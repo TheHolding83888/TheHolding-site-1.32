@@ -78,6 +78,8 @@ jobs:
           const fs = require('fs');
           const x = JSON.parse(fs.readFileSync('intelligence/comparative/comparative-intelligence.json','utf8'));
           const capital = JSON.parse(fs.readFileSync('intelligence/capital-state/capital-state.json','utf8'));
+          const productivity = JSON.parse(fs.readFileSync('companies/productivity-data.json','utf8'));
+          const income = JSON.parse(fs.readFileSync('intelligence/income-performance/income-performance.json','utf8'));
           if (x.version !== '0.1-comparative-intelligence') throw new Error('unexpected version');
           if (x.engineVersion !== '0.1.1-registry-derived-comparability') throw new Error('unexpected engine');
           if (x.status !== 'partial') throw new Error('v0.1 must remain partial');
@@ -87,7 +89,17 @@ jobs:
           const registryCount = Number(capital.network?.registryCompanyCount);
           const completeCount = Number(capital.network?.totalCapitalCompleteCompanyCount);
           if (!Number.isInteger(registryCount) || registryCount < 1 || completeCount !== registryCount) throw new Error('canonical registry completeness unavailable');
-          const expectedGeneralCount = (capital.companies || []).filter(c => c.capitalScope !== 'stable-company-total-current-capital').length;
+          const capitalByName = new Map((capital.companies || []).map(c => [c.name, c]));
+          const expectedGeneralNames = Object.entries(productivity.companies || {})
+            .filter(([name,p]) => {
+              const c = capitalByName.get(name);
+              return c && c.capitalScope !== 'stable-company-total-current-capital' && p.status === 'ok' && Number(p.coverage) === 1 && p.aprScope === 'full-productive-capital' && Number.isFinite(Number(p.productiveValue)) && Number.isFinite(Number(p.aprLatest));
+            })
+            .map(([name]) => name);
+          if (expectedGeneralNames.length < 1) throw new Error('no current comparable general-company Productivity universe');
+          const expectedExcludedGeneralNames = (capital.companies || [])
+            .filter(c => c.capitalScope !== 'stable-company-total-current-capital' && !expectedGeneralNames.includes(c.name))
+            .map(c => c.name);
 
           const c = x.comparisons?.companyCapitalScale;
           if (c?.eligibleCount !== registryCount || c?.rows?.length !== registryCount) throw new Error(`capital ranking must cover ${registryCount}/${registryCount}`);
@@ -97,21 +109,25 @@ jobs:
           for (let i=1;i<c.rows.length;i++) if (c.rows[i-1].capitalUsd < c.rows[i].capitalUsd) throw new Error('capital ranking order broken');
 
           const g = x.comparisons?.generalCompanyReferenceProductivity;
-          if (g?.eligibleCount !== expectedGeneralCount) throw new Error(`expected ${expectedGeneralCount} comparable general companies`);
-          if (!Array.isArray(g.byReferenceApr) || g.byReferenceApr.length !== expectedGeneralCount) throw new Error('APR ranking missing');
-          if (!Array.isArray(g.byProductiveCapital) || g.byProductiveCapital.length !== expectedGeneralCount) throw new Error('productive capital ranking missing');
-          if (!Array.isArray(g.byAnnualizedReferenceOutput) || g.byAnnualizedReferenceOutput.length !== expectedGeneralCount) throw new Error('reference output ranking missing');
+          if (g?.eligibleCount !== expectedGeneralNames.length) throw new Error(`expected ${expectedGeneralNames.length} comparable general companies`);
+          if (!Array.isArray(g.byReferenceApr) || g.byReferenceApr.length !== expectedGeneralNames.length) throw new Error('APR ranking missing');
+          if (!Array.isArray(g.byProductiveCapital) || g.byProductiveCapital.length !== expectedGeneralNames.length) throw new Error('productive capital ranking missing');
+          if (!Array.isArray(g.byAnnualizedReferenceOutput) || g.byAnnualizedReferenceOutput.length !== expectedGeneralNames.length) throw new Error('reference output ranking missing');
           if (!g.exclusions?.some(v=>String(v).includes('Monetra.eth'))) throw new Error('stable/general separation missing');
+          for (const name of expectedExcludedGeneralNames) if (!g.exclusions.some(v => String(v).includes(name))) throw new Error(`missing explicit general-company exclusion: ${name}`);
           if (g.byReferenceApr.some(r=>r.coverage!==1 || r.aprScope!=='full-productive-capital')) throw new Error('partial productivity row leaked into ranking');
+          for (const name of expectedGeneralNames) if (!g.byReferenceApr.some(r => r.name === name)) throw new Error(`eligible general company missing: ${name}`);
 
           const p = x.comparisons?.protocolReferenceApr;
           if (!Number.isInteger(p?.eligibleCount) || p.eligibleCount < 1 || p.rows.length !== p.eligibleCount) throw new Error('protocol ranking missing');
           if (!p.exclusions?.some(v=>String(v).includes('realised'))) throw new Error('APR realised-return guard missing');
 
+          const latest = income.embeddedYield?.latestMeasuredInterval;
           const m = x.comparisons?.monetraLatestMeasuredIncomeContribution;
-          if (m?.eligibleCount !== 8 || m?.measuredPositionCount !== 8 || m?.totalPositionCount !== 10) throw new Error('Monetra latest interval coverage regression');
+          if (!latest || !Array.isArray(latest.byProtocol)) throw new Error('canonical latest Monetra interval missing');
+          if (m?.eligibleCount !== latest.byProtocol.length || m?.measuredPositionCount !== latest.measuredPositionCount || m?.totalPositionCount !== latest.totalPositionCount) throw new Error('Monetra latest interval coverage regression');
           const incomeSum = m.rows.reduce((a,r)=>a+Number(r.latestMeasuredIncomeUsd||0),0);
-          if (Math.abs(incomeSum - m.latestMeasuredIncomeUsd) > 0.00002) throw new Error('Monetra protocol ranking drift');
+          if (Math.abs(incomeSum - Number(latest.incomeUsd)) > 0.00002 || Math.abs(incomeSum - m.latestMeasuredIncomeUsd) > 0.00002) throw new Error('Monetra protocol ranking drift');
           if (!m.exclusions?.some(v=>String(v).includes('Not MTD'))) throw new Error('MTD attribution guard missing');
 
           if (x.answerability?.['best-company-overall'] !== 'blocked-no-universal-score') throw new Error('universal company score leaked');
@@ -121,6 +137,7 @@ jobs:
           console.log('COMPARATIVE INTELLIGENCE v0.1.1 PASS', {
             registryCompaniesRanked: c.eligibleCount,
             generalCompaniesRanked: g.eligibleCount,
+            generalCompanyExclusions: expectedExcludedGeneralNames,
             networkTvlUsd: c.networkTvlUsd,
             largestCompany: c.rows[0]?.name,
             topGeneralReferenceApr: g.byReferenceApr[0]?.name,
