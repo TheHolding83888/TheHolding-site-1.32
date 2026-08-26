@@ -1,7 +1,7 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-26T05:00:41.882Z",
+  "generatedAt": "2026-08-26T05:03:19.082Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
@@ -13,7 +13,7 @@
   },
   "source": {
     "filesScanned": 660,
-    "bytesScanned": 15920445,
+    "bytesScanned": 15920383,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -57,6 +57,22 @@
   "whatChanged": {
     "newFindings": [
       {
+        "id": "2b923a7d14e9d43593593b7415ccd26ce862eaed5900f454c5ed315d9714d39e",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/update-neural-graph-telemetry.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/update-neural-graph-telemetry.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "51e1a55a513c20e456345d7b8afb44ac54a58c08470eef85910b88f2113bc5d9",
+          "currentSha256": "5a848ca2859dc7897803a69233522d55050f1b84d2fa9b94b5f225cdaa7102b6"
+        }
+      }
+    ],
+    "resolvedFindings": [
+      {
         "id": "c2a90711af0ebb3f24caae7ac55ae9bd73717370cb3fd467b9e49af941659532",
         "severity": "medium",
         "category": "critical-surface-change",
@@ -68,22 +84,6 @@
         "evidence": {
           "previousSha256": "e9229fbd6b9967797fb9963b9a71ab618ad79f88d37619598c1bb002a205a603",
           "currentSha256": "e47caff85acac3e9d1eda14e8e8dadd5e874da4d7c6382b00b9445da1d8c23cb"
-        }
-      }
-    ],
-    "resolvedFindings": [
-      {
-        "id": "6f026c448f3e0ffd3a7e3cb44ae116cfbde10029abfbcedea57f60289e6458b5",
-        "severity": "medium",
-        "category": "critical-surface-change",
-        "file": ".github/workflows/ask-experience.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/ask-experience.yml.",
-        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-        "evidence": {
-          "previousSha256": "68d3657b554ef4fca2f1f3e5aa85e496639593f8322c9cb85300331e6b869cff",
-          "currentSha256": "deb9c4e1025390563f8a866f6ddf1c7870e748cbd6aba13fdbd6da2d38e983d4"
         }
       }
     ]
@@ -112,17 +112,17 @@
       "evidence": null
     },
     {
-      "id": "c2a90711af0ebb3f24caae7ac55ae9bd73717370cb3fd467b9e49af941659532",
+      "id": "2b923a7d14e9d43593593b7415ccd26ce862eaed5900f454c5ed315d9714d39e",
       "severity": "medium",
       "category": "critical-surface-change",
-      "file": ".github/workflows/update-explanatory-context.yml",
+      "file": ".github/workflows/update-neural-graph-telemetry.yml",
       "line": null,
       "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/update-explanatory-context.yml.",
+      "summary": "Security-sensitive surface changed: .github/workflows/update-neural-graph-telemetry.yml.",
       "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
       "evidence": {
-        "previousSha256": "e9229fbd6b9967797fb9963b9a71ab618ad79f88d37619598c1bb002a205a603",
-        "currentSha256": "e47caff85acac3e9d1eda14e8e8dadd5e874da4d7c6382b00b9445da1d8c23cb"
+        "previousSha256": "51e1a55a513c20e456345d7b8afb44ac54a58c08470eef85910b88f2113bc5d9",
+        "currentSha256": "5a848ca2859dc7897803a69233522d55050f1b84d2fa9b94b5f225cdaa7102b6"
       }
     },
     {
@@ -736,12 +736,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "19206878e8d60f1e8c0b53549af61b11b6348198352d36ba439b2007a885b292",
+    "snapshotHash": "79ec129b88bc76392b6cf32cf11f59a885dc45b19f626d85bc8b42f687e99eda",
     "securityVault": {
-      "runCount": 534,
+      "runCount": 535,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-26T05-00-41-882Z-19206878e8.json",
-      "latestRecordHash": "98e1377ac0c4ceb269efa1b377c79a8610b64013392e8471f94315f481839f30",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-26T05-03-19-082Z-79ec129b88.json",
+      "latestRecordHash": "2923dac2587c2243a841c1f434a25c8a036a9d31b86efd067b944b3181c0b200",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
