@@ -50,6 +50,7 @@ for (const required of [
   'cancel-in-progress: true',
   'ref: main',
   "PR_STATE=\"$(gh api \"repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER\" --jq '.state')\"",
+  'actions/runs?event=pull_request&per_page=100',
   '.event == "pull_request"',
   '.head_sha != $current_sha',
   '.head_branch == $head_ref',
@@ -63,6 +64,7 @@ for (const required of [
 for (const forbidden of [
   '\n  pull_request:\n',
   '\n  pull_request_target:\n',
+  'actions/runs?event=pull_request_target',
   'contents: write',
   'git push',
   'git commit',
