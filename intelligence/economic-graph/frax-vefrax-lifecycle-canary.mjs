@@ -10,14 +10,16 @@ function sha256(value){return crypto.createHash('sha256').update(JSON.stringify(
 const policy=JSON.parse(fs.readFileSync(new URL('./protocol-lifecycle-policy.json',import.meta.url),'utf8'));
 
 function baseState(){
+  // Production-like baseline mirrors live main before Frax admission:
+  // 2 Canonical + 2 Verified + 3 Shadow.
   const protocols={
     'defitea-fxn-vefxn':{maturityStage:'canonical'},
     'defitea-curve-vecrv':{maturityStage:'canonical'},
     'defitea-aerodrome-veaero':{maturityStage:'verified'},
     'defitea-convex-vlcvx-votium':{maturityStage:'verified'},
-    'defitea-pendle-spendle':{maturityStage:'verified'},
-    'registry-yieldbasis-multimechanism':{maturityStage:'verified'},
-    'registry-velodrome-vevelo':{maturityStage:'verified'}
+    'defitea-pendle-spendle':{maturityStage:'shadow'},
+    'registry-yieldbasis-multimechanism':{maturityStage:'shadow'},
+    'registry-velodrome-vevelo':{maturityStage:'shadow'}
   };
   return {
     generatedAt:'2026-08-26T06:08:02.250Z',
@@ -29,7 +31,7 @@ function baseState(){
       authority:{executionAuthority:'none',repositoryMutationAuthority:false,workflowDispatchAuthority:false,causalClaimAuthority:'none'},
       protocols,
       transitions:[],
-      summary:{protocolCount:7,stageCounts:{canonical:2,verified:5},automaticTransitionsRecorded:0}
+      summary:{protocolCount:7,stageCounts:{canonical:2,verified:2,shadow:3},automaticTransitionsRecorded:0}
     },
     protocolSensors:{}
   };
@@ -86,6 +88,11 @@ assert(policy.laws.legacyApiSchemaDoesNotDefineCurrentTokenIdentity===true,'Frax
 assert(Number(policy.protocols?.[FRAX_PROTOCOL_ID]?.verifiedMinimumDistinctNativePeriodCount)===2,'Frax native-period verification minimum drift');
 
 const baseline=baseState();
+assert(baseline.protocolLifecycle.summary.protocolCount===7,'Production-like baseline protocol count drift');
+assert(baseline.protocolLifecycle.summary.stageCounts.canonical===2,'Production-like baseline canonical count drift');
+assert(baseline.protocolLifecycle.summary.stageCounts.verified===2,'Production-like baseline verified count drift');
+assert(baseline.protocolLifecycle.summary.stageCounts.shadow===3,'Production-like baseline shadow count drift');
+
 const weeklySnapshots=productivity({historyKeys:['2026-W32','2026-W33','2026-W34','2026-W35']});
 const weeklyOnly=applyFraxLifecycle({
   state:clone(baseline),
@@ -101,6 +108,9 @@ assert(weeklyProtocol.blockers.includes('distinct-native-frax-period-depth'),'Na
 assert(weeklySensor.canonicalSnapshotCount===4,'Canonical Frax snapshot support depth mismatch');
 assert(weeklySensor.validatedNativePeriodCount===0,'Weekly snapshots falsely manufactured native Frax periods');
 assert(weeklyOnly.protocolLifecycle.summary.protocolCount===8,'Frax SHADOW materialization must make protocolCount 8');
+assert(weeklyOnly.protocolLifecycle.summary.stageCounts.canonical===2,'Frax SHADOW admission changed canonical count');
+assert(weeklyOnly.protocolLifecycle.summary.stageCounts.verified===2,'Frax SHADOW admission changed verified count');
+assert(weeklyOnly.protocolLifecycle.summary.stageCounts.shadow===4,'Frax SHADOW admission must produce four shadow protocols');
 
 const labelsOnlyProductivity=productivity({
   historyKeys:['2026-W34','2026-W35'],
@@ -158,6 +168,9 @@ const sensor=verified.protocolSensors[FRAX_PROTOCOL_ID];
 assert(frax.maturityStage==='verified',`Two distinct explicit Frax native periods must produce VERIFIED, got ${frax.maturityStage}`);
 assert(frax.operatingMode==='shadow-monitoring','Verified Frax must stay shadow-monitoring');
 assert(verified.protocolLifecycle.summary.protocolCount===8,'Frax must be protocol lifecycle sensor #8');
+assert(verified.protocolLifecycle.summary.stageCounts.canonical===2,'Verified Frax changed canonical count');
+assert(verified.protocolLifecycle.summary.stageCounts.verified===3,'Verified Frax must produce three verified protocols');
+assert(verified.protocolLifecycle.summary.stageCounts.shadow===3,'Verified Frax changed existing shadow count');
 assert(sensor.latest.observation.referenceProductivity.currentAprPct===5.3704,'Frax current APR mismatch');
 assert(sensor.latest.observation.registryExposure.companyCount===3,'Frax registry exposure breadth mismatch');
 assert(sensor.latest.observation.registryExposure.positionCount===3,'Frax registry position count mismatch');
@@ -200,6 +213,7 @@ console.log('FRAX veFRAX LIFECYCLE CANARY PASS',{
   productionLikeStage:weeklyProtocol.maturityStage,
   syntheticNativeProofStage:frax.maturityStage,
   protocolCount:weeklyOnly.protocolLifecycle.summary.protocolCount,
+  stageCounts:weeklyOnly.protocolLifecycle.summary.stageCounts,
   currentAprPct:weeklySensor.latest.observation.referenceProductivity.currentAprPct,
   companyCount:weeklySensor.latest.observation.registryExposure.companyCount,
   canonicalSnapshotCount:weeklySensor.canonicalSnapshotCount,
