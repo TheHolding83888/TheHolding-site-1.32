@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-26T08:25:26.850Z",
+  "generatedAt": "2026-08-26T08:39:35.467Z",
   "status": "watch",
-  "snapshotHash": "cd9baff8486ae40691996de68973767becea3ea92cbc7b65cbf20053eb60b65f",
+  "snapshotHash": "78c23f83695d87a98866e4e00c8e1f069727a21235c3bdc84db5cd7b26bda36c",
   "repository": {
-    "filesScanned": 665,
-    "bytesScanned": 16082278,
+    "filesScanned": 667,
+    "bytesScanned": 16099656,
     "criticalHashes": {
       ".github/workflows/admit-company-010-public.yml": "5feffbf58388675952487c3462d2f9149eecec6f3795483087010dd0d3b19cfb",
       ".github/workflows/ask-experience.yml": "deb9c4e1025390563f8a866f6ddf1c7870e748cbd6aba13fdbd6da2d38e983d4",
@@ -124,7 +124,7 @@
       ".github/workflows/verify-known-mechanism-reuse-parity.yml": "bfda24ead7a83ccd30365d0a7df8b4b0b2fb89344631c11579385a46dca879e6",
       ".github/workflows/verify-passport-productive-label-parity.yml": "58ef80c5dc1a35d1b8dcafbfaadd134f1f2d3aa80a891aab3361bb6e7709326c",
       ".github/workflows/verify-passport-rate-badge-layout.yml": "3a8effa7031468dca2970eeddb2f6db18fc3c21d91d7344e3c0deaa75724bb5d",
-      ".github/workflows/verify-project-memory-bootstrap.yml": "0e6746df15a777bcea0a6420a8e4d83c2e6ee3734c995c95afd90389615eeca6",
+      ".github/workflows/verify-project-memory-bootstrap.yml": "95acc0cc2926d726a794a067f2d770b6a230874d823052ef50ad68a456e2d810",
       ".github/workflows/verify-project-memory-continuity-routing.yml": "69f486507c3d33744dd5db7ecabefc696250caeb0155f8fff776d6b571f8ed86",
       ".github/workflows/verify-proposal-lifecycle.yml": "a8cf3551f9cf56450e65ec91dcdd74143ce9638b9b2e32654570b3d6ca0525e0",
       ".github/workflows/verify-reporting-layer.yml": "0060a077f2df49b7cc75776aad3cb579a1ccee3fa1ed542a7ef47027a2af8ce7",
@@ -405,6 +405,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "aa41593aad87d865f19548c329b73f13b7fa0f14a62f5ff723db889b24aac035",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/verify-project-memory-bootstrap.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-project-memory-bootstrap.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "0e6746df15a777bcea0a6420a8e4d83c2e6ee3734c995c95afd90389615eeca6",
+        "currentSha256": "95acc0cc2926d726a794a067f2d770b6a230874d823052ef50ad68a456e2d810"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -701,10 +715,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 541,
+    "runCount": 542,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/08/2026-08-26T08-25-26-850Z-cd9baff848.json",
-    "latestRecordHash": "4508f236cb1ddfa39896a31f7d154cc2f3de67cde17ea7e2d5784e9ada415e30",
+    "latestRecordPath": "security/security-vault/2026/08/2026-08-26T08-39-35-467Z-78c23f8369.json",
+    "latestRecordHash": "7bb3b31a746847383840d204f05cc97fe48952e6e6b6d7a017ef501daf6b0db0",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }

@@ -2,15 +2,15 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-08-26T08:25:26.850Z",
+  "lastUpdatedAt": "2026-08-26T08:39:35.467Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 541,
-    "vaultRunCount": 541,
+    "runCount": 542,
+    "vaultRunCount": 542,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
@@ -6505,6 +6505,18 @@
       "highCount": 2,
       "newFindingCount": 0,
       "resolvedFindingCount": 18
+    },
+    {
+      "generatedAt": "2026-08-26T08:39:35.467Z",
+      "status": "watch",
+      "snapshotHash": "78c23f83695d87a98866e4e00c8e1f069727a21235c3bdc84db5cd7b26bda36c",
+      "recordPath": "security/security-vault/2026/08/2026-08-26T08-39-35-467Z-78c23f8369.json",
+      "recordHash": "7bb3b31a746847383840d204f05cc97fe48952e6e6b6d7a017ef501daf6b0db0",
+      "findingCount": 23,
+      "criticalCount": 0,
+      "highCount": 2,
+      "newFindingCount": 1,
+      "resolvedFindingCount": 0
     }
   ],
   "events": [
@@ -25415,6 +25427,17 @@
       "category": "dom-innerhtml",
       "summary": "Resolved: Dynamic innerHTML assignment detected.",
       "file": "companies/index.html",
+      "entity": null
+    },
+    {
+      "id": "ca18ab2903993f4792a2aceafd8b69090cdc3f8ed4c0ce50286e848ee5bd2ff6",
+      "type": "finding-opened",
+      "detectedAt": "2026-08-26T08:39:35.467Z",
+      "findingId": "aa41593aad87d865f19548c329b73f13b7fa0f14a62f5ff723db889b24aac035",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-project-memory-bootstrap.yml.",
+      "file": ".github/workflows/verify-project-memory-bootstrap.yml",
       "entity": null
     }
   ]
