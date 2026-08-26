@@ -1,0 +1,131 @@
+# holding-control-plane: workflow-controller
+# holding-control-domain: pull-request-supersession-only
+name: "The Holding Reliability · PR Run Supersession Controller"
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "Pull request number whose obsolete pull_request runs may be cancelled"
+        required: true
+        type: number
+
+permissions:
+  contents: read
+  actions: write
+  pull-requests: read
+
+concurrency:
+  group: pr-run-supersession-${{ github.event.pull_request.number || inputs.pr_number }}
+  cancel-in-progress: true
+
+jobs:
+  supersede:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout controller policy
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+
+      - name: Verify controller fail-closed contract
+        run: node intelligence/reliability/pr-run-supersession-canary.mjs
+
+      - name: Resolve exact pull-request head
+        id: target
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_PR: ${{ github.event.pull_request.number }}
+          EVENT_SHA: ${{ github.event.pull_request.head.sha }}
+          EVENT_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          INPUT_PR: ${{ inputs.pr_number }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          PR_NUMBER="${EVENT_PR:-${INPUT_PR:-}}"
+          if [ -z "$PR_NUMBER" ]; then
+            echo "ERROR: pull request number missing" >&2
+            exit 1
+          fi
+
+          if [ -n "${EVENT_SHA:-}" ] && [ -n "${EVENT_HEAD_REF:-}" ]; then
+            CURRENT_SHA="$EVENT_SHA"
+            HEAD_REF="$EVENT_HEAD_REF"
+          else
+            CURRENT_SHA="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '.head.sha')"
+            HEAD_REF="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '.head.ref')"
+          fi
+
+          if [ -z "$CURRENT_SHA" ] || [ -z "$HEAD_REF" ] || [ "$HEAD_REF" = "main" ]; then
+            echo "ERROR: unsafe or unresolved PR target: pr=$PR_NUMBER head=$HEAD_REF sha=$CURRENT_SHA" >&2
+            exit 1
+          fi
+
+          echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "current_sha=$CURRENT_SHA" >> "$GITHUB_OUTPUT"
+          echo "head_ref=$HEAD_REF" >> "$GITHUB_OUTPUT"
+          echo "Resolved PR #$PR_NUMBER head=$HEAD_REF sha=$CURRENT_SHA"
+
+      - name: Cancel only obsolete runs from the same PR branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.target.outputs.pr_number }}
+          CURRENT_SHA: ${{ steps.target.outputs.current_sha }}
+          HEAD_REF: ${{ steps.target.outputs.head_ref }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tmp="$(mktemp)"
+          trap 'rm -f "$tmp"' EXIT
+
+          gh api --paginate "repos/$GITHUB_REPOSITORY/actions/runs?event=pull_request&per_page=100" \
+            --jq '.workflow_runs[]' > "$tmp"
+
+          mapfile -t CANDIDATES < <(
+            jq -s -r \
+              --argjson pr "$PR_NUMBER" \
+              --arg current_sha "$CURRENT_SHA" \
+              --arg head_ref "$HEAD_REF" '
+                .[]
+                | select(.event == "pull_request")
+                | select(.head_sha != $current_sha)
+                | select(.head_branch == $head_ref)
+                | select(.head_branch != "main")
+                | select(.status != "completed")
+                | select(.pull_requests | any(.number == $pr))
+                | [.id, .name, .head_sha, .status] | @tsv
+              ' "$tmp"
+          )
+
+          cancelled=0
+          for row in "${CANDIDATES[@]}"; do
+            [ -n "$row" ] || continue
+            IFS=$'\t' read -r run_id run_name run_sha run_status <<< "$row"
+            echo "Cancelling superseded PR run id=$run_id workflow=$run_name sha=$run_sha status=$run_status"
+            if gh api -X POST "repos/$GITHUB_REPOSITORY/actions/runs/$run_id/cancel" >/dev/null 2>&1; then
+              cancelled=$((cancelled + 1))
+              continue
+            fi
+
+            now_status="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run_id" --jq '.status')"
+            if [ "$now_status" = "completed" ]; then
+              echo "Run $run_id completed before cancellation; safe no-op."
+              continue
+            fi
+            echo "ERROR: failed to cancel still-active superseded run $run_id (status=$now_status)" >&2
+            exit 1
+          done
+
+          echo "Supersession complete: cancelled=$cancelled current_sha=$CURRENT_SHA"
+          {
+            echo "### PR Run Supersession"
+            echo "- PR: #$PR_NUMBER"
+            echo "- Current head: \`$CURRENT_SHA\`"
+            echo "- Head branch: \`$HEAD_REF\`"
+            echo "- Superseded active runs cancelled: **$cancelled**"
+            echo "- Current-head and production runs: untouched"
+          } >> "$GITHUB_STEP_SUMMARY"
