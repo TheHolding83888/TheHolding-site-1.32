@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { applyProtocolLifecycle } from './protocol-lifecycle.mjs';
 import { applyPendleSPendleLifecycle } from './pendle-spendle-lifecycle.mjs';
+import { applyPendleAccountingEvidence } from './pendle-spendle-accounting-evidence.mjs';
 
 function base(){
   return {
@@ -23,13 +24,20 @@ function pendleProductivity(){return{
   generatedAt:'2026-08-25T18:00:00.000Z',
   engines:{
     pendle_spendle:{
-      protocol:'Pendle',sourceUrl:'https://api-v2.pendle.finance/core/v1/spendle/data',nativeCadence:'14d',
+      protocol:'Pendle',sourceUrl:'https://api-v2.pendle.finance/core/v1/spendle/data',sourceType:'official-api+official-merkle+onchain-survivor-diagnostic',nativeCadence:'14d',
       status:'warming',aprLatest:null,lastUpdatedAt:'2026-08-25T18:00:00.000Z',periodStart:'2026-08-11T00:00:00.000Z',periodEnd:'2026-08-25T00:00:00.000Z',
       details:{
         historyCount:12,publishedApr:0,revenue:282160,buybackAmount:0,selectionRule:'zero-apr-positive-reward-survivor-cluster-not-yet-replicated',mappedMerkleCampaign:null,
         research:{
-          campaignCount:8,
-          epochMap:{pairCount:8,exactAmountMatches:8,offsetConsensus:true,offsetSeconds:259200,offsetDays:3,maxOffsetDeviationSeconds:0},
+          campaignCount:3,
+          epochMap:{
+            pairCount:3,exactAmountMatches:3,offsetConsensus:true,offsetSeconds:259200,offsetDays:3,maxOffsetDeviationSeconds:0,
+            pairs:[
+              {campaign:'2026-08-14-spendle',apiIndex:2,apiPeriodStart:'2026-07-28T00:00:00.000Z',apiPeriodEnd:'2026-08-11T00:00:00.000Z',merklePeriodStart:'2026-07-31T00:00:00.000Z',merklePeriodEnd:'2026-08-14T00:00:00.000Z',apiRevenue:359625.56,apiBuybackAmount:199338,merkleReward:199338,amountDifference:0,amountMatch:true,startOffsetSeconds:259200,endOffsetSeconds:259200,offsetDays:3,offsetDriftSeconds:0},
+              {campaign:'2026-08-01-spendle',apiIndex:3,apiPeriodStart:'2026-07-14T00:00:00.000Z',apiPeriodEnd:'2026-07-28T00:00:00.000Z',merklePeriodStart:'2026-07-17T00:00:00.000Z',merklePeriodEnd:'2026-07-31T00:00:00.000Z',apiRevenue:312875.16,apiBuybackAmount:144388,merkleReward:144388,amountDifference:0,amountMatch:true,startOffsetSeconds:259200,endOffsetSeconds:259200,offsetDays:3,offsetDriftSeconds:0},
+              {campaign:'2026-07-18-spendle',apiIndex:4,apiPeriodStart:'2026-06-30T00:00:00.000Z',apiPeriodEnd:'2026-07-14T00:00:00.000Z',merklePeriodStart:'2026-07-03T00:00:00.000Z',merklePeriodEnd:'2026-07-17T00:00:00.000Z',apiRevenue:270669.23,apiBuybackAmount:149086,merkleReward:149086,amountDifference:0,amountMatch:true,startOffsetSeconds:259200,endOffsetSeconds:259200,offsetDays:3,offsetDriftSeconds:0}
+            ]
+          },
           survivorReplication:{replicated:true,validCampaigns:3,minRequiredCampaigns:2,minClusterSize:30,minClusterDensity:0.25,maxSpreadBps:75,maxSupplyDeviationPct:5,observedSupplyMedian:225738672,observedMaxSupplyDeviationPct:2.35,supplyConsistencyOk:true},
           rewardScope:'sPENDLE buyback distribution only',denominatorPolicy:'replicated survivor reconstruction'
         },
@@ -68,16 +76,24 @@ if(initial.protocolLifecycle.protocols['defitea-aerodrome-veaero'].maturityStage
 if(initial.protocolLifecycle.protocols['defitea-convex-vlcvx-votium'].maturityStage!=='verified') throw new Error('vlCVX must be VERIFIED until aligned longitudinal response closes');
 if(initial.protocolLifecycle.protocols['defitea-fxn-vefxn'].maturityStage!=='canonical'||initial.protocolLifecycle.protocols['defitea-curve-vecrv'].maturityStage!=='canonical') throw new Error('Existing canonical cohorts regressed');
 
-const withPendle=applyPendleSPendleLifecycle({state:initial,previousState:null,productivity:pendleProductivity(),productivitySha256:'a'.repeat(64),policy});
-const pendle=withPendle.protocolLifecycle.protocols['defitea-pendle-spendle'];
-const pendleObservation=withPendle.protocolSensors?.['defitea-pendle-spendle']?.latest?.observation;
+const productivity=pendleProductivity();
+const withPendle=applyPendleSPendleLifecycle({state:initial,previousState:null,productivity,productivitySha256:'a'.repeat(64),policy});
+const withPendleAccounting=applyPendleAccountingEvidence({state:withPendle,productivity,productivitySha256:'a'.repeat(64)});
+const pendle=withPendleAccounting.protocolLifecycle.protocols['defitea-pendle-spendle'];
+const pendleObservation=withPendleAccounting.protocolSensors?.['defitea-pendle-spendle']?.latest?.observation;
+const pendleAccounting=withPendleAccounting.protocolEvidence?.['defitea-pendle-spendle-accounting'];
 if(pendle?.maturityStage!=='shadow') throw new Error(`Pendle warming sensor must enter SHADOW, got ${pendle?.maturityStage}`);
-if(!pendleObservation||withPendle.protocolLifecycle.summary?.protocolCount!==5) throw new Error('Pendle sensor/lifecycle registry not materialized');
+if(!pendleObservation||withPendleAccounting.protocolLifecycle.summary?.protocolCount!==5) throw new Error('Pendle sensor/lifecycle registry not materialized');
 if(pendleObservation.referenceProductivity?.currentAprPct!==null) throw new Error('Pendle UNKNOWN Reference APR was coerced to a number');
 if(pendleObservation.companyPosition?.positionAprPct!==null) throw new Error('Pendle UNKNOWN company position APR was coerced to a number');
 if(!pendle.checks.find(x=>x.id==='false-zero-fail-closed')?.pass) throw new Error('Pendle false-zero fail-closed gate regressed');
 if(pendle.checks.find(x=>x.id==='current-reference-apr-validated')?.pass) throw new Error('Pendle warming current APR was over-promoted');
-if(withPendle.protocolLifecycle.authority?.executionAuthority!=='none') throw new Error('Pendle expanded lifecycle execution authority');
+if(withPendleAccounting.protocolLifecycle.authority?.executionAuthority!=='none') throw new Error('Pendle expanded lifecycle execution authority');
+if(pendleAccounting?.status!=='historical-distribution-publication-identity-proven') throw new Error('Pendle historical API/Merkle accounting identity was not proven');
+if(pendleAccounting?.coverage?.mappedCampaigns!==3||pendleAccounting?.coverage?.amountMatches!==3) throw new Error('Pendle accounting evidence coverage mismatch');
+if(pendleAccounting?.relations?.apiBuybackAmountToMerkleDistribution!=='ATTRIBUTED-mechanical-publication-parity-within-canonical-tolerance') throw new Error('Pendle mechanical distribution parity missing');
+if(!String(pendleAccounting?.relations?.protocolRevenueToBuyback||'').startsWith('UNKNOWN-')) throw new Error('Pendle revenue causality was over-promoted');
+if(pendleAccounting?.authority?.executionAuthority!=='none'||pendleAccounting?.authority?.causalClaimAuthority!=='none') throw new Error('Pendle accounting evidence expanded authority');
 
 const promoted=base();
 promoted.candidateCohorts['defitea-convex-vlcvx-votium'].deepEconomicEvidence.remainingUnknowns=[];
