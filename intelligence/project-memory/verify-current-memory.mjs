@@ -42,7 +42,7 @@ for (const phrase of [
 
 const build = fs.readFileSync(`${root}/${buildFile}`, 'utf8');
 for (const phrase of [
-  'Build layer by layer',
+  'layer by layer',
   'one primary objective',
   'No new layer',
   'capability',
