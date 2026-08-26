@@ -36,6 +36,21 @@ const OFFICIAL_REFERENCES=Object.freeze([
     url:'https://github.com/dromos-labs/metadex-specs/blob/main/docs/overview.md',
     class:'upstream-public-idea-draft-not-production-contract',
     supports:['federated root/leaf design','Base root','sAERO/sTOKEN terminology','per-second reward rates','decaying allocations','cross-chain rate propagation','per-chain ceilings','continuous fee/incentive accrual']
+  },
+  {
+    url:'https://github.com/dromos-labs/metadex-specs/blob/main/docs/voter/voter.md',
+    class:'upstream-public-idea-draft-not-production-contract',
+    supports:['per-chain reward-rate accounting','allocation decay','activation timestamps','cooldowns','settle-all conservation','pause/suspend semantics']
+  },
+  {
+    url:'https://github.com/dromos-labs/metadex-specs/blob/main/docs/gauge/gauge-factory.md',
+    class:'upstream-public-idea-draft-not-production-contract',
+    supports:['per-gauge emission caps','bounded cap-operator role','fee-to-emissions efficiency signal','local automation path']
+  },
+  {
+    url:'https://github.com/dromos-labs/metadex-specs/blob/main/docs/rewards/rewards.md',
+    class:'upstream-public-idea-draft-not-production-contract',
+    supports:['continuous fee accrual','streaming incentive programs','decaying reward weights','cross-chain allocation settlement ordering']
   }
 ]);
 
@@ -106,11 +121,15 @@ export function buildAeroTransitionReadiness({state}){
       allocationChangesSubjectToCooldown:true,
       rewardsStreamPerSecond:true,
       exchangeRevenueAccruesContinuously:true,
+      incentiveProgramsStreamContinuously:true,
       stakingWeightMayDecayWithStakingSchedule:true,
       rootAllocationDefaultInPublicIdeaDraft:true,
       localLeafAllocation:'future-toggle-in-public-idea-draft',
       crossChainRatePropagation:true,
       perChainCeilingSafetyModel:true,
+      perGaugeEmissionCaps:true,
+      boundedFeeResponsiveCapOperator:'public-idea-draft-design-only',
+      crossChainTransitDriftMustBeMeasured:true,
       note:'Governance proposal voting is distinct from liquidity-reward allocation and is not declared removed.'
     },
     historyContract:{
@@ -130,18 +149,23 @@ export function buildAeroTransitionReadiness({state}){
         'global Minter reward rate',
         'per-chain allocated reward rate',
         'per-gauge allocated and effective reward rate',
-        'per-gauge reward caps / unused allocation',
-        'continuous exchange fee and incentive accrual',
+        'per-gauge reward caps / cap-operator bounds / unused allocation',
+        'fee-to-emissions efficiency per gauge',
+        'continuous exchange fee accrual',
+        'streaming incentive program amount / rate / duration',
         'LP liquidity depth and concentration',
         'pool volume / fees / spread / execution quality',
-        'cross-chain activation timestamp / propagation state',
-        'xTOKEN issuance / redemption / chain ceiling state'
+        'cross-chain activation timestamp / propagation delay / convergence state',
+        'chain pause / suspension state',
+        'xTOKEN issuance / redemption / chain ceiling / unused-emissions state'
       ],
       mechanicalRelationsEligibleForAttribution:[
         'staking weight + allocation -> root/leaf allocation weight when reproduced from production contracts',
         'chainWeight / totalWeight × minterRate -> chain reward rate when reproduced from production contracts',
         'gauge allocation + cap -> effective gauge reward rate when reproduced from production contracts',
-        'active allocation weight -> staker share of continuously accrued fee/incentive rewards when reproduced from production contracts'
+        'active allocation weight -> staker share of continuously accrued fee/incentive rewards when reproduced from production contracts',
+        'streaming incentive amount / duration -> incentive tokens-per-second when reproduced from production contracts',
+        'chain accumulator / ceiling -> maximum root redemption when reproduced from production contracts'
       ],
       relationshipsDefaultingToNonCausal:[
         'allocation -> future liquidity growth',
@@ -149,7 +173,8 @@ export function buildAeroTransitionReadiness({state}){
         'allocation -> future fee growth',
         'allocation -> future incentive intensity',
         'allocation -> future relative profitability',
-        'market-flow signal -> future winning pool'
+        'market-flow signal -> future winning pool',
+        'fee-to-emissions efficiency signal -> future optimal cap'
       ],
       epistemicDefault:'MEASURE first; ATTRIBUTED only for reproduced mechanical identities; prospective market outcomes remain CORRELATED/UNKNOWN until independently proven.'
     },
@@ -169,11 +194,14 @@ export function buildAeroTransitionReadiness({state}){
       ],
       candidateOutcomeMetrics:[
         'exchange revenue per unit of allocated AERO rewards',
+        'fees per unit of effective gauge reward rate',
+        'marginal fee growth per marginal AERO reward',
         'fee growth after allocation',
         'liquidity-depth change',
         'volume and execution-quality change',
         'reward efficiency relative to contemporaneous comparable pools',
-        'allocation persistence / reversal after cooldown'
+        'allocation persistence / reversal after cooldown',
+        'cross-chain propagation delay versus realized opportunity window'
       ],
       causalBoundary:'A profitable prospective allocation does not prove why demand moved or that the same signal will work again.'
     },
