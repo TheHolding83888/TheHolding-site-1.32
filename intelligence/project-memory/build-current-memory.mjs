@@ -19,10 +19,16 @@ const continuityFiles = exists('intelligence/project-memory')
   : [];
 const latestContinuity = continuityFiles.at(-1) ?? null;
 
-// These are durable bootstrap contracts, not changing production facts.
+// Full durable canons remain repository-owned and machine-verified, but they are
+// deliberately not all loaded into every chat. CURRENT carries their hot-path
+// operating essentials; the compact router decides when a full canon is needed.
 const ownerCollaborationCanon = 'THE_HOLDING_OWNER_COLLABORATION_OPERATING_STYLE_2026-08-18.md';
-const memoryRoutingIndex = 'THE_HOLDING_MEMORY_ROUTING_INDEX_2026-08-18.md';
+const buildDisciplineCanon = 'THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md';
+const legacyMemoryRoutingIndex = 'THE_HOLDING_MEMORY_ROUTING_INDEX_2026-08-18.md';
+const memoryRoutingIndex = 'THE_HOLDING_MEMORY_ROUTING_INDEX_v2_2026-08-26.md';
 const ownerCollaborationCanonExists = exists(`intelligence/project-memory/${ownerCollaborationCanon}`);
+const buildDisciplineCanonExists = exists(`intelligence/project-memory/${buildDisciplineCanon}`);
+const legacyMemoryRoutingIndexExists = exists(`intelligence/project-memory/${legacyMemoryRoutingIndex}`);
 const memoryRoutingIndexExists = exists(`intelligence/project-memory/${memoryRoutingIndex}`);
 
 const systemMemory = readJson('intelligence/system-memory.json');
@@ -52,8 +58,6 @@ const builderCounts = builder?.summary?.stateCounts ?? {};
 // CURRENT is a bootstrap for the latest independently available subsystem state,
 // not a frozen replay of the older coherent Cognitive Stack packet. Therefore the
 // standalone Security Sentinel artifact is authoritative for *current* Security.
-// The Cognitive Stack keeps its own exact historical Security binding and remains
-// authoritative for that coherent packet only.
 const securityStatus = security?.status ?? cognitive?.chain?.security?.status ?? 'unknown';
 const securityCritical = security?.severityCounts?.critical ?? cognitive?.chain?.security?.critical ?? 0;
 const securityHigh = security?.severityCounts?.high ?? cognitive?.chain?.security?.high ?? 0;
@@ -70,24 +74,23 @@ const lines = [
   '',
   '> **IRON RULE FOR NEW CHATS / NEW MODELS**',
   '>',
-  '> Before substantive The Holding work, read this file from live GitHub `main`, then follow the Resume order below. The latest continuity checkpoint restores the deep current state; the Memory Routing Index selects only the durable blocks relevant to the current task. For changing facts, live generated artifacts and fresh workflow evidence outrank prose memory.',
+  '> Start from this live `main` file. Then load only the minimum recovery packet below. Full owner/build/history canons remain machine-verified durable contracts and are loaded only when the compact router says they are relevant. Changing facts still come from live generated artifacts and exact workflow evidence, not prose memory.',
   '',
   `Canonical source state represented here: **${sourceStateAsOf}**`,
   '',
-  '## Resume order',
+  '## Minimum recovery packet',
   '',
   `1. ${latestContinuity ? `[${latestContinuity}](./${latestContinuity})` : 'No continuity checkpoint found.'}`,
-  `2. ${ownerCollaborationCanonExists ? `[Owner Collaboration Operating Style](./${ownerCollaborationCanon})` : `MISSING: ${ownerCollaborationCanon}`}`,
-  '3. [THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md](./THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md)',
-  `4. ${memoryRoutingIndexExists ? `[Memory Routing Index](./${memoryRoutingIndex})` : `MISSING: ${memoryRoutingIndex}`}`,
-  '5. [Project Memory README](./README.md)',
-  '6. Follow the Routing Index: read only the task-specific durable blocks and live machine-readable artifacts needed for the current objective.',
+  `2. ${memoryRoutingIndexExists ? `[Memory Routing Index v2](./${memoryRoutingIndex})` : `MISSING: ${memoryRoutingIndex}`}`,
+  '3. Follow the router: load only the task-specific durable canon/context and live machine-readable evidence needed for the current objective.',
+  '',
+  'Full Owner Collaboration, Build Discipline, legacy routing and README are **cold durable references**, not default chat payload. Their critical invariants are carried here and independently machine-verified.',
   '',
   '## Task-aware retrieval',
   '',
   '- Canonical retrieval path: `CURRENT → latest continuity → routing index → task-specific canon/context → live artifact → exact evidence`.',
   '- Do not load every historical checkpoint by default. Use the smallest relevant memory set, then verify changing facts from live state.',
-  '- After material work, write changing numeric state to machine artifacts, durable lessons to canons, major resume state to continuity, and routing improvements to the Routing Index/README.',
+  '- After material work, write changing numeric state to machine artifacts, durable lessons to canons, major resume state to continuity, and routing improvements to the Routing Index.',
   '',
   '## Owner collaboration bootstrap',
   '',
@@ -111,7 +114,7 @@ const lines = [
   `- **Permanent Memory Vault** — ${val(vault?.runCount, 0)} Observer record(s), ${val(vault?.eventCount, 0)} material event(s), retention: ${val(vault?.policy?.canonicalRetention)}; hard lifetime cap: ${vault?.policy?.hardLifetimeCap === null ? 'none' : val(vault?.policy?.hardLifetimeCap)}.`,
   `- **Latest Vault record** — ${val(vault?.latestRecord?.recordPath)}.`,
   `- **Decision Memory** — ${val(decisions?.decisionCount, 0)} append-only owner decision(s); executionAuthority: ${val(decisions?.authority?.executionAuthority ?? decisions?.executionAuthority, 'none')}.`,
-  '- **Project continuity** — this bootstrap + latest master continuity + task-aware routing + owner collaboration canon + specialized canons + Git history.',
+  '- **Project continuity** — CURRENT + latest master continuity + compact task router + routed specialized canons + Git history.',
   '',
   '## Current cognitive stack',
   '',
@@ -126,6 +129,7 @@ const lines = [
   '## Learning / Proposal / Builder / Guardian',
   '',
   `- Learning: **${String(val(learning?.status, 'unknown')).toUpperCase()}**; active cases ${val(learning?.summary?.activeCaseCount, 0)}; remembered cases ${val(learning?.summary?.rememberedCaseCount, 0)}; Brain observations ${val(learning?.summary?.brainObservationCount, 0)}; owner decisions ${val(learning?.summary?.decisionCount, 0)}; settled outcomes ${val(learning?.summary?.settledOutcomeCount, 0)}; lessons ${val(learning?.summary?.lessonCount, 0)}.`,
+  '- Continuous learning priority: **autonomous observational/world evidence is the primary always-on lane**; Owner Decision → Outcome remains a sparse complementary lane. Neither lane gains causal, policy, capital, repository or execution authority by accumulation alone.',
   `- Proposal: **${String(val(proposals?.status, 'unknown')).toUpperCase()}**; active ${val(proposals?.summary?.activeProposalCount, 0)}; APPROVED ${val(stateCounts.APPROVED, 0)}; PROPOSED ${val(stateCounts.PROPOSED, 0)}; SUPERSEDED ${val(stateCounts.SUPERSEDED, 0)}; production execution disabled.`,
   `- Builder: **${String(val(builder?.status, 'unknown')).toUpperCase()}**; candidates ${val(builder?.summary?.candidateCount, 0)}; CANDIDATE ${val(builderCounts.CANDIDATE, 0)}; productionMutationAuthorizedCount ${val(builder?.summary?.productionMutationAuthorizedCount, 0)}.`,
   `- Guardian: **${String(val(guardian?.status, 'unknown')).toUpperCase()}**; research-only ${val(guardian?.summary?.researchOnlyCount, 0)}; blocked ${val(guardian?.summary?.blockedCount, 0)}; sandbox-build authorized ${val(guardian?.summary?.sandboxBuildAuthorizedCount, 0)}; production mutation authorized ${val(guardian?.summary?.productionMutationAuthorizedCount, 0)}.`,
@@ -161,8 +165,13 @@ fs.writeFileSync(rel('intelligence/project-memory/CURRENT.md'), lines.join('\n')
 console.log('Project Memory CURRENT.md rebuilt', {
   sourceStateAsOf,
   latestContinuity,
+  minimumRecoveryPacket: ['CURRENT.md', latestContinuity, memoryRoutingIndex],
   ownerCollaborationCanon,
   ownerCollaborationCanonExists,
+  buildDisciplineCanon,
+  buildDisciplineCanonExists,
+  legacyMemoryRoutingIndex,
+  legacyMemoryRoutingIndexExists,
   memoryRoutingIndex,
   memoryRoutingIndexExists,
   securityGeneratedAt,

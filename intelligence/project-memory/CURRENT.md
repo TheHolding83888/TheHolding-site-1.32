@@ -2,24 +2,23 @@
 
 > **IRON RULE FOR NEW CHATS / NEW MODELS**
 >
-> Before substantive The Holding work, read this file from live GitHub `main`, then follow the Resume order below. The latest continuity checkpoint restores the deep current state; the Memory Routing Index selects only the durable blocks relevant to the current task. For changing facts, live generated artifacts and fresh workflow evidence outrank prose memory.
+> Start from this live `main` file. Then load only the minimum recovery packet below. Full owner/build/history canons remain machine-verified durable contracts and are loaded only when the compact router says they are relevant. Changing facts still come from live generated artifacts and exact workflow evidence, not prose memory.
 
 Canonical source state represented here: **2026-08-26T08:25:26.850Z**
 
-## Resume order
+## Minimum recovery packet
 
-1. [THE_HOLDING_MASTER_CONTINUITY_2026-08-25_RUNTIME_RELIABILITY_LEARNING_LOOP_V02_PRODUCTION_GREEN_MEMORY_INHERITANCE_FIXED.md](./THE_HOLDING_MASTER_CONTINUITY_2026-08-25_RUNTIME_RELIABILITY_LEARNING_LOOP_V02_PRODUCTION_GREEN_MEMORY_INHERITANCE_FIXED.md)
-2. [Owner Collaboration Operating Style](./THE_HOLDING_OWNER_COLLABORATION_OPERATING_STYLE_2026-08-18.md)
-3. [THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md](./THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md)
-4. [Memory Routing Index](./THE_HOLDING_MEMORY_ROUTING_INDEX_2026-08-18.md)
-5. [Project Memory README](./README.md)
-6. Follow the Routing Index: read only the task-specific durable blocks and live machine-readable artifacts needed for the current objective.
+1. [THE_HOLDING_MASTER_CONTINUITY_2026-08-26_LIFECYCLE_RELIABILITY_SECURITY_MEMORY_EFFICIENCY_PRODUCTION_CLOSE.md](./THE_HOLDING_MASTER_CONTINUITY_2026-08-26_LIFECYCLE_RELIABILITY_SECURITY_MEMORY_EFFICIENCY_PRODUCTION_CLOSE.md)
+2. [Memory Routing Index v2](./THE_HOLDING_MEMORY_ROUTING_INDEX_v2_2026-08-26.md)
+3. Follow the router: load only the task-specific durable canon/context and live machine-readable evidence needed for the current objective.
+
+Full Owner Collaboration, Build Discipline, legacy routing and README are **cold durable references**, not default chat payload. Their critical invariants are carried here and independently machine-verified.
 
 ## Task-aware retrieval
 
 - Canonical retrieval path: `CURRENT → latest continuity → routing index → task-specific canon/context → live artifact → exact evidence`.
 - Do not load every historical checkpoint by default. Use the smallest relevant memory set, then verify changing facts from live state.
-- After material work, write changing numeric state to machine artifacts, durable lessons to canons, major resume state to continuity, and routing improvements to the Routing Index/README.
+- After material work, write changing numeric state to machine artifacts, durable lessons to canons, major resume state to continuity, and routing improvements to the Routing Index.
 
 ## Owner collaboration bootstrap
 
@@ -43,7 +42,7 @@ Current authority boundary: **execution authority = none**. No wallet signing, t
 - **Permanent Memory Vault** — 16 Observer record(s), 224 material event(s), retention: indefinite; hard lifetime cap: none.
 - **Latest Vault record** — intelligence/memory-vault/2026/08/2026-08-26T07-24-07-699Z-61f708e388.json.
 - **Decision Memory** — 2 append-only owner decision(s); executionAuthority: none.
-- **Project continuity** — this bootstrap + latest master continuity + task-aware routing + owner collaboration canon + specialized canons + Git history.
+- **Project continuity** — CURRENT + latest master continuity + compact task router + routed specialized canons + Git history.
 
 ## Current cognitive stack
 
@@ -56,6 +55,7 @@ Current authority boundary: **execution authority = none**. No wallet signing, t
 ## Learning / Proposal / Builder / Guardian
 
 - Learning: **READY**; active cases 25; remembered cases 169; Brain observations 29; owner decisions 2; settled outcomes 0; lessons 0.
+- Continuous learning priority: **autonomous observational/world evidence is the primary always-on lane**; Owner Decision → Outcome remains a sparse complementary lane. Neither lane gains causal, policy, capital, repository or execution authority by accumulation alone.
 - Proposal: **WATCH**; active 3; APPROVED 1; PROPOSED 2; SUPERSEDED 26; production execution disabled.
 - Builder: **WATCH**; candidates 1; CANDIDATE 1; productionMutationAuthorizedCount 0.
 - Guardian: **WATCH**; research-only 1; blocked 0; sandbox-build authorized 0; production mutation authorized 0.
