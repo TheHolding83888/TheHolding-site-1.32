@@ -1,0 +1,47 @@
+{
+  "version": "0.3-pr-run-supersession-controller",
+  "mode": "cancel-superseded-pull-request-runs-only",
+  "purpose": "Prevent obsolete pull-request workflow runs from consuming runner/concurrency capacity after a PR head moves, without adding another pull_request fan-out consumer and without cancelling production, current-head, scheduled, push, workflow_run or workflow_dispatch work.",
+  "trigger": {
+    "primaryEvent": "workflow_run",
+    "allowedUpstreamEvents": [
+      "pull_request",
+      "pull_request_target"
+    ],
+    "upstreamCompletionOnly": true,
+    "manualRecoveryAllowed": true,
+    "addsPullRequestFanout": false,
+    "bootstrapWakeSource": "The Holding Production Deployment Smoke"
+  },
+  "scope": {
+    "cancellableRunEvent": "pull_request",
+    "requiresSamePullRequestNumber": true,
+    "requiresSameHeadBranch": true,
+    "requiresDifferentHeadSha": true,
+    "requiresNonCompletedStatus": true,
+    "requiresOpenPullRequest": true,
+    "forbidMainHeadBranch": true,
+    "currentHeadNeverCancelled": true,
+    "productionRunsNeverCancelled": true
+  },
+  "authority": {
+    "readOnlyRepository": true,
+    "repositoryMutationAuthority": false,
+    "workflowDispatchAuthority": false,
+    "workflowCancellationAuthority": "superseded-pull-request-runs-only",
+    "executionAuthority": "none",
+    "capitalExecution": false,
+    "walletAuthority": false,
+    "methodologyMutationAuthority": false,
+    "securityPolicyMutationAuthority": false
+  },
+  "safetyLaw": [
+    "A completed trusted upstream PR guard may wake the controller, including the existing read-only pull_request_target deployment smoke used as the bootstrap path when ordinary pull_request jobs are congested.",
+    "Wake-source event class does not widen cancellation scope: a run is cancellable only when it belongs to the same open pull request and same PR head branch, is itself a pull_request event, is not completed, and its head SHA differs from the current PR head SHA read from GitHub at execution time.",
+    "Runs on main are never cancellable by this controller.",
+    "Current-head runs are never cancellable by this controller.",
+    "Production writers remain serialized by their own truth-plane concurrency contracts.",
+    "The controller is awakened by completion of existing guards rather than by adding another pull_request workflow, so it must not increase pull-request fan-out debt.",
+    "The controller reduces obsolete queue work; it does not weaken or skip any current-head domain check."
+  ]
+}
