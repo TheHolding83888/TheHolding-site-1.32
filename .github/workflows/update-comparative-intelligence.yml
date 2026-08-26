@@ -1,4 +1,4 @@
-# THE HOLDING · COMPARATIVE INTELLIGENCE v0.1
+# THE HOLDING · COMPARATIVE INTELLIGENCE v0.1.1
 name: "The Holding · Comparative Intelligence"
 
 on:
@@ -77,24 +77,30 @@ jobs:
           node - <<'NODE'
           const fs = require('fs');
           const x = JSON.parse(fs.readFileSync('intelligence/comparative/comparative-intelligence.json','utf8'));
+          const capital = JSON.parse(fs.readFileSync('intelligence/capital-state/capital-state.json','utf8'));
           if (x.version !== '0.1-comparative-intelligence') throw new Error('unexpected version');
-          if (x.engineVersion !== '0.1-comparability-first-ranking-engine') throw new Error('unexpected engine');
+          if (x.engineVersion !== '0.1.1-registry-derived-comparability') throw new Error('unexpected engine');
           if (x.status !== 'partial') throw new Error('v0.1 must remain partial');
           if (x.authority?.executionAuthority !== 'none' || x.authority?.readOnly !== true) throw new Error('authority regression');
           if (x.authority?.capitalExecution !== false || x.authority?.allocationAuthority !== false || x.authority?.recommendationAuthority !== false) throw new Error('capital/recommendation authority regression');
 
+          const registryCount = Number(capital.network?.registryCompanyCount);
+          const completeCount = Number(capital.network?.totalCapitalCompleteCompanyCount);
+          if (!Number.isInteger(registryCount) || registryCount < 1 || completeCount !== registryCount) throw new Error('canonical registry completeness unavailable');
+          const expectedGeneralCount = (capital.companies || []).filter(c => c.capitalScope !== 'stable-company-total-current-capital').length;
+
           const c = x.comparisons?.companyCapitalScale;
-          if (c?.eligibleCount !== 9 || c?.rows?.length !== 9) throw new Error('capital ranking must cover 9/9');
+          if (c?.eligibleCount !== registryCount || c?.rows?.length !== registryCount) throw new Error(`capital ranking must cover ${registryCount}/${registryCount}`);
           if (!Number.isFinite(c.networkTvlUsd) || c.networkTvlUsd <= 0) throw new Error('network TVL unavailable');
           const capSum = c.rows.reduce((a,r)=>a+Number(r.capitalUsd||0),0);
           if (Math.abs(capSum - c.networkTvlUsd) > 0.02) throw new Error('capital ranking does not reconcile to Network TVL');
           for (let i=1;i<c.rows.length;i++) if (c.rows[i-1].capitalUsd < c.rows[i].capitalUsd) throw new Error('capital ranking order broken');
 
           const g = x.comparisons?.generalCompanyReferenceProductivity;
-          if (g?.eligibleCount !== 8) throw new Error('expected 8 comparable general companies');
-          if (!Array.isArray(g.byReferenceApr) || g.byReferenceApr.length !== 8) throw new Error('APR ranking missing');
-          if (!Array.isArray(g.byProductiveCapital) || g.byProductiveCapital.length !== 8) throw new Error('productive capital ranking missing');
-          if (!Array.isArray(g.byAnnualizedReferenceOutput) || g.byAnnualizedReferenceOutput.length !== 8) throw new Error('reference output ranking missing');
+          if (g?.eligibleCount !== expectedGeneralCount) throw new Error(`expected ${expectedGeneralCount} comparable general companies`);
+          if (!Array.isArray(g.byReferenceApr) || g.byReferenceApr.length !== expectedGeneralCount) throw new Error('APR ranking missing');
+          if (!Array.isArray(g.byProductiveCapital) || g.byProductiveCapital.length !== expectedGeneralCount) throw new Error('productive capital ranking missing');
+          if (!Array.isArray(g.byAnnualizedReferenceOutput) || g.byAnnualizedReferenceOutput.length !== expectedGeneralCount) throw new Error('reference output ranking missing');
           if (!g.exclusions?.some(v=>String(v).includes('Monetra.eth'))) throw new Error('stable/general separation missing');
           if (g.byReferenceApr.some(r=>r.coverage!==1 || r.aprScope!=='full-productive-capital')) throw new Error('partial productivity row leaked into ranking');
 
@@ -112,7 +118,9 @@ jobs:
           if (x.answerability?.['best-protocol-overall'] !== 'blocked-no-universal-score') throw new Error('universal protocol score leaked');
           if (x.answerability?.['cross-company-realised-performance-ranking'] !== 'blocked-insufficient-comparable-realised-performance-coverage') throw new Error('realised performance must remain blocked');
 
-          console.log('COMPARATIVE INTELLIGENCE v0.1 PASS', {
+          console.log('COMPARATIVE INTELLIGENCE v0.1.1 PASS', {
+            registryCompaniesRanked: c.eligibleCount,
+            generalCompaniesRanked: g.eligibleCount,
             networkTvlUsd: c.networkTvlUsd,
             largestCompany: c.rows[0]?.name,
             topGeneralReferenceApr: g.byReferenceApr[0]?.name,
@@ -170,7 +178,7 @@ jobs:
               git cat-file -e "origin/main:$GENERATED"
               REMOTE_VERSION="$(git show "origin/main:$GENERATED" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")"
               test "$REMOTE_VERSION" = "0.1-comparative-intelligence"
-              echo "Verified Comparative Intelligence v0.1 on remote main."
+              echo "Verified Comparative Intelligence v0.1.1 on remote main."
               exit 0
             fi
 
