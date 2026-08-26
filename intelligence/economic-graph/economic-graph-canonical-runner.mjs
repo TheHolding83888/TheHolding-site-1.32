@@ -27,6 +27,7 @@ import { applyPendleSPendleLifecycle } from './pendle-spendle-lifecycle.mjs';
 import { applyPendleAccountingEvidence } from './pendle-spendle-accounting-evidence.mjs';
 import { applyYieldBasisLifecycle } from './yieldbasis-lifecycle.mjs';
 import { applyVelodromeLifecycle } from './ve-gauge-registry-lifecycle.mjs';
+import { applyFraxLifecycle } from './frax-vefrax-lifecycle.mjs';
 import { applyAeroTransitionReadiness, AERO_TRANSITION_ID } from './aero-transition-readiness.mjs';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
@@ -130,7 +131,14 @@ export function buildCanonicalEconomicGraph({productivity,rewards,previousState,
     rewardsSha256,
     policy
   });
-  return applyAeroTransitionReadiness({state:withVelodrome});
+  const withFrax=applyFraxLifecycle({
+    state:withVelodrome,
+    previousState,
+    productivity,
+    productivitySha256:sourceSha256,
+    policy
+  });
+  return applyAeroTransitionReadiness({state:withFrax});
 }
 
 async function main(){
@@ -158,6 +166,8 @@ async function main(){
   const yieldBasisLifecycle=state.protocolLifecycle?.protocols?.['registry-yieldbasis-multimechanism'];
   const velodrome=state.protocolSensors?.['registry-velodrome-vevelo']?.latest?.observation;
   const velodromeLifecycle=state.protocolLifecycle?.protocols?.['registry-velodrome-vevelo'];
+  const frax=state.protocolSensors?.['registry-frax-vefrax']?.latest?.observation;
+  const fraxLifecycle=state.protocolLifecycle?.protocols?.['registry-frax-vefrax'];
   const aeroTransition=state.protocolTransitions?.[AERO_TRANSITION_ID];
   const lifecycle=state.protocolLifecycle;
   console.log('ECONOMIC GRAPH canonical + lifecycle candidates PASS',{
@@ -203,6 +213,15 @@ async function main(){
     velodromeUniquePools:velodrome?.votePoolHistory?.uniquePoolCount,
     velodromeStage:velodromeLifecycle?.maturityStage,
     velodromeValidatedSnapshots:velodromeLifecycle?.longitudinalEvidence?.validatedSnapshotCount,
+    fraxReferenceAprPct:frax?.referenceProductivity?.currentAprPct,
+    fraxCompanyCount:frax?.registryExposure?.companyCount,
+    fraxPositionCount:frax?.registryExposure?.positionCount,
+    fraxValidatedSnapshots:fraxLifecycle?.longitudinalEvidence?.validatedSnapshotCount,
+    fraxCurrentHistoryParity:frax?.longitudinalEvidence?.currentAprParityOk,
+    fraxLegacyApiField:frax?.identityBoundary?.legacyOfficialApiField,
+    fraxMigrationState:frax?.identityBoundary?.ethereumToFraxtalLockMigrationState,
+    fraxRevenueDistributionState:frax?.identityBoundary?.revenueShareDistributionState,
+    fraxStage:fraxLifecycle?.maturityStage,
     aeroTransitionStatus:aeroTransition?.status,
     aeroPredecessorCount:aeroTransition?.predecessors?.length,
     aeroSuccessorProtocol:aeroTransition?.successor?.protocol,
