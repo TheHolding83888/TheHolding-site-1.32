@@ -18,12 +18,16 @@ if (!current.includes(`Canonical source state represented here: **${security.gen
 }
 
 const collaborationFile = 'THE_HOLDING_OWNER_COLLABORATION_OPERATING_STYLE_2026-08-18.md';
-const routingFile = 'THE_HOLDING_MEMORY_ROUTING_INDEX_2026-08-18.md';
+const buildFile = 'THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md';
+const legacyRoutingFile = 'THE_HOLDING_MEMORY_ROUTING_INDEX_2026-08-18.md';
+const routingFile = 'THE_HOLDING_MEMORY_ROUTING_INDEX_v2_2026-08-26.md';
 const marketDataCanon = 'THE_HOLDING_MARKET_DATA_ONCHAIN_AUTHORITY_CANON_2026-08-21.md';
-for (const f of [collaborationFile, routingFile, marketDataCanon]) {
+for (const f of [collaborationFile, buildFile, legacyRoutingFile, routingFile, marketDataCanon]) {
   if (!fs.existsSync(`${root}/${f}`)) throw new Error(`Required project-memory contract missing: ${f}`);
 }
 
+// Cold canons remain machine-verified even though they are no longer mandatory
+// model payload in every session.
 const collaboration = fs.readFileSync(`${root}/${collaborationFile}`, 'utf8');
 for (const phrase of [
   'Bounded routine merge flow',
@@ -36,7 +40,18 @@ for (const phrase of [
   if (!collaboration.toLowerCase().includes(phrase.toLowerCase())) throw new Error(`Owner Collaboration canon missing bounded merge-flow phrase: ${phrase}`);
 }
 
-const router = fs.readFileSync(`${root}/${routingFile}`, 'utf8');
+const build = fs.readFileSync(`${root}/${buildFile}`, 'utf8');
+for (const phrase of [
+  'Build layer by layer',
+  'one primary objective',
+  'No new layer',
+  'capability',
+  'complexity',
+]) {
+  if (!build.toLowerCase().includes(phrase.toLowerCase())) throw new Error(`Build Discipline canon missing durable phrase: ${phrase}`);
+}
+
+const legacyRouter = fs.readFileSync(`${root}/${legacyRoutingFile}`, 'utf8');
 for (const phrase of [
   'CURRENT → continuity → router → task canon → live artifact → exact evidence',
   'enumerable NFT inventory != economic strategy inventory',
@@ -49,7 +64,24 @@ for (const phrase of [
   '<= 30 hours',
   'GREEN workflow != physically materialized production artifact',
 ]) {
-  if (!router.toLowerCase().includes(phrase.toLowerCase())) throw new Error(`Memory Routing Index missing durable route phrase: ${phrase}`);
+  if (!legacyRouter.toLowerCase().includes(phrase.toLowerCase())) throw new Error(`Legacy Memory Routing Index missing durable route phrase: ${phrase}`);
+}
+
+const router = fs.readFileSync(`${root}/${routingFile}`, 'utf8');
+for (const phrase of [
+  'CURRENT → latest continuity → this router → task canon → live artifact → exact evidence',
+  'ALWAYS-READ HOT CORE',
+  'Autonomous Observational / World Learning',
+  'primary continuous learning lane',
+  'Owner Decision → Outcome',
+  'PROJECT MEMORY / CONTINUITY / NEW-CHAT RECOVERY',
+  'Full Owner Collaboration / Build Discipline',
+  'README only for memory architecture documentation/audit',
+  'GREEN workflow != physically materialized production artifact',
+  '1 change → only genuinely relevant checks',
+  'Memory quality is not measured by how much text a model reads',
+]) {
+  if (!router.toLowerCase().includes(phrase.toLowerCase())) throw new Error(`Memory Routing Index v2 missing hot-path contract phrase: ${phrase}`);
 }
 
 const marketCanon = fs.readFileSync(`${root}/${marketDataCanon}`, 'utf8');
@@ -68,19 +100,19 @@ for (const phrase of [
   if (!marketCanon.toLowerCase().includes(phrase.toLowerCase())) throw new Error(`Market Data canon missing durable contract phrase: ${phrase}`);
 }
 
-const resumeMatch = current.match(/## Resume order\n\n([\s\S]*?)\n\n## Task-aware retrieval/);
-if (!resumeMatch) throw new Error('CURRENT Resume order / Task-aware retrieval boundary missing');
+const resumeMatch = current.match(/## Minimum recovery packet\n\n([\s\S]*?)\n\nFull Owner Collaboration/);
+if (!resumeMatch) throw new Error('CURRENT Minimum recovery packet boundary missing');
 const resume = resumeMatch[1];
 const expectedResumeLines = [
   /^1\. \[THE_HOLDING_MASTER_CONTINUITY_.*\.md\]\(\.\/THE_HOLDING_MASTER_CONTINUITY_.*\.md\)$/m,
-  new RegExp(`^2\\. \\[Owner Collaboration Operating Style\\]\\(\\.\\/${collaborationFile.replaceAll('.', '\\.') }\\)$`, 'm'),
-  /^3\. \[THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14\.md\]\(\.\/THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14\.md\)$/m,
-  new RegExp(`^4\\. \\[Memory Routing Index\\]\\(\\.\\/${routingFile.replaceAll('.', '\\.') }\\)$`, 'm'),
-  /^5\. \[Project Memory README\]\(\.\/README\.md\)$/m,
-  /^6\. Follow the Routing Index: read only the task-specific durable blocks and live machine-readable artifacts needed for the current objective\.$/m,
+  new RegExp(`^2\\. \\[Memory Routing Index v2\\]\\(\\.\\/${routingFile.replaceAll('.', '\\.') }\\)$`, 'm'),
+  /^3\. Follow the router: load only the task-specific durable canon\/context and live machine-readable evidence needed for the current objective\.$/m,
 ];
 for (const pattern of expectedResumeLines) {
-  if (!pattern.test(resume)) throw new Error(`CURRENT Resume order contract missing: ${pattern}`);
+  if (!pattern.test(resume)) throw new Error(`CURRENT minimum recovery contract missing: ${pattern}`);
+}
+if (/Owner Collaboration Operating Style|Project Memory README|THE_HOLDING_BUILD_DISCIPLINE_CANON/.test(resume)) {
+  throw new Error('Cold core document leaked back into minimum recovery packet');
 }
 
 const continuityMatch = current.match(/^1\. \[(THE_HOLDING_MASTER_CONTINUITY_.*\.md)\]/m);
@@ -102,6 +134,11 @@ for (const phrase of [
   'PR #227',
   'PR #233',
   'Market Data / onchain tracking: fat check',
+  'Autonomous Observational / World Learning',
+  'Owner Decision → Outcome Experience',
+  'Minimum recovery packet',
+  'Pendle / sPENDLE',
+  'executionAuthority: **none**',
 ]) {
   if (!continuity.toLowerCase().includes(phrase.toLowerCase())) throw new Error(`Latest continuity missing durable/current checkpoint phrase: ${phrase}`);
 }
@@ -114,17 +151,22 @@ for (const phrase of [
   'Routine low-risk repository work may proceed through verified PR merge and production proof without a separate per-PR confirmation',
   'Live-site screenshots are visual acceptance evidence',
   'not a psychological profile',
+  'autonomous observational/world evidence is the primary always-on lane',
+  'cold durable references',
 ]) {
-  if (!current.includes(phrase)) throw new Error(`CURRENT bootstrap missing phrase: ${phrase}`);
+  if (!current.toLowerCase().includes(phrase.toLowerCase())) throw new Error(`CURRENT bootstrap missing phrase: ${phrase}`);
 }
 
-console.log('CURRENT Security + collaboration + routing + Market Data continuity consistency PASS', {
+console.log('CURRENT minimum recovery + Security + cold-canon invariants PASS', {
   generatedAt: security.generatedAt,
   critical: c.critical,
   high: c.high,
   medium: c.medium,
   collaborationFile,
+  buildFile,
+  legacyRoutingFile,
   routingFile,
   marketDataCanon,
   latestContinuity: continuityMatch[1],
+  minimumRecoveryDocumentsAfterCurrent: 2,
 });
