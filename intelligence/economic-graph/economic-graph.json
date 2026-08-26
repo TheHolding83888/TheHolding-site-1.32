@@ -1,7 +1,7 @@
 {
   "version": "0.1-economic-graph",
   "engineVersion": "0.2-defitea-fxn-curve-multi-cohort",
-  "generatedAt": "2026-08-26T17:52:37.793Z",
+  "generatedAt": "2026-08-26T18:06:46.361Z",
   "status": "partial-first-cohort",
   "statusCompatibility": {
     "deprecated": true,
@@ -3856,7 +3856,7 @@
   "protocolLifecycle": {
     "version": "0.1-protocol-intelligence-lifecycle",
     "policyVersion": "0.1-protocol-intelligence-lifecycle-policy",
-    "generatedAt": "2026-08-26T17:52:37.793Z",
+    "generatedAt": "2026-08-26T18:06:46.361Z",
     "status": "active",
     "stageOrder": [
       "discovery",
@@ -3872,7 +3872,8 @@
       "legacyPrimaryCompany": "defitea.eth",
       "registryWideProtocolIds": [
         "registry-yieldbasis-multimechanism",
-        "registry-velodrome-vevelo"
+        "registry-velodrome-vevelo",
+        "registry-frax-vefrax"
       ],
       "protocolIds": [
         "defitea-fxn-vefxn",
@@ -3881,7 +3882,8 @@
         "defitea-convex-vlcvx-votium",
         "defitea-pendle-spendle",
         "registry-yieldbasis-multimechanism",
-        "registry-velodrome-vevelo"
+        "registry-velodrome-vevelo",
+        "registry-frax-vefrax"
       ]
     },
     "authority": {
@@ -3912,16 +3914,19 @@
       "stageRegressionIsAllowedWhenEvidenceRegresses": true,
       "historyIsAppendOnlyByTransitionFingerprint": true,
       "longitudinalDepthRequiresDistinctNativePeriods": true,
+      "nativePeriodLabelsAloneDoNotCreateDepth": true,
       "protocolSensorsMaySpanMultipleCompaniesWithoutCollapsingMechanismSemantics": true,
       "veGaugeFamilyReuseMustPreserveProtocolSpecificEvidenceBoundaries": true,
+      "brandingChangeDoesNotProveMigrationCompletion": true,
+      "legacyApiSchemaDoesNotDefineCurrentTokenIdentity": true,
       "protocolWideCanonicalDoesNotEraseUnknownEdges": true
     },
     "summary": {
-      "protocolCount": 7,
+      "protocolCount": 8,
       "stageCounts": {
         "canonical": 2,
         "verified": 2,
-        "shadow": 3
+        "shadow": 4
       },
       "automaticTransitionsRecorded": 0
     },
@@ -4548,11 +4553,144 @@
         "priorMaturityStage": "shadow",
         "transitionFingerprint": null,
         "epistemicBoundary": "Protocol-wide maturity never upgrades unproven vote/reward/pool causality or execution authority."
+      },
+      "registry-frax-vefrax": {
+        "protocolId": "registry-frax-vefrax",
+        "label": "Frax / veFRAX",
+        "maturityStage": "shadow",
+        "operatingMode": "shadow-monitoring",
+        "automaticallyEvaluated": true,
+        "automaticallyPromoted": false,
+        "automaticallyRegressed": false,
+        "scope": "registry-wide-multi-company-ve-lock",
+        "evidence": {
+          "total": 12,
+          "passed": 9,
+          "failed": 3,
+          "canonicalAtoms": 1,
+          "verifiedAtoms": 6,
+          "shadowAtoms": 2
+        },
+        "longitudinalEvidence": {
+          "canonicalSnapshotCount": 4,
+          "canonicalSnapshotKeys": [
+            "2026-W32",
+            "2026-W33",
+            "2026-W34",
+            "2026-W35"
+          ],
+          "validatedNativePeriodCount": 0,
+          "requiredValidatedNativePeriodCount": 2,
+          "validatedNativePeriodKeys": [],
+          "depthClass": "canonical-productivity-snapshots-only-not-native-epoch-proof"
+        },
+        "checks": [
+          {
+            "id": "sensor-materialized",
+            "pass": true,
+            "stage": "shadow",
+            "evidenceClass": "sensor-state",
+            "detail": "Frax registry-wide sensor is materialized from canonical Productivity."
+          },
+          {
+            "id": "official-api-current-apr",
+            "pass": true,
+            "stage": "verified",
+            "evidenceClass": "source-provenance",
+            "detail": "Current Frax governance productivity APR is measured from the canonical official API path."
+          },
+          {
+            "id": "native-cadence-contract",
+            "pass": true,
+            "stage": "verified",
+            "evidenceClass": "source-semantics",
+            "detail": "Canonical Frax Productivity declares native cadence as epoch."
+          },
+          {
+            "id": "registry-exposure-breadth",
+            "pass": true,
+            "stage": "verified",
+            "evidenceClass": "registry-topology",
+            "detail": "At least one registered company has a measured Frax ve-lock exposure; all current registry exposures are retained separately."
+          },
+          {
+            "id": "current-history-apr-parity",
+            "pass": true,
+            "stage": "verified",
+            "evidenceClass": "canonical-parity",
+            "detail": "Current Frax APR is represented in canonical Productivity snapshot history within 0.01 percentage points."
+          },
+          {
+            "id": "canonical-snapshot-history-support",
+            "pass": true,
+            "stage": "shadow",
+            "evidenceClass": "longitudinal-snapshot",
+            "detail": "Canonical Productivity snapshots provide bounded observation history but do not create native Frax epoch depth."
+          },
+          {
+            "id": "distinct-native-frax-period-depth",
+            "pass": false,
+            "stage": "verified",
+            "evidenceClass": "longitudinal-native-period",
+            "detail": "At least 2 distinct Frax-native periods with explicit reproducible period boundaries are required. Weekly Productivity snapshot keys or labels never satisfy this gate by themselves."
+          },
+          {
+            "id": "legacy-api-schema-boundary-preserved",
+            "pass": true,
+            "stage": "verified",
+            "evidenceClass": "epistemic-safety",
+            "detail": "The legacy-compatible core.vefxs.apr API field is preserved as source schema evidence and is not promoted into current token identity authority."
+          },
+          {
+            "id": "branding-migration-boundary-preserved",
+            "pass": true,
+            "stage": "verified",
+            "evidenceClass": "epistemic-boundary",
+            "detail": "FRAX/veFRAX naming does not prove Ethereum→Fraxtal migration completion or legacy gauge sunset."
+          },
+          {
+            "id": "causal-boundary-preserved",
+            "pass": true,
+            "stage": "canonical",
+            "evidenceClass": "epistemic-boundary",
+            "detail": "Unproven revenue → veFRAX APR causality remains UNKNOWN."
+          },
+          {
+            "id": "ethereum-fraxtal-lock-topology-reconciled",
+            "pass": false,
+            "stage": "canonical",
+            "evidenceClass": "mechanism-proof",
+            "detail": "A canonical reproducible Ethereum/Fraxtal ve-lock topology and migration reconciliation is not yet materialized."
+          },
+          {
+            "id": "frax-revenue-to-vefrax-apr-accounting-identity",
+            "pass": false,
+            "stage": "canonical",
+            "evidenceClass": "mechanism-proof",
+            "detail": "A complete reproducible Frax revenue → veFRAX distribution/APR accounting identity is not yet proven."
+          }
+        ],
+        "blockers": [
+          "distinct-native-frax-period-depth",
+          "ethereum-fraxtal-lock-topology-reconciled",
+          "frax-revenue-to-vefrax-apr-accounting-identity"
+        ],
+        "unknowns": [
+          "distinct Frax-native epoch depth is not yet proven by canonical evidence",
+          "Ethereum → Fraxtal ve-lock migration topology remains UNKNOWN to this canonical sensor",
+          "legacy gauge sunset remains UNKNOWN to this canonical sensor",
+          "revenue-share distribution activation remains UNKNOWN to this canonical sensor",
+          "complete Frax revenue → veFRAX distribution/APR accounting identity remains UNKNOWN",
+          "why Frax reference APR changed remains UNKNOWN"
+        ],
+        "epistemicBoundary": "Current FRAX / veFRAX identity is kept separate from the legacy-compatible official API field core.vefxs.apr. Weekly Productivity snapshots do not create native epoch depth. Branding, API schema names, migration completion, gauge sunset and revenue distribution are distinct facts and cannot prove one another.",
+        "priorMaturityStage": "shadow",
+        "transitionFingerprint": null
       }
     },
     "transitions": [],
-    "nextProtocolTemplate": "Protocol sensors may be company-scoped or registry-wide. Reuse canonical sensors first; preserve mechanism semantics; add only true mechanism deltas.",
-    "policyRevision": "0.5-registry-wide-velodrome-ve-gauge-admission"
+    "nextProtocolTemplate": "Protocol sensors may be company-scoped or registry-wide. Reuse canonical sensors first; preserve identity, native-period, migration, accounting and causal boundaries independently.",
+    "policyRevision": "0.6.2-registry-wide-frax-native-period-boundary-gate"
   },
   "protocolSensors": {
     "defitea-pendle-spendle": {
@@ -7079,6 +7217,340 @@
         "capitalExecution": false,
         "walletAuthority": false,
         "allocationAuthority": false,
+        "causalClaimAuthority": "none",
+        "recommendationAuthority": "none",
+        "predictionAuthority": "none"
+      }
+    },
+    "registry-frax-vefrax": {
+      "version": "0.2-frax-native-period-gated-registry-sensor",
+      "status": "shadow-observation-active",
+      "identity": {
+        "protocol": "Frax",
+        "scope": "registry-wide-multi-company-ve-lock",
+        "principal": "FRAX",
+        "voteEscrow": "veFRAX",
+        "engineId": "frax_vefrax"
+      },
+      "latest": {
+        "observation": {
+          "observedAt": "2026-08-26T06:08:02.250Z",
+          "snapshotKey": "2026-W35",
+          "protocol": "Frax",
+          "scope": "registry-wide-multi-company-ve-lock",
+          "mechanism": "FRAX / veFRAX governance productivity",
+          "referenceProductivity": {
+            "engineId": "frax_vefrax",
+            "status": "ok",
+            "currentAprPct": 5.3704,
+            "nativeCadence": "epoch",
+            "sourceUrl": "https://app.frax.finance/fxtl-vefxs",
+            "sourceType": "official-api",
+            "sourceMetric": "Fraxtal veFRAX/veFXS APR",
+            "canonicalApiSource": "https://api.frax.finance/combineddata/",
+            "periodStart": null,
+            "periodEnd": "2026-08-26T06:07:04.958Z",
+            "stateClass": "measured-current-official-api"
+          },
+          "registryExposure": {
+            "companyCount": 3,
+            "positionCount": 3,
+            "companyKeys": [
+              "05081966.eth",
+              "YieldRing.eth",
+              "defitea.eth"
+            ],
+            "rows": [
+              {
+                "companyKey": "defitea.eth",
+                "companyName": "defitea.eth",
+                "registry": null,
+                "engineId": "frax_vefrax",
+                "principalId": "frax-share",
+                "units": 4224,
+                "productiveValueUsd": 1259.36,
+                "aprPct": 5.3704,
+                "engineStatus": "ok"
+              },
+              {
+                "companyKey": "YieldRing.eth",
+                "companyName": "YieldRing.eth",
+                "registry": null,
+                "engineId": "frax_vefrax",
+                "principalId": "frax-share",
+                "units": 800,
+                "productiveValueUsd": 238.51,
+                "aprPct": 5.3704,
+                "engineStatus": "ok"
+              },
+              {
+                "companyKey": "05081966.eth",
+                "companyName": "05081966.eth",
+                "registry": null,
+                "engineId": "frax_vefrax",
+                "principalId": "frax-share",
+                "units": 393,
+                "productiveValueUsd": 117.17,
+                "aprPct": 5.3704,
+                "engineStatus": "ok"
+              }
+            ],
+            "stateClass": "measured-registry-wide-exposure"
+          },
+          "longitudinalEvidence": {
+            "canonicalSnapshotCount": 4,
+            "canonicalSnapshotKeys": [
+              "2026-W32",
+              "2026-W33",
+              "2026-W34",
+              "2026-W35"
+            ],
+            "currentSnapshotKey": "2026-W35",
+            "currentSnapshotPresent": true,
+            "currentSnapshotAprPct": 5.3704,
+            "currentAprParityDeltaPctPoints": 0,
+            "currentAprParityOk": true,
+            "canonicalSnapshots": [
+              {
+                "snapshotKey": "2026-W32",
+                "aprPct": 5.3265,
+                "nativePeriodId": null,
+                "periodStart": null,
+                "periodEnd": "2026-08-09T21:01:14.956Z",
+                "sourceType": "official-api"
+              },
+              {
+                "snapshotKey": "2026-W33",
+                "aprPct": 5.3384,
+                "nativePeriodId": null,
+                "periodStart": null,
+                "periodEnd": "2026-08-16T04:50:50.379Z",
+                "sourceType": "official-api"
+              },
+              {
+                "snapshotKey": "2026-W34",
+                "aprPct": 5.3618,
+                "nativePeriodId": null,
+                "periodStart": null,
+                "periodEnd": "2026-08-23T06:02:13.300Z",
+                "sourceType": "official-api"
+              },
+              {
+                "snapshotKey": "2026-W35",
+                "aprPct": 5.3704,
+                "nativePeriodId": null,
+                "periodStart": null,
+                "periodEnd": "2026-08-26T06:07:04.958Z",
+                "sourceType": "official-api"
+              }
+            ],
+            "validatedNativePeriodCount": 0,
+            "validatedNativePeriodKeys": [],
+            "validatedNativePeriods": [],
+            "depthClass": "canonical-productivity-snapshots-only-not-native-epoch-proof"
+          },
+          "identityBoundary": {
+            "currentCanonicalPrincipal": "FRAX",
+            "currentCanonicalVoteEscrowLabel": "veFRAX",
+            "legacyOfficialApiField": "core.vefxs.apr",
+            "legacyApiFieldClass": "legacy-compatible-official-schema-field-not-token-identity-authority",
+            "brandingDoesNotProveMigration": true,
+            "ethereumToFraxtalLockMigrationState": "UNKNOWN-not-proven-by-canonical-productivity",
+            "legacyGaugeSunsetState": "UNKNOWN-not-proven-by-canonical-productivity",
+            "revenueShareDistributionState": "UNKNOWN-not-proven-by-canonical-productivity"
+          },
+          "provenance": {
+            "productivityFile": "companies/productivity-data.json",
+            "productivityGeneratedAt": "2026-08-26T06:08:02.250Z",
+            "productivitySnapshotKey": "2026-W35",
+            "productivitySha256": "f9fb3f79c1f1f93ee3c485479c52692b3f4739ec0ac81ea9c484459e947cdaad"
+          },
+          "epistemic": {
+            "observationClass": "registry-wide-protocol-economic-sensor",
+            "currentReferenceApr": "MEASURED-official-api",
+            "canonicalSnapshotHistory": "MEASURED-canonical-productivity-snapshots",
+            "nativeEpochHistory": "UNKNOWN-no-explicit-native-period-boundaries",
+            "revenueToVeFraxAprCausality": "UNKNOWN-not-yet-proven-accounting-identity",
+            "ethereumFraxtalMigrationTopology": "UNKNOWN-not-yet-proven-by-canonical-evidence",
+            "legacyGaugeSunset": "UNKNOWN-not-yet-proven-by-canonical-evidence",
+            "protocolWidePrimaryDriver": null,
+            "causalAttribution": "unresolved",
+            "predictionAuthority": "none",
+            "recommendationAuthority": "none",
+            "executionAuthority": "none"
+          },
+          "id": "frax:2026-W35:acbbc930d77873db6de8"
+        },
+        "movement": {
+          "priorObservationId": null,
+          "comparable": false,
+          "aprDeltaPctPoints": null,
+          "companyCountDelta": null,
+          "note": "Like-for-like Frax observations only. APR movement does not prove revenue, migration, gauge, governance, or native-epoch causality."
+        }
+      },
+      "observationCount": 1,
+      "canonicalSnapshotCount": 4,
+      "canonicalSnapshotKeys": [
+        "2026-W32",
+        "2026-W33",
+        "2026-W34",
+        "2026-W35"
+      ],
+      "validatedNativePeriodCount": 0,
+      "validatedNativePeriodKeys": [],
+      "observations": [
+        {
+          "observedAt": "2026-08-26T06:08:02.250Z",
+          "snapshotKey": "2026-W35",
+          "protocol": "Frax",
+          "scope": "registry-wide-multi-company-ve-lock",
+          "mechanism": "FRAX / veFRAX governance productivity",
+          "referenceProductivity": {
+            "engineId": "frax_vefrax",
+            "status": "ok",
+            "currentAprPct": 5.3704,
+            "nativeCadence": "epoch",
+            "sourceUrl": "https://app.frax.finance/fxtl-vefxs",
+            "sourceType": "official-api",
+            "sourceMetric": "Fraxtal veFRAX/veFXS APR",
+            "canonicalApiSource": "https://api.frax.finance/combineddata/",
+            "periodStart": null,
+            "periodEnd": "2026-08-26T06:07:04.958Z",
+            "stateClass": "measured-current-official-api"
+          },
+          "registryExposure": {
+            "companyCount": 3,
+            "positionCount": 3,
+            "companyKeys": [
+              "05081966.eth",
+              "YieldRing.eth",
+              "defitea.eth"
+            ],
+            "rows": [
+              {
+                "companyKey": "defitea.eth",
+                "companyName": "defitea.eth",
+                "registry": null,
+                "engineId": "frax_vefrax",
+                "principalId": "frax-share",
+                "units": 4224,
+                "productiveValueUsd": 1259.36,
+                "aprPct": 5.3704,
+                "engineStatus": "ok"
+              },
+              {
+                "companyKey": "YieldRing.eth",
+                "companyName": "YieldRing.eth",
+                "registry": null,
+                "engineId": "frax_vefrax",
+                "principalId": "frax-share",
+                "units": 800,
+                "productiveValueUsd": 238.51,
+                "aprPct": 5.3704,
+                "engineStatus": "ok"
+              },
+              {
+                "companyKey": "05081966.eth",
+                "companyName": "05081966.eth",
+                "registry": null,
+                "engineId": "frax_vefrax",
+                "principalId": "frax-share",
+                "units": 393,
+                "productiveValueUsd": 117.17,
+                "aprPct": 5.3704,
+                "engineStatus": "ok"
+              }
+            ],
+            "stateClass": "measured-registry-wide-exposure"
+          },
+          "longitudinalEvidence": {
+            "canonicalSnapshotCount": 4,
+            "canonicalSnapshotKeys": [
+              "2026-W32",
+              "2026-W33",
+              "2026-W34",
+              "2026-W35"
+            ],
+            "currentSnapshotKey": "2026-W35",
+            "currentSnapshotPresent": true,
+            "currentSnapshotAprPct": 5.3704,
+            "currentAprParityDeltaPctPoints": 0,
+            "currentAprParityOk": true,
+            "canonicalSnapshots": [
+              {
+                "snapshotKey": "2026-W32",
+                "aprPct": 5.3265,
+                "nativePeriodId": null,
+                "periodStart": null,
+                "periodEnd": "2026-08-09T21:01:14.956Z",
+                "sourceType": "official-api"
+              },
+              {
+                "snapshotKey": "2026-W33",
+                "aprPct": 5.3384,
+                "nativePeriodId": null,
+                "periodStart": null,
+                "periodEnd": "2026-08-16T04:50:50.379Z",
+                "sourceType": "official-api"
+              },
+              {
+                "snapshotKey": "2026-W34",
+                "aprPct": 5.3618,
+                "nativePeriodId": null,
+                "periodStart": null,
+                "periodEnd": "2026-08-23T06:02:13.300Z",
+                "sourceType": "official-api"
+              },
+              {
+                "snapshotKey": "2026-W35",
+                "aprPct": 5.3704,
+                "nativePeriodId": null,
+                "periodStart": null,
+                "periodEnd": "2026-08-26T06:07:04.958Z",
+                "sourceType": "official-api"
+              }
+            ],
+            "validatedNativePeriodCount": 0,
+            "validatedNativePeriodKeys": [],
+            "validatedNativePeriods": [],
+            "depthClass": "canonical-productivity-snapshots-only-not-native-epoch-proof"
+          },
+          "identityBoundary": {
+            "currentCanonicalPrincipal": "FRAX",
+            "currentCanonicalVoteEscrowLabel": "veFRAX",
+            "legacyOfficialApiField": "core.vefxs.apr",
+            "legacyApiFieldClass": "legacy-compatible-official-schema-field-not-token-identity-authority",
+            "brandingDoesNotProveMigration": true,
+            "ethereumToFraxtalLockMigrationState": "UNKNOWN-not-proven-by-canonical-productivity",
+            "legacyGaugeSunsetState": "UNKNOWN-not-proven-by-canonical-productivity",
+            "revenueShareDistributionState": "UNKNOWN-not-proven-by-canonical-productivity"
+          },
+          "provenance": {
+            "productivityFile": "companies/productivity-data.json",
+            "productivityGeneratedAt": "2026-08-26T06:08:02.250Z",
+            "productivitySnapshotKey": "2026-W35",
+            "productivitySha256": "f9fb3f79c1f1f93ee3c485479c52692b3f4739ec0ac81ea9c484459e947cdaad"
+          },
+          "epistemic": {
+            "observationClass": "registry-wide-protocol-economic-sensor",
+            "currentReferenceApr": "MEASURED-official-api",
+            "canonicalSnapshotHistory": "MEASURED-canonical-productivity-snapshots",
+            "nativeEpochHistory": "UNKNOWN-no-explicit-native-period-boundaries",
+            "revenueToVeFraxAprCausality": "UNKNOWN-not-yet-proven-accounting-identity",
+            "ethereumFraxtalMigrationTopology": "UNKNOWN-not-yet-proven-by-canonical-evidence",
+            "legacyGaugeSunset": "UNKNOWN-not-yet-proven-by-canonical-evidence",
+            "protocolWidePrimaryDriver": null,
+            "causalAttribution": "unresolved",
+            "predictionAuthority": "none",
+            "recommendationAuthority": "none",
+            "executionAuthority": "none"
+          },
+          "id": "frax:2026-W35:acbbc930d77873db6de8"
+        }
+      ],
+      "authority": {
+        "executionAuthority": "none",
         "causalClaimAuthority": "none",
         "recommendationAuthority": "none",
         "predictionAuthority": "none"
