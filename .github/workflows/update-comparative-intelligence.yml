@@ -56,10 +56,13 @@ jobs:
         run: |
           set -euo pipefail
           test -s intelligence/comparative/comparative-intelligence.mjs
+          test -s intelligence/comparative/comparative-handoff-canary.mjs
           test -s intelligence/capital-state/capital-state.json
           test -s companies/productivity-data.json
           test -s intelligence/income-performance/income-performance.json
           node --check intelligence/comparative/comparative-intelligence.mjs
+          node --check intelligence/comparative/comparative-handoff-canary.mjs
+          node intelligence/comparative/comparative-handoff-canary.mjs
           grep -q "noUniversalLeaderboard" intelligence/comparative/comparative-intelligence.mjs
           grep -q "comparabilityRule" intelligence/comparative/comparative-intelligence.mjs
           grep -q "executionAuthority: 'none'" intelligence/comparative/comparative-intelligence.mjs
