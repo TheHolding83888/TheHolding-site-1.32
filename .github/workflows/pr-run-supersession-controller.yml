@@ -9,6 +9,7 @@ on:
       - "The Holding Reliability · Repository Hygiene Guard"
       - "The Holding Security · Commit Identity Privacy Guard"
       - "The Holding Security · Public Surface Privacy Guard"
+      - "The Holding Production Deployment Smoke"
     types: [completed]
   workflow_dispatch:
     inputs:
@@ -33,7 +34,10 @@ jobs:
         github.event_name == 'workflow_dispatch' ||
         (
           github.event_name == 'workflow_run' &&
-          github.event.workflow_run.event == 'pull_request' &&
+          (
+            github.event.workflow_run.event == 'pull_request' ||
+            github.event.workflow_run.event == 'pull_request_target'
+          ) &&
           github.event.workflow_run.head_branch != 'main' &&
           github.event.workflow_run.pull_requests[0].number != null
         )
