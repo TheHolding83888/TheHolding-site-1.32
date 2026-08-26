@@ -35,13 +35,14 @@ function baseState(){
   };
 }
 
-function productivity({snapshotKey='2026-W35',historyKeys=['2026-W34','2026-W35'],apr=5.3704}={}){
+function productivity({snapshotKey='2026-W35',historyKeys=['2026-W34','2026-W35'],apr=5.3704,nativePeriodsBySnapshot={}}={}){
   const generatedAt='2026-08-26T06:07:04.958Z';
   const historyApr={
     '2026-W32':5.3265,
     '2026-W33':5.3384,
     '2026-W34':5.3618,
-    '2026-W35':apr
+    '2026-W35':apr,
+    '2026-W36':5.4021
   };
   return {
     version:'1.16',
@@ -61,47 +62,88 @@ function productivity({snapshotKey='2026-W35',historyKeys=['2026-W34','2026-W35'
       'company-b':{name:'Company B',breakdown:[{engineId:'frax_vefrax',principalId:'frax-share',units:800,value:238.51,apr,engineStatus:'ok'}]},
       'company-c':{name:'Company C',breakdown:[{engineId:'frax_vefrax',principalId:'frax-share',units:393,value:117.17,apr,engineStatus:'ok'}]}
     },
-    history:{engines:{frax_vefrax:historyKeys.map(key=>({snapshotKey:key,apr:historyApr[key]??apr,sourceType:'official-api',periodStart:null,periodEnd:key===snapshotKey?generatedAt:null}))}}
+    history:{engines:{frax_vefrax:historyKeys.map(key=>{
+      const native=nativePeriodsBySnapshot[key]||{};
+      return {
+        snapshotKey:key,
+        apr:historyApr[key]??apr,
+        sourceType:'official-api',
+        nativePeriodId:native.nativePeriodId||null,
+        periodStart:native.periodStart||null,
+        periodEnd:native.periodEnd||null
+      };
+    })}}
   };
 }
 
 assert(policy.scope.registryWideProtocolIds.includes(FRAX_PROTOCOL_ID),'Policy does not admit Frax as registry-wide protocol');
 assert(policy.scope.protocolIds.includes(FRAX_PROTOCOL_ID),'Policy protocolIds missing Frax');
 assert(policy.authority.executionAuthority==='none','Policy execution authority regressed');
+assert(policy.laws.longitudinalDepthRequiresDistinctNativePeriods===true,'Global native-period lifecycle law missing');
 assert(policy.laws.brandingChangeDoesNotProveMigrationCompletion===true,'Frax branding/migration law missing');
 assert(policy.laws.legacyApiSchemaDoesNotDefineCurrentTokenIdentity===true,'Frax legacy API identity law missing');
 
 const baseline=baseState();
-const oneSnapshotProductivity=productivity({historyKeys:['2026-W35']});
-const oneSnapshot=applyFraxLifecycle({
+const weeklySnapshots=productivity({historyKeys:['2026-W32','2026-W33','2026-W34','2026-W35']});
+const weeklyOnly=applyFraxLifecycle({
   state:clone(baseline),
   previousState:clone(baseline),
-  productivity:oneSnapshotProductivity,
-  productivitySha256:sha256(oneSnapshotProductivity),
+  productivity:weeklySnapshots,
+  productivitySha256:sha256(weeklySnapshots),
   policy
 });
-const shadow=oneSnapshot.protocolLifecycle.protocols[FRAX_PROTOCOL_ID];
-assert(shadow.maturityStage==='shadow',`One canonical snapshot must remain SHADOW, got ${shadow.maturityStage}`);
-assert(shadow.blockers.includes('distinct-canonical-snapshot-depth'),'Single-snapshot SHADOW blocker missing');
-assert(oneSnapshot.protocolLifecycle.summary.protocolCount===8,'Frax SHADOW materialization must make protocolCount 8');
+const weeklyProtocol=weeklyOnly.protocolLifecycle.protocols[FRAX_PROTOCOL_ID];
+const weeklySensor=weeklyOnly.protocolSensors[FRAX_PROTOCOL_ID];
+assert(weeklyProtocol.maturityStage==='shadow',`Weekly Productivity snapshots without native Frax periods must remain SHADOW, got ${weeklyProtocol.maturityStage}`);
+assert(weeklyProtocol.blockers.includes('distinct-native-frax-period-depth'),'Native Frax period blocker missing');
+assert(weeklySensor.canonicalSnapshotCount===4,'Canonical Frax snapshot support depth mismatch');
+assert(weeklySensor.validatedNativePeriodCount===0,'Weekly snapshots falsely manufactured native Frax periods');
+assert(weeklyOnly.protocolLifecycle.summary.protocolCount===8,'Frax SHADOW materialization must make protocolCount 8');
 
-const verifiedProductivity=productivity();
+const sameNativePeriod=productivity({
+  historyKeys:['2026-W34','2026-W35'],
+  nativePeriodsBySnapshot:{
+    '2026-W34':{periodStart:'2026-08-01T00:00:00.000Z',periodEnd:'2026-08-15T00:00:00.000Z'},
+    '2026-W35':{periodStart:'2026-08-01T00:00:00.000Z',periodEnd:'2026-08-15T00:00:00.000Z'}
+  }
+});
+const repeatedNative=applyFraxLifecycle({
+  state:clone(baseline),
+  previousState:clone(weeklyOnly),
+  productivity:sameNativePeriod,
+  productivitySha256:sha256(sameNativePeriod),
+  policy
+});
+const repeatedProtocol=repeatedNative.protocolLifecycle.protocols[FRAX_PROTOCOL_ID];
+const repeatedSensor=repeatedNative.protocolSensors[FRAX_PROTOCOL_ID];
+assert(repeatedSensor.validatedNativePeriodCount===1,'Repeated snapshots of one Frax native period must count once');
+assert(repeatedProtocol.maturityStage==='shadow','One distinct Frax native period must remain SHADOW');
+assert(repeatedProtocol.blockers.includes('distinct-native-frax-period-depth'),'One-period SHADOW blocker missing');
+
+const twoNativePeriods=productivity({
+  historyKeys:['2026-W34','2026-W35'],
+  nativePeriodsBySnapshot:{
+    '2026-W34':{nativePeriodId:'frax-epoch-a',periodStart:'2026-08-01T00:00:00.000Z',periodEnd:'2026-08-15T00:00:00.000Z'},
+    '2026-W35':{nativePeriodId:'frax-epoch-b',periodStart:'2026-08-15T00:00:00.000Z',periodEnd:'2026-08-29T00:00:00.000Z'}
+  }
+});
 const verified=applyFraxLifecycle({
   state:clone(baseline),
-  previousState:clone(oneSnapshot),
-  productivity:verifiedProductivity,
-  productivitySha256:sha256(verifiedProductivity),
+  previousState:clone(repeatedNative),
+  productivity:twoNativePeriods,
+  productivitySha256:sha256(twoNativePeriods),
   policy
 });
 const frax=verified.protocolLifecycle.protocols[FRAX_PROTOCOL_ID];
 const sensor=verified.protocolSensors[FRAX_PROTOCOL_ID];
-assert(frax.maturityStage==='verified',`Two distinct canonical snapshots must produce VERIFIED, got ${frax.maturityStage}`);
+assert(frax.maturityStage==='verified',`Two distinct explicit Frax native periods must produce VERIFIED, got ${frax.maturityStage}`);
 assert(frax.operatingMode==='shadow-monitoring','Verified Frax must stay shadow-monitoring');
 assert(verified.protocolLifecycle.summary.protocolCount===8,'Frax must be protocol lifecycle sensor #8');
 assert(sensor.latest.observation.referenceProductivity.currentAprPct===5.3704,'Frax current APR mismatch');
 assert(sensor.latest.observation.registryExposure.companyCount===3,'Frax registry exposure breadth mismatch');
 assert(sensor.latest.observation.registryExposure.positionCount===3,'Frax registry position count mismatch');
-assert(sensor.validatedSnapshotCount===2,'Frax distinct canonical snapshot count mismatch');
+assert(sensor.canonicalSnapshotCount===2,'Frax canonical snapshot count mismatch');
+assert(sensor.validatedNativePeriodCount===2,'Frax distinct native period count mismatch');
 assert(sensor.latest.observation.longitudinalEvidence.currentAprParityOk===true,'Frax current/history APR parity missing');
 assert(sensor.latest.observation.identityBoundary.currentCanonicalPrincipal==='FRAX','Current Frax principal identity drift');
 assert(sensor.latest.observation.identityBoundary.currentCanonicalVoteEscrowLabel==='veFRAX','Current veFRAX identity drift');
@@ -126,14 +168,24 @@ try{
 }catch(error){failClosed=String(error?.message||error).includes('official API field drift');}
 assert(failClosed,'Frax lifecycle must fail closed on unreviewed official API field drift');
 
+const wrongCadence=productivity();
+wrongCadence.engines.frax_vefrax.nativeCadence='weekly';
+let cadenceFailClosed=false;
+try{
+  applyFraxLifecycle({state:clone(baseline),previousState:clone(baseline),productivity:wrongCadence,productivitySha256:sha256(wrongCadence),policy});
+}catch(error){cadenceFailClosed=String(error?.message||error).includes('native cadence drift');}
+assert(cadenceFailClosed,'Frax lifecycle must fail closed on native cadence drift');
+
 console.log('FRAX veFRAX LIFECYCLE CANARY PASS',{
   protocolId:FRAX_PROTOCOL_ID,
-  stage:frax.maturityStage,
-  protocolCount:verified.protocolLifecycle.summary.protocolCount,
-  currentAprPct:sensor.latest.observation.referenceProductivity.currentAprPct,
-  companyCount:sensor.latest.observation.registryExposure.companyCount,
-  validatedSnapshotCount:sensor.validatedSnapshotCount,
-  legacyApiField:sensor.latest.observation.identityBoundary.legacyOfficialApiField,
-  migrationState:sensor.latest.observation.identityBoundary.ethereumToFraxtalLockMigrationState,
-  executionAuthority:sensor.authority.executionAuthority
+  productionLikeStage:weeklyProtocol.maturityStage,
+  syntheticNativeProofStage:frax.maturityStage,
+  protocolCount:weeklyOnly.protocolLifecycle.summary.protocolCount,
+  currentAprPct:weeklySensor.latest.observation.referenceProductivity.currentAprPct,
+  companyCount:weeklySensor.latest.observation.registryExposure.companyCount,
+  canonicalSnapshotCount:weeklySensor.canonicalSnapshotCount,
+  validatedNativePeriodCount:weeklySensor.validatedNativePeriodCount,
+  legacyApiField:weeklySensor.latest.observation.identityBoundary.legacyOfficialApiField,
+  migrationState:weeklySensor.latest.observation.identityBoundary.ethereumToFraxtalLockMigrationState,
+  executionAuthority:weeklySensor.authority.executionAuthority
 });
