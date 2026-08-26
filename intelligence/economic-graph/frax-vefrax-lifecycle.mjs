@@ -8,7 +8,8 @@
  *
  * Weekly/canonical Productivity snapshots are useful observation history, but
  * they are not Frax-native epoch proof. VERIFIED requires distinct native Frax
- * periods with explicit period boundaries (or a future explicit nativePeriodId).
+ * periods with explicit reproducible period boundaries. A label or snapshot key
+ * alone can never manufacture native-period depth.
  *
  * This adapter does not infer Ethereum -> Fraxtal lock migration, legacy-gauge
  * sunset, revenue-share activation, or revenue -> veFRAX APR causality from a
@@ -113,15 +114,15 @@ function nativePeriodEvidence(snapshotHistory){
   for(const row of snapshotHistory?.rows||[]){
     const explicitId=String(row?.nativePeriodId||'').trim();
     const hasBounds=validIso(row?.periodStart)&&validIso(row?.periodEnd)&&Date.parse(row.periodEnd)>Date.parse(row.periodStart);
-    if(!explicitId&&!hasBounds)continue;
-    const periodKey=explicitId||`${row.periodStart}::${row.periodEnd}`;
+    if(!hasBounds)continue;
+    const periodKey=`${row.periodStart}::${row.periodEnd}`;
     if(seen.has(periodKey))continue;
     seen.add(periodKey);
     periods.push({
       periodKey,
       nativePeriodId:explicitId||null,
-      periodStart:hasBounds?row.periodStart:null,
-      periodEnd:hasBounds?row.periodEnd:null,
+      periodStart:row.periodStart,
+      periodEnd:row.periodEnd,
       supportingSnapshotKey:row.snapshotKey,
       aprPct:row.aprPct,
       sourceType:row.sourceType
@@ -201,7 +202,7 @@ export function buildFraxObservation({productivity,productivitySha256}){
       validatedNativePeriodCount:nativePeriods.distinctNativePeriodCount,
       validatedNativePeriodKeys:nativePeriods.periodKeys,
       validatedNativePeriods:nativePeriods.periods,
-      depthClass:nativePeriods.distinctNativePeriodCount>0?'explicit-native-frax-period-evidence':'canonical-productivity-snapshots-only-not-native-epoch-proof'
+      depthClass:nativePeriods.distinctNativePeriodCount>0?'explicit-native-frax-period-boundaries':'canonical-productivity-snapshots-only-not-native-epoch-proof'
     },
     identityBoundary:{
       currentCanonicalPrincipal:'FRAX',
@@ -272,7 +273,7 @@ export function applyFraxLifecycle({state,previousState,productivity,productivit
     check('registry-exposure-breadth',Number(latest.registryExposure.companyCount)>=1&&Number(latest.registryExposure.positionCount)>=1,'verified','At least one registered company has a measured Frax ve-lock exposure; all current registry exposures are retained separately.','registry-topology'),
     check('current-history-apr-parity',latest.longitudinalEvidence.currentSnapshotPresent===true&&latest.longitudinalEvidence.currentAprParityOk===true,'verified','Current Frax APR is represented in canonical Productivity snapshot history within 0.01 percentage points.','canonical-parity'),
     check('canonical-snapshot-history-support',canonicalSnapshotCount>=1,'shadow','Canonical Productivity snapshots provide bounded observation history but do not create native Frax epoch depth.','longitudinal-snapshot'),
-    check('distinct-native-frax-period-depth',nativePeriodCount>=requiredNativePeriodCount,'verified',`At least ${requiredNativePeriodCount} distinct Frax-native periods with explicit boundaries or IDs are required. Weekly Productivity snapshot keys never satisfy this gate by themselves.`,'longitudinal-native-period'),
+    check('distinct-native-frax-period-depth',nativePeriodCount>=requiredNativePeriodCount,'verified',`At least ${requiredNativePeriodCount} distinct Frax-native periods with explicit reproducible period boundaries are required. Weekly Productivity snapshot keys or labels never satisfy this gate by themselves.`,'longitudinal-native-period'),
     check('legacy-api-schema-boundary-preserved',latest.identityBoundary.currentCanonicalPrincipal==='FRAX'&&latest.identityBoundary.currentCanonicalVoteEscrowLabel==='veFRAX'&&latest.identityBoundary.legacyOfficialApiField===LEGACY_API_PATH,'verified','The legacy-compatible core.vefxs.apr API field is preserved as source schema evidence and is not promoted into current token identity authority.','epistemic-safety'),
     check('branding-migration-boundary-preserved',latest.identityBoundary.brandingDoesNotProveMigration===true&&latest.identityBoundary.ethereumToFraxtalLockMigrationState==='UNKNOWN-not-proven-by-canonical-productivity'&&latest.identityBoundary.legacyGaugeSunsetState==='UNKNOWN-not-proven-by-canonical-productivity','verified','FRAX/veFRAX naming does not prove Ethereum→Fraxtal migration completion or legacy gauge sunset.','epistemic-boundary'),
     check('causal-boundary-preserved',latest.epistemic.revenueToVeFraxAprCausality==='UNKNOWN-not-yet-proven-accounting-identity'&&latest.epistemic.protocolWidePrimaryDriver===null,'canonical','Unproven revenue → veFRAX APR causality remains UNKNOWN.','epistemic-boundary'),
