@@ -30,11 +30,11 @@ for (const required of [
   'pull-requests: read',
   'group: pr-run-supersession-${{ github.event.pull_request.number || inputs.pr_number }}',
   'cancel-in-progress: true',
-  'event == "pull_request"',
-  'head_sha != current_sha',
-  'head_branch == head_ref',
-  'head_branch != "main"',
-  'pull_requests | any(.number == $pr)',
+  '.event == "pull_request"',
+  '.head_sha != $current_sha',
+  '.head_branch == $head_ref',
+  '.head_branch != "main"',
+  '.pull_requests | any(.number == $pr)',
   '/cancel'
 ]) {
   assert(workflow.includes(required), `workflow safety contract missing: ${required}`);
