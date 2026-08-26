@@ -26,6 +26,7 @@ import { applyProtocolLifecycle } from './protocol-lifecycle.mjs';
 import { applyPendleSPendleLifecycle } from './pendle-spendle-lifecycle.mjs';
 import { applyPendleAccountingEvidence } from './pendle-spendle-accounting-evidence.mjs';
 import { applyYieldBasisLifecycle } from './yieldbasis-lifecycle.mjs';
+import { applyVelodromeLifecycle } from './ve-gauge-registry-lifecycle.mjs';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const OUT=process.env.ECONOMIC_GRAPH_FILE || path.join(ROOT,'intelligence/economic-graph/economic-graph.json');
@@ -112,11 +113,20 @@ export function buildCanonicalEconomicGraph({productivity,rewards,previousState,
     policy
   });
   const withPendleAccounting=applyPendleAccountingEvidence({state:withPendle,productivity,productivitySha256:sourceSha256});
-  return applyYieldBasisLifecycle({
+  const withYieldBasis=applyYieldBasisLifecycle({
     state:withPendleAccounting,
     previousState,
     productivity,
     productivitySha256:sourceSha256,
+    policy
+  });
+  return applyVelodromeLifecycle({
+    state:withYieldBasis,
+    previousState,
+    productivity,
+    rewards,
+    productivitySha256:sourceSha256,
+    rewardsSha256,
     policy
   });
 }
@@ -144,6 +154,8 @@ async function main(){
   const pendleAccounting=state.protocolEvidence?.['defitea-pendle-spendle-accounting'];
   const yieldBasis=state.protocolSensors?.['registry-yieldbasis-multimechanism']?.latest?.observation;
   const yieldBasisLifecycle=state.protocolLifecycle?.protocols?.['registry-yieldbasis-multimechanism'];
+  const velodrome=state.protocolSensors?.['registry-velodrome-vevelo']?.latest?.observation;
+  const velodromeLifecycle=state.protocolLifecycle?.protocols?.['registry-velodrome-vevelo'];
   const lifecycle=state.protocolLifecycle;
   console.log('ECONOMIC GRAPH canonical + lifecycle candidates PASS',{
     engineVersion:state.engineVersion,
@@ -178,6 +190,16 @@ async function main(){
     yieldBasisPositionCount:yieldBasis?.registryExposure?.positionCount,
     yieldBasisStage:yieldBasisLifecycle?.maturityStage,
     yieldBasisValidatedSnapshots:yieldBasisLifecycle?.longitudinalEvidence?.validatedSnapshotCount,
+    velodromeReferenceAprPct:velodrome?.referenceProductivity?.currentAprPct,
+    velodromeFormulaParityDeltaPctPoints:velodrome?.referenceProductivity?.formula?.parityDeltaPctPoints,
+    velodromeCompanyCount:velodrome?.registryExposure?.companyCount,
+    velodromePositionCount:velodrome?.registryExposure?.positionCount,
+    velodromeRewardRows:velodrome?.accruedRewards?.rowCount,
+    velodromeRewardSymbols:velodrome?.accruedRewards?.symbols?.length,
+    velodromeVoteVeNfts:velodrome?.votePoolHistory?.veNftCount,
+    velodromeUniquePools:velodrome?.votePoolHistory?.uniquePoolCount,
+    velodromeStage:velodromeLifecycle?.maturityStage,
+    velodromeValidatedSnapshots:velodromeLifecycle?.longitudinalEvidence?.validatedSnapshotCount,
     lifecycleStages:Object.fromEntries(Object.entries(lifecycle?.protocols||{}).map(([id,p])=>[id,p.maturityStage])),
     lifecycleTransitions:lifecycle?.transitions?.length,
     promotionAuthority:state.candidateLayer?.promotionAuthority,
