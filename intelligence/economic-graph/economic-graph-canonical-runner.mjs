@@ -24,6 +24,7 @@ import { applyVlCvxVotiumCandidate } from './vlcvx-votium-candidate.mjs';
 import { applyVlCvxVotiumDeepEvidence } from './vlcvx-votium-deep-evidence.mjs';
 import { applyProtocolLifecycle } from './protocol-lifecycle.mjs';
 import { applyPendleSPendleLifecycle } from './pendle-spendle-lifecycle.mjs';
+import { applyPendleAccountingEvidence } from './pendle-spendle-accounting-evidence.mjs';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const OUT=process.env.ECONOMIC_GRAPH_FILE || path.join(ROOT,'intelligence/economic-graph/economic-graph.json');
@@ -101,13 +102,14 @@ export function buildCanonicalEconomicGraph({productivity,rewards,previousState,
   });
   const withDeepEvidence=applyVlCvxVotiumDeepEvidence({state:withVlCvx,root:ROOT});
   const withLifecycle=applyProtocolLifecycle({state:withDeepEvidence,previousState,root:ROOT});
-  return applyPendleSPendleLifecycle({
+  const withPendle=applyPendleSPendleLifecycle({
     state:withLifecycle,
     previousState,
     productivity,
     productivitySha256:sourceSha256,
     policy:readJson(PROTOCOL_LIFECYCLE_POLICY)
   });
+  return applyPendleAccountingEvidence({state:withPendle,productivity,productivitySha256:sourceSha256});
 }
 
 async function main(){
@@ -130,6 +132,7 @@ async function main(){
   const vlcvx=state.candidateCohorts?.['defitea-convex-vlcvx-votium']?.latest?.observation;
   const vlcvxDeep=state.candidateCohorts?.['defitea-convex-vlcvx-votium']?.deepEconomicEvidence;
   const pendle=state.protocolSensors?.['defitea-pendle-spendle']?.latest?.observation;
+  const pendleAccounting=state.protocolEvidence?.['defitea-pendle-spendle-accounting'];
   const lifecycle=state.protocolLifecycle;
   console.log('ECONOMIC GRAPH canonical + lifecycle candidates PASS',{
     engineVersion:state.engineVersion,
@@ -154,6 +157,9 @@ async function main(){
     pendleCurrentStatus:pendle?.referenceProductivity?.status,
     pendleHistoricalCampaigns:pendle?.historicalMechanismEvidence?.campaignCount,
     pendleSurvivorReplicated:pendle?.historicalMechanismEvidence?.survivorReplication?.replicated,
+    pendleAccountingStatus:pendleAccounting?.status,
+    pendleAccountingMatches:pendleAccounting?.coverage?.amountMatches,
+    pendleAccountingMappedCampaigns:pendleAccounting?.coverage?.mappedCampaigns,
     lifecycleStages:Object.fromEntries(Object.entries(lifecycle?.protocols||{}).map(([id,p])=>[id,p.maturityStage])),
     lifecycleTransitions:lifecycle?.transitions?.length,
     promotionAuthority:state.candidateLayer?.promotionAuthority,
