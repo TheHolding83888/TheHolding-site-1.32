@@ -2,17 +2,23 @@ name: "The Holding · Votium → Curve Gauge Flow"
 
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows:
+      - "The Holding · Votium vlCVX Voting Provenance"
+    types: [completed]
   push:
     branches: [main]
     paths:
-      - "intelligence/economic-graph/vlcvx-votium-snapshot-proof.json"
       - "intelligence/economic-graph/vlcvx-votium-curve-gauge-flow.mjs"
       - "scripts/verify-vlcvx-votium-curve-gauge-flow.mjs"
+      - "scripts/verify-vlcvx-votium-evidence-handoff.mjs"
       - ".github/workflows/update-vlcvx-votium-curve-gauge-flow.yml"
   pull_request:
     paths:
       - "intelligence/economic-graph/vlcvx-votium-curve-gauge-flow.mjs"
       - "scripts/verify-vlcvx-votium-curve-gauge-flow.mjs"
+      - "scripts/verify-vlcvx-votium-evidence-handoff.mjs"
+      - ".github/workflows/update-vlcvx-votium-curve-gauge-flow.yml"
 
 permissions:
   contents: write
@@ -23,6 +29,11 @@ concurrency:
 
 jobs:
   build:
+    if: >-
+      ${{
+        github.event_name != 'workflow_run' ||
+        (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+      }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -38,23 +49,48 @@ jobs:
           node-version: "22"
           package-manager-cache: false
 
-      - name: Install existing read-only chain dependencies
-        working-directory: productivity
-        run: npm install --no-audit --no-fund
-
-      - name: Expose existing dependency tree
-        run: ln -sfn productivity/node_modules node_modules
-
       - name: Static validation
         run: |
           set -euo pipefail
           node --check intelligence/economic-graph/vlcvx-votium-curve-gauge-flow.mjs
           node --check scripts/verify-vlcvx-votium-curve-gauge-flow.mjs
+          node --check scripts/verify-vlcvx-votium-evidence-handoff.mjs
+          node scripts/verify-vlcvx-votium-evidence-handoff.mjs
           test -s intelligence/economic-graph/vlcvx-votium-round-flow.json
           test -s intelligence/economic-graph/vlcvx-votium-snapshot-proof.json
           git diff --check
 
+      - name: Determine PR live-probe requirement
+        if: github.event_name == 'pull_request'
+        id: evidence_mode
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="${{ github.event.pull_request.base.sha }}"
+          if git diff --name-only "$BASE"...HEAD | grep -Eq '^(intelligence/economic-graph/vlcvx-votium-curve-gauge-flow\.mjs|scripts/verify-vlcvx-votium-curve-gauge-flow\.mjs)$'; then
+            echo "live_probe_needed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "live_probe_needed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Orchestration-only PR proof
+        if: github.event_name == 'pull_request' && steps.evidence_mode.outputs.live_probe_needed != 'true'
+        run: |
+          set -euo pipefail
+          node scripts/verify-vlcvx-votium-evidence-handoff.mjs
+          echo "Curve Gauge collector unchanged; live Ethereum RPC proof remains production/code-change only."
+
+      - name: Install existing read-only chain dependencies
+        if: github.event_name != 'pull_request' || steps.evidence_mode.outputs.live_probe_needed == 'true'
+        working-directory: productivity
+        run: npm install --no-audit --no-fund
+
+      - name: Expose existing dependency tree
+        if: github.event_name != 'pull_request' || steps.evidence_mode.outputs.live_probe_needed == 'true'
+        run: ln -sfn productivity/node_modules node_modules
+
       - name: Build live Votium → Curve gauge flow
+        if: github.event_name != 'pull_request' || steps.evidence_mode.outputs.live_probe_needed == 'true'
         env:
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
         run: |
@@ -70,6 +106,7 @@ jobs:
           fi
 
       - name: Verify cross-protocol semantics and execution evidence
+        if: github.event_name != 'pull_request' || steps.evidence_mode.outputs.live_probe_needed == 'true'
         run: |
           set -euo pipefail
           VLCVX_VOTIUM_CURVE_GAUGE_FLOW_FILE=/tmp/vlcvx-votium-curve-gauge-flow.json node scripts/verify-vlcvx-votium-curve-gauge-flow.mjs
