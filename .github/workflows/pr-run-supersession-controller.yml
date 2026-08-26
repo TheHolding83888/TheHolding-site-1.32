@@ -3,8 +3,12 @@
 name: "The Holding Reliability · PR Run Supersession Controller"
 
 on:
-  pull_request:
-    types: [opened, reopened, synchronize]
+  workflow_run:
+    workflows:
+      - "The Holding Reliability · Repository Hygiene Guard"
+      - "The Holding Security · Commit Identity Privacy Guard"
+      - "The Holding Security · Public Surface Privacy Guard"
+    types: [completed]
   workflow_dispatch:
     inputs:
       pr_number:
@@ -18,30 +22,38 @@ permissions:
   pull-requests: read
 
 concurrency:
-  group: pr-run-supersession-${{ github.event.pull_request.number || inputs.pr_number }}
+  group: pr-run-supersession-${{ github.event_name == 'workflow_run' && github.event.workflow_run.pull_requests[0].number || inputs.pr_number || github.run_id }}
   cancel-in-progress: true
 
 jobs:
   supersede:
+    if: >-
+      ${{
+        github.event_name == 'workflow_dispatch' ||
+        (
+          github.event_name == 'workflow_run' &&
+          github.event.workflow_run.event == 'pull_request' &&
+          github.event.workflow_run.head_branch != 'main' &&
+          github.event.workflow_run.pull_requests[0].number != null
+        )
+      }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Checkout controller policy
+      - name: Checkout controller policy from canonical main
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: main
           fetch-depth: 1
 
       - name: Verify controller fail-closed contract
         run: node intelligence/reliability/pr-run-supersession-canary.mjs
 
-      - name: Resolve exact pull-request head
+      - name: Resolve exact current pull-request head
         id: target
         env:
           GH_TOKEN: ${{ github.token }}
-          EVENT_PR: ${{ github.event.pull_request.number }}
-          EVENT_SHA: ${{ github.event.pull_request.head.sha }}
-          EVENT_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          EVENT_PR: ${{ github.event.workflow_run.pull_requests[0].number }}
           INPUT_PR: ${{ inputs.pr_number }}
         shell: bash
         run: |
@@ -52,23 +64,19 @@ jobs:
             exit 1
           fi
 
-          if [ -n "${EVENT_SHA:-}" ] && [ -n "${EVENT_HEAD_REF:-}" ]; then
-            CURRENT_SHA="$EVENT_SHA"
-            HEAD_REF="$EVENT_HEAD_REF"
-          else
-            CURRENT_SHA="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '.head.sha')"
-            HEAD_REF="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '.head.ref')"
-          fi
+          CURRENT_SHA="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '.head.sha')"
+          HEAD_REF="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '.head.ref')"
+          PR_STATE="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '.state')"
 
-          if [ -z "$CURRENT_SHA" ] || [ -z "$HEAD_REF" ] || [ "$HEAD_REF" = "main" ]; then
-            echo "ERROR: unsafe or unresolved PR target: pr=$PR_NUMBER head=$HEAD_REF sha=$CURRENT_SHA" >&2
+          if [ "$PR_STATE" != "open" ] || [ -z "$CURRENT_SHA" ] || [ -z "$HEAD_REF" ] || [ "$HEAD_REF" = "main" ]; then
+            echo "ERROR: unsafe or unresolved PR target: pr=$PR_NUMBER state=$PR_STATE head=$HEAD_REF sha=$CURRENT_SHA" >&2
             exit 1
           fi
 
           echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
           echo "current_sha=$CURRENT_SHA" >> "$GITHUB_OUTPUT"
           echo "head_ref=$HEAD_REF" >> "$GITHUB_OUTPUT"
-          echo "Resolved PR #$PR_NUMBER head=$HEAD_REF sha=$CURRENT_SHA"
+          echo "Resolved open PR #$PR_NUMBER head=$HEAD_REF sha=$CURRENT_SHA"
 
       - name: Cancel only obsolete runs from the same PR branch
         env:
@@ -126,6 +134,6 @@ jobs:
             echo "- PR: #$PR_NUMBER"
             echo "- Current head: \`$CURRENT_SHA\`"
             echo "- Head branch: \`$HEAD_REF\`"
-            echo "- Superseded active runs cancelled: **$cancelled**"
+            echo "- Superseded active pull_request runs cancelled: **$cancelled**"
             echo "- Current-head and production runs: untouched"
           } >> "$GITHUB_STEP_SUMMARY"
