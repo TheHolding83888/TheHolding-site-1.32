@@ -34,8 +34,8 @@ const capital = readJson(CAPITAL);
 const productivity = readJson(PRODUCTIVITY);
 const income = readJson(INCOME);
 
-if (capital.version !== '0.2-capital-state') throw new Error(`unexpected Capital State ${capital.version}`);
-if (productivity.version !== '1.15') throw new Error(`unexpected Productivity ${productivity.version}`);
+if (capital.version !== '0.3-capital-state') throw new Error(`unexpected Capital State ${capital.version}`);
+if (productivity.version !== '1.16') throw new Error(`unexpected Productivity ${productivity.version}`);
 if (income.version !== '0.1-income-performance-intelligence') throw new Error(`unexpected Income & Performance ${income.version}`);
 if (capital.network?.totalCapitalCoverage !== 1 || capital.network?.networkTvlStatus !== 'complete') throw new Error('Capital State not fully comparable');
 
