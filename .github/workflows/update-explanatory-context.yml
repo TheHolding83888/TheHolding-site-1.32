@@ -27,8 +27,8 @@ permissions:
   contents: write
 
 concurrency:
-  group: the-holding-explanatory-context
-  cancel-in-progress: false
+  group: ${{ github.event_name == 'pull_request' && format('the-holding-explanatory-context-pr-{0}', github.event.pull_request.number) || 'the-holding-explanatory-context-production' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:
@@ -60,6 +60,7 @@ jobs:
           test -s intelligence/explanatory/explanatory-context.mjs
           test -s intelligence/explanatory/vlcvx-votium-curve-shadow-context.mjs
           test -s intelligence/explanatory/explanatory-handoff-canary.mjs
+          test -s intelligence/explanatory/workflow-concurrency-canary.mjs
           test -s intelligence/comparative/comparative-intelligence.json
           test -s intelligence/income-performance/income-performance.json
           test -s intelligence/economic-graph/economic-graph.json
@@ -68,7 +69,9 @@ jobs:
           node --check intelligence/explanatory/explanatory-context.mjs
           node --check intelligence/explanatory/vlcvx-votium-curve-shadow-context.mjs
           node --check intelligence/explanatory/explanatory-handoff-canary.mjs
+          node --check intelligence/explanatory/workflow-concurrency-canary.mjs
           node intelligence/explanatory/explanatory-handoff-canary.mjs
+          node intelligence/explanatory/workflow-concurrency-canary.mjs
           node --check intelligence/economic-graph/economic-graph-canonical-runner.mjs
           grep -q "multiCohortRule" intelligence/explanatory/explanatory-context.mjs
           grep -q "protocolAprChangeContexts" intelligence/explanatory/explanatory-context.mjs
@@ -176,7 +179,7 @@ jobs:
             fxnCausality:fx.causalAttribution,
             curveMechanicalAttribution:curve.mechanics.mechanicalAttribution,
             vlcvxCurveExecutedGaugeRows:flow.coverage.curveExecutedVotiumGaugeRows,
-            vlcvxCurrentPoolContexts:flow.coverage.currentCurvePoolContextsComplete,
+            vlcvxCurrentPoolContexts:flow.coverage.currentPoolContextsComplete,
             exactFeeUsd:flow.downstreamCurrentContext.exactFeeUsd,
             executionAuthority:x.authority.executionAuthority
           });
