@@ -2,18 +2,23 @@ name: "The Holding · Votium vlCVX Voting Provenance"
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "31 9 * * 3"
+  workflow_run:
+    workflows:
+      - "The Holding · Votium vlCVX Round Flow"
+    types: [completed]
   push:
     branches: [main]
     paths:
       - "intelligence/economic-graph/vlcvx-votium-snapshot-proof.mjs"
       - "scripts/verify-vlcvx-votium-snapshot-proof.mjs"
+      - "intelligence/economic-graph/vlcvx-votium-evidence-handoff-canary.mjs"
       - ".github/workflows/update-vlcvx-votium-snapshot-proof.yml"
   pull_request:
     paths:
       - "intelligence/economic-graph/vlcvx-votium-snapshot-proof.mjs"
       - "scripts/verify-vlcvx-votium-snapshot-proof.mjs"
+      - "intelligence/economic-graph/vlcvx-votium-evidence-handoff-canary.mjs"
+      - ".github/workflows/update-vlcvx-votium-snapshot-proof.yml"
 
 permissions:
   contents: write
@@ -24,6 +29,11 @@ concurrency:
 
 jobs:
   prove:
+    if: >-
+      ${{
+        github.event_name != 'workflow_run' ||
+        (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+      }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -51,6 +61,8 @@ jobs:
           set -euo pipefail
           node --check intelligence/economic-graph/vlcvx-votium-snapshot-proof.mjs
           node --check scripts/verify-vlcvx-votium-snapshot-proof.mjs
+          node --check intelligence/economic-graph/vlcvx-votium-evidence-handoff-canary.mjs
+          node intelligence/economic-graph/vlcvx-votium-evidence-handoff-canary.mjs
           test -s intelligence/economic-graph/vlcvx-votium-round-flow.json
           git diff --check
 
