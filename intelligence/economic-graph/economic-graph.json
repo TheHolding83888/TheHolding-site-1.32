@@ -1,7 +1,7 @@
 {
   "version": "0.1-economic-graph",
   "engineVersion": "0.2-defitea-fxn-curve-multi-cohort",
-  "generatedAt": "2026-08-26T09:00:54.958Z",
+  "generatedAt": "2026-08-26T09:21:07.945Z",
   "status": "partial-first-cohort",
   "statusCompatibility": {
     "deprecated": true,
@@ -3856,7 +3856,7 @@
   "protocolLifecycle": {
     "version": "0.1-protocol-intelligence-lifecycle",
     "policyVersion": "0.1-protocol-intelligence-lifecycle-policy",
-    "generatedAt": "2026-08-26T09:00:54.958Z",
+    "generatedAt": "2026-08-26T09:21:07.945Z",
     "status": "active",
     "stageOrder": [
       "discovery",
@@ -3871,7 +3871,8 @@
         "defitea-fxn-vefxn",
         "defitea-curve-vecrv",
         "defitea-aerodrome-veaero",
-        "defitea-convex-vlcvx-votium"
+        "defitea-convex-vlcvx-votium",
+        "defitea-pendle-spendle"
       ]
     },
     "authority": {
@@ -3904,10 +3905,11 @@
       "protocolWideCanonicalDoesNotEraseUnknownEdges": true
     },
     "summary": {
-      "protocolCount": 4,
+      "protocolCount": 5,
       "stageCounts": {
         "canonical": 2,
-        "verified": 2
+        "verified": 2,
+        "shadow": 1
       },
       "automaticTransitionsRecorded": 0
     },
@@ -4220,9 +4222,317 @@
         "epistemicBoundary": "Canonical evidence may remain causally UNKNOWN outside proven formula/accounting identities.",
         "priorMaturityStage": "verified",
         "transitionFingerprint": null
+      },
+      "defitea-pendle-spendle": {
+        "protocolId": "defitea-pendle-spendle",
+        "label": "Pendle / sPENDLE",
+        "maturityStage": "shadow",
+        "operatingMode": "shadow-monitoring",
+        "automaticallyEvaluated": true,
+        "automaticallyPromoted": false,
+        "automaticallyRegressed": false,
+        "evidence": {
+          "total": 10,
+          "passed": 7,
+          "failed": 3,
+          "canonicalAtoms": 0,
+          "verifiedAtoms": 4,
+          "shadowAtoms": 3
+        },
+        "checks": [
+          {
+            "id": "sensor-materialized",
+            "pass": true,
+            "stage": "shadow",
+            "evidenceClass": "sensor-state",
+            "detail": "Pendle protocol sensor is materialized from canonical Productivity."
+          },
+          {
+            "id": "company-position-measured",
+            "pass": true,
+            "stage": "shadow",
+            "evidenceClass": "company-state",
+            "detail": "Defitea PENDLE productive position is measured."
+          },
+          {
+            "id": "official-api-bound",
+            "pass": true,
+            "stage": "shadow",
+            "evidenceClass": "source-provenance",
+            "detail": "Canonical sPENDLE official API and native 14-day cadence remain bound."
+          },
+          {
+            "id": "historical-reward-calendar-mapped",
+            "pass": true,
+            "stage": "verified",
+            "evidenceClass": "cross-source-accounting",
+            "detail": "Official API buyback amounts map to official Merkle campaigns across multiple epochs with stable calendar offset."
+          },
+          {
+            "id": "onchain-survivor-denominator-replicated",
+            "pass": true,
+            "stage": "verified",
+            "evidenceClass": "onchain-replication",
+            "detail": "Onchain current-balance survivor reconstruction replicates across independent historical campaigns."
+          },
+          {
+            "id": "false-zero-fail-closed",
+            "pass": true,
+            "stage": "verified",
+            "evidenceClass": "epistemic-safety",
+            "detail": "Conflicting positive economic evidence cannot silently become a 0% Reference APR."
+          },
+          {
+            "id": "current-supply-measured",
+            "pass": true,
+            "stage": "verified",
+            "evidenceClass": "onchain-state",
+            "detail": "Current direct + virtual sPENDLE effective supply context is measured."
+          },
+          {
+            "id": "current-reference-apr-validated",
+            "pass": false,
+            "stage": "verified",
+            "evidenceClass": "current-period-validation",
+            "detail": "Latest completed sPENDLE period has passed the canonical current-period Reference APR gate."
+          },
+          {
+            "id": "validated-longitudinal-depth",
+            "pass": false,
+            "stage": "verified",
+            "evidenceClass": "longitudinal-observation",
+            "detail": "At least 2 distinct validated current-period graph observations are retained."
+          },
+          {
+            "id": "revenue-buyback-distribution-identity",
+            "pass": false,
+            "stage": "canonical",
+            "evidenceClass": "mechanism-proof",
+            "detail": "Protocol revenue → buyback → sPENDLE distribution identity is not yet promoted as a complete canonical accounting chain."
+          }
+        ],
+        "blockers": [
+          "current-reference-apr-validated",
+          "validated-longitudinal-depth",
+          "revenue-buyback-distribution-identity"
+        ],
+        "unknowns": [
+          "latest sPENDLE Reference APR remains UNKNOWN until the current period passes the canonical validation gate when upstream evidence conflicts",
+          "why protocol revenue, staking participation and buyback/distribution amounts change remains UNKNOWN beyond proven accounting links",
+          "in-kind point airdrops remain outside Reference APR until independently normalizable"
+        ],
+        "epistemicBoundary": "Historical reward mapping and replicated denominator evidence do not by themselves prove current APR or upstream causality.",
+        "priorMaturityStage": "shadow",
+        "transitionFingerprint": null
       }
     },
     "transitions": [],
-    "nextProtocolTemplate": "New Defitea protocols enter the same lifecycle registry; reuse existing collectors and add only true mechanism deltas."
+    "nextProtocolTemplate": "New protocols reuse canonical sensors first, then enter the same evidence lifecycle; add only true mechanism deltas.",
+    "policyRevision": "0.2-pendle-spendle-admission"
+  },
+  "protocolSensors": {
+    "defitea-pendle-spendle": {
+      "version": "0.1-pendle-spendle-protocol-sensor",
+      "status": "shadow-observation-active",
+      "identity": {
+        "companyRegistry": "004",
+        "company": "defitea.eth",
+        "protocol": "Pendle",
+        "mechanism": "sPENDLE staking / buyback distribution",
+        "asset": "PENDLE"
+      },
+      "latest": {
+        "observation": {
+          "observedAt": "2026-08-26T06:07:04.958Z",
+          "company": {
+            "registry": "004",
+            "name": "defitea.eth"
+          },
+          "protocol": "Pendle",
+          "mechanism": "sPENDLE staking / buyback distribution",
+          "asset": "PENDLE",
+          "companyPosition": {
+            "productiveUnitsPendle": 500,
+            "productiveValueUsd": 872.53,
+            "positionAprPct": 0,
+            "engineStatus": "warming",
+            "stateClass": "measured-current-company-position"
+          },
+          "referenceProductivity": {
+            "status": "warming",
+            "currentAprPct": 0,
+            "sourceUrl": "https://api-v2.pendle.finance/core/v1/spendle/data",
+            "sourceType": "official-api+official-merkle+onchain-survivor-diagnostic",
+            "sourceMetric": "sPENDLE APR withheld · mapped positive rewards but survivor clustering has not yet passed promotion gate",
+            "nativeCadence": "14d",
+            "periodStart": "2026-08-11T00:00:00.000Z",
+            "periodEnd": "2026-08-25T00:00:00.000Z",
+            "publishedApiApr": 0,
+            "revenue": 282160.49871298,
+            "buybackAmount": 0,
+            "selectionRule": "zero-apr-positive-reward-survivor-cluster-not-yet-replicated",
+            "mappedMerkleCampaign": null,
+            "currentPeriodValidated": false,
+            "falseZeroBlocked": true,
+            "rule": "Published zero is never accepted as 0% when independent positive economic evidence conflicts with it. The canonical Productivity gate must prove the current period first."
+          },
+          "historicalMechanismEvidence": {
+            "historyCount": 12,
+            "campaignCount": 8,
+            "epochMap": {
+              "pairCount": 8,
+              "exactAmountMatches": 8,
+              "offsetConsensus": true,
+              "offsetSeconds": 259200,
+              "offsetDays": 3,
+              "maxOffsetDeviationSeconds": 0
+            },
+            "survivorReplication": {
+              "replicated": true,
+              "validCampaigns": 3,
+              "minRequiredCampaigns": 2,
+              "minClusterSize": 30,
+              "minClusterDensity": 0.25,
+              "maxSpreadBps": 75,
+              "maxSupplyDeviationPct": 5,
+              "observedSupplyMedian": 225738672.2942,
+              "observedMaxSupplyDeviationPct": 2.355,
+              "supplyConsistencyOk": true
+            },
+            "rewardScope": "Reference APR reconstructed by this path is the sPENDLE buyback distribution component. In-kind point airdrops are intentionally excluded until they can be normalized independently.",
+            "denominatorPolicy": "V1.9 uses replicated current-balance survivor clustering instead of historical archive state. A Merkle reward APR may become Reference APR only when broad reward/current-direct-sPENDLE clusters pass holder-count, density and spread gates across multiple campaigns, and the independently implied active supplies are mutually consistent. The cluster represents holders whose direct balance is statistically consistent with having remained unchanged since the reward snapshot."
+          },
+          "currentSupply": {
+            "observedAt": 1787724445,
+            "periodEnd": "2026-08-26T06:07:25.000Z",
+            "totalPendleStaked": 97877709.2991072,
+            "totalStakedInSpendle": 34101709.15939382,
+            "virtualSpendleFromVependle": 181929666.24316424,
+            "currentEffectiveSupply": 216031375.40255806
+          },
+          "provenance": {
+            "productivityFile": "companies/productivity-data.json",
+            "productivityGeneratedAt": "2026-08-26T06:08:02.250Z",
+            "productivitySha256": "f9fb3f79c1f1f93ee3c485479c52692b3f4739ec0ac81ea9c484459e947cdaad"
+          },
+          "epistemic": {
+            "observationClass": "shadow-protocol-economic-sensor",
+            "historicalRewardAccounting": "multi-source-consistency-evidence",
+            "currentReferenceApr": "warming-not-yet-promoted",
+            "causalAttribution": "unresolved-beyond-proven-accounting-links",
+            "primaryDriver": null,
+            "predictionAuthority": "none",
+            "recommendationAuthority": "none",
+            "promotionAuthority": "deterministic-evidence-gates-only",
+            "executionAuthority": "none"
+          },
+          "id": "pendle-spendle:2026-08-26:3b30019a0acbc36c8c22"
+        },
+        "movement": {
+          "priorObservationId": null,
+          "elapsedHours": null,
+          "currentAprDeltaPctPoints": null,
+          "effectiveSupplyDelta": null,
+          "comparable": false,
+          "note": "Like-for-like protocol observations only. No revenue→buyback→APR causal delta is inferred."
+        }
+      },
+      "observationCount": 1,
+      "validatedObservationCount": 0,
+      "observations": [
+        {
+          "observedAt": "2026-08-26T06:07:04.958Z",
+          "company": {
+            "registry": "004",
+            "name": "defitea.eth"
+          },
+          "protocol": "Pendle",
+          "mechanism": "sPENDLE staking / buyback distribution",
+          "asset": "PENDLE",
+          "companyPosition": {
+            "productiveUnitsPendle": 500,
+            "productiveValueUsd": 872.53,
+            "positionAprPct": 0,
+            "engineStatus": "warming",
+            "stateClass": "measured-current-company-position"
+          },
+          "referenceProductivity": {
+            "status": "warming",
+            "currentAprPct": 0,
+            "sourceUrl": "https://api-v2.pendle.finance/core/v1/spendle/data",
+            "sourceType": "official-api+official-merkle+onchain-survivor-diagnostic",
+            "sourceMetric": "sPENDLE APR withheld · mapped positive rewards but survivor clustering has not yet passed promotion gate",
+            "nativeCadence": "14d",
+            "periodStart": "2026-08-11T00:00:00.000Z",
+            "periodEnd": "2026-08-25T00:00:00.000Z",
+            "publishedApiApr": 0,
+            "revenue": 282160.49871298,
+            "buybackAmount": 0,
+            "selectionRule": "zero-apr-positive-reward-survivor-cluster-not-yet-replicated",
+            "mappedMerkleCampaign": null,
+            "currentPeriodValidated": false,
+            "falseZeroBlocked": true,
+            "rule": "Published zero is never accepted as 0% when independent positive economic evidence conflicts with it. The canonical Productivity gate must prove the current period first."
+          },
+          "historicalMechanismEvidence": {
+            "historyCount": 12,
+            "campaignCount": 8,
+            "epochMap": {
+              "pairCount": 8,
+              "exactAmountMatches": 8,
+              "offsetConsensus": true,
+              "offsetSeconds": 259200,
+              "offsetDays": 3,
+              "maxOffsetDeviationSeconds": 0
+            },
+            "survivorReplication": {
+              "replicated": true,
+              "validCampaigns": 3,
+              "minRequiredCampaigns": 2,
+              "minClusterSize": 30,
+              "minClusterDensity": 0.25,
+              "maxSpreadBps": 75,
+              "maxSupplyDeviationPct": 5,
+              "observedSupplyMedian": 225738672.2942,
+              "observedMaxSupplyDeviationPct": 2.355,
+              "supplyConsistencyOk": true
+            },
+            "rewardScope": "Reference APR reconstructed by this path is the sPENDLE buyback distribution component. In-kind point airdrops are intentionally excluded until they can be normalized independently.",
+            "denominatorPolicy": "V1.9 uses replicated current-balance survivor clustering instead of historical archive state. A Merkle reward APR may become Reference APR only when broad reward/current-direct-sPENDLE clusters pass holder-count, density and spread gates across multiple campaigns, and the independently implied active supplies are mutually consistent. The cluster represents holders whose direct balance is statistically consistent with having remained unchanged since the reward snapshot."
+          },
+          "currentSupply": {
+            "observedAt": 1787724445,
+            "periodEnd": "2026-08-26T06:07:25.000Z",
+            "totalPendleStaked": 97877709.2991072,
+            "totalStakedInSpendle": 34101709.15939382,
+            "virtualSpendleFromVependle": 181929666.24316424,
+            "currentEffectiveSupply": 216031375.40255806
+          },
+          "provenance": {
+            "productivityFile": "companies/productivity-data.json",
+            "productivityGeneratedAt": "2026-08-26T06:08:02.250Z",
+            "productivitySha256": "f9fb3f79c1f1f93ee3c485479c52692b3f4739ec0ac81ea9c484459e947cdaad"
+          },
+          "epistemic": {
+            "observationClass": "shadow-protocol-economic-sensor",
+            "historicalRewardAccounting": "multi-source-consistency-evidence",
+            "currentReferenceApr": "warming-not-yet-promoted",
+            "causalAttribution": "unresolved-beyond-proven-accounting-links",
+            "primaryDriver": null,
+            "predictionAuthority": "none",
+            "recommendationAuthority": "none",
+            "promotionAuthority": "deterministic-evidence-gates-only",
+            "executionAuthority": "none"
+          },
+          "id": "pendle-spendle:2026-08-26:3b30019a0acbc36c8c22"
+        }
+      ],
+      "authority": {
+        "executionAuthority": "none",
+        "causalClaimAuthority": "none",
+        "recommendationAuthority": "none",
+        "predictionAuthority": "none"
+      }
+    }
   }
 }
