@@ -1,6 +1,6 @@
 {
   "version": "0.1-protocol-intelligence-lifecycle-policy",
-  "revision": "0.4-registry-wide-yieldbasis-admission",
+  "revision": "0.5-registry-wide-velodrome-ve-gauge-admission",
   "stageOrder": ["discovery", "shadow", "verified", "canonical"],
   "operatingModes": ["warming", "shadow-monitoring", "continuous-monitoring"],
   "scope": {
@@ -10,7 +10,8 @@
     "legacyPrimaryCompanyRegistry": "004",
     "legacyPrimaryCompany": "defitea.eth",
     "registryWideProtocolIds": [
-      "registry-yieldbasis-multimechanism"
+      "registry-yieldbasis-multimechanism",
+      "registry-velodrome-vevelo"
     ],
     "protocolIds": [
       "defitea-fxn-vefxn",
@@ -18,7 +19,8 @@
       "defitea-aerodrome-veaero",
       "defitea-convex-vlcvx-votium",
       "defitea-pendle-spendle",
-      "registry-yieldbasis-multimechanism"
+      "registry-yieldbasis-multimechanism",
+      "registry-velodrome-vevelo"
     ]
   },
   "authority": {
@@ -48,7 +50,8 @@
     "stageRegressionIsAllowedWhenEvidenceRegresses": true,
     "historyIsAppendOnlyByTransitionFingerprint": true,
     "longitudinalDepthRequiresDistinctNativePeriods": true,
-    "protocolSensorsMaySpanMultipleCompaniesWithoutCollapsingMechanismSemantics": true
+    "protocolSensorsMaySpanMultipleCompaniesWithoutCollapsingMechanismSemantics": true,
+    "veGaugeFamilyReuseMustPreserveProtocolSpecificEvidenceBoundaries": true
   },
   "protocols": {
     "defitea-fxn-vefxn": {
@@ -88,6 +91,15 @@
       "verifiedMinimumDistinctSnapshotCount": 2,
       "verifiedGate": "current-official-veyb-plus-reproduced-yb-wbtc-and-yb-weth-pps-formulas-plus-registry-exposure-breadth-plus-two-distinct-canonical-snapshots",
       "canonicalGate": "verified-state-plus-complete-veyb-revenue-to-distribution-apr-accounting-identity"
+    },
+    "registry-velodrome-vevelo": {
+      "label": "Velodrome / veVELO",
+      "scope": "registry-wide-multi-company-ve-gauge",
+      "family": "ve-gauge",
+      "existingAuthority": "discovery",
+      "verifiedMinimumDistinctSnapshotCount": 2,
+      "verifiedGate": "reproduced-reference-apr-plus-registry-exposure-plus-current-bounded-reward-route-plus-complete-bounded-vote-pool-history-plus-two-distinct-weekly-snapshots",
+      "canonicalGate": "verified-state-plus-mechanically-proven-vote-to-gauge-pool-execution-and-current-pool-fee-incentive-accounting"
     }
   }
 }
