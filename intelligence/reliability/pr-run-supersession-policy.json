@@ -1,0 +1,33 @@
+{
+  "version": "0.1-pr-run-supersession-controller",
+  "mode": "cancel-superseded-pull-request-runs-only",
+  "purpose": "Prevent obsolete pull-request workflow runs from consuming runner/concurrency capacity after a PR head moves, without cancelling production, current-head, scheduled, push, workflow_run or workflow_dispatch work.",
+  "scope": {
+    "allowedEvent": "pull_request",
+    "requiresSamePullRequestNumber": true,
+    "requiresSameHeadBranch": true,
+    "requiresDifferentHeadSha": true,
+    "requiresNonCompletedStatus": true,
+    "forbidMainHeadBranch": true,
+    "currentHeadNeverCancelled": true,
+    "productionRunsNeverCancelled": true
+  },
+  "authority": {
+    "readOnlyRepository": true,
+    "repositoryMutationAuthority": false,
+    "workflowDispatchAuthority": false,
+    "workflowCancellationAuthority": "superseded-pull-request-runs-only",
+    "executionAuthority": "none",
+    "capitalExecution": false,
+    "walletAuthority": false,
+    "methodologyMutationAuthority": false,
+    "securityPolicyMutationAuthority": false
+  },
+  "safetyLaw": [
+    "A run is cancellable only when it belongs to the same pull request and same PR head branch, is a pull_request event, is not completed, and its head SHA differs from the current PR head SHA.",
+    "Runs on main are never cancellable by this controller.",
+    "Current-head runs are never cancellable by this controller.",
+    "Production writers remain serialized by their own truth-plane concurrency contracts.",
+    "The controller reduces obsolete queue work; it does not weaken or skip any current-head domain check."
+  ]
+}
