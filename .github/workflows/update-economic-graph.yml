@@ -63,6 +63,8 @@ jobs:
           node --check intelligence/economic-graph/economic-graph-canonical-runner.mjs
           node --check intelligence/economic-graph/protocol-lifecycle.mjs
           node --check intelligence/economic-graph/protocol-lifecycle-canary.mjs
+          node --check intelligence/economic-graph/workflow-concurrency-canary.mjs
+          node intelligence/economic-graph/workflow-concurrency-canary.mjs
           node --check intelligence/economic-graph/frax-vefrax-lifecycle.mjs
           node --check intelligence/economic-graph/frax-vefrax-lifecycle-canary.mjs
           node -e "JSON.parse(require('fs').readFileSync('intelligence/economic-graph/protocol-lifecycle-policy.json','utf8')); console.log('PROTOCOL LIFECYCLE POLICY JSON PASS')"
