@@ -25,6 +25,7 @@ import { applyVlCvxVotiumDeepEvidence } from './vlcvx-votium-deep-evidence.mjs';
 import { applyProtocolLifecycle } from './protocol-lifecycle.mjs';
 import { applyPendleSPendleLifecycle } from './pendle-spendle-lifecycle.mjs';
 import { applyPendleAccountingEvidence } from './pendle-spendle-accounting-evidence.mjs';
+import { applyYieldBasisLifecycle } from './yieldbasis-lifecycle.mjs';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const OUT=process.env.ECONOMIC_GRAPH_FILE || path.join(ROOT,'intelligence/economic-graph/economic-graph.json');
@@ -102,14 +103,22 @@ export function buildCanonicalEconomicGraph({productivity,rewards,previousState,
   });
   const withDeepEvidence=applyVlCvxVotiumDeepEvidence({state:withVlCvx,root:ROOT});
   const withLifecycle=applyProtocolLifecycle({state:withDeepEvidence,previousState,root:ROOT});
+  const policy=readJson(PROTOCOL_LIFECYCLE_POLICY);
   const withPendle=applyPendleSPendleLifecycle({
     state:withLifecycle,
     previousState,
     productivity,
     productivitySha256:sourceSha256,
-    policy:readJson(PROTOCOL_LIFECYCLE_POLICY)
+    policy
   });
-  return applyPendleAccountingEvidence({state:withPendle,productivity,productivitySha256:sourceSha256});
+  const withPendleAccounting=applyPendleAccountingEvidence({state:withPendle,productivity,productivitySha256:sourceSha256});
+  return applyYieldBasisLifecycle({
+    state:withPendleAccounting,
+    previousState,
+    productivity,
+    productivitySha256:sourceSha256,
+    policy
+  });
 }
 
 async function main(){
@@ -133,6 +142,8 @@ async function main(){
   const vlcvxDeep=state.candidateCohorts?.['defitea-convex-vlcvx-votium']?.deepEconomicEvidence;
   const pendle=state.protocolSensors?.['defitea-pendle-spendle']?.latest?.observation;
   const pendleAccounting=state.protocolEvidence?.['defitea-pendle-spendle-accounting'];
+  const yieldBasis=state.protocolSensors?.['registry-yieldbasis-multimechanism']?.latest?.observation;
+  const yieldBasisLifecycle=state.protocolLifecycle?.protocols?.['registry-yieldbasis-multimechanism'];
   const lifecycle=state.protocolLifecycle;
   console.log('ECONOMIC GRAPH canonical + lifecycle candidates PASS',{
     engineVersion:state.engineVersion,
@@ -160,6 +171,13 @@ async function main(){
     pendleAccountingStatus:pendleAccounting?.status,
     pendleAccountingMatches:pendleAccounting?.coverage?.amountMatches,
     pendleAccountingMappedCampaigns:pendleAccounting?.coverage?.mappedCampaigns,
+    yieldBasisVeYbAprPct:yieldBasis?.mechanisms?.veYB?.currentAprPct,
+    yieldBasisYbWbtcAprPct:yieldBasis?.mechanisms?.ybWbtc?.currentAprPct,
+    yieldBasisYbWethAprPct:yieldBasis?.mechanisms?.ybWeth?.currentAprPct,
+    yieldBasisCompanyCount:yieldBasis?.registryExposure?.companyCount,
+    yieldBasisPositionCount:yieldBasis?.registryExposure?.positionCount,
+    yieldBasisStage:yieldBasisLifecycle?.maturityStage,
+    yieldBasisValidatedSnapshots:yieldBasisLifecycle?.longitudinalEvidence?.validatedSnapshotCount,
     lifecycleStages:Object.fromEntries(Object.entries(lifecycle?.protocols||{}).map(([id,p])=>[id,p.maturityStage])),
     lifecycleTransitions:lifecycle?.transitions?.length,
     promotionAuthority:state.candidateLayer?.promotionAuthority,
