@@ -63,8 +63,11 @@ jobs:
           node --check intelligence/economic-graph/economic-graph-canonical-runner.mjs
           node --check intelligence/economic-graph/protocol-lifecycle.mjs
           node --check intelligence/economic-graph/protocol-lifecycle-canary.mjs
+          node --check intelligence/economic-graph/frax-vefrax-lifecycle.mjs
+          node --check intelligence/economic-graph/frax-vefrax-lifecycle-canary.mjs
           node -e "JSON.parse(require('fs').readFileSync('intelligence/economic-graph/protocol-lifecycle-policy.json','utf8')); console.log('PROTOCOL LIFECYCLE POLICY JSON PASS')"
           node intelligence/economic-graph/protocol-lifecycle-canary.mjs
+          node intelligence/economic-graph/frax-vefrax-lifecycle-canary.mjs
           node productivity/fxn-locker-apr-guard-validation.mjs
           TMP="$(mktemp)"
           ECONOMIC_GRAPH_FILE="$TMP" node intelligence/economic-graph/economic-graph.mjs --deterministic-validation
@@ -175,14 +178,27 @@ jobs:
           const curveStage=l?.protocols?.['defitea-curve-vecrv']?.maturityStage;
           const aeroStage=l?.protocols?.['defitea-aerodrome-veaero']?.maturityStage;
           const vlcvxStage=l?.protocols?.['defitea-convex-vlcvx-votium']?.maturityStage;
+          const fraxProtocol=l?.protocols?.['registry-frax-vefrax'];
+          const fraxSensor=x.protocolSensors?.['registry-frax-vefrax'];
+          const fraxObservation=fraxSensor?.latest?.observation;
+          const fraxStage=fraxProtocol?.maturityStage;
           if(fxStage!=='canonical'||curveStage!=='canonical')throw new Error(`Existing canonical lifecycle stages regressed: f(x)=${fxStage}, Curve=${curveStage}`);
           if(!['verified','canonical'].includes(aeroStage))throw new Error(`Aerodrome lifecycle stage below verified: ${aeroStage}`);
           if(!['verified','canonical'].includes(vlcvxStage))throw new Error(`vlCVX/Votium lifecycle stage below verified: ${vlcvxStage}`);
+          if(!fraxProtocol||!fraxSensor||Number(l?.summary?.protocolCount)!==8)throw new Error('Frax lifecycle sensor #8 not materialized');
+          if(fraxSensor.authority?.executionAuthority!=='none'||fraxObservation?.epistemic?.executionAuthority!=='none')throw new Error('Frax execution authority expanded');
+          if(fraxObservation?.identityBoundary?.currentCanonicalPrincipal!=='FRAX'||fraxObservation?.identityBoundary?.currentCanonicalVoteEscrowLabel!=='veFRAX'||fraxObservation?.identityBoundary?.legacyOfficialApiField!=='core.vefxs.apr')throw new Error('Frax current/legacy identity boundary drift');
+          if(!String(fraxObservation?.identityBoundary?.ethereumToFraxtalLockMigrationState||'').startsWith('UNKNOWN')||!String(fraxObservation?.epistemic?.revenueToVeFraxAprCausality||'').startsWith('UNKNOWN'))throw new Error('Frax migration or revenue causality was over-claimed');
+          const nativeCount=Number(fraxProtocol?.longitudinalEvidence?.validatedNativePeriodCount||0);
+          const requiredNative=Number(fraxProtocol?.longitudinalEvidence?.requiredValidatedNativePeriodCount||0);
+          if(!(requiredNative>=2))throw new Error('Frax native-period verification minimum missing');
+          if(nativeCount<requiredNative&&fraxStage!=='shadow')throw new Error(`Frax over-promoted without native-period depth: ${fraxStage}`);
+          if(nativeCount>=requiredNative&&!['verified','canonical'].includes(fraxStage))throw new Error(`Frax failed deterministic native-period promotion: ${fraxStage}`);
           console.log('ECONOMIC GRAPH canonical + lifecycle source PASS',{
             cohorts:x.coverage.cohortCount,
             fxn:{observedAt:fx.observedAt,apr:fx.liveObservedAprPct,currentWeekWsteth:fx.drivers.cumulativeThisWeekWsteth,parity:fx.aprParityDeltaPctPoints},
             curve:{observedAt:curve.observedAt,apr:curve.canonicalProductivityAprPct,formulaApr:curve.formulaReproducedAprPct,rollingFeesCrvUSD:curve.drivers.rollingFourWeekFeesCrvUSD,rollingAverageVeSupply:curve.drivers.rollingAverageVeSupply,latestWeekFeesCrvUSD:curve.drivers.latestCompletedWeek?.tokensCrvUSD},
-            lifecycle:{fxn:fxStage,curve:curveStage,aerodrome:aeroStage,vlcvx:vlcvxStage,transitions:l.transitions?.length||0}
+            lifecycle:{fxn:fxStage,curve:curveStage,aerodrome:aeroStage,vlcvx:vlcvxStage,frax:fraxStage,fraxNativePeriods:nativeCount,transitions:l.transitions?.length||0}
           });
           NODE
 
