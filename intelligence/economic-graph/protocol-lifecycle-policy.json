@@ -1,17 +1,24 @@
 {
   "version": "0.1-protocol-intelligence-lifecycle-policy",
-  "revision": "0.3-pendle-distinct-period-verification",
+  "revision": "0.4-registry-wide-yieldbasis-admission",
   "stageOrder": ["discovery", "shadow", "verified", "canonical"],
   "operatingModes": ["warming", "shadow-monitoring", "continuous-monitoring"],
   "scope": {
+    "mode": "mixed-company-and-registry-wide-protocols",
     "companyRegistry": "004",
     "company": "defitea.eth",
+    "legacyPrimaryCompanyRegistry": "004",
+    "legacyPrimaryCompany": "defitea.eth",
+    "registryWideProtocolIds": [
+      "registry-yieldbasis-multimechanism"
+    ],
     "protocolIds": [
       "defitea-fxn-vefxn",
       "defitea-curve-vecrv",
       "defitea-aerodrome-veaero",
       "defitea-convex-vlcvx-votium",
-      "defitea-pendle-spendle"
+      "defitea-pendle-spendle",
+      "registry-yieldbasis-multimechanism"
     ]
   },
   "authority": {
@@ -40,7 +47,8 @@
     "stageTransitionsAreDeterministic": true,
     "stageRegressionIsAllowedWhenEvidenceRegresses": true,
     "historyIsAppendOnlyByTransitionFingerprint": true,
-    "longitudinalDepthRequiresDistinctNativePeriods": true
+    "longitudinalDepthRequiresDistinctNativePeriods": true,
+    "protocolSensorsMaySpanMultipleCompaniesWithoutCollapsingMechanismSemantics": true
   },
   "protocols": {
     "defitea-fxn-vefxn": {
@@ -72,6 +80,14 @@
       "verifiedMinimumValidatedObservationCount": 2,
       "verifiedGate": "canonical-productivity-sensor-plus-multi-epoch-api-merkle-accounting-plus-replicated-onchain-denominator-plus-current-period-apr-validation-plus-two-distinct-validated-native-periods",
       "canonicalGate": "verified-state-plus-proven-revenue-buyback-distribution-accounting-chain"
+    },
+    "registry-yieldbasis-multimechanism": {
+      "label": "Yield Basis / veYB + yb-LP",
+      "scope": "registry-wide-multi-company",
+      "existingAuthority": "discovery",
+      "verifiedMinimumDistinctSnapshotCount": 2,
+      "verifiedGate": "current-official-veyb-plus-reproduced-yb-wbtc-and-yb-weth-pps-formulas-plus-registry-exposure-breadth-plus-two-distinct-canonical-snapshots",
+      "canonicalGate": "verified-state-plus-complete-veyb-revenue-to-distribution-apr-accounting-identity"
     }
   }
 }

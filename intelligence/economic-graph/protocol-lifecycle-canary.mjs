@@ -5,6 +5,7 @@ import path from 'node:path';
 import { applyProtocolLifecycle } from './protocol-lifecycle.mjs';
 import { applyPendleSPendleLifecycle } from './pendle-spendle-lifecycle.mjs';
 import { applyPendleAccountingEvidence } from './pendle-spendle-accounting-evidence.mjs';
+import { applyYieldBasisLifecycle } from './yieldbasis-lifecycle.mjs';
 
 function base(){
   return {
@@ -62,19 +63,42 @@ function validatedPendleProductivity({periodStart,periodEnd,observedAt,apr}){
   p.companies['defitea.eth'].breakdown[0].engineStatus='ok';
   return p;
 }
+function yieldBasisProductivity({snapshotKey='2026-W35',generatedAt='2026-08-26T06:08:02.250Z',veApr=4.88,wbtcApr=-0.407039,wethApr=-1.806478}={}){
+  const start='2026-07-12T00:00:00.000Z';
+  const end='2026-08-11T00:00:00.000Z';
+  const days=(Date.parse(end)-Date.parse(start))/864e5;
+  const ppsAgoBtc=1.007419079525;
+  const ppsAgoEth=1.01240802867;
+  const ppsNowBtc=ppsAgoBtc*((1+wbtcApr/100)**(days/365));
+  const ppsNowEth=ppsAgoEth*((1+wethApr/100)**(days/365));
+  return {
+    version:'1.16',snapshotKey,generatedAt,
+    engines:{
+      yieldbasis_veyb:{engineId:'yieldbasis_veyb',protocol:'Yield Basis',principalSymbol:'YB',sourceUrl:'https://yieldbasis.com/analytics',nativeCadence:'epoch',aprLatest:veApr,sourceType:'official-analytics',sourceMetric:'veYB APR · current/latest epoch',periodStart:null,periodEnd:generatedAt,lastUpdatedAt:generatedAt,status:'ok',details:{}},
+      yieldbasis_yblp_wbtc:{engineId:'yieldbasis_yblp_wbtc',protocol:'Yield Basis',principalSymbol:'BTC',sourceUrl:'companies/company-007-resolve.json',nativeCadence:'30d',aprLatest:wbtcApr,sourceType:'local-verified-resolver',sourceMetric:'Yield Basis FT APY (30D) · fundamental PPS growth · emissions excluded',periodStart:start,periodEnd:end,lastUpdatedAt:generatedAt,status:'ok',details:{market:'yb-WBTC',ppsNow:ppsNowBtc,pps30dAgo:ppsAgoBtc,historicalProvider:'ethereum-history:test',resolverVersion:'1.8-canonical-quantity-source-mesh'}},
+      yieldbasis_yblp_weth:{engineId:'yieldbasis_yblp_weth',protocol:'Yield Basis',principalSymbol:'ETH',sourceUrl:'companies/company-007-resolve.json',nativeCadence:'30d',aprLatest:wethApr,sourceType:'local-verified-resolver',sourceMetric:'Yield Basis FT APY (30D) · fundamental PPS growth · emissions excluded',periodStart:start,periodEnd:end,lastUpdatedAt:generatedAt,status:'ok',details:{market:'yb-WETH',ppsNow:ppsNowEth,pps30dAgo:ppsAgoEth,historicalProvider:'ethereum-history:test',resolverVersion:'1.8-canonical-quantity-source-mesh'}}
+    },
+    companies:{
+      'company-a':{name:'Company A',breakdown:[{engineId:'yieldbasis_veyb',principalId:'yield-basis',units:10846,value:1033.52,apr:veApr,engineStatus:'ok'}]},
+      'company-b':{name:'Company B',breakdown:[{engineId:'yieldbasis_veyb',principalId:'yield-basis',units:12029,value:1146.25,apr:veApr,engineStatus:'ok'}]},
+      'company-c':{name:'Company C',breakdown:[{engineId:'yieldbasis_yblp_wbtc',principalId:'bitcoin',units:0.00335757,value:265.45,apr:wbtcApr,engineStatus:'ok'},{engineId:'yieldbasis_yblp_weth',principalId:'ethereum',units:0.2930932794,value:722.36,apr:wethApr,engineStatus:'ok'}]}
+    }
+  };
+}
 const policy={
   version:'0.1-protocol-intelligence-lifecycle-policy',
-  revision:'0.3-pendle-distinct-period-verification',
+  revision:'0.4-registry-wide-yieldbasis-admission',
   stageOrder:['discovery','shadow','verified','canonical'],
-  scope:{companyRegistry:'004',company:'defitea.eth',protocolIds:['defitea-fxn-vefxn','defitea-curve-vecrv','defitea-aerodrome-veaero','defitea-convex-vlcvx-votium','defitea-pendle-spendle']},
+  scope:{mode:'mixed-company-and-registry-wide-protocols',companyRegistry:'004',company:'defitea.eth',registryWideProtocolIds:['registry-yieldbasis-multimechanism'],protocolIds:['defitea-fxn-vefxn','defitea-curve-vecrv','defitea-aerodrome-veaero','defitea-convex-vlcvx-votium','defitea-pendle-spendle','registry-yieldbasis-multimechanism']},
   authority:{automaticStageEvaluation:true,automaticEvidencePromotion:true,automaticProtocolWidePromotion:true,promotionRuleMutationAuthority:false,repositoryMutationAuthority:false,workflowDispatchAuthority:false,executionAuthority:'none',capitalExecution:false,walletAuthority:false,allocationAuthority:false,recommendationAuthority:false,predictionAuthority:false,causalClaimAuthority:'none',methodologyMutationAuthority:false},
-  laws:{unknownIsNotZero:true,correlationIsNotCausation:true,longitudinalDepthRequiresDistinctNativePeriods:true},
+  laws:{unknownIsNotZero:true,correlationIsNotCausation:true,longitudinalDepthRequiresDistinctNativePeriods:true,protocolSensorsMaySpanMultipleCompaniesWithoutCollapsingMechanismSemantics:true},
   protocols:{
     'defitea-fxn-vefxn':{label:'f(x) / veFXN'},
     'defitea-curve-vecrv':{label:'Curve / veCRV'},
     'defitea-aerodrome-veaero':{label:'Aerodrome / veAERO',verifiedMinimumObservationCount:3},
     'defitea-convex-vlcvx-votium':{label:'Convex / vlCVX / Votium → Curve',verifiedMinimumObservationCount:2},
-    'defitea-pendle-spendle':{label:'Pendle / sPENDLE',verifiedMinimumValidatedPeriodCount:2,verifiedMinimumValidatedObservationCount:2}
+    'defitea-pendle-spendle':{label:'Pendle / sPENDLE',verifiedMinimumValidatedPeriodCount:2,verifiedMinimumValidatedObservationCount:2},
+    'registry-yieldbasis-multimechanism':{label:'Yield Basis / veYB + yb-LP',scope:'registry-wide-multi-company',verifiedMinimumDistinctSnapshotCount:2}
   }
 };
 
@@ -135,6 +159,35 @@ if(distinctSensor.validatedPeriodCount!==2||distinctSensor.validatedObservationC
 if(distinctProtocol.maturityStage!=='verified'||!distinctProtocol.automaticallyPromoted) throw new Error('Two distinct validated Pendle periods did not deterministically promote SHADOW → VERIFIED');
 if(!distinctProtocol.checks.find(x=>x.id==='validated-longitudinal-depth')?.pass) throw new Error('Pendle distinct-period gate did not close after second native period');
 if(distinctProtocol.longitudinalEvidence?.requiredValidatedPeriodCount!==2) throw new Error('Pendle required distinct-period depth missing');
+
+const yieldBasisBase=structuredClone(withPendleAccounting);
+const ybA1=yieldBasisProductivity({snapshotKey:'2026-W35',generatedAt:'2026-08-26T06:08:02.250Z'});
+const firstYieldBasis=applyYieldBasisLifecycle({state:structuredClone(yieldBasisBase),previousState:null,productivity:ybA1,productivitySha256:'e'.repeat(64),policy});
+const firstYbProtocol=firstYieldBasis.protocolLifecycle.protocols['registry-yieldbasis-multimechanism'];
+const firstYbSensor=firstYieldBasis.protocolSensors['registry-yieldbasis-multimechanism'];
+if(firstYieldBasis.protocolLifecycle.summary?.protocolCount!==6) throw new Error('Yield Basis did not become the sixth lifecycle sensor');
+if(firstYbProtocol?.maturityStage!=='shadow'||firstYbSensor?.validatedSnapshotCount!==1) throw new Error('First validated Yield Basis composite snapshot must remain SHADOW');
+if(!(firstYbSensor.latest.observation.mechanisms.ybWbtc.currentAprPct<0)&&!(firstYbSensor.latest.observation.mechanisms.ybWeth.currentAprPct<0)) throw new Error('Yield Basis signed negative FT APY semantics not exercised');
+if(!firstYbProtocol.checks.find(x=>x.id==='signed-return-semantics')?.pass) throw new Error('Yield Basis negative FT APY was not accepted as a valid signed economic return');
+if(!firstYbProtocol.checks.find(x=>x.id==='yb-wbtc-pps-formula-parity')?.pass||!firstYbProtocol.checks.find(x=>x.id==='yb-weth-pps-formula-parity')?.pass) throw new Error('Yield Basis LP PPS formula parity missing');
+if(firstYbProtocol.checks.find(x=>x.id==='veyb-revenue-apr-accounting-identity')?.pass) throw new Error('Yield Basis veYB revenue/APR accounting identity was falsely promoted');
+if(firstYieldBasis.protocolLifecycle.authority?.executionAuthority!=='none') throw new Error('Yield Basis expanded lifecycle execution authority');
+
+const ybA2=yieldBasisProductivity({snapshotKey:'2026-W35',generatedAt:'2026-08-27T06:08:02.250Z'});
+const repeatedYieldBasis=applyYieldBasisLifecycle({state:structuredClone(yieldBasisBase),previousState:firstYieldBasis,productivity:ybA2,productivitySha256:'f'.repeat(64),policy});
+const repeatedYbProtocol=repeatedYieldBasis.protocolLifecycle.protocols['registry-yieldbasis-multimechanism'];
+const repeatedYbSensor=repeatedYieldBasis.protocolSensors['registry-yieldbasis-multimechanism'];
+if(repeatedYbSensor.validatedObservationCount!==2||repeatedYbSensor.validatedSnapshotCount!==1) throw new Error('Repeated Yield Basis observations of one canonical snapshot manufactured longitudinal depth');
+if(repeatedYbProtocol.maturityStage!=='shadow'||repeatedYbProtocol.checks.find(x=>x.id==='distinct-snapshot-depth')?.pass) throw new Error('Repeated Yield Basis snapshot falsely promoted SHADOW → VERIFIED');
+
+const ybB=yieldBasisProductivity({snapshotKey:'2026-W36',generatedAt:'2026-09-02T06:08:02.250Z',veApr:5.12,wbtcApr:-0.2,wethApr:0.75});
+const secondYieldBasis=applyYieldBasisLifecycle({state:structuredClone(yieldBasisBase),previousState:repeatedYieldBasis,productivity:ybB,productivitySha256:'1'.repeat(64),policy});
+const secondYbProtocol=secondYieldBasis.protocolLifecycle.protocols['registry-yieldbasis-multimechanism'];
+const secondYbSensor=secondYieldBasis.protocolSensors['registry-yieldbasis-multimechanism'];
+if(secondYbSensor.validatedSnapshotCount!==2||secondYbSensor.validatedObservationCount!==3) throw new Error('Yield Basis distinct snapshot depth accounting mismatch');
+if(secondYbProtocol.maturityStage!=='verified'||!secondYbProtocol.automaticallyPromoted) throw new Error('Two distinct validated Yield Basis snapshots did not deterministically promote SHADOW → VERIFIED');
+if(!secondYbProtocol.checks.find(x=>x.id==='distinct-snapshot-depth')?.pass) throw new Error('Yield Basis distinct snapshot gate did not close');
+if(secondYbProtocol.maturityStage==='canonical') throw new Error('Yield Basis was over-promoted to CANONICAL without veYB accounting identity');
 
 const promoted=base();
 promoted.candidateCohorts['defitea-convex-vlcvx-votium'].deepEconomicEvidence.remainingUnknowns=[];
