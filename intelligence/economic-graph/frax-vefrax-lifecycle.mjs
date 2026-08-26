@@ -1,10 +1,14 @@
 #!/usr/bin/env node
 /**
- * The Holding · Frax registry-wide veFRAX lifecycle adapter v0.1
+ * The Holding · Frax registry-wide veFRAX lifecycle adapter v0.2
  *
  * Reuses the canonical Productivity Frax engine and its bounded snapshot history.
  * It intentionally separates current FRAX / veFRAX product identity from the
  * legacy-compatible official API field `core.vefxs.apr`.
+ *
+ * Weekly/canonical Productivity snapshots are useful observation history, but
+ * they are not Frax-native epoch proof. VERIFIED requires distinct native Frax
+ * periods with explicit period boundaries (or a future explicit nativePeriodId).
  *
  * This adapter does not infer Ethereum -> Fraxtal lock migration, legacy-gauge
  * sunset, revenue-share activation, or revenue -> veFRAX APR causality from a
@@ -18,13 +22,14 @@
 import crypto from 'node:crypto';
 
 export const FRAX_PROTOCOL_ID='registry-frax-vefrax';
-export const FRAX_SENSOR_VERSION='0.1-frax-registry-ve-lock-sensor';
+export const FRAX_SENSOR_VERSION='0.2-frax-native-period-gated-registry-sensor';
 const ENGINE_ID='frax_vefrax';
 const EXPECTED_PROTOCOL='Frax';
 const EXPECTED_PRINCIPAL='FRAX';
 const EXPECTED_SOURCE_TYPE='official-api';
 const EXPECTED_API='https://api.frax.finance/combineddata/';
 const LEGACY_API_PATH='core.vefxs.apr';
+const EXPECTED_NATIVE_CADENCE='epoch';
 const APR_TOLERANCE_PCT_POINTS=0.01;
 const MAX_OBSERVATIONS=1000;
 const MAX_TRANSITIONS=2000;
@@ -35,6 +40,7 @@ function round(value,digits=8){const n=Number(value);return Number.isFinite(n)?N
 function saneApr(value){return finite(value)&&Number(value)>=0&&Number(value)<=500;}
 function sha256Text(text){return crypto.createHash('sha256').update(text).digest('hex');}
 function stageRank(order,stage){return order.indexOf(stage);}
+function validIso(value){return Number.isFinite(Date.parse(String(value||'')));}
 function check(id,pass,stage,detail,evidenceClass='measured'){return{id,pass:Boolean(pass),stage,evidenceClass,detail};}
 function evidenceSummary(checks){return{
   total:checks.length,
@@ -67,7 +73,7 @@ function collectExposure(productivity){
   return {rows,companyKeys,companyCount:companyKeys.length,positionCount:rows.length};
 }
 
-function canonicalHistory(productivity,currentEngine){
+function canonicalSnapshotHistory(productivity,currentEngine){
   const rows=Array.isArray(productivity?.history?.engines?.[ENGINE_ID])?productivity.history.engines[ENGINE_ID]:[];
   const normalized=[];
   const seen=new Set();
@@ -79,6 +85,7 @@ function canonicalHistory(productivity,currentEngine){
     normalized.push({
       snapshotKey,
       aprPct:round(row.apr,6),
+      nativePeriodId:row?.nativePeriodId?String(row.nativePeriodId):null,
       periodStart:row?.periodStart||null,
       periodEnd:row?.periodEnd||null,
       sourceType:row.sourceType
@@ -100,12 +107,40 @@ function canonicalHistory(productivity,currentEngine){
   };
 }
 
+function nativePeriodEvidence(snapshotHistory){
+  const periods=[];
+  const seen=new Set();
+  for(const row of snapshotHistory?.rows||[]){
+    const explicitId=String(row?.nativePeriodId||'').trim();
+    const hasBounds=validIso(row?.periodStart)&&validIso(row?.periodEnd)&&Date.parse(row.periodEnd)>Date.parse(row.periodStart);
+    if(!explicitId&&!hasBounds)continue;
+    const periodKey=explicitId||`${row.periodStart}::${row.periodEnd}`;
+    if(seen.has(periodKey))continue;
+    seen.add(periodKey);
+    periods.push({
+      periodKey,
+      nativePeriodId:explicitId||null,
+      periodStart:hasBounds?row.periodStart:null,
+      periodEnd:hasBounds?row.periodEnd:null,
+      supportingSnapshotKey:row.snapshotKey,
+      aprPct:row.aprPct,
+      sourceType:row.sourceType
+    });
+  }
+  return {
+    periods,
+    periodKeys:periods.map(x=>x.periodKey),
+    distinctNativePeriodCount:periods.length
+  };
+}
+
 function stableObservationCore(observation){return{
   snapshotKey:observation.snapshotKey,
   currentAprPct:observation.referenceProductivity.currentAprPct,
   companyKeys:observation.registryExposure.companyKeys,
   legacyApiPath:observation.identityBoundary.legacyOfficialApiField,
-  historyKeys:observation.longitudinalEvidence.validatedSnapshotKeys,
+  snapshotKeys:observation.longitudinalEvidence.canonicalSnapshotKeys,
+  nativePeriodKeys:observation.longitudinalEvidence.validatedNativePeriodKeys,
   productivitySha256:observation.provenance.productivitySha256
 };}
 
@@ -117,14 +152,16 @@ export function buildFraxObservation({productivity,productivitySha256}){
   if(engine?.protocol!==EXPECTED_PROTOCOL)fail(`Frax protocol identity drift: ${engine?.protocol}`);
   if(engine?.principalSymbol!==EXPECTED_PRINCIPAL)fail(`Frax principal identity drift: ${engine?.principalSymbol}`);
   if(engine?.sourceType!==EXPECTED_SOURCE_TYPE)fail(`Frax source type drift: ${engine?.sourceType}`);
+  if(engine?.nativeCadence!==EXPECTED_NATIVE_CADENCE)fail(`Frax native cadence drift: ${engine?.nativeCadence}`);
   if(engine?.details?.path!==LEGACY_API_PATH)fail(`Frax official API field drift: ${engine?.details?.path}`);
   const sourceText=String(engine?.source||engine?.sourceApi||'');
   if(sourceText!==EXPECTED_API)fail(`Frax canonical official API source drift: ${sourceText||'missing'}`);
   const currentOk=engine?.status==='ok'&&saneApr(engine?.aprLatest);
   const exposure=collectExposure(productivity);
-  const history=canonicalHistory(productivity,engine);
+  const snapshots=canonicalSnapshotHistory(productivity,engine);
+  const nativePeriods=nativePeriodEvidence(snapshots);
   const observedAt=productivity?.generatedAt||engine?.lastUpdatedAt||engine?.periodEnd;
-  if(!Number.isFinite(Date.parse(observedAt||'')))fail('Frax observation timestamp invalid');
+  if(!validIso(observedAt))fail('Frax observation timestamp invalid');
 
   const observation={
     observedAt,
@@ -153,15 +190,18 @@ export function buildFraxObservation({productivity,productivitySha256}){
       stateClass:exposure.companyCount>=1?'measured-registry-wide-exposure':'no-measured-registry-exposure'
     },
     longitudinalEvidence:{
-      validatedSnapshotCount:history.distinctSnapshotCount,
-      validatedSnapshotKeys:history.snapshotKeys,
-      currentSnapshotKey:history.currentSnapshotKey,
-      currentSnapshotPresent:history.currentSnapshotPresent,
-      currentSnapshotAprPct:history.currentSnapshotAprPct,
-      currentAprParityDeltaPctPoints:history.currentAprParityDeltaPctPoints,
-      currentAprParityOk:history.currentAprParityOk,
-      snapshots:history.rows,
-      depthClass:'canonical-productivity-snapshot-history-not-native-epoch-proof'
+      canonicalSnapshotCount:snapshots.distinctSnapshotCount,
+      canonicalSnapshotKeys:snapshots.snapshotKeys,
+      currentSnapshotKey:snapshots.currentSnapshotKey,
+      currentSnapshotPresent:snapshots.currentSnapshotPresent,
+      currentSnapshotAprPct:snapshots.currentSnapshotAprPct,
+      currentAprParityDeltaPctPoints:snapshots.currentAprParityDeltaPctPoints,
+      currentAprParityOk:snapshots.currentAprParityOk,
+      canonicalSnapshots:snapshots.rows,
+      validatedNativePeriodCount:nativePeriods.distinctNativePeriodCount,
+      validatedNativePeriodKeys:nativePeriods.periodKeys,
+      validatedNativePeriods:nativePeriods.periods,
+      depthClass:nativePeriods.distinctNativePeriodCount>0?'explicit-native-frax-period-evidence':'canonical-productivity-snapshots-only-not-native-epoch-proof'
     },
     identityBoundary:{
       currentCanonicalPrincipal:'FRAX',
@@ -182,7 +222,8 @@ export function buildFraxObservation({productivity,productivitySha256}){
     epistemic:{
       observationClass:'registry-wide-protocol-economic-sensor',
       currentReferenceApr:currentOk?'MEASURED-official-api':'UNKNOWN-source-not-current',
-      longitudinalHistory:'MEASURED-canonical-productivity-snapshots',
+      canonicalSnapshotHistory:'MEASURED-canonical-productivity-snapshots',
+      nativeEpochHistory:nativePeriods.distinctNativePeriodCount>0?'MEASURED-explicit-native-period-boundaries':'UNKNOWN-no-explicit-native-period-boundaries',
       revenueToVeFraxAprCausality:'UNKNOWN-not-yet-proven-accounting-identity',
       ethereumFraxtalMigrationTopology:'UNKNOWN-not-yet-proven-by-canonical-evidence',
       legacyGaugeSunset:'UNKNOWN-not-yet-proven-by-canonical-evidence',
@@ -202,13 +243,14 @@ function buildMovement(current,prior){return{
   comparable:Boolean(prior),
   aprDeltaPctPoints:prior&&finite(current.referenceProductivity.currentAprPct)&&finite(prior.referenceProductivity?.currentAprPct)?round(Number(current.referenceProductivity.currentAprPct)-Number(prior.referenceProductivity.currentAprPct),6):null,
   companyCountDelta:prior?Number(current.registryExposure.companyCount)-Number(prior.registryExposure?.companyCount||0):null,
-  note:'Like-for-like Frax observations only. APR movement does not prove revenue, migration, gauge, or governance causality.'
+  note:'Like-for-like Frax observations only. APR movement does not prove revenue, migration, gauge, governance, or native-epoch causality.'
 };}
 
 export function applyFraxLifecycle({state,previousState,productivity,productivitySha256,policy}){
   if(!state||typeof state!=='object')fail('Frax lifecycle requires Economic Graph state');
   if(state?.authority?.executionAuthority!=='none'||state?.authority?.causalClaimAuthority!=='none')fail('Frax lifecycle refuses Economic Graph authority drift');
   if(!state?.protocolLifecycle||state.protocolLifecycle.authority?.executionAuthority!=='none')fail('Base Protocol Lifecycle must run before Frax adapter');
+  if(policy?.laws?.longitudinalDepthRequiresDistinctNativePeriods!==true)fail('Frax lifecycle requires global distinct-native-period law');
   const p=policy?.protocols?.[FRAX_PROTOCOL_ID];
   if(!p)fail('Frax lifecycle policy missing');
 
@@ -219,15 +261,18 @@ export function applyFraxLifecycle({state,previousState,productivity,productivit
   const observations=rows.slice(-MAX_OBSERVATIONS);
   const latest=observations.at(-1);
   const prior=[...observations].reverse().find(x=>x?.id!==latest?.id)||null;
-  const requiredSnapshotCount=Number(p.verifiedMinimumDistinctSnapshotCount||2);
-  const depth=Number(latest.longitudinalEvidence.validatedSnapshotCount||0);
+  const requiredNativePeriodCount=Number(p.verifiedMinimumDistinctNativePeriodCount||2);
+  const canonicalSnapshotCount=Number(latest.longitudinalEvidence.canonicalSnapshotCount||0);
+  const nativePeriodCount=Number(latest.longitudinalEvidence.validatedNativePeriodCount||0);
 
   const checks=[
     check('sensor-materialized',true,'shadow','Frax registry-wide sensor is materialized from canonical Productivity.','sensor-state'),
     check('official-api-current-apr',latest.referenceProductivity.stateClass==='measured-current-official-api'&&saneApr(latest.referenceProductivity.currentAprPct),'verified','Current Frax governance productivity APR is measured from the canonical official API path.','source-provenance'),
+    check('native-cadence-contract',latest.referenceProductivity.nativeCadence===EXPECTED_NATIVE_CADENCE,'verified','Canonical Frax Productivity declares native cadence as epoch.','source-semantics'),
     check('registry-exposure-breadth',Number(latest.registryExposure.companyCount)>=1&&Number(latest.registryExposure.positionCount)>=1,'verified','At least one registered company has a measured Frax ve-lock exposure; all current registry exposures are retained separately.','registry-topology'),
-    check('current-history-apr-parity',latest.longitudinalEvidence.currentSnapshotPresent===true&&latest.longitudinalEvidence.currentAprParityOk===true,'verified','Current Frax APR is represented in canonical Productivity history within 0.01 percentage points.','canonical-parity'),
-    check('distinct-canonical-snapshot-depth',depth>=requiredSnapshotCount,'verified',`At least ${requiredSnapshotCount} distinct canonical Productivity snapshots are retained. This proves longitudinal snapshot depth, not distinct native Frax epochs.`,'longitudinal-snapshot'),
+    check('current-history-apr-parity',latest.longitudinalEvidence.currentSnapshotPresent===true&&latest.longitudinalEvidence.currentAprParityOk===true,'verified','Current Frax APR is represented in canonical Productivity snapshot history within 0.01 percentage points.','canonical-parity'),
+    check('canonical-snapshot-history-support',canonicalSnapshotCount>=1,'shadow','Canonical Productivity snapshots provide bounded observation history but do not create native Frax epoch depth.','longitudinal-snapshot'),
+    check('distinct-native-frax-period-depth',nativePeriodCount>=requiredNativePeriodCount,'verified',`At least ${requiredNativePeriodCount} distinct Frax-native periods with explicit boundaries or IDs are required. Weekly Productivity snapshot keys never satisfy this gate by themselves.`,'longitudinal-native-period'),
     check('legacy-api-schema-boundary-preserved',latest.identityBoundary.currentCanonicalPrincipal==='FRAX'&&latest.identityBoundary.currentCanonicalVoteEscrowLabel==='veFRAX'&&latest.identityBoundary.legacyOfficialApiField===LEGACY_API_PATH,'verified','The legacy-compatible core.vefxs.apr API field is preserved as source schema evidence and is not promoted into current token identity authority.','epistemic-safety'),
     check('branding-migration-boundary-preserved',latest.identityBoundary.brandingDoesNotProveMigration===true&&latest.identityBoundary.ethereumToFraxtalLockMigrationState==='UNKNOWN-not-proven-by-canonical-productivity'&&latest.identityBoundary.legacyGaugeSunsetState==='UNKNOWN-not-proven-by-canonical-productivity','verified','FRAX/veFRAX naming does not prove Ethereum→Fraxtal migration completion or legacy gauge sunset.','epistemic-boundary'),
     check('causal-boundary-preserved',latest.epistemic.revenueToVeFraxAprCausality==='UNKNOWN-not-yet-proven-accounting-identity'&&latest.epistemic.protocolWidePrimaryDriver===null,'canonical','Unproven revenue → veFRAX APR causality remains UNKNOWN.','epistemic-boundary'),
@@ -235,7 +280,7 @@ export function applyFraxLifecycle({state,previousState,productivity,productivit
     check('frax-revenue-to-vefrax-apr-accounting-identity',false,'canonical','A complete reproducible Frax revenue → veFRAX distribution/APR accounting identity is not yet proven.','mechanism-proof')
   ];
 
-  const verifiedIds=['sensor-materialized','official-api-current-apr','registry-exposure-breadth','current-history-apr-parity','distinct-canonical-snapshot-depth','legacy-api-schema-boundary-preserved','branding-migration-boundary-preserved'];
+  const verifiedIds=['sensor-materialized','official-api-current-apr','native-cadence-contract','registry-exposure-breadth','current-history-apr-parity','distinct-native-frax-period-depth','legacy-api-schema-boundary-preserved','branding-migration-boundary-preserved'];
   const verifiedGate=verifiedIds.every(id=>checks.find(x=>x.id===id)?.pass);
   const canonicalGate=verifiedGate&&['causal-boundary-preserved','ethereum-fraxtal-lock-topology-reconciled','frax-revenue-to-vefrax-apr-accounting-identity'].every(id=>checks.find(x=>x.id===id)?.pass);
   const stage=canonicalGate?'canonical':(verifiedGate?'verified':'shadow');
@@ -257,21 +302,24 @@ export function applyFraxLifecycle({state,previousState,productivity,productivit
     scope:'registry-wide-multi-company-ve-lock',
     evidence:evidenceSummary(checks),
     longitudinalEvidence:{
-      validatedSnapshotCount:depth,
-      requiredValidatedSnapshotCount:requiredSnapshotCount,
-      validatedSnapshotKeys:latest.longitudinalEvidence.validatedSnapshotKeys,
+      canonicalSnapshotCount,
+      canonicalSnapshotKeys:latest.longitudinalEvidence.canonicalSnapshotKeys,
+      validatedNativePeriodCount:nativePeriodCount,
+      requiredValidatedNativePeriodCount:requiredNativePeriodCount,
+      validatedNativePeriodKeys:latest.longitudinalEvidence.validatedNativePeriodKeys,
       depthClass:latest.longitudinalEvidence.depthClass
     },
     checks,
     blockers:stage==='canonical'?[]:checks.filter(x=>!x.pass).map(x=>x.id),
     unknowns:[
+      nativePeriodCount>=requiredNativePeriodCount?null:'distinct Frax-native epoch depth is not yet proven by canonical evidence',
       'Ethereum → Fraxtal ve-lock migration topology remains UNKNOWN to this canonical sensor',
       'legacy gauge sunset remains UNKNOWN to this canonical sensor',
       'revenue-share distribution activation remains UNKNOWN to this canonical sensor',
       'complete Frax revenue → veFRAX distribution/APR accounting identity remains UNKNOWN',
       'why Frax reference APR changed remains UNKNOWN'
-    ],
-    epistemicBoundary:'Current FRAX / veFRAX identity is kept separate from the legacy-compatible official API field core.vefxs.apr. Branding, API schema names, migration completion, gauge sunset and revenue distribution are distinct facts and cannot prove one another.',
+    ].filter(Boolean),
+    epistemicBoundary:'Current FRAX / veFRAX identity is kept separate from the legacy-compatible official API field core.vefxs.apr. Weekly Productivity snapshots do not create native epoch depth. Branding, API schema names, migration completion, gauge sunset and revenue distribution are distinct facts and cannot prove one another.',
     priorMaturityStage:priorStage,
     transitionFingerprint:fingerprint
   };
@@ -284,8 +332,10 @@ export function applyFraxLifecycle({state,previousState,productivity,productivit
       identity:{protocol:'Frax',scope:'registry-wide-multi-company-ve-lock',principal:'FRAX',voteEscrow:'veFRAX',engineId:ENGINE_ID},
       latest:{observation:latest,movement:buildMovement(latest,prior)},
       observationCount:observations.length,
-      validatedSnapshotCount:depth,
-      validatedSnapshotKeys:latest.longitudinalEvidence.validatedSnapshotKeys,
+      canonicalSnapshotCount,
+      canonicalSnapshotKeys:latest.longitudinalEvidence.canonicalSnapshotKeys,
+      validatedNativePeriodCount:nativePeriodCount,
+      validatedNativePeriodKeys:latest.longitudinalEvidence.validatedNativePeriodKeys,
       observations,
       authority:{executionAuthority:'none',causalClaimAuthority:'none',recommendationAuthority:'none',predictionAuthority:'none'}
     }
@@ -303,6 +353,6 @@ export function applyFraxLifecycle({state,previousState,productivity,productivit
   const counts=Object.values(lifecycle.protocols).reduce((acc,row)=>{acc[row.maturityStage]=(acc[row.maturityStage]||0)+1;return acc;},{});
   lifecycle.summary={protocolCount:Object.keys(lifecycle.protocols).length,stageCounts:counts,automaticTransitionsRecorded:(lifecycle.transitions||[]).length};
   lifecycle.policyRevision=policy.revision||null;
-  lifecycle.nextProtocolTemplate='Protocol sensors may be company-scoped or registry-wide. Reuse canonical sensors first; preserve identity, migration, accounting and causal boundaries independently.';
+  lifecycle.nextProtocolTemplate='Protocol sensors may be company-scoped or registry-wide. Reuse canonical sensors first; preserve identity, native-period, migration, accounting and causal boundaries independently.';
   return state;
 }
