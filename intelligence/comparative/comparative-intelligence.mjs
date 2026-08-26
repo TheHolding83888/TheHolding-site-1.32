@@ -34,10 +34,16 @@ const capital = readJson(CAPITAL);
 const productivity = readJson(PRODUCTIVITY);
 const income = readJson(INCOME);
 
-if (capital.version !== '0.2-capital-state') throw new Error(`unexpected Capital State ${capital.version}`);
-if (productivity.version !== '1.15') throw new Error(`unexpected Productivity ${productivity.version}`);
+if (capital.version !== '0.3-capital-state') throw new Error(`unexpected Capital State ${capital.version}`);
+if (productivity.version !== '1.16') throw new Error(`unexpected Productivity ${productivity.version}`);
 if (income.version !== '0.1-income-performance-intelligence') throw new Error(`unexpected Income & Performance ${income.version}`);
 if (capital.network?.totalCapitalCoverage !== 1 || capital.network?.networkTvlStatus !== 'complete') throw new Error('Capital State not fully comparable');
+
+const registryCompanyCount = Number(capital.network?.registryCompanyCount);
+const completeCompanyCount = Number(capital.network?.totalCapitalCompleteCompanyCount);
+if (!Number.isInteger(registryCompanyCount) || registryCompanyCount < 1 || completeCompanyCount !== registryCompanyCount) {
+  throw new Error('Capital State registry completeness contract unavailable');
+}
 
 const capitalRows = (capital.companies || []).map(c => ({
   registry: c.registry,
@@ -47,13 +53,22 @@ const capitalRows = (capital.companies || []).map(c => ({
   totalCapitalComplete: c.totalCapitalComplete === true,
   capitalScope: c.capitalScope || null
 }));
-if (capitalRows.length !== 9 || capitalRows.some(r => !r.totalCapitalComplete)) throw new Error('capital ranking requires 9/9 complete companies');
+if (capitalRows.length !== registryCompanyCount || capitalRows.some(r => !r.totalCapitalComplete)) {
+  throw new Error(`capital ranking requires ${registryCompanyCount}/${registryCompanyCount} complete companies`);
+}
 const capitalRanking = rankDesc(capitalRows, 'capitalUsd');
+
+const stableCapitalNames = new Set(
+  capitalRows
+    .filter(c => c.capitalScope === 'stable-company-total-current-capital')
+    .map(c => c.name)
+);
 
 const productivityRows = [];
 for (const [name, p] of Object.entries(productivity.companies || {})) {
   const cap = capitalRows.find(c => c.name === name);
   if (!cap) throw new Error(`Productivity company missing from Capital State: ${name}`);
+  if (stableCapitalNames.has(name)) continue;
   if (p.status !== 'ok' || Number(p.coverage) !== 1 || p.aprScope !== 'full-productive-capital') continue;
   const productiveValueUsd = Number(p.productiveValue);
   const aprPct = Number(p.aprLatest);
@@ -70,7 +85,19 @@ for (const [name, p] of Object.entries(productivity.companies || {})) {
     aprScope: p.aprScope
   });
 }
-if (productivityRows.length !== 8) throw new Error(`expected 8 comparable general companies, got ${productivityRows.length}`);
+if (productivityRows.length < 1) throw new Error('no fully comparable general companies available');
+
+const rankedGeneralNames = new Set(productivityRows.map(r => r.name));
+const generalProductivityExclusions = [
+  ...[...stableCapitalNames].map(name => `${name} is excluded from this leaderboard because Stable Capital Reference APY is produced by a separate stable methodology/universe.`),
+  ...capitalRows
+    .filter(c => !stableCapitalNames.has(c.name) && !rankedGeneralNames.has(c.name))
+    .map(c => {
+      const p = productivity.companies?.[c.name];
+      if (!p) return `${c.name} is excluded because no canonical Productivity company state is available.`;
+      return `${c.name} is excluded because current Productivity is not fully comparable (status=${p.status ?? 'unknown'}, coverage=${p.coverage ?? 'unknown'}, aprScope=${p.aprScope ?? 'unknown'}).`;
+    })
+];
 
 const protocolRows = Object.values(productivity.engines || {})
   .filter(e => e.status === 'ok' && Number.isFinite(Number(e.aprLatest)))
@@ -100,13 +127,14 @@ if (Math.abs(incomeSum - Number(latest.incomeUsd)) > 0.00002) throw new Error('l
 
 const output = {
   version: '0.1-comparative-intelligence',
-  engineVersion: '0.1-comparability-first-ranking-engine',
+  engineVersion: '0.1.1-registry-derived-comparability',
   generatedAt: new Date().toISOString(),
   status: 'partial',
   purpose: 'Evidence-bound comparative layer that ranks only within explicitly comparable universes and preserves metric semantics, exclusions, provenance, and coverage.',
   semantics: {
     noUniversalLeaderboard: 'There is no single best company or protocol score. Capital scale, Reference Productivity, protocol Reference APR, and measured income contribution answer different questions.',
     comparabilityRule: 'A ranking is emitted only when metric definition, eligible universe, coverage and source methodology are explicit enough to reproduce it.',
+    registryRule: 'Capital ranking size is derived from canonical Capital State registry completeness; Productivity ranking eligibility is derived from current full-coverage Productivity semantics, with partial companies explicitly excluded.',
     aprRule: 'Reference APR is annualized productive capacity, not realised cash flow, embedded yield, claimable rewards or verified performance.',
     incomeRule: 'Latest measured income contribution is an observed checkpoint-interval attribution for Monetra only; it is not a calendar-day, MTD, or cross-company performance ranking.',
     zeroRule: 'Unknown or unsupported values are excluded, not ranked as zero.'
@@ -131,17 +159,17 @@ const output = {
       eligibleUniverse: 'all Registry companies with complete total-capital binding',
       eligibleCount: capitalRanking.length,
       networkTvlUsd: round(capital.network.networkTvlUsd),
-      coverageRule: 'requires 9/9 complete Capital State total-capital binding',
+      coverageRule: `requires ${registryCompanyCount}/${registryCompanyCount} complete Capital State total-capital binding`,
       exclusions: [],
       rows: capitalRanking
     },
     generalCompanyReferenceProductivity: {
       metric: 'capital-weighted-reference-apr-pct',
       rankingBasis: 'descending aprLatest within full-productive-capital methodology',
-      eligibleUniverse: 'general companies in canonical Productivity with status=ok, coverage=1 and aprScope=full-productive-capital',
+      eligibleUniverse: 'non-Stable-Capital Registry companies in canonical Productivity with status=ok, coverage=1 and aprScope=full-productive-capital',
       eligibleCount: productivityRows.length,
-      coverageRule: 'only 100% covered general-company productive universes are ranked',
-      exclusions: ['Monetra.eth is excluded from this leaderboard because Stable Capital Reference APY is produced by a separate stable methodology/universe.'],
+      coverageRule: 'only current 100%-covered full-productive-capital company states are ranked; partial/warming states remain explicitly excluded rather than coerced into the ranking',
+      exclusions: generalProductivityExclusions,
       byReferenceApr: rankDesc(productivityRows, 'referenceAprPct'),
       byProductiveCapital: rankDesc(productivityRows, 'productiveCapitalUsd'),
       byAnnualizedReferenceOutput: rankDesc(productivityRows, 'annualizedReferenceOutputUsd')
@@ -197,10 +225,11 @@ const output = {
 
 fs.mkdirSync(path.dirname(OUT), { recursive: true });
 fs.writeFileSync(OUT, JSON.stringify(output, null, 2) + '\n');
-console.log('Comparative Intelligence v0.1 built', {
+console.log('Comparative Intelligence v0.1.1 built', {
   networkTvlUsd: output.comparisons.companyCapitalScale.networkTvlUsd,
   companiesRanked: output.comparisons.companyCapitalScale.eligibleCount,
   generalCompaniesRanked: output.comparisons.generalCompanyReferenceProductivity.eligibleCount,
+  generalCompanyExclusions: output.comparisons.generalCompanyReferenceProductivity.exclusions.length,
   protocolEnginesRanked: output.comparisons.protocolReferenceApr.eligibleCount,
   monetraLatestProtocolsRanked: output.comparisons.monetraLatestMeasuredIncomeContribution.eligibleCount,
   executionAuthority: output.authority.executionAuthority
