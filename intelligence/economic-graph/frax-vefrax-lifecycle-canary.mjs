@@ -80,8 +80,10 @@ assert(policy.scope.registryWideProtocolIds.includes(FRAX_PROTOCOL_ID),'Policy d
 assert(policy.scope.protocolIds.includes(FRAX_PROTOCOL_ID),'Policy protocolIds missing Frax');
 assert(policy.authority.executionAuthority==='none','Policy execution authority regressed');
 assert(policy.laws.longitudinalDepthRequiresDistinctNativePeriods===true,'Global native-period lifecycle law missing');
+assert(policy.laws.nativePeriodLabelsAloneDoNotCreateDepth===true,'Native-period label safety law missing');
 assert(policy.laws.brandingChangeDoesNotProveMigrationCompletion===true,'Frax branding/migration law missing');
 assert(policy.laws.legacyApiSchemaDoesNotDefineCurrentTokenIdentity===true,'Frax legacy API identity law missing');
+assert(Number(policy.protocols?.[FRAX_PROTOCOL_ID]?.verifiedMinimumDistinctNativePeriodCount)===2,'Frax native-period verification minimum drift');
 
 const baseline=baseState();
 const weeklySnapshots=productivity({historyKeys:['2026-W32','2026-W33','2026-W34','2026-W35']});
@@ -100,6 +102,23 @@ assert(weeklySensor.canonicalSnapshotCount===4,'Canonical Frax snapshot support 
 assert(weeklySensor.validatedNativePeriodCount===0,'Weekly snapshots falsely manufactured native Frax periods');
 assert(weeklyOnly.protocolLifecycle.summary.protocolCount===8,'Frax SHADOW materialization must make protocolCount 8');
 
+const labelsOnlyProductivity=productivity({
+  historyKeys:['2026-W34','2026-W35'],
+  nativePeriodsBySnapshot:{
+    '2026-W34':{nativePeriodId:'frax-epoch-a'},
+    '2026-W35':{nativePeriodId:'frax-epoch-b'}
+  }
+});
+const labelsOnly=applyFraxLifecycle({
+  state:clone(baseline),
+  previousState:clone(weeklyOnly),
+  productivity:labelsOnlyProductivity,
+  productivitySha256:sha256(labelsOnlyProductivity),
+  policy
+});
+assert(labelsOnly.protocolSensors[FRAX_PROTOCOL_ID].validatedNativePeriodCount===0,'Native period labels without reproducible boundaries manufactured depth');
+assert(labelsOnly.protocolLifecycle.protocols[FRAX_PROTOCOL_ID].maturityStage==='shadow','Native period labels without boundaries falsely promoted Frax');
+
 const sameNativePeriod=productivity({
   historyKeys:['2026-W34','2026-W35'],
   nativePeriodsBySnapshot:{
@@ -109,7 +128,7 @@ const sameNativePeriod=productivity({
 });
 const repeatedNative=applyFraxLifecycle({
   state:clone(baseline),
-  previousState:clone(weeklyOnly),
+  previousState:clone(labelsOnly),
   productivity:sameNativePeriod,
   productivitySha256:sha256(sameNativePeriod),
   policy
