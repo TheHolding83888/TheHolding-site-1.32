@@ -41,6 +41,7 @@ const economicGraph = readJson(ECONOMIC_GRAPH);
 const economicGraphSha256 = sha256(ECONOMIC_GRAPH);
 
 if (comparative.version !== '0.1-comparative-intelligence') throw new Error('unexpected Comparative Intelligence version');
+if (comparative.engineVersion !== '0.1.1-registry-derived-comparability') throw new Error('Comparative Intelligence registry-derived engine required');
 if (income.version !== '0.1-income-performance-intelligence') throw new Error('unexpected Income & Performance version');
 if (economicGraph.version !== '0.1-economic-graph') throw new Error('unexpected Economic Graph version');
 if (economicGraph.engineVersion !== '0.2-defitea-fxn-curve-multi-cohort') throw new Error('Economic Graph multi-cohort engine required');
@@ -53,14 +54,28 @@ if (economicGraph.statusCompatibility?.deprecated !== true || economicGraph.stat
 if (economicGraph.authority?.readOnly !== true || economicGraph.authority?.executionAuthority !== 'none') throw new Error('Economic Graph authority regression');
 if (economicGraph.authority?.causalClaimAuthority !== 'none') throw new Error('Economic Graph causal authority regression');
 
-const capitalRows = comparative.comparisons?.companyCapitalScale?.rows || [];
+const capitalScale = comparative.comparisons?.companyCapitalScale;
+const capitalRows = capitalScale?.rows || [];
 const general = comparative.comparisons?.generalCompanyReferenceProductivity;
 const aprRows = general?.byReferenceApr || [];
 const outputRows = general?.byAnnualizedReferenceOutput || [];
 const productiveRows = general?.byProductiveCapital || [];
-const monetraRows = comparative.comparisons?.monetraLatestMeasuredIncomeContribution?.rows || [];
+const monetra = comparative.comparisons?.monetraLatestMeasuredIncomeContribution;
+const monetraRows = monetra?.rows || [];
 
-if (capitalRows.length !== 9 || aprRows.length !== 8 || outputRows.length !== 8 || monetraRows.length !== 8) {
+const capitalEligibleCount = Number(capitalScale?.eligibleCount);
+const generalEligibleCount = Number(general?.eligibleCount);
+const monetraEligibleCount = Number(monetra?.eligibleCount);
+if (
+  !Number.isInteger(capitalEligibleCount) || capitalEligibleCount < 1 ||
+  !Number.isInteger(generalEligibleCount) || generalEligibleCount < 1 ||
+  !Number.isInteger(monetraEligibleCount) || monetraEligibleCount < 1 ||
+  capitalRows.length !== capitalEligibleCount ||
+  aprRows.length !== generalEligibleCount ||
+  outputRows.length !== generalEligibleCount ||
+  productiveRows.length !== generalEligibleCount ||
+  monetraRows.length !== monetraEligibleCount
+) {
   throw new Error('required comparative universes unavailable');
 }
 
