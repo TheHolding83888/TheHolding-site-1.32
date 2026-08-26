@@ -1,13 +1,20 @@
 {
-  "version": "0.1-pr-run-supersession-controller",
+  "version": "0.2-pr-run-supersession-controller",
   "mode": "cancel-superseded-pull-request-runs-only",
-  "purpose": "Prevent obsolete pull-request workflow runs from consuming runner/concurrency capacity after a PR head moves, without cancelling production, current-head, scheduled, push, workflow_run or workflow_dispatch work.",
+  "purpose": "Prevent obsolete pull-request workflow runs from consuming runner/concurrency capacity after a PR head moves, without adding another pull_request fan-out consumer and without cancelling production, current-head, scheduled, push, workflow_run or workflow_dispatch work.",
+  "trigger": {
+    "primaryEvent": "workflow_run",
+    "upstreamCompletionOnly": true,
+    "manualRecoveryAllowed": true,
+    "addsPullRequestFanout": false
+  },
   "scope": {
-    "allowedEvent": "pull_request",
+    "cancellableRunEvent": "pull_request",
     "requiresSamePullRequestNumber": true,
     "requiresSameHeadBranch": true,
     "requiresDifferentHeadSha": true,
     "requiresNonCompletedStatus": true,
+    "requiresOpenPullRequest": true,
     "forbidMainHeadBranch": true,
     "currentHeadNeverCancelled": true,
     "productionRunsNeverCancelled": true
@@ -24,10 +31,11 @@
     "securityPolicyMutationAuthority": false
   },
   "safetyLaw": [
-    "A run is cancellable only when it belongs to the same pull request and same PR head branch, is a pull_request event, is not completed, and its head SHA differs from the current PR head SHA.",
+    "A run is cancellable only when it belongs to the same open pull request and same PR head branch, is a pull_request event, is not completed, and its head SHA differs from the current PR head SHA read from GitHub at execution time.",
     "Runs on main are never cancellable by this controller.",
     "Current-head runs are never cancellable by this controller.",
     "Production writers remain serialized by their own truth-plane concurrency contracts.",
+    "The controller is awakened by completion of existing global PR guards rather than by adding another pull_request workflow, so it must not increase pull-request fan-out debt.",
     "The controller reduces obsolete queue work; it does not weaken or skip any current-head domain check."
   ]
 }
