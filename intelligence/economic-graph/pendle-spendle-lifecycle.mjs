@@ -62,6 +62,12 @@ function stableObservationCore(observation){return{
   currentEffectiveSupply:observation.currentSupply.currentEffectiveSupply,
   productivitySha256:observation.provenance.productivitySha256
 };}
+function validatedPeriodKey(observation){
+  const r=observation?.referenceProductivity;
+  if(r?.currentPeriodValidated!==true||!finite(r?.currentAprPct))return null;
+  if(!r?.periodStart||!r?.periodEnd)return null;
+  return `${r.periodStart}::${r.periodEnd}`;
+}
 
 export function buildPendleProtocolObservation({productivity,productivitySha256}){
   if(!productivity||typeof productivity!=='object')fail('Pendle lifecycle requires Productivity state');
@@ -208,7 +214,11 @@ export function applyPendleSPendleLifecycle({state,previousState,productivity,pr
   const historicalMapping=Boolean(h.campaignCount>=3&&h.epochMap.offsetConsensus&&h.epochMap.exactAmountMatches>=3);
   const replicatedDenominator=Boolean(h.survivorReplication.replicated&&h.survivorReplication.validCampaigns>=Math.max(2,h.survivorReplication.minRequiredCampaigns||2)&&h.survivorReplication.supplyConsistencyOk);
   const supplyMeasured=Boolean(finite(s.currentEffectiveSupply)&&Number(s.currentEffectiveSupply)>0&&finite(s.totalStakedInSpendle)&&Number(s.totalStakedInSpendle)>0);
-  const validatedObservationCount=observations.filter(x=>x?.referenceProductivity?.currentPeriodValidated===true&&finite(x?.referenceProductivity?.currentAprPct)).length;
+  const validatedObservations=observations.filter(x=>validatedPeriodKey(x)!==null);
+  const validatedObservationCount=validatedObservations.length;
+  const validatedPeriodKeys=[...new Set(validatedObservations.map(validatedPeriodKey))];
+  const validatedPeriodCount=validatedPeriodKeys.length;
+  const requiredValidatedPeriodCount=Number(p.verifiedMinimumValidatedPeriodCount||p.verifiedMinimumValidatedObservationCount||2);
 
   const checks=[
     check('sensor-materialized',true,'shadow','Pendle protocol sensor is materialized from canonical Productivity.','sensor-state'),
@@ -219,7 +229,7 @@ export function applyPendleSPendleLifecycle({state,previousState,productivity,pr
     check('false-zero-fail-closed',r.falseZeroBlocked===true,'verified','Conflicting positive economic evidence cannot silently become a 0% Reference APR.','epistemic-safety'),
     check('current-supply-measured',supplyMeasured,'verified','Current direct + virtual sPENDLE effective supply context is measured.','onchain-state'),
     check('current-reference-apr-validated',r.currentPeriodValidated===true&&finite(r.currentAprPct),'verified','Latest completed sPENDLE period has passed the canonical current-period Reference APR gate.','current-period-validation'),
-    check('validated-longitudinal-depth',validatedObservationCount>=Number(p.verifiedMinimumValidatedObservationCount||2),'verified',`At least ${Number(p.verifiedMinimumValidatedObservationCount||2)} distinct validated current-period graph observations are retained.`,'longitudinal-observation'),
+    check('validated-longitudinal-depth',validatedPeriodCount>=requiredValidatedPeriodCount,'verified',`At least ${requiredValidatedPeriodCount} distinct validated 14-day sPENDLE periods are retained; repeated snapshots of one period count once.`,'longitudinal-period'),
     check('revenue-buyback-distribution-identity',false,'canonical','Protocol revenue → buyback → sPENDLE distribution identity is not yet promoted as a complete canonical accounting chain.','mechanism-proof')
   ];
   const verifiedIds=['sensor-materialized','company-position-measured','official-api-bound','historical-reward-calendar-mapped','onchain-survivor-denominator-replicated','false-zero-fail-closed','current-supply-measured','current-reference-apr-validated','validated-longitudinal-depth'];
@@ -242,6 +252,12 @@ export function applyPendleSPendleLifecycle({state,previousState,productivity,pr
     automaticallyPromoted:priorStage!==null&&stageRank(order,stage)>stageRank(order,priorStage),
     automaticallyRegressed:priorStage!==null&&stageRank(order,stage)<stageRank(order,priorStage),
     evidence:evidenceSummary(checks),
+    longitudinalEvidence:{
+      validatedObservationCount,
+      validatedPeriodCount,
+      requiredValidatedPeriodCount,
+      validatedPeriodKeys
+    },
     checks,
     blockers:stage==='canonical'?[]:checks.filter(x=>!x.pass).map(x=>x.id),
     unknowns:[
@@ -249,7 +265,7 @@ export function applyPendleSPendleLifecycle({state,previousState,productivity,pr
       'why protocol revenue, staking participation and buyback/distribution amounts change remains UNKNOWN beyond proven accounting links',
       'in-kind point airdrops remain outside Reference APR until independently normalizable'
     ],
-    epistemicBoundary:'Historical reward mapping and replicated denominator evidence do not by themselves prove current APR or upstream causality.',
+    epistemicBoundary:'Historical reward mapping and replicated denominator evidence do not by themselves prove current APR or upstream causality. Repeated observations of one validated period do not constitute longitudinal depth.',
     priorMaturityStage:priorStage,
     transitionFingerprint:fingerprint
   };
@@ -263,6 +279,8 @@ export function applyPendleSPendleLifecycle({state,previousState,productivity,pr
       latest:{observation:latest,movement:buildMovement(latest,prior)},
       observationCount:observations.length,
       validatedObservationCount,
+      validatedPeriodCount,
+      validatedPeriodKeys,
       observations,
       authority:{executionAuthority:'none',causalClaimAuthority:'none',recommendationAuthority:'none',predictionAuthority:'none'}
     }
