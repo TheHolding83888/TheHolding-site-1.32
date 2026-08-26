@@ -27,6 +27,7 @@ import { applyPendleSPendleLifecycle } from './pendle-spendle-lifecycle.mjs';
 import { applyPendleAccountingEvidence } from './pendle-spendle-accounting-evidence.mjs';
 import { applyYieldBasisLifecycle } from './yieldbasis-lifecycle.mjs';
 import { applyVelodromeLifecycle } from './ve-gauge-registry-lifecycle.mjs';
+import { applyAeroTransitionReadiness, AERO_TRANSITION_ID } from './aero-transition-readiness.mjs';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const OUT=process.env.ECONOMIC_GRAPH_FILE || path.join(ROOT,'intelligence/economic-graph/economic-graph.json');
@@ -120,7 +121,7 @@ export function buildCanonicalEconomicGraph({productivity,rewards,previousState,
     productivitySha256:sourceSha256,
     policy
   });
-  return applyVelodromeLifecycle({
+  const withVelodrome=applyVelodromeLifecycle({
     state:withYieldBasis,
     previousState,
     productivity,
@@ -129,6 +130,7 @@ export function buildCanonicalEconomicGraph({productivity,rewards,previousState,
     rewardsSha256,
     policy
   });
+  return applyAeroTransitionReadiness({state:withVelodrome});
 }
 
 async function main(){
@@ -156,6 +158,7 @@ async function main(){
   const yieldBasisLifecycle=state.protocolLifecycle?.protocols?.['registry-yieldbasis-multimechanism'];
   const velodrome=state.protocolSensors?.['registry-velodrome-vevelo']?.latest?.observation;
   const velodromeLifecycle=state.protocolLifecycle?.protocols?.['registry-velodrome-vevelo'];
+  const aeroTransition=state.protocolTransitions?.[AERO_TRANSITION_ID];
   const lifecycle=state.protocolLifecycle;
   console.log('ECONOMIC GRAPH canonical + lifecycle candidates PASS',{
     engineVersion:state.engineVersion,
@@ -200,6 +203,12 @@ async function main(){
     velodromeUniquePools:velodrome?.votePoolHistory?.uniquePoolCount,
     velodromeStage:velodromeLifecycle?.maturityStage,
     velodromeValidatedSnapshots:velodromeLifecycle?.longitudinalEvidence?.validatedSnapshotCount,
+    aeroTransitionStatus:aeroTransition?.status,
+    aeroPredecessorCount:aeroTransition?.predecessors?.length,
+    aeroSuccessorProtocol:aeroTransition?.successor?.protocol,
+    aeroSuccessorStakingForm:aeroTransition?.successor?.stakingForm,
+    aeroContinuousAllocation:aeroTransition?.announcedDynamics?.continuousAllocation,
+    aeroActivationReady:aeroTransition?.activation?.ready,
     lifecycleStages:Object.fromEntries(Object.entries(lifecycle?.protocols||{}).map(([id,p])=>[id,p.maturityStage])),
     lifecycleTransitions:lifecycle?.transitions?.length,
     promotionAuthority:state.candidateLayer?.promotionAuthority,
