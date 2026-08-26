@@ -4,17 +4,23 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "23 */6 * * *"
+  workflow_run:
+    workflows:
+      - "The Holding · Votium → Curve Gauge Flow"
+    types: [completed]
   push:
     branches: [main]
     paths:
-      - "intelligence/economic-graph/vlcvx-votium-curve-gauge-flow.json"
       - "intelligence/economic-graph/vlcvx-votium-curve-pool-context.mjs"
       - "scripts/verify-vlcvx-votium-curve-pool-context.mjs"
+      - "intelligence/economic-graph/vlcvx-votium-evidence-handoff-canary.mjs"
       - ".github/workflows/update-vlcvx-votium-curve-pool-context.yml"
   pull_request:
     paths:
       - "intelligence/economic-graph/vlcvx-votium-curve-pool-context.mjs"
       - "scripts/verify-vlcvx-votium-curve-pool-context.mjs"
+      - "intelligence/economic-graph/vlcvx-votium-evidence-handoff-canary.mjs"
+      - ".github/workflows/update-vlcvx-votium-curve-pool-context.yml"
 
 permissions:
   contents: write
@@ -25,6 +31,11 @@ concurrency:
 
 jobs:
   build:
+    if: >-
+      ${{
+        github.event_name != 'workflow_run' ||
+        (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+      }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -45,6 +56,8 @@ jobs:
           set -euo pipefail
           node --check intelligence/economic-graph/vlcvx-votium-curve-pool-context.mjs
           node --check scripts/verify-vlcvx-votium-curve-pool-context.mjs
+          node --check intelligence/economic-graph/vlcvx-votium-evidence-handoff-canary.mjs
+          node intelligence/economic-graph/vlcvx-votium-evidence-handoff-canary.mjs
           test -s intelligence/economic-graph/vlcvx-votium-curve-gauge-flow.json
           git diff --check
 
