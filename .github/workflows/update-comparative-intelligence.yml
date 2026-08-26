@@ -3,6 +3,11 @@ name: "The Holding · Comparative Intelligence"
 
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows:
+      - "The Holding Capital · Unified Refresh"
+      - "The Holding · Income & Performance Intelligence"
+    types: [completed]
   pull_request:
     paths:
       - "intelligence/comparative/**"
@@ -25,6 +30,11 @@ concurrency:
 
 jobs:
   build:
+    if: >-
+      ${{
+        github.event_name != 'workflow_run' ||
+        (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+      }}
     runs-on: ubuntu-latest
     timeout-minutes: 6
 
