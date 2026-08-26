@@ -47,26 +47,44 @@ function normalizeListItem(text) {
   return text.trim().replace(/^[-]\s*/, '').replace(/^['"]|['"]$/g, '').trim();
 }
 
-function actionFamilyFromChangedLine(line) {
-  const body = stripDiffPrefix(line);
-  const m = body.match(/^(?:-\s*)?uses:\s*([^@\s]+)@[^\s#]+(?:\s*#.*)?$/);
-  return m ? m[1] : null;
+function actionFromBody(body) {
+  const m = body.trim().match(/^(?:-\s*)?uses:\s*([^@\s]+)@([^\s#]+)(?:\s*#.*)?$/);
+  return m ? { family: m[1], spec: `${m[1]}@${m[2]}` } : null;
 }
 
-export function isCentralActionPinOnly(diff, allowedFamilies) {
+function actionFromChangedLine(line) {
+  return actionFromBody(stripDiffPrefix(line));
+}
+
+export function extractCentrallyProvenActionSpecs(text, allowedFamilies) {
+  if (typeof text !== 'string' || !text.trim()) return [];
+  const allowed = new Set(allowedFamilies || []);
+  const specs = new Set();
+  for (const line of text.split(/\r?\n/)) {
+    const action = actionFromBody(line.trim());
+    if (action && allowed.has(action.family)) specs.add(action.spec);
+  }
+  return [...specs].sort();
+}
+
+export function isCentralActionPinOnly(diff, allowedFamilies, centrallyProvenActionSpecs = []) {
   const lines = changedPayloadLines(diff);
   if (lines.length < 2) return false;
+  const allowed = new Set(allowedFamilies || []);
+  const proven = new Set(centrallyProvenActionSpecs || []);
   const removed = [];
   const added = [];
   for (const line of lines) {
-    const family = actionFamilyFromChangedLine(line);
-    if (!family || !allowedFamilies.includes(family)) return false;
-    if (line.startsWith('-')) removed.push(family);
-    else added.push(family);
+    const action = actionFromChangedLine(line);
+    if (!action || !allowed.has(action.family)) return false;
+    if (line.startsWith('-')) removed.push(action);
+    else added.push(action);
   }
-  removed.sort();
-  added.sort();
-  return removed.length > 0 && removed.length === added.length && removed.every((x, i) => x === added[i]);
+  removed.sort((a, b) => a.family.localeCompare(b.family));
+  added.sort((a, b) => a.family.localeCompare(b.family));
+  if (!removed.length || removed.length !== added.length) return false;
+  if (!removed.every((x, i) => x.family === added[i].family)) return false;
+  return added.every(x => proven.has(x.spec));
 }
 
 export function isSelfTriggerReductionOnly({ file, diff, baseText, headText }) {
@@ -86,7 +104,7 @@ export function isSelfTriggerReductionOnly({ file, diff, baseText, headText }) {
   return remainingDomainPaths.length > 0;
 }
 
-export function evaluateWorkflowDefinitionChange({ file, baseText, headText, diff, changedFiles, policy }) {
+export function evaluateWorkflowDefinitionChange({ file, baseText, headText, diff, changedFiles, policy, centrallyProvenActionSpecs = [] }) {
   if (baseText == null && headText != null) {
     const trigger = parsePullRequestTrigger(headText);
     const selfWake = wakesForChangedFiles(trigger, [file]);
@@ -107,8 +125,8 @@ export function evaluateWorkflowDefinitionChange({ file, baseText, headText, dif
     return { file, status: 'PASS', proof: 'workflow-self-verifier-wakes' };
   }
 
-  if (isCentralActionPinOnly(diff, policy.centrallyProvenActionFamilies || [])) {
-    return { file, status: 'PASS', proof: 'central-common-action-pin-canary' };
+  if (isCentralActionPinOnly(diff, policy.centrallyProvenActionFamilies || [], centrallyProvenActionSpecs)) {
+    return { file, status: 'PASS', proof: 'central-exact-action-pin-canary' };
   }
 
   if (isSelfTriggerReductionOnly({ file, diff, baseText, headText })) {
@@ -130,12 +148,26 @@ export function evaluateWorkflowDefinitionChange({ file, baseText, headText, dif
 }
 
 export function evaluateChanges({ baseSha, headSha, changedFiles, policy, reader = readAt, differ = diffAt }) {
+  const centralProofWorkflow = policy.centralProofWorkflow || '';
+  const centralProofText = centralProofWorkflow ? reader(headSha, centralProofWorkflow) : null;
+  const centrallyProvenActionSpecs = extractCentrallyProvenActionSpecs(
+    centralProofText,
+    policy.centrallyProvenActionFamilies || []
+  );
   const workflowFiles = changedFiles.filter(f => /^\.github\/workflows\/[^/]+\.ya?ml$/i.test(f)).sort();
   const results = workflowFiles.map(file => {
     const baseText = reader(baseSha, file);
     const headText = reader(headSha, file);
     const diff = differ(baseSha, headSha, file);
-    return evaluateWorkflowDefinitionChange({ file, baseText, headText, diff, changedFiles, policy });
+    return evaluateWorkflowDefinitionChange({
+      file,
+      baseText,
+      headText,
+      diff,
+      changedFiles,
+      policy,
+      centrallyProvenActionSpecs
+    });
   });
   return {
     version: policy.version,
@@ -143,6 +175,8 @@ export function evaluateChanges({ baseSha, headSha, changedFiles, policy, reader
     authority: policy.authority,
     baseSha,
     headSha,
+    centralProofWorkflow,
+    centrallyProvenActionSpecs,
     changedWorkflowCount: workflowFiles.length,
     passCount: results.filter(x => x.status === 'PASS').length,
     failCount: results.filter(x => x.status === 'FAIL').length,
@@ -163,6 +197,9 @@ function assertAuthority(policy) {
   for (const [key, value] of Object.entries(expected)) {
     if (policy.authority?.[key] !== value) throw new Error(`workflow definition guard authority expansion: ${key}`);
   }
+  if (!policy.centralProofWorkflow || !policy.centralProofWorkflow.startsWith('.github/workflows/')) {
+    throw new Error('workflow definition guard central proof workflow missing or invalid');
+  }
 }
 
 function main() {
@@ -177,6 +214,7 @@ function main() {
   if (process.argv.includes('--json')) console.log(JSON.stringify(report, null, 2));
   else {
     console.log(`Workflow Definition Diff Guard ${report.version}`);
+    console.log(`centralProof=${report.centralProofWorkflow} exactSpecs=${report.centrallyProvenActionSpecs.join(',') || '-'}`);
     for (const row of report.results) console.log(`${row.status}\t${row.file}\t${row.proof}`);
     console.log(`changed=${report.changedWorkflowCount} pass=${report.passCount} fail=${report.failCount}`);
   }
