@@ -1,7 +1,7 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-26T04:41:44.253Z",
+  "generatedAt": "2026-08-26T04:44:53.717Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
@@ -13,7 +13,7 @@
   },
   "source": {
     "filesScanned": 660,
-    "bytesScanned": 15908868,
+    "bytesScanned": 15908804,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -57,6 +57,22 @@
   "whatChanged": {
     "newFindings": [
       {
+        "id": "d340bea43cc85be20e384b2afa62c0345e009bcb42d5a15a9da28d07a13215f2",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/update-runtime-owner-activation.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/update-runtime-owner-activation.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "aa8b4173da2462c1b0285d80e00afbed8b248d1d6b2d264ae066ac1eadea42db",
+          "currentSha256": "a5f1506177cdd7d6a306d59c02393038d32b2c15fa930696cce4331f2ee5a677"
+        }
+      }
+    ],
+    "resolvedFindings": [
+      {
         "id": "a356bf329d8d765c4d3b3da7b8c7af77cd6871daada6ca24498fc63a6d771792",
         "severity": "medium",
         "category": "critical-surface-change",
@@ -68,22 +84,6 @@
         "evidence": {
           "previousSha256": "e62b332910027719de55d6a055cc87aba0b520cc48f447a83b2c50a185b42529",
           "currentSha256": "2585116c2757e276ea9f3e7470354edeec4d19239c4e08e018983f9a0ba0f118"
-        }
-      }
-    ],
-    "resolvedFindings": [
-      {
-        "id": "5dc51fa59be4c3a300978441452aab553ce83b0d9801122c4354e10a3afeedcd",
-        "severity": "medium",
-        "category": "critical-surface-change",
-        "file": ".github/workflows/verify-project-memory-bootstrap.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/verify-project-memory-bootstrap.yml.",
-        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-        "evidence": {
-          "previousSha256": "20e773fce2c6eaef588dc87f58eb39c28be8d32f1c51c69c9ea7368fa2c2bcd5",
-          "currentSha256": "0e6746df15a777bcea0a6420a8e4d83c2e6ee3734c995c95afd90389615eeca6"
         }
       }
     ]
@@ -112,17 +112,17 @@
       "evidence": null
     },
     {
-      "id": "a356bf329d8d765c4d3b3da7b8c7af77cd6871daada6ca24498fc63a6d771792",
+      "id": "d340bea43cc85be20e384b2afa62c0345e009bcb42d5a15a9da28d07a13215f2",
       "severity": "medium",
       "category": "critical-surface-change",
-      "file": ".github/workflows/runtime-reliability-observer.yml",
+      "file": ".github/workflows/update-runtime-owner-activation.yml",
       "line": null,
       "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/runtime-reliability-observer.yml.",
+      "summary": "Security-sensitive surface changed: .github/workflows/update-runtime-owner-activation.yml.",
       "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
       "evidence": {
-        "previousSha256": "e62b332910027719de55d6a055cc87aba0b520cc48f447a83b2c50a185b42529",
-        "currentSha256": "2585116c2757e276ea9f3e7470354edeec4d19239c4e08e018983f9a0ba0f118"
+        "previousSha256": "aa8b4173da2462c1b0285d80e00afbed8b248d1d6b2d264ae066ac1eadea42db",
+        "currentSha256": "a5f1506177cdd7d6a306d59c02393038d32b2c15fa930696cce4331f2ee5a677"
       }
     },
     {
@@ -736,12 +736,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "d6f59020fe47cf2b2bdfa64ba54156186ddd0bc67003b1d3eed6d7018488d3c4",
+    "snapshotHash": "5e7f873829110a250da3f52be295195514b514cb40cc8c2f7fc4de6e392c0ecd",
     "securityVault": {
-      "runCount": 528,
+      "runCount": 529,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-26T04-41-44-253Z-d6f59020fe.json",
-      "latestRecordHash": "651a34c5f5b27776c9a470443fb38ff46b1d8cf93961657e9a3465664501599e",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-26T04-44-53-717Z-5e7f873829.json",
+      "latestRecordHash": "4f6cd8b300b85f5b7b0a149526fd99357e3a673febcc4176bfc4762f0f342f6d",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
