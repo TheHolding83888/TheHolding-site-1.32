@@ -6,6 +6,7 @@ on:
   workflow_run:
     workflows:
       - "The Holding · Economic Graph"
+      - "The Holding · Comparative Intelligence"
     types: [completed]
   pull_request:
     paths:
@@ -58,6 +59,7 @@ jobs:
           set -euo pipefail
           test -s intelligence/explanatory/explanatory-context.mjs
           test -s intelligence/explanatory/vlcvx-votium-curve-shadow-context.mjs
+          test -s intelligence/explanatory/explanatory-handoff-canary.mjs
           test -s intelligence/comparative/comparative-intelligence.json
           test -s intelligence/income-performance/income-performance.json
           test -s intelligence/economic-graph/economic-graph.json
@@ -65,6 +67,8 @@ jobs:
           test -s intelligence/economic-graph/vlcvx-votium-deep-evidence.mjs
           node --check intelligence/explanatory/explanatory-context.mjs
           node --check intelligence/explanatory/vlcvx-votium-curve-shadow-context.mjs
+          node --check intelligence/explanatory/explanatory-handoff-canary.mjs
+          node intelligence/explanatory/explanatory-handoff-canary.mjs
           node --check intelligence/economic-graph/economic-graph-canonical-runner.mjs
           grep -q "multiCohortRule" intelligence/explanatory/explanatory-context.mjs
           grep -q "protocolAprChangeContexts" intelligence/explanatory/explanatory-context.mjs
