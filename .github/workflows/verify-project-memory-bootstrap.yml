@@ -34,6 +34,7 @@ jobs:
           test -s intelligence/project-memory/THE_HOLDING_OWNER_COLLABORATION_OPERATING_STYLE_2026-08-18.md
           test -s intelligence/project-memory/THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md
           test -s intelligence/project-memory/THE_HOLDING_MEMORY_ROUTING_INDEX_2026-08-18.md
+          test -s intelligence/project-memory/THE_HOLDING_MEMORY_ROUTING_INDEX_v2_2026-08-26.md
           test -s intelligence/project-memory/build-current-memory.mjs
           test -s intelligence/project-memory/verify-current-memory.mjs
           node --check intelligence/project-memory/build-current-memory.mjs
@@ -47,7 +48,7 @@ jobs:
           node intelligence/project-memory/verify-current-memory.mjs
           git diff --check
 
-      - name: Verify first-class routed resume order
+      - name: Verify minimum routed recovery packet
         shell: bash
         run: |
           set -euo pipefail
@@ -57,23 +58,29 @@ jobs:
 
           p = Path('intelligence/project-memory/CURRENT.md')
           text = p.read_text()
-          section = re.search(r'## Resume order\n\n(.*?)\n\n## Task-aware retrieval', text, re.S)
+          section = re.search(r'## Minimum recovery packet\n\n(.*?)\n\nFull Owner Collaboration', text, re.S)
           if not section:
-              raise SystemExit('Resume order section missing or not followed by Task-aware retrieval')
+              raise SystemExit('Minimum recovery packet section missing')
           lines = [x.strip() for x in section.group(1).splitlines() if x.strip()]
-          if len(lines) != 6:
-              raise SystemExit(f'Expected exactly 6 resume items, got {len(lines)}: {lines}')
+          if len(lines) != 3:
+              raise SystemExit(f'Expected exactly 3 recovery items, got {len(lines)}: {lines}')
           expected = [
               (1, 'THE_HOLDING_MASTER_CONTINUITY_'),
-              (2, 'Owner Collaboration Operating Style'),
-              (3, 'THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md'),
-              (4, 'Memory Routing Index'),
-              (5, 'Project Memory README'),
-              (6, 'Follow the Routing Index'),
+              (2, 'Memory Routing Index v2'),
+              (3, 'Follow the router'),
           ]
           for (n, needle), line in zip(expected, lines):
               if not line.startswith(f'{n}. ') or needle not in line:
-                  raise SystemExit(f'Resume item {n} mismatch: {line}')
+                  raise SystemExit(f'Recovery item {n} mismatch: {line}')
+
+          forbidden = [
+              'Owner Collaboration Operating Style',
+              'THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md',
+              'Project Memory README',
+          ]
+          for needle in forbidden:
+              if needle in section.group(1):
+                  raise SystemExit(f'Cold document leaked into hot recovery packet: {needle}')
 
           routed = re.search(r'## Task-aware retrieval\n\n(.*?)\n\n## Owner collaboration bootstrap', text, re.S)
           if not routed:
@@ -87,7 +94,7 @@ jobs:
           for needle in required:
               if needle not in routed_text:
                   raise SystemExit(f'Task-aware retrieval contract missing: {needle}')
-          print('First-class routed CURRENT resume order PASS')
+          print('Minimum routed CURRENT recovery packet PASS')
           PY
 
       - name: Verify generated mutation boundary
