@@ -1,7 +1,7 @@
 {
   "version": "0.1-economic-graph",
   "engineVersion": "0.2-defitea-fxn-curve-multi-cohort",
-  "generatedAt": "2026-08-26T09:44:52.613Z",
+  "generatedAt": "2026-08-26T09:58:20.991Z",
   "status": "partial-first-cohort",
   "statusCompatibility": {
     "deprecated": true,
@@ -3856,7 +3856,7 @@
   "protocolLifecycle": {
     "version": "0.1-protocol-intelligence-lifecycle",
     "policyVersion": "0.1-protocol-intelligence-lifecycle-policy",
-    "generatedAt": "2026-08-26T09:44:52.613Z",
+    "generatedAt": "2026-08-26T09:58:20.991Z",
     "status": "active",
     "stageOrder": [
       "discovery",
@@ -3902,6 +3902,7 @@
       "stageTransitionsAreDeterministic": true,
       "stageRegressionIsAllowedWhenEvidenceRegresses": true,
       "historyIsAppendOnlyByTransitionFingerprint": true,
+      "longitudinalDepthRequiresDistinctNativePeriods": true,
       "protocolWideCanonicalDoesNotEraseUnknownEdges": true
     },
     "summary": {
@@ -4239,6 +4240,12 @@
           "verifiedAtoms": 4,
           "shadowAtoms": 3
         },
+        "longitudinalEvidence": {
+          "validatedObservationCount": 0,
+          "validatedPeriodCount": 0,
+          "requiredValidatedPeriodCount": 2,
+          "validatedPeriodKeys": []
+        },
         "checks": [
           {
             "id": "sensor-materialized",
@@ -4300,8 +4307,8 @@
             "id": "validated-longitudinal-depth",
             "pass": false,
             "stage": "verified",
-            "evidenceClass": "longitudinal-observation",
-            "detail": "At least 2 distinct validated current-period graph observations are retained."
+            "evidenceClass": "longitudinal-period",
+            "detail": "At least 2 distinct validated 14-day sPENDLE periods are retained; repeated snapshots of one period count once."
           },
           {
             "id": "revenue-buyback-distribution-identity",
@@ -4321,14 +4328,14 @@
           "why protocol revenue, staking participation and buyback/distribution amounts change remains UNKNOWN beyond proven accounting links",
           "in-kind point airdrops remain outside Reference APR until independently normalizable"
         ],
-        "epistemicBoundary": "Historical reward mapping and replicated denominator evidence do not by themselves prove current APR or upstream causality.",
+        "epistemicBoundary": "Historical reward mapping and replicated denominator evidence do not by themselves prove current APR or upstream causality. Repeated observations of one validated period do not constitute longitudinal depth.",
         "priorMaturityStage": "shadow",
         "transitionFingerprint": null
       }
     },
     "transitions": [],
     "nextProtocolTemplate": "New protocols reuse canonical sensors first, then enter the same evidence lifecycle; add only true mechanism deltas.",
-    "policyRevision": "0.2-pendle-spendle-admission"
+    "policyRevision": "0.3-pendle-distinct-period-verification"
   },
   "protocolSensors": {
     "defitea-pendle-spendle": {
@@ -4439,6 +4446,8 @@
       },
       "observationCount": 2,
       "validatedObservationCount": 0,
+      "validatedPeriodCount": 0,
+      "validatedPeriodKeys": [],
       "observations": [
         {
           "observedAt": "2026-08-26T06:07:04.958Z",
