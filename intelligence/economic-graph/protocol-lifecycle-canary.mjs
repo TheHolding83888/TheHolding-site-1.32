@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { applyProtocolLifecycle } from './protocol-lifecycle.mjs';
+import { applyPendleSPendleLifecycle } from './pendle-spendle-lifecycle.mjs';
 
 function base(){
   return {
@@ -18,17 +19,39 @@ function base(){
     }
   };
 }
+function pendleProductivity(){return{
+  generatedAt:'2026-08-25T18:00:00.000Z',
+  engines:{
+    pendle_spendle:{
+      protocol:'Pendle',sourceUrl:'https://api-v2.pendle.finance/core/v1/spendle/data',nativeCadence:'14d',
+      status:'warming',aprLatest:null,lastUpdatedAt:'2026-08-25T18:00:00.000Z',periodStart:'2026-08-11T00:00:00.000Z',periodEnd:'2026-08-25T00:00:00.000Z',
+      details:{
+        historyCount:12,publishedApr:0,revenue:282160,buybackAmount:0,selectionRule:'zero-apr-positive-reward-survivor-cluster-not-yet-replicated',mappedMerkleCampaign:null,
+        research:{
+          campaignCount:8,
+          epochMap:{pairCount:8,exactAmountMatches:8,offsetConsensus:true,offsetSeconds:259200,offsetDays:3,maxOffsetDeviationSeconds:0},
+          survivorReplication:{replicated:true,validCampaigns:3,minRequiredCampaigns:2,minClusterSize:30,minClusterDensity:0.25,maxSpreadBps:75,maxSupplyDeviationPct:5,observedSupplyMedian:225738672,observedMaxSupplyDeviationPct:2.35,supplyConsistencyOk:true},
+          rewardScope:'sPENDLE buyback distribution only',denominatorPolicy:'replicated survivor reconstruction'
+        },
+        currentSupply:{observedAt:1787724445,periodEnd:'2026-08-25T18:00:00.000Z',totalPendleStaked:97877709,totalStakedInSpendle:34101709,virtualSpendleFromVependle:181929666,currentEffectiveSupply:216031375}
+      }
+    }
+  },
+  companies:{'defitea.eth':{breakdown:[{engineId:'pendle_spendle',units:500,value:872.53,apr:null,engineStatus:'warming'}]}}
+};}
 const policy={
   version:'0.1-protocol-intelligence-lifecycle-policy',
+  revision:'0.2-pendle-spendle-admission',
   stageOrder:['discovery','shadow','verified','canonical'],
-  scope:{companyRegistry:'004',company:'defitea.eth',protocolIds:['defitea-fxn-vefxn','defitea-curve-vecrv','defitea-aerodrome-veaero','defitea-convex-vlcvx-votium']},
+  scope:{companyRegistry:'004',company:'defitea.eth',protocolIds:['defitea-fxn-vefxn','defitea-curve-vecrv','defitea-aerodrome-veaero','defitea-convex-vlcvx-votium','defitea-pendle-spendle']},
   authority:{automaticStageEvaluation:true,automaticEvidencePromotion:true,automaticProtocolWidePromotion:true,promotionRuleMutationAuthority:false,repositoryMutationAuthority:false,workflowDispatchAuthority:false,executionAuthority:'none',capitalExecution:false,walletAuthority:false,allocationAuthority:false,recommendationAuthority:false,predictionAuthority:false,causalClaimAuthority:'none',methodologyMutationAuthority:false},
   laws:{unknownIsNotZero:true,correlationIsNotCausation:true},
   protocols:{
     'defitea-fxn-vefxn':{label:'f(x) / veFXN'},
     'defitea-curve-vecrv':{label:'Curve / veCRV'},
     'defitea-aerodrome-veaero':{label:'Aerodrome / veAERO',verifiedMinimumObservationCount:3},
-    'defitea-convex-vlcvx-votium':{label:'Convex / vlCVX / Votium → Curve',verifiedMinimumObservationCount:2}
+    'defitea-convex-vlcvx-votium':{label:'Convex / vlCVX / Votium → Curve',verifiedMinimumObservationCount:2},
+    'defitea-pendle-spendle':{label:'Pendle / sPENDLE',verifiedMinimumValidatedObservationCount:2}
   }
 };
 
@@ -44,6 +67,14 @@ const initial=applyProtocolLifecycle({state:base(),previousState:null,root,polic
 if(initial.protocolLifecycle.protocols['defitea-aerodrome-veaero'].maturityStage!=='verified') throw new Error('Aerodrome must be VERIFIED until pool-volume context closes');
 if(initial.protocolLifecycle.protocols['defitea-convex-vlcvx-votium'].maturityStage!=='verified') throw new Error('vlCVX must be VERIFIED until aligned longitudinal response closes');
 if(initial.protocolLifecycle.protocols['defitea-fxn-vefxn'].maturityStage!=='canonical'||initial.protocolLifecycle.protocols['defitea-curve-vecrv'].maturityStage!=='canonical') throw new Error('Existing canonical cohorts regressed');
+
+const withPendle=applyPendleSPendleLifecycle({state:initial,previousState:null,productivity:pendleProductivity(),productivitySha256:'a'.repeat(64),policy});
+const pendle=withPendle.protocolLifecycle.protocols['defitea-pendle-spendle'];
+if(pendle?.maturityStage!=='shadow') throw new Error(`Pendle warming sensor must enter SHADOW, got ${pendle?.maturityStage}`);
+if(!withPendle.protocolSensors?.['defitea-pendle-spendle']||withPendle.protocolLifecycle.summary?.protocolCount!==5) throw new Error('Pendle sensor/lifecycle registry not materialized');
+if(!pendle.checks.find(x=>x.id==='false-zero-fail-closed')?.pass) throw new Error('Pendle false-zero fail-closed gate regressed');
+if(pendle.checks.find(x=>x.id==='current-reference-apr-validated')?.pass) throw new Error('Pendle warming current APR was over-promoted');
+if(withPendle.protocolLifecycle.authority?.executionAuthority!=='none') throw new Error('Pendle expanded lifecycle execution authority');
 
 const promoted=base();
 promoted.candidateCohorts['defitea-convex-vlcvx-votium'].deepEconomicEvidence.remainingUnknowns=[];

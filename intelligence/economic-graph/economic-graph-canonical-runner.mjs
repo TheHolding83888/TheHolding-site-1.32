@@ -7,8 +7,8 @@
  * Productivity publication and downstream Graph publication.
  *
  * The canonical f(x) + Curve surface remains unchanged while bounded protocol
- * candidates may be attached in shadow mode before downstream promotion.
- * Protocol Intelligence Lifecycle evaluates those existing evidence surfaces
+ * candidates/sensors may be attached before downstream promotion. Protocol
+ * Intelligence Lifecycle evaluates those existing evidence surfaces
  * deterministically without adding a collector, writer or execution authority.
  * No execution, recommendation, allocation or methodology-mutation authority.
  */
@@ -23,12 +23,14 @@ import { applyAerodromeCandidate } from './aerodrome-veaero-candidate.mjs';
 import { applyVlCvxVotiumCandidate } from './vlcvx-votium-candidate.mjs';
 import { applyVlCvxVotiumDeepEvidence } from './vlcvx-votium-deep-evidence.mjs';
 import { applyProtocolLifecycle } from './protocol-lifecycle.mjs';
+import { applyPendleSPendleLifecycle } from './pendle-spendle-lifecycle.mjs';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const OUT=process.env.ECONOMIC_GRAPH_FILE || path.join(ROOT,'intelligence/economic-graph/economic-graph.json');
 const PRODUCTIVITY=process.env.PRODUCTIVITY_DATA_FILE || path.join(ROOT,'companies/productivity-data.json');
 const REWARDS=process.env.REWARDS_DATA_FILE || path.join(ROOT,'companies/rewards-data.json');
 const PRODUCTIVITY_ENGINE=path.join(ROOT,'productivity/productivity-engine.mjs');
+const PROTOCOL_LIFECYCLE_POLICY=path.join(ROOT,'intelligence/economic-graph/protocol-lifecycle-policy.json');
 const APR_PARITY_TOLERANCE_PCT_POINTS=0.01;
 
 function readJson(file,required=true){
@@ -98,7 +100,14 @@ export function buildCanonicalEconomicGraph({productivity,rewards,previousState,
     rewardsSha256
   });
   const withDeepEvidence=applyVlCvxVotiumDeepEvidence({state:withVlCvx,root:ROOT});
-  return applyProtocolLifecycle({state:withDeepEvidence,previousState,root:ROOT});
+  const withLifecycle=applyProtocolLifecycle({state:withDeepEvidence,previousState,root:ROOT});
+  return applyPendleSPendleLifecycle({
+    state:withLifecycle,
+    previousState,
+    productivity,
+    productivitySha256:sourceSha256,
+    policy:readJson(PROTOCOL_LIFECYCLE_POLICY)
+  });
 }
 
 async function main(){
@@ -120,6 +129,7 @@ async function main(){
   const aero=state.candidateCohorts?.['defitea-aerodrome-veaero']?.latest?.observation;
   const vlcvx=state.candidateCohorts?.['defitea-convex-vlcvx-votium']?.latest?.observation;
   const vlcvxDeep=state.candidateCohorts?.['defitea-convex-vlcvx-votium']?.deepEconomicEvidence;
+  const pendle=state.protocolSensors?.['defitea-pendle-spendle']?.latest?.observation;
   const lifecycle=state.protocolLifecycle;
   console.log('ECONOMIC GRAPH canonical + lifecycle candidates PASS',{
     engineVersion:state.engineVersion,
@@ -140,6 +150,10 @@ async function main(){
     vlCvxCurveExecutedGaugeRows:vlcvxDeep?.coverage?.curveExecutedVotiumGaugeRows,
     vlCvxCurrentPoolContexts:vlcvxDeep?.coverage?.currentCurvePoolContextsComplete,
     vlCvxCausalAuthority:vlcvxDeep?.authority?.causalClaimAuthority,
+    pendleCurrentAprPct:pendle?.referenceProductivity?.currentAprPct,
+    pendleCurrentStatus:pendle?.referenceProductivity?.status,
+    pendleHistoricalCampaigns:pendle?.historicalMechanismEvidence?.campaignCount,
+    pendleSurvivorReplicated:pendle?.historicalMechanismEvidence?.survivorReplication?.replicated,
     lifecycleStages:Object.fromEntries(Object.entries(lifecycle?.protocols||{}).map(([id,p])=>[id,p.maturityStage])),
     lifecycleTransitions:lifecycle?.transitions?.length,
     promotionAuthority:state.candidateLayer?.promotionAuthority,
