@@ -1,6 +1,6 @@
 # The Holding Brain — Grounded Reasoning Brief
 
-Generated: 2026-08-25T10:55:17.895Z
+Generated: 2026-08-26T06:29:50.042Z
 Mode: delta
 Status: watch
 
@@ -13,7 +13,7 @@ Current canonical inputs contain 15 material Observer change(s), 0 new security 
 
 #### defitea.eth · f(x) · veFXN Locker
 - Cohort ID: defitea-fxn-vefxn
-- Canonical APR: 21.05%
+- Canonical APR: 20.99%
 - Context status: context-available-causal-attribution-unresolved
 - Mechanical attribution: not proven
 - Causal attribution: unresolved
@@ -21,7 +21,7 @@ Current canonical inputs contain 15 material Observer change(s), 0 new security 
 
 #### defitea.eth · Curve · veCRV Fee Distributor
 - Cohort ID: defitea-curve-vecrv
-- Canonical APR: 1.6318%
+- Canonical APR: 1.7142%
 - Context status: mechanics-proven-upstream-cause-unresolved
 - Mechanical attribution: proven-within-apr-formula
 - Causal attribution: unresolved-beyond-formula
@@ -235,3 +235,13 @@ This layer does not execute capital actions, mutate methodology, rewrite source 
 Measured protocol-economic context remains context until a protocol-specific formula or onchain accounting identity proves causation.
 A proven mechanical identity never authorizes an unsupported upstream causal narrative.
 Every reasoning case is evidence-bound and proposal-only.
+### Shadow cross-protocol flow context · vlCVX / Votium → Curve
+- Context ID: defitea-convex-vlcvx-votium
+- Canonical cohort: no — shadow candidate only
+- Votium→Convex vote match: 79/79
+- Votium→Curve executed gauge rows: 79/79
+- Current eligible Curve pool contexts: 31/31
+- Exact pool fee USD: UNKNOWN under selected official endpoints
+- Proven relation: vote → executed Curve gauge BPS (mechanical)
+- Unproven relations: incentive → vote; historical vote → current pool outcome
+- Execution / causal / promotion authority: none

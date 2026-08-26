@@ -1,7 +1,7 @@
 {
   "version": "0.1-grounded-reasoning-gateway",
   "reasonerVersion": "0.1-deterministic-evidence-bound-reasoner",
-  "generatedAt": "2026-08-25T10:55:17.895Z",
+  "generatedAt": "2026-08-26T06:29:50.042Z",
   "mode": "delta",
   "status": "watch",
   "headline": "25 evidence-bound reasoning case(s) are active across economic and security memory.",
@@ -26,11 +26,11 @@
       "protocol": "f(x)",
       "mechanism": "veFXN Locker",
       "asset": "FXN",
-      "canonicalAprPct": 21.05,
-      "aprDeltaFromPriorGraphObservationPctPoints": -0.14,
+      "canonicalAprPct": 20.99,
+      "aprDeltaFromPriorGraphObservationPctPoints": -0.02,
       "causalAttribution": "unresolved",
       "primaryDriver": null,
-      "sourceObservationId": "fxn-locker:2026-08-25:d366936541c2aaf69537",
+      "sourceObservationId": "fxn-locker:2026-08-26:a5e223cf3d58cf4e41f4",
       "legacyAliasCohortId": "defitea-fxn-vefxn",
       "cohortCount": 2,
       "activeCohortIds": [
@@ -46,12 +46,12 @@
           "protocol": "f(x)",
           "mechanism": "veFXN Locker",
           "asset": "FXN",
-          "canonicalAprPct": 21.05,
-          "aprDeltaFromPriorGraphObservationPctPoints": -0.14,
+          "canonicalAprPct": 20.99,
+          "aprDeltaFromPriorGraphObservationPctPoints": -0.02,
           "mechanicalAttribution": null,
           "causalAttribution": "unresolved",
           "primaryDriver": null,
-          "sourceObservationId": "fxn-locker:2026-08-25:d366936541c2aaf69537"
+          "sourceObservationId": "fxn-locker:2026-08-26:a5e223cf3d58cf4e41f4"
         },
         "defitea-curve-vecrv": {
           "cohortId": "defitea-curve-vecrv",
@@ -61,12 +61,12 @@
           "protocol": "Curve",
           "mechanism": "veCRV Fee Distributor",
           "asset": "CRV",
-          "canonicalAprPct": 1.6318,
-          "aprDeltaFromPriorGraphObservationPctPoints": -0.0421,
+          "canonicalAprPct": 1.7142,
+          "aprDeltaFromPriorGraphObservationPctPoints": -0.013,
           "mechanicalAttribution": "proven-within-apr-formula",
           "causalAttribution": "unresolved-beyond-formula",
           "primaryDriver": null,
-          "sourceObservationId": "curve-vecrv:2026-08-25:f7a3020f34dc411fa989"
+          "sourceObservationId": "curve-vecrv:2026-08-26:ec9f716a086ea11fc07a"
         }
       }
     },
@@ -77,11 +77,35 @@
       "medium": 38,
       "newFindingEvents": 0,
       "resolvedFindingEvents": 1
+    },
+    "protocolFlows": {
+      "status": "shadow-context-available-causality-unresolved",
+      "contextCount": 1,
+      "activeContextIds": [
+        "defitea-convex-vlcvx-votium"
+      ],
+      "contexts": {
+        "defitea-convex-vlcvx-votium": {
+          "status": "shadow-cross-protocol-context-answerable-causality-unresolved",
+          "companyRegistry": "004",
+          "company": "defitea.eth",
+          "protocolStack": [
+            "Convex",
+            "Votium",
+            "Curve"
+          ],
+          "mechanicalExecution": "proven",
+          "currentPoolContext": "complete-for-all-currently-eligible-mapped-gauges",
+          "exactFeeUsd": "UNKNOWN",
+          "primaryDriver": null,
+          "causalAttribution": "unresolved-beyond-proven-mechanical-execution"
+        }
+      }
     }
   },
   "questions": {
     "whatChanged": {
-      "answer": "Current canonical inputs contain 15 material Observer change(s), 0 new security finding event(s), and 1 resolved security finding event(s). Canonical protocol-economic context is available across 2 cohorts (f(x) veFXN Locker; Curve veCRV Fee Distributor). f(x) remains measured context with unresolved causality; Curve exposes a proven APR mechanical identity while the upstream cause of fee-distribution changes remains unresolved.",
+      "answer": "Current canonical inputs contain 15 material Observer change(s), 0 new security finding event(s), and 1 resolved security finding event(s). Canonical protocol-economic context is available across 2 cohorts (f(x) veFXN Locker; Curve veCRV Fee Distributor). f(x) remains measured context with unresolved causality; Curve exposes a proven APR mechanical identity while the upstream cause of fee-distribution changes remains unresolved. Shadow vlCVX/Votium evidence additionally proves 79/79 post-migration vote matching, 79/79 Curve gauge execution rows, and complete current pool context for 31/31 currently eligible mapped Curve gauges; causality beyond mechanical execution remains unresolved.",
       "confidence": "high",
       "evidence": [
         {
@@ -341,7 +365,7 @@
             "newFindings": [],
             "resolvedFindings": [
               {
-                "id": "4dbb892a1d566aed7ce348d16f1bb9196d221c7e6fe8a61c9b0079015929017b",
+                "id": "d226e90ce12c324a751d089e9e21aa7f3494070603c18e7a12ba10f02ad20d7a",
                 "severity": "medium",
                 "category": "critical-surface-change",
                 "file": ".github/workflows/update-explanatory-context.yml",
@@ -350,14 +374,14 @@
                 "summary": "Security-sensitive surface changed: .github/workflows/update-explanatory-context.yml.",
                 "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
                 "evidence": {
-                  "previousSha256": "6b47db73d1e656e13a53fa5c3c8058c335bb15c76eb3ee7df5d0001e809059d0",
-                  "currentSha256": "88882ac1a87f625c60c2f9798059d19ccfa56536b7ed26bc944688a79d74c404"
+                  "previousSha256": "e47caff85acac3e9d1eda14e8e8dadd5e874da4d7c6382b00b9445da1d8c23cb",
+                  "currentSha256": "ce1a65c76584f4d144c572abe737ce76e7e1f91c7a1d533ee059d5977e26fa4c"
                 }
               }
             ]
           },
-          "sourceSha256": "b7d718605e7b8c6fe16596029b5e43c7d9897a240a5c068eb2a090fe84087530",
-          "observedAt": "2026-08-25T10:55:17.264Z",
+          "sourceSha256": "666e5dac8c3847cc5570bcddd352351e936d19c58169bbe20dc7f1eb18ff9a18",
+          "observedAt": "2026-08-26T06:29:49.043Z",
           "interpretation": "direct"
         },
         {
@@ -376,39 +400,39 @@
               "asset": "FXN"
             },
             "apr": {
-              "liveObservedPct": 21.05,
-              "canonicalProductivityPct": 21.05,
+              "liveObservedPct": 20.99,
+              "canonicalProductivityPct": 20.99,
               "parityDeltaPctPoints": 0,
               "currentObservationStatus": "ok",
-              "deltaFromPriorGraphObservationPctPoints": -0.14
+              "deltaFromPriorGraphObservationPctPoints": -0.02
             },
             "measuredDrivers": {
-              "fxnLocked": 533623.58,
-              "fxnCirculatingSupplyLockedPct": 77.07,
-              "totalVeFxn": 467152.74,
-              "cumulativeThisWeekWsteth": 0.36,
+              "fxnLocked": 541656.19,
+              "fxnCirculatingSupplyLockedPct": 78.18,
+              "totalVeFxn": 467061.9,
+              "cumulativeThisWeekWsteth": 10,
               "previousWeekWsteth": 7.98,
-              "averageLockRaw": "3.50 Years",
+              "averageLockRaw": "3.45 Years",
               "accumulateTillRaw": "Aug 26, 2026 11:59 PM"
             },
             "measuredMovement": {
-              "priorObservationId": "fxn-locker:2026-08-25:15a82cbf8099a035fc9e",
-              "elapsedHours": 0.4061,
-              "fxnLockedDelta": 0,
+              "priorObservationId": "fxn-locker:2026-08-25:af7042532238dc2f2350",
+              "elapsedHours": 10.8159,
+              "fxnLockedDelta": 2.61,
               "fxnCirculatingSupplyLockedPctDeltaPoints": 0,
-              "totalVeFxnDelta": -6.07,
-              "currentWeekRevenueDeltaWsteth": 0,
+              "totalVeFxnDelta": -152.68,
+              "currentWeekRevenueDeltaWsteth": 9.64,
               "revenueDeltaComparable": true,
               "revenueDeltaNonComparableReason": null
             },
             "provenance": {
               "graphFile": "intelligence/economic-graph/economic-graph.json",
-              "graphSha256": "4dd578c65b1b46f3b18df41bf66b1c3cfc51cd63c06d63f80ed1dcb118512ec2",
-              "observationId": "fxn-locker:2026-08-25:d366936541c2aaf69537",
-              "observedAt": "2026-08-25T06:06:25.263Z",
+              "graphSha256": "d4b6b49e6fa215f5eaad723b303cab399a3ca06b208b7f2ab40b42acaab06b20",
+              "observationId": "fxn-locker:2026-08-26:a5e223cf3d58cf4e41f4",
+              "observedAt": "2026-08-26T06:08:02.292Z",
               "sourceUrl": "https://fx.aladdin.club/v2/lock",
               "sourceType": "official-frontend-exact-locker-block",
-              "rawBlockHash": "485ef4c9a97deed53e7f6d884c1bc6b5330461dd5a56a29ae3826e84f2832eae"
+              "rawBlockHash": "65789f581ec31cfe8ae6442f18b021b145825c44f50dbd54caee7c629be4d5c9"
             },
             "causalAttribution": "unresolved",
             "primaryDriver": null,
@@ -416,8 +440,8 @@
             "explanation": "Canonical protocol-economic driver context is available for the Defitea veFXN cohort. The system may report these measured values and comparable deltas, but it must not say that revenue, locked supply, Total veFXN, price, incentives or another driver caused the APR until a protocol-specific formula or onchain accounting identity proves that path.",
             "promotionRule": "A driver may become ATTRIBUTED only after a protocol-specific formula or onchain accounting identity proves the causal path."
           },
-          "sourceSha256": "6fff66eaf2cf00398d69d01fc3fb714be90f215793739cd96c7ac665855f2fcc",
-          "observedAt": "2026-08-25T10:55:00.428Z",
+          "sourceSha256": "4b5c75093dcb9f7cf062d81759ccceec44c7f4bd02f929230769e6edd78d4234",
+          "observedAt": "2026-08-26T06:29:28.289Z",
           "interpretation": "legacy-vefxn-alias-measured-context-not-causal-attribution",
           "note": "Compatibility alias for the veFXN cohort. Canonical multi-cohort evidence is also included separately."
         },
@@ -437,39 +461,39 @@
               "asset": "FXN"
             },
             "apr": {
-              "liveObservedPct": 21.05,
-              "canonicalProductivityPct": 21.05,
+              "liveObservedPct": 20.99,
+              "canonicalProductivityPct": 20.99,
               "parityDeltaPctPoints": 0,
               "currentObservationStatus": "ok",
-              "deltaFromPriorGraphObservationPctPoints": -0.14
+              "deltaFromPriorGraphObservationPctPoints": -0.02
             },
             "measuredDrivers": {
-              "fxnLocked": 533623.58,
-              "fxnCirculatingSupplyLockedPct": 77.07,
-              "totalVeFxn": 467152.74,
-              "cumulativeThisWeekWsteth": 0.36,
+              "fxnLocked": 541656.19,
+              "fxnCirculatingSupplyLockedPct": 78.18,
+              "totalVeFxn": 467061.9,
+              "cumulativeThisWeekWsteth": 10,
               "previousWeekWsteth": 7.98,
-              "averageLockRaw": "3.50 Years",
+              "averageLockRaw": "3.45 Years",
               "accumulateTillRaw": "Aug 26, 2026 11:59 PM"
             },
             "measuredMovement": {
-              "priorObservationId": "fxn-locker:2026-08-25:15a82cbf8099a035fc9e",
-              "elapsedHours": 0.4061,
-              "fxnLockedDelta": 0,
+              "priorObservationId": "fxn-locker:2026-08-25:af7042532238dc2f2350",
+              "elapsedHours": 10.8159,
+              "fxnLockedDelta": 2.61,
               "fxnCirculatingSupplyLockedPctDeltaPoints": 0,
-              "totalVeFxnDelta": -6.07,
-              "currentWeekRevenueDeltaWsteth": 0,
+              "totalVeFxnDelta": -152.68,
+              "currentWeekRevenueDeltaWsteth": 9.64,
               "revenueDeltaComparable": true,
               "revenueDeltaNonComparableReason": null
             },
             "provenance": {
               "graphFile": "intelligence/economic-graph/economic-graph.json",
-              "graphSha256": "4dd578c65b1b46f3b18df41bf66b1c3cfc51cd63c06d63f80ed1dcb118512ec2",
-              "observationId": "fxn-locker:2026-08-25:d366936541c2aaf69537",
-              "observedAt": "2026-08-25T06:06:25.263Z",
+              "graphSha256": "d4b6b49e6fa215f5eaad723b303cab399a3ca06b208b7f2ab40b42acaab06b20",
+              "observationId": "fxn-locker:2026-08-26:a5e223cf3d58cf4e41f4",
+              "observedAt": "2026-08-26T06:08:02.292Z",
               "sourceUrl": "https://fx.aladdin.club/v2/lock",
               "sourceType": "official-frontend-exact-locker-block",
-              "rawBlockHash": "485ef4c9a97deed53e7f6d884c1bc6b5330461dd5a56a29ae3826e84f2832eae"
+              "rawBlockHash": "65789f581ec31cfe8ae6442f18b021b145825c44f50dbd54caee7c629be4d5c9"
             },
             "causalAttribution": "unresolved",
             "primaryDriver": null,
@@ -477,8 +501,8 @@
             "explanation": "Canonical protocol-economic driver context is available for the Defitea veFXN cohort. The system may report these measured values and comparable deltas, but it must not say that revenue, locked supply, Total veFXN, price, incentives or another driver caused the APR until a protocol-specific formula or onchain accounting identity proves that path.",
             "promotionRule": "A driver may become ATTRIBUTED only after a protocol-specific formula or onchain accounting identity proves the causal path."
           },
-          "sourceSha256": "6fff66eaf2cf00398d69d01fc3fb714be90f215793739cd96c7ac665855f2fcc",
-          "observedAt": "2026-08-25T10:55:00.428Z",
+          "sourceSha256": "4b5c75093dcb9f7cf062d81759ccceec44c7f4bd02f929230769e6edd78d4234",
+          "observedAt": "2026-08-26T06:29:28.289Z",
           "interpretation": "normalized-measured-context-not-causal-attribution",
           "note": "Canonical protocol-economic cohort from Explanatory Context. Report only the causal strength explicitly proven by this cohort."
         },
@@ -498,17 +522,17 @@
               "asset": "CRV"
             },
             "apr": {
-              "canonicalProductivityPct": 1.6318,
-              "formulaReproducedPct": 1.631774,
-              "formulaParityDeltaPctPoints": 0.000026,
+              "canonicalProductivityPct": 1.7142,
+              "formulaReproducedPct": 1.714152,
+              "formulaParityDeltaPctPoints": 0.000048,
               "currentObservationStatus": "ok",
-              "deltaFromPriorGraphObservationPctPoints": -0.0421
+              "deltaFromPriorGraphObservationPctPoints": -0.013
             },
             "measuredDrivers": {
-              "crvPriceUsd": 0.33673686,
+              "crvPriceUsd": 0.32055411,
               "rollingFourWeekFeesCrvUSD": 330900.9914959235,
               "rollingAverageVeSupply": 783336549.6240488,
-              "rollingAverageAprPct": 1.631775,
+              "rollingAverageAprPct": 1.71415,
               "weeksUsed": 4,
               "rollingWindowStart": "2026-07-23T00:00:00.000Z",
               "rollingWindowEnd": "2026-08-20T00:00:00.000Z",
@@ -518,21 +542,21 @@
                 "periodEnd": "2026-08-20T00:00:00.000Z",
                 "tokensCrvUSD": 148807.3648552352,
                 "veSupply": 781338361.8236687,
-                "aprPct": 2.941
+                "aprPct": 3.0895
               }
             },
             "measuredMovement": {
-              "priorObservationId": "curve-vecrv:2026-08-24:414058474c3f503d61e2",
-              "elapsedHours": 10.6623,
-              "aprDeltaPctPoints": -0.0421,
-              "crvPriceDeltaUsd": 0.00847836,
+              "priorObservationId": "curve-vecrv:2026-08-25:b3ff3f52532d9b6db492",
+              "elapsedHours": 11.0188,
+              "aprDeltaPctPoints": -0.013,
+              "crvPriceDeltaUsd": 0.00242117,
               "rollingAverageVeSupplyDelta": 0,
               "rollingFourWeekFeesDeltaCrvUSD": 0,
               "rollingWindowComparable": true,
               "rollingWindowNonComparableReason": null,
               "latestWeekFeesDeltaCrvUSD": 0,
               "latestWeekVeSupplyDelta": 0,
-              "latestWeekAprDeltaPctPoints": -0.076,
+              "latestWeekAprDeltaPctPoints": -0.0235,
               "latestWeekComparable": true,
               "latestWeekNonComparableReason": null
             },
@@ -540,21 +564,21 @@
               "status": "proven-canonical-collector-identity",
               "weeklyIdentity": "weeklyAprPct = (tokensCrvUSD / veSupply) / crvPriceUsd * 52 * 100",
               "rollingIdentity": "canonicalProductivityAprPct = arithmetic mean(completed-week aprPct values used by Productivity)",
-              "reproducedCanonicalAprPct": 1.631774,
-              "parityDeltaPctPoints": 0.000026,
+              "reproducedCanonicalAprPct": 1.714152,
+              "parityDeltaPctPoints": 0.000048,
               "mechanicalAttribution": "proven-within-apr-formula",
               "provenRelation": "For the canonical veCRV fee APR, distributed crvUSD fees are the numerator, veCRV supply and CRV price are denominator inputs, and the rolling Reference APR is the arithmetic mean of completed-week formula outputs."
             },
             "provenance": {
               "graphFile": "intelligence/economic-graph/economic-graph.json",
-              "graphSha256": "4dd578c65b1b46f3b18df41bf66b1c3cfc51cd63c06d63f80ed1dcb118512ec2",
-              "observationId": "curve-vecrv:2026-08-25:f7a3020f34dc411fa989",
-              "observedAt": "2026-08-25T05:21:44.054Z",
+              "graphSha256": "d4b6b49e6fa215f5eaad723b303cab399a3ca06b208b7f2ab40b42acaab06b20",
+              "observationId": "curve-vecrv:2026-08-26:ec9f716a086ea11fc07a",
+              "observedAt": "2026-08-26T06:07:04.958Z",
               "sourceUrl": "https://etherscan.io/address/0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914",
               "sourceType": "onchain",
               "sourceMetric": "veCRV crvUSD fee APR · 4 completed weeks average",
               "contract": "0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914",
-              "productivitySha256": "c815954ed6173f5bab7303590f60211d3d33afe767f878f5905e7c2b135414c5"
+              "productivitySha256": "f9fb3f79c1f1f93ee3c485479c52692b3f4739ec0ac81ea9c484459e947cdaad"
             },
             "causalAttribution": "unresolved-beyond-formula",
             "primaryDriver": null,
@@ -562,10 +586,108 @@
             "explanation": "Curve veCRV Reference APR is mechanically reproducible from distributed crvUSD fees, veCRV supply and CRV price under the canonical completed-week formula. This proves how those measured inputs form the Reference APR. It does not prove why Curve fee distributions themselves increased or decreased; upstream protocol activity remains unresolved until fee-origin evidence is added.",
             "promotionRule": "Formula inputs may be described as mechanical APR inputs. Upstream causes of fee changes require separate canonical protocol-activity evidence before causal promotion."
           },
-          "sourceSha256": "6fff66eaf2cf00398d69d01fc3fb714be90f215793739cd96c7ac665855f2fcc",
-          "observedAt": "2026-08-25T10:55:00.428Z",
+          "sourceSha256": "4b5c75093dcb9f7cf062d81759ccceec44c7f4bd02f929230769e6edd78d4234",
+          "observedAt": "2026-08-26T06:29:28.289Z",
           "interpretation": "normalized-proven-mechanical-context-upstream-cause-unresolved",
           "note": "Canonical protocol-economic cohort from Explanatory Context. Report only the causal strength explicitly proven by this cohort."
+        },
+        {
+          "source": "intelligence/explanatory/explanatory-context.json",
+          "pointer": "/explanations/protocolFlowContexts/defitea-convex-vlcvx-votium",
+          "value": {
+            "contextId": "defitea-convex-vlcvx-votium",
+            "status": "shadow-cross-protocol-context-answerable-causality-unresolved",
+            "coverage": {
+              "companyRegistry": "004",
+              "company": "defitea.eth",
+              "protocolStack": [
+                "Convex",
+                "Votium",
+                "Curve"
+              ],
+              "mechanism": "vlCVX delegation → Votium incentives/votes → executed Curve gauge weights → current Curve pool context",
+              "canonicalProtocolEconomicCohort": false,
+              "shadowCandidate": true,
+              "completedVotiumRoundsMeasured": 3,
+              "votingProvenanceRoundsProven": 3,
+              "onchainVotiumGaugesExactMatched": 79,
+              "curveExecutedVotiumGaugeRows": 79,
+              "currentCurveGaugeUniverseClassified": 47,
+              "currentCurvePoolEligibleGauges": 31,
+              "currentCurvePoolContextsComplete": 31,
+              "unresolvedEligiblePoolContexts": 0
+            },
+            "explanation": "The current shadow evidence proves the Votium voting-source transition, exact post-migration Votium→Convex vote matching, mechanical execution of those votes into Curve gauge BPS, and complete current liquidity/24h-volume/base-yield context for every currently eligible mapped Curve pool. It does not prove that incentives caused vote choices or that historical vote allocation caused current pool outcomes.",
+            "measuredRelations": {
+              "incentiveToVote": {
+                "class": "CORRELATED",
+                "status": "context-only-not-causal"
+              },
+              "voteToExecutedCurveGaugeBps": {
+                "class": "ATTRIBUTED",
+                "status": "mechanical-execution-proven"
+              },
+              "historicalVoteToCurrentPoolState": {
+                "class": "CORRELATED",
+                "status": "temporal-context-only-not-causal"
+              }
+            },
+            "downstreamCurrentContext": {
+              "eligiblePoolCount": 31,
+              "completePoolContextCount": 31,
+              "liquidity": "MEASURED-current-official-curve-api-context",
+              "volume24h": "MEASURED-current-official-curve-api-context",
+              "baseYield": "MEASURED-current-official-curve-api-context",
+              "exactFeeUsd": "UNKNOWN",
+              "exactFeeUsdReason": "Selected official Curve endpoints do not directly expose exact pool fee USD."
+            },
+            "causalBoundary": {
+              "primaryDriver": null,
+              "incentiveToVoteCause": "unresolved",
+              "voteToCurrentPoolOutcomeCause": "unresolved",
+              "nextUnlock": "Accumulate aligned longitudinal Votium vote/incentive and Curve pool observations; promote causal response claims only if a protocol-specific accounting identity or reproducible aligned evidence proves them."
+            },
+            "provenance": {
+              "economicGraphFile": "intelligence/economic-graph/economic-graph.json",
+              "graphSha256": "d4b6b49e6fa215f5eaad723b303cab399a3ca06b208b7f2ab40b42acaab06b20",
+              "deepEvidenceVersion": "0.1-vlcvx-votium-curve-cognitive-close",
+              "sourceBinding": {
+                "roundFlow": {
+                  "file": "intelligence/economic-graph/vlcvx-votium-round-flow.json",
+                  "sha256": "bbbb098a729d0e5c91b66f254ded7aa48f7a255c684fc9f666fd2306f661ddc2",
+                  "generatedAt": "2026-08-26T03:41:54.736Z"
+                },
+                "votingProvenance": {
+                  "file": "intelligence/economic-graph/vlcvx-votium-snapshot-proof.json",
+                  "sha256": "cb387b3d376184b8e781deea6b3ef8751c259335a046e3220f27bb9956c63bbb",
+                  "generatedAt": "2026-08-26T05:58:14.921Z"
+                },
+                "curveGaugeFlow": {
+                  "file": "intelligence/economic-graph/vlcvx-votium-curve-gauge-flow.json",
+                  "sha256": "b36d24f903b520420fadcc4ee81b5620560fef482f67f2e662897fe77c68e599",
+                  "generatedAt": "2026-08-26T05:58:46.142Z"
+                },
+                "curvePoolContext": {
+                  "file": "intelligence/economic-graph/vlcvx-votium-curve-pool-context.json",
+                  "sha256": "4b1adf8c1bf93e918a17cc59bbc97ec4e185115bf54ab6b0ca509ea644318e22",
+                  "generatedAt": "2026-08-26T05:59:02.560Z"
+                }
+              }
+            },
+            "authority": {
+              "readOnly": true,
+              "executionAuthority": "none",
+              "allocationAuthority": false,
+              "recommendationAuthority": false,
+              "predictionAuthority": false,
+              "causalClaimAuthority": "none",
+              "promotionAuthority": "none"
+            }
+          },
+          "sourceSha256": "4b5c75093dcb9f7cf062d81759ccceec44c7f4bd02f929230769e6edd78d4234",
+          "observedAt": "2026-08-26T06:29:28.289Z",
+          "interpretation": "shadow-cross-protocol-mechanics-and-temporal-context-causality-unresolved",
+          "note": "Votium→Convex→Curve mechanical execution is proven; current Curve pool state is measured temporal context only. Do not infer incentive→vote or vote→pool causality."
         }
       ]
     },
@@ -575,21 +697,21 @@
       "causalAttribution": "unresolved",
       "primaryDriver": null,
       "reportableMeasuredContext": {
-        "fxnLocked": 533623.58,
-        "fxnCirculatingSupplyLockedPct": 77.07,
-        "totalVeFxn": 467152.74,
-        "cumulativeThisWeekWsteth": 0.36,
+        "fxnLocked": 541656.19,
+        "fxnCirculatingSupplyLockedPct": 78.18,
+        "totalVeFxn": 467061.9,
+        "cumulativeThisWeekWsteth": 10,
         "previousWeekWsteth": 7.98,
-        "averageLockRaw": "3.50 Years",
+        "averageLockRaw": "3.45 Years",
         "accumulateTillRaw": "Aug 26, 2026 11:59 PM"
       },
       "measuredMovement": {
-        "priorObservationId": "fxn-locker:2026-08-25:15a82cbf8099a035fc9e",
-        "elapsedHours": 0.4061,
-        "fxnLockedDelta": 0,
+        "priorObservationId": "fxn-locker:2026-08-25:af7042532238dc2f2350",
+        "elapsedHours": 10.8159,
+        "fxnLockedDelta": 2.61,
         "fxnCirculatingSupplyLockedPctDeltaPoints": 0,
-        "totalVeFxnDelta": -6.07,
-        "currentWeekRevenueDeltaWsteth": 0,
+        "totalVeFxnDelta": -152.68,
+        "currentWeekRevenueDeltaWsteth": 9.64,
         "revenueDeltaComparable": true,
         "revenueDeltaNonComparableReason": null
       },
@@ -610,39 +732,39 @@
               "asset": "FXN"
             },
             "apr": {
-              "liveObservedPct": 21.05,
-              "canonicalProductivityPct": 21.05,
+              "liveObservedPct": 20.99,
+              "canonicalProductivityPct": 20.99,
               "parityDeltaPctPoints": 0,
               "currentObservationStatus": "ok",
-              "deltaFromPriorGraphObservationPctPoints": -0.14
+              "deltaFromPriorGraphObservationPctPoints": -0.02
             },
             "measuredDrivers": {
-              "fxnLocked": 533623.58,
-              "fxnCirculatingSupplyLockedPct": 77.07,
-              "totalVeFxn": 467152.74,
-              "cumulativeThisWeekWsteth": 0.36,
+              "fxnLocked": 541656.19,
+              "fxnCirculatingSupplyLockedPct": 78.18,
+              "totalVeFxn": 467061.9,
+              "cumulativeThisWeekWsteth": 10,
               "previousWeekWsteth": 7.98,
-              "averageLockRaw": "3.50 Years",
+              "averageLockRaw": "3.45 Years",
               "accumulateTillRaw": "Aug 26, 2026 11:59 PM"
             },
             "measuredMovement": {
-              "priorObservationId": "fxn-locker:2026-08-25:15a82cbf8099a035fc9e",
-              "elapsedHours": 0.4061,
-              "fxnLockedDelta": 0,
+              "priorObservationId": "fxn-locker:2026-08-25:af7042532238dc2f2350",
+              "elapsedHours": 10.8159,
+              "fxnLockedDelta": 2.61,
               "fxnCirculatingSupplyLockedPctDeltaPoints": 0,
-              "totalVeFxnDelta": -6.07,
-              "currentWeekRevenueDeltaWsteth": 0,
+              "totalVeFxnDelta": -152.68,
+              "currentWeekRevenueDeltaWsteth": 9.64,
               "revenueDeltaComparable": true,
               "revenueDeltaNonComparableReason": null
             },
             "provenance": {
               "graphFile": "intelligence/economic-graph/economic-graph.json",
-              "graphSha256": "4dd578c65b1b46f3b18df41bf66b1c3cfc51cd63c06d63f80ed1dcb118512ec2",
-              "observationId": "fxn-locker:2026-08-25:d366936541c2aaf69537",
-              "observedAt": "2026-08-25T06:06:25.263Z",
+              "graphSha256": "d4b6b49e6fa215f5eaad723b303cab399a3ca06b208b7f2ab40b42acaab06b20",
+              "observationId": "fxn-locker:2026-08-26:a5e223cf3d58cf4e41f4",
+              "observedAt": "2026-08-26T06:08:02.292Z",
               "sourceUrl": "https://fx.aladdin.club/v2/lock",
               "sourceType": "official-frontend-exact-locker-block",
-              "rawBlockHash": "485ef4c9a97deed53e7f6d884c1bc6b5330461dd5a56a29ae3826e84f2832eae"
+              "rawBlockHash": "65789f581ec31cfe8ae6442f18b021b145825c44f50dbd54caee7c629be4d5c9"
             },
             "causalAttribution": "unresolved",
             "primaryDriver": null,
@@ -650,8 +772,8 @@
             "explanation": "Canonical protocol-economic driver context is available for the Defitea veFXN cohort. The system may report these measured values and comparable deltas, but it must not say that revenue, locked supply, Total veFXN, price, incentives or another driver caused the APR until a protocol-specific formula or onchain accounting identity proves that path.",
             "promotionRule": "A driver may become ATTRIBUTED only after a protocol-specific formula or onchain accounting identity proves the causal path."
           },
-          "sourceSha256": "6fff66eaf2cf00398d69d01fc3fb714be90f215793739cd96c7ac665855f2fcc",
-          "observedAt": "2026-08-25T10:55:00.428Z",
+          "sourceSha256": "4b5c75093dcb9f7cf062d81759ccceec44c7f4bd02f929230769e6edd78d4234",
+          "observedAt": "2026-08-26T06:29:28.289Z",
           "interpretation": "legacy-vefxn-alias-measured-context-not-causal-attribution",
           "note": "Compatibility alias for the veFXN cohort. Canonical multi-cohort evidence is also included separately."
         }
@@ -671,31 +793,31 @@
           "asset": "FXN"
         },
         "apr": {
-          "liveObservedPct": 21.05,
-          "canonicalProductivityPct": 21.05,
+          "liveObservedPct": 20.99,
+          "canonicalProductivityPct": 20.99,
           "parityDeltaPctPoints": 0,
           "currentObservationStatus": "ok",
-          "deltaFromPriorGraphObservationPctPoints": -0.14
+          "deltaFromPriorGraphObservationPctPoints": -0.02
         },
         "causalClass": "measured-context-only",
         "causalAttribution": "unresolved",
         "primaryDriver": null,
         "reportableMeasuredContext": {
-          "fxnLocked": 533623.58,
-          "fxnCirculatingSupplyLockedPct": 77.07,
-          "totalVeFxn": 467152.74,
-          "cumulativeThisWeekWsteth": 0.36,
+          "fxnLocked": 541656.19,
+          "fxnCirculatingSupplyLockedPct": 78.18,
+          "totalVeFxn": 467061.9,
+          "cumulativeThisWeekWsteth": 10,
           "previousWeekWsteth": 7.98,
-          "averageLockRaw": "3.50 Years",
+          "averageLockRaw": "3.45 Years",
           "accumulateTillRaw": "Aug 26, 2026 11:59 PM"
         },
         "measuredMovement": {
-          "priorObservationId": "fxn-locker:2026-08-25:15a82cbf8099a035fc9e",
-          "elapsedHours": 0.4061,
-          "fxnLockedDelta": 0,
+          "priorObservationId": "fxn-locker:2026-08-25:af7042532238dc2f2350",
+          "elapsedHours": 10.8159,
+          "fxnLockedDelta": 2.61,
           "fxnCirculatingSupplyLockedPctDeltaPoints": 0,
-          "totalVeFxnDelta": -6.07,
-          "currentWeekRevenueDeltaWsteth": 0,
+          "totalVeFxnDelta": -152.68,
+          "currentWeekRevenueDeltaWsteth": 9.64,
           "revenueDeltaComparable": true,
           "revenueDeltaNonComparableReason": null
         },
@@ -717,39 +839,39 @@
                 "asset": "FXN"
               },
               "apr": {
-                "liveObservedPct": 21.05,
-                "canonicalProductivityPct": 21.05,
+                "liveObservedPct": 20.99,
+                "canonicalProductivityPct": 20.99,
                 "parityDeltaPctPoints": 0,
                 "currentObservationStatus": "ok",
-                "deltaFromPriorGraphObservationPctPoints": -0.14
+                "deltaFromPriorGraphObservationPctPoints": -0.02
               },
               "measuredDrivers": {
-                "fxnLocked": 533623.58,
-                "fxnCirculatingSupplyLockedPct": 77.07,
-                "totalVeFxn": 467152.74,
-                "cumulativeThisWeekWsteth": 0.36,
+                "fxnLocked": 541656.19,
+                "fxnCirculatingSupplyLockedPct": 78.18,
+                "totalVeFxn": 467061.9,
+                "cumulativeThisWeekWsteth": 10,
                 "previousWeekWsteth": 7.98,
-                "averageLockRaw": "3.50 Years",
+                "averageLockRaw": "3.45 Years",
                 "accumulateTillRaw": "Aug 26, 2026 11:59 PM"
               },
               "measuredMovement": {
-                "priorObservationId": "fxn-locker:2026-08-25:15a82cbf8099a035fc9e",
-                "elapsedHours": 0.4061,
-                "fxnLockedDelta": 0,
+                "priorObservationId": "fxn-locker:2026-08-25:af7042532238dc2f2350",
+                "elapsedHours": 10.8159,
+                "fxnLockedDelta": 2.61,
                 "fxnCirculatingSupplyLockedPctDeltaPoints": 0,
-                "totalVeFxnDelta": -6.07,
-                "currentWeekRevenueDeltaWsteth": 0,
+                "totalVeFxnDelta": -152.68,
+                "currentWeekRevenueDeltaWsteth": 9.64,
                 "revenueDeltaComparable": true,
                 "revenueDeltaNonComparableReason": null
               },
               "provenance": {
                 "graphFile": "intelligence/economic-graph/economic-graph.json",
-                "graphSha256": "4dd578c65b1b46f3b18df41bf66b1c3cfc51cd63c06d63f80ed1dcb118512ec2",
-                "observationId": "fxn-locker:2026-08-25:d366936541c2aaf69537",
-                "observedAt": "2026-08-25T06:06:25.263Z",
+                "graphSha256": "d4b6b49e6fa215f5eaad723b303cab399a3ca06b208b7f2ab40b42acaab06b20",
+                "observationId": "fxn-locker:2026-08-26:a5e223cf3d58cf4e41f4",
+                "observedAt": "2026-08-26T06:08:02.292Z",
                 "sourceUrl": "https://fx.aladdin.club/v2/lock",
                 "sourceType": "official-frontend-exact-locker-block",
-                "rawBlockHash": "485ef4c9a97deed53e7f6d884c1bc6b5330461dd5a56a29ae3826e84f2832eae"
+                "rawBlockHash": "65789f581ec31cfe8ae6442f18b021b145825c44f50dbd54caee7c629be4d5c9"
               },
               "causalAttribution": "unresolved",
               "primaryDriver": null,
@@ -757,8 +879,8 @@
               "explanation": "Canonical protocol-economic driver context is available for the Defitea veFXN cohort. The system may report these measured values and comparable deltas, but it must not say that revenue, locked supply, Total veFXN, price, incentives or another driver caused the APR until a protocol-specific formula or onchain accounting identity proves that path.",
               "promotionRule": "A driver may become ATTRIBUTED only after a protocol-specific formula or onchain accounting identity proves the causal path."
             },
-            "sourceSha256": "6fff66eaf2cf00398d69d01fc3fb714be90f215793739cd96c7ac665855f2fcc",
-            "observedAt": "2026-08-25T10:55:00.428Z",
+            "sourceSha256": "4b5c75093dcb9f7cf062d81759ccceec44c7f4bd02f929230769e6edd78d4234",
+            "observedAt": "2026-08-26T06:29:28.289Z",
             "interpretation": "normalized-measured-context-not-causal-attribution",
             "note": "Canonical protocol-economic cohort from Explanatory Context. Report only the causal strength explicitly proven by this cohort."
           }
@@ -777,20 +899,20 @@
           "asset": "CRV"
         },
         "apr": {
-          "canonicalProductivityPct": 1.6318,
-          "formulaReproducedPct": 1.631774,
-          "formulaParityDeltaPctPoints": 0.000026,
+          "canonicalProductivityPct": 1.7142,
+          "formulaReproducedPct": 1.714152,
+          "formulaParityDeltaPctPoints": 0.000048,
           "currentObservationStatus": "ok",
-          "deltaFromPriorGraphObservationPctPoints": -0.0421
+          "deltaFromPriorGraphObservationPctPoints": -0.013
         },
         "causalClass": "proven-mechanical-identity-upstream-cause-unresolved",
         "causalAttribution": "unresolved-beyond-formula",
         "primaryDriver": null,
         "reportableMeasuredContext": {
-          "crvPriceUsd": 0.33673686,
+          "crvPriceUsd": 0.32055411,
           "rollingFourWeekFeesCrvUSD": 330900.9914959235,
           "rollingAverageVeSupply": 783336549.6240488,
-          "rollingAverageAprPct": 1.631775,
+          "rollingAverageAprPct": 1.71415,
           "weeksUsed": 4,
           "rollingWindowStart": "2026-07-23T00:00:00.000Z",
           "rollingWindowEnd": "2026-08-20T00:00:00.000Z",
@@ -800,21 +922,21 @@
             "periodEnd": "2026-08-20T00:00:00.000Z",
             "tokensCrvUSD": 148807.3648552352,
             "veSupply": 781338361.8236687,
-            "aprPct": 2.941
+            "aprPct": 3.0895
           }
         },
         "measuredMovement": {
-          "priorObservationId": "curve-vecrv:2026-08-24:414058474c3f503d61e2",
-          "elapsedHours": 10.6623,
-          "aprDeltaPctPoints": -0.0421,
-          "crvPriceDeltaUsd": 0.00847836,
+          "priorObservationId": "curve-vecrv:2026-08-25:b3ff3f52532d9b6db492",
+          "elapsedHours": 11.0188,
+          "aprDeltaPctPoints": -0.013,
+          "crvPriceDeltaUsd": 0.00242117,
           "rollingAverageVeSupplyDelta": 0,
           "rollingFourWeekFeesDeltaCrvUSD": 0,
           "rollingWindowComparable": true,
           "rollingWindowNonComparableReason": null,
           "latestWeekFeesDeltaCrvUSD": 0,
           "latestWeekVeSupplyDelta": 0,
-          "latestWeekAprDeltaPctPoints": -0.076,
+          "latestWeekAprDeltaPctPoints": -0.0235,
           "latestWeekComparable": true,
           "latestWeekNonComparableReason": null
         },
@@ -822,8 +944,8 @@
           "status": "proven-canonical-collector-identity",
           "weeklyIdentity": "weeklyAprPct = (tokensCrvUSD / veSupply) / crvPriceUsd * 52 * 100",
           "rollingIdentity": "canonicalProductivityAprPct = arithmetic mean(completed-week aprPct values used by Productivity)",
-          "reproducedCanonicalAprPct": 1.631774,
-          "parityDeltaPctPoints": 0.000026,
+          "reproducedCanonicalAprPct": 1.714152,
+          "parityDeltaPctPoints": 0.000048,
           "mechanicalAttribution": "proven-within-apr-formula",
           "provenRelation": "For the canonical veCRV fee APR, distributed crvUSD fees are the numerator, veCRV supply and CRV price are denominator inputs, and the rolling Reference APR is the arithmetic mean of completed-week formula outputs."
         },
@@ -844,17 +966,17 @@
                 "asset": "CRV"
               },
               "apr": {
-                "canonicalProductivityPct": 1.6318,
-                "formulaReproducedPct": 1.631774,
-                "formulaParityDeltaPctPoints": 0.000026,
+                "canonicalProductivityPct": 1.7142,
+                "formulaReproducedPct": 1.714152,
+                "formulaParityDeltaPctPoints": 0.000048,
                 "currentObservationStatus": "ok",
-                "deltaFromPriorGraphObservationPctPoints": -0.0421
+                "deltaFromPriorGraphObservationPctPoints": -0.013
               },
               "measuredDrivers": {
-                "crvPriceUsd": 0.33673686,
+                "crvPriceUsd": 0.32055411,
                 "rollingFourWeekFeesCrvUSD": 330900.9914959235,
                 "rollingAverageVeSupply": 783336549.6240488,
-                "rollingAverageAprPct": 1.631775,
+                "rollingAverageAprPct": 1.71415,
                 "weeksUsed": 4,
                 "rollingWindowStart": "2026-07-23T00:00:00.000Z",
                 "rollingWindowEnd": "2026-08-20T00:00:00.000Z",
@@ -864,21 +986,21 @@
                   "periodEnd": "2026-08-20T00:00:00.000Z",
                   "tokensCrvUSD": 148807.3648552352,
                   "veSupply": 781338361.8236687,
-                  "aprPct": 2.941
+                  "aprPct": 3.0895
                 }
               },
               "measuredMovement": {
-                "priorObservationId": "curve-vecrv:2026-08-24:414058474c3f503d61e2",
-                "elapsedHours": 10.6623,
-                "aprDeltaPctPoints": -0.0421,
-                "crvPriceDeltaUsd": 0.00847836,
+                "priorObservationId": "curve-vecrv:2026-08-25:b3ff3f52532d9b6db492",
+                "elapsedHours": 11.0188,
+                "aprDeltaPctPoints": -0.013,
+                "crvPriceDeltaUsd": 0.00242117,
                 "rollingAverageVeSupplyDelta": 0,
                 "rollingFourWeekFeesDeltaCrvUSD": 0,
                 "rollingWindowComparable": true,
                 "rollingWindowNonComparableReason": null,
                 "latestWeekFeesDeltaCrvUSD": 0,
                 "latestWeekVeSupplyDelta": 0,
-                "latestWeekAprDeltaPctPoints": -0.076,
+                "latestWeekAprDeltaPctPoints": -0.0235,
                 "latestWeekComparable": true,
                 "latestWeekNonComparableReason": null
               },
@@ -886,21 +1008,21 @@
                 "status": "proven-canonical-collector-identity",
                 "weeklyIdentity": "weeklyAprPct = (tokensCrvUSD / veSupply) / crvPriceUsd * 52 * 100",
                 "rollingIdentity": "canonicalProductivityAprPct = arithmetic mean(completed-week aprPct values used by Productivity)",
-                "reproducedCanonicalAprPct": 1.631774,
-                "parityDeltaPctPoints": 0.000026,
+                "reproducedCanonicalAprPct": 1.714152,
+                "parityDeltaPctPoints": 0.000048,
                 "mechanicalAttribution": "proven-within-apr-formula",
                 "provenRelation": "For the canonical veCRV fee APR, distributed crvUSD fees are the numerator, veCRV supply and CRV price are denominator inputs, and the rolling Reference APR is the arithmetic mean of completed-week formula outputs."
               },
               "provenance": {
                 "graphFile": "intelligence/economic-graph/economic-graph.json",
-                "graphSha256": "4dd578c65b1b46f3b18df41bf66b1c3cfc51cd63c06d63f80ed1dcb118512ec2",
-                "observationId": "curve-vecrv:2026-08-25:f7a3020f34dc411fa989",
-                "observedAt": "2026-08-25T05:21:44.054Z",
+                "graphSha256": "d4b6b49e6fa215f5eaad723b303cab399a3ca06b208b7f2ab40b42acaab06b20",
+                "observationId": "curve-vecrv:2026-08-26:ec9f716a086ea11fc07a",
+                "observedAt": "2026-08-26T06:07:04.958Z",
                 "sourceUrl": "https://etherscan.io/address/0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914",
                 "sourceType": "onchain",
                 "sourceMetric": "veCRV crvUSD fee APR · 4 completed weeks average",
                 "contract": "0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914",
-                "productivitySha256": "c815954ed6173f5bab7303590f60211d3d33afe767f878f5905e7c2b135414c5"
+                "productivitySha256": "f9fb3f79c1f1f93ee3c485479c52692b3f4739ec0ac81ea9c484459e947cdaad"
               },
               "causalAttribution": "unresolved-beyond-formula",
               "primaryDriver": null,
@@ -908,8 +1030,8 @@
               "explanation": "Curve veCRV Reference APR is mechanically reproducible from distributed crvUSD fees, veCRV supply and CRV price under the canonical completed-week formula. This proves how those measured inputs form the Reference APR. It does not prove why Curve fee distributions themselves increased or decreased; upstream protocol activity remains unresolved until fee-origin evidence is added.",
               "promotionRule": "Formula inputs may be described as mechanical APR inputs. Upstream causes of fee changes require separate canonical protocol-activity evidence before causal promotion."
             },
-            "sourceSha256": "6fff66eaf2cf00398d69d01fc3fb714be90f215793739cd96c7ac665855f2fcc",
-            "observedAt": "2026-08-25T10:55:00.428Z",
+            "sourceSha256": "4b5c75093dcb9f7cf062d81759ccceec44c7f4bd02f929230769e6edd78d4234",
+            "observedAt": "2026-08-26T06:29:28.289Z",
             "interpretation": "normalized-proven-mechanical-context-upstream-cause-unresolved",
             "note": "Canonical protocol-economic cohort from Explanatory Context. Report only the causal strength explicitly proven by this cohort."
           }
@@ -926,7 +1048,7 @@
             "source": "security/security-intelligence.json",
             "pointer": "/currentFindings/0",
             "selector": null,
-            "sourceSha256": "b7d718605e7b8c6fe16596029b5e43c7d9897a240a5c068eb2a090fe84087530"
+            "sourceSha256": "666e5dac8c3847cc5570bcddd352351e936d19c58169bbe20dc7f1eb18ff9a18"
           }
         ]
       },
@@ -939,7 +1061,7 @@
             "source": "security/security-intelligence.json",
             "pointer": "/currentFindings/1",
             "selector": null,
-            "sourceSha256": "b7d718605e7b8c6fe16596029b5e43c7d9897a240a5c068eb2a090fe84087530"
+            "sourceSha256": "666e5dac8c3847cc5570bcddd352351e936d19c58169bbe20dc7f1eb18ff9a18"
           }
         ]
       },
@@ -952,7 +1074,7 @@
             "source": "security/security-intelligence.json",
             "pointer": "/currentFindings",
             "selector": "severity=medium&category=dom-innerhtml",
-            "sourceSha256": "b7d718605e7b8c6fe16596029b5e43c7d9897a240a5c068eb2a090fe84087530"
+            "sourceSha256": "666e5dac8c3847cc5570bcddd352351e936d19c58169bbe20dc7f1eb18ff9a18"
           }
         ]
       },
@@ -1596,7 +1718,171 @@
         "riskTier": "low",
         "actionMode": "proposal-only"
       }
-    ]
+    ],
+    "protocolFlowContexts": {
+      "defitea-convex-vlcvx-votium": {
+        "answer": "The current shadow evidence proves the Votium voting-source transition, exact post-migration Votium→Convex vote matching, mechanical execution of those votes into Curve gauge BPS, and complete current liquidity/24h-volume/base-yield context for every currently eligible mapped Curve pool. It does not prove that incentives caused vote choices or that historical vote allocation caused current pool outcomes.",
+        "status": "shadow-cross-protocol-context-answerable-causality-unresolved",
+        "coverage": {
+          "companyRegistry": "004",
+          "company": "defitea.eth",
+          "protocolStack": [
+            "Convex",
+            "Votium",
+            "Curve"
+          ],
+          "mechanism": "vlCVX delegation → Votium incentives/votes → executed Curve gauge weights → current Curve pool context",
+          "canonicalProtocolEconomicCohort": false,
+          "shadowCandidate": true,
+          "completedVotiumRoundsMeasured": 3,
+          "votingProvenanceRoundsProven": 3,
+          "onchainVotiumGaugesExactMatched": 79,
+          "curveExecutedVotiumGaugeRows": 79,
+          "currentCurveGaugeUniverseClassified": 47,
+          "currentCurvePoolEligibleGauges": 31,
+          "currentCurvePoolContextsComplete": 31,
+          "unresolvedEligiblePoolContexts": 0
+        },
+        "measuredRelations": {
+          "incentiveToVote": {
+            "class": "CORRELATED",
+            "status": "context-only-not-causal"
+          },
+          "voteToExecutedCurveGaugeBps": {
+            "class": "ATTRIBUTED",
+            "status": "mechanical-execution-proven"
+          },
+          "historicalVoteToCurrentPoolState": {
+            "class": "CORRELATED",
+            "status": "temporal-context-only-not-causal"
+          }
+        },
+        "downstreamCurrentContext": {
+          "eligiblePoolCount": 31,
+          "completePoolContextCount": 31,
+          "liquidity": "MEASURED-current-official-curve-api-context",
+          "volume24h": "MEASURED-current-official-curve-api-context",
+          "baseYield": "MEASURED-current-official-curve-api-context",
+          "exactFeeUsd": "UNKNOWN",
+          "exactFeeUsdReason": "Selected official Curve endpoints do not directly expose exact pool fee USD."
+        },
+        "causalBoundary": {
+          "primaryDriver": null,
+          "incentiveToVoteCause": "unresolved",
+          "voteToCurrentPoolOutcomeCause": "unresolved",
+          "nextUnlock": "Accumulate aligned longitudinal Votium vote/incentive and Curve pool observations; promote causal response claims only if a protocol-specific accounting identity or reproducible aligned evidence proves them."
+        },
+        "authority": {
+          "readOnly": true,
+          "executionAuthority": "none",
+          "allocationAuthority": false,
+          "recommendationAuthority": false,
+          "predictionAuthority": false,
+          "causalClaimAuthority": "none",
+          "promotionAuthority": "none"
+        },
+        "evidence": [
+          {
+            "source": "intelligence/explanatory/explanatory-context.json",
+            "pointer": "/explanations/protocolFlowContexts/defitea-convex-vlcvx-votium",
+            "value": {
+              "contextId": "defitea-convex-vlcvx-votium",
+              "status": "shadow-cross-protocol-context-answerable-causality-unresolved",
+              "coverage": {
+                "companyRegistry": "004",
+                "company": "defitea.eth",
+                "protocolStack": [
+                  "Convex",
+                  "Votium",
+                  "Curve"
+                ],
+                "mechanism": "vlCVX delegation → Votium incentives/votes → executed Curve gauge weights → current Curve pool context",
+                "canonicalProtocolEconomicCohort": false,
+                "shadowCandidate": true,
+                "completedVotiumRoundsMeasured": 3,
+                "votingProvenanceRoundsProven": 3,
+                "onchainVotiumGaugesExactMatched": 79,
+                "curveExecutedVotiumGaugeRows": 79,
+                "currentCurveGaugeUniverseClassified": 47,
+                "currentCurvePoolEligibleGauges": 31,
+                "currentCurvePoolContextsComplete": 31,
+                "unresolvedEligiblePoolContexts": 0
+              },
+              "explanation": "The current shadow evidence proves the Votium voting-source transition, exact post-migration Votium→Convex vote matching, mechanical execution of those votes into Curve gauge BPS, and complete current liquidity/24h-volume/base-yield context for every currently eligible mapped Curve pool. It does not prove that incentives caused vote choices or that historical vote allocation caused current pool outcomes.",
+              "measuredRelations": {
+                "incentiveToVote": {
+                  "class": "CORRELATED",
+                  "status": "context-only-not-causal"
+                },
+                "voteToExecutedCurveGaugeBps": {
+                  "class": "ATTRIBUTED",
+                  "status": "mechanical-execution-proven"
+                },
+                "historicalVoteToCurrentPoolState": {
+                  "class": "CORRELATED",
+                  "status": "temporal-context-only-not-causal"
+                }
+              },
+              "downstreamCurrentContext": {
+                "eligiblePoolCount": 31,
+                "completePoolContextCount": 31,
+                "liquidity": "MEASURED-current-official-curve-api-context",
+                "volume24h": "MEASURED-current-official-curve-api-context",
+                "baseYield": "MEASURED-current-official-curve-api-context",
+                "exactFeeUsd": "UNKNOWN",
+                "exactFeeUsdReason": "Selected official Curve endpoints do not directly expose exact pool fee USD."
+              },
+              "causalBoundary": {
+                "primaryDriver": null,
+                "incentiveToVoteCause": "unresolved",
+                "voteToCurrentPoolOutcomeCause": "unresolved",
+                "nextUnlock": "Accumulate aligned longitudinal Votium vote/incentive and Curve pool observations; promote causal response claims only if a protocol-specific accounting identity or reproducible aligned evidence proves them."
+              },
+              "provenance": {
+                "economicGraphFile": "intelligence/economic-graph/economic-graph.json",
+                "graphSha256": "d4b6b49e6fa215f5eaad723b303cab399a3ca06b208b7f2ab40b42acaab06b20",
+                "deepEvidenceVersion": "0.1-vlcvx-votium-curve-cognitive-close",
+                "sourceBinding": {
+                  "roundFlow": {
+                    "file": "intelligence/economic-graph/vlcvx-votium-round-flow.json",
+                    "sha256": "bbbb098a729d0e5c91b66f254ded7aa48f7a255c684fc9f666fd2306f661ddc2",
+                    "generatedAt": "2026-08-26T03:41:54.736Z"
+                  },
+                  "votingProvenance": {
+                    "file": "intelligence/economic-graph/vlcvx-votium-snapshot-proof.json",
+                    "sha256": "cb387b3d376184b8e781deea6b3ef8751c259335a046e3220f27bb9956c63bbb",
+                    "generatedAt": "2026-08-26T05:58:14.921Z"
+                  },
+                  "curveGaugeFlow": {
+                    "file": "intelligence/economic-graph/vlcvx-votium-curve-gauge-flow.json",
+                    "sha256": "b36d24f903b520420fadcc4ee81b5620560fef482f67f2e662897fe77c68e599",
+                    "generatedAt": "2026-08-26T05:58:46.142Z"
+                  },
+                  "curvePoolContext": {
+                    "file": "intelligence/economic-graph/vlcvx-votium-curve-pool-context.json",
+                    "sha256": "4b1adf8c1bf93e918a17cc59bbc97ec4e185115bf54ab6b0ca509ea644318e22",
+                    "generatedAt": "2026-08-26T05:59:02.560Z"
+                  }
+                }
+              },
+              "authority": {
+                "readOnly": true,
+                "executionAuthority": "none",
+                "allocationAuthority": false,
+                "recommendationAuthority": false,
+                "predictionAuthority": false,
+                "causalClaimAuthority": "none",
+                "promotionAuthority": "none"
+              }
+            },
+            "sourceSha256": "4b5c75093dcb9f7cf062d81759ccceec44c7f4bd02f929230769e6edd78d4234",
+            "observedAt": "2026-08-26T06:29:28.289Z",
+            "interpretation": "shadow-cross-protocol-mechanics-and-temporal-context-causality-unresolved",
+            "note": "Votium→Convex→Curve mechanical execution is proven; current Curve pool state is measured temporal context only. Do not infer incentive→vote or vote→pool causality."
+          }
+        ]
+      }
+    }
   },
   "reasoningCases": [
     {
@@ -1628,8 +1914,8 @@
             "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
             "evidence": null
           },
-          "sourceSha256": "b7d718605e7b8c6fe16596029b5e43c7d9897a240a5c068eb2a090fe84087530",
-          "observedAt": "2026-08-25T10:55:17.264Z",
+          "sourceSha256": "666e5dac8c3847cc5570bcddd352351e936d19c58169bbe20dc7f1eb18ff9a18",
+          "observedAt": "2026-08-26T06:29:49.043Z",
           "interpretation": "direct",
           "note": "Direct current finding emitted by The Holding Security Sentinel."
         }
@@ -1664,8 +1950,8 @@
             "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
             "evidence": null
           },
-          "sourceSha256": "b7d718605e7b8c6fe16596029b5e43c7d9897a240a5c068eb2a090fe84087530",
-          "observedAt": "2026-08-25T10:55:17.264Z",
+          "sourceSha256": "666e5dac8c3847cc5570bcddd352351e936d19c58169bbe20dc7f1eb18ff9a18",
+          "observedAt": "2026-08-26T06:29:49.043Z",
           "interpretation": "direct",
           "note": "Direct current finding emitted by The Holding Security Sentinel."
         }
@@ -1712,8 +1998,8 @@
               }
             ]
           },
-          "sourceSha256": "b7d718605e7b8c6fe16596029b5e43c7d9897a240a5c068eb2a090fe84087530",
-          "observedAt": "2026-08-25T10:55:17.264Z",
+          "sourceSha256": "666e5dac8c3847cc5570bcddd352351e936d19c58169bbe20dc7f1eb18ff9a18",
+          "observedAt": "2026-08-26T06:29:49.043Z",
           "interpretation": "derived-from-direct-findings",
           "selector": "severity=medium&category=dom-innerhtml",
           "note": "Count is derived deterministically from current Security Sentinel findings."
@@ -2576,8 +2862,8 @@
         "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
         "evidence": null
       },
-      "sourceSha256": "b7d718605e7b8c6fe16596029b5e43c7d9897a240a5c068eb2a090fe84087530",
-      "observedAt": "2026-08-25T10:55:17.264Z",
+      "sourceSha256": "666e5dac8c3847cc5570bcddd352351e936d19c58169bbe20dc7f1eb18ff9a18",
+      "observedAt": "2026-08-26T06:29:49.043Z",
       "interpretation": "direct",
       "note": "Direct current finding emitted by The Holding Security Sentinel."
     },
@@ -2595,8 +2881,8 @@
         "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
         "evidence": null
       },
-      "sourceSha256": "b7d718605e7b8c6fe16596029b5e43c7d9897a240a5c068eb2a090fe84087530",
-      "observedAt": "2026-08-25T10:55:17.264Z",
+      "sourceSha256": "666e5dac8c3847cc5570bcddd352351e936d19c58169bbe20dc7f1eb18ff9a18",
+      "observedAt": "2026-08-26T06:29:49.043Z",
       "interpretation": "direct",
       "note": "Direct current finding emitted by The Holding Security Sentinel."
     },
@@ -2626,8 +2912,8 @@
           }
         ]
       },
-      "sourceSha256": "b7d718605e7b8c6fe16596029b5e43c7d9897a240a5c068eb2a090fe84087530",
-      "observedAt": "2026-08-25T10:55:17.264Z",
+      "sourceSha256": "666e5dac8c3847cc5570bcddd352351e936d19c58169bbe20dc7f1eb18ff9a18",
+      "observedAt": "2026-08-26T06:29:49.043Z",
       "interpretation": "derived-from-direct-findings",
       "selector": "severity=medium&category=dom-innerhtml",
       "note": "Count is derived deterministically from current Security Sentinel findings."
@@ -3114,39 +3400,39 @@
           "asset": "FXN"
         },
         "apr": {
-          "liveObservedPct": 21.05,
-          "canonicalProductivityPct": 21.05,
+          "liveObservedPct": 20.99,
+          "canonicalProductivityPct": 20.99,
           "parityDeltaPctPoints": 0,
           "currentObservationStatus": "ok",
-          "deltaFromPriorGraphObservationPctPoints": -0.14
+          "deltaFromPriorGraphObservationPctPoints": -0.02
         },
         "measuredDrivers": {
-          "fxnLocked": 533623.58,
-          "fxnCirculatingSupplyLockedPct": 77.07,
-          "totalVeFxn": 467152.74,
-          "cumulativeThisWeekWsteth": 0.36,
+          "fxnLocked": 541656.19,
+          "fxnCirculatingSupplyLockedPct": 78.18,
+          "totalVeFxn": 467061.9,
+          "cumulativeThisWeekWsteth": 10,
           "previousWeekWsteth": 7.98,
-          "averageLockRaw": "3.50 Years",
+          "averageLockRaw": "3.45 Years",
           "accumulateTillRaw": "Aug 26, 2026 11:59 PM"
         },
         "measuredMovement": {
-          "priorObservationId": "fxn-locker:2026-08-25:15a82cbf8099a035fc9e",
-          "elapsedHours": 0.4061,
-          "fxnLockedDelta": 0,
+          "priorObservationId": "fxn-locker:2026-08-25:af7042532238dc2f2350",
+          "elapsedHours": 10.8159,
+          "fxnLockedDelta": 2.61,
           "fxnCirculatingSupplyLockedPctDeltaPoints": 0,
-          "totalVeFxnDelta": -6.07,
-          "currentWeekRevenueDeltaWsteth": 0,
+          "totalVeFxnDelta": -152.68,
+          "currentWeekRevenueDeltaWsteth": 9.64,
           "revenueDeltaComparable": true,
           "revenueDeltaNonComparableReason": null
         },
         "provenance": {
           "graphFile": "intelligence/economic-graph/economic-graph.json",
-          "graphSha256": "4dd578c65b1b46f3b18df41bf66b1c3cfc51cd63c06d63f80ed1dcb118512ec2",
-          "observationId": "fxn-locker:2026-08-25:d366936541c2aaf69537",
-          "observedAt": "2026-08-25T06:06:25.263Z",
+          "graphSha256": "d4b6b49e6fa215f5eaad723b303cab399a3ca06b208b7f2ab40b42acaab06b20",
+          "observationId": "fxn-locker:2026-08-26:a5e223cf3d58cf4e41f4",
+          "observedAt": "2026-08-26T06:08:02.292Z",
           "sourceUrl": "https://fx.aladdin.club/v2/lock",
           "sourceType": "official-frontend-exact-locker-block",
-          "rawBlockHash": "485ef4c9a97deed53e7f6d884c1bc6b5330461dd5a56a29ae3826e84f2832eae"
+          "rawBlockHash": "65789f581ec31cfe8ae6442f18b021b145825c44f50dbd54caee7c629be4d5c9"
         },
         "causalAttribution": "unresolved",
         "primaryDriver": null,
@@ -3154,8 +3440,8 @@
         "explanation": "Canonical protocol-economic driver context is available for the Defitea veFXN cohort. The system may report these measured values and comparable deltas, but it must not say that revenue, locked supply, Total veFXN, price, incentives or another driver caused the APR until a protocol-specific formula or onchain accounting identity proves that path.",
         "promotionRule": "A driver may become ATTRIBUTED only after a protocol-specific formula or onchain accounting identity proves the causal path."
       },
-      "sourceSha256": "6fff66eaf2cf00398d69d01fc3fb714be90f215793739cd96c7ac665855f2fcc",
-      "observedAt": "2026-08-25T10:55:00.428Z",
+      "sourceSha256": "4b5c75093dcb9f7cf062d81759ccceec44c7f4bd02f929230769e6edd78d4234",
+      "observedAt": "2026-08-26T06:29:28.289Z",
       "interpretation": "legacy-vefxn-alias-measured-context-not-causal-attribution",
       "note": "Compatibility alias for the veFXN cohort. Canonical multi-cohort evidence is also included separately."
     },
@@ -3175,39 +3461,39 @@
           "asset": "FXN"
         },
         "apr": {
-          "liveObservedPct": 21.05,
-          "canonicalProductivityPct": 21.05,
+          "liveObservedPct": 20.99,
+          "canonicalProductivityPct": 20.99,
           "parityDeltaPctPoints": 0,
           "currentObservationStatus": "ok",
-          "deltaFromPriorGraphObservationPctPoints": -0.14
+          "deltaFromPriorGraphObservationPctPoints": -0.02
         },
         "measuredDrivers": {
-          "fxnLocked": 533623.58,
-          "fxnCirculatingSupplyLockedPct": 77.07,
-          "totalVeFxn": 467152.74,
-          "cumulativeThisWeekWsteth": 0.36,
+          "fxnLocked": 541656.19,
+          "fxnCirculatingSupplyLockedPct": 78.18,
+          "totalVeFxn": 467061.9,
+          "cumulativeThisWeekWsteth": 10,
           "previousWeekWsteth": 7.98,
-          "averageLockRaw": "3.50 Years",
+          "averageLockRaw": "3.45 Years",
           "accumulateTillRaw": "Aug 26, 2026 11:59 PM"
         },
         "measuredMovement": {
-          "priorObservationId": "fxn-locker:2026-08-25:15a82cbf8099a035fc9e",
-          "elapsedHours": 0.4061,
-          "fxnLockedDelta": 0,
+          "priorObservationId": "fxn-locker:2026-08-25:af7042532238dc2f2350",
+          "elapsedHours": 10.8159,
+          "fxnLockedDelta": 2.61,
           "fxnCirculatingSupplyLockedPctDeltaPoints": 0,
-          "totalVeFxnDelta": -6.07,
-          "currentWeekRevenueDeltaWsteth": 0,
+          "totalVeFxnDelta": -152.68,
+          "currentWeekRevenueDeltaWsteth": 9.64,
           "revenueDeltaComparable": true,
           "revenueDeltaNonComparableReason": null
         },
         "provenance": {
           "graphFile": "intelligence/economic-graph/economic-graph.json",
-          "graphSha256": "4dd578c65b1b46f3b18df41bf66b1c3cfc51cd63c06d63f80ed1dcb118512ec2",
-          "observationId": "fxn-locker:2026-08-25:d366936541c2aaf69537",
-          "observedAt": "2026-08-25T06:06:25.263Z",
+          "graphSha256": "d4b6b49e6fa215f5eaad723b303cab399a3ca06b208b7f2ab40b42acaab06b20",
+          "observationId": "fxn-locker:2026-08-26:a5e223cf3d58cf4e41f4",
+          "observedAt": "2026-08-26T06:08:02.292Z",
           "sourceUrl": "https://fx.aladdin.club/v2/lock",
           "sourceType": "official-frontend-exact-locker-block",
-          "rawBlockHash": "485ef4c9a97deed53e7f6d884c1bc6b5330461dd5a56a29ae3826e84f2832eae"
+          "rawBlockHash": "65789f581ec31cfe8ae6442f18b021b145825c44f50dbd54caee7c629be4d5c9"
         },
         "causalAttribution": "unresolved",
         "primaryDriver": null,
@@ -3215,8 +3501,8 @@
         "explanation": "Canonical protocol-economic driver context is available for the Defitea veFXN cohort. The system may report these measured values and comparable deltas, but it must not say that revenue, locked supply, Total veFXN, price, incentives or another driver caused the APR until a protocol-specific formula or onchain accounting identity proves that path.",
         "promotionRule": "A driver may become ATTRIBUTED only after a protocol-specific formula or onchain accounting identity proves the causal path."
       },
-      "sourceSha256": "6fff66eaf2cf00398d69d01fc3fb714be90f215793739cd96c7ac665855f2fcc",
-      "observedAt": "2026-08-25T10:55:00.428Z",
+      "sourceSha256": "4b5c75093dcb9f7cf062d81759ccceec44c7f4bd02f929230769e6edd78d4234",
+      "observedAt": "2026-08-26T06:29:28.289Z",
       "interpretation": "normalized-measured-context-not-causal-attribution",
       "note": "Canonical protocol-economic cohort from Explanatory Context. Report only the causal strength explicitly proven by this cohort."
     },
@@ -3236,17 +3522,17 @@
           "asset": "CRV"
         },
         "apr": {
-          "canonicalProductivityPct": 1.6318,
-          "formulaReproducedPct": 1.631774,
-          "formulaParityDeltaPctPoints": 0.000026,
+          "canonicalProductivityPct": 1.7142,
+          "formulaReproducedPct": 1.714152,
+          "formulaParityDeltaPctPoints": 0.000048,
           "currentObservationStatus": "ok",
-          "deltaFromPriorGraphObservationPctPoints": -0.0421
+          "deltaFromPriorGraphObservationPctPoints": -0.013
         },
         "measuredDrivers": {
-          "crvPriceUsd": 0.33673686,
+          "crvPriceUsd": 0.32055411,
           "rollingFourWeekFeesCrvUSD": 330900.9914959235,
           "rollingAverageVeSupply": 783336549.6240488,
-          "rollingAverageAprPct": 1.631775,
+          "rollingAverageAprPct": 1.71415,
           "weeksUsed": 4,
           "rollingWindowStart": "2026-07-23T00:00:00.000Z",
           "rollingWindowEnd": "2026-08-20T00:00:00.000Z",
@@ -3256,21 +3542,21 @@
             "periodEnd": "2026-08-20T00:00:00.000Z",
             "tokensCrvUSD": 148807.3648552352,
             "veSupply": 781338361.8236687,
-            "aprPct": 2.941
+            "aprPct": 3.0895
           }
         },
         "measuredMovement": {
-          "priorObservationId": "curve-vecrv:2026-08-24:414058474c3f503d61e2",
-          "elapsedHours": 10.6623,
-          "aprDeltaPctPoints": -0.0421,
-          "crvPriceDeltaUsd": 0.00847836,
+          "priorObservationId": "curve-vecrv:2026-08-25:b3ff3f52532d9b6db492",
+          "elapsedHours": 11.0188,
+          "aprDeltaPctPoints": -0.013,
+          "crvPriceDeltaUsd": 0.00242117,
           "rollingAverageVeSupplyDelta": 0,
           "rollingFourWeekFeesDeltaCrvUSD": 0,
           "rollingWindowComparable": true,
           "rollingWindowNonComparableReason": null,
           "latestWeekFeesDeltaCrvUSD": 0,
           "latestWeekVeSupplyDelta": 0,
-          "latestWeekAprDeltaPctPoints": -0.076,
+          "latestWeekAprDeltaPctPoints": -0.0235,
           "latestWeekComparable": true,
           "latestWeekNonComparableReason": null
         },
@@ -3278,21 +3564,21 @@
           "status": "proven-canonical-collector-identity",
           "weeklyIdentity": "weeklyAprPct = (tokensCrvUSD / veSupply) / crvPriceUsd * 52 * 100",
           "rollingIdentity": "canonicalProductivityAprPct = arithmetic mean(completed-week aprPct values used by Productivity)",
-          "reproducedCanonicalAprPct": 1.631774,
-          "parityDeltaPctPoints": 0.000026,
+          "reproducedCanonicalAprPct": 1.714152,
+          "parityDeltaPctPoints": 0.000048,
           "mechanicalAttribution": "proven-within-apr-formula",
           "provenRelation": "For the canonical veCRV fee APR, distributed crvUSD fees are the numerator, veCRV supply and CRV price are denominator inputs, and the rolling Reference APR is the arithmetic mean of completed-week formula outputs."
         },
         "provenance": {
           "graphFile": "intelligence/economic-graph/economic-graph.json",
-          "graphSha256": "4dd578c65b1b46f3b18df41bf66b1c3cfc51cd63c06d63f80ed1dcb118512ec2",
-          "observationId": "curve-vecrv:2026-08-25:f7a3020f34dc411fa989",
-          "observedAt": "2026-08-25T05:21:44.054Z",
+          "graphSha256": "d4b6b49e6fa215f5eaad723b303cab399a3ca06b208b7f2ab40b42acaab06b20",
+          "observationId": "curve-vecrv:2026-08-26:ec9f716a086ea11fc07a",
+          "observedAt": "2026-08-26T06:07:04.958Z",
           "sourceUrl": "https://etherscan.io/address/0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914",
           "sourceType": "onchain",
           "sourceMetric": "veCRV crvUSD fee APR · 4 completed weeks average",
           "contract": "0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914",
-          "productivitySha256": "c815954ed6173f5bab7303590f60211d3d33afe767f878f5905e7c2b135414c5"
+          "productivitySha256": "f9fb3f79c1f1f93ee3c485479c52692b3f4739ec0ac81ea9c484459e947cdaad"
         },
         "causalAttribution": "unresolved-beyond-formula",
         "primaryDriver": null,
@@ -3300,10 +3586,108 @@
         "explanation": "Curve veCRV Reference APR is mechanically reproducible from distributed crvUSD fees, veCRV supply and CRV price under the canonical completed-week formula. This proves how those measured inputs form the Reference APR. It does not prove why Curve fee distributions themselves increased or decreased; upstream protocol activity remains unresolved until fee-origin evidence is added.",
         "promotionRule": "Formula inputs may be described as mechanical APR inputs. Upstream causes of fee changes require separate canonical protocol-activity evidence before causal promotion."
       },
-      "sourceSha256": "6fff66eaf2cf00398d69d01fc3fb714be90f215793739cd96c7ac665855f2fcc",
-      "observedAt": "2026-08-25T10:55:00.428Z",
+      "sourceSha256": "4b5c75093dcb9f7cf062d81759ccceec44c7f4bd02f929230769e6edd78d4234",
+      "observedAt": "2026-08-26T06:29:28.289Z",
       "interpretation": "normalized-proven-mechanical-context-upstream-cause-unresolved",
       "note": "Canonical protocol-economic cohort from Explanatory Context. Report only the causal strength explicitly proven by this cohort."
+    },
+    {
+      "source": "intelligence/explanatory/explanatory-context.json",
+      "pointer": "/explanations/protocolFlowContexts/defitea-convex-vlcvx-votium",
+      "value": {
+        "contextId": "defitea-convex-vlcvx-votium",
+        "status": "shadow-cross-protocol-context-answerable-causality-unresolved",
+        "coverage": {
+          "companyRegistry": "004",
+          "company": "defitea.eth",
+          "protocolStack": [
+            "Convex",
+            "Votium",
+            "Curve"
+          ],
+          "mechanism": "vlCVX delegation → Votium incentives/votes → executed Curve gauge weights → current Curve pool context",
+          "canonicalProtocolEconomicCohort": false,
+          "shadowCandidate": true,
+          "completedVotiumRoundsMeasured": 3,
+          "votingProvenanceRoundsProven": 3,
+          "onchainVotiumGaugesExactMatched": 79,
+          "curveExecutedVotiumGaugeRows": 79,
+          "currentCurveGaugeUniverseClassified": 47,
+          "currentCurvePoolEligibleGauges": 31,
+          "currentCurvePoolContextsComplete": 31,
+          "unresolvedEligiblePoolContexts": 0
+        },
+        "explanation": "The current shadow evidence proves the Votium voting-source transition, exact post-migration Votium→Convex vote matching, mechanical execution of those votes into Curve gauge BPS, and complete current liquidity/24h-volume/base-yield context for every currently eligible mapped Curve pool. It does not prove that incentives caused vote choices or that historical vote allocation caused current pool outcomes.",
+        "measuredRelations": {
+          "incentiveToVote": {
+            "class": "CORRELATED",
+            "status": "context-only-not-causal"
+          },
+          "voteToExecutedCurveGaugeBps": {
+            "class": "ATTRIBUTED",
+            "status": "mechanical-execution-proven"
+          },
+          "historicalVoteToCurrentPoolState": {
+            "class": "CORRELATED",
+            "status": "temporal-context-only-not-causal"
+          }
+        },
+        "downstreamCurrentContext": {
+          "eligiblePoolCount": 31,
+          "completePoolContextCount": 31,
+          "liquidity": "MEASURED-current-official-curve-api-context",
+          "volume24h": "MEASURED-current-official-curve-api-context",
+          "baseYield": "MEASURED-current-official-curve-api-context",
+          "exactFeeUsd": "UNKNOWN",
+          "exactFeeUsdReason": "Selected official Curve endpoints do not directly expose exact pool fee USD."
+        },
+        "causalBoundary": {
+          "primaryDriver": null,
+          "incentiveToVoteCause": "unresolved",
+          "voteToCurrentPoolOutcomeCause": "unresolved",
+          "nextUnlock": "Accumulate aligned longitudinal Votium vote/incentive and Curve pool observations; promote causal response claims only if a protocol-specific accounting identity or reproducible aligned evidence proves them."
+        },
+        "provenance": {
+          "economicGraphFile": "intelligence/economic-graph/economic-graph.json",
+          "graphSha256": "d4b6b49e6fa215f5eaad723b303cab399a3ca06b208b7f2ab40b42acaab06b20",
+          "deepEvidenceVersion": "0.1-vlcvx-votium-curve-cognitive-close",
+          "sourceBinding": {
+            "roundFlow": {
+              "file": "intelligence/economic-graph/vlcvx-votium-round-flow.json",
+              "sha256": "bbbb098a729d0e5c91b66f254ded7aa48f7a255c684fc9f666fd2306f661ddc2",
+              "generatedAt": "2026-08-26T03:41:54.736Z"
+            },
+            "votingProvenance": {
+              "file": "intelligence/economic-graph/vlcvx-votium-snapshot-proof.json",
+              "sha256": "cb387b3d376184b8e781deea6b3ef8751c259335a046e3220f27bb9956c63bbb",
+              "generatedAt": "2026-08-26T05:58:14.921Z"
+            },
+            "curveGaugeFlow": {
+              "file": "intelligence/economic-graph/vlcvx-votium-curve-gauge-flow.json",
+              "sha256": "b36d24f903b520420fadcc4ee81b5620560fef482f67f2e662897fe77c68e599",
+              "generatedAt": "2026-08-26T05:58:46.142Z"
+            },
+            "curvePoolContext": {
+              "file": "intelligence/economic-graph/vlcvx-votium-curve-pool-context.json",
+              "sha256": "4b1adf8c1bf93e918a17cc59bbc97ec4e185115bf54ab6b0ca509ea644318e22",
+              "generatedAt": "2026-08-26T05:59:02.560Z"
+            }
+          }
+        },
+        "authority": {
+          "readOnly": true,
+          "executionAuthority": "none",
+          "allocationAuthority": false,
+          "recommendationAuthority": false,
+          "predictionAuthority": false,
+          "causalClaimAuthority": "none",
+          "promotionAuthority": "none"
+        }
+      },
+      "sourceSha256": "4b5c75093dcb9f7cf062d81759ccceec44c7f4bd02f929230769e6edd78d4234",
+      "observedAt": "2026-08-26T06:29:28.289Z",
+      "interpretation": "shadow-cross-protocol-mechanics-and-temporal-context-causality-unresolved",
+      "note": "Votium→Convex→Curve mechanical execution is proven; current Curve pool state is measured temporal context only. Do not infer incentive→vote or vote→pool causality."
     }
   ],
   "grounding": {
@@ -3313,7 +3697,7 @@
         "file": "intelligence/change-intelligence.json",
         "sha256": "2a28ee00593d1f3bb25434bd5a6dfa641802c63e1bbc6e7c5bb3812c4c550e4f",
         "generatedAt": "2026-08-25T07:23:52.883Z",
-        "ageHours": 3.524,
+        "ageHours": 23.099,
         "expectedMaxAgeHours": 36,
         "freshness": "fresh"
       },
@@ -3321,31 +3705,31 @@
         "file": "intelligence/system-memory.json",
         "sha256": "f4d25aeb75cce14c93e64abfb2872aa457b4c78326f98873c25d8ef5039e0c6c",
         "generatedAt": "2026-08-25T07:23:52.883Z",
-        "ageHours": 3.524,
+        "ageHours": 23.099,
         "expectedMaxAgeHours": 36,
         "freshness": "fresh"
       },
       "security": {
         "file": "security/security-intelligence.json",
-        "sha256": "b7d718605e7b8c6fe16596029b5e43c7d9897a240a5c068eb2a090fe84087530",
-        "generatedAt": "2026-08-25T10:55:17.264Z",
+        "sha256": "666e5dac8c3847cc5570bcddd352351e936d19c58169bbe20dc7f1eb18ff9a18",
+        "generatedAt": "2026-08-26T06:29:49.043Z",
         "ageHours": 0,
         "expectedMaxAgeHours": 36,
         "freshness": "fresh"
       },
       "securityMemory": {
         "file": "security/security-memory.json",
-        "sha256": "2ad6a73bed43beaadf0c9c85c72d4f4f73ddf4dcf3dde6645eaee66d9df59ec6",
-        "generatedAt": "2026-08-25T10:55:17.264Z",
+        "sha256": "a75de550b888e5a3562e5749319c3c6c16719fd1b20f845892ee8a1466ffce07",
+        "generatedAt": "2026-08-26T06:29:49.043Z",
         "ageHours": 0,
         "expectedMaxAgeHours": 36,
         "freshness": "fresh"
       },
       "explanatory": {
         "file": "intelligence/explanatory/explanatory-context.json",
-        "sha256": "6fff66eaf2cf00398d69d01fc3fb714be90f215793739cd96c7ac665855f2fcc",
-        "generatedAt": "2026-08-25T10:55:00.428Z",
-        "ageHours": 0.005,
+        "sha256": "4b5c75093dcb9f7cf062d81759ccceec44c7f4bd02f929230769e6edd78d4234",
+        "generatedAt": "2026-08-26T06:29:28.289Z",
+        "ageHours": 0.006,
         "expectedMaxAgeHours": 36,
         "freshness": "fresh"
       }
@@ -3363,7 +3747,8 @@
       "A proven mechanical identity may explain how a metric is formed without proving why its upstream inputs changed.",
       "Correction ledger interpretation takes precedence over superseded historical interpretation when applicable.",
       "Recommendations are proposals, not executable actions.",
-      "Security-critical workflow-plane changes remain human-gated."
+      "Security-critical workflow-plane changes remain human-gated.",
+      "Shadow cross-protocol context may prove mechanical execution and expose measured temporal state without proving incentive→vote or vote→pool causality."
     ]
   },
   "constraints": {
@@ -3377,8 +3762,11 @@
   },
   "bridge": {
     "purpose": "Canonical evidence-bound reasoning packet for future human/AI interpretation. Read this before opening large memory artifacts.",
-    "inputCompositeHash": "05baaf51596342a462cffe5af9873872cd4361c145a47dd3c6315a229c2279c9",
-    "snapshotHash": "2628af556e9cf86146288cdefd31a89798e077855b9a947614834c0271802f98",
-    "previousInputCompositeHash": "ae324046f943387d71e25db98478a30eeb0607a5a9c47ed49983ac176f377101"
+    "inputCompositeHash": "56d06f4ecd871d24c4677b9f08a583235ce227e58dd4b2a8d16c4eb79e285ca5",
+    "snapshotHash": "3488bfeb2939686fb0935c2e90f30199409ee022e00b5404d6283766f9962f48",
+    "previousInputCompositeHash": "05baaf51596342a462cffe5af9873872cd4361c145a47dd3c6315a229c2279c9"
+  },
+  "extensions": {
+    "vlCvxVotiumCurve": "0.1-vlcvx-votium-curve-shadow-context"
   }
 }
