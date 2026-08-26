@@ -8,7 +8,19 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
-assert(policy.version === '0.3-pr-run-supersession-controller', 'policy version drift');
+function classifyTarget({ state, sha, ref }) {
+  if (state === 'closed') return 'noop';
+  if (state !== 'open' || !sha || !ref || ref === 'main') return 'reject';
+  return 'active';
+}
+
+assert(classifyTarget({ state: 'closed', sha: 'abc', ref: 'feature' }) === 'noop', 'closed PR must be a safe no-op');
+assert(classifyTarget({ state: 'open', sha: 'abc', ref: 'feature' }) === 'active', 'valid open PR must remain active');
+assert(classifyTarget({ state: 'unknown', sha: 'abc', ref: 'feature' }) === 'reject', 'unexpected state must fail closed');
+assert(classifyTarget({ state: 'open', sha: '', ref: 'feature' }) === 'reject', 'missing SHA must fail closed');
+assert(classifyTarget({ state: 'open', sha: 'abc', ref: 'main' }) === 'reject', 'main target must fail closed');
+
+assert(policy.version === '0.4-pr-run-supersession-controller', 'policy version drift');
 assert(policy.mode === 'cancel-superseded-pull-request-runs-only', 'policy mode drift');
 assert(policy.trigger?.primaryEvent === 'workflow_run', 'controller must remain workflow_run-driven');
 assert(Array.isArray(policy.trigger?.allowedUpstreamEvents), 'allowed upstream events missing');
@@ -22,6 +34,8 @@ assert(policy.scope?.requiresSamePullRequestNumber === true, 'same PR gate missi
 assert(policy.scope?.requiresSameHeadBranch === true, 'same head branch gate missing');
 assert(policy.scope?.requiresDifferentHeadSha === true, 'different head SHA gate missing');
 assert(policy.scope?.requiresOpenPullRequest === true, 'open PR gate missing');
+assert(policy.scope?.closedPullRequestWakeIsNoop === true, 'closed PR no-op law missing');
+assert(policy.scope?.unknownOrMalformedTargetFailsClosed === true, 'malformed target fail-closed law missing');
 assert(policy.scope?.forbidMainHeadBranch === true, 'main protection missing');
 assert(policy.scope?.currentHeadNeverCancelled === true, 'current-head protection missing');
 assert(policy.scope?.productionRunsNeverCancelled === true, 'production protection missing');
@@ -49,7 +63,12 @@ for (const required of [
   'group: pr-run-supersession-${{',
   'cancel-in-progress: true',
   'ref: main',
-  "PR_STATE=\"$(gh api \"repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER\" --jq '.state')\"",
+  'PR_JSON="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER")"',
+  'if [ "$PR_STATE" = "closed" ]; then',
+  'echo "active=false" >> "$GITHUB_OUTPUT"',
+  'safe no-op; no workflow cancellation attempted',
+  'echo "active=true" >> "$GITHUB_OUTPUT"',
+  "if: steps.target.outputs.active == 'true'",
   'actions/runs?event=pull_request&per_page=100',
   '.event == "pull_request"',
   '.head_sha != $current_sha',
@@ -78,6 +97,7 @@ console.log('PR RUN SUPERSESSION CANARY PASS', {
   trigger: policy.trigger.primaryEvent,
   upstreamEvents: policy.trigger.allowedUpstreamEvents,
   bootstrapWakeSource: policy.trigger.bootstrapWakeSource,
+  closedPrWake: 'safe-noop',
   addsPullRequestFanout: policy.trigger.addsPullRequestFanout,
   cancellationAuthority: policy.authority.workflowCancellationAuthority,
   executionAuthority: policy.authority.executionAuthority
