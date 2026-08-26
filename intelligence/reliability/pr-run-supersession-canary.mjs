@@ -8,12 +8,16 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
-assert(policy.version === '0.1-pr-run-supersession-controller', 'policy version drift');
+assert(policy.version === '0.2-pr-run-supersession-controller', 'policy version drift');
 assert(policy.mode === 'cancel-superseded-pull-request-runs-only', 'policy mode drift');
-assert(policy.scope?.allowedEvent === 'pull_request', 'controller event scope must remain pull_request-only for cancellations');
+assert(policy.trigger?.primaryEvent === 'workflow_run', 'controller must remain workflow_run-driven');
+assert(policy.trigger?.upstreamCompletionOnly === true, 'upstream completion gate missing');
+assert(policy.trigger?.addsPullRequestFanout === false, 'controller may not add pull_request fanout');
+assert(policy.scope?.cancellableRunEvent === 'pull_request', 'cancellation target must remain pull_request-only');
 assert(policy.scope?.requiresSamePullRequestNumber === true, 'same PR gate missing');
 assert(policy.scope?.requiresSameHeadBranch === true, 'same head branch gate missing');
 assert(policy.scope?.requiresDifferentHeadSha === true, 'different head SHA gate missing');
+assert(policy.scope?.requiresOpenPullRequest === true, 'open PR gate missing');
 assert(policy.scope?.forbidMainHeadBranch === true, 'main protection missing');
 assert(policy.scope?.currentHeadNeverCancelled === true, 'current-head protection missing');
 assert(policy.scope?.productionRunsNeverCancelled === true, 'production protection missing');
@@ -25,12 +29,20 @@ assert(policy.authority?.executionAuthority === 'none', 'execution authority exp
 for (const required of [
   '# holding-control-plane: workflow-controller',
   '# holding-control-domain: pull-request-supersession-only',
+  'workflow_run:',
+  'The Holding Reliability · Repository Hygiene Guard',
+  'The Holding Security · Commit Identity Privacy Guard',
+  'The Holding Security · Public Surface Privacy Guard',
+  'types: [completed]',
   'actions: write',
   'contents: read',
   'pull-requests: read',
-  'group: pr-run-supersession-${{ github.event.pull_request.number || inputs.pr_number }}',
+  "github.event.workflow_run.event == 'pull_request'",
+  "github.event.workflow_run.head_branch != 'main'",
+  'group: pr-run-supersession-${{',
   'cancel-in-progress: true',
-  '.event == "pull_request"',
+  'ref: main',
+  "PR_STATE=\"$(gh api \"repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER\" --jq '.state')\"",
   '.head_sha != $current_sha',
   '.head_branch == $head_ref',
   '.head_branch != "main"',
@@ -41,17 +53,20 @@ for (const required of [
 }
 
 for (const forbidden of [
+  '\n  pull_request:\n',
+  'pull_request_target:',
   'contents: write',
   'git push',
   'git commit',
-  'workflow_dispatch_authority',
-  'pull_request_target:'
+  'gh workflow run '
 ]) {
   assert(!workflow.includes(forbidden), `forbidden controller capability present: ${forbidden}`);
 }
 
 console.log('PR RUN SUPERSESSION CANARY PASS', {
-  mode: policy.mode,
+  version: policy.version,
+  trigger: policy.trigger.primaryEvent,
+  addsPullRequestFanout: policy.trigger.addsPullRequestFanout,
   cancellationAuthority: policy.authority.workflowCancellationAuthority,
   executionAuthority: policy.authority.executionAuthority
 });
