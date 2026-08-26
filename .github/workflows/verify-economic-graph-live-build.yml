@@ -73,6 +73,14 @@ jobs:
           });
           NODE
 
+      - name: Prove Frax veFRAX lifecycle semantics
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check intelligence/economic-graph/frax-vefrax-lifecycle.mjs
+          node --check intelligence/economic-graph/frax-vefrax-lifecycle-canary.mjs
+          node intelligence/economic-graph/frax-vefrax-lifecycle-canary.mjs
+
       - name: Install live probe dependencies
         working-directory: productivity
         run: |
