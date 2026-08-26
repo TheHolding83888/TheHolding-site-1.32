@@ -1,6 +1,6 @@
 {
   "version": "0.1-protocol-intelligence-lifecycle-policy",
-  "revision": "0.5-registry-wide-velodrome-ve-gauge-admission",
+  "revision": "0.6.2-registry-wide-frax-native-period-boundary-gate",
   "stageOrder": ["discovery", "shadow", "verified", "canonical"],
   "operatingModes": ["warming", "shadow-monitoring", "continuous-monitoring"],
   "scope": {
@@ -11,7 +11,8 @@
     "legacyPrimaryCompany": "defitea.eth",
     "registryWideProtocolIds": [
       "registry-yieldbasis-multimechanism",
-      "registry-velodrome-vevelo"
+      "registry-velodrome-vevelo",
+      "registry-frax-vefrax"
     ],
     "protocolIds": [
       "defitea-fxn-vefxn",
@@ -20,7 +21,8 @@
       "defitea-convex-vlcvx-votium",
       "defitea-pendle-spendle",
       "registry-yieldbasis-multimechanism",
-      "registry-velodrome-vevelo"
+      "registry-velodrome-vevelo",
+      "registry-frax-vefrax"
     ]
   },
   "authority": {
@@ -50,8 +52,11 @@
     "stageRegressionIsAllowedWhenEvidenceRegresses": true,
     "historyIsAppendOnlyByTransitionFingerprint": true,
     "longitudinalDepthRequiresDistinctNativePeriods": true,
+    "nativePeriodLabelsAloneDoNotCreateDepth": true,
     "protocolSensorsMaySpanMultipleCompaniesWithoutCollapsingMechanismSemantics": true,
-    "veGaugeFamilyReuseMustPreserveProtocolSpecificEvidenceBoundaries": true
+    "veGaugeFamilyReuseMustPreserveProtocolSpecificEvidenceBoundaries": true,
+    "brandingChangeDoesNotProveMigrationCompletion": true,
+    "legacyApiSchemaDoesNotDefineCurrentTokenIdentity": true
   },
   "protocols": {
     "defitea-fxn-vefxn": {
@@ -100,6 +105,15 @@
       "verifiedMinimumDistinctSnapshotCount": 2,
       "verifiedGate": "reproduced-reference-apr-plus-registry-exposure-plus-current-bounded-reward-route-plus-complete-bounded-vote-pool-history-plus-two-distinct-weekly-snapshots",
       "canonicalGate": "verified-state-plus-mechanically-proven-vote-to-gauge-pool-execution-and-current-pool-fee-incentive-accounting"
+    },
+    "registry-frax-vefrax": {
+      "label": "Frax / veFRAX",
+      "scope": "registry-wide-multi-company-ve-lock",
+      "family": "ve-lock-governance",
+      "existingAuthority": "discovery",
+      "verifiedMinimumDistinctNativePeriodCount": 2,
+      "verifiedGate": "current-official-api-reference-apr-plus-registry-exposure-plus-current-history-parity-plus-two-distinct-frax-native-periods-with-explicit-reproducible-start-end-boundaries-plus-branding-migration-and-legacy-api-schema-boundaries",
+      "canonicalGate": "verified-state-plus-live-ethereum-fraxtal-lock-topology-reconciliation-plus-complete-revenue-to-vefrax-distribution-apr-accounting-identity"
     }
   }
 }
