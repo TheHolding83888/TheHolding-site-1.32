@@ -2,17 +2,23 @@ name: "The Holding · Votium → Curve Gauge Flow"
 
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows:
+      - "The Holding · Votium vlCVX Voting Provenance"
+    types: [completed]
   push:
     branches: [main]
     paths:
-      - "intelligence/economic-graph/vlcvx-votium-snapshot-proof.json"
       - "intelligence/economic-graph/vlcvx-votium-curve-gauge-flow.mjs"
       - "scripts/verify-vlcvx-votium-curve-gauge-flow.mjs"
+      - "intelligence/economic-graph/vlcvx-votium-evidence-handoff-canary.mjs"
       - ".github/workflows/update-vlcvx-votium-curve-gauge-flow.yml"
   pull_request:
     paths:
       - "intelligence/economic-graph/vlcvx-votium-curve-gauge-flow.mjs"
       - "scripts/verify-vlcvx-votium-curve-gauge-flow.mjs"
+      - "intelligence/economic-graph/vlcvx-votium-evidence-handoff-canary.mjs"
+      - ".github/workflows/update-vlcvx-votium-curve-gauge-flow.yml"
 
 permissions:
   contents: write
@@ -23,6 +29,11 @@ concurrency:
 
 jobs:
   build:
+    if: >-
+      ${{
+        github.event_name != 'workflow_run' ||
+        (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+      }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -50,6 +61,8 @@ jobs:
           set -euo pipefail
           node --check intelligence/economic-graph/vlcvx-votium-curve-gauge-flow.mjs
           node --check scripts/verify-vlcvx-votium-curve-gauge-flow.mjs
+          node --check intelligence/economic-graph/vlcvx-votium-evidence-handoff-canary.mjs
+          node intelligence/economic-graph/vlcvx-votium-evidence-handoff-canary.mjs
           test -s intelligence/economic-graph/vlcvx-votium-round-flow.json
           test -s intelligence/economic-graph/vlcvx-votium-snapshot-proof.json
           git diff --check
