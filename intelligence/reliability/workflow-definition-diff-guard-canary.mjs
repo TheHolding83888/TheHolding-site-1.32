@@ -139,6 +139,31 @@ r = evaluateWorkflowDefinitionChange({
 });
 assert(r.status === 'PASS' && r.proof === 'paired-deterministic-definition-proof-executed', 'fanout-neutral added workflow with executed paired proof must pass');
 
+const controllerMaintained = controllerHead.replace('contents: read', 'contents: read\n  actions: read');
+r = evaluateWorkflowDefinitionChange({
+  file: controllerFile,
+  baseText: controllerHead,
+  headText: controllerMaintained,
+  diff: `@@ -8,0 +9 @@\n+  actions: read`,
+  changedFiles: [controllerFile, proofPath],
+  policy,
+  centrallyProvenActionSpecs: provenSpecs,
+  pairedDefinitionProof: { ok: true, proofPath, reason: 'paired-deterministic-definition-proof-executed' }
+});
+assert(r.status === 'PASS' && r.proof === 'paired-deterministic-definition-proof-executed', 'maintained fanout-neutral workflow with executed paired proof must pass');
+
+r = evaluateWorkflowDefinitionChange({
+  file: controllerFile,
+  baseText: controllerHead,
+  headText: controllerMaintained,
+  diff: `@@ -8,0 +9 @@\n+  actions: read`,
+  changedFiles: [controllerFile],
+  policy,
+  centrallyProvenActionSpecs: provenSpecs,
+  pairedDefinitionProof: { ok: false, proofPath, reason: 'proof-file-not-changed-with-workflow' }
+});
+assert(r.status === 'FAIL' && r.proof === 'proof-file-not-changed-with-workflow', 'maintained fanout-neutral workflow without changed proof must fail closed');
+
 paired = validatePairedWorkflowDefinitionProof({
   file: controllerFile,
   headText: controllerHead,
@@ -169,4 +194,4 @@ r = evaluateWorkflowDefinitionChange({
 });
 assert(r.status === 'FAIL' && r.proof === 'missing-or-ambiguous-proof-marker', 'unproven fanout-neutral workflow must fail closed');
 
-console.log('WORKFLOW DEFINITION DIFF GUARD CANARY PASS (exact central action proof / self-reduction / paired fanout-neutral proof / logic fail-closed)');
+console.log('WORKFLOW DEFINITION DIFF GUARD CANARY PASS (exact central action proof / self-reduction / paired add+maintenance proof / logic fail-closed)');

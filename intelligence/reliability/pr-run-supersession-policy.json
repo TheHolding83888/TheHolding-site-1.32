@@ -1,7 +1,7 @@
 {
-  "version": "0.3-pr-run-supersession-controller",
+  "version": "0.4-pr-run-supersession-controller",
   "mode": "cancel-superseded-pull-request-runs-only",
-  "purpose": "Prevent obsolete pull-request workflow runs from consuming runner/concurrency capacity after a PR head moves, without adding another pull_request fan-out consumer and without cancelling production, current-head, scheduled, push, workflow_run or workflow_dispatch work.",
+  "purpose": "Prevent obsolete pull-request workflow runs from consuming runner/concurrency capacity after a PR head moves, without adding another pull_request fan-out consumer and without cancelling production, current-head, scheduled, push, workflow_run or workflow_dispatch work. Late callbacks for already closed pull requests are successful no-ops rather than false operational failures.",
   "trigger": {
     "primaryEvent": "workflow_run",
     "allowedUpstreamEvents": [
@@ -20,6 +20,8 @@
     "requiresDifferentHeadSha": true,
     "requiresNonCompletedStatus": true,
     "requiresOpenPullRequest": true,
+    "closedPullRequestWakeIsNoop": true,
+    "unknownOrMalformedTargetFailsClosed": true,
     "forbidMainHeadBranch": true,
     "currentHeadNeverCancelled": true,
     "productionRunsNeverCancelled": true
@@ -37,6 +39,8 @@
   },
   "safetyLaw": [
     "A completed trusted upstream PR guard may wake the controller, including the existing read-only pull_request_target deployment smoke used as the bootstrap path when ordinary pull_request jobs are congested.",
+    "A late callback for a pull request that GitHub already reports as closed is a successful no-op: no cancellation query is executed and no authority is exercised.",
+    "An unresolved, malformed or unexpected target state still fails closed.",
     "Wake-source event class does not widen cancellation scope: a run is cancellable only when it belongs to the same open pull request and same PR head branch, is itself a pull_request event, is not completed, and its head SHA differs from the current PR head SHA read from GitHub at execution time.",
     "Runs on main are never cancellable by this controller.",
     "Current-head runs are never cancellable by this controller.",

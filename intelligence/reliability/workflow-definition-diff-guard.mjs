@@ -177,7 +177,15 @@ export function evaluateWorkflowDefinitionChange({ file, baseText, headText, dif
   }
 
   if (!trigger.enabled) {
-    return { file, status: 'FAIL', proof: 'pull-request-verifier-disabled-without-central-proof' };
+    if (pairedDefinitionProof?.ok === true) {
+      return { file, status: 'PASS', proof: pairedDefinitionProof.reason || 'paired-deterministic-definition-proof-executed', proofPath: pairedDefinitionProof.proofPath || null };
+    }
+    return {
+      file,
+      status: 'FAIL',
+      proof: pairedDefinitionProof?.reason || 'pull-request-verifier-disabled-without-central-proof',
+      proofPath: pairedDefinitionProof?.proofPath || null
+    };
   }
 
   const domainChanged = changedFiles
@@ -206,9 +214,9 @@ export function evaluateChanges({ baseSha, headSha, changedFiles, policy, reader
     const diff = differ(baseSha, headSha, file);
     let pairedDefinitionProof = null;
 
-    if (baseText == null && headText != null) {
-      const proofPath = extractWorkflowDefinitionProof(headText);
-      const proofText = proofPath ? reader(headSha, proofPath) : null;
+    const proofPath = headText != null ? extractWorkflowDefinitionProof(headText) : null;
+    if (headText != null && proofPath) {
+      const proofText = reader(headSha, proofPath);
       const staticProof = validatePairedWorkflowDefinitionProof({ file, headText, changedFiles, policy, proofText });
       if (staticProof.ok) {
         if (!proofCache.has(staticProof.proofPath)) proofCache.set(staticProof.proofPath, proofExecutor(staticProof.proofPath));
@@ -216,7 +224,7 @@ export function evaluateChanges({ baseSha, headSha, changedFiles, policy, reader
         pairedDefinitionProof = {
           ok: executed.ok === true,
           proofPath: staticProof.proofPath,
-          reason: executed.ok ? executed.reason : executed.reason
+          reason: executed.reason
         };
       } else {
         pairedDefinitionProof = staticProof;

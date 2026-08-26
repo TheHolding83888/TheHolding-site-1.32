@@ -1,7 +1,7 @@
 {
-  "version": "0.3-workflow-definition-diff-guard-paired-proof",
+  "version": "0.4-workflow-definition-diff-guard-paired-maintenance-proof",
   "mode": "fail-closed-unverified-workflow-logic-change",
-  "purpose": "Preserve workflow review safety while allowing fan-out-neutral controllers: self-waking workflows keep their existing proof path, reduced workflows retain exact central action-pin/domain proof, and newly added workflows without pull_request fan-out may pass only through an explicit changed deterministic proof file that is executed by this guard.",
+  "purpose": "Preserve workflow review safety while allowing fan-out-neutral controllers to be added and maintained without reintroducing pull_request fan-out: self-waking workflows keep their existing proof path, reduced workflows retain exact central action-pin/domain proof, and workflows without direct pull_request validation may pass only through an explicit changed deterministic proof file that is executed by this guard.",
   "authority": {
     "readOnly": true,
     "executionAuthority": "none",
@@ -25,10 +25,11 @@
     "If a changed workflow no longer self-wakes, a pin-only update is allowed only when its added exact action spec is present in and therefore exercised by the candidate central Control Plane workflow.",
     "Action-family membership alone is never sufficient proof for a reduced workflow; an unexercised exact pin fails closed.",
     "Removing only the workflow's own path entry from pull_request.paths is allowed only when the workflow keeps pull_request enabled and retains at least one non-workflow domain path.",
-    "Any other existing-workflow logic change that does not self-wake must be paired with a changed non-workflow path that wakes the current workflow verifier.",
+    "Any other existing workflow with pull_request enabled that does not self-wake must be paired with a changed non-workflow path that wakes the current workflow verifier.",
     "A newly added workflow may avoid pull_request fan-out only when it declares exactly one holding-workflow-definition-proof path under an allowed prefix, that proof file is changed in the same candidate, references the workflow path, and executes successfully during the guard.",
+    "An existing workflow with no direct pull_request trigger may be maintained through the same paired deterministic proof contract; the proof file must change with the workflow and execute successfully in the candidate Control Plane run.",
     "A paired workflow-definition proof never grants runtime authority; it only proves candidate workflow semantics during review.",
     "Deleted workflow definitions without a bounded maintenance review fail closed.",
-    "Unknown diff semantics, missing proof bytes, unapproved proof locations or failed proof execution fail closed."
+    "Unknown diff semantics, missing proof bytes, unchanged proof files, unapproved proof locations or failed proof execution fail closed."
   ]
 }

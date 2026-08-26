@@ -69,21 +69,38 @@ jobs:
             exit 1
           fi
 
-          CURRENT_SHA="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '.head.sha')"
-          HEAD_REF="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '.head.ref')"
-          PR_STATE="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '.state')"
+          PR_JSON="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER")"
+          CURRENT_SHA="$(jq -r '.head.sha // empty' <<< "$PR_JSON")"
+          HEAD_REF="$(jq -r '.head.ref // empty' <<< "$PR_JSON")"
+          PR_STATE="$(jq -r '.state // empty' <<< "$PR_JSON")"
+
+          echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+
+          if [ "$PR_STATE" = "closed" ]; then
+            echo "active=false" >> "$GITHUB_OUTPUT"
+            echo "Closed PR #$PR_NUMBER received a late guard callback; supersession is a safe no-op."
+            {
+              echo "### PR Run Supersession"
+              echo "- PR: #$PR_NUMBER"
+              echo "- State: closed"
+              echo "- Action: safe no-op; no workflow cancellation attempted"
+              echo "- Current-head and production runs: untouched"
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
 
           if [ "$PR_STATE" != "open" ] || [ -z "$CURRENT_SHA" ] || [ -z "$HEAD_REF" ] || [ "$HEAD_REF" = "main" ]; then
             echo "ERROR: unsafe or unresolved PR target: pr=$PR_NUMBER state=$PR_STATE head=$HEAD_REF sha=$CURRENT_SHA" >&2
             exit 1
           fi
 
-          echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "active=true" >> "$GITHUB_OUTPUT"
           echo "current_sha=$CURRENT_SHA" >> "$GITHUB_OUTPUT"
           echo "head_ref=$HEAD_REF" >> "$GITHUB_OUTPUT"
           echo "Resolved open PR #$PR_NUMBER head=$HEAD_REF sha=$CURRENT_SHA"
 
       - name: Cancel only obsolete runs from the same PR branch
+        if: steps.target.outputs.active == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ steps.target.outputs.pr_number }}
