@@ -1,6 +1,6 @@
 {
   "version": "0.1-browser-trust-policy",
-  "reviewedAt": "2026-08-14T10:05:00Z",
+  "reviewedAt": "2026-08-26T08:24:00Z",
   "purpose": "Turn noisy browser-surface findings into explicit, fail-closed trust decisions. Reviewed DOM sinks are accepted only while the exact Git blob remains unchanged; mutable third-party scripts remain monitored as external trust dependencies rather than being incorrectly pinned with brittle SRI.",
   "externalScripts": [
     {
@@ -72,10 +72,10 @@
     },
     {
       "file": "companies/index.html",
-      "gitBlobSha1": "3fc9c49f28968a282025c8716b756eebc9f25923",
-      "expectedCount": 16,
+      "gitBlobSha1": "def951f9432bfe600f29bdbbf1c26dbd58655b0d",
+      "expectedCount": 18,
       "classification": "trusted-canonical-company-registry-and-generated-data",
-      "rationale": "Reviewed sinks render static registry/i18n structures and same-origin canonical Company/Stable/Rewards/Reporting artifacts. No URL/search/form/user string is routed directly into these reviewed assignments. Any file change invalidates this review and reopens every sink automatically."
+      "rationale": "Reviewed sinks render static registry/i18n structures and same-origin canonical Company, Stable, Rewards, Reporting, Economic Graph and protocol-lifecycle artifacts. External/string fields in the reviewed render paths are escaped and numeric fields are formatted/coerced before insertion; no URL/search/form/user string is routed directly into these assignments. Any file change invalidates this review and reopens every sink automatically."
     }
   ]
 }
