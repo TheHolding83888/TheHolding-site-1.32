@@ -7,6 +7,7 @@ import { applyPendleSPendleLifecycle } from './pendle-spendle-lifecycle.mjs';
 import { applyPendleAccountingEvidence } from './pendle-spendle-accounting-evidence.mjs';
 import { applyYieldBasisLifecycle } from './yieldbasis-lifecycle.mjs';
 import { applyVelodromeLifecycle } from './ve-gauge-registry-lifecycle.mjs';
+import { applyAeroTransitionReadiness, AERO_TRANSITION_ID } from './aero-transition-readiness.mjs';
 
 function base(){
   return {
@@ -252,6 +253,20 @@ if(secondVeloProtocol.maturityStage!=='verified'||!secondVeloProtocol.automatica
 if(!secondVeloProtocol.checks.find(x=>x.id==='distinct-snapshot-depth')?.pass) throw new Error('Velodrome distinct-week gate did not close');
 if(secondVeloProtocol.maturityStage==='canonical') throw new Error('Velodrome was over-promoted to CANONICAL without end-to-end vote/gauge/pool/fee accounting');
 if(secondVeloProtocol.checks.find(x=>x.id==='end-to-end-vote-gauge-pool-fee-accounting')?.pass) throw new Error('Velodrome canonical mechanical gate unexpectedly passed');
+
+const withAeroTransition=applyAeroTransitionReadiness({state:secondVelodrome});
+const aeroTransition=withAeroTransition.protocolTransitions?.[AERO_TRANSITION_ID];
+if(!aeroTransition||aeroTransition.status!=='announced-not-activated') throw new Error('Aero transition readiness state was not materialized fail-closed');
+if(aeroTransition.predecessors?.length!==2) throw new Error('Aero transition must preserve exactly the Aerodrome + Velodrome predecessor identities');
+if(aeroTransition.successor?.protocol!=='Aero'||aeroTransition.successor?.ticker!=='AERO'||aeroTransition.successor?.stakingForm!=='sAERO'||aeroTransition.successor?.rootChain!=='Base') throw new Error('Aero announced successor identity drift');
+if(aeroTransition.announcedDynamics?.successorVotingForLiquidityRewardDirection!==false||aeroTransition.announcedDynamics?.successorEpochs!==false||aeroTransition.announcedDynamics?.continuousAllocation!==true||aeroTransition.announcedDynamics?.rewardsStreamPerSecond!==true) throw new Error('Aero continuous-allocation design boundary drift');
+if(aeroTransition.historyContract?.preserveAerodromeHistory!==true||aeroTransition.historyContract?.preserveVelodromeHistory!==true||aeroTransition.historyContract?.relabelLegacyObservationsAsAero!==false) throw new Error('Aero transition would corrupt predecessor history');
+if(!String(aeroTransition.successor?.walletMigrationFormula||'').startsWith('UNKNOWN-')) throw new Error('Aero wallet migration formula was invented before production proof');
+if(aeroTransition.activation?.ready!==false||Object.values(aeroTransition.activation?.gates||{}).some(Boolean)) throw new Error('Aero transition activated before production evidence');
+if(withAeroTransition.protocolLifecycle.summary?.protocolCount!==7||withAeroTransition.protocolLifecycle.protocols?.[AERO_TRANSITION_ID]) throw new Error('Announced Aero was falsely admitted as an eighth active lifecycle protocol');
+if(withAeroTransition.protocolLifecycle.protocols['defitea-aerodrome-veaero']?.maturityStage!==secondVelodrome.protocolLifecycle.protocols['defitea-aerodrome-veaero']?.maturityStage||withAeroTransition.protocolLifecycle.protocols['registry-velodrome-vevelo']?.maturityStage!==secondVeloProtocol.maturityStage) throw new Error('Aero readiness changed predecessor lifecycle maturity');
+if(aeroTransition.authority?.executionAuthority!=='none'||aeroTransition.authority?.allocationAuthority!==false||aeroTransition.authority?.recommendationAuthority!==false||aeroTransition.authority?.predictionAuthority!==false||aeroTransition.authority?.migrationAuthority!=='none') throw new Error('Aero transition readiness expanded authority');
+if(aeroTransition.prospectiveAllocationEvaluation?.protocol!=='freeze-before-observe'||aeroTransition.prospectiveAllocationEvaluation?.executionEnabled!==false) throw new Error('Aero prospective evaluation lost frozen-baseline or no-execution boundary');
 
 const promoted=base();
 promoted.candidateCohorts['defitea-convex-vlcvx-votium'].deepEconomicEvidence.remainingUnknowns=[];
