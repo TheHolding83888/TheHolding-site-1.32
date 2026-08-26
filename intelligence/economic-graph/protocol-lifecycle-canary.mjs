@@ -6,6 +6,7 @@ import { applyProtocolLifecycle } from './protocol-lifecycle.mjs';
 import { applyPendleSPendleLifecycle } from './pendle-spendle-lifecycle.mjs';
 import { applyPendleAccountingEvidence } from './pendle-spendle-accounting-evidence.mjs';
 import { applyYieldBasisLifecycle } from './yieldbasis-lifecycle.mjs';
+import { applyVelodromeLifecycle } from './ve-gauge-registry-lifecycle.mjs';
 
 function base(){
   return {
@@ -85,20 +86,48 @@ function yieldBasisProductivity({snapshotKey='2026-W35',generatedAt='2026-08-26T
     }
   };
 }
+function velodromeProductivity({snapshotKey='2026-W35',generatedAt='2026-08-26T06:08:02.250Z',weekly=48,apr=24.96}={}){
+  return {
+    version:'1.16',snapshotKey,generatedAt,
+    engines:{
+      velodrome_vevelo:{engineId:'velodrome_vevelo',protocol:'Velodrome',principalSymbol:'VELO',sourceUrl:'https://www.40acres.finance/',nativeCadence:'weekly',aprLatest:apr,sourceType:'official-frontend',sourceMetric:'40 Acres simulator gross expected weekly voting rewards annualized',periodStart:null,periodEnd:generatedAt,lastUpdatedAt:generatedAt,status:'ok',details:{maxBorrow:3000,ltv:30,weekly,impliedVeNftValue:10000}}
+    },
+    companies:{
+      'company-a':{name:'Company A',breakdown:[{engineId:'velodrome_vevelo',principalId:'velodrome-finance',units:12180,value:269.39,apr,engineStatus:'ok'}]},
+      'company-b':{name:'Company B',breakdown:[{engineId:'velodrome_vevelo',principalId:'velodrome-finance',units:28326,value:626.51,apr,engineStatus:'ok'}]},
+      'company-c':{name:'Company C',breakdown:[{engineId:'velodrome_vevelo',principalId:'velodrome-finance',units:6971.925992,value:154.2,apr,engineStatus:'ok'}]}
+    }
+  };
+}
+function velodromeRewards({generatedAt='2026-08-26T05:52:34.772Z',amountRaw='2500000'}={}){
+  return {
+    generatedAt,
+    methodology:{aerodromeVelodrome:'Direct veAERO/veVELO Accrued Rewards use bounded operational accounting. The collector discovers only the fresh 180-day Voted tail. Already distributed wallet payouts are not counted as accrued rewards.'},
+    internalState:{historicalVoteCache:{
+      'optimism:32671':{providerKey:'optimism',complete:true,throughBlock:155414329,pools:['0xpool1','0xpool2','0xpool3'],firstVoteBlock:150950754,lastVoteBlock:155182618,mintDiscovery:{blockNumber:144748388}},
+      'optimism:11335':{providerKey:'optimism',complete:true,throughBlock:155414756,pools:['0xpool2','0xpool4'],firstVoteBlock:120000000,lastVoteBlock:155100000,mintDiscovery:{blockNumber:107506553}}
+    }},
+    companies:{
+      'company-a':{rewards:[{protocol:'Velodrome · veVELO',route:'velodrome-ve',chain:'Optimism',token:'0x0000000000000000000000000000000000000001',symbol:'USDC',amountRaw,decimals:6,usdValue:2.5,wallet:'0xaaa',walletAlias:'company-a',tokenId:'32671'}]},
+      'company-b':{rewards:[{protocol:'Velodrome · veVELO',route:'velodrome-ve',chain:'Optimism',token:'0x0000000000000000000000000000000000000002',symbol:'WETH',amountRaw:'1000000000000000',decimals:18,usdValue:2.4,wallet:'0xbbb',walletAlias:'company-b',tokenId:'11335'}]}
+    }
+  };
+}
 const policy={
   version:'0.1-protocol-intelligence-lifecycle-policy',
-  revision:'0.4-registry-wide-yieldbasis-admission',
+  revision:'0.5-registry-wide-velodrome-ve-gauge-admission',
   stageOrder:['discovery','shadow','verified','canonical'],
-  scope:{mode:'mixed-company-and-registry-wide-protocols',companyRegistry:'004',company:'defitea.eth',registryWideProtocolIds:['registry-yieldbasis-multimechanism'],protocolIds:['defitea-fxn-vefxn','defitea-curve-vecrv','defitea-aerodrome-veaero','defitea-convex-vlcvx-votium','defitea-pendle-spendle','registry-yieldbasis-multimechanism']},
+  scope:{mode:'mixed-company-and-registry-wide-protocols',companyRegistry:'004',company:'defitea.eth',registryWideProtocolIds:['registry-yieldbasis-multimechanism','registry-velodrome-vevelo'],protocolIds:['defitea-fxn-vefxn','defitea-curve-vecrv','defitea-aerodrome-veaero','defitea-convex-vlcvx-votium','defitea-pendle-spendle','registry-yieldbasis-multimechanism','registry-velodrome-vevelo']},
   authority:{automaticStageEvaluation:true,automaticEvidencePromotion:true,automaticProtocolWidePromotion:true,promotionRuleMutationAuthority:false,repositoryMutationAuthority:false,workflowDispatchAuthority:false,executionAuthority:'none',capitalExecution:false,walletAuthority:false,allocationAuthority:false,recommendationAuthority:false,predictionAuthority:false,causalClaimAuthority:'none',methodologyMutationAuthority:false},
-  laws:{unknownIsNotZero:true,correlationIsNotCausation:true,longitudinalDepthRequiresDistinctNativePeriods:true,protocolSensorsMaySpanMultipleCompaniesWithoutCollapsingMechanismSemantics:true},
+  laws:{unknownIsNotZero:true,correlationIsNotCausation:true,longitudinalDepthRequiresDistinctNativePeriods:true,protocolSensorsMaySpanMultipleCompaniesWithoutCollapsingMechanismSemantics:true,veGaugeFamilyReuseMustPreserveProtocolSpecificEvidenceBoundaries:true},
   protocols:{
     'defitea-fxn-vefxn':{label:'f(x) / veFXN'},
     'defitea-curve-vecrv':{label:'Curve / veCRV'},
     'defitea-aerodrome-veaero':{label:'Aerodrome / veAERO',verifiedMinimumObservationCount:3},
     'defitea-convex-vlcvx-votium':{label:'Convex / vlCVX / Votium → Curve',verifiedMinimumObservationCount:2},
     'defitea-pendle-spendle':{label:'Pendle / sPENDLE',verifiedMinimumValidatedPeriodCount:2,verifiedMinimumValidatedObservationCount:2},
-    'registry-yieldbasis-multimechanism':{label:'Yield Basis / veYB + yb-LP',scope:'registry-wide-multi-company',verifiedMinimumDistinctSnapshotCount:2}
+    'registry-yieldbasis-multimechanism':{label:'Yield Basis / veYB + yb-LP',scope:'registry-wide-multi-company',verifiedMinimumDistinctSnapshotCount:2},
+    'registry-velodrome-vevelo':{label:'Velodrome / veVELO',scope:'registry-wide-multi-company-ve-gauge',family:'ve-gauge',verifiedMinimumDistinctSnapshotCount:2}
   }
 };
 
@@ -188,6 +217,41 @@ if(secondYbSensor.validatedSnapshotCount!==2||secondYbSensor.validatedObservatio
 if(secondYbProtocol.maturityStage!=='verified'||!secondYbProtocol.automaticallyPromoted) throw new Error('Two distinct validated Yield Basis snapshots did not deterministically promote SHADOW → VERIFIED');
 if(!secondYbProtocol.checks.find(x=>x.id==='distinct-snapshot-depth')?.pass) throw new Error('Yield Basis distinct snapshot gate did not close');
 if(secondYbProtocol.maturityStage==='canonical') throw new Error('Yield Basis was over-promoted to CANONICAL without veYB accounting identity');
+
+const priorSixStages=Object.fromEntries(Object.entries(firstYieldBasis.protocolLifecycle.protocols).map(([id,row])=>[id,row.maturityStage]));
+const veloA1=velodromeProductivity({snapshotKey:'2026-W35',generatedAt:'2026-08-26T06:08:02.250Z',weekly:48,apr:24.96});
+const veloR1=velodromeRewards({generatedAt:'2026-08-26T05:52:34.772Z'});
+const firstVelodrome=applyVelodromeLifecycle({state:structuredClone(firstYieldBasis),previousState:null,productivity:veloA1,rewards:veloR1,productivitySha256:'2'.repeat(64),rewardsSha256:'3'.repeat(64),policy});
+const firstVeloProtocol=firstVelodrome.protocolLifecycle.protocols['registry-velodrome-vevelo'];
+const firstVeloSensor=firstVelodrome.protocolSensors['registry-velodrome-vevelo'];
+if(firstVelodrome.protocolLifecycle.summary?.protocolCount!==7) throw new Error('Velodrome did not become the seventh lifecycle sensor');
+for(const [id,stage] of Object.entries(priorSixStages))if(firstVelodrome.protocolLifecycle.protocols[id]?.maturityStage!==stage) throw new Error(`Velodrome admission regressed existing lifecycle stage ${id}`);
+if(firstVeloProtocol?.maturityStage!=='shadow'||firstVeloSensor?.validatedSnapshotCount!==1) throw new Error('First validated Velodrome weekly snapshot must remain SHADOW');
+if(!firstVeloProtocol.checks.find(x=>x.id==='reference-formula-parity')?.pass) throw new Error('Velodrome Reference APR mechanical parity missing');
+if(!firstVeloProtocol.checks.find(x=>x.id==='current-accrued-reward-route')?.pass) throw new Error('Velodrome bounded reward-route evidence missing');
+if(!firstVeloProtocol.checks.find(x=>x.id==='bounded-vote-pool-history')?.pass) throw new Error('Velodrome bounded vote/pool history missing');
+if(firstVeloProtocol.checks.find(x=>x.id==='end-to-end-vote-gauge-pool-fee-accounting')?.pass) throw new Error('Velodrome end-to-end economic causality was falsely promoted');
+if(firstVeloSensor.latest.observation.epistemic.voteToRewardOutcome!=='CORRELATED-context-only-not-causal') throw new Error('Velodrome vote/reward correlation boundary regressed');
+if(firstVelodrome.protocolLifecycle.authority?.executionAuthority!=='none'||firstVeloSensor.authority?.executionAuthority!=='none') throw new Error('Velodrome expanded execution authority');
+
+const veloA2=velodromeProductivity({snapshotKey:'2026-W35',generatedAt:'2026-08-27T06:08:02.250Z',weekly:48,apr:24.96});
+const veloR2=velodromeRewards({generatedAt:'2026-08-27T05:52:34.772Z',amountRaw:'2600000'});
+const repeatedVelodrome=applyVelodromeLifecycle({state:structuredClone(firstYieldBasis),previousState:firstVelodrome,productivity:veloA2,rewards:veloR2,productivitySha256:'4'.repeat(64),rewardsSha256:'5'.repeat(64),policy});
+const repeatedVeloProtocol=repeatedVelodrome.protocolLifecycle.protocols['registry-velodrome-vevelo'];
+const repeatedVeloSensor=repeatedVelodrome.protocolSensors['registry-velodrome-vevelo'];
+if(repeatedVeloSensor.validatedObservationCount!==2||repeatedVeloSensor.validatedSnapshotCount!==1) throw new Error('Repeated Velodrome observations of one canonical week manufactured longitudinal depth');
+if(repeatedVeloProtocol.maturityStage!=='shadow'||repeatedVeloProtocol.checks.find(x=>x.id==='distinct-snapshot-depth')?.pass) throw new Error('Repeated Velodrome weekly snapshot falsely promoted SHADOW → VERIFIED');
+
+const veloB=velodromeProductivity({snapshotKey:'2026-W36',generatedAt:'2026-09-02T06:08:02.250Z',weekly:50,apr:26});
+const veloRB=velodromeRewards({generatedAt:'2026-09-02T05:52:34.772Z',amountRaw:'3000000'});
+const secondVelodrome=applyVelodromeLifecycle({state:structuredClone(firstYieldBasis),previousState:repeatedVelodrome,productivity:veloB,rewards:veloRB,productivitySha256:'6'.repeat(64),rewardsSha256:'7'.repeat(64),policy});
+const secondVeloProtocol=secondVelodrome.protocolLifecycle.protocols['registry-velodrome-vevelo'];
+const secondVeloSensor=secondVelodrome.protocolSensors['registry-velodrome-vevelo'];
+if(secondVeloSensor.validatedSnapshotCount!==2||secondVeloSensor.validatedObservationCount!==3) throw new Error('Velodrome distinct weekly snapshot depth accounting mismatch');
+if(secondVeloProtocol.maturityStage!=='verified'||!secondVeloProtocol.automaticallyPromoted) throw new Error('Two distinct validated Velodrome weeks did not deterministically promote SHADOW → VERIFIED');
+if(!secondVeloProtocol.checks.find(x=>x.id==='distinct-snapshot-depth')?.pass) throw new Error('Velodrome distinct-week gate did not close');
+if(secondVeloProtocol.maturityStage==='canonical') throw new Error('Velodrome was over-promoted to CANONICAL without end-to-end vote/gauge/pool/fee accounting');
+if(secondVeloProtocol.checks.find(x=>x.id==='end-to-end-vote-gauge-pool-fee-accounting')?.pass) throw new Error('Velodrome canonical mechanical gate unexpectedly passed');
 
 const promoted=base();
 promoted.candidateCohorts['defitea-convex-vlcvx-votium'].deepEconomicEvidence.remainingUnknowns=[];
