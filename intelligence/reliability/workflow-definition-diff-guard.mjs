@@ -104,14 +104,57 @@ export function isSelfTriggerReductionOnly({ file, diff, baseText, headText }) {
   return remainingDomainPaths.length > 0;
 }
 
-export function evaluateWorkflowDefinitionChange({ file, baseText, headText, diff, changedFiles, policy, centrallyProvenActionSpecs = [] }) {
+export function extractWorkflowDefinitionProof(text) {
+  if (typeof text !== 'string' || !text.trim()) return null;
+  const matches = [...text.matchAll(/^\s*#\s*holding-workflow-definition-proof:\s*(.+?)\s*$/gmi)]
+    .map(m => m[1].trim())
+    .filter(Boolean);
+  return matches.length === 1 ? matches[0] : null;
+}
+
+export function validatePairedWorkflowDefinitionProof({ file, headText, changedFiles, policy, proofText }) {
+  const proofPath = extractWorkflowDefinitionProof(headText);
+  if (!proofPath) return { ok: false, proofPath: null, reason: 'missing-or-ambiguous-proof-marker' };
+  const allowedPrefixes = Array.isArray(policy.pairedWorkflowProofAllowedPrefixes) ? policy.pairedWorkflowProofAllowedPrefixes : [];
+  if (!allowedPrefixes.some(prefix => proofPath.startsWith(prefix))) {
+    return { ok: false, proofPath, reason: 'proof-path-outside-allowed-prefix' };
+  }
+  if (!/^[A-Za-z0-9_.\/-]+\.mjs$/.test(proofPath) || path.isAbsolute(proofPath) || proofPath.includes('..')) {
+    return { ok: false, proofPath, reason: 'proof-path-invalid' };
+  }
+  if (!changedFiles.includes(proofPath)) return { ok: false, proofPath, reason: 'proof-file-not-changed-with-workflow' };
+  if (typeof proofText !== 'string' || !proofText.trim()) return { ok: false, proofPath, reason: 'proof-file-missing' };
+  if (!proofText.includes(file)) return { ok: false, proofPath, reason: 'proof-file-not-bound-to-workflow' };
+  return { ok: true, proofPath, reason: 'paired-deterministic-definition-proof' };
+}
+
+function executePairedWorkflowDefinitionProof(proofPath) {
+  try {
+    execFileSync(process.execPath, [path.resolve(ROOT, proofPath)], {
+      cwd: ROOT,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+      timeout: 30000
+    });
+    return { ok: true, reason: 'paired-deterministic-definition-proof-executed' };
+  } catch (error) {
+    const stderr = String(error?.stderr || '').trim().slice(0, 500);
+    return { ok: false, reason: stderr ? `paired-proof-execution-failed:${stderr}` : 'paired-proof-execution-failed' };
+  }
+}
+
+export function evaluateWorkflowDefinitionChange({ file, baseText, headText, diff, changedFiles, policy, centrallyProvenActionSpecs = [], pairedDefinitionProof = null }) {
   if (baseText == null && headText != null) {
     const trigger = parsePullRequestTrigger(headText);
     const selfWake = wakesForChangedFiles(trigger, [file]);
     const domainChanged = changedFiles.filter(x => !x.startsWith('.github/workflows/')).some(x => wakesForChangedFiles(trigger, [x]));
-    return selfWake || domainChanged
-      ? { file, status: 'PASS', proof: selfWake ? 'added-workflow-self-wakes' : 'added-workflow-domain-proof' }
-      : { file, status: 'FAIL', proof: 'added-workflow-without-verifier-proof' };
+    if (selfWake || domainChanged) {
+      return { file, status: 'PASS', proof: selfWake ? 'added-workflow-self-wakes' : 'added-workflow-domain-proof' };
+    }
+    if (pairedDefinitionProof?.ok === true) {
+      return { file, status: 'PASS', proof: pairedDefinitionProof.reason || 'paired-deterministic-definition-proof-executed', proofPath: pairedDefinitionProof.proofPath || null };
+    }
+    return { file, status: 'FAIL', proof: pairedDefinitionProof?.reason || 'added-workflow-without-verifier-proof', proofPath: pairedDefinitionProof?.proofPath || null };
   }
   if (baseText != null && headText == null) {
     return { file, status: 'FAIL', proof: 'deleted-workflow-requires-bounded-maintenance-review' };
@@ -147,7 +190,7 @@ export function evaluateWorkflowDefinitionChange({ file, baseText, headText, dif
   return { file, status: 'FAIL', proof: 'workflow-logic-change-without-verifier-proof' };
 }
 
-export function evaluateChanges({ baseSha, headSha, changedFiles, policy, reader = readAt, differ = diffAt }) {
+export function evaluateChanges({ baseSha, headSha, changedFiles, policy, reader = readAt, differ = diffAt, proofExecutor = executePairedWorkflowDefinitionProof }) {
   const centralProofWorkflow = policy.centralProofWorkflow || '';
   const centralProofText = centralProofWorkflow ? reader(headSha, centralProofWorkflow) : null;
   const centrallyProvenActionSpecs = extractCentrallyProvenActionSpecs(
@@ -155,10 +198,31 @@ export function evaluateChanges({ baseSha, headSha, changedFiles, policy, reader
     policy.centrallyProvenActionFamilies || []
   );
   const workflowFiles = changedFiles.filter(f => /^\.github\/workflows\/[^/]+\.ya?ml$/i.test(f)).sort();
+  const proofCache = new Map();
+
   const results = workflowFiles.map(file => {
     const baseText = reader(baseSha, file);
     const headText = reader(headSha, file);
     const diff = differ(baseSha, headSha, file);
+    let pairedDefinitionProof = null;
+
+    if (baseText == null && headText != null) {
+      const proofPath = extractWorkflowDefinitionProof(headText);
+      const proofText = proofPath ? reader(headSha, proofPath) : null;
+      const staticProof = validatePairedWorkflowDefinitionProof({ file, headText, changedFiles, policy, proofText });
+      if (staticProof.ok) {
+        if (!proofCache.has(staticProof.proofPath)) proofCache.set(staticProof.proofPath, proofExecutor(staticProof.proofPath));
+        const executed = proofCache.get(staticProof.proofPath);
+        pairedDefinitionProof = {
+          ok: executed.ok === true,
+          proofPath: staticProof.proofPath,
+          reason: executed.ok ? executed.reason : executed.reason
+        };
+      } else {
+        pairedDefinitionProof = staticProof;
+      }
+    }
+
     return evaluateWorkflowDefinitionChange({
       file,
       baseText,
@@ -166,7 +230,8 @@ export function evaluateChanges({ baseSha, headSha, changedFiles, policy, reader
       diff,
       changedFiles,
       policy,
-      centrallyProvenActionSpecs
+      centrallyProvenActionSpecs,
+      pairedDefinitionProof
     });
   });
   return {
@@ -200,6 +265,9 @@ function assertAuthority(policy) {
   if (!policy.centralProofWorkflow || !policy.centralProofWorkflow.startsWith('.github/workflows/')) {
     throw new Error('workflow definition guard central proof workflow missing or invalid');
   }
+  if (!Array.isArray(policy.pairedWorkflowProofAllowedPrefixes) || policy.pairedWorkflowProofAllowedPrefixes.length < 1) {
+    throw new Error('workflow definition guard paired proof allowlist missing');
+  }
 }
 
 function main() {
@@ -215,7 +283,7 @@ function main() {
   else {
     console.log(`Workflow Definition Diff Guard ${report.version}`);
     console.log(`centralProof=${report.centralProofWorkflow} exactSpecs=${report.centrallyProvenActionSpecs.join(',') || '-'}`);
-    for (const row of report.results) console.log(`${row.status}\t${row.file}\t${row.proof}`);
+    for (const row of report.results) console.log(`${row.status}\t${row.file}\t${row.proof}${row.proofPath ? `\t${row.proofPath}` : ''}`);
     console.log(`changed=${report.changedWorkflowCount} pass=${report.passCount} fail=${report.failCount}`);
   }
   if (report.failCount) process.exit(1);
