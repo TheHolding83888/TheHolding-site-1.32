@@ -2,8 +2,10 @@
 import {
   evaluateWorkflowDefinitionChange,
   extractCentrallyProvenActionSpecs,
+  extractWorkflowDefinitionProof,
   isCentralActionPinOnly,
-  isSelfTriggerReductionOnly
+  isSelfTriggerReductionOnly,
+  validatePairedWorkflowDefinitionProof
 } from './workflow-definition-diff-guard.mjs';
 
 function assert(condition, message) {
@@ -12,7 +14,8 @@ function assert(condition, message) {
 
 const policy = {
   centralProofWorkflow: '.github/workflows/workflow-control-plane.yml',
-  centrallyProvenActionFamilies: ['actions/checkout', 'actions/setup-node', 'actions/upload-artifact']
+  centrallyProvenActionFamilies: ['actions/checkout', 'actions/setup-node', 'actions/upload-artifact'],
+  pairedWorkflowProofAllowedPrefixes: ['intelligence/reliability/']
 };
 const centralProof = `name: Control Plane\njobs:\n  audit:\n    steps:\n      - uses: actions/checkout@checkout-proven # v6\n      - uses: actions/setup-node@setup-proven # v6\n      - uses: actions/upload-artifact@upload-proven # v4\n`;
 const provenSpecs = extractCentrallyProvenActionSpecs(centralProof, policy.centrallyProvenActionFamilies);
@@ -111,4 +114,59 @@ assert(!isSelfTriggerReductionOnly({
   headText: `name: No Domain\non:\n  pull_request:\n    paths:\n`
 }), 'self-trigger removal without remaining domain path must not pass');
 
-console.log('WORKFLOW DEFINITION DIFF GUARD CANARY PASS (exact central action proof / self-reduction / logic fail-closed)');
+const controllerFile = '.github/workflows/controller.yml';
+const proofPath = 'intelligence/reliability/controller-canary.mjs';
+const controllerHead = `# holding-workflow-definition-proof: ${proofPath}\nname: Controller\non:\n  workflow_run:\n    workflows: [Guard]\n    types: [completed]\npermissions:\n  contents: read\n`;
+const proofText = `const workflow = '${controllerFile}';\nif (!workflow) process.exit(1);\n`;
+assert(extractWorkflowDefinitionProof(controllerHead) === proofPath, 'paired proof marker not extracted');
+let paired = validatePairedWorkflowDefinitionProof({
+  file: controllerFile,
+  headText: controllerHead,
+  changedFiles: [controllerFile, proofPath],
+  policy,
+  proofText
+});
+assert(paired.ok === true && paired.proofPath === proofPath, 'valid paired definition proof rejected');
+r = evaluateWorkflowDefinitionChange({
+  file: controllerFile,
+  baseText: null,
+  headText: controllerHead,
+  diff: '',
+  changedFiles: [controllerFile, proofPath],
+  policy,
+  centrallyProvenActionSpecs: provenSpecs,
+  pairedDefinitionProof: { ok: true, proofPath, reason: 'paired-deterministic-definition-proof-executed' }
+});
+assert(r.status === 'PASS' && r.proof === 'paired-deterministic-definition-proof-executed', 'fanout-neutral added workflow with executed paired proof must pass');
+
+paired = validatePairedWorkflowDefinitionProof({
+  file: controllerFile,
+  headText: controllerHead,
+  changedFiles: [controllerFile],
+  policy,
+  proofText
+});
+assert(paired.ok === false && paired.reason === 'proof-file-not-changed-with-workflow', 'missing changed proof must fail closed');
+
+paired = validatePairedWorkflowDefinitionProof({
+  file: controllerFile,
+  headText: controllerHead.replace(proofPath, 'scripts/untrusted-proof.mjs'),
+  changedFiles: [controllerFile, 'scripts/untrusted-proof.mjs'],
+  policy,
+  proofText: `const workflow='${controllerFile}';`
+});
+assert(paired.ok === false && paired.reason === 'proof-path-outside-allowed-prefix', 'out-of-bound paired proof must fail closed');
+
+r = evaluateWorkflowDefinitionChange({
+  file: controllerFile,
+  baseText: null,
+  headText: `name: Controller\non:\n  workflow_run:\n    workflows: [Guard]\n    types: [completed]\n`,
+  diff: '',
+  changedFiles: [controllerFile],
+  policy,
+  centrallyProvenActionSpecs: provenSpecs,
+  pairedDefinitionProof: { ok: false, proofPath: null, reason: 'missing-or-ambiguous-proof-marker' }
+});
+assert(r.status === 'FAIL' && r.proof === 'missing-or-ambiguous-proof-marker', 'unproven fanout-neutral workflow must fail closed');
+
+console.log('WORKFLOW DEFINITION DIFF GUARD CANARY PASS (exact central action proof / self-reduction / paired fanout-neutral proof / logic fail-closed)');
