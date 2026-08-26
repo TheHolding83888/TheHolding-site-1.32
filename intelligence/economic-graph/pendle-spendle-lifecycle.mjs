@@ -20,7 +20,7 @@ const MAX_TRANSITIONS=2000;
 const OFFICIAL_API='https://api-v2.pendle.finance/core/v1/spendle/data';
 
 function fail(message){throw new Error(message);}
-function finite(value){return Number.isFinite(Number(value));}
+function finite(value){return value!==null&&value!==undefined&&value!==''&&Number.isFinite(Number(value));}
 function numberOrNull(value){return finite(value)?Number(value):null;}
 function round(value,digits=8){const n=Number(value);return Number.isFinite(n)?Number(n.toFixed(digits)):null;}
 function sha256Text(text){return crypto.createHash('sha256').update(text).digest('hex');}

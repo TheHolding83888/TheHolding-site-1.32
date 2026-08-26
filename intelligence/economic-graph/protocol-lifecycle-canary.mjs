@@ -70,8 +70,11 @@ if(initial.protocolLifecycle.protocols['defitea-fxn-vefxn'].maturityStage!=='can
 
 const withPendle=applyPendleSPendleLifecycle({state:initial,previousState:null,productivity:pendleProductivity(),productivitySha256:'a'.repeat(64),policy});
 const pendle=withPendle.protocolLifecycle.protocols['defitea-pendle-spendle'];
+const pendleObservation=withPendle.protocolSensors?.['defitea-pendle-spendle']?.latest?.observation;
 if(pendle?.maturityStage!=='shadow') throw new Error(`Pendle warming sensor must enter SHADOW, got ${pendle?.maturityStage}`);
-if(!withPendle.protocolSensors?.['defitea-pendle-spendle']||withPendle.protocolLifecycle.summary?.protocolCount!==5) throw new Error('Pendle sensor/lifecycle registry not materialized');
+if(!pendleObservation||withPendle.protocolLifecycle.summary?.protocolCount!==5) throw new Error('Pendle sensor/lifecycle registry not materialized');
+if(pendleObservation.referenceProductivity?.currentAprPct!==null) throw new Error('Pendle UNKNOWN Reference APR was coerced to a number');
+if(pendleObservation.companyPosition?.positionAprPct!==null) throw new Error('Pendle UNKNOWN company position APR was coerced to a number');
 if(!pendle.checks.find(x=>x.id==='false-zero-fail-closed')?.pass) throw new Error('Pendle false-zero fail-closed gate regressed');
 if(pendle.checks.find(x=>x.id==='current-reference-apr-validated')?.pass) throw new Error('Pendle warming current APR was over-promoted');
 if(withPendle.protocolLifecycle.authority?.executionAuthority!=='none') throw new Error('Pendle expanded lifecycle execution authority');
