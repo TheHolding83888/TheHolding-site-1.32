@@ -16,19 +16,96 @@ import {
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const read=p=>JSON.parse(fs.readFileSync(path.join(ROOT,p),'utf8'));
+const clone=value=>JSON.parse(JSON.stringify(value));
+const validApr=value=>value!==null&&value!==undefined&&value!==''&&Number.isFinite(Number(value))&&Number(value)>=0;
 
 const state=read('companies/defitea-canonical-state.json');
-const productivity=read('companies/productivity-data.json');
+const liveProductivity=read('companies/productivity-data.json');
 const marketData=read('intelligence/market-data/market-data.json');
+const publishedReporting=read('reporting/reporting-data.json');
 let rewards={};
 try { rewards=read('companies/rewards-data.json'); } catch {}
 
 const positions=canonicalDefiteaPositions(state);
 assert.equal(positions.length,DEFITEA_CANONICAL_POSITION_COUNT);
 assert.equal(new Set(positions.map(p=>p.id)).size,DEFITEA_CANONICAL_POSITION_COUNT);
+
+// PR code verification must be deterministic even when a live Productivity
+// source is intentionally fail-closed/warming. Production Reporting must NOT
+// inherit this fixture: it continues to consume the live Productivity file and
+// therefore still refuses publication unless all 11 rows are valid.
+const liveCompany=liveProductivity?.companies?.['defitea.eth'];
+assert.ok(liveCompany&&Array.isArray(liveCompany.breakdown),'live Defitea Productivity company missing');
+const liveInvalidRows=liveCompany.breakdown.filter(row=>row?.engineStatus!=='ok'||!validApr(row?.apr));
+if(liveInvalidRows.length){
+  assert.throws(
+    ()=>assertDefiteaProductivityParity(positions,liveProductivity),
+    /exact 11\/11 Defitea Reference APR coverage not satisfied/,
+    'live warming/UNKNOWN Productivity must remain fail-closed for production Reporting'
+  );
+}
+
+const productivity=clone(liveProductivity);
+const fixtureCompany=productivity.companies?.['defitea.eth'];
+const lastPublished=publishedReporting?.funds?.['defitea.eth']?.latestSnapshot;
+const lastPublishedRows=Array.isArray(lastPublished?.positions)?lastPublished.positions:[];
+const fixtureSources=[];
+
+for(const row of fixtureCompany.breakdown){
+  if(row?.engineStatus==='ok'&&validApr(row?.apr)) continue;
+  const prior=lastPublishedRows.find(x=>(x?.principalId&&x.principalId===row?.principalId)||(x?.engineId&&x.engineId===row?.engineId));
+  assert.ok(prior,`${row?.principalId||row?.engineId}: no previously published valid Reporting row available for deterministic validation fixture`);
+  assert.equal(prior.engineStatus,'ok',`${row?.principalId||row?.engineId}: previously published fixture row is not ok`);
+  assert.ok(validApr(prior.referenceApr),`${row?.principalId||row?.engineId}: previously published fixture APR invalid`);
+  row.apr=Number(prior.referenceApr);
+  row.engineStatus='ok';
+  row.validationFixture={
+    validationOnly:true,
+    source:'reporting/reporting-data.json latest physically published valid snapshot',
+    capturedAt:lastPublished?.capturedAt||null,
+    referenceApr:Number(prior.referenceApr),
+    liveStatus:liveCompany.breakdown.find(x=>x.engineId===row.engineId)?.engineStatus||null,
+    liveApr:liveCompany.breakdown.find(x=>x.engineId===row.engineId)?.apr??null
+  };
+  if(productivity.engines?.[row.engineId]){
+    productivity.engines[row.engineId].aprLatest=Number(prior.referenceApr);
+    productivity.engines[row.engineId].status='ok';
+    productivity.engines[row.engineId].validationFixture=row.validationFixture;
+  }
+  fixtureSources.push({engineId:row.engineId,principalId:row.principalId,referenceApr:Number(prior.referenceApr),capturedAt:lastPublished?.capturedAt||null});
+}
+
+if(fixtureSources.length){
+  const rows=fixtureCompany.breakdown;
+  const total=rows.reduce((sum,row)=>sum+Number(row.value||0),0);
+  const weighted=rows.reduce((sum,row)=>sum+Number(row.value||0)*Number(row.apr||0),0);
+  assert.ok(total>0&&rows.every(row=>row.engineStatus==='ok'&&validApr(row.apr)),'validation fixture failed to restore deterministic 11/11 coverage');
+  fixtureCompany.aprLatest=weighted/total;
+  fixtureCompany.status='ok';
+  fixtureCompany.aprScope='full-productive-capital-validation-fixture';
+  fixtureCompany.coverage=1;
+  fixtureCompany.productiveValue=total;
+  fixtureCompany.coveredProductiveValue=total;
+  fixtureCompany.uncoveredProductiveValue=0;
+  productivity.validationFixture={
+    validationOnly:true,
+    source:'last physically published valid Reporting snapshot',
+    reportingGeneratedAt:publishedReporting.generatedAt||null,
+    liveGeneratedAt:liveProductivity.generatedAt||null,
+    patchedRows:fixtureSources,
+    productionAuthority:false,
+    productionWriterMustUseLiveProductivity:true
+  };
+}
+
 assertDefiteaProductivityParity(positions,productivity);
 const selected=selectedMarketPrices(positions,marketData);
 assert.equal(selected.size,DEFITEA_CANONICAL_POSITION_COUNT);
+
+const fixtureOutput=process.env.REPORTING_VALIDATION_PRODUCTIVITY_FILE;
+if(fixtureOutput){
+  fs.writeFileSync(path.resolve(fixtureOutput),JSON.stringify(productivity,null,2)+'\n');
+}
 
 const snapshot=buildDefiteaSnapshot({
   generatedAt:'2026-08-22T06:07:00.000Z',
@@ -127,6 +204,9 @@ console.log('Reporting hardening PASS',{
   fullProductiveCoverage:snapshot.fullProductiveCoverage,
   marketDataGeneratedAt:snapshot.marketDataGeneratedAt,
   selectedLanes:[...new Set(snapshot.positions.map(r=>r.selectedLane))],
+  liveInvalidRows:liveInvalidRows.map(r=>({engineId:r.engineId,principalId:r.principalId,status:r.engineStatus,apr:r.apr})),
+  validationFixtureRows:fixtureSources,
+  productionLiveFailClosed:liveInvalidRows.length>0,
   firstMonthNormalization:firstAgg.normalizationFactor,
   laterMonthNormalization:laterAgg.normalizationFactor,
   unionAdditive:reconciliation.claimableSettlementAddedToReferenceCashFlow
