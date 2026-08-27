@@ -2,16 +2,23 @@ name: Update Company Monthly Reports
 
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows:
+      - "Update The Holding Reporting Data"
+    types: [completed]
   push:
     branches: [main]
     paths:
+      - 'companies/productivity-data.json'
       - 'reporting/company-monthly-reports.mjs'
       - 'reporting/company-monthly-reports-validation.mjs'
       - 'companies/company-monthly-report-adapter.js'
       - '.github/workflows/update-company-monthly-reports.yml'
       - '.github/workflows/verify-company-monthly-reports.yml'
   schedule:
-    # Runs after canonical fund Reporting and the daily Observer / Memory Vault snapshot.
+    # Fallback heartbeat. Primary freshness comes from canonical Reporting completion
+    # and current Productivity materialization, so a delayed GitHub cron cannot
+    # silently leave company passports stale.
     - cron: '37 7 * * *'
 
 permissions:
@@ -23,12 +30,18 @@ concurrency:
 
 jobs:
   update:
+    if: >-
+      ${{
+        github.event_name != 'workflow_run' ||
+        (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+      }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
+          ref: main
           fetch-depth: 0
 
       - name: Setup Node
