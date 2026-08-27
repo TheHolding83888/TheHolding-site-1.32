@@ -8,7 +8,7 @@ on:
       - '.github/workflows/tmp-patch-rewards-scheduler-branch.yml'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   patch:
@@ -21,7 +21,7 @@ jobs:
           ref: fix/rewards-scheduler-contract-2026-08-27
           fetch-depth: 0
 
-      - name: Apply exact scheduler repair
+      - name: Apply exact scheduler repair and emit patched file
         run: |
           set -euo pipefail
           python3 - <<'PY'
@@ -51,12 +51,7 @@ jobs:
           node --check intelligence/reliability/rewards-scheduler-workflow-definition-proof.mjs
           node intelligence/reliability/rewards-scheduler-workflow-definition-proof.mjs
           git diff --check
-
-      - name: Commit branch repair
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .github/workflows/update-company-rewards.yml
-          git commit -m "reliability: bind Rewards writer to scheduler contract"
-          git push origin HEAD:fix/rewards-scheduler-contract-2026-08-27
+          echo 'PATCHED_WORKFLOW_BASE64_BEGIN'
+          base64 -w0 .github/workflows/update-company-rewards.yml
+          echo
+          echo 'PATCHED_WORKFLOW_BASE64_END'
