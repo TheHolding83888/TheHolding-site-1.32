@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-27T04:20:15.843Z",
+  "generatedAt": "2026-08-27T05:34:32.518Z",
   "status": "watch",
-  "snapshotHash": "fb3aa832fbee04c97215a9abbedfb2aa10d8a48b6e61e9e5896963869c22d830",
+  "snapshotHash": "e908451dacfd4eabad22bfdc6bd7159afd0f6396848b0db0f7069fb5604b24e5",
   "repository": {
-    "filesScanned": 682,
-    "bytesScanned": 16631438,
+    "filesScanned": 683,
+    "bytesScanned": 16700529,
     "criticalHashes": {
       ".github/workflows/admit-company-010-public.yml": "5feffbf58388675952487c3462d2f9149eecec6f3795483087010dd0d3b19cfb",
       ".github/workflows/ask-experience.yml": "deb9c4e1025390563f8a866f6ddf1c7870e748cbd6aba13fdbd6da2d38e983d4",
@@ -46,7 +46,7 @@
       ".github/workflows/resolve-monetra-lido-close.yml": "5bd816a1447075fe58b41c104f807434ec3a473bdb50a9d7f15ba1078c1f78c5",
       ".github/workflows/resolve-monetra-strategy-entry-ledger.yml": "d130e2957d8f0b6f837ca54ad1581427a08116238e22fc3bef4692f2ddcfc517",
       ".github/workflows/resume-cognitive-stack-after-release.yml": "8dac46ad3c6ddf77cefb24ec26b719813d8f4dbea46f4cf59b351c93998e0230",
-      ".github/workflows/resume-economic-graph-after-code-change.yml": "5261b2cfea6b5f5640f3a35a37005b976952d6ba67ff405bd7dcd554d5e8ea1a",
+      ".github/workflows/resume-economic-graph-after-code-change.yml": "f121897c54b4171253942eb36aaeb6036b722ce061aba85b2aa23c39cf402763",
       ".github/workflows/resume-unified-capital-after-fxn-guard.yml": "5470e1c68ea0a9f340f68635076f6dcb1f9a9f4e421b2530ec1587865b99365b",
       ".github/workflows/runtime-reliability-observer.yml": "2585116c2757e276ea9f3e7470354edeec4d19239c4e08e018983f9a0ba0f118",
       ".github/workflows/security-hardening-actions.yml": "0353e44050c35c920c7d5e86dda4aeef15b4cb50ef432225ff7884d26ecc3704",
@@ -67,7 +67,7 @@
       ".github/workflows/update-comparative-intelligence.yml": "618f9ec51359ae75f5b8ebc6a3e2265c0913035f4b1e7d20f8788f290f47e787",
       ".github/workflows/update-economic-graph.yml": "35cfd64f1a41997ec94dbf599bd92b12c8953f6b1284a03b15c97d653ab7b82b",
       ".github/workflows/update-event-intelligence.yml": "d3bed4e02c2d57d4cf742b51b54ddb65a3fdc6301ed466448adf93a369132150",
-      ".github/workflows/update-explanatory-context.yml": "e2ab9c7b599768110c318fdc5fd42b419ed051ea461b5b36dcf9dfd1b6395233",
+      ".github/workflows/update-explanatory-context.yml": "657c8106c0b18d2db1fc00afd58178a07617e2678e9f6f999d80defe601aa107",
       ".github/workflows/update-guardian-state.yml": "12b24c0609d70c2ae0ab387772ccda17ed6a9ec8ffa50a46686b0bb559913b97",
       ".github/workflows/update-health-factor-intelligence.yml": "2601229168100aac280bab30c14b376f863452aec746cdbd6cb7cfc52ce149a5",
       ".github/workflows/update-icp-nns-rewards.yml": "ddee1d3039576b05194508d1545809a7359ac77313868ee232f1ad0ac7ea58ac",
@@ -119,7 +119,7 @@
       ".github/workflows/verify-company-monthly-reports.yml": "08b957c434a3b89418c9d12a9f5a8d19bdada80913063b5135d9881592e63ee6",
       ".github/workflows/verify-cvxcrv-income-parity.yml": "505bd0fcff241abf5458917bdef8e8e5a6ad9c76447e0035c6840f19b32df1e6",
       ".github/workflows/verify-defitea-union-scrvusd.yml": "1b7011abebac9dc6953c045e2f1f7166ce0caf976bff2003e8b2e1677c6403f6",
-      ".github/workflows/verify-economic-graph-live-build.yml": "0c217f09a0a315c4512faef439215e04834c13f160ab9520d3cc974b528e60ca",
+      ".github/workflows/verify-economic-graph-live-build.yml": "6c7e8845cdd5e7e2aca6494c188fa479997b827e3c9139300f9a83d3771399fd",
       ".github/workflows/verify-fxn-locker-apr-guard.yml": "d7f6899b049f10bf37d00dd602df6ddd4a2c35ec79da5b42859511826c136efa",
       ".github/workflows/verify-intelligence-progress-live-integrity.yml": "b7f013c673749475e992169826a80db28cf9a68fb363d397b775b5231be810f2",
       ".github/workflows/verify-known-mechanism-reuse-parity.yml": "bfda24ead7a83ccd30365d0a7df8b4b0b2fb89344631c11579385a46dca879e6",
@@ -406,6 +406,48 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "bf9b96aaa61c109b325752146feaf493dc8ba93b345930cd54fac03f8d958d20",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/resume-economic-graph-after-code-change.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/resume-economic-graph-after-code-change.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "5261b2cfea6b5f5640f3a35a37005b976952d6ba67ff405bd7dcd554d5e8ea1a",
+        "currentSha256": "f121897c54b4171253942eb36aaeb6036b722ce061aba85b2aa23c39cf402763"
+      }
+    },
+    {
+      "id": "bc413c62bcb5e4933b2805dd4ad027185863dff1dc6f13be28a8c9d9c87e3362",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/update-explanatory-context.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/update-explanatory-context.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "e2ab9c7b599768110c318fdc5fd42b419ed051ea461b5b36dcf9dfd1b6395233",
+        "currentSha256": "657c8106c0b18d2db1fc00afd58178a07617e2678e9f6f999d80defe601aa107"
+      }
+    },
+    {
+      "id": "4801614d1d03556be1fdf16bd5b96ca4fb01fcc662f84ffbf95d22593d90a22e",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/verify-economic-graph-live-build.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-economic-graph-live-build.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "0c217f09a0a315c4512faef439215e04834c13f160ab9520d3cc974b528e60ca",
+        "currentSha256": "6c7e8845cdd5e7e2aca6494c188fa479997b827e3c9139300f9a83d3771399fd"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -702,10 +744,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 556,
+    "runCount": 557,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/08/2026-08-27T04-20-15-843Z-fb3aa832fb.json",
-    "latestRecordHash": "8739cd7986a8d5fd343432e6b933ad8410577e25d570bb8ae0a8965afb35e5cf",
+    "latestRecordPath": "security/security-vault/2026/08/2026-08-27T05-34-32-518Z-e908451dac.json",
+    "latestRecordHash": "17adcdf26b50542cb45579eec8baeb23dd5b2c3382842d2af3c67374d0d1ca51",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
