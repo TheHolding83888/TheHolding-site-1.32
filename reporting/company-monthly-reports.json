@@ -1,12 +1,25 @@
 {
-  "version": "0.1-company-monthly-reporting",
-  "methodologyVersion": "0.1-observed-reference-income-from-august-2026",
-  "generatedAt": "2026-08-27T17:20:05.655Z",
+  "version": "0.2-company-monthly-reporting-income-families",
+  "methodologyVersion": "0.2-reference-metrics-plus-canonical-evidence-families",
+  "generatedAt": "2026-08-27T17:28:09.346Z",
+  "incomeLedger": {
+    "source": "reporting/income-ledger.json",
+    "version": "0.1-canonical-income-ledger",
+    "policyVersion": "0.1-canonical-income-ledger-policy",
+    "generatedAt": "2026-08-27T17:19:42.336Z",
+    "status": "partial",
+    "crossFamilySummationForbidden": true,
+    "unknownIsNotZero": true
+  },
   "trackingPolicy": {
     "standardCompaniesStartNoEarlierThan": "2026-08-01",
     "noPreTrackingBackfill": true,
     "unknownIsNotZero": true,
     "referenceIncomeFormula": "coveredProductiveCapitalUsd * companyReferenceAprPct / 100 / 365",
+    "referenceIncomeIsEarnedIncomeAuthority": false,
+    "canonicalEvidenceFamiliesPresentedSideBySide": true,
+    "canonicalEvidenceFamiliesAddedToPrimaryMetric": false,
+    "crossFamilySummationForbidden": true,
     "maxCarryForwardDays": 8,
     "defiteaAuthority": "canonical-reporting",
     "monetraAuthority": "canonical-stable-reporting",
@@ -38,7 +51,68 @@
           "semantic": "reference-generated-income-not-realised-cash-flow",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
-          "executionAuthority": "none"
+          "executionAuthority": "none",
+          "incomeAccounting": {
+            "version": "0.1-monthly-evidence-family-view",
+            "primaryMetric": {
+              "usd": 1.729662,
+              "semantic": "reference-generated-income-not-realised-cash-flow",
+              "sourceFamily": "observed-productivity-reference-model",
+              "earnedIncomeAuthority": false,
+              "additiveWithCanonicalEvidenceFamilies": false,
+              "overlapStatus": "separate-reference-or-reporting-metric"
+            },
+            "canonicalEvidence": {
+              "accruedEntitlement": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "realisedCashFlow": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "embeddedIncome": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "stablePriceEffectUsd": null
+            },
+            "combinedIncomeUsd": null,
+            "crossFamilySumAllowed": false,
+            "reconciliationStatus": "not-reconciled-for-cross-family-total",
+            "source": "reporting/income-ledger.json",
+            "sourceGeneratedAt": "2026-08-27T17:19:42.336Z",
+            "companyCoverageOverallComplete": false,
+            "unknownIsNotZero": true,
+            "executionAuthority": "none"
+          }
         }
       }
     },
@@ -67,7 +141,68 @@
           "semantic": "reference-generated-income-not-realised-cash-flow",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
-          "executionAuthority": "none"
+          "executionAuthority": "none",
+          "incomeAccounting": {
+            "version": "0.1-monthly-evidence-family-view",
+            "primaryMetric": {
+              "usd": 7.155809,
+              "semantic": "reference-generated-income-not-realised-cash-flow",
+              "sourceFamily": "observed-productivity-reference-model",
+              "earnedIncomeAuthority": false,
+              "additiveWithCanonicalEvidenceFamilies": false,
+              "overlapStatus": "separate-reference-or-reporting-metric"
+            },
+            "canonicalEvidence": {
+              "accruedEntitlement": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "realisedCashFlow": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "embeddedIncome": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "stablePriceEffectUsd": null
+            },
+            "combinedIncomeUsd": null,
+            "crossFamilySumAllowed": false,
+            "reconciliationStatus": "not-reconciled-for-cross-family-total",
+            "source": "reporting/income-ledger.json",
+            "sourceGeneratedAt": "2026-08-27T17:19:42.336Z",
+            "companyCoverageOverallComplete": false,
+            "unknownIsNotZero": true,
+            "executionAuthority": "none"
+          }
         }
       }
     },
@@ -96,7 +231,68 @@
           "semantic": "reference-generated-income-not-realised-cash-flow",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
-          "executionAuthority": "none"
+          "executionAuthority": "none",
+          "incomeAccounting": {
+            "version": "0.1-monthly-evidence-family-view",
+            "primaryMetric": {
+              "usd": 1.714756,
+              "semantic": "reference-generated-income-not-realised-cash-flow",
+              "sourceFamily": "observed-productivity-reference-model",
+              "earnedIncomeAuthority": false,
+              "additiveWithCanonicalEvidenceFamilies": false,
+              "overlapStatus": "separate-reference-or-reporting-metric"
+            },
+            "canonicalEvidence": {
+              "accruedEntitlement": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "realisedCashFlow": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "embeddedIncome": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "stablePriceEffectUsd": null
+            },
+            "combinedIncomeUsd": null,
+            "crossFamilySumAllowed": false,
+            "reconciliationStatus": "not-reconciled-for-cross-family-total",
+            "source": "reporting/income-ledger.json",
+            "sourceGeneratedAt": "2026-08-27T17:19:42.336Z",
+            "companyCoverageOverallComplete": false,
+            "unknownIsNotZero": true,
+            "executionAuthority": "none"
+          }
         }
       }
     },
@@ -124,7 +320,68 @@
           "semantic": "canonical-fund-reporting",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
-          "executionAuthority": "none"
+          "executionAuthority": "none",
+          "incomeAccounting": {
+            "version": "0.1-monthly-evidence-family-view",
+            "primaryMetric": {
+              "usd": 29.66,
+              "semantic": "canonical-fund-reporting",
+              "sourceFamily": "canonical-fund-reporting",
+              "earnedIncomeAuthority": false,
+              "additiveWithCanonicalEvidenceFamilies": false,
+              "overlapStatus": "canonical-reporting-aggregate-may-overlap-accrued-and-realised-evidence"
+            },
+            "canonicalEvidence": {
+              "accruedEntitlement": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "partial-mechanism-specific",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "realisedCashFlow": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "partial-mechanism-specific",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "embeddedIncome": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "stablePriceEffectUsd": null
+            },
+            "combinedIncomeUsd": null,
+            "crossFamilySumAllowed": false,
+            "reconciliationStatus": "not-reconciled-for-cross-family-total",
+            "source": "reporting/income-ledger.json",
+            "sourceGeneratedAt": "2026-08-27T17:19:42.336Z",
+            "companyCoverageOverallComplete": false,
+            "unknownIsNotZero": true,
+            "executionAuthority": "none"
+          }
         },
         "2026-02": {
           "month": "2026-02",
@@ -141,7 +398,68 @@
           "semantic": "canonical-fund-reporting",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
-          "executionAuthority": "none"
+          "executionAuthority": "none",
+          "incomeAccounting": {
+            "version": "0.1-monthly-evidence-family-view",
+            "primaryMetric": {
+              "usd": 45.97,
+              "semantic": "canonical-fund-reporting",
+              "sourceFamily": "canonical-fund-reporting",
+              "earnedIncomeAuthority": false,
+              "additiveWithCanonicalEvidenceFamilies": false,
+              "overlapStatus": "canonical-reporting-aggregate-may-overlap-accrued-and-realised-evidence"
+            },
+            "canonicalEvidence": {
+              "accruedEntitlement": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "partial-mechanism-specific",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "realisedCashFlow": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "partial-mechanism-specific",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "embeddedIncome": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "stablePriceEffectUsd": null
+            },
+            "combinedIncomeUsd": null,
+            "crossFamilySumAllowed": false,
+            "reconciliationStatus": "not-reconciled-for-cross-family-total",
+            "source": "reporting/income-ledger.json",
+            "sourceGeneratedAt": "2026-08-27T17:19:42.336Z",
+            "companyCoverageOverallComplete": false,
+            "unknownIsNotZero": true,
+            "executionAuthority": "none"
+          }
         },
         "2026-03": {
           "month": "2026-03",
@@ -158,7 +476,68 @@
           "semantic": "canonical-fund-reporting",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
-          "executionAuthority": "none"
+          "executionAuthority": "none",
+          "incomeAccounting": {
+            "version": "0.1-monthly-evidence-family-view",
+            "primaryMetric": {
+              "usd": 27.51,
+              "semantic": "canonical-fund-reporting",
+              "sourceFamily": "canonical-fund-reporting",
+              "earnedIncomeAuthority": false,
+              "additiveWithCanonicalEvidenceFamilies": false,
+              "overlapStatus": "canonical-reporting-aggregate-may-overlap-accrued-and-realised-evidence"
+            },
+            "canonicalEvidence": {
+              "accruedEntitlement": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "partial-mechanism-specific",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "realisedCashFlow": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "partial-mechanism-specific",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "embeddedIncome": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "stablePriceEffectUsd": null
+            },
+            "combinedIncomeUsd": null,
+            "crossFamilySumAllowed": false,
+            "reconciliationStatus": "not-reconciled-for-cross-family-total",
+            "source": "reporting/income-ledger.json",
+            "sourceGeneratedAt": "2026-08-27T17:19:42.336Z",
+            "companyCoverageOverallComplete": false,
+            "unknownIsNotZero": true,
+            "executionAuthority": "none"
+          }
         },
         "2026-04": {
           "month": "2026-04",
@@ -175,7 +554,68 @@
           "semantic": "canonical-fund-reporting",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
-          "executionAuthority": "none"
+          "executionAuthority": "none",
+          "incomeAccounting": {
+            "version": "0.1-monthly-evidence-family-view",
+            "primaryMetric": {
+              "usd": 20.2,
+              "semantic": "canonical-fund-reporting",
+              "sourceFamily": "canonical-fund-reporting",
+              "earnedIncomeAuthority": false,
+              "additiveWithCanonicalEvidenceFamilies": false,
+              "overlapStatus": "canonical-reporting-aggregate-may-overlap-accrued-and-realised-evidence"
+            },
+            "canonicalEvidence": {
+              "accruedEntitlement": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "partial-mechanism-specific",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "realisedCashFlow": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "partial-mechanism-specific",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "embeddedIncome": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "stablePriceEffectUsd": null
+            },
+            "combinedIncomeUsd": null,
+            "crossFamilySumAllowed": false,
+            "reconciliationStatus": "not-reconciled-for-cross-family-total",
+            "source": "reporting/income-ledger.json",
+            "sourceGeneratedAt": "2026-08-27T17:19:42.336Z",
+            "companyCoverageOverallComplete": false,
+            "unknownIsNotZero": true,
+            "executionAuthority": "none"
+          }
         },
         "2026-05": {
           "month": "2026-05",
@@ -192,7 +632,68 @@
           "semantic": "canonical-fund-reporting",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
-          "executionAuthority": "none"
+          "executionAuthority": "none",
+          "incomeAccounting": {
+            "version": "0.1-monthly-evidence-family-view",
+            "primaryMetric": {
+              "usd": 30.4,
+              "semantic": "canonical-fund-reporting",
+              "sourceFamily": "canonical-fund-reporting",
+              "earnedIncomeAuthority": false,
+              "additiveWithCanonicalEvidenceFamilies": false,
+              "overlapStatus": "canonical-reporting-aggregate-may-overlap-accrued-and-realised-evidence"
+            },
+            "canonicalEvidence": {
+              "accruedEntitlement": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "partial-mechanism-specific",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "realisedCashFlow": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "partial-mechanism-specific",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "embeddedIncome": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "stablePriceEffectUsd": null
+            },
+            "combinedIncomeUsd": null,
+            "crossFamilySumAllowed": false,
+            "reconciliationStatus": "not-reconciled-for-cross-family-total",
+            "source": "reporting/income-ledger.json",
+            "sourceGeneratedAt": "2026-08-27T17:19:42.336Z",
+            "companyCoverageOverallComplete": false,
+            "unknownIsNotZero": true,
+            "executionAuthority": "none"
+          }
         },
         "2026-06": {
           "month": "2026-06",
@@ -209,7 +710,68 @@
           "semantic": "canonical-fund-reporting",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
-          "executionAuthority": "none"
+          "executionAuthority": "none",
+          "incomeAccounting": {
+            "version": "0.1-monthly-evidence-family-view",
+            "primaryMetric": {
+              "usd": 74.76,
+              "semantic": "canonical-fund-reporting",
+              "sourceFamily": "canonical-fund-reporting",
+              "earnedIncomeAuthority": false,
+              "additiveWithCanonicalEvidenceFamilies": false,
+              "overlapStatus": "canonical-reporting-aggregate-may-overlap-accrued-and-realised-evidence"
+            },
+            "canonicalEvidence": {
+              "accruedEntitlement": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "partial-mechanism-specific",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "realisedCashFlow": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "partial-mechanism-specific",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "embeddedIncome": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "stablePriceEffectUsd": null
+            },
+            "combinedIncomeUsd": null,
+            "crossFamilySumAllowed": false,
+            "reconciliationStatus": "not-reconciled-for-cross-family-total",
+            "source": "reporting/income-ledger.json",
+            "sourceGeneratedAt": "2026-08-27T17:19:42.336Z",
+            "companyCoverageOverallComplete": false,
+            "unknownIsNotZero": true,
+            "executionAuthority": "none"
+          }
         },
         "2026-07": {
           "month": "2026-07",
@@ -226,7 +788,68 @@
           "semantic": "canonical-fund-reporting",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
-          "executionAuthority": "none"
+          "executionAuthority": "none",
+          "incomeAccounting": {
+            "version": "0.1-monthly-evidence-family-view",
+            "primaryMetric": {
+              "usd": 56.05,
+              "semantic": "canonical-fund-reporting",
+              "sourceFamily": "canonical-fund-reporting",
+              "earnedIncomeAuthority": false,
+              "additiveWithCanonicalEvidenceFamilies": false,
+              "overlapStatus": "canonical-reporting-aggregate-may-overlap-accrued-and-realised-evidence"
+            },
+            "canonicalEvidence": {
+              "accruedEntitlement": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "partial-mechanism-specific",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "realisedCashFlow": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "partial-mechanism-specific",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "embeddedIncome": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "stablePriceEffectUsd": null
+            },
+            "combinedIncomeUsd": null,
+            "crossFamilySumAllowed": false,
+            "reconciliationStatus": "not-reconciled-for-cross-family-total",
+            "source": "reporting/income-ledger.json",
+            "sourceGeneratedAt": "2026-08-27T17:19:42.336Z",
+            "companyCoverageOverallComplete": false,
+            "unknownIsNotZero": true,
+            "executionAuthority": "none"
+          }
         },
         "2026-08": {
           "month": "2026-08",
@@ -243,7 +866,68 @@
           "semantic": "canonical-fund-reporting",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
-          "executionAuthority": "none"
+          "executionAuthority": "none",
+          "incomeAccounting": {
+            "version": "0.1-monthly-evidence-family-view",
+            "primaryMetric": {
+              "usd": 75.51,
+              "semantic": "canonical-fund-reporting",
+              "sourceFamily": "canonical-fund-reporting",
+              "earnedIncomeAuthority": false,
+              "additiveWithCanonicalEvidenceFamilies": false,
+              "overlapStatus": "canonical-reporting-aggregate-may-overlap-accrued-and-realised-evidence"
+            },
+            "canonicalEvidence": {
+              "accruedEntitlement": {
+                "status": "observed",
+                "coverage": "partial-mechanism-specific",
+                "eventCount": 14,
+                "valuedEventCount": 14,
+                "unvaluedEventCount": 0,
+                "usdComplete": true,
+                "usd": 10.759724,
+                "valuedUsdSubtotal": 10.759724,
+                "earnedIncomeEvidence": true,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "realisedCashFlow": {
+                "status": "observed",
+                "coverage": "partial-mechanism-specific",
+                "eventCount": 4,
+                "valuedEventCount": 4,
+                "unvaluedEventCount": 0,
+                "usdComplete": true,
+                "usd": 2.956305,
+                "valuedUsdSubtotal": 2.956305,
+                "earnedIncomeEvidence": true,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "embeddedIncome": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "stablePriceEffectUsd": null
+            },
+            "combinedIncomeUsd": null,
+            "crossFamilySumAllowed": false,
+            "reconciliationStatus": "not-reconciled-for-cross-family-total",
+            "source": "reporting/income-ledger.json",
+            "sourceGeneratedAt": "2026-08-27T17:19:42.336Z",
+            "companyCoverageOverallComplete": false,
+            "unknownIsNotZero": true,
+            "executionAuthority": "none"
+          }
         }
       }
     },
@@ -272,7 +956,68 @@
           "semantic": "reference-generated-income-not-realised-cash-flow",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
-          "executionAuthority": "none"
+          "executionAuthority": "none",
+          "incomeAccounting": {
+            "version": "0.1-monthly-evidence-family-view",
+            "primaryMetric": {
+              "usd": 39.112713,
+              "semantic": "reference-generated-income-not-realised-cash-flow",
+              "sourceFamily": "observed-productivity-reference-model",
+              "earnedIncomeAuthority": false,
+              "additiveWithCanonicalEvidenceFamilies": false,
+              "overlapStatus": "separate-reference-or-reporting-metric"
+            },
+            "canonicalEvidence": {
+              "accruedEntitlement": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "realisedCashFlow": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "embeddedIncome": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "stablePriceEffectUsd": null
+            },
+            "combinedIncomeUsd": null,
+            "crossFamilySumAllowed": false,
+            "reconciliationStatus": "not-reconciled-for-cross-family-total",
+            "source": "reporting/income-ledger.json",
+            "sourceGeneratedAt": "2026-08-27T17:19:42.336Z",
+            "companyCoverageOverallComplete": false,
+            "unknownIsNotZero": true,
+            "executionAuthority": "none"
+          }
         }
       }
     },
@@ -301,7 +1046,68 @@
           "semantic": "reference-generated-income-not-realised-cash-flow",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
-          "executionAuthority": "none"
+          "executionAuthority": "none",
+          "incomeAccounting": {
+            "version": "0.1-monthly-evidence-family-view",
+            "primaryMetric": {
+              "usd": 57.208536,
+              "semantic": "reference-generated-income-not-realised-cash-flow",
+              "sourceFamily": "observed-productivity-reference-model",
+              "earnedIncomeAuthority": false,
+              "additiveWithCanonicalEvidenceFamilies": false,
+              "overlapStatus": "separate-reference-or-reporting-metric"
+            },
+            "canonicalEvidence": {
+              "accruedEntitlement": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "realisedCashFlow": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "embeddedIncome": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "stablePriceEffectUsd": null
+            },
+            "combinedIncomeUsd": null,
+            "crossFamilySumAllowed": false,
+            "reconciliationStatus": "not-reconciled-for-cross-family-total",
+            "source": "reporting/income-ledger.json",
+            "sourceGeneratedAt": "2026-08-27T17:19:42.336Z",
+            "companyCoverageOverallComplete": false,
+            "unknownIsNotZero": true,
+            "executionAuthority": "none"
+          }
         }
       }
     },
@@ -330,7 +1136,68 @@
           "semantic": "reference-generated-income-not-realised-cash-flow",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
-          "executionAuthority": "none"
+          "executionAuthority": "none",
+          "incomeAccounting": {
+            "version": "0.1-monthly-evidence-family-view",
+            "primaryMetric": {
+              "usd": 24.775624,
+              "semantic": "reference-generated-income-not-realised-cash-flow",
+              "sourceFamily": "observed-productivity-reference-model",
+              "earnedIncomeAuthority": false,
+              "additiveWithCanonicalEvidenceFamilies": false,
+              "overlapStatus": "separate-reference-or-reporting-metric"
+            },
+            "canonicalEvidence": {
+              "accruedEntitlement": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "realisedCashFlow": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "embeddedIncome": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "stablePriceEffectUsd": null
+            },
+            "combinedIncomeUsd": null,
+            "crossFamilySumAllowed": false,
+            "reconciliationStatus": "not-reconciled-for-cross-family-total",
+            "source": "reporting/income-ledger.json",
+            "sourceGeneratedAt": "2026-08-27T17:19:42.336Z",
+            "companyCoverageOverallComplete": false,
+            "unknownIsNotZero": true,
+            "executionAuthority": "none"
+          }
         }
       }
     },
@@ -358,7 +1225,68 @@
           "semantic": "reference-generated-income-not-realised-cash-flow",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
-          "executionAuthority": "none"
+          "executionAuthority": "none",
+          "incomeAccounting": {
+            "version": "0.1-monthly-evidence-family-view",
+            "primaryMetric": {
+              "usd": 0.1564,
+              "semantic": "reference-generated-income-not-realised-cash-flow",
+              "sourceFamily": "canonical-stable-reporting",
+              "earnedIncomeAuthority": false,
+              "additiveWithCanonicalEvidenceFamilies": false,
+              "overlapStatus": "separate-reference-or-reporting-metric"
+            },
+            "canonicalEvidence": {
+              "accruedEntitlement": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "realisedCashFlow": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "embeddedIncome": {
+                "status": "observed",
+                "coverage": "canonical-accepted-intervals-only",
+                "eventCount": 120,
+                "valuedEventCount": 120,
+                "unvaluedEventCount": 0,
+                "usdComplete": true,
+                "usd": 0.13164967,
+                "valuedUsdSubtotal": 0.13164967,
+                "earnedIncomeEvidence": true,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "stablePriceEffectUsd": 0.04146811
+            },
+            "combinedIncomeUsd": null,
+            "crossFamilySumAllowed": false,
+            "reconciliationStatus": "not-reconciled-for-cross-family-total",
+            "source": "reporting/income-ledger.json",
+            "sourceGeneratedAt": "2026-08-27T17:19:42.336Z",
+            "companyCoverageOverallComplete": false,
+            "unknownIsNotZero": true,
+            "executionAuthority": "none"
+          }
         }
       }
     },
@@ -387,7 +1315,68 @@
           "semantic": "reference-generated-income-not-realised-cash-flow",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
-          "executionAuthority": "none"
+          "executionAuthority": "none",
+          "incomeAccounting": {
+            "version": "0.1-monthly-evidence-family-view",
+            "primaryMetric": {
+              "usd": 1.798687,
+              "semantic": "reference-generated-income-not-realised-cash-flow",
+              "sourceFamily": "observed-productivity-reference-model",
+              "earnedIncomeAuthority": false,
+              "additiveWithCanonicalEvidenceFamilies": false,
+              "overlapStatus": "separate-reference-or-reporting-metric"
+            },
+            "canonicalEvidence": {
+              "accruedEntitlement": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "realisedCashFlow": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "embeddedIncome": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "stablePriceEffectUsd": null
+            },
+            "combinedIncomeUsd": null,
+            "crossFamilySumAllowed": false,
+            "reconciliationStatus": "not-reconciled-for-cross-family-total",
+            "source": "reporting/income-ledger.json",
+            "sourceGeneratedAt": "2026-08-27T17:19:42.336Z",
+            "companyCoverageOverallComplete": false,
+            "unknownIsNotZero": true,
+            "executionAuthority": "none"
+          }
         }
       }
     },
@@ -416,7 +1405,68 @@
           "semantic": "reference-generated-income-not-realised-cash-flow",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
-          "executionAuthority": "none"
+          "executionAuthority": "none",
+          "incomeAccounting": {
+            "version": "0.1-monthly-evidence-family-view",
+            "primaryMetric": {
+              "usd": 14.963781,
+              "semantic": "reference-generated-income-not-realised-cash-flow",
+              "sourceFamily": "observed-productivity-reference-model",
+              "earnedIncomeAuthority": false,
+              "additiveWithCanonicalEvidenceFamilies": false,
+              "overlapStatus": "separate-reference-or-reporting-metric"
+            },
+            "canonicalEvidence": {
+              "accruedEntitlement": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "realisedCashFlow": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "embeddedIncome": {
+                "status": "unknown-no-complete-coverage",
+                "coverage": "unknown",
+                "eventCount": 0,
+                "valuedEventCount": 0,
+                "unvaluedEventCount": 0,
+                "usdComplete": false,
+                "usd": null,
+                "valuedUsdSubtotal": null,
+                "earnedIncomeEvidence": false,
+                "unknownIsNotZero": true,
+                "executionAuthority": "none"
+              },
+              "stablePriceEffectUsd": null
+            },
+            "combinedIncomeUsd": null,
+            "crossFamilySumAllowed": false,
+            "reconciliationStatus": "not-reconciled-for-cross-family-total",
+            "source": "reporting/income-ledger.json",
+            "sourceGeneratedAt": "2026-08-27T17:19:42.336Z",
+            "companyCoverageOverallComplete": false,
+            "unknownIsNotZero": true,
+            "executionAuthority": "none"
+          }
         }
       }
     }
