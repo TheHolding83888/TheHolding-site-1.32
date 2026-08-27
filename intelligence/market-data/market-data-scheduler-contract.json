@@ -1,0 +1,34 @@
+{
+  "version": "0.1-market-data-scheduler-contract",
+  "status": "production",
+  "workflow": "The Holding Market Data · Shared Refresh",
+  "cron": "7,37 * * * *",
+  "cadenceMinutes": 30,
+  "timezone": "UTC",
+  "purpose": "Single source of truth for the natural Shared Market Data wake and the canonical Public Capital State refresh cadence used by fund TVL, company TVL and The Holding aggregate TVL.",
+  "canonicalOutputs": [
+    "intelligence/market-data/market-data.json",
+    "intelligence/market-data/onchain-price-shadow.json",
+    "intelligence/market-data/public-capital-state.json"
+  ],
+  "separationOfConcerns": {
+    "dailyCoinGeckoBaselineIsSeparate": true,
+    "sharedRefreshMayReuseDailyCoinGeckoWithoutExternalRequest": true,
+    "onchainObservationRunsEverySharedRefresh": true,
+    "publicCapitalStateRebuiltEverySharedRefresh": true
+  },
+  "epistemics": {
+    "naturalScheduleProofRequired": true,
+    "pushOrManualRunDoesNotProveSchedulerHealth": true,
+    "unknownIsNotZero": true,
+    "partialIsNotTotal": true,
+    "oneEconomicPositionOnce": true
+  },
+  "authority": {
+    "repositoryMutationAuthority": true,
+    "workflowDispatchAuthority": false,
+    "capitalExecution": false,
+    "walletAuthority": false,
+    "methodologyMutationAuthority": false
+  }
+}
