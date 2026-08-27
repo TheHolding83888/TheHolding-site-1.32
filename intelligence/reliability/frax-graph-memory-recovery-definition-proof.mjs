@@ -34,7 +34,7 @@ for(const required of [
   'Refresh Project Memory after downstream success',
   'Refresh Intelligence Progress after Project Memory success',
   "change.sourceHealth?.allFresh!==true",
-  "change.bridge?.snapshotHash!==memory.snapshotHash",
+  "!change.bridge?.snapshotHash||change.bridge.snapshotHash!==memory.snapshotHash",
   "change.generatedAt!==memory.generatedAt",
   "change.version!=='0.2.1-autonomous-change-intelligence-memory-vault'",
   "memory.version!=='0.2.1-system-memory'",
@@ -74,7 +74,7 @@ assert(ordered.every(x=>x>=0)&&ordered.every((x,i)=>i===0||x>ordered[i-1]),'Reco
 const pushBlock=explanatory.match(/\n  push:\n([\s\S]*?)\n\npermissions:/)?.[1]||'';
 assert(pushBlock.includes('intelligence/economic-graph/economic-graph.json'),'Explanatory materialized Graph wake missing');
 assert(!pushBlock.includes('intelligence/explanatory/explanatory-context.mjs'),'Premature Explanatory source push race reintroduced');
-assert(!pushBlock.includes('intelligence/explanatory/vlcvx-votium-curve-shadow-context.mjs'),'Premature Explanatory extension push race reintroduced');
+assert(!pushBlock.includes('intelligence/explanatory/vlcvx-votium-curve-shadow-context.mjs'),'Premature Explanatory extension source push race reintroduced');
 assert(explanatory.includes("'the-holding-explanatory-context-production'"),'Explanatory serialized production lane missing');
 assert(explanatory.includes("cancel-in-progress: ${{ github.event_name == 'pull_request' }}"),'Explanatory PR/production cancellation partition drift');
 
