@@ -4,7 +4,7 @@
 >
 > Start from this live `main` file. Then load only the minimum recovery packet below. Full owner/build/history canons remain machine-verified durable contracts and are loaded only when the compact router says they are relevant. Changing facts still come from live generated artifacts and exact workflow evidence, not prose memory.
 
-Canonical source state represented here: **2026-08-27T08:57:12.460Z**
+Canonical source state represented here: **2026-08-27T08:57:53.660Z**
 
 ## Minimum recovery packet
 
