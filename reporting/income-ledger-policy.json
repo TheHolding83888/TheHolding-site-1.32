@@ -1,0 +1,54 @@
+{
+  "version": "0.1-canonical-income-ledger-policy",
+  "status": "production-candidate",
+  "purpose": "Provide one append-only, evidence-family-aware income history for Reporting without collapsing reference productivity, accrued entitlement, realised cash flow, embedded income or market performance into one misleading number.",
+  "families": [
+    "accrued-entitlement",
+    "realised-cash-flow",
+    "embedded-income"
+  ],
+  "stateFamilies": [
+    "current-claimable"
+  ],
+  "rules": {
+    "eventIdentityRequired": true,
+    "eventEconomicFieldsImmutableAfterAdmission": true,
+    "claimOrWalletMovementDoesNotErasePriorIncome": true,
+    "currentClaimableBalanceIsStateNotPeriodIncome": true,
+    "claimableDecreaseDoesNotProveRealisedCashFlow": true,
+    "claimableIncreaseWithoutMechanismIdentityDoesNotProvePeriodIncome": true,
+    "missingClaimableRouteDoesNotMeanZero": true,
+    "embeddedIncomeRequiresAcceptedCanonicalInterval": true,
+    "realisedCashFlowRequiresMechanismSpecificProof": true,
+    "referenceAprCanNeverBackfillEarnedIncome": true,
+    "stablePriceEffectIsSeparateFromEmbeddedIncome": true,
+    "unknownIsNotZero": true,
+    "crossFamilySummationForbidden": true
+  },
+  "claimableContinuity": {
+    "increase": "state-increase-observed-not-income-authority",
+    "decrease": "reconciliation-needed-not-realised-proof",
+    "missing": "route-missing-reconciliation-needed-not-zero",
+    "new": "new-route-baseline",
+    "unchanged": "unchanged"
+  },
+  "sourceAuthority": {
+    "defiteaVoteMarket": "reporting/defitea-income-ledger.json voteMarketEvents",
+    "defiteaFortyAcresReceived": "reporting/defitea-income-ledger.json fortyAcresReceivedEvents",
+    "monetraEmbeddedIncome": "companies/embedded-yield-ledger.json accepted intervalHistory",
+    "mechanismSpecificRealisedCashFlow": "intelligence/realised-cash-flow/realised-cash-flow.json accepted realised-income rows",
+    "currentClaimableState": "companies/rewards-data.json current canonical Rewards rows"
+  },
+  "retention": {
+    "incomeEvents": "indefinite",
+    "claimableSnapshots": 730,
+    "conflictingEventMutationPolicy": "fail-closed"
+  },
+  "authority": {
+    "executionAuthority": "none",
+    "walletAuthority": "none",
+    "claimingAuthority": "none",
+    "capitalExecution": false,
+    "methodologyMutationAuthority": "none"
+  }
+}

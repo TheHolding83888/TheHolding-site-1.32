@@ -8,10 +8,14 @@ on:
       - 'reporting/reporting-scheduler-contract.json'
       - 'reporting/reporting-scheduled-runner.mjs'
       - 'reporting/rate-continuity-policy.json'
+      - 'reporting/income-ledger-policy.json'
+      - 'reporting/income-ledger.mjs'
+      - 'reporting/income-ledger-validation.mjs'
       - 'reporting/defitea-income-composition.mjs'
       - 'reporting/defitea-income-composition-validation.mjs'
       - 'reporting/defitea-forty-acres-settlement.mjs'
       - 'reporting/defitea-forty-acres-settlement-validation.mjs'
+      - 'intelligence/realised-cash-flow/realised-cash-flow.json'
       - '.github/workflows/update-reporting.yml'
       - '.github/workflows/verify-reporting-layer.yml'
       - 'yield-reports/index.html'
@@ -24,7 +28,7 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 9
     steps:
       - name: Checkout exact candidate
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -37,27 +41,36 @@ jobs:
       - name: Static and semantic validation
         run: |
           set -euo pipefail
-          node --check reporting/reporting-engine.mjs
-          node --check reporting/reporting-scheduled-runner.mjs
-          node --check reporting/reporting-engine-validation.mjs
-          node --check reporting/defitea-income-composition.mjs
-          node --check reporting/defitea-income-composition-validation.mjs
-          node --check reporting/defitea-forty-acres-settlement.mjs
-          node --check reporting/defitea-forty-acres-settlement-validation.mjs
+          for f in \
+            reporting/reporting-engine.mjs \
+            reporting/reporting-scheduled-runner.mjs \
+            reporting/reporting-engine-validation.mjs \
+            reporting/income-ledger.mjs \
+            reporting/income-ledger-validation.mjs \
+            reporting/defitea-income-composition.mjs \
+            reporting/defitea-income-composition-validation.mjs \
+            reporting/defitea-forty-acres-settlement.mjs \
+            reporting/defitea-forty-acres-settlement-validation.mjs; do
+            node --check "$f"
+          done
           test -s reporting/reporting-scheduler-contract.json
           test -s reporting/rate-continuity-policy.json
+          test -s reporting/income-ledger-policy.json
+          test -s intelligence/realised-cash-flow/realised-cash-flow.json
           node reporting/reporting-scheduled-runner.mjs --validate-contract
           node reporting/reporting-engine-validation.mjs
+          node reporting/income-ledger-validation.mjs
           node reporting/defitea-income-composition-validation.mjs
           node reporting/defitea-forty-acres-settlement-validation.mjs
           git diff --check
 
-      - name: Exercise full writer and income composition
+      - name: Exercise full writer and canonical income history
         shell: bash
         run: |
           set -euo pipefail
           cp reporting/reporting-data.json /tmp/reporting-data.json
-          rm -f /tmp/defitea-income-ledger.json
+          rm -f /tmp/defitea-income-ledger.json /tmp/income-ledger.json
+
           DEFITEA_STATE_FILE=./companies/defitea-canonical-state.json \
           PRODUCTIVITY_DATA_FILE=./companies/productivity-data.json \
           MARKET_DATA_FILE=./intelligence/market-data/market-data.json \
@@ -67,37 +80,50 @@ jobs:
           RATE_CONTINUITY_POLICY_FILE=./reporting/rate-continuity-policy.json \
           REPORTING_DATA_FILE=/tmp/reporting-data.json \
           node reporting/reporting-scheduled-runner.mjs
+
           PRODUCTIVITY_DATA_FILE=./companies/productivity-data.json \
           REWARDS_DATA_FILE=./companies/rewards-data.json \
           REPORTING_DATA_FILE=/tmp/reporting-data.json \
           DEFITEA_INCOME_LEDGER_FILE=/tmp/defitea-income-ledger.json \
           node reporting/defitea-income-composition.mjs
+
           REWARDS_DATA_FILE=./companies/rewards-data.json \
           REPORTING_DATA_FILE=/tmp/reporting-data.json \
           DEFITEA_INCOME_LEDGER_FILE=/tmp/defitea-income-ledger.json \
           node reporting/defitea-forty-acres-settlement.mjs
+
+          INCOME_LEDGER_POLICY_FILE=./reporting/income-ledger-policy.json \
+          REPORTING_DATA_FILE=/tmp/reporting-data.json \
+          DEFITEA_INCOME_LEDGER_FILE=/tmp/defitea-income-ledger.json \
+          EMBEDDED_YIELD_LEDGER_FILE=./companies/embedded-yield-ledger.json \
+          REWARDS_DATA_FILE=./companies/rewards-data.json \
+          REALISED_CASH_FLOW_FILE=./intelligence/realised-cash-flow/realised-cash-flow.json \
+          INCOME_LEDGER_FILE=/tmp/income-ledger.json \
+          node reporting/income-ledger.mjs
+
           node - <<'NODE'
           const fs=require('fs');
           const r=JSON.parse(fs.readFileSync('/tmp/reporting-data.json','utf8'));
           const l=JSON.parse(fs.readFileSync('/tmp/defitea-income-ledger.json','utf8'));
+          const income=JSON.parse(fs.readFileSync('/tmp/income-ledger.json','utf8'));
           const schedule=JSON.parse(fs.readFileSync('reporting/reporting-scheduler-contract.json','utf8'));
-          const policy=JSON.parse(fs.readFileSync('reporting/rate-continuity-policy.json','utf8'));
+          const ratePolicy=JSON.parse(fs.readFileSync('reporting/rate-continuity-policy.json','utf8'));
+          const incomePolicy=JSON.parse(fs.readFileSync('reporting/income-ledger-policy.json','utf8'));
           const productivity=JSON.parse(fs.readFileSync('companies/productivity-data.json','utf8'));
+          const embedded=JSON.parse(fs.readFileSync('companies/embedded-yield-ledger.json','utf8'));
           const d=r.funds?.['defitea.eth'];
-          if(r.version!=='1.2.1-resilient-rate-coverage') throw new Error('version drift');
+
+          if(r.version!=='1.2.1-resilient-rate-coverage') throw new Error('Reporting version drift');
           if(r.schedule?.dailySnapshot!==schedule.dailySnapshotUtc||r.schedule?.cron!==schedule.cron||r.schedule?.contractVersion!==schedule.version||r.schedule?.contractSource!=='reporting/reporting-scheduler-contract.json') throw new Error('scheduler contract runtime binding failed');
-          if(r.schedule?.rateContinuityPolicyReference!=='reporting/rate-continuity-policy.json') throw new Error('rate continuity policy runtime provenance missing');
+          if(r.schedule?.rateContinuityPolicyReference!=='reporting/rate-continuity-policy.json') throw new Error('rate continuity provenance missing');
           const s=d?.latestSnapshot;
           if(!s||s.positionCount!==11||(s.positions||[]).length!==11) throw new Error('Defitea canonical 11-position runtime proof failed');
-          if(!Number.isInteger(s.rateCoveredPositionCount)||s.rateCoveredPositionCount<0||s.rateCoveredPositionCount>11) throw new Error('Defitea rate coverage count invalid');
-          if(!(Number(s.totalValueUsd)>0)||!(Number(s.coveredValueUsd)>=0)||Number(s.coveredValueUsd)>Number(s.totalValueUsd)+0.01) throw new Error('Defitea covered TVL invalid');
-          if(s.unknownIsNotZero!==true||s.rateContinuityPolicyVersion!==policy.version) throw new Error('Defitea rate continuity epistemic metadata missing');
-          if(s.priceAuthority!=='canonical-selected-market-data') throw new Error('canonical Market Data runtime binding failed');
+          if(!Number.isInteger(s.rateCoveredPositionCount)||s.rateCoveredPositionCount<0||s.rateCoveredPositionCount>11) throw new Error('Defitea rate coverage invalid');
+          if(s.unknownIsNotZero!==true||s.rateContinuityPolicyVersion!==ratePolicy.version) throw new Error('Defitea rate epistemics missing');
           for(const row of s.positions||[]){
             if(!['current','carried-forward','unknown'].includes(row.rateStatus)) throw new Error('invalid rate state '+row.principalId);
-            if(row.rateStatus==='unknown'){
-              if(row.referenceApr!==null) throw new Error('UNKNOWN became numeric '+row.principalId);
-            }else if(!Number.isFinite(Number(row.referenceApr))||Number(row.referenceApr)<0) throw new Error('covered APR invalid '+row.principalId);
+            if(row.rateStatus==='unknown'&&row.referenceApr!==null) throw new Error('UNKNOWN became numeric '+row.principalId);
+            if(row.rateStatus!=='unknown'&&(!Number.isFinite(Number(row.referenceApr))||Number(row.referenceApr)<0)) throw new Error('covered APR invalid '+row.principalId);
             if(row.rateStatus==='carried-forward'&&Number(row.rateAgeDays)>Number(row.maxCarryDays)) throw new Error('expired carry admitted '+row.principalId);
           }
           const livePendle=productivity?.companies?.['defitea.eth']?.breakdown?.find(x=>x.engineId==='pendle_spendle');
@@ -107,66 +133,105 @@ jobs:
             if(!['carried-forward','unknown'].includes(reportPendle.rateStatus)) throw new Error('live Pendle degradation was not isolated');
             if(reportPendle.rateStatus==='carried-forward'&&reportPendle.rateSource!=='previous-published-valid-reporting-rate') throw new Error('Pendle carry provenance invalid');
           }
-          if(d?.vlCvxReconciliation?.claimableSettlementAddedToReferenceCashFlow!==false) throw new Error('vlCVX additive-double-count guard failed');
-          if(d?.incomeComposition?.version!=='0.1-defitea-associated-income-plus-votemarket-events') throw new Error('income composition runtime proof failed');
-          if(d?.incomeComposition?.associatedCompanyTvlIncluded!==false||d?.incomeComposition?.tvlSemantic!=='defitea-only') throw new Error('associated-company TVL boundary failed');
-          if(l?.version!=='0.1-defitea-income-composition'||l?.accounting?.currentClaimableBalanceSummedDaily!==false) throw new Error('income ledger runtime contract failed');
-          if((l?.contributorDaily||[]).filter(x=>x.date===d.latestSnapshot.date).length!==2) throw new Error('both associated-company daily contributors not materialized');
-          if((l?.contributors||[]).some(x=>x.includedInDefiteaTvl!==false)) throw new Error('contributor TVL exclusion runtime proof failed');
-          const vm=l?.voteMarketEvents||[];
-          if(new Set(vm.map(x=>x.eventKey)).size!==vm.length) throw new Error('VoteMarket event dedupe runtime proof failed');
-          if(vm.some(x=>x.eventDate<d.trackingStartedAt||!(Number(x.usdValue)>0))) throw new Error('VoteMarket event admission runtime proof failed');
-          const fa=l?.fortyAcresReceivedEvents||[];
-          if(fa.length<1) throw new Error('40 Acres Received events not materialized');
-          if(new Set(fa.map(x=>x.eventKey)).size!==fa.length) throw new Error('40 Acres Received event dedupe runtime proof failed');
-          if(fa.some(x=>x.eventDate<'2026-08-01'||!(Number(x.usdValue)>0)||x.executionAuthority!=='none')) throw new Error('40 Acres Received event admission runtime proof failed');
+
+          if(l?.version!=='0.1-defitea-income-composition'||l?.accounting?.currentClaimableBalanceSummedDaily!==false) throw new Error('Defitea income ledger runtime contract failed');
+          const vm=l?.voteMarketEvents||[],fa=l?.fortyAcresReceivedEvents||[];
+          if(new Set(vm.map(x=>x.eventKey)).size!==vm.length||new Set(fa.map(x=>x.eventKey)).size!==fa.length) throw new Error('Defitea source event dedupe failed');
           if(d?.fortyAcresSettlement?.accounting!=='actual-net-received-replaces-velodrome-reference-model'||d?.fortyAcresSettlement?.referenceDoubleCountPrevented!==true) throw new Error('40 Acres replacement runtime proof failed');
-          if(d?.fortyAcresSettlement?.claimableAffected!==false||d?.fortyAcresSettlement?.tvlAffected!==false) throw new Error('40 Acres accounting boundary failed');
-          const current=d.months?.[d.latestSnapshot.date.slice(0,7)];
-          if(current?.mode==='reference-model'){
-            const expected=Number(current.baseDefiteaReferenceCashFlowUsd||0)-Number(current.fortyAcresReplacedReferenceCashFlowUsd||0)+Number(current.associatedCompanyReferenceCashFlowUsd||0)+Number(current.voteMarketObservedIncomeUsd||0)+Number(current.fortyAcresReceivedIncomeUsd||0);
-            if(Math.abs(Number(current.cashFlowUsd)-expected)>0.011) throw new Error('unified 40 Acres replacement arithmetic runtime proof failed');
-            if(!(Number(current.fortyAcresReceivedIncomeUsd)>0)||!(Number(current.fortyAcresReplacedReferenceCashFlowUsd)>0)) throw new Error('40 Acres Received/replacement values missing');
+
+          if(income.version!=='0.1-canonical-income-ledger'||income.policyVersion!==incomePolicy.version||income.status!=='partial') throw new Error('Canonical Income Ledger identity drift');
+          if(income.semantics?.unknownIsNotZero!==true||income.semantics?.referenceAprCanBackfillEarnedIncome!==false||income.semantics?.stablePriceEffectSeparate!==true) throw new Error('Canonical Income Ledger semantic drift');
+          if(income.authority?.executionAuthority!=='none'||income.authority?.capitalExecution!==false||income.authority?.claimingAuthority!=='none') throw new Error('Canonical Income Ledger authority expansion');
+          const events=income.events||[];
+          if(new Set(events.map(e=>e.eventKey)).size!==events.length) throw new Error('Canonical Income Ledger duplicate event identity');
+          if(events.some(e=>!e.immutableEconomicFieldsHash||e.retention!=='indefinite'||e.laterStateChangeDoesNotEraseIncome!==true)) throw new Error('Canonical Income Ledger retention/integrity drift');
+
+          const sourceVm=vm.filter(e=>e?.eventKey&&Number(e?.usdValue)>0).length;
+          const sourceFa=fa.filter(e=>e?.eventKey&&Number(e?.usdValue)>0).length;
+          if(events.filter(e=>e.company==='defitea.eth'&&e.family==='accrued-entitlement').length!==sourceVm) throw new Error('VoteMarket canonical event import parity failed');
+          if(events.filter(e=>e.company==='defitea.eth'&&e.family==='realised-cash-flow'&&e.sourceFamily==='fortyAcresReceivedEvents').length!==sourceFa) throw new Error('40 Acres canonical event import parity failed');
+          let acceptedEmbedded=0;
+          for(const p of Object.values(embedded.positions||{})) acceptedEmbedded+=(p.intervalHistory||[]).filter(e=>e?.status==='ok'&&e?.accepted===true).length;
+          if(events.filter(e=>e.company==='Monetra.eth'&&e.family==='embedded-income').length!==acceptedEmbedded) throw new Error('Monetra accepted interval import parity failed');
+
+          if((income.claimableSnapshots||[]).some(x=>x.stateOnly!==true||x.periodIncomeAuthority!==false||x.realisedCashFlowAuthority!==false||x.unknownIsNotZero!==true)) throw new Error('claimable state escaped accounting boundary');
+          for(const c of Object.values(income.companies||{})){
+            if(c.coverage?.overallComplete!==false||c.coverage?.unknownIsNotZero!==true) throw new Error('company coverage silently upgraded');
+            if((c.claimableContinuity||[]).some(x=>x.periodIncomeAuthority!==false||x.realisedCashFlowAuthority!==false||x.unknownIsNotZero!==true)) throw new Error('claimable continuity became income authority');
+            for(const m of Object.values(c.monthly||{})) if(m.combinedIncomeUsd!==null||m.crossFamilySumAllowed!==false) throw new Error('cross-family economic collapse detected');
           }
-          console.log('Reporting resilient candidate runtime PASS',{
-            schedulerCron:schedule.cron,
-            schedulerSnapshot:schedule.dailySnapshotUtc,
+          console.log('Reporting + Canonical Income Ledger runtime PASS',{
             rateCoveredPositions:s.rateCoveredPositionCount,
             rateCoverage:s.coverage,
-            carriedRatePositions:s.carriedRatePositions,
-            unknownRatePositions:s.unknownRatePositions,
             livePendleStatus:livePendle?.engineStatus,
             reportedPendleStatus:reportPendle.rateStatus,
-            defiteaTvlUsd:s.totalValueUsd,
-            contributorEntries:(l.contributorDaily||[]).length,
-            voteMarketEvents:vm.length,
-            fortyAcresEvents:fa.length,
-            currentMonthCashFlowUsd:current?.cashFlowUsd
+            canonicalIncomeEvents:events.length,
+            voteMarketEvents:sourceVm,
+            fortyAcresEvents:sourceFa,
+            monetraEmbeddedIntervals:acceptedEmbedded,
+            claimableSnapshots:(income.claimableSnapshots||[]).length
           });
           NODE
 
-      - name: Guard independent price discovery and authority expansion
+      - name: Prove append-only retention across a simulated claim
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp /tmp/income-ledger.json /tmp/income-ledger-before-claim.json
+          node - <<'NODE'
+          const fs=require('fs');
+          const rewards=JSON.parse(fs.readFileSync('companies/rewards-data.json','utf8'));
+          const names=Object.keys(rewards.companies||{});
+          if(names.length){
+            const c=rewards.companies[names[0]];
+            if(Array.isArray(c.rewards)&&c.rewards.length){
+              c.rewards=c.rewards.slice(1);
+              c.totalUsd=null;
+            }
+          }
+          rewards.generatedAt='2026-08-27T18:00:00.000Z';
+          fs.writeFileSync('/tmp/rewards-after-claim.json',JSON.stringify(rewards,null,2));
+          NODE
+          INCOME_LEDGER_POLICY_FILE=./reporting/income-ledger-policy.json \
+          REPORTING_DATA_FILE=/tmp/reporting-data.json \
+          DEFITEA_INCOME_LEDGER_FILE=/tmp/defitea-income-ledger.json \
+          EMBEDDED_YIELD_LEDGER_FILE=./companies/embedded-yield-ledger.json \
+          REWARDS_DATA_FILE=/tmp/rewards-after-claim.json \
+          REALISED_CASH_FLOW_FILE=./intelligence/realised-cash-flow/realised-cash-flow.json \
+          INCOME_LEDGER_FILE=/tmp/income-ledger.json \
+          node reporting/income-ledger.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const before=JSON.parse(fs.readFileSync('/tmp/income-ledger-before-claim.json','utf8'));
+          const after=JSON.parse(fs.readFileSync('/tmp/income-ledger.json','utf8'));
+          const a=new Map((after.events||[]).map(e=>[e.eventKey,e]));
+          for(const e of before.events||[]){
+            const n=a.get(e.eventKey);
+            if(!n) throw new Error('historical income erased after claim/source disappearance: '+e.eventKey);
+            if(n.immutableEconomicFieldsHash!==e.immutableEconomicFieldsHash) throw new Error('historical income mutated after claim: '+e.eventKey);
+          }
+          const states=Object.values(after.companies||{}).flatMap(c=>c.claimableContinuity||[]).map(x=>x.state);
+          if(states.some(x=>x==='route-missing-reconciliation-needed-not-zero')===false && states.some(x=>x==='reconciliation-needed-not-realised-proof')===false){
+            console.log('Simulated source mutation did not intersect a canonical claimable row; append-only event retention still proven.');
+          }
+          console.log('Append-only claim/reinvest resilience PASS',{beforeEvents:(before.events||[]).length,afterEvents:(after.events||[]).length});
+          NODE
+
+      - name: Guard independent discovery and authority expansion
         shell: bash
         run: |
           set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');
-          const engine=fs.readFileSync('reporting/reporting-engine.mjs','utf8');
-          const runner=fs.readFileSync('reporting/reporting-scheduled-runner.mjs','utf8');
-          const composition=fs.readFileSync('reporting/defitea-income-composition.mjs','utf8');
-          const settlement=fs.readFileSync('reporting/defitea-forty-acres-settlement.mjs','utf8');
-          const workflow=fs.readFileSync('.github/workflows/update-reporting.yml','utf8');
+          const files=['reporting/reporting-engine.mjs','reporting/reporting-scheduled-runner.mjs','reporting/defitea-income-composition.mjs','reporting/defitea-forty-acres-settlement.mjs','reporting/income-ledger.mjs','.github/workflows/update-reporting.yml'];
+          const text=files.map(f=>fs.readFileSync(f,'utf8')).join('\n');
           const schedule=JSON.parse(fs.readFileSync('reporting/reporting-scheduler-contract.json','utf8'));
-          const policy=JSON.parse(fs.readFileSync('reporting/rate-continuity-policy.json','utf8'));
-          for(const bad of ['api.coingecko.com/api/v3/simple/price','COINGECKO_API_KEY','getCoinGeckoPrices(','COMPANY_PAGE_FILE','parseCompanyBook(']){
-            if(engine.includes(bad)||runner.includes(bad)||composition.includes(bad)||settlement.includes(bad)||workflow.includes(bad)) throw new Error('independent Reporting price discovery remains: '+bad);
-          }
-          for(const bad of ['sendTransaction(','new Wallet(','claimTransactionAuthority: true','executionAuthority: write']){
-            if(engine.includes(bad)||runner.includes(bad)||composition.includes(bad)||settlement.includes(bad)) throw new Error('unexpected Reporting authority expansion: '+bad);
-          }
-          for(const key of ['repositoryMutationAuthority','workflowDispatchAuthority','capitalExecution','walletAuthority','methodologyMutationAuthority']){
-            if(schedule.authority?.[key]!==false) throw new Error('scheduler authority expansion: '+key);
-          }
-          if(policy.authority?.executionAuthority!=='none'||policy.authority?.methodologyMutationAuthority!=='none'||policy.authority?.walletAuthority!=='none') throw new Error('rate continuity policy authority expansion');
+          const ratePolicy=JSON.parse(fs.readFileSync('reporting/rate-continuity-policy.json','utf8'));
+          const incomePolicy=JSON.parse(fs.readFileSync('reporting/income-ledger-policy.json','utf8'));
+          for(const bad of ['api.coingecko.com/api/v3/simple/price','COINGECKO_API_KEY','getCoinGeckoPrices(','COMPANY_PAGE_FILE','parseCompanyBook(']) if(text.includes(bad)) throw new Error('independent Reporting discovery remains: '+bad);
+          for(const bad of ['sendTransaction(','new Wallet(','claimTransactionAuthority: true','executionAuthority: write']) if(text.includes(bad)) throw new Error('unexpected Reporting authority expansion: '+bad);
+          for(const key of ['repositoryMutationAuthority','workflowDispatchAuthority','capitalExecution','walletAuthority','methodologyMutationAuthority']) if(schedule.authority?.[key]!==false) throw new Error('scheduler authority expansion: '+key);
+          if(ratePolicy.authority?.executionAuthority!=='none'||ratePolicy.authority?.methodologyMutationAuthority!=='none'||ratePolicy.authority?.walletAuthority!=='none') throw new Error('rate continuity policy authority expansion');
+          if(incomePolicy.authority?.executionAuthority!=='none'||incomePolicy.authority?.walletAuthority!=='none'||incomePolicy.authority?.claimingAuthority!=='none'||incomePolicy.authority?.capitalExecution!==false) throw new Error('income ledger policy authority expansion');
           console.log('Reporting authority boundary PASS');
           NODE

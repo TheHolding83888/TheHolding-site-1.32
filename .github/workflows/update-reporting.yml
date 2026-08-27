@@ -16,11 +16,15 @@ on:
       - 'companies/embedded-yield-ledger.json'
       - 'companies/productivity-data.json'
       - 'companies/defitea-canonical-state.json'
+      - 'intelligence/realised-cash-flow/realised-cash-flow.json'
       - 'reporting/reporting-scheduler-contract.json'
       - 'reporting/rate-continuity-policy.json'
+      - 'reporting/income-ledger-policy.json'
       - 'reporting/reporting-scheduled-runner.mjs'
       - 'reporting/reporting-engine.mjs'
       - 'reporting/reporting-engine-validation.mjs'
+      - 'reporting/income-ledger.mjs'
+      - 'reporting/income-ledger-validation.mjs'
       - 'reporting/defitea-forty-acres-settlement.mjs'
       - 'reporting/defitea-forty-acres-settlement-validation.mjs'
       - 'reporting/defitea-income-composition.mjs'
@@ -47,7 +51,7 @@ jobs:
         (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
       }}
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 6
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -67,20 +71,25 @@ jobs:
           node --check reporting/reporting-engine.mjs
           node --check reporting/reporting-scheduled-runner.mjs
           node --check reporting/reporting-engine-validation.mjs
+          node --check reporting/income-ledger.mjs
+          node --check reporting/income-ledger-validation.mjs
           node --check reporting/defitea-income-composition.mjs
           node --check reporting/defitea-income-composition-validation.mjs
           node --check reporting/defitea-forty-acres-settlement.mjs
           node --check reporting/defitea-forty-acres-settlement-validation.mjs
           test -s reporting/reporting-scheduler-contract.json
           test -s reporting/rate-continuity-policy.json
+          test -s reporting/income-ledger-policy.json
           test -s companies/defitea-canonical-state.json
           test -s companies/productivity-data.json
           test -s companies/rewards-data.json
           test -s intelligence/market-data/market-data.json
           test -s companies/stable-index-data.json
           test -s companies/embedded-yield-ledger.json
+          test -s intelligence/realised-cash-flow/realised-cash-flow.json
           node reporting/reporting-scheduled-runner.mjs --validate-contract
           node reporting/reporting-engine-validation.mjs
+          node reporting/income-ledger-validation.mjs
           node reporting/defitea-income-composition-validation.mjs
           node reporting/defitea-forty-acres-settlement-validation.mjs
           node - <<'NODE'
@@ -94,7 +103,9 @@ jobs:
           if(l.company?.registry!=='008') throw new Error('Monetra Embedded Yield Ledger identity mismatch');
           const p=JSON.parse(fs.readFileSync('reporting/rate-continuity-policy.json','utf8'));
           if(p.version!=='0.1-reporting-rate-continuity'||p.semantics?.unknownIsNotZero!==true||p.semantics?.singleSourceDataFailureMustNotFreezeWholeReport!==true) throw new Error('Reporting rate continuity policy invalid');
-          console.log('Dual-fund reporting canonical preflight OK.');
+          const income=JSON.parse(fs.readFileSync('reporting/income-ledger-policy.json','utf8'));
+          if(income.version!=='0.1-canonical-income-ledger-policy'||income.rules?.crossFamilySummationForbidden!==true||income.rules?.claimableDecreaseDoesNotProveRealisedCashFlow!==true||income.rules?.unknownIsNotZero!==true) throw new Error('Canonical Income Ledger policy invalid');
+          console.log('Dual-fund reporting + canonical income ledger preflight OK.');
           NODE
 
       - name: Update Defitea + Monetra daily reporting state
@@ -123,6 +134,17 @@ jobs:
           REPORTING_DATA_FILE: ./reporting/reporting-data.json
           DEFITEA_INCOME_LEDGER_FILE: ./reporting/defitea-income-ledger.json
         run: node reporting/defitea-forty-acres-settlement.mjs
+
+      - name: Build Canonical Income Ledger
+        env:
+          INCOME_LEDGER_POLICY_FILE: ./reporting/income-ledger-policy.json
+          REPORTING_DATA_FILE: ./reporting/reporting-data.json
+          DEFITEA_INCOME_LEDGER_FILE: ./reporting/defitea-income-ledger.json
+          EMBEDDED_YIELD_LEDGER_FILE: ./companies/embedded-yield-ledger.json
+          REWARDS_DATA_FILE: ./companies/rewards-data.json
+          REALISED_CASH_FLOW_FILE: ./intelligence/realised-cash-flow/realised-cash-flow.json
+          INCOME_LEDGER_FILE: ./reporting/income-ledger.json
+        run: node reporting/income-ledger.mjs
 
       - name: Validate generated reporting data
         shell: bash
@@ -205,29 +227,100 @@ jobs:
           console.log('Dual-fund resilient reporting validation OK.',{rateCovered:s.rateCoveredPositionCount,total:s.positionCount,coverage:s.coverage,carried:s.carriedRatePositions,unknown:s.unknownRatePositions});
           NODE
 
+      - name: Validate Canonical Income Ledger output
+        shell: bash
+        run: |
+          set -euo pipefail
+          node reporting/income-ledger-validation.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('reporting/income-ledger.json','utf8'));
+          const p=JSON.parse(fs.readFileSync('reporting/income-ledger-policy.json','utf8'));
+          if(x.version!=='0.1-canonical-income-ledger'||x.policyVersion!==p.version||x.status!=='partial') throw new Error('Canonical Income Ledger identity drift');
+          if(x.semantics?.unknownIsNotZero!==true||x.semantics?.referenceAprCanBackfillEarnedIncome!==false||x.semantics?.stablePriceEffectSeparate!==true) throw new Error('Canonical Income Ledger semantic drift');
+          if(x.authority?.executionAuthority!=='none'||x.authority?.capitalExecution!==false||x.authority?.claimingAuthority!=='none') throw new Error('Canonical Income Ledger authority expansion');
+          const events=x.events||[];
+          if(new Set(events.map(e=>e.eventKey)).size!==events.length) throw new Error('Canonical Income Ledger duplicate event identity');
+          if(events.some(e=>!e.immutableEconomicFieldsHash||e.retention!=='indefinite'||e.laterStateChangeDoesNotEraseIncome!==true||e.executionAuthority!=='none')) throw new Error('Canonical Income Ledger event retention/integrity drift');
+          if((x.claimableSnapshots||[]).some(s=>s.stateOnly!==true||s.periodIncomeAuthority!==false||s.realisedCashFlowAuthority!==false||s.unknownIsNotZero!==true)) throw new Error('Claimable state escaped accounting boundary');
+          for(const c of Object.values(x.companies||{})){
+            if(c.coverage?.overallComplete!==false||c.coverage?.unknownIsNotZero!==true) throw new Error('Company income coverage silently upgraded');
+            for(const m of Object.values(c.monthly||{})) if(m.combinedIncomeUsd!==null||m.crossFamilySumAllowed!==false) throw new Error('Cross-family income collapse detected');
+            if((c.claimableContinuity||[]).some(r=>r.periodIncomeAuthority!==false||r.realisedCashFlowAuthority!==false||r.unknownIsNotZero!==true)) throw new Error('Claimable continuity became income authority');
+          }
+          console.log('Canonical Income Ledger output PASS',{events:events.length,claimableSnapshots:(x.claimableSnapshots||[]).length,companies:Object.keys(x.companies||{}).length,newEvents:x.run?.newEventsAdmitted});
+          NODE
+
       - name: Commit reporting snapshot
+        shell: bash
         run: |
           set -euo pipefail
           git config user.name "The Holding Data Engine"
           git config user.email "data-engine@theholding.ai"
-          git add reporting/reporting-data.json reporting/defitea-income-ledger.json
+
+          critical_fingerprint() {
+            sha256sum \
+              reporting/reporting-engine.mjs \
+              reporting/reporting-scheduled-runner.mjs \
+              reporting/reporting-engine-validation.mjs \
+              reporting/rate-continuity-policy.json \
+              reporting/income-ledger.mjs \
+              reporting/income-ledger-validation.mjs \
+              reporting/income-ledger-policy.json \
+              reporting/defitea-income-composition.mjs \
+              reporting/defitea-forty-acres-settlement.mjs \
+              .github/workflows/update-reporting.yml
+          }
+          critical_before="$(critical_fingerprint)"
+
+          git add reporting/reporting-data.json reporting/defitea-income-ledger.json reporting/income-ledger.json
           if git diff --cached --quiet; then
             echo "No reporting data changes."
-          else
-            git commit -m "data: update Defitea and Monetra reporting snapshot"
-            for attempt in 1 2 3; do
-              git fetch origin main
-              if ! git rebase origin/main; then
-                git rebase --abort || true
-                echo "Safe writer guard: rebase conflict; refusing to guess."
-                exit 1
-              fi
-              if git push origin HEAD:main; then
-                exit 0
-              fi
-              echo "Safe writer guard: main moved during push; retrying ($attempt/3)..."
-              sleep $((attempt * 2))
-            done
-            echo "Safe writer guard: push failed after 3 attempts."
-            exit 1
+            exit 0
           fi
+          git commit -m "data: update reporting and canonical income ledger"
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "Safe writer guard: rebase conflict; refusing to guess."
+              exit 1
+            fi
+
+            critical_after="$(critical_fingerprint)"
+            if [ "$critical_after" != "$critical_before" ]; then
+              echo "Critical Reporting code/policy changed during publish rebase; fail closed and require a fresh canonical run."
+              exit 1
+            fi
+
+            # Data sources may have moved while main advanced. Rebuild all
+            # deterministic reporting products on the rebased canonical inputs
+            # so a successful race retry can never publish a stale snapshot.
+            node reporting/reporting-scheduled-runner.mjs
+            node reporting/defitea-income-composition.mjs
+            node reporting/defitea-forty-acres-settlement.mjs
+            node reporting/income-ledger.mjs
+            node reporting/reporting-engine-validation.mjs
+            node reporting/income-ledger-validation.mjs
+            node reporting/defitea-income-composition-validation.mjs
+            node reporting/defitea-forty-acres-settlement-validation.mjs
+            git add reporting/reporting-data.json reporting/defitea-income-ledger.json reporting/income-ledger.json
+            git commit --amend --no-edit
+
+            mapfile -t ahead < <(git diff --name-only origin/main...HEAD)
+            for f in "${ahead[@]}"; do
+              case "$f" in
+                reporting/reporting-data.json|reporting/defitea-income-ledger.json|reporting/income-ledger.json) ;;
+                *) echo "Unexpected Reporting publish delta after rebase: $f"; exit 1 ;;
+              esac
+            done
+
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Safe writer guard: main moved during push; rebuilding on the next rebased canonical state ($attempt/3)..."
+            sleep $((attempt * 2))
+          done
+          echo "Safe writer guard: push failed after 3 attempts."
+          exit 1
