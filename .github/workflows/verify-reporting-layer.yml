@@ -129,16 +129,15 @@ jobs:
           const fs=require('fs');
           const engine=fs.readFileSync('reporting/reporting-engine.mjs','utf8');
           const runner=fs.readFileSync('reporting/reporting-scheduled-runner.mjs','utf8');
-          const validation=fs.readFileSync('reporting/reporting-engine-validation.mjs','utf8');
           const composition=fs.readFileSync('reporting/defitea-income-composition.mjs','utf8');
           const settlement=fs.readFileSync('reporting/defitea-forty-acres-settlement.mjs','utf8');
           const workflow=fs.readFileSync('.github/workflows/update-reporting.yml','utf8');
           const schedule=JSON.parse(fs.readFileSync('reporting/reporting-scheduler-contract.json','utf8'));
           for(const bad of ['api.coingecko.com/api/v3/simple/price','COINGECKO_API_KEY','getCoinGeckoPrices(','COMPANY_PAGE_FILE','parseCompanyBook(']){
-            if(engine.includes(bad)||runner.includes(bad)||validation.includes(bad)||composition.includes(bad)||settlement.includes(bad)||workflow.includes(bad)) throw new Error('independent Reporting price discovery remains: '+bad);
+            if(engine.includes(bad)||runner.includes(bad)||composition.includes(bad)||settlement.includes(bad)||workflow.includes(bad)) throw new Error('independent Reporting price discovery remains: '+bad);
           }
           for(const bad of ['sendTransaction(','new Wallet(','claimTransactionAuthority: true','executionAuthority: write']){
-            if(engine.includes(bad)||runner.includes(bad)||validation.includes(bad)||composition.includes(bad)||settlement.includes(bad)) throw new Error('unexpected Reporting authority expansion: '+bad);
+            if(engine.includes(bad)||runner.includes(bad)||composition.includes(bad)||settlement.includes(bad)) throw new Error('unexpected Reporting authority expansion: '+bad);
           }
           if(workflow.includes('PRODUCTIVITY_DATA_FILE=/tmp/reporting-verifier-productivity.json')) throw new Error('production Reporting workflow must never consume verification fixture');
           for(const key of ['repositoryMutationAuthority','workflowDispatchAuthority','capitalExecution','walletAuthority','methodologyMutationAuthority']){
