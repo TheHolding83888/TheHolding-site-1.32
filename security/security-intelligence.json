@@ -1,7 +1,7 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-27T20:45:34.331Z",
+  "generatedAt": "2026-08-27T20:49:03.497Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
@@ -13,7 +13,7 @@
   },
   "source": {
     "filesScanned": 708,
-    "bytesScanned": 18553804,
+    "bytesScanned": 18553676,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -57,6 +57,36 @@
   "whatChanged": {
     "newFindings": [
       {
+        "id": "7cd79efabadf2991a89201b090e332e66eb3e60ec6ecdbb2af03bb18bf49a1b5",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/verify-company-010-hyperlend-income.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/verify-company-010-hyperlend-income.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "7acc3de54e354c0c16059829ede777def990d099f19aa88051c54b752fb23104",
+          "currentSha256": "ab81be35e84d6f915ab9ba1c336de9d5d0cf66162d3fb71e04e788280e2e9cf3"
+        }
+      },
+      {
+        "id": "28ca3dccaba45b9647a32677dc2f60e7bf3170174f0cec095be27e5ed09cc42b",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/verify-cvxcrv-income-parity.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/verify-cvxcrv-income-parity.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "505bd0fcff241abf5458917bdef8e8e5a6ad9c76447e0035c6840f19b32df1e6",
+          "currentSha256": "d15ba2b72124bc2af298ce9c1ccee53977e33e060c3782084eb1c056c9af0c3d"
+        }
+      }
+    ],
+    "resolvedFindings": [
+      {
         "id": "8da40add2cc52a5a2673d9180a6f940c38c21104104817f0d8c225efba88e8d1",
         "severity": "medium",
         "category": "critical-surface-change",
@@ -82,36 +112,6 @@
         "evidence": {
           "previousSha256": "30f957d11497e44eac291b927f7c8c6572fce5fa5cd73ac924ed0cf9d9acd8f0",
           "currentSha256": "2e4d0b65e8b6e4608587e6c85f843d59e17832838af241fcb9d95b9d122c5e13"
-        }
-      }
-    ],
-    "resolvedFindings": [
-      {
-        "id": "4595bc80711c4968da6abe352b6d5228a09a97866824784e5ce04414a7ef7e9b",
-        "severity": "medium",
-        "category": "critical-surface-change",
-        "file": ".github/workflows/verify-company-010-ve-rewards.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/verify-company-010-ve-rewards.yml.",
-        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-        "evidence": {
-          "previousSha256": "e0b400d6feadd8a2fe163c99ee9cd400992f5dac5c9738354f5284d23d2b7ebd",
-          "currentSha256": "dc8f9453ae871c5d62df0c7a1def137589952d152526505ede7aa4a593590f81"
-        }
-      },
-      {
-        "id": "4f5bec121cc0c280188ee073b69ba40d2e621b916075787ae0253a88ff14fde0",
-        "severity": "medium",
-        "category": "critical-surface-change",
-        "file": ".github/workflows/verify-known-mechanism-reuse-parity.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/verify-known-mechanism-reuse-parity.yml.",
-        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-        "evidence": {
-          "previousSha256": "bfda24ead7a83ccd30365d0a7df8b4b0b2fb89344631c11579385a46dca879e6",
-          "currentSha256": "9ecfe30313055790f1304addc54ce6b4ab918acfff88f170078717422c3a0755"
         }
       }
     ]
@@ -140,31 +140,31 @@
       "evidence": null
     },
     {
-      "id": "8da40add2cc52a5a2673d9180a6f940c38c21104104817f0d8c225efba88e8d1",
+      "id": "7cd79efabadf2991a89201b090e332e66eb3e60ec6ecdbb2af03bb18bf49a1b5",
       "severity": "medium",
       "category": "critical-surface-change",
-      "file": ".github/workflows/validate-yieldring-capital-state.yml",
+      "file": ".github/workflows/verify-company-010-hyperlend-income.yml",
       "line": null,
       "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/validate-yieldring-capital-state.yml.",
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-company-010-hyperlend-income.yml.",
       "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
       "evidence": {
-        "previousSha256": "c28e0cc1c1c5ef565af1d6e11e3d116ffbf28d605e9f554fc8515c3c250a0611",
-        "currentSha256": "72851330416153d65c8a9d11d800bedd3c1bd70a894dd7abc6a393b55f1ce31c"
+        "previousSha256": "7acc3de54e354c0c16059829ede777def990d099f19aa88051c54b752fb23104",
+        "currentSha256": "ab81be35e84d6f915ab9ba1c336de9d5d0cf66162d3fb71e04e788280e2e9cf3"
       }
     },
     {
-      "id": "402a06cfc98e82790e6da27a7509a64ea7db17a6ffb4f5167fa9af208a5bf8a6",
+      "id": "28ca3dccaba45b9647a32677dc2f60e7bf3170174f0cec095be27e5ed09cc42b",
       "severity": "medium",
       "category": "critical-surface-change",
-      "file": ".github/workflows/validate-yieldring-production-cascade.yml",
+      "file": ".github/workflows/verify-cvxcrv-income-parity.yml",
       "line": null,
       "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/validate-yieldring-production-cascade.yml.",
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-cvxcrv-income-parity.yml.",
       "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
       "evidence": {
-        "previousSha256": "30f957d11497e44eac291b927f7c8c6572fce5fa5cd73ac924ed0cf9d9acd8f0",
-        "currentSha256": "2e4d0b65e8b6e4608587e6c85f843d59e17832838af241fcb9d95b9d122c5e13"
+        "previousSha256": "505bd0fcff241abf5458917bdef8e8e5a6ad9c76447e0035c6840f19b32df1e6",
+        "currentSha256": "d15ba2b72124bc2af298ce9c1ccee53977e33e060c3782084eb1c056c9af0c3d"
       }
     },
     {
@@ -472,12 +472,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "1d4059b423a126a21dd09a323c198392f8cdfd3ca166bb8f1b3231402926002f",
+    "snapshotHash": "fdca73d295a1a2117d65cee3c365868edf53b2575f6b72f395f882ad2a20db7d",
     "securityVault": {
-      "runCount": 587,
+      "runCount": 588,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-27T20-45-34-331Z-1d4059b423.json",
-      "latestRecordHash": "d5a0c37450f78fff644689680443fa9248fbfa590811997b4894064eb8f9ad2e",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-27T20-49-03-497Z-fdca73d295.json",
+      "latestRecordHash": "60e04b56d0a5a5bbcf7271ce21d61cef552feedf148c4c5daea33cf1df82b739",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
