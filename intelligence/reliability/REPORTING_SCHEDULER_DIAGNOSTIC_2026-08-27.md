@@ -1,56 +1,98 @@
 # Reporting Scheduler Diagnostic — 2026-08-27
 
-Status: **DIAGNOSTIC CHECKPOINT — root cause narrowed, production repair not yet proven**
+Status: **REPAIR IMPLEMENTATION / CONTRACT DONE — NATURAL SCHEDULER PROOF WAITING EXTERNAL EVENT**
 
-## Why this checkpoint exists
+## Closure classification
 
-Preserve the live evidence and current hypothesis before the repair is complete. This file is diagnostic memory, not a claim that Reporting is GREEN.
+- scheduler registration/contract repair: **DONE**;
+- workflow ↔ schedule metadata parity: **DONE**;
+- Reporting verifier + Control Plane/no-new-fan-out guards: **DONE**;
+- natural post-repair `event=schedule` proof: **WAITING EXTERNAL PROOF**;
+- live Pendle APR availability: **WAITING EXTERNAL EVIDENCE**, not scheduler defect;
+- manual dispatch: **not accepted as scheduler-health proof**.
 
-## Live evidence
+This file no longer represents an open pre-repair investigation. PR #397 implemented and merged the bounded repair. The exact GitHub platform-side reason the old schedule stopped materializing remains unproven, but the repository-side registration/contract defect has been repaired without changing Reporting accounting semantics or expanding authority.
 
-- `Update The Holding Reporting Data` has a daily schedule in `.github/workflows/update-reporting.yml`.
-- Current workflow schedule before this repair: `22 6 * * *` (06:22 UTC).
-- Last confirmed natural Reporting run was 2026-08-24 and was triggered by `event=schedule`; it completed successfully and produced the current Reporting snapshot.
-- `reporting/reporting-data.json` remained stuck at the 2026-08-24 snapshot through 2026-08-27.
-- No Reporting snapshot commits were observed for Aug 25–27 during the live investigation.
-- Other scheduled workflows continued to run, and the repository remained highly active; repository-wide inactivity is therefore not a plausible explanation.
-- `.github/workflows/update-reporting.yml` itself had not changed since before the missed Aug 25–27 executions.
-- Reporting engine metadata currently declares `dailySnapshot: '06:07 UTC'`, while the workflow schedule is 06:22 UTC. This is a contract drift even though it does not by itself prove why GitHub stopped creating scheduled runs.
+## Pre-repair evidence
 
-## Current diagnosis
+- `Update The Holding Reporting Data` had a daily schedule in `.github/workflows/update-reporting.yml`.
+- Pre-repair workflow schedule: `22 6 * * *` (06:22 UTC).
+- Last confirmed natural Reporting run before the repair was 2026-08-24 and was triggered by `event=schedule`; it completed successfully and produced the current published Reporting snapshot.
+- Expected Aug 25–27 Reporting schedule runs were absent rather than present-and-failing.
+- Other scheduled workflows continued to run and the repository remained active.
+- Generated Reporting metadata declared `dailySnapshot: 06:07 UTC` while the workflow declared 06:22 UTC: a real schedule contract drift.
 
-The evidence narrows the fault away from Reporting economic logic and toward **scheduled workflow registration/state / scheduler wake-up**:
+## Repair implemented in PR #397
 
-1. The same Reporting workflow logic succeeded under a natural `schedule` event on Aug 24.
-2. Subsequent expected scheduled runs were not found, rather than being present and failing.
-3. Other cron workflows still execute.
-4. The repository is active.
+PR #397 — `Repair Reporting scheduler registration and contract drift` — merged with historical merge SHA:
 
-Therefore the working hypothesis is: **the Reporting workflow schedule stopped being materialized by GitHub after the Aug 24 run**. Exact platform-side cause is not yet proven from repository evidence alone.
+`9bc3e3e75151030c7f6cd547d2cb70af3baa0fce`
 
-## Repair principles
+Implemented:
 
-- Do not manually refresh Reporting merely to hide staleness.
-- Do not change Reporting accounting or economic semantics as part of scheduler repair.
-- Do not add a second scheduler/workflow unless the existing schedule proves unrecoverable.
-- Preserve writer concurrency and fail-closed validation.
-- Force a bounded schedule-definition re-registration through an explicit workflow definition change.
-- Eliminate YAML ↔ generated metadata schedule drift with a machine-verifiable scheduler contract.
-- Reuse the existing Workflow Control Plane and Reporting verifier; do not create unnecessary fan-out.
+1. `reporting/reporting-scheduler-contract.json` as the single schedule source of truth;
+2. `reporting/reporting-scheduled-runner.mjs` as a thin contract validator/binder around the existing Reporting engine;
+3. natural cron shifted to `31 6 * * *` / **06:31 UTC** to force bounded schedule-definition re-registration while remaining after Rewards, Stable Capital and Shared Market Data;
+4. exact workflow ↔ contract parity verification;
+5. generated Reporting schedule metadata bound to the contract;
+6. deterministic validation-only Productivity fixture where needed for CI, explicitly `productionAuthority:false`;
+7. production Reporting writer remains bound to live Productivity and cannot consume the validation fixture;
+8. no new workflow, no new dispatch authority, no capital/wallet/methodology authority.
 
-## Planned minimal repair
+PR checks passed after the repair, including Reporting verification, Workflow Control Plane/no-new-debt/no-new-fan-out and repository/privacy guards.
 
-1. Introduce a Reporting scheduler contract consumed by Reporting output metadata.
-2. Shift the cron by a small bounded amount to force GitHub schedule re-registration and avoid top-of-hour congestion.
-3. Extend Reporting verification to prove exact contract parity between workflow cron and generated metadata.
-4. Merge only after existing Workflow Control Plane / Reporting validation stays GREEN.
-5. Distinguish two proofs after merge:
-   - **workflow logic proof** (manual dispatch if needed), and
-   - **autonomous scheduler proof** (a subsequent natural `event=schedule` run).
+## Current scheduler contract
+
+- version: `0.1-reporting-scheduler-contract`;
+- status: `production`;
+- cron: `31 6 * * *`;
+- dailySnapshotUtc: `06:31 UTC`;
+- timezone: UTC;
+- `naturalScheduleProofRequired = true`;
+- `manualDispatchDoesNotProveSchedulerHealth = true`;
+- `unknownIsNotZero = true`.
+
+## Why natural proof is still waiting
+
+#397 merged after the Aug 27 06:31 UTC schedule slot. Therefore a same-day natural post-repair cron proof was physically unavailable.
+
+The first honest proof opportunity is the next natural Reporting slot on **2026-08-28 around 06:31 UTC**.
+
+Do not manually dispatch merely to manufacture GREEN. At/after the next slot, inspect whether GitHub created the natural `event=schedule` run.
+
+## Scheduler health != input publishability != artifact materialization
+
+These are three separate proofs:
+
+1. **scheduler health** — did the natural `event=schedule` run materialize?;
+2. **input publishability** — did every required live Reporting input satisfy its fail-closed contract?;
+3. **artifact materialization** — did a valid new Reporting snapshot commit physically reach `main`?
+
+A natural scheduled run can prove scheduler health even if the writer later refuses publication because a required live economic input is `UNKNOWN/WARMING`.
+
+Do not conflate the current Pendle evidence wait with scheduler failure.
+
+## Pendle boundary
+
+At the checkpoint `pendle_spendle` is correctly fail-closed:
+
+- `aprLatest = null`;
+- `status = warming`;
+- current 14-day period has not yet accumulated the required independent official evidence for promotion.
+
+This is **WAITING EXTERNAL EVIDENCE**, not an engineering defect. Never convert UNKNOWN to zero, silently reuse stale APR as production authority or weaken exact Reporting coverage merely to publish a fresher timestamp.
+
+## Durable closure rule
+
+**No moving finish line.**
+
+New observations after this repair must be classified as `DONE / WAITING EXTERNAL PROOF / OPEN DEFECT / FUTURE HARDENING`. A correctly functioning fail-closed wait does not reopen this scheduler repair.
 
 ## Authority / epistemics
 
-- This checkpoint has no execution authority.
-- It does not authorize capital, wallet, methodology, or accounting changes.
-- `UNKNOWN` remains distinct from zero.
-- The scheduler root cause is **narrowed but not fully proven** until a natural post-repair schedule event is observed.
+- execution authority: none;
+- no workflow dispatch/cancel/rerun authority added;
+- no capital or wallet authority;
+- no Reporting accounting/methodology change in this repair;
+- UNKNOWN remains distinct from zero;
+- current Reporting data staleness remains visible until a publishable production run materializes.
