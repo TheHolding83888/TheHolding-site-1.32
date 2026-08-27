@@ -1,0 +1,25 @@
+{
+  "version": "0.1-reporting-scheduler-contract",
+  "status": "production",
+  "cron": "31 6 * * *",
+  "dailySnapshotUtc": "06:31 UTC",
+  "timezone": "UTC",
+  "purpose": "Single source of truth for the natural daily Reporting scheduler and the schedule metadata published by reporting-data.json.",
+  "upstreamSequence": [
+    { "workflow": "Rewards", "nominalUtc": "04:57 UTC" },
+    { "workflow": "Stable Capital", "nominalUtc": "05:37 UTC" },
+    { "workflow": "Shared Market Data", "nominalUtc": "06:07 UTC" }
+  ],
+  "epistemics": {
+    "naturalScheduleProofRequired": true,
+    "manualDispatchDoesNotProveSchedulerHealth": true,
+    "unknownIsNotZero": true
+  },
+  "authority": {
+    "repositoryMutationAuthority": false,
+    "workflowDispatchAuthority": false,
+    "capitalExecution": false,
+    "walletAuthority": false,
+    "methodologyMutationAuthority": false
+  }
+}
