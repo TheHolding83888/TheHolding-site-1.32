@@ -6,10 +6,13 @@ on:
       - "intelligence/economic-graph/**"
       - "intelligence/explanatory/**"
       - "intelligence/reliability/frax-graph-memory-recovery-definition-proof.mjs"
+      - "intelligence/reliability/cognitive-freshness-guard.mjs"
+      - "intelligence/reliability/cognitive-freshness-guard-canary.mjs"
       - "productivity/fxn-locker-apr-guard.mjs"
       - "companies/productivity-data.json"
       - ".github/workflows/update-economic-graph.yml"
       - ".github/workflows/update-explanatory-context.yml"
+      - ".github/workflows/refresh-cognitive-stack.yml"
       - ".github/workflows/resume-economic-graph-after-code-change.yml"
       - ".github/workflows/verify-economic-graph-live-build.yml"
   workflow_dispatch:
@@ -40,12 +43,19 @@ jobs:
           test -s .github/workflows/update-economic-graph.yml
           test -s .github/workflows/update-explanatory-context.yml
           test -s .github/workflows/update-change-intelligence.yml
+          test -s .github/workflows/refresh-cognitive-stack.yml
           test -s .github/workflows/resume-economic-graph-after-code-change.yml
+          test -s intelligence/reliability/cognitive-freshness-guard.mjs
+          test -s intelligence/reliability/cognitive-freshness-guard-canary.mjs
+          test -s intelligence/reliability/frax-graph-memory-recovery-definition-proof.mjs
+          node intelligence/reliability/cognitive-freshness-guard-canary.mjs
+          node intelligence/reliability/frax-graph-memory-recovery-definition-proof.mjs
           node - <<'NODE'
           const fs=require('fs');
           const graph=fs.readFileSync('.github/workflows/update-economic-graph.yml','utf8');
           const explanatory=fs.readFileSync('.github/workflows/update-explanatory-context.yml','utf8');
           const observer=fs.readFileSync('.github/workflows/update-change-intelligence.yml','utf8');
+          const cognitive=fs.readFileSync('.github/workflows/refresh-cognitive-stack.yml','utf8');
           const resume=fs.readFileSync('.github/workflows/resume-economic-graph-after-code-change.yml','utf8');
           const graphPush=graph.match(/\n  push:\n([\s\S]*?)\n\npermissions:/)?.[1]||'';
           if(!graphPush.includes('companies/productivity-data.json'))throw new Error('Economic Graph no longer follows canonical Productivity publishes');
@@ -68,8 +78,9 @@ jobs:
             "Rebuild Explanatory only after Graph materialization",
             "Prove exact Graph to Explanatory Frax handoff",
             "Refresh Observer and System Memory before cognition",
-            "Prove fresh Observer and System Memory contract",
+            "Prove dependency-scoped Observer and System Memory contract",
             "Refresh canonical Cognitive Stack from proven Explanatory and Observer",
+            "freshness_scope=economic-graph-recovery",
             "Refresh Project Memory after downstream success"
           ]){
             if(!resume.includes(required))throw new Error(`Ordered Graph recovery topology missing: ${required}`);
@@ -80,24 +91,31 @@ jobs:
             'Rebuild Explanatory only after Graph materialization',
             'Prove exact Graph to Explanatory Frax handoff',
             'Refresh Observer and System Memory before cognition',
-            'Prove fresh Observer and System Memory contract',
+            'Prove dependency-scoped Observer and System Memory contract',
             'Refresh canonical Cognitive Stack from proven Explanatory and Observer',
             'Refresh Project Memory after downstream success'
           ].map(x=>resume.indexOf(x));
           if(order.some(x=>x<0)||order.some((x,i)=>i>0&&x<=order[i-1]))throw new Error('Graph→Explanatory→Observer→Brain→Memory recovery order drift');
-          if(!resume.includes('change.sourceHealth?.allFresh!==true'))throw new Error('Observer freshness fail-closed proof missing');
-          if(!resume.includes('!change.bridge?.snapshotHash||change.bridge.snapshotHash!==memory.snapshotHash'))throw new Error('Observer/System Memory snapshot proof missing');
+          if(!resume.includes('--scope economic-graph-recovery'))throw new Error('Dependency-scoped Observer proof missing');
+          if(!resume.includes('--max-observer-age-hours 1'))throw new Error('Bounded Observer age proof missing');
+          if(!cognitive.includes('default: global'))throw new Error('Global cognitive freshness default missing');
+          if(!cognitive.includes('economic-graph-recovery'))throw new Error('Graph recovery cognitive scope missing');
+          if(!cognitive.includes('intelligence/reliability/cognitive-freshness-guard.mjs'))throw new Error('Central cognitive freshness guard missing');
+          if(!cognitive.includes("github.event.workflow_run.event != 'workflow_dispatch'"))throw new Error('Duplicate workflow_dispatch cognitive wake suppression missing');
+          if(cognitive.includes("change.sourceHealth?.allFresh !== true"))throw new Error('Inline global source-health coupling reintroduced');
           if(resume.includes('gh workflow run unified-capital-refresh.yml --ref main'))throw new Error('Economic Graph recovery regressed to redundant Unified Capital dispatch');
           if(!/actions:\s*write/.test(resume))throw new Error('Economic Graph recovery dispatcher lacks actions:write');
           if(!/contents:\s*read/.test(resume))throw new Error('Economic Graph recovery dispatcher widened contents permission');
           if(/contents:\s*write/.test(resume))throw new Error('Economic Graph recovery dispatcher may not write repository contents');
           if(!/group:\s*economic-graph-code-change-resume/.test(resume)||!/cancel-in-progress:\s*false/.test(resume))throw new Error('Serialized non-cancellable recovery lane missing');
-          console.log('ECONOMIC GRAPH OBSERVER-GATED RECOVERY TOPOLOGY PASS',{
+          console.log('ECONOMIC GRAPH DEPENDENCY-SCOPED RECOVERY TOPOLOGY PASS',{
             directGraphCodePushBuild:false,
             directExplanatorySourcePushBuild:false,
             canonicalProductivityPushBuild:true,
             graphModuleCoverage:'globbed',
-            observerFreshnessGate:true,
+            globalCognitionFailClosed:true,
+            graphRecoveryDependencies:['productivity','rewards'],
+            duplicateWorkflowDispatchCognitiveWake:false,
             recoveryOrder:'Graph→Explanatory→Observer→Brain→Memory',
             redundantUnifiedDispatch:false,
             dispatcherContents:'read',
