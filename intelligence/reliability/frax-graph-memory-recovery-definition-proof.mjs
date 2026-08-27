@@ -4,11 +4,18 @@ import fs from 'node:fs';
 const recoveryPath='.github/workflows/resume-economic-graph-after-code-change.yml';
 const explanatoryPath='.github/workflows/update-explanatory-context.yml';
 const observerPath='.github/workflows/update-change-intelligence.yml';
+const cognitivePath='.github/workflows/refresh-cognitive-stack.yml';
 const liveVerifierPath='.github/workflows/verify-economic-graph-live-build.yml';
+const freshnessGuardPath='intelligence/reliability/cognitive-freshness-guard.mjs';
+const freshnessCanaryPath='intelligence/reliability/cognitive-freshness-guard-canary.mjs';
+
 const recovery=fs.readFileSync(recoveryPath,'utf8');
 const explanatory=fs.readFileSync(explanatoryPath,'utf8');
 const observer=fs.readFileSync(observerPath,'utf8');
+const cognitive=fs.readFileSync(cognitivePath,'utf8');
 const liveVerifier=fs.readFileSync(liveVerifierPath,'utf8');
+const freshnessGuard=fs.readFileSync(freshnessGuardPath,'utf8');
+const freshnessCanary=fs.readFileSync(freshnessCanaryPath,'utf8');
 
 function assert(condition,message){if(!condition)throw new Error(message);}
 
@@ -25,7 +32,7 @@ for(const required of [
   'Rebuild Explanatory only after Graph materialization',
   'Prove exact Graph to Explanatory Frax handoff',
   'Refresh Observer and System Memory before cognition',
-  'Prove fresh Observer and System Memory contract',
+  'Prove dependency-scoped Observer and System Memory contract',
   'Refresh canonical Cognitive Stack from proven Explanatory and Observer',
   'Prove Brain consumed Frax deep context',
   'Refresh Learning after Cognitive success',
@@ -33,11 +40,11 @@ for(const required of [
   'Refresh Downstream Continuity after Proposal success',
   'Refresh Project Memory after downstream success',
   'Refresh Intelligence Progress after Project Memory success',
-  "change.sourceHealth?.allFresh!==true",
-  "!change.bridge?.snapshotHash||change.bridge.snapshotHash!==memory.snapshotHash",
-  "change.generatedAt!==memory.generatedAt",
-  "change.version!=='0.2.1-autonomous-change-intelligence-memory-vault'",
-  "memory.version!=='0.2.1-system-memory'",
+  "-f freshness_scope=economic-graph-recovery",
+  "CHANGE_INTELLIGENCE_FILE=/tmp/change-intelligence.json",
+  "SYSTEM_MEMORY_FILE=/tmp/system-memory.json",
+  "--scope economic-graph-recovery",
+  "--max-observer-age-hours 1",
   "eco.coverage?.surfaceCount)!==9",
   "eco.coverage?.measuredSurfaceCount)!==1",
   "eco.coverage?.sourceBoundUnknownSurfaceCount)!==8",
@@ -53,13 +60,39 @@ assert(observer.includes('intelligence/change-intelligence.json'),'Observer no l
 assert(!/contents:\s*write/.test(recovery),'Recovery controller must not write repository contents directly');
 assert(!recovery.includes('gh workflow run unified-capital-refresh.yml --ref main'),'Recovery must not reintroduce redundant Unified Capital dispatch');
 
+for(const required of [
+  'workflow_dispatch:',
+  'freshness_scope:',
+  'default: global',
+  'economic-graph-recovery',
+  'intelligence/reliability/cognitive-freshness-guard.mjs',
+  "github.event.workflow_run.event != 'workflow_dispatch'"
+])assert(cognitive.includes(required),`Cognitive workflow scoped-freshness contract missing: ${required}`);
+assert(!cognitive.includes("change.sourceHealth?.allFresh !== true"),'Cognitive workflow reintroduced inline global freshness coupling');
+
+for(const required of [
+  "global: Object.freeze",
+  "'economic-graph-recovery': Object.freeze",
+  "Object.freeze(['productivity', 'rewards'])",
+  "unrelatedStaleSources",
+  "Unknown cognitive freshness scope"
+])assert(freshnessGuard.includes(required),`Freshness guard contract missing: ${required}`);
+for(const required of [
+  'global stale reporting',
+  'graph dependency stale productivity',
+  'graph dependency stale rewards',
+  'snapshot mismatch',
+  'observer age',
+  'unknown scope'
+])assert(freshnessCanary.includes(required),`Freshness canary coverage missing: ${required}`);
+
 const ordered=[
   'Rebuild canonical Economic Graph first',
   'Prove physical eight-protocol Graph and Frax ecosystem',
   'Rebuild Explanatory only after Graph materialization',
   'Prove exact Graph to Explanatory Frax handoff',
   'Refresh Observer and System Memory before cognition',
-  'Prove fresh Observer and System Memory contract',
+  'Prove dependency-scoped Observer and System Memory contract',
   'Refresh canonical Cognitive Stack from proven Explanatory and Observer',
   'Prove Brain consumed Frax deep context',
   'Refresh Learning after Cognitive success',
@@ -81,19 +114,27 @@ assert(explanatory.includes("cancel-in-progress: ${{ github.event_name == 'pull_
 for(const required of [
   recoveryPath,
   explanatoryPath,
-  'Refresh Observer and System Memory before cognition',
-  'Refresh canonical Cognitive Stack from proven Explanatory and Observer',
+  cognitivePath,
+  freshnessGuardPath,
+  freshnessCanaryPath,
+  'Prove dependency-scoped Observer and System Memory contract',
+  'freshness_scope=economic-graph-recovery',
   'Serialized non-cancellable recovery lane missing'
-])assert(liveVerifier.includes(required),`Live verifier is not bound to Observer-gated recovery topology: ${required}`);
+])assert(liveVerifier.includes(required),`Live verifier is not bound to dependency-scoped recovery topology: ${required}`);
 
-console.log('FRAX GRAPH→OBSERVER→MEMORY WORKFLOW DEFINITION PROOF PASS',{
+console.log('FRAX GRAPH→SCOPED COGNITION→MEMORY WORKFLOW DEFINITION PROOF PASS',{
   recoveryPath,
   explanatoryPath,
   observerPath,
+  cognitivePath,
   liveVerifierPath,
+  freshnessGuardPath,
   graphModuleCoverage:'globbed',
   sourceRaceBlocked:true,
-  observerFreshnessGate:true,
+  globalFreshnessStillFailClosed:true,
+  graphRecoveryFreshnessDependencies:['productivity','rewards'],
+  unrelatedStaleSourcesRemainVisible:true,
+  duplicateWorkflowDispatchCognitiveWakeBlocked:true,
   recoveryOrder:'Graph→Explanatory→Observer→Brain→Learning→Proposal→Downstream→Memory→Progress',
   controllerContentsAuthority:'read-only',
   executionAuthority:'none'
