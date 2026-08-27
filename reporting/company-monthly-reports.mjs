@@ -3,6 +3,7 @@ import path from 'node:path';
 
 const PRODUCTIVITY_FILE = process.env.PRODUCTIVITY_DATA_FILE || './companies/productivity-data.json';
 const REPORTING_FILE = process.env.REPORTING_DATA_FILE || './reporting/reporting-data.json';
+const INCOME_LEDGER_FILE = process.env.INCOME_LEDGER_FILE || './reporting/income-ledger.json';
 const MEMORY_VAULT_DIR = process.env.MEMORY_VAULT_DIR || './intelligence/memory-vault';
 const OUTPUT_FILE = process.env.COMPANY_MONTHLY_REPORTS_FILE || './reporting/company-monthly-reports.json';
 const START_MONTH = '2026-08';
@@ -22,6 +23,11 @@ const REGISTRY = Object.freeze({
 });
 
 const STANDARD_REFERENCE_COMPANIES = Object.keys(REGISTRY).filter(name => !['defitea.eth', 'Monetra.eth'].includes(name));
+const FAMILY_KEYS = Object.freeze({
+  accruedEntitlement: 'accruedEntitlement',
+  realisedCashFlow: 'realisedCashFlow',
+  embeddedIncome: 'embeddedIncome'
+});
 
 function readJson(file) {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -236,6 +242,85 @@ function normalizeFundMonths(fund, type) {
   return out;
 }
 
+function evidenceFamily(source, coverage) {
+  const eventCount = Number(source?.eventCount || 0);
+  const completeCoverage = coverage === 'complete';
+  const usdComplete = eventCount > 0 && source?.usdComplete === true;
+  let status = 'unknown-no-complete-coverage';
+  let usd = null;
+  if (eventCount > 0) {
+    status = usdComplete ? 'observed' : 'observed-partial-valuation';
+    usd = usdComplete && finite(source?.usd) ? round(source.usd, 8) : null;
+  } else if (completeCoverage) {
+    status = 'measured-zero';
+    usd = 0;
+  }
+  return {
+    status,
+    coverage: coverage || 'unknown',
+    eventCount,
+    valuedEventCount: Number(source?.valuedEventCount || 0),
+    unvaluedEventCount: Number(source?.unvaluedEventCount || 0),
+    usdComplete: completeCoverage ? source?.usdComplete !== false : usdComplete,
+    usd,
+    valuedUsdSubtotal: eventCount > 0 && finite(source?.valuedUsdSubtotal) ? round(source.valuedUsdSubtotal, 8) : null,
+    earnedIncomeEvidence: eventCount > 0,
+    unknownIsNotZero: true,
+    executionAuthority: 'none'
+  };
+}
+
+function attachIncomeAccounting(companies, incomeLedger) {
+  if (incomeLedger?.version !== '0.1-canonical-income-ledger') throw new Error(`Canonical Income Ledger version mismatch: ${incomeLedger?.version}`);
+  if (incomeLedger?.semantics?.unknownIsNotZero !== true || incomeLedger?.semantics?.referenceAprCanBackfillEarnedIncome !== false) {
+    throw new Error('Canonical Income Ledger epistemic contract invalid');
+  }
+  if (incomeLedger?.authority?.executionAuthority !== 'none' || incomeLedger?.authority?.capitalExecution !== false) {
+    throw new Error('Canonical Income Ledger authority expansion');
+  }
+
+  for (const [name, company] of Object.entries(companies)) {
+    const ledgerCompany = incomeLedger?.companies?.[name] || null;
+    const coverage = ledgerCompany?.coverage || {};
+    for (const [month, reportMonth] of Object.entries(company.months || {})) {
+      const ledgerMonth = ledgerCompany?.monthly?.[month] || null;
+      const families = ledgerMonth?.families || {};
+      const accrued = evidenceFamily(families[FAMILY_KEYS.accruedEntitlement], coverage.accruedEntitlement);
+      const realised = evidenceFamily(families[FAMILY_KEYS.realisedCashFlow], coverage.realisedCashFlow);
+      const embedded = evidenceFamily(families[FAMILY_KEYS.embeddedIncome], coverage.embeddedIncome);
+      const defiteaLegacyOverlap = name === 'defitea.eth';
+
+      reportMonth.incomeAccounting = {
+        version: '0.1-monthly-evidence-family-view',
+        primaryMetric: {
+          usd: finite(reportMonth.generatedIncomeUsd) ? round(reportMonth.generatedIncomeUsd, 8) : null,
+          semantic: reportMonth.semantic,
+          sourceFamily: company.sourceFamily,
+          earnedIncomeAuthority: false,
+          additiveWithCanonicalEvidenceFamilies: false,
+          overlapStatus: defiteaLegacyOverlap
+            ? 'canonical-reporting-aggregate-may-overlap-accrued-and-realised-evidence'
+            : 'separate-reference-or-reporting-metric'
+        },
+        canonicalEvidence: {
+          accruedEntitlement: accrued,
+          realisedCashFlow: realised,
+          embeddedIncome: embedded,
+          stablePriceEffectUsd: ledgerMonth && finite(ledgerMonth.stablePriceEffectUsd) ? round(ledgerMonth.stablePriceEffectUsd, 8) : null
+        },
+        combinedIncomeUsd: null,
+        crossFamilySumAllowed: false,
+        reconciliationStatus: 'not-reconciled-for-cross-family-total',
+        source: 'reporting/income-ledger.json',
+        sourceGeneratedAt: incomeLedger.generatedAt || null,
+        companyCoverageOverallComplete: ledgerCompany?.coverage?.overallComplete === true,
+        unknownIsNotZero: true,
+        executionAuthority: 'none'
+      };
+    }
+  }
+}
+
 function companyRecord(name, registry, sourceFamily, capitalMetric, months, extra = {}) {
   return {
     registry,
@@ -251,6 +336,7 @@ function companyRecord(name, registry, sourceFamily, capitalMetric, months, extr
 
 const productivity = readJson(PRODUCTIVITY_FILE);
 const reporting = readJson(REPORTING_FILE);
+const incomeLedger = readJson(INCOME_LEDGER_FILE);
 const observations = collectReferenceObservations(productivity);
 
 const companies = {};
@@ -285,16 +371,31 @@ for (const name of STANDARD_REFERENCE_COMPANIES) {
   );
 }
 
+attachIncomeAccounting(companies, incomeLedger);
+
 const orderedCompanies = Object.fromEntries(Object.entries(companies).sort(([, a], [, b]) => a.registry.localeCompare(b.registry)));
 const output = {
-  version: '0.1-company-monthly-reporting',
-  methodologyVersion: '0.1-observed-reference-income-from-august-2026',
+  version: '0.2-company-monthly-reporting-income-families',
+  methodologyVersion: '0.2-reference-metrics-plus-canonical-evidence-families',
   generatedAt: new Date().toISOString(),
+  incomeLedger: {
+    source: 'reporting/income-ledger.json',
+    version: incomeLedger.version,
+    policyVersion: incomeLedger.policyVersion || null,
+    generatedAt: incomeLedger.generatedAt || null,
+    status: incomeLedger.status || null,
+    crossFamilySummationForbidden: true,
+    unknownIsNotZero: true
+  },
   trackingPolicy: {
     standardCompaniesStartNoEarlierThan: '2026-08-01',
     noPreTrackingBackfill: true,
     unknownIsNotZero: true,
     referenceIncomeFormula: 'coveredProductiveCapitalUsd * companyReferenceAprPct / 100 / 365',
+    referenceIncomeIsEarnedIncomeAuthority: false,
+    canonicalEvidenceFamiliesPresentedSideBySide: true,
+    canonicalEvidenceFamiliesAddedToPrimaryMetric: false,
+    crossFamilySummationForbidden: true,
     maxCarryForwardDays: MAX_CARRY_DAYS,
     defiteaAuthority: 'canonical-reporting',
     monetraAuthority: 'canonical-stable-reporting',
@@ -308,5 +409,8 @@ fs.writeFileSync(OUTPUT_FILE, JSON.stringify(output, null, 2) + '\n');
 console.log('Company Monthly Reports generated', {
   output: OUTPUT_FILE,
   companyCount: Object.keys(orderedCompanies).length,
+  incomeLedgerVersion: incomeLedger.version,
+  incomeLedgerGeneratedAt: incomeLedger.generatedAt,
+  crossFamilySummationForbidden: true,
   months: Object.fromEntries(Object.entries(orderedCompanies).map(([name, c]) => [name, Object.keys(c.months)]))
 });
