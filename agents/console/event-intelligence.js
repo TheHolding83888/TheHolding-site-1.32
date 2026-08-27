@@ -198,7 +198,7 @@
     }
     [...shell.children].slice(1).forEach(node => node.remove());
     const box = el('div', 'oei-unavailable');
-    box.append(el('strong', '', 'The Holding News unavailable. '), document.createTextNode(message || 'Source unavailable'));
+    box.append(el('strong', '', 'The Holding News unavailable. '), document.createTextNode(message || 'The UI refuses to invent tracked coverage or events.'));
     shell.append(box);
   }
 
