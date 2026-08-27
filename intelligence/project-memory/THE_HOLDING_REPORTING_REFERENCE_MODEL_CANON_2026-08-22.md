@@ -1,34 +1,80 @@
 # THE HOLDING — REPORTING REFERENCE MODEL CANON
-## 2026-08-22 · Defitea daily/monthly reporting hardening + income composition
+## 2026-08-22 · amended 2026-08-27 · resilient reporting + Canonical Income Ledger
+
+Status: **CANONICAL PRODUCTION LAW**
+Execution authority: **none**
 
 ## Purpose
 
-This canon defines the durable boundary for automated Defitea reporting after the Reporting Layer was aligned with the shared Market Data architecture and the canonical 11-position productive inventory.
+This canon defines the durable boundary for automated Defitea, Monetra and Company Monthly Reporting after the Reporting Layer was aligned with shared Market Data, resilient per-source degradation, the Canonical Income Ledger and the event-driven production cascade.
 
-It also defines the Defitea income-composition boundary: associated-company income from `YieldRing.eth` and `05081966.eth`, plus observed VoteMarket veCRV / veFXN entitlement events, may contribute to the reported Defitea cash-flow numerator while **Defitea TVL remains Defitea-only**.
+It preserves the original Defitea income-composition law: associated-company income from `YieldRing.eth` and `05081966.eth`, plus observed VoteMarket veCRV / veFXN entitlement events, may contribute to the Defitea cash-flow numerator while **Defitea TVL remains Defitea-only**.
 
-It does not redefine Jan–Jul 2026 historical reports. Those remain preserved reported/realised history.
+It does not redefine Jan–Jul 2026 historical Defitea reports. Those remain preserved reported/realised history.
 
-## 1. Canonical Defitea inventory
+---
 
-Automated Defitea reporting must consume:
+## 1. Canonical Defitea inventory — structural integrity remains strict
+
+Automated Defitea reporting consumes:
 
 `companies/defitea-canonical-state.json`
 
-The current canonical productive inventory contains exactly **11 economic positions**. The Reporting Layer must not reconstruct the inventory from public HTML or maintain its own position book.
+The current canonical productive inventory contains exactly **11 economic positions**. Reporting must not reconstruct that inventory from public HTML or maintain a second position book.
 
-A daily Defitea reference report is publishable only when all 11 canonical positions have:
+Structural requirements remain fail-closed. Every canonical productive position must have:
 - one unique canonical asset identity;
 - a positive canonical quantity;
 - a selected canonical market price;
-- a matching Productivity engine;
-- a finite non-negative Reference APR with `engineStatus = ok`.
+- a matching Productivity engine.
 
-If exact 11/11 coverage is not satisfied, the daily writer fails closed instead of silently publishing a partial fund-level cash-flow model.
+A broken inventory, missing identity, invalid quantity, missing canonical price, duplicated position, corrupted methodology contract or other structural-integrity failure still blocks publication.
 
-`unknown != zero` remains a hard law.
+A **temporary economic-source failure is different from a structural failure**. One temporarily unavailable Reference APR must not freeze the entire fund or the whole Reporting system.
 
-## 2. One canonical market-price plane
+Canonical rate states are:
+- `current` — a fresh, currently validated Reference APR;
+- `carried-forward` — the last previously published valid Reporting rate, admitted only under the bounded continuity policy and with explicit historical provenance;
+- `unknown` — no admissible current or bounded prior rate exists.
+
+For `unknown`:
+- the position remains in TVL;
+- its rate is `null`, never `0`;
+- it is excluded only from modeled-income / rate-covered calculations;
+- the rest of the fund continues reporting when structurally sound.
+
+Hard law:
+
+**fail soft on an individual economic data source; fail closed on structural integrity.**
+
+`unknown != zero` remains absolute.
+
+The machine-readable policy is:
+
+`reporting/rate-continuity-policy.json`
+
+---
+
+## 2. Bounded rate continuity is not current verification
+
+Carry-forward exists to preserve reporting continuity during temporary source degradation. It does not promote an old observation into a fresh measurement.
+
+A carried rate must preserve:
+- the previous verified value;
+- its original observation/provenance time;
+- its age;
+- the maximum permitted carry window;
+- the current source-engine state that caused degradation.
+
+If the permitted window expires, the rate becomes `UNKNOWN`. Reporting must never extend continuity indefinitely merely to keep a number on screen.
+
+Hard-invalid / blocked / revoked states are never eligible for historical carry.
+
+This mechanism is generic. Pendle is one production example, not a protocol-specific exception. The same policy applies to any future income-rate source that temporarily enters an admissible degraded state.
+
+---
+
+## 3. One canonical market-price plane
 
 Reporting is a consumer of:
 
@@ -36,52 +82,65 @@ Reporting is a consumer of:
 
 It does not perform independent CoinGecko discovery, browser price discovery, or another external spot-price request.
 
-The selected Market Data row is authoritative for Reporting regardless of whether the Market Data selector chose a healthy onchain route or its bounded CoinGecko failback. Source selection belongs to Market Data; Reporting must not recreate that policy.
+The selected Market Data row is authoritative for Reporting regardless of whether the Market Data selector chose a healthy onchain route or an approved bounded fallback. Source selection belongs to Market Data; Reporting must not recreate that policy.
 
 Every daily position preserves selected-lane/provenance metadata and the exact `marketDataGeneratedAt` used for the snapshot.
 
-## 3. Internally coherent daily Reference APR
+---
 
-The daily Defitea snapshot computes its fund Reference APR from the exact same 11 position values used for that day's TVL:
+## 4. Internally coherent daily Reference APR
+
+For every rate-covered Defitea position, the daily snapshot computes its fund Reference APR from the same position values used for that day's TVL.
+
+When full rate coverage exists:
 
 `sum(position USD value × position Reference APR) / total productive USD value`
 
-Daily modeled base cash flow is:
+When one or more positions are `UNKNOWN`, the weighted Reference APR applies only to rate-covered capital, while total TVL continues to represent the full canonical productive inventory.
 
-`sum(position USD value × position Reference APR / 100 / 365)`
+Daily modeled reference cash flow is:
 
-The Productivity Layer's published company APR remains useful provenance, but the Reporting snapshot does not blindly reuse an APR weighted against a different price observation.
+`sum(rate-covered position USD value × admitted Reference APR / 100 / 365)`
 
-This keeps daily Defitea TVL, weighted APR and modeled base cash flow on one coherent valuation timestamp.
+Reporting must expose coverage/provenance rather than silently pretending partial rate coverage is full coverage.
 
-## 4. Reference model != realised cash flow
+The Productivity Layer's published company APR remains useful provenance, but Reporting does not blindly reuse an APR weighted against a different valuation timestamp.
 
-Automated Defitea periods are explicitly:
+---
 
-**reference cash-flow models with separately observed entitlement events, not wallet claim accounting.**
+## 5. Reference model != earned-income authority != realised cash flow
 
-Reference APR/APY is not realised wallet income. Current claimable balance is not itself a new daily cash-flow event. Asset-price performance is not income.
+Automated Reference APR/APY models are useful continuous estimates, but they are not by themselves proof that a specific amount was earned, claimed or received.
 
-Jan–Jul 2026 historical rows remain their existing reported/realised family. Automated periods must remain visibly distinguishable from that history.
+Hard distinctions:
+- Reference APR/APY != realised wallet cash flow;
+- current claimable balance != a new daily cash-flow event;
+- claimable decrease != proof of realised cash flow;
+- asset-price performance != income;
+- Reference APR cannot backfill missing earned-income evidence.
 
-## 5. First tracking month — no fabricated backfill
+Jan–Jul 2026 Defitea rows remain their existing reported/realised family. New automated periods preserve their own provenance and semantics.
 
-The first autonomous Defitea tracking month must never be normalized across days before tracking began.
+---
 
-If autonomous tracking starts on August 9, the closed August reference period counts only observed reporting days from August 9 onward. It must not fabricate August 1–8 income by multiplying observed samples to a full-month estimate.
+## 6. First tracking month — no fabricated backfill
 
-Later closed months may normalize isolated missed base daily snapshots under the existing bounded continuity policy, but the unobserved beginning of the first tracking month is permanently excluded.
+The first autonomous tracking month must never be normalized across days before tracking began.
+
+If autonomous tracking starts after the first day of a month, the first month counts only observed reporting days. It must not fabricate earlier income by extrapolating observed samples backwards.
 
 Machine-readable contract:
-- `firstTrackingMonth = true` for the first automated month;
+- `firstTrackingMonth = true` for the first automated month where applicable;
 - `unobservedPreTrackingDaysBackfilled = false`;
-- if that first month is partial, `normalizationFactor = 1`.
+- the first partial tracking month keeps `normalizationFactor = 1`.
 
-Associated-company income also begins only when its daily contribution is actually observed by the composition layer. No historical associated-company income is fabricated before that first observation.
+Later closed months may use only the separately defined bounded continuity rules for isolated missing observations. Unknown history is never manufactured.
 
-## 6. vlCVX / Votium + Union reconciliation boundary
+---
 
-Defitea's current proven vlCVX route is:
+## 7. vlCVX / Votium + Union reconciliation boundary
+
+Defitea's proven vlCVX route includes:
 
 `vlCVX → Votium → The Union → scrvUSD`
 
@@ -93,46 +152,32 @@ Hard rule:
 
 `claimable Union settlement + convex_vlcvx Reference APR model` must **not** be summed as two independent income sources.
 
-Reporting may preserve:
-- current route identity;
-- settlement asset;
-- current claimable amount/USD when proven;
-- legacy residual continuity;
-- route evidence status.
-
-But it must also preserve:
+Reporting preserves route identity and evidence while keeping:
 - `claimableSettlementAddedToReferenceCashFlow = false`;
 - `realisedCashFlowAuthority = false`.
 
-A future realised-income system may supersede reference periods only after complete flow-safe accounting proves the corresponding cash flows without double counting.
+---
 
-## 7. VoteMarket veCRV / veFXN — event accounting
+## 8. VoteMarket veCRV / veFXN — append-only event accounting
 
-Defitea also earns conditional vote incentives through:
+Defitea may earn conditional vote incentives through:
 - `votemarket-vecrv`;
 - `votemarket-vefxn`.
 
-These flows are not part of the base `curve_vecrv` or `fx_vefxn` Productivity APRs. They are discontinuous and vote-dependent: a week may have a different campaign, gauge, reward asset and effective yield, or no eligible vote/income at all.
+These flows are not continuous base APR and are not counted by repeatedly summing the current claimable balance.
 
-The authoritative evidence lane is canonical Rewards, which already proves individual VoteMarket entitlements from official Stake DAO proof data plus VoteMarket claimed/period state and published vote reconstruction.
-
-Reporting must **not** add the current VoteMarket claimable balance every day. That would count one unclaimed entitlement repeatedly and then erase it after claim.
-
-Instead Reporting maintains an append-only income-event ledger. One event is admitted exactly once using the identity:
-
-`route + epoch + chainId + platform + campaignId + gauge + wallet + rewardToken`
-
-At first admission:
-- the proven USD value is frozen for reporting history;
-- later claiming/disappearance does not erase the event;
+A proven entitlement is admitted once using a stable event identity. At first admission:
+- its evidence identity is frozen;
+- its reporting value is preserved with provenance;
+- later claim/disappearance does not erase historical earned evidence;
 - duplicate daily observations do not create duplicate income;
-- events before Defitea autonomous tracking are not used to rewrite Jan–Jul history;
-- no eligible VoteMarket event for a week means zero VoteMarket income for that week;
-- uncertain / unresolved Rewards evidence remains excluded rather than guessed.
+- unresolved evidence remains excluded rather than guessed.
 
-This is **observed entitlement income**, not a claim transaction ledger.
+This is observed entitlement evidence, not a claim-transaction inference.
 
-## 8. Associated-company income contributors
+---
+
+## 9. Associated-company income contributors
 
 Two companies are designated income contributors to the Defitea report:
 - `YieldRing.eth`;
@@ -140,87 +185,141 @@ Two companies are designated income contributors to the Defitea report:
 
 Their role is **income contributor, not capital contributor**.
 
-For each observed Reporting day, their contribution is modeled from their canonical complete Productivity state:
-
-`company productiveValue × company Reference APR / 100 / 365`
-
-Admission requires:
-- company Productivity `status = ok`;
-- `coverage = 1`;
-- positive finite `productiveValue`;
-- finite non-negative `aprLatest`.
-
-If that contract is not satisfied, the composition layer fails closed. Missing contributor income is never silently converted to zero.
+When their canonical Productivity state is complete and valid, their reference contribution may be modeled from their own productive capital and Reference APR.
 
 Hard capital boundary:
-- `incomeIncludedInDefiteaCashFlow = true`;
+- `incomeIncludedInDefiteaCashFlow = true` where the existing Defitea composition contract admits it;
 - `includedInDefiteaTvl = false`;
-- YieldRing / 05081966 productive value must never be added to Defitea `totalValueUsd`, `averageTvlUsd`, or any TVL denominator.
+- their productive value must never inflate Defitea TVL or its denominator.
 
-Their productive value is used only to calculate their own reference-income contribution.
+---
 
-## 9. Unified Defitea monthly cash-flow numerator
+## 10. Canonical Income Ledger — durable economic evidence plane
 
-For automated Defitea months:
+The canonical economic evidence artifact is:
 
-`cashFlowUsd = base Defitea reference cash flow + associated-company reference income + observed VoteMarket veCRV/veFXN income events`
+`reporting/income-ledger.json`
 
-The public Yield Reports surface may continue to display one aggregate cash-flow number. Machine-readable Reporting must preserve the components separately for auditability:
-- `baseDefiteaReferenceCashFlowUsd`;
-- `associatedCompanyReferenceCashFlowUsd`;
-- `voteMarketObservedIncomeUsd`;
-- unified `cashFlowUsd`.
+Its governing machine policy is:
 
-Monthly yield remains:
+`reporting/income-ledger-policy.json`
 
-`unified cashFlowUsd / Defitea-only averageTvlUsd`
+The ledger exists so that income does not disappear merely because a claim, withdrawal, reinvestment or compounding event changes current balances.
 
-Thus associated companies can increase the Defitea cash-flow numerator without inflating or contaminating the Defitea TVL denominator.
+The backend distinguishes at least these economic families:
 
-### Live-month and year annualisation
+1. **Accrued entitlement** — proven economic entitlement / earned claimable evidence that has not necessarily been received.
+2. **Realised cash flow** — proven value actually received under an admitted realised-flow mechanism.
+3. **Embedded income** — measured income economically retained inside a strategy / wrapper / compounding route.
 
-Each month's `annualizedAprPct` is a comparable non-compounded annualised rate:
-- closed month: `monthlyYieldPct × 12`;
-- live provisional month: `observed monthlyYieldPct × 365 / sampleDays`.
+Current claimable state is a state observation, not an append-only income event by itself.
 
-The live provisional month is annualised only from days actually observed. Reporting must not fabricate unobserved future days and must not compound the result.
+Hard rules:
+- append-only event identity where the mechanism is event-based;
+- current claimable decrease does not prove realised cash flow;
+- claim/reinvest/compounding must not erase previously admitted earned evidence;
+- duplicate observations must not duplicate income;
+- incomplete coverage remains `UNKNOWN`, not `$0`;
+- no cross-family total is published until non-overlap is actually proven;
+- Reference APR/APY remains separate from canonical earned-income evidence unless a protocol-specific reconciliation proves equivalence for that period.
 
-The year-level `annualizedCashFlowAprPct` is the arithmetic mean of all finite monthly `annualizedAprPct` values available for that year, **including the live provisional month when present**.
+Therefore:
 
-Therefore the displayed year APR moves daily with the current live month. When no provisional month exists, the same formula naturally reduces to the mean of closed-month annualised rates.
+`accrued + realised + embedded`
 
-Audit fields:
-- `annualizedCashFlowAprIncludesLiveMonth`;
-- `annualizedCashFlowAprMonths`;
-- `currentMonthAnnualizedAprPct`.
+is **not automatically a valid total**.
 
-`bestMonth` remains based on closed months only. Existing closed-only YTD summary fields remain closed-only internally so public live-YTD composition does not double-count the provisional month.
+The ledger may carry multiple evidence families side by side precisely so the system can become more intelligent without lying to the user.
 
-## 10. Persistent income ledger
+`executionAuthority = none` and `capitalExecution = false` remain hard boundaries.
 
-The composition layer owns:
+---
 
-`reporting/defitea-income-ledger.json`
+## 11. Company Monthly Reports — one headline, detailed backend
 
-The ledger is persistent because `reporting-data.json` is regenerated by the base Reporting engine. It stores:
-- daily associated-company reference-income observations;
-- deduplicated VoteMarket entitlement events;
-- explicit TVL-exclusion semantics and accounting provenance.
+`reporting/company-monthly-reports.json` is the canonical Company Monthly Reports presentation artifact.
 
-The ledger is written by the existing Reporting workflow and does not create a second workflow/writer plane.
+It may consume:
+- canonical Reporting;
+- Canonical Income Ledger;
+- Productivity / capital observations;
+- durable tracking history required by its existing methodology.
 
-## 11. Schedule / writer boundary
+The backend may preserve detailed accounting families, provenance, coverage, statuses and reconciliation metadata.
 
-The daily Reporting writer runs after the 04:57 UTC Rewards update, after Stable Capital, and after the 06:07 UTC shared Market Data heartbeat. It must not share the exact same scheduled minute with the canonical price writer.
+**The standard Company Passport must remain simple.**
 
-The sequence is:
+Canonical presentation law:
 
-`canonical Reporting base snapshot → Defitea income composition → validation → one Reporting commit`
+**Backend maximally intelligent and detailed; Passport maximally simple and readable.**
 
-Reporting owns only its reporting/history artifacts. It is never a Market Data writer and never gains execution authority.
+Default Company Passport Monthly Reports surface shows only the compact user-level result:
+- one headline `Generated` amount for the selected month;
+- `Month Yield`;
+- the appropriate average capital metric (`Average TVL`, `Average Stable Capital`, `Average Productive Capital`, etc.);
+- optional `Full Report` navigation when a dedicated report exists.
 
-`executionAuthority = none` remains canonical.
+Raw `Accrued entitlement`, `Realised cash flow`, `Embedded income`, reconciliation states and other accounting subfamilies are **not shown by default in the standard Passport**. They remain backend/machine intelligence and may appear only on a deliberately designed deeper audit/reporting surface.
+
+A rich backend must not make the primary Passport harder to understand.
+
+---
+
+## 12. Defitea monthly headline remains auditable
+
+For Defitea, the public monthly headline may continue to present one aggregate Reporting number while machine-readable artifacts preserve its components and overlap warnings.
+
+The public headline is not permission to add every Canonical Income Ledger family on top of it. Where the primary Reporting metric may already contain overlapping economics, canonical evidence remains side-by-side and `combinedIncomeUsd` stays `null` until reconciliation proves a safe combined total.
+
+This is why a Company Passport can truthfully show one simple monthly number while the backend retains much richer evidence.
+
+---
+
+## 13. Monetra reporting boundary
+
+Monetra uses its own stable-capital reporting family.
+
+Reference-generated income is based on daily productive Stable Capital and validated Reference APY. Embedded Yield remains an independent measured/audit family unless full reconciliation proves that a different combined representation is safe.
+
+Stable-price / depeg effects and market P&L remain separate from generated income.
+
+The public `/yield-reports/` surface may show Monetra's live monthly reporting, while the backend preserves the independent Embedded Yield evidence family without automatically summing the two.
+
+---
+
+## 14. Production orchestration / freshness cascade
+
+Reporting freshness is event-driven first and cron-backed second.
+
+Current intended production flow is:
+
+`Rewards / Stable Capital canonical materialization → Update The Holding Reporting Data → Canonical Income Ledger → Update Company Monthly Reports`
+
+Productivity and other canonical inputs may also wake the relevant reporting writer through their defined paths.
+
+Fallback cron heartbeats remain defense-in-depth; they are not the only freshness mechanism.
+
+Hard laws:
+- `GREEN workflow != physically materialized production artifact`;
+- downstream reporting is considered fresh only after the canonical artifact is physically published to `main`;
+- writers rebuild on fresh `main` after safe rebase when required;
+- if critical reporting methodology changes during publish, the writer fails closed and requires a fresh canonical run;
+- no second parallel reporting truth plane is created merely to solve scheduling reliability.
+
+---
+
+## 15. Public reporting surfaces
+
+The public reporting hierarchy is intentionally layered:
+
+- **Company Passport** — compact monthly headline for ordinary reading.
+- **`/yield-reports/`** — dedicated fund-level reporting for Defitea and Monetra.
+- **machine artifacts / ledgers** — detailed evidence, provenance, coverage, reconciliation and accounting-family intelligence.
+
+User-facing simplicity and backend depth are complementary, not conflicting goals.
+
+---
 
 ## Compact law
 
-**Defitea-only 11-position TVL + canonical base Reference APR → base income; YieldRing + 05081966 add income but never TVL; VoteMarket veCRV/veFXN enters once per proven entitlement event; Union settlement never double-counts; live-month APR uses observed days only; year APR includes the live month; one unified monthly cash-flow numerator remains auditable by component.**
+**Keep the economic book deep and the Passport simple. One temporary protocol/source failure must degrade locally rather than freeze the whole report; structural corruption still fails closed. Current → bounded verified carry → UNKNOWN, never invented zero. Preserve claimable, received and compounded/embedded evidence as distinct canonical families, never double-count them, never let claims erase earned history, and publish one simple monthly headline only after the backend has done the hard reconciliation work.**
