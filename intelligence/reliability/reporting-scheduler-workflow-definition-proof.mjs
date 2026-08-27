@@ -5,10 +5,12 @@ import fs from 'node:fs';
 const WORKFLOW_PATH='.github/workflows/update-reporting.yml';
 const CONTRACT_PATH='reporting/reporting-scheduler-contract.json';
 const RUNNER_PATH='reporting/reporting-scheduled-runner.mjs';
+const RATE_POLICY_PATH='reporting/rate-continuity-policy.json';
 
 const workflow=fs.readFileSync(WORKFLOW_PATH,'utf8');
 const contract=JSON.parse(fs.readFileSync(CONTRACT_PATH,'utf8'));
 const runner=fs.readFileSync(RUNNER_PATH,'utf8');
+const ratePolicy=JSON.parse(fs.readFileSync(RATE_POLICY_PATH,'utf8'));
 
 assert.equal(contract.version,'0.1-reporting-scheduler-contract');
 assert.equal(contract.status,'production');
@@ -22,6 +24,17 @@ assert.equal(contract.epistemics?.unknownIsNotZero,true);
 for(const key of ['repositoryMutationAuthority','workflowDispatchAuthority','capitalExecution','walletAuthority','methodologyMutationAuthority']){
   assert.equal(contract.authority?.[key],false,`scheduler contract authority expansion: ${key}`);
 }
+
+assert.equal(ratePolicy.version,'0.1-reporting-rate-continuity');
+assert.equal(ratePolicy.status,'production');
+assert.equal(ratePolicy.semantics?.unknownIsNotZero,true);
+assert.equal(ratePolicy.semantics?.singleSourceDataFailureMustNotFreezeWholeReport,true);
+assert.equal(ratePolicy.semantics?.structuralIntegrityFailureRemainsFailClosed,true);
+assert.equal(ratePolicy.semantics?.carryForwardIsCurrentVerification,false);
+assert.equal(ratePolicy.semantics?.expiredOrUnprovenRateBecomesUnknown,true);
+assert.equal(ratePolicy.authority?.executionAuthority,'none');
+assert.equal(ratePolicy.authority?.methodologyMutationAuthority,'none');
+assert.equal(ratePolicy.authority?.walletAuthority,'none');
 
 const exactCron=`- cron: '${contract.cron}'`;
 assert.equal(workflow.split(exactCron).length-1,1,'Reporting workflow must contain exactly one canonical scheduler cron');
@@ -49,6 +62,13 @@ for(const source of [
   'companies/productivity-data.json',
   'companies/defitea-canonical-state.json'
 ]) assert.ok(workflow.includes(`- '${source}'`),`Reporting freshness source missing: ${source}`);
+for(const source of [
+  'reporting/rate-continuity-policy.json',
+  'reporting/reporting-engine.mjs',
+  'reporting/reporting-engine-validation.mjs'
+]) assert.ok(workflow.includes(`- '${source}'`),`Reporting deterministic code/policy wake missing: ${source}`);
+assert.match(workflow,/test -s reporting\/rate-continuity-policy\.json/,'Reporting rate continuity policy preflight missing');
+assert.match(workflow,/RATE_CONTINUITY_POLICY_FILE:\s*\.\/reporting\/rate-continuity-policy\.json/,'Reporting rate continuity runtime binding missing');
 
 assert.match(runner,/reporting-scheduler-contract\.json/,'scheduled runner is not bound to scheduler contract');
 assert.match(runner,/reporting-engine\.mjs/,'scheduled runner is not bound to existing Reporting engine');
@@ -70,6 +90,8 @@ console.log('Reporting workflow definition paired proof PASS',{
   dailySnapshotUtc:contract.dailySnapshotUtc,
   workflowRunSources:['Update Company Rewards','Update Stable Capital'],
   canonicalDataWakeCount:5,
+  rateContinuityPolicy:ratePolicy.version,
+  singleSourceFailureIsolation:true,
   productionWriterPullRequestAuthority:false,
   workflowDispatchAuthority:false,
   concurrency:'reporting-daily/non-cancellable',
