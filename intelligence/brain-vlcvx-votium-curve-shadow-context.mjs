@@ -1,20 +1,27 @@
 #!/usr/bin/env node
 /**
- * The Holding Brain · vlCVX/Votium → Curve shadow context v0.1
+ * The Holding Brain · protocol context compatibility bridge v0.2
  *
  * Deterministic post-build extension of the existing Grounded Brain packet.
  * It consumes only the exact Explanatory Context already bound as a Brain
- * upstream. No new source, reasoning case, recommendation or authority is added.
+ * upstream. Canonical APR cohorts remain exactly f(x) + Curve; the established
+ * vlCVX/Votium → Curve shadow flow plus the eight-protocol lifecycle and Frax
+ * ecosystem family are exposed as read-only context only.
+ *
+ * No new source, reasoning case, recommendation, promotion or authority is added.
  */
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 
 export const VLCVX_BRAIN_EXTENSION_VERSION='0.1-vlcvx-votium-curve-shadow-context';
+export const PROTOCOL_LIFECYCLE_BRAIN_EXTENSION_VERSION='0.1-protocol-lifecycle-frax-ecosystem-context';
 const EXPLANATORY='intelligence/explanatory/explanatory-context.json';
 const BRAIN='intelligence/brain-intelligence.json';
 const HISTORY='intelligence/brain-history.json';
 const BRIEF='intelligence/brain-brief.md';
 const CONTEXT_ID='defitea-convex-vlcvx-votium';
+const FRAX_PROTOCOL_ID='registry-frax-vefrax';
+const FRAX_ECOSYSTEM_ID='registry-frax-ecosystem';
 
 function fail(message){throw new Error(message);}
 function sha256(value){return crypto.createHash('sha256').update(value).digest('hex');}
@@ -34,38 +41,66 @@ function dedupeEvidence(items){
   return out;
 }
 function readJson(file){return JSON.parse(fs.readFileSync(file,'utf8'));}
+function evidence({pointer,value,sha,observedAt,interpretation,note}){
+  return {source:EXPLANATORY,pointer,value,sourceSha256:sha,observedAt,interpretation,note};
+}
 
 export function applyBrainVlCvxVotiumCurveShadowContext(){
   const explanatoryText=fs.readFileSync(EXPLANATORY,'utf8');
   const explanatory=JSON.parse(explanatoryText);
   const brain=readJson(BRAIN);
   const context=explanatory?.explanations?.protocolFlowContexts?.[CONTEXT_ID];
+  const lifecycleContexts=explanatory?.explanations?.protocolLifecycleContexts;
+  const fraxEcosystem=explanatory?.explanations?.protocolEcosystemContexts?.[FRAX_ECOSYSTEM_ID];
 
   if(explanatory?.extensions?.vlCvxVotiumCurve!=='0.1-vlcvx-votium-curve-shadow-context'||!context)fail('Explanatory vlCVX/Votium shadow context unavailable');
+  if(explanatory?.extensions?.protocolLifecycle!=='0.1-protocol-lifecycle-frax-ecosystem-context')fail('Explanatory protocol lifecycle extension unavailable');
   if(Number(explanatory?.coverage?.protocolEconomicCohortCount)!==2||Object.keys(explanatory?.explanations?.protocolAprChangeContexts??{}).length!==2)fail('Explanatory canonical cohort boundary drift');
   if(Number(explanatory?.coverage?.shadowProtocolFlowContextCount)!==1)fail('Unexpected Explanatory shadow flow count');
+  if(Number(explanatory?.coverage?.protocolLifecycleContextCount)!==8||Object.keys(lifecycleContexts??{}).length!==8)fail('Expected eight Explanatory lifecycle contexts');
+  if(Number(explanatory?.coverage?.deepProtocolEcosystemContextCount)!==1||!fraxEcosystem)fail('Frax ecosystem Explanatory context unavailable');
   if(context?.coverage?.canonicalProtocolEconomicCohort!==false||context?.coverage?.shadowCandidate!==true)fail('vlCVX context escaped shadow boundary');
   if(Number(context?.coverage?.onchainVotiumGaugesExactMatched)!==79||Number(context?.coverage?.curveExecutedVotiumGaugeRows)!==79||Number(context?.coverage?.currentCurvePoolContextsComplete)!==31||Number(context?.coverage?.unresolvedEligiblePoolContexts)!==0)fail('vlCVX downstream proof coverage drift');
   if(context?.measuredRelations?.voteToExecutedCurveGaugeBps?.class!=='ATTRIBUTED'||context?.measuredRelations?.incentiveToVote?.class!=='CORRELATED'||context?.measuredRelations?.historicalVoteToCurrentPoolState?.class!=='CORRELATED')fail('vlCVX relation semantics drift');
   if(context?.downstreamCurrentContext?.exactFeeUsd!=='UNKNOWN'||context?.causalBoundary?.primaryDriver!==null)fail('vlCVX unknown/causal boundary drift');
   if(context?.authority?.executionAuthority!=='none'||context?.authority?.causalClaimAuthority!=='none'||context?.authority?.promotionAuthority!=='none')fail('vlCVX context authority drift');
 
+  const fraxLifecycle=lifecycleContexts?.[FRAX_PROTOCOL_ID];
+  if(!fraxLifecycle||fraxEcosystem?.protocolId!==FRAX_PROTOCOL_ID||fraxEcosystem?.lifecycleStage!==fraxLifecycle?.maturityStage)fail('Frax lifecycle/ecosystem identity drift');
+  if(Number(fraxEcosystem?.coverage?.surfaceCount)!==9||Number(fraxEcosystem?.coverage?.measuredSurfaceCount)!==1||Number(fraxEcosystem?.coverage?.sourceBoundUnknownSurfaceCount)!==8)fail('Frax ecosystem coverage drift');
+  if(!String(fraxEcosystem?.epistemic?.revenueToVeFraxAprCausality||'').startsWith('UNKNOWN')||!String(fraxEcosystem?.epistemic?.treasuryYieldToSpecificFxPoolIncentive||'').startsWith('UNKNOWN'))fail('Frax ecosystem causal boundary weakened');
+  if(fraxEcosystem?.authority?.executionAuthority!=='none'||fraxEcosystem?.authority?.causalClaimAuthority!=='none'||fraxEcosystem?.authority?.lifecyclePromotionAuthority!=='none')fail('Frax ecosystem authority drift');
+  for(const item of Object.values(lifecycleContexts)){
+    if(item?.authority?.executionAuthority!=='none'||item?.authority?.causalClaimAuthority!=='none'||item?.authority?.promotionAuthority!=='none')fail(`Lifecycle context authority drift: ${item?.protocolId}`);
+  }
+
   if(brain?.version!=='0.1-grounded-reasoning-gateway'||brain?.reasonerVersion!=='0.1-deterministic-evidence-bound-reasoner')fail('Unexpected Grounded Brain packet');
   if(Number(brain?.currentPosture?.protocolEconomics?.cohortCount)!==2||Object.keys(brain?.questions?.protocolAprContexts??{}).length!==2)fail('Brain canonical two-cohort boundary drift');
   if(brain?.constraints?.actionMode!=='proposal-only'||brain?.constraints?.autonomousCapitalActionAllowed!==false||brain?.constraints?.autonomousRepositoryCodeMutationAllowed!==false)fail('Brain authority drift');
   const explanatorySha=sha256(explanatoryText);
   if(brain?.grounding?.sources?.explanatory?.sha256!==explanatorySha)fail('Brain exact Explanatory upstream hash is stale');
+  const observedAt=brain?.grounding?.sources?.explanatory?.generatedAt??null;
 
-  const ev={
-    source:EXPLANATORY,
+  const flowEv=evidence({
     pointer:`/explanations/protocolFlowContexts/${CONTEXT_ID}`,
-    value:context,
-    sourceSha256:explanatorySha,
-    observedAt:brain?.grounding?.sources?.explanatory?.generatedAt??null,
+    value:context,sha:explanatorySha,observedAt,
     interpretation:'shadow-cross-protocol-mechanics-and-temporal-context-causality-unresolved',
     note:'Votium→Convex→Curve mechanical execution is proven; current Curve pool state is measured temporal context only. Do not infer incentive→vote or vote→pool causality.'
-  };
-  const question={
+  });
+  const lifecycleEvidence=Object.fromEntries(Object.entries(lifecycleContexts).map(([id,value])=>[id,evidence({
+    pointer:`/explanations/protocolLifecycleContexts/${id}`,
+    value,sha:explanatorySha,observedAt,
+    interpretation:'read-only-protocol-lifecycle-context',
+    note:'Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority.'
+  })]));
+  const fraxEv=evidence({
+    pointer:`/explanations/protocolEcosystemContexts/${FRAX_ECOSYSTEM_ID}`,
+    value:fraxEcosystem,sha:explanatorySha,observedAt,
+    interpretation:'frax-deep-ecosystem-measured-vs-source-bound-unknown',
+    note:'Only the veFRAX governance surface is currently measured. Source-bound ecosystem topology remains UNKNOWN for current economic values until reproducible ingestion exists.'
+  });
+
+  const flowQuestion={
     answer:context.explanation,
     status:context.status,
     coverage:context.coverage,
@@ -73,10 +108,32 @@ export function applyBrainVlCvxVotiumCurveShadowContext(){
     downstreamCurrentContext:context.downstreamCurrentContext,
     causalBoundary:context.causalBoundary,
     authority:context.authority,
-    evidence:[ev]
+    evidence:[flowEv]
+  };
+  const lifecycleQuestions=Object.fromEntries(Object.entries(lifecycleContexts).map(([id,value])=>[id,{
+    answer:`${value.protocol||id} · ${value.mechanism||'protocol mechanism'} · lifecycle stage ${value.maturityStage||'UNKNOWN'}.`,
+    ...value,
+    evidence:[lifecycleEvidence[id]]
+  }]));
+  const fraxQuestion={
+    answer:fraxEcosystem.explanation,
+    status:fraxEcosystem.status,
+    lifecycleStage:fraxEcosystem.lifecycleStage,
+    coverage:fraxEcosystem.coverage,
+    surfaces:fraxEcosystem.surfaces,
+    relationshipGraph:fraxEcosystem.relationshipGraph,
+    epistemic:fraxEcosystem.epistemic,
+    nextMeasurementUnlocks:fraxEcosystem.nextMeasurementUnlocks,
+    authority:fraxEcosystem.authority,
+    evidence:[fraxEv]
   };
 
-  brain.extensions={...(brain.extensions??{}),vlCvxVotiumCurve:VLCVX_BRAIN_EXTENSION_VERSION};
+  const stageCounts=Object.values(lifecycleContexts).reduce((acc,item)=>{const stage=item?.maturityStage||'unknown';acc[stage]=(acc[stage]||0)+1;return acc;},{});
+  brain.extensions={
+    ...(brain.extensions??{}),
+    vlCvxVotiumCurve:VLCVX_BRAIN_EXTENSION_VERSION,
+    protocolLifecycle:PROTOCOL_LIFECYCLE_BRAIN_EXTENSION_VERSION
+  };
   brain.currentPosture={
     ...(brain.currentPosture??{}),
     protocolFlows:{
@@ -94,20 +151,48 @@ export function applyBrainVlCvxVotiumCurveShadowContext(){
         primaryDriver:null,
         causalAttribution:'unresolved-beyond-proven-mechanical-execution'
       }}
+    },
+    protocolLifecycle:{
+      status:'eight-protocol-lifecycle-context-available',
+      protocolCount:8,
+      stageCounts,
+      protocolIds:Object.keys(lifecycleContexts),
+      frax:{protocolId:FRAX_PROTOCOL_ID,maturityStage:fraxLifecycle.maturityStage,status:fraxLifecycle.status??null}
+    },
+    protocolEcosystems:{
+      status:'deep-ecosystem-context-available-measurement-partial',
+      contextCount:1,
+      activeContextIds:[FRAX_ECOSYSTEM_ID],
+      contexts:{[FRAX_ECOSYSTEM_ID]:{
+        protocolId:FRAX_PROTOCOL_ID,
+        lifecycleStage:fraxEcosystem.lifecycleStage,
+        surfaceCount:fraxEcosystem.coverage.surfaceCount,
+        measuredSurfaceCount:fraxEcosystem.coverage.measuredSurfaceCount,
+        sourceBoundUnknownSurfaceCount:fraxEcosystem.coverage.sourceBoundUnknownSurfaceCount,
+        revenueToVeFraxAprCausality:'UNKNOWN',
+        treasuryYieldToSpecificFxPoolIncentive:'UNKNOWN'
+      }}
     }
   };
   brain.questions={
     ...(brain.questions??{}),
-    protocolFlowContexts:{[CONTEXT_ID]:question}
+    protocolFlowContexts:{[CONTEXT_ID]:flowQuestion},
+    protocolLifecycleContexts:lifecycleQuestions,
+    protocolEcosystemContexts:{[FRAX_ECOSYSTEM_ID]:fraxQuestion}
   };
   if(brain?.questions?.whatChanged){
-    brain.questions.whatChanged.answer=`${brain.questions.whatChanged.answer} Shadow vlCVX/Votium evidence additionally proves 79/79 post-migration vote matching, 79/79 Curve gauge execution rows, and complete current pool context for 31/31 currently eligible mapped Curve gauges; causality beyond mechanical execution remains unresolved.`;
-    brain.questions.whatChanged.evidence=dedupeEvidence([...(brain.questions.whatChanged.evidence??[]),ev]);
+    brain.questions.whatChanged.answer=`${brain.questions.whatChanged.answer} Shadow vlCVX/Votium evidence additionally proves 79/79 post-migration vote matching, 79/79 Curve gauge execution rows, and complete current pool context for 31/31 currently eligible mapped Curve gauges; causality beyond mechanical execution remains unresolved. Protocol Intelligence now exposes eight lifecycle contexts and one deep Frax ecosystem family with nine tracked surfaces; only veFRAX governance is currently measured, while eight wider ecosystem surfaces remain source-bound UNKNOWN.`;
+    brain.questions.whatChanged.evidence=dedupeEvidence([...(brain.questions.whatChanged.evidence??[]),flowEv,...Object.values(lifecycleEvidence),fraxEv]);
   }
-  brain.evidenceLedger=dedupeEvidence([...(brain.evidenceLedger??[]),ev]);
+  brain.evidenceLedger=dedupeEvidence([...(brain.evidenceLedger??[]),flowEv,...Object.values(lifecycleEvidence),fraxEv]);
   brain.grounding={
     ...(brain.grounding??{}),
-    principles:[...new Set([...(brain.grounding?.principles??[]),'Shadow cross-protocol context may prove mechanical execution and expose measured temporal state without proving incentive→vote or vote→pool causality.'])]
+    principles:[...new Set([
+      ...(brain.grounding?.principles??[]),
+      'Shadow cross-protocol context may prove mechanical execution and expose measured temporal state without proving incentive→vote or vote→pool causality.',
+      'Protocol lifecycle and deep ecosystem context remain read-only intelligence surfaces and do not change canonical APR cohort authority.',
+      'Official source readiness, documented topology and known addresses are not current measurements; missing current ingestion remains UNKNOWN.'
+    ])]
   };
 
   brain.bridge.snapshotHash=null;
@@ -125,14 +210,21 @@ export function applyBrainVlCvxVotiumCurveShadowContext(){
       last.snapshotHash=brain.bridge.snapshotHash;
       last.protocolFlowContextCount=1;
       last.protocolFlowContextStatuses={[CONTEXT_ID]:context.status};
+      last.protocolLifecycleContextCount=8;
+      last.protocolLifecycleStageCounts=stageCounts;
+      last.protocolEcosystemContextCount=1;
+      last.protocolEcosystemContextStatuses={[FRAX_ECOSYSTEM_ID]:fraxEcosystem.status};
     }
     fs.writeFileSync(HISTORY,JSON.stringify(history,null,2)+'\n');
   }
   if(fs.existsSync(BRIEF)){
     let brief=fs.readFileSync(BRIEF,'utf8').trimEnd();
-    const marker='### Shadow cross-protocol flow context · vlCVX / Votium → Curve';
+    const flowMarker='### Shadow cross-protocol flow context · vlCVX / Votium → Curve';
+    const fraxMarker='### Protocol lifecycle + Frax ecosystem context';
+    const cutPoints=[brief.indexOf(`\n${flowMarker}`),brief.indexOf(`\n${fraxMarker}`)].filter(x=>x>=0);
+    if(cutPoints.length)brief=brief.slice(0,Math.min(...cutPoints)).trimEnd();
     const section=[
-      '',marker,
+      '',flowMarker,
       `- Context ID: ${CONTEXT_ID}`,
       '- Canonical cohort: no — shadow candidate only',
       '- Votium→Convex vote match: 79/79',
@@ -141,16 +233,30 @@ export function applyBrainVlCvxVotiumCurveShadowContext(){
       '- Exact pool fee USD: UNKNOWN under selected official endpoints',
       '- Proven relation: vote → executed Curve gauge BPS (mechanical)',
       '- Unproven relations: incentive → vote; historical vote → current pool outcome',
-      '- Execution / causal / promotion authority: none',''
+      '- Execution / causal / promotion authority: none',
+      '',fraxMarker,
+      '- Live lifecycle sensors: 8',
+      `- Frax lifecycle stage: ${fraxLifecycle.maturityStage}`,
+      '- Frax ecosystem tracked surfaces: 9',
+      '- Current measured Frax ecosystem surfaces: 1 — veFRAX governance',
+      '- Source-bound UNKNOWN Frax ecosystem surfaces: 8',
+      '- Revenue → veFRAX APR: UNKNOWN',
+      '- Treasury yield → specific FX-pool incentive: UNKNOWN',
+      '- Lifecycle / recommendation / causal / execution authority: none',''
     ].join('\n');
-    const index=brief.indexOf(`\n${marker}`);
-    if(index>=0)brief=brief.slice(0,index).trimEnd();
     fs.writeFileSync(BRIEF,brief+section,'utf8');
   }
 
-  console.log('BRAIN VLCVX VOTIUM CURVE SHADOW CONTEXT PASS',{
+  console.log('BRAIN PROTOCOL LIFECYCLE + FRAX ECOSYSTEM CONTEXT PASS',{
     canonicalCohorts:brain.currentPosture.protocolEconomics.cohortCount,
     shadowFlowContexts:brain.currentPosture.protocolFlows.contextCount,
+    lifecycleContexts:brain.currentPosture.protocolLifecycle.protocolCount,
+    lifecycleStageCounts:brain.currentPosture.protocolLifecycle.stageCounts,
+    fraxStage:brain.currentPosture.protocolLifecycle.frax.maturityStage,
+    deepEcosystemContexts:brain.currentPosture.protocolEcosystems.contextCount,
+    fraxSurfaces:fraxEcosystem.coverage.surfaceCount,
+    fraxMeasuredSurfaces:fraxEcosystem.coverage.measuredSurfaceCount,
+    fraxUnknownSurfaces:fraxEcosystem.coverage.sourceBoundUnknownSurfaceCount,
     curveExecutedGaugeRows:context.coverage.curveExecutedVotiumGaugeRows,
     currentPoolContexts:context.coverage.currentCurvePoolContextsComplete,
     exactFeeUsd:context.downstreamCurrentContext.exactFeeUsd,
