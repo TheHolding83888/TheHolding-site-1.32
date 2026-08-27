@@ -47,6 +47,7 @@ jobs:
             intelligence/explanatory/vlcvx-votium-curve-shadow-context.mjs
             .github/workflows/update-economic-graph.yml
             .github/workflows/update-explanatory-context.yml
+            .github/workflows/update-change-intelligence.yml
           )
           for f in "${REQUIRED[@]}"; do test -s "$f"; done
           node --check intelligence/economic-graph/economic-graph-canonical-runner.mjs
@@ -148,7 +149,33 @@ jobs:
           console.log('GRAPH → EXPLANATORY PHYSICAL PASS',{graphSha,generatedAt:x.generatedAt,lifecycleContexts:x.coverage.protocolLifecycleContextCount,fraxSurfaces:frax.coverage.surfaceCount});
           NODE
 
-      - name: Refresh canonical Cognitive Stack from proven Explanatory
+      - name: Refresh Observer and System Memory before cognition
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: /tmp/dispatch-and-await.sh update-change-intelligence.yml 'Change Intelligence Observer'
+
+      - name: Prove fresh Observer and System Memory contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git show origin/main:intelligence/change-intelligence.json > /tmp/change-intelligence.json
+          git show origin/main:intelligence/system-memory.json > /tmp/system-memory.json
+          node - <<'NODE'
+          const fs=require('fs');
+          const change=JSON.parse(fs.readFileSync('/tmp/change-intelligence.json','utf8'));
+          const memory=JSON.parse(fs.readFileSync('/tmp/system-memory.json','utf8'));
+          if(change.version!=='0.2.1-autonomous-change-intelligence-memory-vault')throw new Error('Observer version drift');
+          if(memory.version!=='0.2.1-system-memory')throw new Error('System Memory version drift');
+          if(!change.bridge?.snapshotHash||change.bridge.snapshotHash!==memory.snapshotHash)throw new Error('Observer/System Memory snapshot mismatch');
+          if(change.generatedAt!==memory.generatedAt)throw new Error('Observer/System Memory generatedAt mismatch');
+          if(change.sourceHealth?.allFresh!==true)throw new Error('Observer still reports stale economic sources after explicit refresh');
+          const ageHours=(Date.now()-Date.parse(change.generatedAt))/3600000;
+          if(!Number.isFinite(ageHours)||ageHours<-.25||ageHours>1)throw new Error(`Observer refresh age invalid: ${ageHours}`);
+          console.log('OBSERVER + SYSTEM MEMORY PHYSICAL PASS',{generatedAt:change.generatedAt,ageHours:Number(ageHours.toFixed(3)),allFresh:change.sourceHealth.allFresh,snapshotHash:change.bridge.snapshotHash});
+          NODE
+
+      - name: Refresh canonical Cognitive Stack from proven Explanatory and Observer
         env:
           GH_TOKEN: ${{ github.token }}
         run: /tmp/dispatch-and-await.sh refresh-cognitive-stack.yml 'Cognitive Stack'
@@ -168,7 +195,7 @@ jobs:
           if(Number(frax.surfaceCount)!==9||Number(frax.measuredSurfaceCount)!==1||Number(frax.sourceBoundUnknownSurfaceCount)!==8)throw new Error('Brain Frax 9/1/8 coverage drift');
           if(frax.revenueToVeFraxAprCausality!=='UNKNOWN'||frax.treasuryYieldToSpecificFxPoolIncentive!=='UNKNOWN')throw new Error('Brain Frax UNKNOWN guards weakened');
           if(b.constraints?.actionMode!=='proposal-only'||b.constraints?.autonomousCapitalActionAllowed!==false)throw new Error('Brain authority drift');
-          console.log('EXPLANATORY → BRAIN PHYSICAL PASS',{generatedAt:b.generatedAt,protocolCount:b.currentPosture.protocolLifecycle.protocolCount,frax});
+          console.log('EXPLANATORY + OBSERVER → BRAIN PHYSICAL PASS',{generatedAt:b.generatedAt,protocolCount:b.currentPosture.protocolLifecycle.protocolCount,frax});
           NODE
 
       - name: Refresh Learning after Cognitive success
@@ -208,4 +235,4 @@ jobs:
           test -s /tmp/brain.json
           test -s /tmp/explanatory.json
           grep -q 'The Holding' /tmp/CURRENT.md
-          echo 'GRAPH → EXPLANATORY → BRAIN → LEARNING → DOWNSTREAM → PROJECT MEMORY PHYSICAL PASS'
+          echo 'GRAPH → EXPLANATORY → OBSERVER → BRAIN → LEARNING → DOWNSTREAM → PROJECT MEMORY PHYSICAL PASS'
