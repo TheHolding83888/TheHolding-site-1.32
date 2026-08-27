@@ -59,12 +59,21 @@ jobs:
           node --check companies/company-monthly-report-adapter.js
           test -s companies/productivity-data.json
           test -s reporting/reporting-data.json
+          test -s reporting/income-ledger.json
           test -d intelligence/memory-vault
+          node - <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('reporting/income-ledger.json','utf8'));
+          if(x.version!=='0.1-canonical-income-ledger'||x.semantics?.unknownIsNotZero!==true||x.semantics?.referenceAprCanBackfillEarnedIncome!==false) throw new Error('Canonical Income Ledger monthly dependency invalid');
+          if(x.authority?.executionAuthority!=='none'||x.authority?.capitalExecution!==false) throw new Error('Canonical Income Ledger authority drift');
+          console.log('Company Monthly Reports canonical income dependency PASS');
+          NODE
 
       - name: Build company monthly reports
         env:
           PRODUCTIVITY_DATA_FILE: ./companies/productivity-data.json
           REPORTING_DATA_FILE: ./reporting/reporting-data.json
+          INCOME_LEDGER_FILE: ./reporting/income-ledger.json
           MEMORY_VAULT_DIR: ./intelligence/memory-vault
           COMPANY_MONTHLY_REPORTS_FILE: ./reporting/company-monthly-reports.json
         run: node reporting/company-monthly-reports.mjs
@@ -80,24 +89,59 @@ jobs:
           set -euo pipefail
           git config user.name "The Holding Data Engine"
           git config user.email "data-engine@theholding.ai"
+
+          critical_fingerprint() {
+            sha256sum \
+              reporting/company-monthly-reports.mjs \
+              reporting/company-monthly-reports-validation.mjs \
+              .github/workflows/update-company-monthly-reports.yml
+          }
+          critical_before="$(critical_fingerprint)"
+
           git add reporting/company-monthly-reports.json
           if git diff --cached --quiet; then
             echo "No company monthly reporting changes."
-          else
-            git commit -m "data: update company monthly reports"
-            for attempt in 1 2 3; do
-              git fetch origin main
-              if ! git rebase origin/main; then
-                git rebase --abort || true
-                echo "Safe writer guard: rebase conflict; refusing to guess."
-                exit 1
-              fi
-              if git push origin HEAD:main; then
-                exit 0
-              fi
-              echo "Safe writer guard: main moved during push; retrying ($attempt/3)..."
-              sleep $((attempt * 2))
-            done
-            echo "Safe writer guard: push failed after 3 attempts."
-            exit 1
+            exit 0
           fi
+          git commit -m "data: update company monthly reports"
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "Safe writer guard: rebase conflict; refusing to guess."
+              exit 1
+            fi
+
+            critical_after="$(critical_fingerprint)"
+            if [ "$critical_after" != "$critical_before" ]; then
+              echo "Critical Company Monthly Reports code changed during publish rebase; fail closed and require a fresh canonical run."
+              exit 1
+            fi
+
+            PRODUCTIVITY_DATA_FILE=./companies/productivity-data.json \
+            REPORTING_DATA_FILE=./reporting/reporting-data.json \
+            INCOME_LEDGER_FILE=./reporting/income-ledger.json \
+            MEMORY_VAULT_DIR=./intelligence/memory-vault \
+            COMPANY_MONTHLY_REPORTS_FILE=./reporting/company-monthly-reports.json \
+            node reporting/company-monthly-reports.mjs
+            COMPANY_MONTHLY_REPORTS_FILE=./reporting/company-monthly-reports.json \
+            node reporting/company-monthly-reports-validation.mjs
+
+            git add reporting/company-monthly-reports.json
+            git commit --amend --no-edit
+
+            mapfile -t ahead < <(git diff --name-only origin/main...HEAD)
+            if [ "${#ahead[@]}" -ne 1 ] || [ "${ahead[0]}" != "reporting/company-monthly-reports.json" ]; then
+              echo "Unexpected Company Monthly Reports publish delta after rebase: ${ahead[*]}"
+              exit 1
+            fi
+
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Safe writer guard: main moved during push; rebuilding on the next rebased canonical state ($attempt/3)..."
+            sleep $((attempt * 2))
+          done
+          echo "Safe writer guard: push failed after 3 attempts."
+          exit 1
