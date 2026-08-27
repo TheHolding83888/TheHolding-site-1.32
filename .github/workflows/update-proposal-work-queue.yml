@@ -1,3 +1,4 @@
+# holding-workflow-definition-proof: intelligence/reliability/proposal-material-change-definition-proof.mjs
 name: "The Holding Brain · Proposal Work Queue"
 
 on:
@@ -15,6 +16,7 @@ on:
       - 'intelligence/proposals/independent-proposal-decision-reviewer.mjs'
       - 'intelligence/proposals/proposal-release-guard.mjs'
       - 'intelligence/proposals/proposal-release.json'
+      - 'intelligence/reliability/proposal-material-change-definition-proof.mjs'
   workflow_run:
     workflows: ["The Holding Brain · Decision Outcome Learning Loop"]
     types: [completed]
@@ -70,6 +72,7 @@ jobs:
             "intelligence/proposals/independent-proposal-decision-reviewer.mjs"
             "intelligence/proposals/proposal-release-guard.mjs"
             "intelligence/proposals/proposal-release.json"
+            "intelligence/reliability/proposal-material-change-definition-proof.mjs"
           )
           for f in "${REQUIRED[@]}"; do test -s "$f"; done
           node --check intelligence/proposals/proposal-engine.mjs
@@ -77,11 +80,13 @@ jobs:
           node --check intelligence/proposals/proposal-decision-bridge.mjs
           node --check intelligence/proposals/independent-proposal-decision-reviewer.mjs
           node --check intelligence/proposals/proposal-release-guard.mjs
+          node --check intelligence/reliability/proposal-material-change-definition-proof.mjs
           node -e "JSON.parse(require('fs').readFileSync('intelligence/proposals/proposal-policy.json','utf8'))"
           node -e "JSON.parse(require('fs').readFileSync('intelligence/proposals/proposal-schema.json','utf8'))"
           node -e "JSON.parse(require('fs').readFileSync('intelligence/proposals/proposal-decision-policy.json','utf8'))"
           node -e "JSON.parse(require('fs').readFileSync('intelligence/proposals/proposal-release.json','utf8'))"
           node intelligence/proposals/proposal-release-guard.mjs
+          node intelligence/reliability/proposal-material-change-definition-proof.mjs
 
       - name: Verify exact Learning → Cognitive binding
         shell: bash
@@ -109,6 +114,19 @@ jobs:
             ownerDecisions: ledger.decisionCount
           });
           NODE
+
+      - name: Snapshot prior reviewed Proposal packet
+        shell: bash
+        run: |
+          set -euo pipefail
+          git show HEAD:intelligence/proposals/proposal-queue.json > /tmp/proposal-queue.previous.json
+          git show HEAD:intelligence/proposals/proposal-brief.md > /tmp/proposal-brief.previous.md
+          git show HEAD:intelligence/proposals/proposal-eval.json > /tmp/proposal-eval.previous.json
+          git show HEAD:intelligence/proposals/proposal-decision-eval.json > /tmp/proposal-decision-eval.previous.json
+          test -s /tmp/proposal-queue.previous.json
+          test -s /tmp/proposal-brief.previous.md
+          test -s /tmp/proposal-eval.previous.json
+          test -s /tmp/proposal-decision-eval.previous.json
 
       - name: Build machine-readable Proposal Work Queue
         run: node intelligence/proposals/proposal-engine.mjs
@@ -150,6 +168,20 @@ jobs:
           console.log('Proposal v0.2 safety boundary PASS', q.summary);
           NODE
           git diff --check
+
+      - name: Apply Proposal material-change gate
+        shell: bash
+        run: |
+          set +e
+          node intelligence/reliability/proposal-material-change-definition-proof.mjs --gate /tmp/proposal-queue.previous.json intelligence/proposals/proposal-queue.json
+          code=$?
+          set -e
+          if [ "$code" -eq 10 ]; then
+            git restore --source=HEAD -- intelligence/proposals/proposal-queue.json intelligence/proposals/proposal-brief.md intelligence/proposals/proposal-eval.json intelligence/proposals/proposal-decision-eval.json
+            echo "No material Proposal delta; preserving prior reviewed artifact bytes."
+          elif [ "$code" -ne 0 ]; then
+            exit "$code"
+          fi
 
       - name: Publish Proposal state safely
         shell: bash
