@@ -1,3 +1,4 @@
+# holding-workflow-definition-proof: intelligence/reliability/intelligence-progress-material-change-definition-proof.mjs
 name: "The Holding Brain · Intelligence Progress"
 
 on:
@@ -13,6 +14,7 @@ on:
     paths:
       - 'intelligence/intelligence-progress-engine.mjs'
       - 'intelligence/intelligence-progress-policy.json'
+      - 'intelligence/reliability/intelligence-progress-material-change-definition-proof.mjs'
       - '.github/workflows/update-intelligence-progress.yml'
       - 'agents/console/intelligence-progress.js'
       - 'agents/console/safety.js'
@@ -65,9 +67,19 @@ jobs:
           set -euo pipefail
           node --check intelligence/intelligence-progress-engine.mjs
           node intelligence/intelligence-progress-engine.mjs --self-test
+          node --check intelligence/reliability/intelligence-progress-material-change-definition-proof.mjs
           node --check agents/console/intelligence-progress.js
           node --check agents/console/safety.js
+          test -s intelligence/reliability/intelligence-progress-material-change-definition-proof.mjs
           node -e "JSON.parse(require('fs').readFileSync('intelligence/intelligence-progress-policy.json','utf8'))"
+          node intelligence/reliability/intelligence-progress-material-change-definition-proof.mjs
+
+      - name: Snapshot prior Intelligence Progress telemetry
+        shell: bash
+        run: |
+          set -euo pipefail
+          git show HEAD:intelligence/intelligence-progress.json > /tmp/intelligence-progress.previous.json
+          test -s /tmp/intelligence-progress.previous.json
 
       - name: Build deterministic Intelligence Progress telemetry
         shell: bash
@@ -86,6 +98,20 @@ jobs:
           console.log('Intelligence Progress boundary PASS', {thi:x.index.value,stage:x.index.stage,questionBank:x.metrics.evaluation.staticQuestionBank});
           NODE
           git diff --check
+
+      - name: Apply material-change gate
+        shell: bash
+        run: |
+          set +e
+          node intelligence/reliability/intelligence-progress-material-change-definition-proof.mjs --gate /tmp/intelligence-progress.previous.json intelligence/intelligence-progress.json
+          code=$?
+          set -e
+          if [ "$code" -eq 10 ]; then
+            git restore --source=HEAD -- intelligence/intelligence-progress.json
+            echo "No material Intelligence Progress delta; preserving prior artifact bytes."
+          elif [ "$code" -ne 0 ]; then
+            exit "$code"
+          fi
 
       - name: Publish telemetry safely
         shell: bash
