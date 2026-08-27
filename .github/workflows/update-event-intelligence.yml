@@ -1,3 +1,4 @@
+# holding-workflow-definition-proof: intelligence/reliability/event-intelligence-material-change-definition-proof.mjs
 name: Update The Holding Operating Event Intelligence
 
 on:
@@ -11,6 +12,7 @@ on:
     paths:
       - 'intelligence/event-intelligence-engine.mjs'
       - 'intelligence/event-intelligence-policy.json'
+      - 'intelligence/reliability/event-intelligence-material-change-definition-proof.mjs'
       - '.github/workflows/update-event-intelligence.yml'
   schedule:
     # Backstop after daily Reporting (06:07) and Observer (06:27 UTC).
@@ -47,10 +49,20 @@ jobs:
         run: |
           set -euo pipefail
           node --check intelligence/event-intelligence-engine.mjs
+          node --check intelligence/reliability/event-intelligence-material-change-definition-proof.mjs
           test -s intelligence/event-intelligence-policy.json
           test -s intelligence/change-history.json
           test -s reporting/reporting-data.json
+          test -s intelligence/reliability/event-intelligence-material-change-definition-proof.mjs
           node -e "JSON.parse(require('fs').readFileSync('intelligence/event-intelligence-policy.json','utf8'))"
+          node intelligence/reliability/event-intelligence-material-change-definition-proof.mjs
+
+      - name: Snapshot prior event intelligence
+        shell: bash
+        run: |
+          set -euo pipefail
+          git show HEAD:intelligence/event-intelligence.json > /tmp/event-intelligence.previous.json
+          test -s /tmp/event-intelligence.previous.json
 
       - name: Build source-backed operating events
         run: node intelligence/event-intelligence-engine.mjs
@@ -76,6 +88,20 @@ jobs:
           console.log('Coverage gaps:', x.tracked.coverageGapCount);
           console.log('Feed items:', x.feed.itemCount);
           NODE
+
+      - name: Apply material-change gate
+        shell: bash
+        run: |
+          set +e
+          node intelligence/reliability/event-intelligence-material-change-definition-proof.mjs --gate /tmp/event-intelligence.previous.json intelligence/event-intelligence.json
+          code=$?
+          set -e
+          if [ "$code" -eq 10 ]; then
+            git restore --source=HEAD -- intelligence/event-intelligence.json
+            echo "No material Event Intelligence delta; preserving prior artifact bytes."
+          elif [ "$code" -ne 0 ]; then
+            exit "$code"
+          fi
 
       - name: Publish operating event intelligence
         shell: bash
