@@ -28,7 +28,6 @@ assert(!workflow.includes('group: the-holding-explanatory-context\n'), 'legacy s
 assert(!workflow.includes('cancel-in-progress: false'), 'Explanatory PR supersession must not remain globally disabled');
 assert(!workflow.includes('cancel-in-progress: true'), 'Explanatory production work must never be globally cancellable');
 
-// Source code changes must never race a stale materialized Economic Graph on main.
 assert(!workflow.includes('      - "intelligence/explanatory/explanatory-context.mjs"'), 'premature Explanatory source-code push trigger reintroduced');
 assert(!workflow.includes('      - "intelligence/explanatory/vlcvx-votium-curve-shadow-context.mjs"'), 'premature Explanatory extension source push trigger reintroduced');
 assert(workflow.includes('      - "intelligence/economic-graph/economic-graph.json"'), 'materialized Graph push wake source missing');
@@ -40,7 +39,9 @@ for (const required of [
   'Prove physical eight-protocol Graph and Frax ecosystem',
   'Rebuild Explanatory only after Graph materialization',
   'Prove exact Graph to Explanatory Frax handoff',
-  'Refresh canonical Cognitive Stack from proven Explanatory',
+  'Refresh Observer and System Memory before cognition',
+  'Prove fresh Observer and System Memory contract',
+  'Refresh canonical Cognitive Stack from proven Explanatory and Observer',
   'Prove Brain consumed Frax deep context',
   'Refresh Project Memory after downstream success',
   "group: economic-graph-code-change-resume",
@@ -53,16 +54,19 @@ const graphPos = recovery.indexOf('Rebuild canonical Economic Graph first');
 const graphProofPos = recovery.indexOf('Prove physical eight-protocol Graph and Frax ecosystem');
 const explanatoryPos = recovery.indexOf('Rebuild Explanatory only after Graph materialization');
 const explanatoryProofPos = recovery.indexOf('Prove exact Graph to Explanatory Frax handoff');
-const cognitivePos = recovery.indexOf('Refresh canonical Cognitive Stack from proven Explanatory');
+const observerPos = recovery.indexOf('Refresh Observer and System Memory before cognition');
+const observerProofPos = recovery.indexOf('Prove fresh Observer and System Memory contract');
+const cognitivePos = recovery.indexOf('Refresh canonical Cognitive Stack from proven Explanatory and Observer');
 const memoryPos = recovery.indexOf('Refresh Project Memory after downstream success');
-assert(graphPos < graphProofPos && graphProofPos < explanatoryPos && explanatoryPos < explanatoryProofPos && explanatoryProofPos < cognitivePos && cognitivePos < memoryPos, 'Graph→Explanatory→Brain→Memory recovery order drift');
+assert(graphPos < graphProofPos && graphProofPos < explanatoryPos && explanatoryPos < explanatoryProofPos && explanatoryProofPos < observerPos && observerPos < observerProofPos && observerProofPos < cognitivePos && cognitivePos < memoryPos, 'Graph→Explanatory→Observer→Brain→Memory recovery order drift');
 
-console.log('EXPLANATORY CONCURRENCY + ORDERED RECOVERY CANARY PASS', {
+console.log('EXPLANATORY CONCURRENCY + OBSERVER-GATED RECOVERY CANARY PASS', {
   prLane: 'per-pr-number',
   prSupersession: true,
   productionLane: 'serialized',
   productionCancellation: false,
   sourceCodeRaceBlocked: true,
   graphModuleCoverage: 'globbed',
-  recoveryOrder: 'Graph→Explanatory→Brain→Memory'
+  observerFreshnessGate: true,
+  recoveryOrder: 'Graph→Explanatory→Observer→Brain→Memory'
 });
