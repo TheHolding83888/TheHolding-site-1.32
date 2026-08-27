@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Economic Graph canonical runner v0.2
+ * The Holding · Economic Graph canonical runner v0.3
  *
  * Production Graph builds consume the f(x) economic snapshot materialized
  * inside canonical Productivity. They do not re-probe the browser between the
@@ -10,6 +10,8 @@
  * candidates/sensors may be attached before downstream promotion. Protocol
  * Intelligence Lifecycle evaluates those existing evidence surfaces
  * deterministically without adding a collector, writer or execution authority.
+ * Frax ecosystem depth is attached to lifecycle sensor #8 without changing the
+ * lifecycle protocol count or promoting source readiness into measurement.
  * No execution, recommendation, allocation or methodology-mutation authority.
  */
 
@@ -28,6 +30,7 @@ import { applyPendleAccountingEvidence } from './pendle-spendle-accounting-evide
 import { applyYieldBasisLifecycle } from './yieldbasis-lifecycle.mjs';
 import { applyVelodromeLifecycle } from './ve-gauge-registry-lifecycle.mjs';
 import { applyFraxLifecycle } from './frax-vefrax-lifecycle.mjs';
+import { applyFraxEcosystemSensor, FRAX_ECOSYSTEM_EVIDENCE_ID } from './frax-ecosystem-sensor.mjs';
 import { applyAeroTransitionReadiness, AERO_TRANSITION_ID } from './aero-transition-readiness.mjs';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
@@ -138,7 +141,8 @@ export function buildCanonicalEconomicGraph({productivity,rewards,previousState,
     productivitySha256:sourceSha256,
     policy
   });
-  return applyAeroTransitionReadiness({state:withFrax});
+  const withFraxEcosystem=applyFraxEcosystemSensor({state:withFrax,previousState});
+  return applyAeroTransitionReadiness({state:withFraxEcosystem});
 }
 
 async function main(){
@@ -168,9 +172,10 @@ async function main(){
   const velodromeLifecycle=state.protocolLifecycle?.protocols?.['registry-velodrome-vevelo'];
   const frax=state.protocolSensors?.['registry-frax-vefrax']?.latest?.observation;
   const fraxLifecycle=state.protocolLifecycle?.protocols?.['registry-frax-vefrax'];
+  const fraxEcosystem=state.protocolEvidence?.[FRAX_ECOSYSTEM_EVIDENCE_ID]?.latest?.observation;
   const aeroTransition=state.protocolTransitions?.[AERO_TRANSITION_ID];
   const lifecycle=state.protocolLifecycle;
-  console.log('ECONOMIC GRAPH canonical + lifecycle candidates PASS',{
+  console.log('ECONOMIC GRAPH canonical + lifecycle candidates + Frax ecosystem PASS',{
     engineVersion:state.engineVersion,
     canonicalCohortCount:state.coverage?.cohortCount,
     candidateCount:state.candidateLayer?.candidateCount,
@@ -225,6 +230,11 @@ async function main(){
     fraxMigrationState:frax?.identityBoundary?.ethereumToFraxtalLockMigrationState,
     fraxRevenueDistributionState:frax?.identityBoundary?.revenueShareDistributionState,
     fraxStage:fraxLifecycle?.maturityStage,
+    fraxEcosystemStatus:fraxEcosystem?.status,
+    fraxEcosystemSurfaces:fraxEcosystem?.coverage?.surfaceCount,
+    fraxEcosystemMeasuredSurfaces:fraxEcosystem?.coverage?.measuredSurfaceCount,
+    fraxEcosystemUnknownSurfaces:fraxEcosystem?.coverage?.sourceBoundUnknownSurfaceCount,
+    fraxEcosystemRelationships:fraxEcosystem?.coverage?.relationshipCount,
     aeroTransitionStatus:aeroTransition?.status,
     aeroPredecessorCount:aeroTransition?.predecessors?.length,
     aeroSuccessorProtocol:aeroTransition?.successor?.protocol,
