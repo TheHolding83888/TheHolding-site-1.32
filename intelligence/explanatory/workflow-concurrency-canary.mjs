@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 
-const file = '.github/workflows/update-explanatory-context.yml';
-const workflow = fs.readFileSync(file, 'utf8');
+const explanatoryFile = '.github/workflows/update-explanatory-context.yml';
+const recoveryFile = '.github/workflows/resume-economic-graph-after-code-change.yml';
+const workflow = fs.readFileSync(explanatoryFile, 'utf8');
+const recovery = fs.readFileSync(recoveryFile, 'utf8');
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -26,9 +28,41 @@ assert(!workflow.includes('group: the-holding-explanatory-context\n'), 'legacy s
 assert(!workflow.includes('cancel-in-progress: false'), 'Explanatory PR supersession must not remain globally disabled');
 assert(!workflow.includes('cancel-in-progress: true'), 'Explanatory production work must never be globally cancellable');
 
-console.log('EXPLANATORY CONCURRENCY PARTITION CANARY PASS', {
+// Source code changes must never race a stale materialized Economic Graph on main.
+assert(!workflow.includes('      - "intelligence/explanatory/explanatory-context.mjs"'), 'premature Explanatory source-code push trigger reintroduced');
+assert(!workflow.includes('      - "intelligence/explanatory/vlcvx-votium-curve-shadow-context.mjs"'), 'premature Explanatory extension source push trigger reintroduced');
+assert(workflow.includes('      - "intelligence/economic-graph/economic-graph.json"'), 'materialized Graph push wake source missing');
+
+for (const required of [
+  "- 'intelligence/economic-graph/*.mjs'",
+  "- 'intelligence/explanatory/*.mjs'",
+  'Rebuild canonical Economic Graph first',
+  'Prove physical eight-protocol Graph and Frax ecosystem',
+  'Rebuild Explanatory only after Graph materialization',
+  'Prove exact Graph to Explanatory Frax handoff',
+  'Refresh canonical Cognitive Stack from proven Explanatory',
+  'Prove Brain consumed Frax deep context',
+  'Refresh Project Memory after downstream success',
+  "group: economic-graph-code-change-resume",
+  'cancel-in-progress: false'
+]) {
+  assert(recovery.includes(required), `Ordered recovery contract missing: ${required}`);
+}
+
+const graphPos = recovery.indexOf('Rebuild canonical Economic Graph first');
+const graphProofPos = recovery.indexOf('Prove physical eight-protocol Graph and Frax ecosystem');
+const explanatoryPos = recovery.indexOf('Rebuild Explanatory only after Graph materialization');
+const explanatoryProofPos = recovery.indexOf('Prove exact Graph to Explanatory Frax handoff');
+const cognitivePos = recovery.indexOf('Refresh canonical Cognitive Stack from proven Explanatory');
+const memoryPos = recovery.indexOf('Refresh Project Memory after downstream success');
+assert(graphPos < graphProofPos && graphProofPos < explanatoryPos && explanatoryPos < explanatoryProofPos && explanatoryProofPos < cognitivePos && cognitivePos < memoryPos, 'Graph→Explanatory→Brain→Memory recovery order drift');
+
+console.log('EXPLANATORY CONCURRENCY + ORDERED RECOVERY CANARY PASS', {
   prLane: 'per-pr-number',
   prSupersession: true,
   productionLane: 'serialized',
-  productionCancellation: false
+  productionCancellation: false,
+  sourceCodeRaceBlocked: true,
+  graphModuleCoverage: 'globbed',
+  recoveryOrder: 'Graph→Explanatory→Brain→Memory'
 });
