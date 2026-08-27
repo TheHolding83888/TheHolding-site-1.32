@@ -1,4 +1,5 @@
 name: "The Holding Market Data · Shared Refresh"
+# holding-workflow-definition-proof: intelligence/reliability/market-data-scheduler-workflow-definition-proof.mjs
 
 on:
   workflow_dispatch:
@@ -20,6 +21,8 @@ on:
       - 'intelligence/market-data/onchain-price-source-registry.json'
       - 'intelligence/market-data/onchain-price-source-registry-extensions.json'
       - 'intelligence/market-data/onchain-price-resolver.mjs'
+      - 'intelligence/market-data/market-data-scheduler-contract.json'
+      - 'intelligence/reliability/market-data-scheduler-workflow-definition-proof.mjs'
       - 'companies/defitea-canonical-state.json'
       - 'companies/stable-index-data.json'
       - 'companies/productivity-data.json'
@@ -48,6 +51,12 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
+
+      - name: Verify Shared Market Data scheduler contract
+        run: |
+          set -euo pipefail
+          node --check intelligence/reliability/market-data-scheduler-workflow-definition-proof.mjs
+          node intelligence/reliability/market-data-scheduler-workflow-definition-proof.mjs
 
       - name: Validate shared Market Data engines
         run: |
