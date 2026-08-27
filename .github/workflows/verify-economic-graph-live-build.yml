@@ -86,7 +86,7 @@ jobs:
           ].map(x=>resume.indexOf(x));
           if(order.some(x=>x<0)||order.some((x,i)=>i>0&&x<=order[i-1]))throw new Error('Graph→Explanatory→Observer→Brain→Memory recovery order drift');
           if(!resume.includes('change.sourceHealth?.allFresh!==true'))throw new Error('Observer freshness fail-closed proof missing');
-          if(!resume.includes('change.bridge?.snapshotHash!==memory.snapshotHash'))throw new Error('Observer/System Memory snapshot proof missing');
+          if(!resume.includes('!change.bridge?.snapshotHash||change.bridge.snapshotHash!==memory.snapshotHash'))throw new Error('Observer/System Memory snapshot proof missing');
           if(resume.includes('gh workflow run unified-capital-refresh.yml --ref main'))throw new Error('Economic Graph recovery regressed to redundant Unified Capital dispatch');
           if(!/actions:\s*write/.test(resume))throw new Error('Economic Graph recovery dispatcher lacks actions:write');
           if(!/contents:\s*read/.test(resume))throw new Error('Economic Graph recovery dispatcher widened contents permission');
