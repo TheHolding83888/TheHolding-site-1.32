@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-27T05:43:56.207Z",
+  "generatedAt": "2026-08-27T08:57:12.460Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 2,
-    "medium": 22,
+    "medium": 23,
     "low": 0,
     "info": 0
   },
   "source": {
-    "filesScanned": 683,
-    "bytesScanned": 16738033,
+    "filesScanned": 686,
+    "bytesScanned": 16764898,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -57,6 +57,50 @@
   "whatChanged": {
     "newFindings": [
       {
+        "id": "d18e1c359e22c5baf015f3cae09d0457a2caa2f205728b8001c645ca3c48c70b",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/refresh-cognitive-stack.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/refresh-cognitive-stack.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "cb70ef8b980ffa3bc761527ee966d8c919c1a3b5fcae3f785e2cabc8c1e930db",
+          "currentSha256": "884471f020d333e6dbf394e45dce7296892e8d219c71abbce8d6c1024b6a8ea8"
+        }
+      },
+      {
+        "id": "8d33e5adf8dc0e741a3ffa8442922d567327aa959dec5b9277ad566a4097668e",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/resume-economic-graph-after-code-change.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/resume-economic-graph-after-code-change.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "6581fd326fbd7596f0bc62ffddb275f4451a8a5d9a6e00b8277fd59063bbe175",
+          "currentSha256": "8f21d67aab67d75b8bdd6ceb4fc5dd887e5806ff30e2e42a84fa11c1a6b5f3f7"
+        }
+      },
+      {
+        "id": "13e5fb1a00a388c26a2970e629a4ffbd214472ec9620daefefa459f60f15f1fb",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/verify-economic-graph-live-build.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/verify-economic-graph-live-build.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "8d51aa3271b77466a56ec30605a3da4608f6c1c81644444824e91e9724029353",
+          "currentSha256": "e94d6f58fe21d3c61482407be15c1705a069cb59d97b77a52e1773bb099b750a"
+        }
+      }
+    ],
+    "resolvedFindings": [
+      {
         "id": "b6e5f03cfac860b0a4cd87bd21e6502b128f4baded4d8a3760a0c6eaaf0e9363",
         "severity": "medium",
         "category": "critical-surface-change",
@@ -82,50 +126,6 @@
         "evidence": {
           "previousSha256": "6c7e8845cdd5e7e2aca6494c188fa479997b827e3c9139300f9a83d3771399fd",
           "currentSha256": "8d51aa3271b77466a56ec30605a3da4608f6c1c81644444824e91e9724029353"
-        }
-      }
-    ],
-    "resolvedFindings": [
-      {
-        "id": "bf9b96aaa61c109b325752146feaf493dc8ba93b345930cd54fac03f8d958d20",
-        "severity": "medium",
-        "category": "critical-surface-change",
-        "file": ".github/workflows/resume-economic-graph-after-code-change.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/resume-economic-graph-after-code-change.yml.",
-        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-        "evidence": {
-          "previousSha256": "5261b2cfea6b5f5640f3a35a37005b976952d6ba67ff405bd7dcd554d5e8ea1a",
-          "currentSha256": "f121897c54b4171253942eb36aaeb6036b722ce061aba85b2aa23c39cf402763"
-        }
-      },
-      {
-        "id": "bc413c62bcb5e4933b2805dd4ad027185863dff1dc6f13be28a8c9d9c87e3362",
-        "severity": "medium",
-        "category": "critical-surface-change",
-        "file": ".github/workflows/update-explanatory-context.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/update-explanatory-context.yml.",
-        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-        "evidence": {
-          "previousSha256": "e2ab9c7b599768110c318fdc5fd42b419ed051ea461b5b36dcf9dfd1b6395233",
-          "currentSha256": "657c8106c0b18d2db1fc00afd58178a07617e2678e9f6f999d80defe601aa107"
-        }
-      },
-      {
-        "id": "4801614d1d03556be1fdf16bd5b96ca4fb01fcc662f84ffbf95d22593d90a22e",
-        "severity": "medium",
-        "category": "critical-surface-change",
-        "file": ".github/workflows/verify-economic-graph-live-build.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/verify-economic-graph-live-build.yml.",
-        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-        "evidence": {
-          "previousSha256": "0c217f09a0a315c4512faef439215e04834c13f160ab9520d3cc974b528e60ca",
-          "currentSha256": "6c7e8845cdd5e7e2aca6494c188fa479997b827e3c9139300f9a83d3771399fd"
         }
       }
     ]
@@ -154,7 +154,21 @@
       "evidence": null
     },
     {
-      "id": "b6e5f03cfac860b0a4cd87bd21e6502b128f4baded4d8a3760a0c6eaaf0e9363",
+      "id": "d18e1c359e22c5baf015f3cae09d0457a2caa2f205728b8001c645ca3c48c70b",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/refresh-cognitive-stack.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/refresh-cognitive-stack.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "cb70ef8b980ffa3bc761527ee966d8c919c1a3b5fcae3f785e2cabc8c1e930db",
+        "currentSha256": "884471f020d333e6dbf394e45dce7296892e8d219c71abbce8d6c1024b6a8ea8"
+      }
+    },
+    {
+      "id": "8d33e5adf8dc0e741a3ffa8442922d567327aa959dec5b9277ad566a4097668e",
       "severity": "medium",
       "category": "critical-surface-change",
       "file": ".github/workflows/resume-economic-graph-after-code-change.yml",
@@ -163,12 +177,12 @@
       "summary": "Security-sensitive surface changed: .github/workflows/resume-economic-graph-after-code-change.yml.",
       "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
       "evidence": {
-        "previousSha256": "f121897c54b4171253942eb36aaeb6036b722ce061aba85b2aa23c39cf402763",
-        "currentSha256": "6581fd326fbd7596f0bc62ffddb275f4451a8a5d9a6e00b8277fd59063bbe175"
+        "previousSha256": "6581fd326fbd7596f0bc62ffddb275f4451a8a5d9a6e00b8277fd59063bbe175",
+        "currentSha256": "8f21d67aab67d75b8bdd6ceb4fc5dd887e5806ff30e2e42a84fa11c1a6b5f3f7"
       }
     },
     {
-      "id": "e843b6adc1b4fad3a3e819f24e6b9e8277137b78f4b2ef6539d9dbd3ab5fa061",
+      "id": "13e5fb1a00a388c26a2970e629a4ffbd214472ec9620daefefa459f60f15f1fb",
       "severity": "medium",
       "category": "critical-surface-change",
       "file": ".github/workflows/verify-economic-graph-live-build.yml",
@@ -177,8 +191,8 @@
       "summary": "Security-sensitive surface changed: .github/workflows/verify-economic-graph-live-build.yml.",
       "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
       "evidence": {
-        "previousSha256": "6c7e8845cdd5e7e2aca6494c188fa479997b827e3c9139300f9a83d3771399fd",
-        "currentSha256": "8d51aa3271b77466a56ec30605a3da4608f6c1c81644444824e91e9724029353"
+        "previousSha256": "8d51aa3271b77466a56ec30605a3da4608f6c1c81644444824e91e9724029353",
+        "currentSha256": "e94d6f58fe21d3c61482407be15c1705a069cb59d97b77a52e1773bb099b750a"
       }
     },
     {
@@ -486,12 +500,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "e627b51d5efebf2e80d006f6b8740f7c3b211a006d5b0945208ab2edb786cb66",
+    "snapshotHash": "59f1fef6271828caa692298a3fad906d9562fabe676130658948f8288f7da12f",
     "securityVault": {
-      "runCount": 558,
+      "runCount": 559,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-27T05-43-56-207Z-e627b51d5e.json",
-      "latestRecordHash": "5fe581af1c8ce4c31b1642afa5e1ad7a7ea2347b0c71f8b2664dd5165b3686d4",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-27T08-57-12-460Z-59f1fef627.json",
+      "latestRecordHash": "8701e2217080ef6f44fa98a876225e824eda2abc3900fc06f7bd6caf72f8dcb8",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }

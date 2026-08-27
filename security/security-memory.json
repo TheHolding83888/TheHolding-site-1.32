@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-27T05:43:56.207Z",
+  "generatedAt": "2026-08-27T08:57:12.460Z",
   "status": "watch",
-  "snapshotHash": "e627b51d5efebf2e80d006f6b8740f7c3b211a006d5b0945208ab2edb786cb66",
+  "snapshotHash": "59f1fef6271828caa692298a3fad906d9562fabe676130658948f8288f7da12f",
   "repository": {
-    "filesScanned": 683,
-    "bytesScanned": 16738033,
+    "filesScanned": 686,
+    "bytesScanned": 16764898,
     "criticalHashes": {
       ".github/workflows/admit-company-010-public.yml": "5feffbf58388675952487c3462d2f9149eecec6f3795483087010dd0d3b19cfb",
       ".github/workflows/ask-experience.yml": "deb9c4e1025390563f8a866f6ddf1c7870e748cbd6aba13fdbd6da2d38e983d4",
@@ -34,7 +34,7 @@
       ".github/workflows/record-owner-economic-decision.yml": "f612ebca703f81cb0bb6bf9d1a140f5901390db67c8fb95e1a47ed1602b00dad",
       ".github/workflows/record-owner-economic-outcome-review.yml": "27ce4b7c4a3568d529dbbb57d0bf85cb95b6796bac0a682c4b62e9e46e6bcc5e",
       ".github/workflows/recover-cognitive-stack-after-release.yml": "6a40e1d24125d7469ae229560e5aa6dc78e8075e95ab8ef589bb7ff3a460ff2f",
-      ".github/workflows/refresh-cognitive-stack.yml": "cb70ef8b980ffa3bc761527ee966d8c919c1a3b5fcae3f785e2cabc8c1e930db",
+      ".github/workflows/refresh-cognitive-stack.yml": "884471f020d333e6dbf394e45dce7296892e8d219c71abbce8d6c1024b6a8ea8",
       ".github/workflows/refresh-downstream-continuity.yml": "21bd7245bb1cc076d3362cbed8e91dd3999efb6e25a71b2592bd7c75e5745179",
       ".github/workflows/repository-hygiene-guard.yml": "79c2f4470217d1c85be26ac494a0d07b09db76db5affa2feaad85550dd12a752",
       ".github/workflows/repository-integrity-sentinel.yml": "202aae18525961a9d70a51497a203f2a18830043e837ac9a0a680061715102ba",
@@ -46,7 +46,7 @@
       ".github/workflows/resolve-monetra-lido-close.yml": "5bd816a1447075fe58b41c104f807434ec3a473bdb50a9d7f15ba1078c1f78c5",
       ".github/workflows/resolve-monetra-strategy-entry-ledger.yml": "d130e2957d8f0b6f837ca54ad1581427a08116238e22fc3bef4692f2ddcfc517",
       ".github/workflows/resume-cognitive-stack-after-release.yml": "8dac46ad3c6ddf77cefb24ec26b719813d8f4dbea46f4cf59b351c93998e0230",
-      ".github/workflows/resume-economic-graph-after-code-change.yml": "6581fd326fbd7596f0bc62ffddb275f4451a8a5d9a6e00b8277fd59063bbe175",
+      ".github/workflows/resume-economic-graph-after-code-change.yml": "8f21d67aab67d75b8bdd6ceb4fc5dd887e5806ff30e2e42a84fa11c1a6b5f3f7",
       ".github/workflows/resume-unified-capital-after-fxn-guard.yml": "5470e1c68ea0a9f340f68635076f6dcb1f9a9f4e421b2530ec1587865b99365b",
       ".github/workflows/runtime-reliability-observer.yml": "2585116c2757e276ea9f3e7470354edeec4d19239c4e08e018983f9a0ba0f118",
       ".github/workflows/security-hardening-actions.yml": "0353e44050c35c920c7d5e86dda4aeef15b4cb50ef432225ff7884d26ecc3704",
@@ -119,7 +119,7 @@
       ".github/workflows/verify-company-monthly-reports.yml": "08b957c434a3b89418c9d12a9f5a8d19bdada80913063b5135d9881592e63ee6",
       ".github/workflows/verify-cvxcrv-income-parity.yml": "505bd0fcff241abf5458917bdef8e8e5a6ad9c76447e0035c6840f19b32df1e6",
       ".github/workflows/verify-defitea-union-scrvusd.yml": "1b7011abebac9dc6953c045e2f1f7166ce0caf976bff2003e8b2e1677c6403f6",
-      ".github/workflows/verify-economic-graph-live-build.yml": "8d51aa3271b77466a56ec30605a3da4608f6c1c81644444824e91e9724029353",
+      ".github/workflows/verify-economic-graph-live-build.yml": "e94d6f58fe21d3c61482407be15c1705a069cb59d97b77a52e1773bb099b750a",
       ".github/workflows/verify-fxn-locker-apr-guard.yml": "d7f6899b049f10bf37d00dd602df6ddd4a2c35ec79da5b42859511826c136efa",
       ".github/workflows/verify-intelligence-progress-live-integrity.yml": "b7f013c673749475e992169826a80db28cf9a68fb363d397b775b5231be810f2",
       ".github/workflows/verify-known-mechanism-reuse-parity.yml": "bfda24ead7a83ccd30365d0a7df8b4b0b2fb89344631c11579385a46dca879e6",
@@ -408,7 +408,21 @@
       "evidence": null
     },
     {
-      "id": "b6e5f03cfac860b0a4cd87bd21e6502b128f4baded4d8a3760a0c6eaaf0e9363",
+      "id": "d18e1c359e22c5baf015f3cae09d0457a2caa2f205728b8001c645ca3c48c70b",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/refresh-cognitive-stack.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/refresh-cognitive-stack.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "cb70ef8b980ffa3bc761527ee966d8c919c1a3b5fcae3f785e2cabc8c1e930db",
+        "currentSha256": "884471f020d333e6dbf394e45dce7296892e8d219c71abbce8d6c1024b6a8ea8"
+      }
+    },
+    {
+      "id": "8d33e5adf8dc0e741a3ffa8442922d567327aa959dec5b9277ad566a4097668e",
       "severity": "medium",
       "category": "critical-surface-change",
       "file": ".github/workflows/resume-economic-graph-after-code-change.yml",
@@ -417,12 +431,12 @@
       "summary": "Security-sensitive surface changed: .github/workflows/resume-economic-graph-after-code-change.yml.",
       "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
       "evidence": {
-        "previousSha256": "f121897c54b4171253942eb36aaeb6036b722ce061aba85b2aa23c39cf402763",
-        "currentSha256": "6581fd326fbd7596f0bc62ffddb275f4451a8a5d9a6e00b8277fd59063bbe175"
+        "previousSha256": "6581fd326fbd7596f0bc62ffddb275f4451a8a5d9a6e00b8277fd59063bbe175",
+        "currentSha256": "8f21d67aab67d75b8bdd6ceb4fc5dd887e5806ff30e2e42a84fa11c1a6b5f3f7"
       }
     },
     {
-      "id": "e843b6adc1b4fad3a3e819f24e6b9e8277137b78f4b2ef6539d9dbd3ab5fa061",
+      "id": "13e5fb1a00a388c26a2970e629a4ffbd214472ec9620daefefa459f60f15f1fb",
       "severity": "medium",
       "category": "critical-surface-change",
       "file": ".github/workflows/verify-economic-graph-live-build.yml",
@@ -431,8 +445,8 @@
       "summary": "Security-sensitive surface changed: .github/workflows/verify-economic-graph-live-build.yml.",
       "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
       "evidence": {
-        "previousSha256": "6c7e8845cdd5e7e2aca6494c188fa479997b827e3c9139300f9a83d3771399fd",
-        "currentSha256": "8d51aa3271b77466a56ec30605a3da4608f6c1c81644444824e91e9724029353"
+        "previousSha256": "8d51aa3271b77466a56ec30605a3da4608f6c1c81644444824e91e9724029353",
+        "currentSha256": "e94d6f58fe21d3c61482407be15c1705a069cb59d97b77a52e1773bb099b750a"
       }
     },
     {
@@ -730,10 +744,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 558,
+    "runCount": 559,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/08/2026-08-27T05-43-56-207Z-e627b51d5e.json",
-    "latestRecordHash": "5fe581af1c8ce4c31b1642afa5e1ad7a7ea2347b0c71f8b2664dd5165b3686d4",
+    "latestRecordPath": "security/security-vault/2026/08/2026-08-27T08-57-12-460Z-59f1fef627.json",
+    "latestRecordHash": "8701e2217080ef6f44fa98a876225e824eda2abc3900fc06f7bd6caf72f8dcb8",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
