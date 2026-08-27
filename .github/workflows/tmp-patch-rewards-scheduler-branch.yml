@@ -1,0 +1,62 @@
+name: TEMP Patch Rewards Scheduler Branch
+
+on:
+  push:
+    branches:
+      - fix/rewards-scheduler-contract-2026-08-27
+    paths:
+      - '.github/workflows/tmp-patch-rewards-scheduler-branch.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repair branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/rewards-scheduler-contract-2026-08-27
+          fetch-depth: 0
+
+      - name: Apply exact scheduler repair
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('.github/workflows/update-company-rewards.yml')
+          s=p.read_text()
+          old="    - cron: '57 4 * * *'"
+          new="    - cron: '07 5 * * *'"
+          if s.count(old) != 1:
+              raise SystemExit(f'expected exactly one old Rewards cron, found {s.count(old)}')
+          s=s.replace(old,new,1)
+
+          anchor="      - 'rewards/rewards-passport-hygiene.mjs'\n      - '.github/workflows/update-company-rewards.yml'"
+          replacement="      - 'rewards/rewards-passport-hygiene.mjs'\n      - 'rewards/rewards-scheduler-contract.json'\n      - 'intelligence/reliability/rewards-scheduler-workflow-definition-proof.mjs'\n      - '.github/workflows/update-company-rewards.yml'"
+          if s.count(anchor) != 1:
+              raise SystemExit(f'expected exactly one Rewards path anchor, found {s.count(anchor)}')
+          s=s.replace(anchor,replacement,1)
+
+          install="      - name: Install runtime dependency\n        run: npm install --no-save --no-package-lock ethers@6\n"
+          preflight="      - name: Verify Rewards scheduler contract\n        run: |\n          set -euo pipefail\n          node --check intelligence/reliability/rewards-scheduler-workflow-definition-proof.mjs\n          node intelligence/reliability/rewards-scheduler-workflow-definition-proof.mjs\n\n"+install
+          if s.count(install) != 1:
+              raise SystemExit(f'expected exactly one dependency step anchor, found {s.count(install)}')
+          s=s.replace(install,preflight,1)
+          p.write_text(s)
+          PY
+
+          node --check intelligence/reliability/rewards-scheduler-workflow-definition-proof.mjs
+          node intelligence/reliability/rewards-scheduler-workflow-definition-proof.mjs
+          git diff --check
+
+      - name: Commit branch repair
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/workflows/update-company-rewards.yml
+          git commit -m "reliability: bind Rewards writer to scheduler contract"
+          git push origin HEAD:fix/rewards-scheduler-contract-2026-08-27
