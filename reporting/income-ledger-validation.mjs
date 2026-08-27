@@ -97,8 +97,32 @@ assert.equal(continuity.every(x=>x.periodIncomeAuthority===false),true);
 for(const [company,c] of Object.entries(rewards.companies||{})){
   const rows=rewardStateRows(c);
   assert.equal(new Set(rows.map(x=>x.routeKey)).size,rows.length,`${company}: claimable route state keys must be unique`);
-  assert.equal(rows.every(x=>x.unknownIsNotZero===true),true);
+  assert.equal(rows.every(x=>x.unknownIsNotZero===true&&x.periodIncomeAuthority===false&&x.realisedCashFlowAuthority===false),true);
 }
+
+const shardAggregate=rewardStateRows({rewards:[
+  {route:'same-route',protocol:'Synthetic',chain:'Base',symbol:'TOKEN',wallet:'0xabc',classification:'unclaimed',amount:1.25,usdValue:2.5,source:'shard-a'},
+  {route:'same-route',protocol:'Synthetic',chain:'Base',symbol:'TOKEN',wallet:'0xabc',classification:'unclaimed',amount:2.75,usdValue:5.5,source:'shard-b'}
+]});
+assert.equal(shardAggregate.length,1,'same-mechanism claimable shards must aggregate into one state row');
+assert.equal(shardAggregate[0].shardCount,2);
+assert.equal(shardAggregate[0].amount,4);
+assert.equal(shardAggregate[0].usdValue,8);
+assert.equal(shardAggregate[0].amountComplete,true);
+assert.equal(shardAggregate[0].usdValueComplete,true);
+assert.equal(shardAggregate[0].periodIncomeAuthority,false);
+assert.equal(shardAggregate[0].realisedCashFlowAuthority,false);
+
+const incompleteShardAggregate=rewardStateRows({rewards:[
+  {route:'partial-route',protocol:'Synthetic',chain:'Base',symbol:'TOKEN',wallet:'0xdef',classification:'unclaimed',amount:1,usdValue:2,source:'known-shard'},
+  {route:'partial-route',protocol:'Synthetic',chain:'Base',symbol:'TOKEN',wallet:'0xdef',classification:'unclaimed',amount:null,usdValue:null,source:'unknown-shard'}
+]});
+assert.equal(incompleteShardAggregate.length,1);
+assert.equal(incompleteShardAggregate[0].amount,null,'unknown shard amount must not be treated as zero');
+assert.equal(incompleteShardAggregate[0].usdValue,null,'unknown shard USD must not be treated as zero');
+assert.equal(incompleteShardAggregate[0].amountComplete,false);
+assert.equal(incompleteShardAggregate[0].usdValueComplete,false);
+assert.equal(incompleteShardAggregate[0].unknownIsNotZero,true);
 
 const cross=finalizeCandidate({
   eventKey:'synthetic:embedded:cross-month',company:'Synthetic.eth',family:'embedded-income',periodStart:'2026-08-31T23:00:00Z',periodEnd:'2026-09-01T01:00:00Z',economicDate:'2026-09-01',route:'p',protocol:'P',asset:'USDC',usdValue:1,stablePriceEffectUsd:0
@@ -118,6 +142,7 @@ assert.equal(family.valuedUsdSubtotal,1);
 const source=fs.readFileSync(path.join(ROOT,'reporting/income-ledger.mjs'),'utf8');
 for(const forbidden of ['sendTransaction(','new Wallet(','claimTransactionAuthority: true','executionAuthority: write']) assert.equal(source.includes(forbidden),false,`income ledger authority expansion: ${forbidden}`);
 assert.equal(source.includes('referenceAprCanBackfillEarnedIncome:false'),true,'explicit reference APR non-backfill semantic missing');
+assert.equal(source.includes('claimableShardRule:'),true,'claimable shard aggregation semantic missing');
 
 console.log('Canonical Income Ledger validation PASS',{
   defiteaEntitlementEvents:sourceVote,
@@ -126,6 +151,8 @@ console.log('Canonical Income Ledger validation PASS',{
   mechanismSpecificRealisedEvents:acceptedRealised,
   candidateEvents:all.length,
   claimableCompanies:Object.keys(rewards.companies||{}).length,
+  sameMechanismShardAggregation:true,
+  incompleteShardUnknownPreserved:true,
   claimableDecreaseRealisedAuthority:false,
   crossFamilySummation:false,
   unknownIsNotZero:true
