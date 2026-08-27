@@ -81,21 +81,6 @@ function discoverFortyAcres(companyName, company) {
   return [...discovered.values()];
 }
 
-async function providerWithFallback() {
-  let lastError = null;
-  for (const url of RPC_URLS) {
-    const provider = new JsonRpcProvider(url, 10, { staticNetwork: true });
-    try {
-      await provider.getBlockNumber();
-      return { provider, endpointClass: url.includes('publicnode') ? 'publicnode' : url.includes('optimism.io') ? 'optimism-public' : 'configured-secret' };
-    } catch (err) {
-      lastError = err;
-      try { provider.destroy(); } catch {}
-    }
-  }
-  throw lastError || new Error('No working Optimism RPC');
-}
-
 async function recentScanStart(provider, timestampMs, latestBlock) {
   const latest = await provider.getBlock(latestBlock);
   if (!latest) throw new Error(`Latest Optimism block ${latestBlock} unavailable`);
@@ -106,6 +91,31 @@ async function recentScanStart(provider, timestampMs, latestBlock) {
   // recent-history margin, then enforce the exact timestamp boundary per payout.
   // This avoids querying archive-era block headers just to locate an August window.
   return Math.max(0, latestBlock - expectedBlocks - RECENT_SCAN_MARGIN_BLOCKS);
+}
+
+async function providerWithFallback(timestampMs) {
+  let lastError = null;
+  for (const url of RPC_URLS) {
+    const provider = new JsonRpcProvider(url, 10, { staticNetwork: true });
+    try {
+      const latestBlock = await provider.getBlockNumber();
+      const fromBlock = await recentScanStart(provider, timestampMs, latestBlock);
+      // A latest-block ping is not enough for this ledger: it reads historical
+      // August logs. Prove that the endpoint actually serves the required archive
+      // window before selecting it, so a current-only RPC cannot fail the full run.
+      await provider.getLogs({ topics: [REWARDS_TOPIC], fromBlock, toBlock: fromBlock });
+      return {
+        provider,
+        latestBlock,
+        fromBlock,
+        endpointClass: url.includes('publicnode') ? 'publicnode' : url.includes('optimism.io') ? 'optimism-public' : 'configured-secret'
+      };
+    } catch (err) {
+      lastError = err;
+      try { provider.destroy(); } catch {}
+    }
+  }
+  throw lastError || new Error('No archive-capable Optimism RPC');
 }
 
 async function getLogsAdaptive(provider, filter, fromBlock, toBlock) {
@@ -250,10 +260,8 @@ for (const [companyName, company] of Object.entries(data.companies)) {
   }
 }
 
-const { provider, endpointClass } = await providerWithFallback();
+const { provider, endpointClass, latestBlock, fromBlock } = await providerWithFallback(trackingTs);
 try {
-  const latestBlock = await provider.getBlockNumber();
-  const fromBlock = await recentScanStart(provider, trackingTs, latestBlock);
   let companiesWithReceived = 0;
   let receivedTransferCount = 0;
   let receivedUsd = 0;
