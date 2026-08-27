@@ -17,7 +17,10 @@ on:
       - 'companies/productivity-data.json'
       - 'companies/defitea-canonical-state.json'
       - 'reporting/reporting-scheduler-contract.json'
+      - 'reporting/rate-continuity-policy.json'
       - 'reporting/reporting-scheduled-runner.mjs'
+      - 'reporting/reporting-engine.mjs'
+      - 'reporting/reporting-engine-validation.mjs'
       - 'reporting/defitea-forty-acres-settlement.mjs'
       - 'reporting/defitea-forty-acres-settlement-validation.mjs'
       - 'reporting/defitea-income-composition.mjs'
@@ -69,6 +72,7 @@ jobs:
           node --check reporting/defitea-forty-acres-settlement.mjs
           node --check reporting/defitea-forty-acres-settlement-validation.mjs
           test -s reporting/reporting-scheduler-contract.json
+          test -s reporting/rate-continuity-policy.json
           test -s companies/defitea-canonical-state.json
           test -s companies/productivity-data.json
           test -s companies/rewards-data.json
@@ -88,6 +92,8 @@ jobs:
           if(!Number.isFinite(Number(c.displayReferenceApyPct))) throw new Error('Monetra display Reference APY missing');
           const l=JSON.parse(fs.readFileSync('companies/embedded-yield-ledger.json','utf8'));
           if(l.company?.registry!=='008') throw new Error('Monetra Embedded Yield Ledger identity mismatch');
+          const p=JSON.parse(fs.readFileSync('reporting/rate-continuity-policy.json','utf8'));
+          if(p.version!=='0.1-reporting-rate-continuity'||p.semantics?.unknownIsNotZero!==true||p.semantics?.singleSourceDataFailureMustNotFreezeWholeReport!==true) throw new Error('Reporting rate continuity policy invalid');
           console.log('Dual-fund reporting canonical preflight OK.');
           NODE
 
@@ -99,6 +105,7 @@ jobs:
           REWARDS_DATA_FILE: ./companies/rewards-data.json
           STABLE_INDEX_DATA_FILE: ./companies/stable-index-data.json
           EMBEDDED_LEDGER_FILE: ./companies/embedded-yield-ledger.json
+          RATE_CONTINUITY_POLICY_FILE: ./reporting/rate-continuity-policy.json
           REPORTING_DATA_FILE: ./reporting/reporting-data.json
         run: node reporting/reporting-scheduled-runner.mjs
 
@@ -125,19 +132,35 @@ jobs:
           const fs=require('fs');
           const r=JSON.parse(fs.readFileSync('reporting/reporting-data.json','utf8'));
           const schedule=JSON.parse(fs.readFileSync('reporting/reporting-scheduler-contract.json','utf8'));
-          if(r.version!=='1.2.0-defitea-canonical-market-data') throw new Error('unexpected reporting version '+r.version);
+          const policy=JSON.parse(fs.readFileSync('reporting/rate-continuity-policy.json','utf8'));
+          if(r.version!=='1.2.1-resilient-rate-coverage') throw new Error('unexpected reporting version '+r.version);
           if(r.schedule?.defiteaExternalPriceDiscovery!==false) throw new Error('Reporting external price discovery boundary missing');
           if(r.schedule?.dailySnapshot!==schedule.dailySnapshotUtc||r.schedule?.cron!==schedule.cron||r.schedule?.contractVersion!==schedule.version||r.schedule?.contractSource!=='reporting/reporting-scheduler-contract.json') throw new Error('Reporting scheduler output metadata drift');
+          if(r.schedule?.rateContinuityPolicyReference!=='reporting/rate-continuity-policy.json') throw new Error('Reporting rate policy provenance missing');
 
           const d=r.funds?.['defitea.eth'];
           if(!d) throw new Error('Defitea reporting missing');
           const s=d.latestSnapshot||{};
           if(d.exactCanonicalProductivePositionCount!==11) throw new Error('Defitea canonical position contract drift');
-          if(s.positionCount!==11||s.rateCoveredPositionCount!==11||s.fullProductiveCoverage!==true||s.coverage!==1) throw new Error('Defitea exact 11/11 productive coverage missing');
+          if(s.positionCount!==11||(s.positions||[]).length!==11) throw new Error('Defitea canonical position coverage missing');
+          if(!(Number(s.totalValueUsd)>0)||!(Number(s.coveredValueUsd)>=0)||Number(s.coveredValueUsd)>Number(s.totalValueUsd)+0.01) throw new Error('Defitea rate-covered TVL invalid');
+          if(!Number.isInteger(s.rateCoveredPositionCount)||s.rateCoveredPositionCount<0||s.rateCoveredPositionCount>11) throw new Error('Defitea rate-covered position count invalid');
+          const expectedCovered=(s.positions||[]).filter(x=>x.rateStatus!=='unknown').length;
+          if(s.rateCoveredPositionCount!==expectedCovered) throw new Error('Defitea rate-covered position parity drift');
+          const expectedCoverage=Number(s.totalValueUsd)>0?Number(s.coveredValueUsd)/Number(s.totalValueUsd):0;
+          if(Math.abs(Number(s.coverage)-expectedCoverage)>0.00001) throw new Error('Defitea rate coverage arithmetic drift');
+          if(s.fullProductiveCoverage!==(s.rateCoveredPositionCount===11)) throw new Error('Defitea full coverage flag drift');
+          if(s.unknownIsNotZero!==true||s.rateContinuityPolicyVersion!==policy.version) throw new Error('Defitea epistemic rate policy missing');
           if(!s.marketDataGeneratedAt||s.priceAuthority!=='canonical-selected-market-data') throw new Error('Defitea canonical Market Data binding missing');
-          if((s.positions||[]).length!==11) throw new Error('Defitea reporting positions != 11');
-          if((s.positions||[]).some(x=>x.priceSource!=='canonical-market-data'||!x.selectedLane||!(Number(x.price)>0)||x.engineStatus!=='ok'||!(Number(x.referenceApr)>=0))) throw new Error('Defitea canonical price/APR row coverage invalid');
-          if(s.missingPrices?.length||s.fallbackPrices?.length) throw new Error('legacy Reporting fallback arrays must remain empty under canonical Market Data authority');
+          for(const x of s.positions||[]){
+            if(x.priceSource!=='canonical-market-data'||!x.selectedLane||!(Number(x.price)>0)) throw new Error('Defitea canonical price row invalid '+x.principalId);
+            if(!['current','carried-forward','unknown'].includes(x.rateStatus)||x.unknownIsNotZero!==true) throw new Error('Defitea rate state invalid '+x.principalId);
+            if(x.rateStatus==='unknown'){
+              if(x.referenceApr!==null) throw new Error('UNKNOWN rate became numeric '+x.principalId);
+            }else if(!Number.isFinite(Number(x.referenceApr))||Number(x.referenceApr)<0) throw new Error('Covered Reference APR invalid '+x.principalId);
+            if(x.rateStatus==='carried-forward'&&(!(Number(x.rateAgeDays)>=0)||Number(x.rateAgeDays)>Number(x.maxCarryDays))) throw new Error('Expired carried rate admitted '+x.principalId);
+          }
+          if(s.missingPrices?.length||s.fallbackPrices?.length) throw new Error('legacy Reporting price fallback arrays must remain empty');
           if(d.vlCvxReconciliation?.referenceIncomeEngine!=='convex_vlcvx'||d.vlCvxReconciliation?.referenceAprIncludesVotiumIncentives!==true||d.vlCvxReconciliation?.claimableSettlementAddedToReferenceCashFlow!==false) throw new Error('Defitea vlCVX reconciliation boundary invalid');
 
           const composition=d.incomeComposition;
@@ -179,7 +202,7 @@ jobs:
           if(!(Number(m.latestSnapshot?.stableCapitalUsd)>90)) throw new Error('Monetra Stable Capital missing');
           if(!Number.isFinite(Number(m.latestSnapshot?.referenceApyPct))) throw new Error('Monetra APY missing');
           if(!Number.isFinite(Number(m.latestSnapshot?.modeledDailyGeneratedIncomeUsd))) throw new Error('Monetra daily generated income missing');
-          console.log('Dual-fund reporting + Defitea 40 Acres settlement validation OK.');
+          console.log('Dual-fund resilient reporting validation OK.',{rateCovered:s.rateCoveredPositionCount,total:s.positionCount,coverage:s.coverage,carried:s.carriedRatePositions,unknown:s.unknownRatePositions});
           NODE
 
       - name: Commit reporting snapshot

@@ -7,6 +7,7 @@ on:
       - 'reporting/reporting-engine-validation.mjs'
       - 'reporting/reporting-scheduler-contract.json'
       - 'reporting/reporting-scheduled-runner.mjs'
+      - 'reporting/rate-continuity-policy.json'
       - 'reporting/defitea-income-composition.mjs'
       - 'reporting/defitea-income-composition-validation.mjs'
       - 'reporting/defitea-forty-acres-settlement.mjs'
@@ -44,9 +45,9 @@ jobs:
           node --check reporting/defitea-forty-acres-settlement.mjs
           node --check reporting/defitea-forty-acres-settlement-validation.mjs
           test -s reporting/reporting-scheduler-contract.json
+          test -s reporting/rate-continuity-policy.json
           node reporting/reporting-scheduled-runner.mjs --validate-contract
-          REPORTING_VALIDATION_PRODUCTIVITY_FILE=/tmp/reporting-verifier-productivity.json node reporting/reporting-engine-validation.mjs
-          test -s /tmp/reporting-verifier-productivity.json
+          node reporting/reporting-engine-validation.mjs
           node reporting/defitea-income-composition-validation.mjs
           node reporting/defitea-forty-acres-settlement-validation.mjs
           git diff --check
@@ -58,11 +59,12 @@ jobs:
           cp reporting/reporting-data.json /tmp/reporting-data.json
           rm -f /tmp/defitea-income-ledger.json
           DEFITEA_STATE_FILE=./companies/defitea-canonical-state.json \
-          PRODUCTIVITY_DATA_FILE=/tmp/reporting-verifier-productivity.json \
+          PRODUCTIVITY_DATA_FILE=./companies/productivity-data.json \
           MARKET_DATA_FILE=./intelligence/market-data/market-data.json \
           REWARDS_DATA_FILE=./companies/rewards-data.json \
           STABLE_INDEX_DATA_FILE=./companies/stable-index-data.json \
           EMBEDDED_LEDGER_FILE=./companies/embedded-yield-ledger.json \
+          RATE_CONTINUITY_POLICY_FILE=./reporting/rate-continuity-policy.json \
           REPORTING_DATA_FILE=/tmp/reporting-data.json \
           node reporting/reporting-scheduled-runner.mjs
           PRODUCTIVITY_DATA_FILE=./companies/productivity-data.json \
@@ -79,13 +81,32 @@ jobs:
           const r=JSON.parse(fs.readFileSync('/tmp/reporting-data.json','utf8'));
           const l=JSON.parse(fs.readFileSync('/tmp/defitea-income-ledger.json','utf8'));
           const schedule=JSON.parse(fs.readFileSync('reporting/reporting-scheduler-contract.json','utf8'));
-          const fixture=JSON.parse(fs.readFileSync('/tmp/reporting-verifier-productivity.json','utf8'));
+          const policy=JSON.parse(fs.readFileSync('reporting/rate-continuity-policy.json','utf8'));
+          const productivity=JSON.parse(fs.readFileSync('companies/productivity-data.json','utf8'));
           const d=r.funds?.['defitea.eth'];
-          if(r.version!=='1.2.0-defitea-canonical-market-data') throw new Error('version drift');
+          if(r.version!=='1.2.1-resilient-rate-coverage') throw new Error('version drift');
           if(r.schedule?.dailySnapshot!==schedule.dailySnapshotUtc||r.schedule?.cron!==schedule.cron||r.schedule?.contractVersion!==schedule.version||r.schedule?.contractSource!=='reporting/reporting-scheduler-contract.json') throw new Error('scheduler contract runtime binding failed');
-          if(fixture.validationFixture?.validationOnly!==true||fixture.validationFixture?.productionAuthority!==false||fixture.validationFixture?.productionWriterMustUseLiveProductivity!==true) throw new Error('Reporting verification fixture provenance/authority missing');
-          if(d?.latestSnapshot?.positionCount!==11||d?.latestSnapshot?.rateCoveredPositionCount!==11||d?.latestSnapshot?.coverage!==1) throw new Error('Defitea 11/11 runtime proof failed');
-          if(d?.latestSnapshot?.priceAuthority!=='canonical-selected-market-data') throw new Error('canonical Market Data runtime binding failed');
+          if(r.schedule?.rateContinuityPolicyReference!=='reporting/rate-continuity-policy.json') throw new Error('rate continuity policy runtime provenance missing');
+          const s=d?.latestSnapshot;
+          if(!s||s.positionCount!==11||(s.positions||[]).length!==11) throw new Error('Defitea canonical 11-position runtime proof failed');
+          if(!Number.isInteger(s.rateCoveredPositionCount)||s.rateCoveredPositionCount<0||s.rateCoveredPositionCount>11) throw new Error('Defitea rate coverage count invalid');
+          if(!(Number(s.totalValueUsd)>0)||!(Number(s.coveredValueUsd)>=0)||Number(s.coveredValueUsd)>Number(s.totalValueUsd)+0.01) throw new Error('Defitea covered TVL invalid');
+          if(s.unknownIsNotZero!==true||s.rateContinuityPolicyVersion!==policy.version) throw new Error('Defitea rate continuity epistemic metadata missing');
+          if(s.priceAuthority!=='canonical-selected-market-data') throw new Error('canonical Market Data runtime binding failed');
+          for(const row of s.positions||[]){
+            if(!['current','carried-forward','unknown'].includes(row.rateStatus)) throw new Error('invalid rate state '+row.principalId);
+            if(row.rateStatus==='unknown'){
+              if(row.referenceApr!==null) throw new Error('UNKNOWN became numeric '+row.principalId);
+            }else if(!Number.isFinite(Number(row.referenceApr))||Number(row.referenceApr)<0) throw new Error('covered APR invalid '+row.principalId);
+            if(row.rateStatus==='carried-forward'&&Number(row.rateAgeDays)>Number(row.maxCarryDays)) throw new Error('expired carry admitted '+row.principalId);
+          }
+          const livePendle=productivity?.companies?.['defitea.eth']?.breakdown?.find(x=>x.engineId==='pendle_spendle');
+          const reportPendle=s.positions.find(x=>x.engineId==='pendle_spendle');
+          if(!reportPendle) throw new Error('Pendle reporting row missing');
+          if(livePendle?.engineStatus!=='ok'||!Number.isFinite(Number(livePendle?.apr))){
+            if(!['carried-forward','unknown'].includes(reportPendle.rateStatus)) throw new Error('live Pendle degradation was not isolated');
+            if(reportPendle.rateStatus==='carried-forward'&&reportPendle.rateSource!=='previous-published-valid-reporting-rate') throw new Error('Pendle carry provenance invalid');
+          }
           if(d?.vlCvxReconciliation?.claimableSettlementAddedToReferenceCashFlow!==false) throw new Error('vlCVX additive-double-count guard failed');
           if(d?.incomeComposition?.version!=='0.1-defitea-associated-income-plus-votemarket-events') throw new Error('income composition runtime proof failed');
           if(d?.incomeComposition?.associatedCompanyTvlIncluded!==false||d?.incomeComposition?.tvlSemantic!=='defitea-only') throw new Error('associated-company TVL boundary failed');
@@ -107,16 +128,19 @@ jobs:
             if(Math.abs(Number(current.cashFlowUsd)-expected)>0.011) throw new Error('unified 40 Acres replacement arithmetic runtime proof failed');
             if(!(Number(current.fortyAcresReceivedIncomeUsd)>0)||!(Number(current.fortyAcresReplacedReferenceCashFlowUsd)>0)) throw new Error('40 Acres Received/replacement values missing');
           }
-          console.log('Reporting + Defitea 40 Acres candidate runtime PASS',{
+          console.log('Reporting resilient candidate runtime PASS',{
             schedulerCron:schedule.cron,
             schedulerSnapshot:schedule.dailySnapshotUtc,
-            validationFixtureRows:fixture.validationFixture?.patchedRows||[],
-            defiteaTvlUsd:d.latestSnapshot.totalValueUsd,
+            rateCoveredPositions:s.rateCoveredPositionCount,
+            rateCoverage:s.coverage,
+            carriedRatePositions:s.carriedRatePositions,
+            unknownRatePositions:s.unknownRatePositions,
+            livePendleStatus:livePendle?.engineStatus,
+            reportedPendleStatus:reportPendle.rateStatus,
+            defiteaTvlUsd:s.totalValueUsd,
             contributorEntries:(l.contributorDaily||[]).length,
             voteMarketEvents:vm.length,
             fortyAcresEvents:fa.length,
-            fortyAcresReceivedUsd:current?.fortyAcresReceivedIncomeUsd,
-            fortyAcresReplacedReferenceUsd:current?.fortyAcresReplacedReferenceCashFlowUsd,
             currentMonthCashFlowUsd:current?.cashFlowUsd
           });
           NODE
@@ -133,15 +157,16 @@ jobs:
           const settlement=fs.readFileSync('reporting/defitea-forty-acres-settlement.mjs','utf8');
           const workflow=fs.readFileSync('.github/workflows/update-reporting.yml','utf8');
           const schedule=JSON.parse(fs.readFileSync('reporting/reporting-scheduler-contract.json','utf8'));
+          const policy=JSON.parse(fs.readFileSync('reporting/rate-continuity-policy.json','utf8'));
           for(const bad of ['api.coingecko.com/api/v3/simple/price','COINGECKO_API_KEY','getCoinGeckoPrices(','COMPANY_PAGE_FILE','parseCompanyBook(']){
             if(engine.includes(bad)||runner.includes(bad)||composition.includes(bad)||settlement.includes(bad)||workflow.includes(bad)) throw new Error('independent Reporting price discovery remains: '+bad);
           }
           for(const bad of ['sendTransaction(','new Wallet(','claimTransactionAuthority: true','executionAuthority: write']){
             if(engine.includes(bad)||runner.includes(bad)||composition.includes(bad)||settlement.includes(bad)) throw new Error('unexpected Reporting authority expansion: '+bad);
           }
-          if(workflow.includes('PRODUCTIVITY_DATA_FILE=/tmp/reporting-verifier-productivity.json')) throw new Error('production Reporting workflow must never consume verification fixture');
           for(const key of ['repositoryMutationAuthority','workflowDispatchAuthority','capitalExecution','walletAuthority','methodologyMutationAuthority']){
             if(schedule.authority?.[key]!==false) throw new Error('scheduler authority expansion: '+key);
           }
+          if(policy.authority?.executionAuthority!=='none'||policy.authority?.methodologyMutationAuthority!=='none'||policy.authority?.walletAuthority!=='none') throw new Error('rate continuity policy authority expansion');
           console.log('Reporting authority boundary PASS');
           NODE

@@ -1,0 +1,32 @@
+{
+  "version": "0.1-reporting-rate-continuity",
+  "status": "production",
+  "purpose": "Allow one temporarily unavailable income-rate source to degrade locally without freezing the entire reporting system, while preserving UNKNOWN != 0 and provenance.",
+  "currentAcceptedStatuses": ["ok"],
+  "carryEligibleStatuses": ["warming", "partial", "stale", "unavailable", "error", "unknown"],
+  "hardInvalidStatuses": ["invalid", "blocked", "revoked"],
+  "defaultMaxCarryDays": 8,
+  "cadenceMaxCarryDays": {
+    "continuous": 3,
+    "daily": 3,
+    "weekly": 10,
+    "biweekly": 18,
+    "14d": 18,
+    "monthly": 40
+  },
+  "semantics": {
+    "carryForwardIsHistoricalReference": true,
+    "carryForwardIsCurrentVerification": false,
+    "expiredOrUnprovenRateBecomesUnknown": true,
+    "unknownIsNotZero": true,
+    "unknownRatePositionRemainsInTvl": true,
+    "unknownRatePositionExcludedFromModeledIncome": true,
+    "singleSourceDataFailureMustNotFreezeWholeReport": true,
+    "structuralIntegrityFailureRemainsFailClosed": true
+  },
+  "authority": {
+    "executionAuthority": "none",
+    "methodologyMutationAuthority": "none",
+    "walletAuthority": "none"
+  }
+}
