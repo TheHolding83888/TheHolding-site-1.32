@@ -24,6 +24,7 @@ on:
       - 'productivity/fxn-locker-apr-guard.mjs'
       - 'intelligence/capital-state/capital-state.mjs'
       - 'intelligence/capital-state/unified-capital-refresh.mjs'
+      - 'intelligence/capital-state/unified-capital-market-data-guard.mjs'
       - 'intelligence/market-data/market-price-registry.json'
       - 'intelligence/market-data/public-capital-engine.mjs'
       - '.github/workflows/unified-capital-refresh.yml'
@@ -68,6 +69,7 @@ jobs:
         run: |
           set -euo pipefail
           node --check intelligence/capital-state/unified-capital-refresh.mjs
+          node --check intelligence/capital-state/unified-capital-market-data-guard.mjs
           node --check companies/defitea-public-capital-projection.mjs
           node --check companies/yieldring-public-capital-projection.mjs
           node --check productivity/productivity-engine.mjs
@@ -78,20 +80,10 @@ jobs:
           node --check intelligence/market-data/coingecko-fetch-shim.mjs
           node --check intelligence/market-data/public-capital-engine.mjs
 
-      - name: Require canonical onchain-selected Market Data
+      - name: Require canonical per-asset Market Data
         run: |
           set -euo pipefail
-          node - <<'NODE'
-          const fs=require('fs');
-          const m=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
-          const prices=m.prices||{};
-          const icp=prices['internet-computer'];
-          const count=Object.keys(prices).length;
-          if(m.semantics?.perAssetAuthoritySelectionApplied!==true)throw new Error('Unified Capital refuses non-materialized Market Data');
-          if(Number(m.authority?.onchainSelectedAssetCount)!==count||count!==26)throw new Error('Canonical onchain Market Data coverage mismatch');
-          if(icp?.authority?.selectedLane!=='onchain'||icp?.authority?.fallbackUsed!==false||!String(icp?.source||'').startsWith('onchain-')||!(Number(icp?.usd)>0))throw new Error('ICP canonical onchain price unavailable');
-          console.log('Canonical Market Data consumer contract PASS',{generatedAt:m.generatedAt,onchainSelectedAssetCount:m.authority.onchainSelectedAssetCount,icpUsd:icp.usd,icpSource:icp.source});
-          NODE
+          node intelligence/capital-state/unified-capital-market-data-guard.mjs
 
       - name: Refresh all coherent capital surfaces from canonical Market Data
         env:
@@ -142,8 +134,10 @@ jobs:
           if(!(Number(c.network?.networkTvlUsd)>0)||c.network?.networkTvlStatus!=='complete')throw new Error('Network TVL unavailable');
           if(c.authority?.executionAuthority!=='none'||pub.authority?.executionAuthority!=='none')throw new Error('authority drift');
           if(m.semantics?.browserExternalPriceRequestsAllowed!==false||m.semantics?.perAssetAuthoritySelectionApplied!==true||pub.semantics?.browserExternalPriceRequestsAllowed!==false)throw new Error('market price authority drift');
+          if(Number(m.authority?.unknownCount)!==0)throw new Error('Canonical Market Data contains UNKNOWN assets');
+          if(Number(m.authority?.onchainSelectedAssetCount)+Number(m.authority?.coingeckoSelectedAssetCount)!==26)throw new Error('Canonical Market Data selected-lane coverage drift');
           if(!Number.isFinite(Number(pub.funds?.defitea?.tvlUsd))||!Number.isFinite(Number(pub.funds?.defitea?.referenceAprPct)))throw new Error('Defitea Public Capital incomplete');
-          console.log('Unified Capital Refresh final validation PASS',{generatedAt:p.generatedAt,defiteaApr:d.aprLatest,defiteaAero:dca.units,defiteaFxn:dcf.units,yieldRingApr:y.aprLatest,networkTvl:c.network.networkTvlUsd,marketObservedAt:m.observedAt,icpUsd:icp.usd,icpSource:icp.source,company005Icp:icp5.units,company006Icp:icp6.units,publicDefiteaTvl:pub.funds.defitea.tvlUsd});
+          console.log('Unified Capital Refresh final validation PASS',{generatedAt:p.generatedAt,defiteaApr:d.aprLatest,defiteaAero:dca.units,defiteaFxn:dcf.units,yieldRingApr:y.aprLatest,networkTvl:c.network.networkTvlUsd,marketObservedAt:m.observedAt,onchainSelectedAssetCount:m.authority.onchainSelectedAssetCount,coingeckoFallbackAssetCount:m.authority.coingeckoSelectedAssetCount,icpUsd:icp.usd,icpSource:icp.source,company005Icp:icp5.units,company006Icp:icp6.units,publicDefiteaTvl:pub.funds.defitea.tvlUsd});
           NODE
           git diff --check
 
@@ -173,7 +167,7 @@ jobs:
               echo "Unified capital writer conflict; refusing to guess."
               exit 1
             fi
-            node -e "const fs=require('fs');const m=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));if(m.semantics?.perAssetAuthoritySelectionApplied!==true||Number(m.authority?.onchainSelectedAssetCount)!==26)throw new Error('Canonical Market Data lost during rebase');const icp=m.prices?.['internet-computer'];if(icp?.authority?.selectedLane!=='onchain'||!(Number(icp?.usd)>0))throw new Error('Canonical ICP onchain price lost during rebase');"
+            node intelligence/capital-state/unified-capital-market-data-guard.mjs
             NODE_OPTIONS='--import=${{ github.workspace }}/intelligence/market-data/coingecko-fetch-shim.mjs' \
             ETH_RPC_URL='${{ secrets.ETH_RPC_URL }}' \
             BASE_RPC_URL='${{ secrets.BASE_RPC_URL }}' \
