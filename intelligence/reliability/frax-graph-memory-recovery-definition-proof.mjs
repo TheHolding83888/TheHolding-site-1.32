@@ -3,9 +3,11 @@ import fs from 'node:fs';
 
 const recoveryPath='.github/workflows/resume-economic-graph-after-code-change.yml';
 const explanatoryPath='.github/workflows/update-explanatory-context.yml';
+const observerPath='.github/workflows/update-change-intelligence.yml';
 const liveVerifierPath='.github/workflows/verify-economic-graph-live-build.yml';
 const recovery=fs.readFileSync(recoveryPath,'utf8');
 const explanatory=fs.readFileSync(explanatoryPath,'utf8');
+const observer=fs.readFileSync(observerPath,'utf8');
 const liveVerifier=fs.readFileSync(liveVerifierPath,'utf8');
 
 function assert(condition,message){if(!condition)throw new Error(message);}
@@ -22,13 +24,20 @@ for(const required of [
   'Prove physical eight-protocol Graph and Frax ecosystem',
   'Rebuild Explanatory only after Graph materialization',
   'Prove exact Graph to Explanatory Frax handoff',
-  'Refresh canonical Cognitive Stack from proven Explanatory',
+  'Refresh Observer and System Memory before cognition',
+  'Prove fresh Observer and System Memory contract',
+  'Refresh canonical Cognitive Stack from proven Explanatory and Observer',
   'Prove Brain consumed Frax deep context',
   'Refresh Learning after Cognitive success',
   'Refresh Proposal Work Queue after Learning success',
   'Refresh Downstream Continuity after Proposal success',
   'Refresh Project Memory after downstream success',
   'Refresh Intelligence Progress after Project Memory success',
+  "change.sourceHealth?.allFresh!==true",
+  "change.bridge?.snapshotHash!==memory.snapshotHash",
+  "change.generatedAt!==memory.generatedAt",
+  "change.version!=='0.2.1-autonomous-change-intelligence-memory-vault'",
+  "memory.version!=='0.2.1-system-memory'",
   "eco.coverage?.surfaceCount)!==9",
   "eco.coverage?.measuredSurfaceCount)!==1",
   "eco.coverage?.sourceBoundUnknownSurfaceCount)!==8",
@@ -38,6 +47,9 @@ for(const required of [
   "eco.authority?.causalClaimAuthority!=='none'"
 ])assert(recovery.includes(required),`Recovery workflow contract missing: ${required}`);
 
+assert(observer.includes('workflow_dispatch:'),'Canonical Change Intelligence Observer lacks workflow_dispatch entrypoint');
+assert(observer.includes('intelligence/system-memory.json'),'Observer no longer materializes System Memory');
+assert(observer.includes('intelligence/change-intelligence.json'),'Observer no longer materializes Change Intelligence');
 assert(!/contents:\s*write/.test(recovery),'Recovery controller must not write repository contents directly');
 assert(!recovery.includes('gh workflow run unified-capital-refresh.yml --ref main'),'Recovery must not reintroduce redundant Unified Capital dispatch');
 
@@ -46,7 +58,9 @@ const ordered=[
   'Prove physical eight-protocol Graph and Frax ecosystem',
   'Rebuild Explanatory only after Graph materialization',
   'Prove exact Graph to Explanatory Frax handoff',
-  'Refresh canonical Cognitive Stack from proven Explanatory',
+  'Refresh Observer and System Memory before cognition',
+  'Prove fresh Observer and System Memory contract',
+  'Refresh canonical Cognitive Stack from proven Explanatory and Observer',
   'Prove Brain consumed Frax deep context',
   'Refresh Learning after Cognitive success',
   'Refresh Proposal Work Queue after Learning success',
@@ -67,17 +81,20 @@ assert(explanatory.includes("cancel-in-progress: ${{ github.event_name == 'pull_
 for(const required of [
   recoveryPath,
   explanatoryPath,
-  'Graph→Explanatory→Brain→Memory recovery order drift',
+  'Refresh Observer and System Memory before cognition',
+  'Refresh canonical Cognitive Stack from proven Explanatory and Observer',
   'Serialized non-cancellable recovery lane missing'
-])assert(liveVerifier.includes(required),`Live verifier is not bound to new recovery topology: ${required}`);
+])assert(liveVerifier.includes(required),`Live verifier is not bound to Observer-gated recovery topology: ${required}`);
 
-console.log('FRAX GRAPH→MEMORY WORKFLOW DEFINITION PROOF PASS',{
+console.log('FRAX GRAPH→OBSERVER→MEMORY WORKFLOW DEFINITION PROOF PASS',{
   recoveryPath,
   explanatoryPath,
+  observerPath,
   liveVerifierPath,
   graphModuleCoverage:'globbed',
   sourceRaceBlocked:true,
-  recoveryOrder:'Graph→Explanatory→Brain→Learning→Proposal→Downstream→Memory→Progress',
+  observerFreshnessGate:true,
+  recoveryOrder:'Graph→Explanatory→Observer→Brain→Learning→Proposal→Downstream→Memory→Progress',
   controllerContentsAuthority:'read-only',
   executionAuthority:'none'
 });
