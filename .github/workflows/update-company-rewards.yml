@@ -1,4 +1,5 @@
 name: Update Company Rewards
+# holding-workflow-definition-proof: intelligence/reliability/rewards-scheduler-workflow-definition-proof.mjs
 
 on:
   push:
@@ -17,9 +18,11 @@ on:
       - 'rewards/forty-acres-received-ledger.mjs'
       - 'rewards/liquity-v2-userproxy-overlay.mjs'
       - 'rewards/rewards-passport-hygiene.mjs'
+      - 'rewards/rewards-scheduler-contract.json'
+      - 'intelligence/reliability/rewards-scheduler-workflow-definition-proof.mjs'
       - '.github/workflows/update-company-rewards.yml'
   schedule:
-    - cron: '57 4 * * *'
+    - cron: '07 5 * * *'
   workflow_dispatch:
   workflow_run:
     workflows:
@@ -49,6 +52,12 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
+
+      - name: Verify Rewards scheduler contract
+        run: |
+          set -euo pipefail
+          node --check intelligence/reliability/rewards-scheduler-workflow-definition-proof.mjs
+          node intelligence/reliability/rewards-scheduler-workflow-definition-proof.mjs
 
       - name: Install runtime dependency
         run: npm install --no-save --no-package-lock ethers@6
