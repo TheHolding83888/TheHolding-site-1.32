@@ -45,9 +45,12 @@ jobs:
             intelligence/economic-graph/frax-ecosystem-sensor-canary.mjs
             intelligence/explanatory/explanatory-context.mjs
             intelligence/explanatory/vlcvx-votium-curve-shadow-context.mjs
+            intelligence/reliability/cognitive-freshness-guard.mjs
+            intelligence/reliability/cognitive-freshness-guard-canary.mjs
             .github/workflows/update-economic-graph.yml
             .github/workflows/update-explanatory-context.yml
             .github/workflows/update-change-intelligence.yml
+            .github/workflows/refresh-cognitive-stack.yml
           )
           for f in "${REQUIRED[@]}"; do test -s "$f"; done
           node --check intelligence/economic-graph/economic-graph-canonical-runner.mjs
@@ -56,6 +59,8 @@ jobs:
           node intelligence/economic-graph/frax-ecosystem-sensor-canary.mjs
           node --check intelligence/explanatory/explanatory-context.mjs
           node --check intelligence/explanatory/vlcvx-votium-curve-shadow-context.mjs
+          node --check intelligence/reliability/cognitive-freshness-guard.mjs
+          node intelligence/reliability/cognitive-freshness-guard-canary.mjs
 
       - name: Install ordered-dispatch helper
         shell: bash
@@ -65,9 +70,10 @@ jobs:
           set -euo pipefail
           workflow="$1"
           label="$2"
+          shift 2
           before_id="$(gh run list --workflow "$workflow" --branch main --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId // 0')"
           dispatched_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          gh workflow run "$workflow" --ref main
+          gh workflow run "$workflow" --ref main "$@"
           run_id=""
           for attempt in $(seq 1 60); do
             run_id="$(gh run list --workflow "$workflow" --branch main --event workflow_dispatch --limit 20 --json databaseId,createdAt --jq "[.[] | select((.databaseId|tostring) != \"${before_id}\" and .createdAt >= \"${dispatched_at}\")] | sort_by(.createdAt) | last | .databaseId // empty")"
@@ -154,31 +160,23 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: /tmp/dispatch-and-await.sh update-change-intelligence.yml 'Change Intelligence Observer'
 
-      - name: Prove fresh Observer and System Memory contract
+      - name: Prove dependency-scoped Observer and System Memory contract
         shell: bash
         run: |
           set -euo pipefail
           git fetch origin main
           git show origin/main:intelligence/change-intelligence.json > /tmp/change-intelligence.json
           git show origin/main:intelligence/system-memory.json > /tmp/system-memory.json
-          node - <<'NODE'
-          const fs=require('fs');
-          const change=JSON.parse(fs.readFileSync('/tmp/change-intelligence.json','utf8'));
-          const memory=JSON.parse(fs.readFileSync('/tmp/system-memory.json','utf8'));
-          if(change.version!=='0.2.1-autonomous-change-intelligence-memory-vault')throw new Error('Observer version drift');
-          if(memory.version!=='0.2.1-system-memory')throw new Error('System Memory version drift');
-          if(!change.bridge?.snapshotHash||change.bridge.snapshotHash!==memory.snapshotHash)throw new Error('Observer/System Memory snapshot mismatch');
-          if(change.generatedAt!==memory.generatedAt)throw new Error('Observer/System Memory generatedAt mismatch');
-          if(change.sourceHealth?.allFresh!==true)throw new Error('Observer still reports stale economic sources after explicit refresh');
-          const ageHours=(Date.now()-Date.parse(change.generatedAt))/3600000;
-          if(!Number.isFinite(ageHours)||ageHours<-.25||ageHours>1)throw new Error(`Observer refresh age invalid: ${ageHours}`);
-          console.log('OBSERVER + SYSTEM MEMORY PHYSICAL PASS',{generatedAt:change.generatedAt,ageHours:Number(ageHours.toFixed(3)),allFresh:change.sourceHealth.allFresh,snapshotHash:change.bridge.snapshotHash});
-          NODE
+          CHANGE_INTELLIGENCE_FILE=/tmp/change-intelligence.json \
+          SYSTEM_MEMORY_FILE=/tmp/system-memory.json \
+          node intelligence/reliability/cognitive-freshness-guard.mjs \
+            --scope economic-graph-recovery \
+            --max-observer-age-hours 1
 
       - name: Refresh canonical Cognitive Stack from proven Explanatory and Observer
         env:
           GH_TOKEN: ${{ github.token }}
-        run: /tmp/dispatch-and-await.sh refresh-cognitive-stack.yml 'Cognitive Stack'
+        run: /tmp/dispatch-and-await.sh refresh-cognitive-stack.yml 'Cognitive Stack' -f freshness_scope=economic-graph-recovery
 
       - name: Prove Brain consumed Frax deep context
         shell: bash
@@ -235,4 +233,4 @@ jobs:
           test -s /tmp/brain.json
           test -s /tmp/explanatory.json
           grep -q 'The Holding' /tmp/CURRENT.md
-          echo 'GRAPH → EXPLANATORY → OBSERVER → BRAIN → LEARNING → DOWNSTREAM → PROJECT MEMORY PHYSICAL PASS'
+          echo 'GRAPH → EXPLANATORY → SCOPED OBSERVER → BRAIN → LEARNING → DOWNSTREAM → PROJECT MEMORY PHYSICAL PASS'
