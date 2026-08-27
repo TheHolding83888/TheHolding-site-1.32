@@ -3,9 +3,19 @@ name: Update The Holding Reporting Data
 
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows:
+      - "Update Company Rewards"
+      - "Update Stable Capital"
+    types: [completed]
   push:
     branches: [main]
     paths:
+      - 'companies/rewards-data.json'
+      - 'companies/stable-index-data.json'
+      - 'companies/embedded-yield-ledger.json'
+      - 'companies/productivity-data.json'
+      - 'companies/defitea-canonical-state.json'
       - 'reporting/reporting-scheduler-contract.json'
       - 'reporting/reporting-scheduled-runner.mjs'
       - 'reporting/defitea-forty-acres-settlement.mjs'
@@ -14,9 +24,9 @@ on:
       - 'reporting/defitea-income-composition-validation.mjs'
       - '.github/workflows/update-reporting.yml'
   schedule:
-    # One daily reporting snapshot for Defitea + Monetra.
-    # Runs after the 04:57 UTC Rewards workflow, the 05:37 UTC Stable Capital
-    # workflow and the 06:07 UTC shared Market Data heartbeat.
+    # Fallback daily heartbeat. Primary freshness is event-driven from canonical
+    # Rewards / Stable Capital / Productivity materialization, so a delayed or
+    # skipped GitHub cron cannot silently freeze the reporting surface.
     - cron: '31 6 * * *'
 
 permissions:
@@ -28,12 +38,18 @@ concurrency:
 
 jobs:
   update-reporting:
+    if: >-
+      ${{
+        github.event_name != 'workflow_run' ||
+        (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+      }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
+          ref: main
           fetch-depth: 0
 
       - name: Setup Node
