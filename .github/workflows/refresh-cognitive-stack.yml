@@ -2,6 +2,15 @@ name: "The Holding Brain · Refresh Cognitive Stack"
 
 on:
   workflow_dispatch:
+    inputs:
+      freshness_scope:
+        description: "Freshness policy scope; global remains the default."
+        required: false
+        default: global
+        type: choice
+        options:
+          - global
+          - economic-graph-recovery
   workflow_run:
     workflows:
       - "The Holding · Explanatory Context"
@@ -25,7 +34,11 @@ jobs:
     if: >-
       ${{
         github.event_name != 'workflow_run' ||
-        (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+        (
+          github.event.workflow_run.conclusion == 'success' &&
+          github.event.workflow_run.head_branch == 'main' &&
+          github.event.workflow_run.event != 'workflow_dispatch'
+        )
       }}
     runs-on: ubuntu-latest
     timeout-minutes: 12
@@ -41,51 +54,19 @@ jobs:
           node-version: "22"
           package-manager-cache: false
 
-      - name: Verify autonomous daily Observer contract
+      - name: Verify Observer freshness contract for this cognitive lane
         env:
           COGNITIVE_TRIGGER: ${{ github.event_name }}
+          COGNITIVE_FRESHNESS_SCOPE: ${{ github.event_name == 'workflow_dispatch' && inputs.freshness_scope || 'global' }}
           AUTONOMOUS_OBSERVER_MAX_AGE_HOURS: "6"
         shell: bash
         run: |
           set -euo pipefail
-          node - <<'NODE'
-          const fs = require('fs');
-          const change = JSON.parse(fs.readFileSync('intelligence/change-intelligence.json', 'utf8'));
-          const memory = JSON.parse(fs.readFileSync('intelligence/system-memory.json', 'utf8'));
-          const trigger = process.env.COGNITIVE_TRIGGER || 'unknown';
-          const maxAgeHours = Number(process.env.AUTONOMOUS_OBSERVER_MAX_AGE_HOURS || 6);
-
-          if (change.version !== '0.2.1-autonomous-change-intelligence-memory-vault') {
-            throw new Error(`Unexpected Observer version: ${change.version}`);
-          }
-          if (memory.version !== '0.2.1-system-memory') {
-            throw new Error(`Unexpected System Memory version: ${memory.version}`);
-          }
-          if (!change.bridge?.snapshotHash || change.bridge.snapshotHash !== memory.snapshotHash) {
-            throw new Error('Observer / System Memory snapshot mismatch');
-          }
-          if (change.generatedAt !== memory.generatedAt) {
-            throw new Error('Observer / System Memory generatedAt mismatch');
-          }
-          if (change.sourceHealth?.allFresh !== true) {
-            throw new Error('Observer reports one or more underlying economic sources stale; refusing autonomous cognition');
-          }
-          const generatedMs = Date.parse(change.generatedAt);
-          const ageHours = (Date.now() - generatedMs) / 3600000;
-          if (!Number.isFinite(generatedMs) || !Number.isFinite(ageHours) || ageHours < -0.25) {
-            throw new Error('Observer generatedAt is invalid or materially in the future');
-          }
-          if (trigger === 'schedule' && ageHours > maxAgeHours) {
-            throw new Error(`Scheduled cognitive cycle requires Observer age <= ${maxAgeHours}h; current age=${ageHours.toFixed(2)}h`);
-          }
-          console.log('Autonomous Observer contract PASS', {
-            trigger,
-            observerGeneratedAt: change.generatedAt,
-            observerAgeHours: Number(ageHours.toFixed(3)),
-            allEconomicSourcesFresh: change.sourceHealth.allFresh,
-            snapshotHash: change.bridge.snapshotHash,
-          });
-          NODE
+          args=(--scope "$COGNITIVE_FRESHNESS_SCOPE")
+          if [ "$COGNITIVE_TRIGGER" = "schedule" ]; then
+            args+=(--max-observer-age-hours "$AUTONOMOUS_OBSERVER_MAX_AGE_HOURS")
+          fi
+          node intelligence/reliability/cognitive-freshness-guard.mjs "${args[@]}"
 
       - name: Preflight entire cognitive stack
         shell: bash
@@ -106,6 +87,8 @@ jobs:
             "intelligence/change-intelligence.json"
             "intelligence/system-memory.json"
             "intelligence/explanatory/explanatory-context.json"
+            "intelligence/reliability/cognitive-freshness-guard.mjs"
+            "intelligence/reliability/cognitive-freshness-guard-canary.mjs"
           )
           for f in "${REQUIRED[@]}"; do
             test -s "$f"
@@ -118,6 +101,8 @@ jobs:
           node --check intelligence/brain-upstream-guard.mjs
           node --check intelligence/cognitive-stack-verifier.mjs
           node --check intelligence/cognitive-release-guard.mjs
+          node --check intelligence/reliability/cognitive-freshness-guard.mjs
+          node intelligence/reliability/cognitive-freshness-guard-canary.mjs
 
           node intelligence/cognitive-release-guard.mjs
       - name: Refresh Security Sentinel state
@@ -271,7 +256,7 @@ jobs:
             canonicalCohorts: brain.currentPosture.protocolEconomics.cohortCount,
             shadowFlowContexts: brain.currentPosture.protocolFlows.contextCount,
             curveExecutedGaugeRows: flow.coverage.curveExecutedVotiumGaugeRows,
-            currentPoolContexts: flow.coverage.currentCurvePoolContextsComplete,
+            currentPoolContexts: flow.coverage.currentPoolContextsComplete,
             exactFeeUsd: flow.downstreamCurrentContext.exactFeeUsd,
             historyObservations: history.observationCount,
             snapshotHash: brain.bridge?.snapshotHash,
