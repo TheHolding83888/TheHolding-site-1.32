@@ -125,18 +125,40 @@ function realisedCandidates(realised,generatedAt){
 }
 
 function rewardStateRows(company){
-  const byKey=new Map();
+  const groups=new Map();
   for(const r of company?.rewards||[]){
     if(r?.includedInClaimableTotal===false)continue;
-    const route=String(r?.route||'').trim(),protocol=String(r?.protocol||'').trim(),token=String(r?.token||r?.symbol||'').trim(),wallet=String(r?.wallet||r?.details?.wallet||'').trim();
-    const routeKey=[route||protocol||'route-unknown',token||'token-unknown',wallet||'wallet-unknown'].map(x=>x.toLowerCase()).join(':');
+    const route=String(r?.route||'').trim();
+    const protocol=String(r?.protocol||'').trim();
+    const chain=String(r?.chain||r?.details?.chain||'').trim();
+    const token=String(r?.token||r?.symbol||'').trim();
+    const wallet=String(r?.wallet||r?.details?.wallet||'').trim();
+    const routeKey=[route||protocol||'route-unknown',protocol||'protocol-unknown',chain||'chain-unknown',token||'token-unknown',wallet||'wallet-unknown'].map(x=>x.toLowerCase()).join(':');
+    let g=groups.get(routeKey);
+    if(!g){
+      g={routeKey,route:route||null,protocol:protocol||null,chain:chain||null,token:r?.token||null,symbol:r?.symbol||null,wallet:wallet||null,shardCount:0,amountTotal:0,usdTotal:0,amountComplete:true,usdComplete:true,classifications:new Set(),sources:new Map()};
+      groups.set(routeKey,g);
+    }
+    g.shardCount++;
     const amount=finite(r?.amount),usd=finite(r?.usdValue);
-    const row={routeKey,route:route||null,protocol:protocol||null,token:r?.token||null,symbol:r?.symbol||null,wallet:wallet||null,classification:r?.classification||null,amount:Number.isFinite(amount)?round(amount,12):null,usdValue:Number.isFinite(usd)?round(usd,8):null,source:r?.source||null,includedInClaimableTotal:true,unknownIsNotZero:true};
-    const prior=byKey.get(routeKey);
-    if(prior&&stableStringify(prior)!==stableStringify(row))throw new Error(`Claimable state identity collision: ${routeKey}`);
-    byKey.set(routeKey,row);
+    if(Number.isFinite(amount))g.amountTotal+=amount;else g.amountComplete=false;
+    if(Number.isFinite(usd))g.usdTotal+=usd;else g.usdComplete=false;
+    if(r?.classification)g.classifications.add(String(r.classification));
+    if(r?.source!==null&&r?.source!==undefined){const k=stableStringify(r.source);g.sources.set(k,r.source);}
   }
-  return[...byKey.values()].sort((a,b)=>a.routeKey.localeCompare(b.routeKey));
+  return[...groups.values()].map(g=>{
+    const classifications=[...g.classifications].sort();
+    const sources=[...g.sources.entries()].sort(([a],[b])=>a.localeCompare(b)).map(([,v])=>v);
+    return{
+      routeKey:g.routeKey,route:g.route,protocol:g.protocol,chain:g.chain,token:g.token,symbol:g.symbol,wallet:g.wallet,
+      shardCount:g.shardCount,aggregation:g.shardCount>1?'same-mechanism-shards':'single-mechanism-shard',
+      classification:classifications.length===1?classifications[0]:null,classifications,
+      amount:g.amountComplete?round(g.amountTotal,12):null,amountComplete:g.amountComplete,
+      usdValue:g.usdComplete?round(g.usdTotal,8):null,usdValueComplete:g.usdComplete,
+      source:sources.length===1?sources[0]:null,sources,
+      includedInClaimableTotal:true,stateOnly:true,periodIncomeAuthority:false,realisedCashFlowAuthority:false,unknownIsNotZero:true
+    };
+  }).sort((a,b)=>a.routeKey.localeCompare(b.routeKey));
 }
 function continuityFor(previous,current,policy){
   const prev=new Map((previous?.rows||[]).map(x=>[x.routeKey,x])),cur=new Map((current?.rows||[]).map(x=>[x.routeKey,x]));
@@ -154,6 +176,11 @@ function continuityFor(previous,current,policy){
     return{routeKey,state,previousAmount:a?.amount??null,currentAmount:b?.amount??null,deltaAmount,previousUsdValue:a?.usdValue??null,currentUsdValue:b?.usdValue??null,deltaUsd,periodIncomeAuthority:false,realisedCashFlowAuthority:false,unknownIsNotZero:true};
   });
 }
+function retainSnapshotsPerCompany(values,max){
+  const groups=new Map();
+  for(const row of values){if(!row?.company)continue;if(!groups.has(row.company))groups.set(row.company,[]);groups.get(row.company).push(row);}
+  return[...groups.values()].flatMap(rows=>rows.sort((a,b)=>String(a.capturedAt).localeCompare(String(b.capturedAt))).slice(-max)).sort((a,b)=>String(a.capturedAt).localeCompare(String(b.capturedAt))||String(a.company).localeCompare(String(b.company)));
+}
 function buildClaimableSnapshots(previous,rewards,policy){
   const prior=Array.isArray(previous)?previous:[];
   if(!rewards?.generatedAt||!rewards?.companies||typeof rewards.companies!=='object')return{snapshots:prior,currentByCompany:{},continuity:{}};
@@ -165,7 +192,7 @@ function buildClaimableSnapshots(previous,rewards,policy){
     continuity[company]=continuityFor(priorCompany,snapshot,policy);byKey.set(snapshot.snapshotKey,snapshot);currentByCompany[company]=snapshot;
   }
   const max=Number(policy?.retention?.claimableSnapshots)||730;
-  return{snapshots:[...byKey.values()].sort((a,b)=>String(a.capturedAt).localeCompare(String(b.capturedAt))).slice(-max),currentByCompany,continuity};
+  return{snapshots:retainSnapshotsPerCompany([...byKey.values()],max),currentByCompany,continuity};
 }
 
 function eventMonth(e){if(e.family==='embedded-income'){const a=monthKey(e.periodStart),b=monthKey(e.periodEnd);return a&&a===b?b:null;}return monthKey(e.economicDate||e.periodEnd);}
@@ -195,13 +222,18 @@ function buildCompanies({events,currentByCompany,continuity,reporting,realised})
 async function build(){
   const generatedAt=new Date().toISOString();
   const [policyRaw,reporting,defiteaLedger,embedded,rewards,realised,previous]=await Promise.all([readJson(POLICY_FILE),readJson(REPORTING_FILE),readJson(DEFITEA_LEDGER_FILE),readJson(EMBEDDED_LEDGER_FILE),readJson(REWARDS_FILE),readJson(REALISED_FILE),readJson(OUTPUT_FILE,{})]);
-  const policy=validatePolicy(policyRaw),candidates=[...defiteaCandidates(defiteaLedger,generatedAt),...embeddedCandidates(embedded,generatedAt),...realisedCandidates(realised,generatedAt)],admitted=admitEvents(previous?.events,candidates),claimable=buildClaimableSnapshots(previous?.claimableSnapshots,rewards,policy),companies=buildCompanies({events:admitted.events,currentByCompany:claimable.currentByCompany,continuity:claimable.continuity,reporting,realised});
+  const policy=validatePolicy(policyRaw);
+  const candidates=[...defiteaCandidates(defiteaLedger,generatedAt),...embeddedCandidates(embedded,generatedAt),...realisedCandidates(realised,generatedAt)];
+  const priorEventCount=Array.isArray(previous?.events)?previous.events.length:0;
+  const admitted=admitEvents(previous?.events,candidates);
+  const claimable=buildClaimableSnapshots(previous?.claimableSnapshots,rewards,policy);
+  const companies=buildCompanies({events:admitted.events,currentByCompany:claimable.currentByCompany,continuity:claimable.continuity,reporting,realised});
   return{
     version:VERSION,methodologyVersion:METHODOLOGY_VERSION,policyVersion:policy.version,generatedAt,status:'partial',
-    semantics:{noCollapseRule:'Do not sum accrued entitlement + realised cash flow + embedded income + reference productivity into one income number without explicit non-overlap reconciliation.',claimableStateRule:'Current claimable balances and their deltas are state observations, not period-income or realised-cash-flow authority.',continuityRule:'Claims, reinvestment, transfers, source disappearance and protocol resets do not erase previously admitted income events. Ambiguous decreases become local reconciliation-needed states.',unknownIsNotZero:true,referenceAprCanBackfillEarnedIncome:false,stablePriceEffectSeparate:true},
+    semantics:{noCollapseRule:'Do not sum accrued entitlement + realised cash flow + embedded income + reference productivity into one income number without explicit non-overlap reconciliation.',claimableStateRule:'Current claimable balances and their deltas are state observations, not period-income or realised-cash-flow authority.',claimableShardRule:'Same-mechanism claimable rows may be aggregated as state only; if any shard lacks a numeric amount or USD value, that aggregate field remains UNKNOWN rather than treating the shard as zero.',continuityRule:'Claims, reinvestment, transfers, source disappearance and protocol resets do not erase previously admitted income events. Ambiguous decreases become local reconciliation-needed states.',unknownIsNotZero:true,referenceAprCanBackfillEarnedIncome:false,stablePriceEffectSeparate:true},
     sourceState:{reporting:{file:'reporting/reporting-data.json',version:reporting?.version||null,generatedAt:reporting?.generatedAt||null},defiteaIncomeLedger:{file:'reporting/defitea-income-ledger.json',version:defiteaLedger?.version||null,updatedAt:defiteaLedger?.updatedAt||null},embeddedYieldLedger:{file:'companies/embedded-yield-ledger.json',version:embedded?.version||null,generatedAt:embedded?.generatedAt||null},rewards:{file:'companies/rewards-data.json',version:rewards?.version||null,generatedAt:rewards?.generatedAt||null},realisedCashFlow:{file:'intelligence/realised-cash-flow/realised-cash-flow.json',version:realised?.version||null,generatedAt:realised?.generatedAt||null,overallCoverageComplete:realised?.methodology?.overallCoverageComplete===true}},
     events:admitted.events,claimableSnapshots:claimable.snapshots,companies,
-    run:{candidateEventCount:candidates.length,newEventsAdmitted:admitted.admitted,retainedHistoricalEventCount:Math.max(0,admitted.events.length-admitted.admitted),claimableSnapshotCount:claimable.snapshots.length},
+    run:{candidateEventCount:candidates.length,newEventsAdmitted:admitted.admitted,retainedHistoricalEventCount:priorEventCount,claimableSnapshotCount:claimable.snapshots.length},
     authority:{executionAuthority:'none',walletAuthority:'none',claimingAuthority:'none',capitalExecution:false,methodologyMutationAuthority:'none'}
   };
 }
