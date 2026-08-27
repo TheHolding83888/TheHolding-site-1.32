@@ -1,7 +1,7 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-27T20:37:23.334Z",
+  "generatedAt": "2026-08-27T20:42:06.958Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
@@ -13,7 +13,7 @@
   },
   "source": {
     "filesScanned": 708,
-    "bytesScanned": 18554069,
+    "bytesScanned": 18553939,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Thu, 20 Aug 2026 05:31:34 GMT",
+        "lastModified": "Wed, 26 Aug 2026 05:19:45 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -56,6 +56,36 @@
   },
   "whatChanged": {
     "newFindings": [
+      {
+        "id": "4595bc80711c4968da6abe352b6d5228a09a97866824784e5ce04414a7ef7e9b",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/verify-company-010-ve-rewards.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/verify-company-010-ve-rewards.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "e0b400d6feadd8a2fe163c99ee9cd400992f5dac5c9738354f5284d23d2b7ebd",
+          "currentSha256": "dc8f9453ae871c5d62df0c7a1def137589952d152526505ede7aa4a593590f81"
+        }
+      },
+      {
+        "id": "4f5bec121cc0c280188ee073b69ba40d2e621b916075787ae0253a88ff14fde0",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/verify-known-mechanism-reuse-parity.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/verify-known-mechanism-reuse-parity.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "bfda24ead7a83ccd30365d0a7df8b4b0b2fb89344631c11579385a46dca879e6",
+          "currentSha256": "9ecfe30313055790f1304addc54ce6b4ab918acfff88f170078717422c3a0755"
+        }
+      }
+    ],
+    "resolvedFindings": [
       {
         "id": "21755b75a23a4fd5db73aa1ce0d71d1a4181f5dd63feb402302ffe07a13fa7e4",
         "severity": "medium",
@@ -84,36 +114,6 @@
           "currentSha256": "6735aadb0aa432dc04d45218d2357f863d788af204ace0507ab53ce58b011947"
         }
       }
-    ],
-    "resolvedFindings": [
-      {
-        "id": "de013692a7eaae3531acd0aaf09b8dcb75f26026c54da8b162aab4fa558c06e5",
-        "severity": "medium",
-        "category": "critical-surface-change",
-        "file": ".github/workflows/validate-market-data-cadence-separation.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/validate-market-data-cadence-separation.yml.",
-        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-        "evidence": {
-          "previousSha256": "15de0ef4d13d0eae3bc9acf6b0dd61bfa183e969afb092515c70fdb161d22cd6",
-          "currentSha256": "4c2f05fbae9a9dbe5a4b7c776678cdae497406224c4d4cb8d17ead1aebd67dc7"
-        }
-      },
-      {
-        "id": "826e587fedffda60ad1ebdc60aaddd86c49d7ca7d1f59d62c6e4c444f0e73dfc",
-        "severity": "medium",
-        "category": "critical-surface-change",
-        "file": ".github/workflows/validate-onchain-market-data.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/validate-onchain-market-data.yml.",
-        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-        "evidence": {
-          "previousSha256": "1ae66cbf39312ca9cbda39caa83ec3e41034b6dbe52ba62e820c339cdf8c9e2a",
-          "currentSha256": "c4054e805c3c1c7cf6361cbffe168e6544a7b5d8da9f62eb980ff772fae71f75"
-        }
-      }
     ]
   },
   "currentFindings": [
@@ -140,31 +140,31 @@
       "evidence": null
     },
     {
-      "id": "21755b75a23a4fd5db73aa1ce0d71d1a4181f5dd63feb402302ffe07a13fa7e4",
+      "id": "4595bc80711c4968da6abe352b6d5228a09a97866824784e5ce04414a7ef7e9b",
       "severity": "medium",
       "category": "critical-surface-change",
-      "file": ".github/workflows/validate-ovr-onchain-market-data.yml",
+      "file": ".github/workflows/verify-company-010-ve-rewards.yml",
       "line": null,
       "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/validate-ovr-onchain-market-data.yml.",
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-company-010-ve-rewards.yml.",
       "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
       "evidence": {
-        "previousSha256": "3582d02030cda3c2c85d3f7ea3536768e53f7e07888e91623f8c48743e0525b3",
-        "currentSha256": "148d32c7e70bdfadb4b6ad1a9c67a857a2820385ceb88939a509eecaea929f58"
+        "previousSha256": "e0b400d6feadd8a2fe163c99ee9cd400992f5dac5c9738354f5284d23d2b7ebd",
+        "currentSha256": "dc8f9453ae871c5d62df0c7a1def137589952d152526505ede7aa4a593590f81"
       }
     },
     {
-      "id": "1783b6b4150afee1ea57725c588c218413e201b6e20e88c880312236db35f9d9",
+      "id": "4f5bec121cc0c280188ee073b69ba40d2e621b916075787ae0253a88ff14fde0",
       "severity": "medium",
       "category": "critical-surface-change",
-      "file": ".github/workflows/validate-productivity-overlay-order.yml",
+      "file": ".github/workflows/verify-known-mechanism-reuse-parity.yml",
       "line": null,
       "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/validate-productivity-overlay-order.yml.",
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-known-mechanism-reuse-parity.yml.",
       "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
       "evidence": {
-        "previousSha256": "2a236ccc4d7380b9831c3018271d92d5129e5770ef0caf7b434fef311ed198a2",
-        "currentSha256": "6735aadb0aa432dc04d45218d2357f863d788af204ace0507ab53ce58b011947"
+        "previousSha256": "bfda24ead7a83ccd30365d0a7df8b4b0b2fb89344631c11579385a46dca879e6",
+        "currentSha256": "9ecfe30313055790f1304addc54ce6b4ab918acfff88f170078717422c3a0755"
       }
     },
     {
@@ -472,12 +472,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "1be634d9e1ddf0300c814c3c5cc49578051b33876cee5090657766738cd1bfa7",
+    "snapshotHash": "9ed97a6b11efbe7b7d03ec44ad38e4ae4bdeab97b26e36ea0fb020d9aa3a6825",
     "securityVault": {
-      "runCount": 585,
+      "runCount": 586,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-27T20-37-23-334Z-1be634d9e1.json",
-      "latestRecordHash": "743ac3fdf4c9c2f1526118a2741539a99780f48679853beb8b01fe40428e3f50",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-27T20-42-06-958Z-9ed97a6b11.json",
+      "latestRecordHash": "fdf1d0cbef217b0c6792d4e38993630db56020ec29e66fa5db61b9b2b589879f",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
