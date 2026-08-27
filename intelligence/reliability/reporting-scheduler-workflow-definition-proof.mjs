@@ -34,6 +34,22 @@ assert.match(workflow,/node reporting\/reporting-scheduled-runner\.mjs --validat
 assert.match(workflow,/run: node reporting\/reporting-scheduled-runner\.mjs/,'Reporting production writer must execute the contract-bound runner');
 assert.doesNotMatch(workflow,/gh workflow run|workflow_dispatch\s*\(/,'Reporting workflow gained dispatch behavior');
 
+// Freshness cascade: canonical upstream writers may wake Reporting, but only a
+// successful run on main is admitted. Data-file push wakes are bounded to exact
+// canonical inputs already consumed by the Reporting job. Cron remains the
+// independent natural heartbeat and is not replaced by event-driven execution.
+assert.match(workflow,/workflow_run:\n\s+workflows:\n\s+- "Update Company Rewards"\n\s+- "Update Stable Capital"\n\s+types: \[completed\]/,'Reporting canonical workflow_run sources drift');
+assert.match(workflow,/github\.event\.workflow_run\.conclusion == 'success'/,'Reporting workflow_run success gate missing');
+assert.match(workflow,/github\.event\.workflow_run\.head_branch == 'main'/,'Reporting workflow_run main-branch gate missing');
+assert.match(workflow,/ref: main/,'Reporting must consume canonical main');
+for(const source of [
+  'companies/rewards-data.json',
+  'companies/stable-index-data.json',
+  'companies/embedded-yield-ledger.json',
+  'companies/productivity-data.json',
+  'companies/defitea-canonical-state.json'
+]) assert.ok(workflow.includes(`- '${source}'`),`Reporting freshness source missing: ${source}`);
+
 assert.match(runner,/reporting-scheduler-contract\.json/,'scheduled runner is not bound to scheduler contract');
 assert.match(runner,/reporting-engine\.mjs/,'scheduled runner is not bound to existing Reporting engine');
 assert.match(runner,/manualDispatchDoesNotProveSchedulerHealth/,'scheduled runner lost natural-schedule epistemic guard');
@@ -52,6 +68,8 @@ console.log('Reporting workflow definition paired proof PASS',{
   workflow:WORKFLOW_PATH,
   cron:contract.cron,
   dailySnapshotUtc:contract.dailySnapshotUtc,
+  workflowRunSources:['Update Company Rewards','Update Stable Capital'],
+  canonicalDataWakeCount:5,
   productionWriterPullRequestAuthority:false,
   workflowDispatchAuthority:false,
   concurrency:'reporting-daily/non-cancellable',
