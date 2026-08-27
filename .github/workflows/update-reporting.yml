@@ -14,7 +14,7 @@ on:
     # One daily reporting snapshot for Defitea + Monetra.
     # Runs after the 04:57 UTC Rewards workflow, the 05:37 UTC Stable Capital
     # workflow and the 06:07 UTC shared Market Data heartbeat.
-    - cron: '22 6 * * *'
+    - cron: '31 6 * * *'
 
 permissions:
   contents: write
@@ -34,7 +34,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '22'
 
@@ -43,17 +43,20 @@ jobs:
         run: |
           set -euo pipefail
           node --check reporting/reporting-engine.mjs
+          node --check reporting/reporting-scheduled-runner.mjs
           node --check reporting/reporting-engine-validation.mjs
           node --check reporting/defitea-income-composition.mjs
           node --check reporting/defitea-income-composition-validation.mjs
           node --check reporting/defitea-forty-acres-settlement.mjs
           node --check reporting/defitea-forty-acres-settlement-validation.mjs
+          test -s reporting/reporting-scheduler-contract.json
           test -s companies/defitea-canonical-state.json
           test -s companies/productivity-data.json
           test -s companies/rewards-data.json
           test -s intelligence/market-data/market-data.json
           test -s companies/stable-index-data.json
           test -s companies/embedded-yield-ledger.json
+          node reporting/reporting-scheduled-runner.mjs --validate-contract
           node reporting/reporting-engine-validation.mjs
           node reporting/defitea-income-composition-validation.mjs
           node reporting/defitea-forty-acres-settlement-validation.mjs
@@ -78,7 +81,7 @@ jobs:
           STABLE_INDEX_DATA_FILE: ./companies/stable-index-data.json
           EMBEDDED_LEDGER_FILE: ./companies/embedded-yield-ledger.json
           REPORTING_DATA_FILE: ./reporting/reporting-data.json
-        run: node reporting/reporting-engine.mjs
+        run: node reporting/reporting-scheduled-runner.mjs
 
       - name: Compose Defitea associated income + VoteMarket events
         env:
@@ -102,8 +105,10 @@ jobs:
           node - <<'NODE'
           const fs=require('fs');
           const r=JSON.parse(fs.readFileSync('reporting/reporting-data.json','utf8'));
+          const schedule=JSON.parse(fs.readFileSync('reporting/reporting-scheduler-contract.json','utf8'));
           if(r.version!=='1.2.0-defitea-canonical-market-data') throw new Error('unexpected reporting version '+r.version);
           if(r.schedule?.defiteaExternalPriceDiscovery!==false) throw new Error('Reporting external price discovery boundary missing');
+          if(r.schedule?.dailySnapshot!==schedule.dailySnapshotUtc||r.schedule?.cron!==schedule.cron||r.schedule?.contractVersion!==schedule.version||r.schedule?.contractSource!=='reporting/reporting-scheduler-contract.json') throw new Error('Reporting scheduler output metadata drift');
 
           const d=r.funds?.['defitea.eth'];
           if(!d) throw new Error('Defitea reporting missing');

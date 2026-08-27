@@ -5,6 +5,8 @@ on:
     paths:
       - 'reporting/reporting-engine.mjs'
       - 'reporting/reporting-engine-validation.mjs'
+      - 'reporting/reporting-scheduler-contract.json'
+      - 'reporting/reporting-scheduled-runner.mjs'
       - 'reporting/defitea-income-composition.mjs'
       - 'reporting/defitea-income-composition-validation.mjs'
       - 'reporting/defitea-forty-acres-settlement.mjs'
@@ -35,11 +37,14 @@ jobs:
         run: |
           set -euo pipefail
           node --check reporting/reporting-engine.mjs
+          node --check reporting/reporting-scheduled-runner.mjs
           node --check reporting/reporting-engine-validation.mjs
           node --check reporting/defitea-income-composition.mjs
           node --check reporting/defitea-income-composition-validation.mjs
           node --check reporting/defitea-forty-acres-settlement.mjs
           node --check reporting/defitea-forty-acres-settlement-validation.mjs
+          test -s reporting/reporting-scheduler-contract.json
+          node reporting/reporting-scheduled-runner.mjs --validate-contract
           node reporting/reporting-engine-validation.mjs
           node reporting/defitea-income-composition-validation.mjs
           node reporting/defitea-forty-acres-settlement-validation.mjs
@@ -58,7 +63,7 @@ jobs:
           STABLE_INDEX_DATA_FILE=./companies/stable-index-data.json \
           EMBEDDED_LEDGER_FILE=./companies/embedded-yield-ledger.json \
           REPORTING_DATA_FILE=/tmp/reporting-data.json \
-          node reporting/reporting-engine.mjs
+          node reporting/reporting-scheduled-runner.mjs
           PRODUCTIVITY_DATA_FILE=./companies/productivity-data.json \
           REWARDS_DATA_FILE=./companies/rewards-data.json \
           REPORTING_DATA_FILE=/tmp/reporting-data.json \
@@ -72,8 +77,10 @@ jobs:
           const fs=require('fs');
           const r=JSON.parse(fs.readFileSync('/tmp/reporting-data.json','utf8'));
           const l=JSON.parse(fs.readFileSync('/tmp/defitea-income-ledger.json','utf8'));
+          const schedule=JSON.parse(fs.readFileSync('reporting/reporting-scheduler-contract.json','utf8'));
           const d=r.funds?.['defitea.eth'];
           if(r.version!=='1.2.0-defitea-canonical-market-data') throw new Error('version drift');
+          if(r.schedule?.dailySnapshot!==schedule.dailySnapshotUtc||r.schedule?.cron!==schedule.cron||r.schedule?.contractVersion!==schedule.version||r.schedule?.contractSource!=='reporting/reporting-scheduler-contract.json') throw new Error('scheduler contract runtime binding failed');
           if(d?.latestSnapshot?.positionCount!==11||d?.latestSnapshot?.rateCoveredPositionCount!==11||d?.latestSnapshot?.coverage!==1) throw new Error('Defitea 11/11 runtime proof failed');
           if(d?.latestSnapshot?.priceAuthority!=='canonical-selected-market-data') throw new Error('canonical Market Data runtime binding failed');
           if(d?.vlCvxReconciliation?.claimableSettlementAddedToReferenceCashFlow!==false) throw new Error('vlCVX additive-double-count guard failed');
@@ -98,6 +105,8 @@ jobs:
             if(!(Number(current.fortyAcresReceivedIncomeUsd)>0)||!(Number(current.fortyAcresReplacedReferenceCashFlowUsd)>0)) throw new Error('40 Acres Received/replacement values missing');
           }
           console.log('Reporting + Defitea 40 Acres candidate runtime PASS',{
+            schedulerCron:schedule.cron,
+            schedulerSnapshot:schedule.dailySnapshotUtc,
             defiteaTvlUsd:d.latestSnapshot.totalValueUsd,
             contributorEntries:(l.contributorDaily||[]).length,
             voteMarketEvents:vm.length,
@@ -115,14 +124,19 @@ jobs:
           node - <<'NODE'
           const fs=require('fs');
           const engine=fs.readFileSync('reporting/reporting-engine.mjs','utf8');
+          const runner=fs.readFileSync('reporting/reporting-scheduled-runner.mjs','utf8');
           const composition=fs.readFileSync('reporting/defitea-income-composition.mjs','utf8');
           const settlement=fs.readFileSync('reporting/defitea-forty-acres-settlement.mjs','utf8');
           const workflow=fs.readFileSync('.github/workflows/update-reporting.yml','utf8');
+          const schedule=JSON.parse(fs.readFileSync('reporting/reporting-scheduler-contract.json','utf8'));
           for(const bad of ['api.coingecko.com/api/v3/simple/price','COINGECKO_API_KEY','getCoinGeckoPrices(','COMPANY_PAGE_FILE','parseCompanyBook(']){
-            if(engine.includes(bad)||composition.includes(bad)||settlement.includes(bad)||workflow.includes(bad)) throw new Error('independent Reporting price discovery remains: '+bad);
+            if(engine.includes(bad)||runner.includes(bad)||composition.includes(bad)||settlement.includes(bad)||workflow.includes(bad)) throw new Error('independent Reporting price discovery remains: '+bad);
           }
           for(const bad of ['sendTransaction(','new Wallet(','claimTransactionAuthority: true','executionAuthority: write']){
-            if(engine.includes(bad)||composition.includes(bad)||settlement.includes(bad)) throw new Error('unexpected Reporting authority expansion: '+bad);
+            if(engine.includes(bad)||runner.includes(bad)||composition.includes(bad)||settlement.includes(bad)) throw new Error('unexpected Reporting authority expansion: '+bad);
+          }
+          for(const key of ['repositoryMutationAuthority','workflowDispatchAuthority','capitalExecution','walletAuthority','methodologyMutationAuthority']){
+            if(schedule.authority?.[key]!==false) throw new Error('scheduler authority expansion: '+key);
           }
           console.log('Reporting authority boundary PASS');
           NODE
