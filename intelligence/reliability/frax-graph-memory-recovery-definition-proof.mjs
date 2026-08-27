@@ -79,8 +79,8 @@ for(const required of [
 ])assert(freshnessGuard.includes(required),`Freshness guard contract missing: ${required}`);
 for(const required of [
   'global stale reporting',
-  'graph dependency stale productivity',
-  'graph dependency stale rewards',
+  "for (const key of ['productivity', 'rewards'])",
+  'graph dependency stale ${key}',
   'snapshot mismatch',
   'observer age',
   'unknown scope'
