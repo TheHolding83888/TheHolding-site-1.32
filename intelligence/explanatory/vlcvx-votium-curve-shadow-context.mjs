@@ -1,19 +1,26 @@
 #!/usr/bin/env node
 /**
- * The Holding · Explanatory shadow context · vlCVX/Votium → Curve v0.1
+ * The Holding · Explanatory protocol context compatibility bridge v0.2
  *
- * Deterministic post-build extension over the canonical Explanatory Context.
- * It exposes the already-proven Economic Graph shadow candidate without turning
- * it into a third canonical protocol-economic cohort or adding causal authority.
+ * Retains the established vlCVX/Votium → Curve shadow context contract and now
+ * also exposes the full Protocol Intelligence Lifecycle plus the Frax ecosystem
+ * sensor family already materialized in the exact Economic Graph bytes.
+ *
+ * Canonical APR cohorts remain exactly f(x) + Curve. Lifecycle/deep contexts are
+ * read-only extensions: they do not become canonical APR cohorts and do not gain
+ * causal, recommendation, allocation, promotion or execution authority.
  */
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 
 export const VLCVX_EXPLANATORY_EXTENSION_VERSION='0.1-vlcvx-votium-curve-shadow-context';
+export const PROTOCOL_LIFECYCLE_EXPLANATORY_EXTENSION_VERSION='0.1-protocol-lifecycle-frax-ecosystem-context';
 const GRAPH='intelligence/economic-graph/economic-graph.json';
 const OUT=process.env.EXPLANATORY_CONTEXT_FILE||'intelligence/explanatory/explanatory-context.json';
 const CANDIDATE_ID='defitea-convex-vlcvx-votium';
+const FRAX_PROTOCOL_ID='registry-frax-vefrax';
+const FRAX_ECOSYSTEM_ID='registry-frax-ecosystem';
 
 function fail(message){throw new Error(message);}
 function sha256(bytes){return crypto.createHash('sha256').update(bytes).digest('hex');}
@@ -89,6 +96,56 @@ export function buildVlCvxVotiumCurveShadowContext({graph,graphSha256}){
   };
 }
 
+function lifecycleSummary(graph){
+  const lifecycle=graph?.protocolLifecycle;
+  if(lifecycle?.version!=='0.1-protocol-intelligence-lifecycle')fail('Protocol lifecycle unavailable for Explanatory context');
+  if(lifecycle?.authority?.executionAuthority!=='none'||lifecycle?.authority?.causalClaimAuthority!=='none')fail('Protocol lifecycle authority drift');
+  const protocols=lifecycle?.protocols||{};
+  if(Number(lifecycle?.summary?.protocolCount||Object.keys(protocols).length)!==8||Object.keys(protocols).length!==8)fail('Expected eight protocol lifecycle sensors');
+  return Object.fromEntries(Object.entries(protocols).map(([id,p])=>[id,{
+    protocolId:id,
+    protocol:p?.protocol??null,
+    mechanism:p?.mechanism??null,
+    maturityStage:p?.maturityStage??null,
+    status:p?.status??null,
+    longitudinalEvidence:p?.longitudinalEvidence??null,
+    blockers:p?.blockers??[],
+    nextUnlock:p?.nextUnlock??null,
+    authority:{
+      executionAuthority:p?.authority?.executionAuthority??'none',
+      causalClaimAuthority:p?.authority?.causalClaimAuthority??'none',
+      promotionAuthority:p?.authority?.promotionAuthority??'none'
+    }
+  }]));
+}
+
+function buildFraxEcosystemContext({graph,graphSha256}){
+  const evidence=graph?.protocolEvidence?.[FRAX_ECOSYSTEM_ID];
+  const observation=evidence?.latest?.observation;
+  const fraxLifecycle=graph?.protocolLifecycle?.protocols?.[FRAX_PROTOCOL_ID];
+  if(!evidence||!observation||!fraxLifecycle)fail('Frax ecosystem evidence unavailable');
+  if(observation?.version!=='0.1-frax-deep-ecosystem-sensor-family')fail('Unexpected Frax ecosystem version');
+  if(observation?.protocolId!==FRAX_PROTOCOL_ID||fraxLifecycle?.maturityStage!==observation?.lifecycleStage)fail('Frax ecosystem/lifecycle identity drift');
+  if(Number(observation?.coverage?.surfaceCount)!==9||Number(observation?.coverage?.measuredSurfaceCount)!==1||Number(observation?.coverage?.sourceBoundUnknownSurfaceCount)!==8)fail('Frax ecosystem coverage drift');
+  if(observation?.epistemic?.executionAuthority!=='none'||observation?.authority?.executionAuthority!=='none'||observation?.authority?.causalClaimAuthority!=='none')fail('Frax ecosystem authority drift');
+  if(!String(observation?.epistemic?.revenueToVeFraxAprCausality||'').startsWith('UNKNOWN')||!String(observation?.epistemic?.treasuryYieldToSpecificFxPoolIncentive||'').startsWith('UNKNOWN'))fail('Frax ecosystem causal boundary weakened');
+  return {
+    contextId:FRAX_ECOSYSTEM_ID,
+    protocolId:FRAX_PROTOCOL_ID,
+    status:observation.status,
+    lifecycleStage:observation.lifecycleStage,
+    scope:observation.scope,
+    coverage:observation.coverage,
+    surfaces:observation.surfaces,
+    relationshipGraph:observation.relationshipGraph,
+    epistemic:observation.epistemic,
+    nextMeasurementUnlocks:observation.nextMeasurementUnlocks,
+    explanation:'Frax is now represented as one lifecycle sensor with a nine-surface ecosystem family: veFRAX governance is currently measured; Fraxtal/Flox/FXTL, frxUSD/sfrxUSD, FraxNet, Fraxlend, Fraxswap/BAMM, FXB, FX liquidity and end-to-end revenue routing are source-bound but remain UNKNOWN for current economic values until reproducible ingestion exists. This prevents source topology from being mistaken for measurement or causality.',
+    provenance:{economicGraphFile:GRAPH,graphSha256,observationId:observation.id,evidenceVersion:evidence.version},
+    authority:observation.authority
+  };
+}
+
 export function applyVlCvxVotiumCurveShadowContext({root=process.cwd()}={}){
   process.chdir(root);
   const graphState=read(GRAPH);
@@ -99,15 +156,32 @@ export function applyVlCvxVotiumCurveShadowContext({root=process.cwd()}={}){
   if(explanatory?.sourceState?.economicGraph?.sha256!==graphState.sha256)fail('Canonical Explanatory exact Economic Graph binding is stale');
 
   const context=buildVlCvxVotiumCurveShadowContext({graph:graphState.json,graphSha256:graphState.sha256});
-  explanatory.extensions={...(explanatory.extensions??{}),vlCvxVotiumCurve:VLCVX_EXPLANATORY_EXTENSION_VERSION};
-  explanatory.coverage={...(explanatory.coverage??{}),shadowProtocolFlowContextCount:1,shadowProtocolFlowContextIds:[CANDIDATE_ID]};
+  const lifecycleContexts=lifecycleSummary(graphState.json);
+  const fraxEcosystem=buildFraxEcosystemContext({graph:graphState.json,graphSha256:graphState.sha256});
+  explanatory.extensions={
+    ...(explanatory.extensions??{}),
+    vlCvxVotiumCurve:VLCVX_EXPLANATORY_EXTENSION_VERSION,
+    protocolLifecycle:PROTOCOL_LIFECYCLE_EXPLANATORY_EXTENSION_VERSION
+  };
+  explanatory.coverage={
+    ...(explanatory.coverage??{}),
+    shadowProtocolFlowContextCount:1,
+    shadowProtocolFlowContextIds:[CANDIDATE_ID],
+    protocolLifecycleContextCount:Object.keys(lifecycleContexts).length,
+    deepProtocolEcosystemContextCount:1,
+    deepProtocolEcosystemContextIds:[FRAX_ECOSYSTEM_ID]
+  };
   explanatory.semantics={
     ...(explanatory.semantics??{}),
-    shadowFlowRule:'Shadow cross-protocol flow contexts may expose proven mechanics and measured temporal context without becoming canonical APR cohorts or authorizing causal, recommendation, allocation or execution claims.'
+    shadowFlowRule:'Shadow cross-protocol flow contexts may expose proven mechanics and measured temporal context without becoming canonical APR cohorts or authorizing causal, recommendation, allocation or execution claims.',
+    lifecycleContextRule:'Protocol lifecycle and deep ecosystem contexts remain read-only intelligence surfaces. They do not change canonical APR cohort count or gain promotion/execution authority.',
+    sourceReadinessRule:'An official source contract, documented mechanism or known address is not a current measurement. Missing current ingestion remains UNKNOWN.'
   };
   explanatory.explanations={
     ...(explanatory.explanations??{}),
-    protocolFlowContexts:{[CANDIDATE_ID]:context}
+    protocolFlowContexts:{[CANDIDATE_ID]:context},
+    protocolLifecycleContexts:lifecycleContexts,
+    protocolEcosystemContexts:{[FRAX_ECOSYSTEM_ID]:fraxEcosystem}
   };
   explanatory.answerability={
     ...(explanatory.answerability??{}),
@@ -115,12 +189,23 @@ export function applyVlCvxVotiumCurveShadowContext({root=process.cwd()}={}){
     'what-current-curve-pool-context-exists-for-votium-gauges':'answerable-by-complete-current-temporal-context',
     'exact-curve-pool-fee-usd-for-votium-gauges':'unknown-selected-official-endpoints-do-not-expose-exact-fee-usd',
     'did-votium-incentives-cause-vlcvx-votes':'blocked-causal-link-unproven',
-    'did-vlcvx-votes-cause-current-curve-pool-outcomes':'blocked-causal-link-unproven'
+    'did-vlcvx-votes-cause-current-curve-pool-outcomes':'blocked-causal-link-unproven',
+    'what-protocol-sensors-are-live':'answerable-by-eight-protocol-lifecycle-context',
+    'what-frax-ecosystem-surfaces-are-tracked':'answerable-by-deep-frax-ecosystem-context',
+    'which-frax-ecosystem-values-are-currently-measured':'answerable-with-measured-vs-source-bound-unknown-separation',
+    'did-frax-protocol-revenue-cause-current-vefrax-apr':'blocked-causal-link-unproven',
+    'does-treasury-yield-fund-specific-fx-pool-incentives':'blocked-accounting-link-unproven'
   };
   fs.writeFileSync(OUT,JSON.stringify(explanatory,null,2)+'\n');
-  console.log('EXPLANATORY VLCVX VOTIUM CURVE SHADOW CONTEXT PASS',{
+  console.log('EXPLANATORY PROTOCOL LIFECYCLE + FRAX ECOSYSTEM CONTEXT PASS',{
     canonicalCohorts:explanatory.coverage.protocolEconomicCohortCount,
     shadowFlowContexts:explanatory.coverage.shadowProtocolFlowContextCount,
+    lifecycleContexts:explanatory.coverage.protocolLifecycleContextCount,
+    deepEcosystemContexts:explanatory.coverage.deepProtocolEcosystemContextCount,
+    fraxStage:fraxEcosystem.lifecycleStage,
+    fraxSurfaces:fraxEcosystem.coverage.surfaceCount,
+    fraxMeasuredSurfaces:fraxEcosystem.coverage.measuredSurfaceCount,
+    fraxUnknownSurfaces:fraxEcosystem.coverage.sourceBoundUnknownSurfaceCount,
     gaugeMatches:context.coverage.onchainVotiumGaugesExactMatched,
     curveExecuted:context.coverage.curveExecutedVotiumGaugeRows,
     currentPools:context.coverage.currentCurvePoolContextsComplete,
