@@ -436,10 +436,10 @@
     ]
   },
   "productivity": {
-    "status": "partial",
+    "status": "complete",
     "knownProductiveValueUsd": 2778.64,
-    "currentlyAprCoveredValueUsd": 2375.17,
-    "coverage": 0.854796,
+    "currentlyAprCoveredValueUsd": 2778.64,
+    "coverage": 1,
     "positions": [
       {
         "id": "convex_vlcvx",
@@ -544,13 +544,13 @@
         "label": "Project X · WHYPE-USDC",
         "quantity": 1,
         "valueUsd": 263.52,
-        "referenceAprPct": null,
-        "status": "warming",
-        "source": "current economically active Project X WHYPE-USDC NFT set",
-        "referenceMetric": null,
+        "referenceAprPct": 74.474217,
+        "status": "measured",
+        "source": "Project X canonical onchain collect.staticCall observation history",
+        "referenceMetric": "Project X observed collectible fee APR · trailing stable-window",
         "incomeMode": "separate-claimable-fees",
         "claimableApplicable": true,
-        "methodology": "Fee tier is not yield. APR stays Pending until a reproducible first-party yield time series is bound."
+        "methodology": "Annualized growth of collectible WHYPE+USDC fees over an unchanged dynamic active-NFT strategy fingerprint; endpoint-average token prices and strategy NAV; fee tier is never used as yield."
       }
     ],
     "rule": "Unknown Reference APR is excluded, never treated as 0%."
@@ -678,14 +678,7 @@
       }
     ]
   },
-  "gaps": [
-    {
-      "id": "project-x-reference-apr",
-      "severity": "productivity",
-      "status": "warming",
-      "meaning": "Current economically active Project X WHYPE-USDC NFTs have complete principal and claimable-fee measurement; Reference APR remains Pending."
-    }
-  ],
+  "gaps": [],
   "provenance": {
     "closure": {
       "version": "0.4.1-company-010-economic-closure-reviewed",
@@ -760,6 +753,15 @@
       ],
       "source": "Convex official CvxCrvUtilities accountRewardRates + accountExtraRewardRates; DeFiLlama contract prices",
       "executionAuthority": "none"
+    },
+    "projectXReferenceApr": {
+      "version": "0.2-projectx-dynamic-active-set-observed-fee-reference-apr",
+      "historyFile": "companies/company-010-projectx-rate-history.json",
+      "metric": "Project X observed collectible fee APR · trailing stable-window",
+      "minimumWindowHours": 24,
+      "maximumWindowHours": 168,
+      "activeNftCount": 1,
+      "generatedAt": "2026-08-27T15:33:46.918Z"
     }
   },
   "epistemicBoundary": {
@@ -787,7 +789,11 @@
     "projectXUsdcIsPartOfStrategyNav": true,
     "projectXClaimableFeesAreNotPrincipal": true,
     "projectXFeeTierIsNotApr": true,
-    "multiLegResolvedMustPromoteAllEconomicLegs": true
+    "multiLegResolvedMustPromoteAllEconomicLegs": true,
+    "projectXReferenceAprUsesObservedFeeGrowth": true,
+    "projectXAprResetsOnStrategyChangeOrClaim": true,
+    "projectXAprTracksDynamicActiveNftSet": true,
+    "projectXAprMinimumStableWindowHours": 24
   },
   "authority": {
     "readOnly": true,
@@ -1180,10 +1186,19 @@
         "source": "collect.staticCall across the current economically active NFT set"
       },
       "yield": {
-        "status": "warming",
-        "referenceAprPct": null,
-        "publicStatus": "APR Pending",
-        "reason": "Fee tier is not yield; no reproducible first-party Project X Reference APR time series has been proven."
+        "status": "measured",
+        "referenceAprPct": 74.474217,
+        "publicStatus": "APR 74.47%",
+        "referenceMetric": "Project X observed collectible fee APR · trailing stable-window",
+        "source": "Project X canonical onchain collect.staticCall observation history",
+        "periodStart": "2026-08-24T05:26:41.891Z",
+        "periodEnd": "2026-08-27T15:33:16.303Z",
+        "windowHours": 82.1096,
+        "feeDeltaUsd": 1.82520076,
+        "averageNavUsd": 261.645,
+        "methodology": "Annualized growth of collectible WHYPE+USDC fees over an unchanged dynamic active-NFT strategy fingerprint; endpoint-average token prices and strategy NAV; fee tier is never used as yield.",
+        "claimableApplicable": true,
+        "incomeMode": "separate-claimable-fees"
       },
       "accountingBoundary": {
         "multiLegPrincipalComplete": true,
