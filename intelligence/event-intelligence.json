@@ -1,8 +1,8 @@
 {
   "version": "0.1-operating-event-intelligence",
   "engineVersion": "0.1-source-backed-event-synthesizer",
-  "generatedAt": "2026-08-26T07:29:14.154Z",
-  "status": "watch",
+  "generatedAt": "2026-08-27T17:46:44.354Z",
+  "status": "ok",
   "purpose": "Source-backed operating event telemetry for The Holding console and future Curators.",
   "authority": {
     "executionAuthority": "none",
@@ -121,25 +121,1207 @@
     ]
   },
   "sourceHealth": {
-    "status": "watch",
+    "status": "fresh",
     "reporting": {
-      "generatedAt": "2026-08-24T07:32:25.250Z",
-      "ageHours": 47.95,
+      "generatedAt": "2026-08-27T17:19:42.170Z",
+      "ageHours": 0.45,
       "maxAgeHours": 36,
-      "sha256": "cc76da8c8c5e5fb0e4b90b968b22a88d0647404ffc79e46cf267cd23b215358c"
+      "sha256": "5ddf59958d35fbb18ac722608b0a39cfb5259e3ee5da063cbe03ff28bdf94ef0"
     },
     "changeHistory": {
-      "generatedAt": "2026-08-26T07:24:07.699Z",
-      "ageHours": 0.09,
+      "generatedAt": "2026-08-27T17:46:21.337Z",
+      "ageHours": 0.01,
       "maxAgeHours": 36,
-      "sha256": "4905d4b3c7dd701663a39360f9190eec341173ec7513f56d0f52ee7aedbb8eec"
+      "sha256": "c3c085b793e8827e7615409ff5e7b96ae84d9e1d2eb556c6ffff10bfb39ea8e1"
     }
   },
   "feed": {
     "itemCount": 80,
-    "totalDerivedFromAvailableHistory": 334,
+    "totalDerivedFromAvailableHistory": 381,
     "maxItems": 80,
     "items": [
+      {
+        "id": "EV-981e2b0a4e5d389eeabe",
+        "type": "observer-material-change",
+        "mode": "measured",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "reporting",
+        "headline": "reporting source version changed 1.2.0-defitea-canonical-market-data → 1.2.1-resilient-rate-coverage.",
+        "detail": "A source/schema version change can unlock new capabilities or alter downstream assumptions and should be observed explicitly.",
+        "severity": "important",
+        "source": {
+          "kind": "change-history",
+          "eventId": "b2cd1bc85b6a95f1e98a",
+          "sourceKeys": [
+            "reporting"
+          ]
+        },
+        "metrics": {
+          "category": "system",
+          "metric": "source-version",
+          "previous": "1.2.0-defitea-canonical-market-data",
+          "current": "1.2.1-resilient-rate-coverage"
+        },
+        "attribution": null
+      },
+      {
+        "id": "EV-1ddb7b4c119e5485f854",
+        "type": "observer-material-change",
+        "mode": "measured",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "Cypher",
+        "headline": "Cypher Rewards status changed ok → partial.",
+        "detail": "Reward measurement completeness affects the reliability of current earned-but-unclaimed value.",
+        "severity": "watch",
+        "source": {
+          "kind": "change-history",
+          "eventId": "4f98541bd42d6739430a",
+          "sourceKeys": [
+            "rewards"
+          ]
+        },
+        "metrics": {
+          "category": "rewards",
+          "metric": "status",
+          "previous": "ok",
+          "current": "partial"
+        },
+        "attribution": null
+      },
+      {
+        "id": "EV-96d4652bb17ccd5e6ce7",
+        "type": "observer-material-change",
+        "mode": "measured",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "Cypher",
+        "headline": "Cypher Rewards completeness changed: pending routes 0 → 1, unpriced 0 → 0.",
+        "detail": "Completeness improvements turn previously partial observations into reusable verified intelligence.",
+        "severity": "watch",
+        "source": {
+          "kind": "change-history",
+          "eventId": "8f444799c1828ac61206",
+          "sourceKeys": [
+            "rewards"
+          ]
+        },
+        "metrics": {
+          "category": "rewards",
+          "metric": "completeness",
+          "previous": {
+            "pendingRoutes": 0,
+            "unpricedRewards": 0
+          },
+          "current": {
+            "pendingRoutes": 1,
+            "unpricedRewards": 0
+          }
+        },
+        "attribution": null
+      },
+      {
+        "id": "EV-04acb3d185bbe352a242",
+        "type": "reward-usd-milestone",
+        "mode": "derived",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "0x5860...83CA8.eth",
+        "headline": "0x5860...83CA8.eth rewards crossed $120",
+        "detail": "Accrued reward value moved $118.87 → $138.34 and crossed the $120 milestone.",
+        "severity": "info",
+        "source": {
+          "kind": "change-history",
+          "eventId": "17eef3bb4bad49449c33",
+          "sourceKeys": [
+            "rewards"
+          ]
+        },
+        "metrics": {
+          "previousUsd": 118.865208,
+          "currentUsd": 138.340837,
+          "milestoneUsd": 120
+        },
+        "attribution": {
+          "status": "not-separated",
+          "note": "Current lane cannot yet separate newly accrued reward units from reward-token price effect for this crossing."
+        }
+      },
+      {
+        "id": "EV-f0f72cbd4cf1cf8d49e8",
+        "type": "reward-usd-milestone",
+        "mode": "derived",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "0x5860...83CA8.eth",
+        "headline": "0x5860...83CA8.eth rewards crossed $130",
+        "detail": "Accrued reward value moved $118.87 → $138.34 and crossed the $130 milestone.",
+        "severity": "info",
+        "source": {
+          "kind": "change-history",
+          "eventId": "17eef3bb4bad49449c33",
+          "sourceKeys": [
+            "rewards"
+          ]
+        },
+        "metrics": {
+          "previousUsd": 118.865208,
+          "currentUsd": 138.340837,
+          "milestoneUsd": 130
+        },
+        "attribution": {
+          "status": "not-separated",
+          "note": "Current lane cannot yet separate newly accrued reward units from reward-token price effect for this crossing."
+        }
+      },
+      {
+        "id": "EV-0317b73a7dad3b8b6088",
+        "type": "reward-usd-milestone",
+        "mode": "derived",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "1milliondollar.eth",
+        "headline": "1milliondollar.eth rewards crossed $30",
+        "detail": "Accrued reward value moved $28.15 → $33.34 and crossed the $30 milestone.",
+        "severity": "info",
+        "source": {
+          "kind": "change-history",
+          "eventId": "944ed2ab4745a074e5fc",
+          "sourceKeys": [
+            "rewards"
+          ]
+        },
+        "metrics": {
+          "previousUsd": 28.148689,
+          "currentUsd": 33.342119,
+          "milestoneUsd": 30
+        },
+        "attribution": {
+          "status": "not-separated",
+          "note": "Current lane cannot yet separate newly accrued reward units from reward-token price effect for this crossing."
+        }
+      },
+      {
+        "id": "EV-afe660b192c88415c670",
+        "type": "reward-usd-milestone",
+        "mode": "derived",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "aerocvxyb.eth",
+        "headline": "aerocvxyb.eth rewards crossed $170",
+        "detail": "Accrued reward value moved $165.91 → $190.40 and crossed the $170 milestone.",
+        "severity": "info",
+        "source": {
+          "kind": "change-history",
+          "eventId": "466ea7716a1a81be51bb",
+          "sourceKeys": [
+            "rewards"
+          ]
+        },
+        "metrics": {
+          "previousUsd": 165.906325,
+          "currentUsd": 190.39659,
+          "milestoneUsd": 170
+        },
+        "attribution": {
+          "status": "not-separated",
+          "note": "Current lane cannot yet separate newly accrued reward units from reward-token price effect for this crossing."
+        }
+      },
+      {
+        "id": "EV-9659e04d7725930fed98",
+        "type": "reward-usd-milestone",
+        "mode": "derived",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "aerocvxyb.eth",
+        "headline": "aerocvxyb.eth rewards crossed $180",
+        "detail": "Accrued reward value moved $165.91 → $190.40 and crossed the $180 milestone.",
+        "severity": "info",
+        "source": {
+          "kind": "change-history",
+          "eventId": "466ea7716a1a81be51bb",
+          "sourceKeys": [
+            "rewards"
+          ]
+        },
+        "metrics": {
+          "previousUsd": 165.906325,
+          "currentUsd": 190.39659,
+          "milestoneUsd": 180
+        },
+        "attribution": {
+          "status": "not-separated",
+          "note": "Current lane cannot yet separate newly accrued reward units from reward-token price effect for this crossing."
+        }
+      },
+      {
+        "id": "EV-59806cf52fdb608aa87f",
+        "type": "reward-usd-milestone",
+        "mode": "derived",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "aerocvxyb.eth",
+        "headline": "aerocvxyb.eth rewards crossed $190",
+        "detail": "Accrued reward value moved $165.91 → $190.40 and crossed the $190 milestone.",
+        "severity": "info",
+        "source": {
+          "kind": "change-history",
+          "eventId": "466ea7716a1a81be51bb",
+          "sourceKeys": [
+            "rewards"
+          ]
+        },
+        "metrics": {
+          "previousUsd": 165.906325,
+          "currentUsd": 190.39659,
+          "milestoneUsd": 190
+        },
+        "attribution": {
+          "status": "not-separated",
+          "note": "Current lane cannot yet separate newly accrued reward units from reward-token price effect for this crossing."
+        }
+      },
+      {
+        "id": "EV-bfe7f29ce5c758bd6500",
+        "type": "reward-usd-milestone",
+        "mode": "derived",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "defitea.eth",
+        "headline": "defitea.eth rewards crossed $140",
+        "detail": "Accrued reward value moved $133.46 → $158.64 and crossed the $140 milestone.",
+        "severity": "info",
+        "source": {
+          "kind": "change-history",
+          "eventId": "b553f01337a65256e50f",
+          "sourceKeys": [
+            "rewards"
+          ]
+        },
+        "metrics": {
+          "previousUsd": 133.458109,
+          "currentUsd": 158.644169,
+          "milestoneUsd": 140
+        },
+        "attribution": {
+          "status": "not-separated",
+          "note": "Current lane cannot yet separate newly accrued reward units from reward-token price effect for this crossing."
+        }
+      },
+      {
+        "id": "EV-3615460e0d962e83ce1e",
+        "type": "reward-usd-milestone",
+        "mode": "derived",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "defitea.eth",
+        "headline": "defitea.eth rewards crossed $150",
+        "detail": "Accrued reward value moved $133.46 → $158.64 and crossed the $150 milestone.",
+        "severity": "info",
+        "source": {
+          "kind": "change-history",
+          "eventId": "b553f01337a65256e50f",
+          "sourceKeys": [
+            "rewards"
+          ]
+        },
+        "metrics": {
+          "previousUsd": 133.458109,
+          "currentUsd": 158.644169,
+          "milestoneUsd": 150
+        },
+        "attribution": {
+          "status": "not-separated",
+          "note": "Current lane cannot yet separate newly accrued reward units from reward-token price effect for this crossing."
+        }
+      },
+      {
+        "id": "EV-02eb8acc90aee61b070c",
+        "type": "reward-usd-milestone",
+        "mode": "derived",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "Rook's portfolio",
+        "headline": "Rook's portfolio rewards crossed $180",
+        "detail": "Accrued reward value moved $177.61 → $213.53 and crossed the $180 milestone.",
+        "severity": "info",
+        "source": {
+          "kind": "change-history",
+          "eventId": "4d22763306dcb0bff12a",
+          "sourceKeys": [
+            "rewards"
+          ]
+        },
+        "metrics": {
+          "previousUsd": 177.609568,
+          "currentUsd": 213.532551,
+          "milestoneUsd": 180
+        },
+        "attribution": {
+          "status": "not-separated",
+          "note": "Current lane cannot yet separate newly accrued reward units from reward-token price effect for this crossing."
+        }
+      },
+      {
+        "id": "EV-ac2042a0584dddf27602",
+        "type": "reward-usd-milestone",
+        "mode": "derived",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "Rook's portfolio",
+        "headline": "Rook's portfolio rewards crossed $190",
+        "detail": "Accrued reward value moved $177.61 → $213.53 and crossed the $190 milestone.",
+        "severity": "info",
+        "source": {
+          "kind": "change-history",
+          "eventId": "4d22763306dcb0bff12a",
+          "sourceKeys": [
+            "rewards"
+          ]
+        },
+        "metrics": {
+          "previousUsd": 177.609568,
+          "currentUsd": 213.532551,
+          "milestoneUsd": 190
+        },
+        "attribution": {
+          "status": "not-separated",
+          "note": "Current lane cannot yet separate newly accrued reward units from reward-token price effect for this crossing."
+        }
+      },
+      {
+        "id": "EV-8ec62d1f8753c0dd7f10",
+        "type": "reward-usd-milestone",
+        "mode": "derived",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "Rook's portfolio",
+        "headline": "Rook's portfolio rewards crossed $200",
+        "detail": "Accrued reward value moved $177.61 → $213.53 and crossed the $200 milestone.",
+        "severity": "info",
+        "source": {
+          "kind": "change-history",
+          "eventId": "4d22763306dcb0bff12a",
+          "sourceKeys": [
+            "rewards"
+          ]
+        },
+        "metrics": {
+          "previousUsd": 177.609568,
+          "currentUsd": 213.532551,
+          "milestoneUsd": 200
+        },
+        "attribution": {
+          "status": "not-separated",
+          "note": "Current lane cannot yet separate newly accrued reward units from reward-token price effect for this crossing."
+        }
+      },
+      {
+        "id": "EV-79f5e9b70e777fbe7e80",
+        "type": "reward-usd-milestone",
+        "mode": "derived",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "Rook's portfolio",
+        "headline": "Rook's portfolio rewards crossed $210",
+        "detail": "Accrued reward value moved $177.61 → $213.53 and crossed the $210 milestone.",
+        "severity": "info",
+        "source": {
+          "kind": "change-history",
+          "eventId": "4d22763306dcb0bff12a",
+          "sourceKeys": [
+            "rewards"
+          ]
+        },
+        "metrics": {
+          "previousUsd": 177.609568,
+          "currentUsd": 213.532551,
+          "milestoneUsd": 210
+        },
+        "attribution": {
+          "status": "not-separated",
+          "note": "Current lane cannot yet separate newly accrued reward units from reward-token price effect for this crossing."
+        }
+      },
+      {
+        "id": "EV-95faec1753e4fedfc10d",
+        "type": "observer-material-change",
+        "mode": "measured",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "1milliondollar.eth",
+        "headline": "1milliondollar.eth Reference APR moved 10.82% → 11.45% (+0.63 pp).",
+        "detail": "Meaningful changes in productive capacity are part of the company’s operating history.",
+        "severity": "info",
+        "source": {
+          "kind": "change-history",
+          "eventId": "4fb4026da79803618d9d",
+          "sourceKeys": [
+            "productivity"
+          ]
+        },
+        "metrics": {
+          "category": "productivity",
+          "metric": "aprLatestPct",
+          "previous": 10.8217,
+          "current": 11.4505
+        },
+        "attribution": null
+      },
+      {
+        "id": "EV-d75c3284b31cbd332acf",
+        "type": "observer-material-change",
+        "mode": "measured",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "Cypher",
+        "headline": "Cypher Reference APR moved 24.08% → 23.26% (-0.82 pp).",
+        "detail": "Meaningful changes in productive capacity are part of the company’s operating history.",
+        "severity": "info",
+        "source": {
+          "kind": "change-history",
+          "eventId": "9cac3c2143eb942aa563",
+          "sourceKeys": [
+            "productivity"
+          ]
+        },
+        "metrics": {
+          "category": "productivity",
+          "metric": "aprLatestPct",
+          "previous": 24.0825,
+          "current": 23.2581
+        },
+        "attribution": null
+      },
+      {
+        "id": "EV-ef8c3e18db078d9e9407",
+        "type": "observer-material-change",
+        "mode": "measured",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "defitea.eth",
+        "headline": "defitea.eth Reference APR moved 11.78% → 12.00% (+0.23 pp).",
+        "detail": "Meaningful changes in productive capacity are part of the company’s operating history.",
+        "severity": "info",
+        "source": {
+          "kind": "change-history",
+          "eventId": "82d30fb161552b073f9b",
+          "sourceKeys": [
+            "productivity"
+          ]
+        },
+        "metrics": {
+          "category": "productivity",
+          "metric": "aprLatestPct",
+          "previous": 11.775,
+          "current": 12.0049
+        },
+        "attribution": null
+      },
+      {
+        "id": "EV-72542d299db7e14b6513",
+        "type": "observer-material-change",
+        "mode": "measured",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "dinaz.eth",
+        "headline": "dinaz.eth Reference APR moved 4.88% → 5.71% (+0.83 pp).",
+        "detail": "Meaningful changes in productive capacity are part of the company’s operating history.",
+        "severity": "info",
+        "source": {
+          "kind": "change-history",
+          "eventId": "58dbab164ea131d33f85",
+          "sourceKeys": [
+            "productivity"
+          ]
+        },
+        "metrics": {
+          "category": "productivity",
+          "metric": "aprLatestPct",
+          "previous": 4.88,
+          "current": 5.71
+        },
+        "attribution": null
+      },
+      {
+        "id": "EV-0b854937e2302a4705ff",
+        "type": "observer-material-change",
+        "mode": "measured",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "Rook's portfolio",
+        "headline": "Rook's portfolio Reference APR moved 15.48% → 15.09% (-0.39 pp).",
+        "detail": "Meaningful changes in productive capacity are part of the company’s operating history.",
+        "severity": "info",
+        "source": {
+          "kind": "change-history",
+          "eventId": "dcd76ed96891ceacc49a",
+          "sourceKeys": [
+            "productivity"
+          ]
+        },
+        "metrics": {
+          "category": "productivity",
+          "metric": "aprLatestPct",
+          "previous": 15.4776,
+          "current": 15.086
+        },
+        "attribution": null
+      },
+      {
+        "id": "EV-b58e14a56a980d8a8a6e",
+        "type": "observer-material-change",
+        "mode": "measured",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "YieldRing.eth",
+        "headline": "YieldRing.eth Reference APR moved 14.89% → 14.01% (-0.88 pp).",
+        "detail": "Meaningful changes in productive capacity are part of the company’s operating history.",
+        "severity": "info",
+        "source": {
+          "kind": "change-history",
+          "eventId": "cba6ac4bda30eacff834",
+          "sourceKeys": [
+            "productivity"
+          ]
+        },
+        "metrics": {
+          "category": "productivity",
+          "metric": "aprLatestPct",
+          "previous": 14.8907,
+          "current": 14.006
+        },
+        "attribution": null
+      },
+      {
+        "id": "EV-3593033e9c1437db5da1",
+        "type": "cash-flow-counter-change",
+        "mode": "measured",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "defitea.eth",
+        "headline": "defitea.eth current-month cash-flow/reference-income counter moved $66.60 → $75.51.",
+        "detail": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
+        "severity": "info",
+        "source": {
+          "kind": "change-history",
+          "eventId": "5bc79b25d6e6ec3ed1b3",
+          "sourceKeys": [
+            "reporting"
+          ]
+        },
+        "metrics": {
+          "previousUsd": 66.6,
+          "currentUsd": 75.51
+        },
+        "attribution": null
+      },
+      {
+        "id": "EV-9341e16b560ad854f6da",
+        "type": "cash-flow-counter-change",
+        "mode": "measured",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "Monetra.eth",
+        "headline": "Monetra.eth current-month cash-flow/reference-income counter moved $0.14 → $0.16.",
+        "detail": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
+        "severity": "info",
+        "source": {
+          "kind": "change-history",
+          "eventId": "c11c02badf83b3f2bf54",
+          "sourceKeys": [
+            "reporting"
+          ]
+        },
+        "metrics": {
+          "previousUsd": 0.1441,
+          "currentUsd": 0.1564
+        },
+        "attribution": null
+      },
+      {
+        "id": "EV-426cc3ab60e3f9509fac",
+        "type": "generated-income-change",
+        "mode": "measured",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "Monetra.eth",
+        "headline": "Monetra.eth current-month generated income moved $0.1441 → $0.1564.",
+        "detail": "Generated income is a distinct history stream for capital that may compound inside positions rather than arrive as realised cash.",
+        "severity": "info",
+        "source": {
+          "kind": "change-history",
+          "eventId": "28180cdcc56f11fa7f32",
+          "sourceKeys": [
+            "reporting"
+          ]
+        },
+        "metrics": {
+          "previousUsd": 0.1441,
+          "currentUsd": 0.1564
+        },
+        "attribution": null
+      },
+      {
+        "id": "EV-bba7fe492236cbf74521",
+        "type": "reward-value-change",
+        "mode": "measured",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "05081966.eth",
+        "headline": "05081966.eth accrued rewards moved $2.35 → $3.08 (+$0.72).",
+        "detail": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+        "severity": "info",
+        "source": {
+          "kind": "change-history",
+          "eventId": "59ab6a7604176892a13c",
+          "sourceKeys": [
+            "rewards"
+          ]
+        },
+        "metrics": {
+          "previousUsd": 2.35333,
+          "currentUsd": 3.075253
+        },
+        "attribution": {
+          "status": "not-separated",
+          "note": "USD movement may combine newly accrued units and reward-token price movement until route-level decomposition is canonical."
+        }
+      },
+      {
+        "id": "EV-57fdd3a9b829d8d22b08",
+        "type": "reward-value-change",
+        "mode": "measured",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "0x5860...83CA8.eth",
+        "headline": "0x5860...83CA8.eth accrued rewards moved $118.87 → $138.34 (+$19.48).",
+        "detail": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+        "severity": "info",
+        "source": {
+          "kind": "change-history",
+          "eventId": "17eef3bb4bad49449c33",
+          "sourceKeys": [
+            "rewards"
+          ]
+        },
+        "metrics": {
+          "previousUsd": 118.865208,
+          "currentUsd": 138.340837
+        },
+        "attribution": {
+          "status": "not-separated",
+          "note": "USD movement may combine newly accrued units and reward-token price movement until route-level decomposition is canonical."
+        }
+      },
+      {
+        "id": "EV-bd12922d30a36918a2d8",
+        "type": "reward-value-change",
+        "mode": "measured",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "1milliondollar.eth",
+        "headline": "1milliondollar.eth accrued rewards moved $28.15 → $33.34 (+$5.19).",
+        "detail": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+        "severity": "info",
+        "source": {
+          "kind": "change-history",
+          "eventId": "944ed2ab4745a074e5fc",
+          "sourceKeys": [
+            "rewards"
+          ]
+        },
+        "metrics": {
+          "previousUsd": 28.148689,
+          "currentUsd": 33.342119
+        },
+        "attribution": {
+          "status": "not-separated",
+          "note": "USD movement may combine newly accrued units and reward-token price movement until route-level decomposition is canonical."
+        }
+      },
+      {
+        "id": "EV-8519bcfa4169d0ff4ec9",
+        "type": "reward-value-change",
+        "mode": "measured",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "aerocvxyb.eth",
+        "headline": "aerocvxyb.eth accrued rewards moved $165.91 → $190.40 (+$24.49).",
+        "detail": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+        "severity": "info",
+        "source": {
+          "kind": "change-history",
+          "eventId": "466ea7716a1a81be51bb",
+          "sourceKeys": [
+            "rewards"
+          ]
+        },
+        "metrics": {
+          "previousUsd": 165.906325,
+          "currentUsd": 190.39659
+        },
+        "attribution": {
+          "status": "not-separated",
+          "note": "USD movement may combine newly accrued units and reward-token price movement until route-level decomposition is canonical."
+        }
+      },
+      {
+        "id": "EV-1db4db13e1de164f28e7",
+        "type": "reward-value-change",
+        "mode": "measured",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "Cypher",
+        "headline": "Cypher accrued rewards moved $10.60 → $13.92 (+$3.32).",
+        "detail": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+        "severity": "info",
+        "source": {
+          "kind": "change-history",
+          "eventId": "0adbf2a9dd388f32fb16",
+          "sourceKeys": [
+            "rewards"
+          ]
+        },
+        "metrics": {
+          "previousUsd": 10.599472,
+          "currentUsd": 13.916627
+        },
+        "attribution": {
+          "status": "not-separated",
+          "note": "USD movement may combine newly accrued units and reward-token price movement until route-level decomposition is canonical."
+        }
+      },
+      {
+        "id": "EV-0a8c063301c7341b78d4",
+        "type": "reward-value-change",
+        "mode": "measured",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "defitea.eth",
+        "headline": "defitea.eth accrued rewards moved $133.46 → $158.64 (+$25.19).",
+        "detail": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+        "severity": "info",
+        "source": {
+          "kind": "change-history",
+          "eventId": "b553f01337a65256e50f",
+          "sourceKeys": [
+            "rewards"
+          ]
+        },
+        "metrics": {
+          "previousUsd": 133.458109,
+          "currentUsd": 158.644169
+        },
+        "attribution": {
+          "status": "not-separated",
+          "note": "USD movement may combine newly accrued units and reward-token price movement until route-level decomposition is canonical."
+        }
+      },
+      {
+        "id": "EV-3bdcf0b7d41eafb56b52",
+        "type": "reward-value-change",
+        "mode": "measured",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "dinaz.eth",
+        "headline": "dinaz.eth accrued rewards moved $5.69 → $7.18 (+$1.49).",
+        "detail": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+        "severity": "info",
+        "source": {
+          "kind": "change-history",
+          "eventId": "6320b84f39d27d69c8a5",
+          "sourceKeys": [
+            "rewards"
+          ]
+        },
+        "metrics": {
+          "previousUsd": 5.693766,
+          "currentUsd": 7.184889
+        },
+        "attribution": {
+          "status": "not-separated",
+          "note": "USD movement may combine newly accrued units and reward-token price movement until route-level decomposition is canonical."
+        }
+      },
+      {
+        "id": "EV-027563f8403d548ca7a3",
+        "type": "reward-value-change",
+        "mode": "measured",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "Rook's portfolio",
+        "headline": "Rook's portfolio accrued rewards moved $177.61 → $213.53 (+$35.92).",
+        "detail": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+        "severity": "info",
+        "source": {
+          "kind": "change-history",
+          "eventId": "4d22763306dcb0bff12a",
+          "sourceKeys": [
+            "rewards"
+          ]
+        },
+        "metrics": {
+          "previousUsd": 177.609568,
+          "currentUsd": 213.532551
+        },
+        "attribution": {
+          "status": "not-separated",
+          "note": "USD movement may combine newly accrued units and reward-token price movement until route-level decomposition is canonical."
+        }
+      },
+      {
+        "id": "EV-d4c4b7d0a8a592c73675",
+        "type": "reward-value-change",
+        "mode": "measured",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "YieldRing.eth",
+        "headline": "YieldRing.eth accrued rewards moved $5.20 → $6.83 (+$1.62).",
+        "detail": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+        "severity": "info",
+        "source": {
+          "kind": "change-history",
+          "eventId": "0fb804d24159d87e95ed",
+          "sourceKeys": [
+            "rewards"
+          ]
+        },
+        "metrics": {
+          "previousUsd": 5.204341,
+          "currentUsd": 6.827071
+        },
+        "attribution": {
+          "status": "not-separated",
+          "note": "USD movement may combine newly accrued units and reward-token price movement until route-level decomposition is canonical."
+        }
+      },
+      {
+        "id": "EV-8c331b43731f79333f9e",
+        "type": "stable-capital-change",
+        "mode": "measured",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "Stable Companies Index",
+        "headline": "Stable Companies current capital moved $100.3422 → $100.3859 (+$0.0438).",
+        "detail": "Current Capital is the market-value state of Stable Capital plus separately earned claimable value.",
+        "severity": "info",
+        "source": {
+          "kind": "change-history",
+          "eventId": "3471a1cd8194db39bf38",
+          "sourceKeys": [
+            "stableIndex"
+          ]
+        },
+        "metrics": {
+          "metric": "currentCapitalUsd",
+          "previous": 100.34216119,
+          "current": 100.38593941
+        },
+        "attribution": null
+      },
+      {
+        "id": "EV-ea654ddcc0e13ed6eef8",
+        "type": "stable-capital-change",
+        "mode": "measured",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "Stable Companies Index",
+        "headline": "Observed embedded income since tracking moved $0.0084 → $0.0129.",
+        "detail": "Embedded Yield is the system’s memory of value that compounds inside positions instead of waiting to be claimed.",
+        "severity": "info",
+        "source": {
+          "kind": "change-history",
+          "eventId": "e7081958551c3a26f90a",
+          "sourceKeys": [
+            "stableIndex",
+            "embeddedLedger"
+          ]
+        },
+        "metrics": {
+          "metric": "embeddedIncomeSinceTrackingUsd",
+          "previous": 0.00839944,
+          "current": 0.01292115
+        },
+        "attribution": null
+      },
+      {
+        "id": "EV-ba2871a72126ba5f493a",
+        "type": "observer-material-change",
+        "mode": "measured",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "Stable Companies Index",
+        "headline": "Verified Stable strategy performance moved $0.4552 → $0.4862.",
+        "detail": "Strategy Performance connects verified entry principal to current nominal strategy value without mixing in stable-price effects.",
+        "severity": "info",
+        "source": {
+          "kind": "change-history",
+          "eventId": "02ac2fe89188f9123bf4",
+          "sourceKeys": [
+            "stableIndex"
+          ]
+        },
+        "metrics": {
+          "category": "stable-capital",
+          "metric": "strategyPerformanceUsd",
+          "previous": 0.45522251,
+          "current": 0.48616251
+        },
+        "attribution": null
+      },
+      {
+        "id": "EV-e50cc6a14a21108eec50",
+        "type": "daily-reporting-observation",
+        "mode": "measured",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "defitea.eth",
+        "headline": "defitea.eth recorded a new daily reporting observation for 2026-08-27.",
+        "detail": "Every new daily observation extends the operating memory used by future analytics and decision support.",
+        "severity": "memory",
+        "source": {
+          "kind": "change-history",
+          "eventId": "965d989271f0b83009c2",
+          "sourceKeys": [
+            "reporting"
+          ]
+        },
+        "metrics": {
+          "previousDate": "2026-08-24",
+          "currentDate": "2026-08-27"
+        },
+        "attribution": null
+      },
+      {
+        "id": "EV-aef39af3255652ad8f7b",
+        "type": "daily-reporting-observation",
+        "mode": "measured",
+        "occurredAt": "2026-08-27T17:46:21.337Z",
+        "entity": "Monetra.eth",
+        "headline": "Monetra.eth recorded a new daily reporting observation for 2026-08-27.",
+        "detail": "Every new daily observation extends the operating memory used by future analytics and decision support.",
+        "severity": "memory",
+        "source": {
+          "kind": "change-history",
+          "eventId": "3f0f08991000c2c03bf5",
+          "sourceKeys": [
+            "reporting"
+          ]
+        },
+        "metrics": {
+          "previousDate": "2026-08-24",
+          "currentDate": "2026-08-27"
+        },
+        "attribution": null
+      },
+      {
+        "id": "EV-c416ece759506688f853",
+        "type": "company-reference-apr-change",
+        "mode": "derived",
+        "occurredAt": "2026-08-27T17:19:42.170Z",
+        "entity": "Defitea",
+        "headline": "Defitea reference APR moved 17.26% → 11.32%",
+        "detail": "Company-level reference APR changed -5.94 pp. Event Intelligence does not infer the cause without protocol-specific volume/fee evidence.",
+        "severity": "watch",
+        "source": {
+          "kind": "reporting",
+          "fund": "defitea.eth",
+          "previousDate": "2026-08-24",
+          "currentDate": "2026-08-27"
+        },
+        "metrics": {
+          "previousAprPct": 17.2585,
+          "currentAprPct": 11.3167,
+          "changePp": -5.9418,
+          "relativeChangePct": -34.4283
+        },
+        "attribution": {
+          "status": "unattributed",
+          "note": "Volume/fee/revenue causality is a coverage gap until bound to a verified mechanism-specific source."
+        }
+      },
+      {
+        "id": "EV-e58c7aa13c22f974413e",
+        "type": "protocol-reference-apr-change",
+        "mode": "derived",
+        "occurredAt": "2026-08-27T17:19:42.170Z",
+        "entity": "Defitea · convex-finance",
+        "headline": "convex-finance reference APR moved 11.04% → 9.86%",
+        "detail": "The tracked productive route changed -1.18 pp between daily snapshots. Cause remains unassigned until protocol economics are measured directly.",
+        "severity": "watch",
+        "source": {
+          "kind": "reporting",
+          "fund": "defitea.eth",
+          "engineId": "convex_vlcvx",
+          "previousDate": "2026-08-24",
+          "currentDate": "2026-08-27"
+        },
+        "metrics": {
+          "previousAprPct": 11.041,
+          "currentAprPct": 9.86,
+          "changePp": -1.181,
+          "relativeChangePct": -10.6965
+        },
+        "attribution": {
+          "status": "unattributed",
+          "note": "Do not equate APR movement with trading-volume movement without source-backed protocol economics."
+        }
+      },
+      {
+        "id": "EV-6b9e80221cc56d71b732",
+        "type": "protocol-reference-apr-change",
+        "mode": "derived",
+        "occurredAt": "2026-08-27T17:19:42.170Z",
+        "entity": "Defitea · curve-dao-token",
+        "headline": "curve-dao-token reference APR moved 1.69% → 1.84%",
+        "detail": "The tracked productive route changed +0.15 pp between daily snapshots. Cause remains unassigned until protocol economics are measured directly.",
+        "severity": "watch",
+        "source": {
+          "kind": "reporting",
+          "fund": "defitea.eth",
+          "engineId": "curve_vecrv",
+          "previousDate": "2026-08-24",
+          "currentDate": "2026-08-27"
+        },
+        "metrics": {
+          "previousAprPct": 1.6885,
+          "currentAprPct": 1.8433,
+          "changePp": 0.1548,
+          "relativeChangePct": 9.1679
+        },
+        "attribution": {
+          "status": "unattributed",
+          "note": "Do not equate APR movement with trading-volume movement without source-backed protocol economics."
+        }
+      },
+      {
+        "id": "EV-8782b155bbe516823f4f",
+        "type": "protocol-reference-apr-change",
+        "mode": "derived",
+        "occurredAt": "2026-08-27T17:19:42.170Z",
+        "entity": "Defitea · fxn-token",
+        "headline": "fxn-token reference APR moved 77.12% → 24.74%",
+        "detail": "The tracked productive route changed -52.38 pp between daily snapshots. Cause remains unassigned until protocol economics are measured directly.",
+        "severity": "watch",
+        "source": {
+          "kind": "reporting",
+          "fund": "defitea.eth",
+          "engineId": "fx_vefxn",
+          "previousDate": "2026-08-24",
+          "currentDate": "2026-08-27"
+        },
+        "metrics": {
+          "previousAprPct": 77.12,
+          "currentAprPct": 24.74,
+          "changePp": -52.38,
+          "relativeChangePct": -67.9201
+        },
+        "attribution": {
+          "status": "unattributed",
+          "note": "Do not equate APR movement with trading-volume movement without source-backed protocol economics."
+        }
+      },
+      {
+        "id": "EV-9dc1dee8e78aed6ecbfa",
+        "type": "protocol-reference-apr-change",
+        "mode": "derived",
+        "occurredAt": "2026-08-27T17:19:42.170Z",
+        "entity": "Defitea · yield-basis",
+        "headline": "yield-basis reference APR moved 5.04% → 5.71%",
+        "detail": "The tracked productive route changed +0.67 pp between daily snapshots. Cause remains unassigned until protocol economics are measured directly.",
+        "severity": "watch",
+        "source": {
+          "kind": "reporting",
+          "fund": "defitea.eth",
+          "engineId": "yieldbasis_veyb",
+          "previousDate": "2026-08-24",
+          "currentDate": "2026-08-27"
+        },
+        "metrics": {
+          "previousAprPct": 5.04,
+          "currentAprPct": 5.71,
+          "changePp": 0.67,
+          "relativeChangePct": 13.2937
+        },
+        "attribution": {
+          "status": "unattributed",
+          "note": "Do not equate APR movement with trading-volume movement without source-backed protocol economics."
+        }
+      },
+      {
+        "id": "EV-9345e58b85d503250e59",
+        "type": "protocol-reference-apr-change",
+        "mode": "derived",
+        "occurredAt": "2026-08-27T17:19:42.170Z",
+        "entity": "Defitea · frax-share",
+        "headline": "frax-share reference APR moved 5.36% → 5.39%",
+        "detail": "The tracked productive route changed +0.03 pp between daily snapshots. Cause remains unassigned until protocol economics are measured directly.",
+        "severity": "watch",
+        "source": {
+          "kind": "reporting",
+          "fund": "defitea.eth",
+          "engineId": "frax_vefrax",
+          "previousDate": "2026-08-24",
+          "currentDate": "2026-08-27"
+        },
+        "metrics": {
+          "previousAprPct": 5.3645,
+          "currentAprPct": 5.3934,
+          "changePp": 0.0289,
+          "relativeChangePct": 0.5387
+        },
+        "attribution": {
+          "status": "unattributed",
+          "note": "Do not equate APR movement with trading-volume movement without source-backed protocol economics."
+        }
+      },
+      {
+        "id": "EV-9962de35d314f5d4becc",
+        "type": "protocol-reference-apr-change",
+        "mode": "derived",
+        "occurredAt": "2026-08-27T17:19:42.170Z",
+        "entity": "Defitea · venice-token",
+        "headline": "venice-token reference APR moved 8.77% → 8.76%",
+        "detail": "The tracked productive route changed -0.01 pp between daily snapshots. Cause remains unassigned until protocol economics are measured directly.",
+        "severity": "watch",
+        "source": {
+          "kind": "reporting",
+          "fund": "defitea.eth",
+          "engineId": "venice_svvv",
+          "previousDate": "2026-08-24",
+          "currentDate": "2026-08-27"
+        },
+        "metrics": {
+          "previousAprPct": 8.7698,
+          "currentAprPct": 8.7552,
+          "changePp": -0.0146,
+          "relativeChangePct": -0.1665
+        },
+        "attribution": {
+          "status": "unattributed",
+          "note": "Do not equate APR movement with trading-volume movement without source-backed protocol economics."
+        }
+      },
+      {
+        "id": "EV-a8d023f1b6ce4bc0999c",
+        "type": "protocol-reference-apr-change",
+        "mode": "derived",
+        "occurredAt": "2026-08-27T17:19:42.170Z",
+        "entity": "Defitea · liquity",
+        "headline": "liquity reference APR moved 11.21% → 0.11%",
+        "detail": "The tracked productive route changed -11.09 pp between daily snapshots. Cause remains unassigned until protocol economics are measured directly.",
+        "severity": "watch",
+        "source": {
+          "kind": "reporting",
+          "fund": "defitea.eth",
+          "engineId": "liquity_lqty",
+          "previousDate": "2026-08-24",
+          "currentDate": "2026-08-27"
+        },
+        "metrics": {
+          "previousAprPct": 11.2051,
+          "currentAprPct": 0.1123,
+          "changePp": -11.0928,
+          "relativeChangePct": -98.9978
+        },
+        "attribution": {
+          "status": "unattributed",
+          "note": "Do not equate APR movement with trading-volume movement without source-backed protocol economics."
+        }
+      },
+      {
+        "id": "EV-bc364081cea26198ef0f",
+        "type": "protocol-reference-apr-change",
+        "mode": "derived",
+        "occurredAt": "2026-08-27T17:19:42.170Z",
+        "entity": "Defitea · resupply",
+        "headline": "resupply reference APR moved 14.86% → 18.73%",
+        "detail": "The tracked productive route changed +3.87 pp between daily snapshots. Cause remains unassigned until protocol economics are measured directly.",
+        "severity": "watch",
+        "source": {
+          "kind": "reporting",
+          "fund": "defitea.eth",
+          "engineId": "resupply_rsup",
+          "previousDate": "2026-08-24",
+          "currentDate": "2026-08-27"
+        },
+        "metrics": {
+          "previousAprPct": 14.86,
+          "currentAprPct": 18.73,
+          "changePp": 3.87,
+          "relativeChangePct": 26.0431
+        },
+        "attribution": {
+          "status": "unattributed",
+          "note": "Do not equate APR movement with trading-volume movement without source-backed protocol economics."
+        }
+      },
       {
         "id": "EV-fa69f4ca8f1c3459c295",
         "type": "observer-material-change",
@@ -935,1166 +2117,6 @@
           "current": 17.2625
         },
         "attribution": null
-      },
-      {
-        "id": "EV-82ddbd291df6d1983a50",
-        "type": "cash-flow-counter-change",
-        "mode": "measured",
-        "occurredAt": "2026-08-24T07:35:58.568Z",
-        "entity": "defitea.eth",
-        "headline": "defitea.eth current-month cash-flow/reference-income counter moved $60.67 → $66.60.",
-        "detail": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "2e2a7625d2822538e7b0",
-          "sourceKeys": [
-            "reporting"
-          ]
-        },
-        "metrics": {
-          "previousUsd": 60.67,
-          "currentUsd": 66.6
-        },
-        "attribution": null
-      },
-      {
-        "id": "EV-3134ff05e5b882535773",
-        "type": "cash-flow-counter-change",
-        "mode": "measured",
-        "occurredAt": "2026-08-24T07:35:58.568Z",
-        "entity": "Monetra.eth",
-        "headline": "Monetra.eth current-month cash-flow/reference-income counter moved $0.13 → $0.14.",
-        "detail": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "58ebfbde20760e98d34e",
-          "sourceKeys": [
-            "reporting"
-          ]
-        },
-        "metrics": {
-          "previousUsd": 0.1323,
-          "currentUsd": 0.1441
-        },
-        "attribution": null
-      },
-      {
-        "id": "EV-e92c7b4a1db5efc48cbb",
-        "type": "generated-income-change",
-        "mode": "measured",
-        "occurredAt": "2026-08-24T07:35:58.568Z",
-        "entity": "Monetra.eth",
-        "headline": "Monetra.eth current-month generated income moved $0.1323 → $0.1441.",
-        "detail": "Generated income is a distinct history stream for capital that may compound inside positions rather than arrive as realised cash.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "f78db21fd3956cd9bd8f",
-          "sourceKeys": [
-            "reporting"
-          ]
-        },
-        "metrics": {
-          "previousUsd": 0.1323,
-          "currentUsd": 0.1441
-        },
-        "attribution": null
-      },
-      {
-        "id": "EV-1ab8bedb284e7ca11ec4",
-        "type": "reward-value-change",
-        "mode": "measured",
-        "occurredAt": "2026-08-24T07:35:58.568Z",
-        "entity": "0x5860...83CA8.eth",
-        "headline": "0x5860...83CA8.eth accrued rewards moved $116.21 → $118.24 (+$2.03).",
-        "detail": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "9ef4e4788419693a4c14",
-          "sourceKeys": [
-            "rewards"
-          ]
-        },
-        "metrics": {
-          "previousUsd": 116.206578,
-          "currentUsd": 118.239936
-        },
-        "attribution": {
-          "status": "not-separated",
-          "note": "USD movement may combine newly accrued units and reward-token price movement until route-level decomposition is canonical."
-        }
-      },
-      {
-        "id": "EV-52c50ceb37486dccd6d9",
-        "type": "reward-value-change",
-        "mode": "measured",
-        "occurredAt": "2026-08-24T07:35:58.568Z",
-        "entity": "aerocvxyb.eth",
-        "headline": "aerocvxyb.eth accrued rewards moved $163.25 → $165.28 (+$2.03).",
-        "detail": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "f57ad65ba75eaea126cf",
-          "sourceKeys": [
-            "rewards"
-          ]
-        },
-        "metrics": {
-          "previousUsd": 163.247695,
-          "currentUsd": 165.281053
-        },
-        "attribution": {
-          "status": "not-separated",
-          "note": "USD movement may combine newly accrued units and reward-token price movement until route-level decomposition is canonical."
-        }
-      },
-      {
-        "id": "EV-702bb8ff520141cf8d8b",
-        "type": "stable-capital-change",
-        "mode": "measured",
-        "occurredAt": "2026-08-24T07:35:58.568Z",
-        "entity": "Stable Companies Index",
-        "headline": "Stable Companies current capital moved $100.3020 → $100.3604 (+$0.0584).",
-        "detail": "Current Capital is the market-value state of Stable Capital plus separately earned claimable value.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "144bbc6fdfd5f5d2a916",
-          "sourceKeys": [
-            "stableIndex"
-          ]
-        },
-        "metrics": {
-          "metric": "currentCapitalUsd",
-          "previous": 100.301953,
-          "current": 100.36035474
-        },
-        "attribution": null
-      },
-      {
-        "id": "EV-340bffa0b430a04d0083",
-        "type": "observer-material-change",
-        "mode": "measured",
-        "occurredAt": "2026-08-24T07:35:58.568Z",
-        "entity": "Stable Companies Index",
-        "headline": "Verified Stable strategy performance moved $0.4189 → $0.4540.",
-        "detail": "Strategy Performance connects verified entry principal to current nominal strategy value without mixing in stable-price effects.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "a32b1d7d13816e207cd3",
-          "sourceKeys": [
-            "stableIndex"
-          ]
-        },
-        "metrics": {
-          "category": "stable-capital",
-          "metric": "strategyPerformanceUsd",
-          "previous": 0.41893198,
-          "current": 0.45403438
-        },
-        "attribution": null
-      },
-      {
-        "id": "EV-c554c5ff2f8bb8e7bf34",
-        "type": "daily-reporting-observation",
-        "mode": "measured",
-        "occurredAt": "2026-08-24T07:35:58.568Z",
-        "entity": "defitea.eth",
-        "headline": "defitea.eth recorded a new daily reporting observation for 2026-08-24.",
-        "detail": "Every new daily observation extends the operating memory used by future analytics and decision support.",
-        "severity": "memory",
-        "source": {
-          "kind": "change-history",
-          "eventId": "703110b61aa617e55cd7",
-          "sourceKeys": [
-            "reporting"
-          ]
-        },
-        "metrics": {
-          "previousDate": "2026-08-23",
-          "currentDate": "2026-08-24"
-        },
-        "attribution": null
-      },
-      {
-        "id": "EV-8947e24360e41a93d4f6",
-        "type": "daily-reporting-observation",
-        "mode": "measured",
-        "occurredAt": "2026-08-24T07:35:58.568Z",
-        "entity": "Monetra.eth",
-        "headline": "Monetra.eth recorded a new daily reporting observation for 2026-08-24.",
-        "detail": "Every new daily observation extends the operating memory used by future analytics and decision support.",
-        "severity": "memory",
-        "source": {
-          "kind": "change-history",
-          "eventId": "4ef791285a3f133ed9f1",
-          "sourceKeys": [
-            "reporting"
-          ]
-        },
-        "metrics": {
-          "previousDate": "2026-08-23",
-          "currentDate": "2026-08-24"
-        },
-        "attribution": null
-      },
-      {
-        "id": "EV-62d722a20babcb012ed8",
-        "type": "company-reference-apr-change",
-        "mode": "derived",
-        "occurredAt": "2026-08-24T07:32:25.250Z",
-        "entity": "Defitea",
-        "headline": "Defitea reference APR moved 11.28% → 17.26%",
-        "detail": "Company-level reference APR changed +5.98 pp. Event Intelligence does not infer the cause without protocol-specific volume/fee evidence.",
-        "severity": "watch",
-        "source": {
-          "kind": "reporting",
-          "fund": "defitea.eth",
-          "previousDate": "2026-08-23",
-          "currentDate": "2026-08-24"
-        },
-        "metrics": {
-          "previousAprPct": 11.2755,
-          "currentAprPct": 17.2585,
-          "changePp": 5.983,
-          "relativeChangePct": 53.0619
-        },
-        "attribution": {
-          "status": "unattributed",
-          "note": "Volume/fee/revenue causality is a coverage gap until bound to a verified mechanism-specific source."
-        }
-      },
-      {
-        "id": "EV-0e037bdafb6fa14be4e6",
-        "type": "protocol-reference-apr-change",
-        "mode": "derived",
-        "occurredAt": "2026-08-24T07:32:25.250Z",
-        "entity": "Defitea · convex-finance",
-        "headline": "convex-finance reference APR moved 11.54% → 11.04%",
-        "detail": "The tracked productive route changed -0.50 pp between daily snapshots. Cause remains unassigned until protocol economics are measured directly.",
-        "severity": "watch",
-        "source": {
-          "kind": "reporting",
-          "fund": "defitea.eth",
-          "engineId": "convex_vlcvx",
-          "previousDate": "2026-08-23",
-          "currentDate": "2026-08-24"
-        },
-        "metrics": {
-          "previousAprPct": 11.541,
-          "currentAprPct": 11.041,
-          "changePp": -0.5,
-          "relativeChangePct": -4.3324
-        },
-        "attribution": {
-          "status": "unattributed",
-          "note": "Do not equate APR movement with trading-volume movement without source-backed protocol economics."
-        }
-      },
-      {
-        "id": "EV-422c3955999870975ac1",
-        "type": "protocol-reference-apr-change",
-        "mode": "derived",
-        "occurredAt": "2026-08-24T07:32:25.250Z",
-        "entity": "Defitea · curve-dao-token",
-        "headline": "curve-dao-token reference APR moved 1.74% → 1.69%",
-        "detail": "The tracked productive route changed -0.05 pp between daily snapshots. Cause remains unassigned until protocol economics are measured directly.",
-        "severity": "watch",
-        "source": {
-          "kind": "reporting",
-          "fund": "defitea.eth",
-          "engineId": "curve_vecrv",
-          "previousDate": "2026-08-23",
-          "currentDate": "2026-08-24"
-        },
-        "metrics": {
-          "previousAprPct": 1.7381,
-          "currentAprPct": 1.6885,
-          "changePp": -0.0496,
-          "relativeChangePct": -2.8537
-        },
-        "attribution": {
-          "status": "unattributed",
-          "note": "Do not equate APR movement with trading-volume movement without source-backed protocol economics."
-        }
-      },
-      {
-        "id": "EV-b16f2bdfa7ccfbe14862",
-        "type": "protocol-reference-apr-change",
-        "mode": "derived",
-        "occurredAt": "2026-08-24T07:32:25.250Z",
-        "entity": "Defitea · fxn-token",
-        "headline": "fxn-token reference APR moved 20.77% → 77.12%",
-        "detail": "The tracked productive route changed +56.35 pp between daily snapshots. Cause remains unassigned until protocol economics are measured directly.",
-        "severity": "watch",
-        "source": {
-          "kind": "reporting",
-          "fund": "defitea.eth",
-          "engineId": "fx_vefxn",
-          "previousDate": "2026-08-23",
-          "currentDate": "2026-08-24"
-        },
-        "metrics": {
-          "previousAprPct": 20.77,
-          "currentAprPct": 77.12,
-          "changePp": 56.35,
-          "relativeChangePct": 271.3048
-        },
-        "attribution": {
-          "status": "unattributed",
-          "note": "Do not equate APR movement with trading-volume movement without source-backed protocol economics."
-        }
-      },
-      {
-        "id": "EV-79291831783591901c1c",
-        "type": "protocol-reference-apr-change",
-        "mode": "derived",
-        "occurredAt": "2026-08-24T07:32:25.250Z",
-        "entity": "Defitea · yield-basis",
-        "headline": "yield-basis reference APR moved 4.98% → 5.04%",
-        "detail": "The tracked productive route changed +0.06 pp between daily snapshots. Cause remains unassigned until protocol economics are measured directly.",
-        "severity": "watch",
-        "source": {
-          "kind": "reporting",
-          "fund": "defitea.eth",
-          "engineId": "yieldbasis_veyb",
-          "previousDate": "2026-08-23",
-          "currentDate": "2026-08-24"
-        },
-        "metrics": {
-          "previousAprPct": 4.98,
-          "currentAprPct": 5.04,
-          "changePp": 0.06,
-          "relativeChangePct": 1.2048
-        },
-        "attribution": {
-          "status": "unattributed",
-          "note": "Do not equate APR movement with trading-volume movement without source-backed protocol economics."
-        }
-      },
-      {
-        "id": "EV-35309bbb296c0305da65",
-        "type": "protocol-reference-apr-change",
-        "mode": "derived",
-        "occurredAt": "2026-08-24T07:32:25.250Z",
-        "entity": "Defitea · frax-share",
-        "headline": "frax-share reference APR moved 5.36% → 5.36%",
-        "detail": "The tracked productive route changed +0.00 pp between daily snapshots. Cause remains unassigned until protocol economics are measured directly.",
-        "severity": "watch",
-        "source": {
-          "kind": "reporting",
-          "fund": "defitea.eth",
-          "engineId": "frax_vefrax",
-          "previousDate": "2026-08-23",
-          "currentDate": "2026-08-24"
-        },
-        "metrics": {
-          "previousAprPct": 5.3618,
-          "currentAprPct": 5.3645,
-          "changePp": 0.0027,
-          "relativeChangePct": 0.0504
-        },
-        "attribution": {
-          "status": "unattributed",
-          "note": "Do not equate APR movement with trading-volume movement without source-backed protocol economics."
-        }
-      },
-      {
-        "id": "EV-67bcc54eab749f905ff4",
-        "type": "protocol-reference-apr-change",
-        "mode": "derived",
-        "occurredAt": "2026-08-24T07:32:25.250Z",
-        "entity": "Defitea · venice-token",
-        "headline": "venice-token reference APR moved 8.78% → 8.77%",
-        "detail": "The tracked productive route changed -0.01 pp between daily snapshots. Cause remains unassigned until protocol economics are measured directly.",
-        "severity": "watch",
-        "source": {
-          "kind": "reporting",
-          "fund": "defitea.eth",
-          "engineId": "venice_svvv",
-          "previousDate": "2026-08-23",
-          "currentDate": "2026-08-24"
-        },
-        "metrics": {
-          "previousAprPct": 8.7754,
-          "currentAprPct": 8.7698,
-          "changePp": -0.0056,
-          "relativeChangePct": -0.0638
-        },
-        "attribution": {
-          "status": "unattributed",
-          "note": "Do not equate APR movement with trading-volume movement without source-backed protocol economics."
-        }
-      },
-      {
-        "id": "EV-b05107f38475e652c403",
-        "type": "protocol-reference-apr-change",
-        "mode": "derived",
-        "occurredAt": "2026-08-24T07:32:25.250Z",
-        "entity": "Defitea · resupply",
-        "headline": "resupply reference APR moved 15.54% → 14.86%",
-        "detail": "The tracked productive route changed -0.68 pp between daily snapshots. Cause remains unassigned until protocol economics are measured directly.",
-        "severity": "watch",
-        "source": {
-          "kind": "reporting",
-          "fund": "defitea.eth",
-          "engineId": "resupply_rsup",
-          "previousDate": "2026-08-23",
-          "currentDate": "2026-08-24"
-        },
-        "metrics": {
-          "previousAprPct": 15.54,
-          "currentAprPct": 14.86,
-          "changePp": -0.68,
-          "relativeChangePct": -4.3758
-        },
-        "attribution": {
-          "status": "unattributed",
-          "note": "Do not equate APR movement with trading-volume movement without source-backed protocol economics."
-        }
-      },
-      {
-        "id": "EV-7886284d19a2338c8808",
-        "type": "observer-material-change",
-        "mode": "measured",
-        "occurredAt": "2026-08-23T07:09:51.151Z",
-        "entity": "Cypher",
-        "headline": "Cypher Productivity coverage moved 90.5% → 100.0%.",
-        "detail": "Coverage tells us how much productive capital is currently understood rather than guessed or treated as zero.",
-        "severity": "important",
-        "source": {
-          "kind": "change-history",
-          "eventId": "7f3a72efb8952b61b8a0",
-          "sourceKeys": [
-            "productivity"
-          ]
-        },
-        "metrics": {
-          "category": "productivity",
-          "metric": "coverage",
-          "previous": 0.9053,
-          "current": 1
-        },
-        "attribution": null
-      },
-      {
-        "id": "EV-76dd88b3efc619e75ba4",
-        "type": "observer-material-change",
-        "mode": "measured",
-        "occurredAt": "2026-08-23T07:09:51.151Z",
-        "entity": "defitea.eth",
-        "headline": "defitea.eth Rewards completeness changed: pending routes 1 → 2, unpriced 0 → 0.",
-        "detail": "Completeness improvements turn previously partial observations into reusable verified intelligence.",
-        "severity": "watch",
-        "source": {
-          "kind": "change-history",
-          "eventId": "04736c0cb336c8f608df",
-          "sourceKeys": [
-            "rewards"
-          ]
-        },
-        "metrics": {
-          "category": "rewards",
-          "metric": "completeness",
-          "previous": {
-            "pendingRoutes": 1,
-            "unpricedRewards": 0
-          },
-          "current": {
-            "pendingRoutes": 2,
-            "unpricedRewards": 0
-          }
-        },
-        "attribution": null
-      },
-      {
-        "id": "EV-2bb59e4ca574d9e129d7",
-        "type": "reward-usd-milestone",
-        "mode": "derived",
-        "occurredAt": "2026-08-23T07:09:51.151Z",
-        "entity": "Cypher",
-        "headline": "Cypher rewards crossed $10",
-        "detail": "Accrued reward value moved $9.65 → $10.60 and crossed the $10 milestone.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "cf83b70851687ad2fed8",
-          "sourceKeys": [
-            "rewards"
-          ]
-        },
-        "metrics": {
-          "previousUsd": 9.648064,
-          "currentUsd": 10.599472,
-          "milestoneUsd": 10
-        },
-        "attribution": {
-          "status": "not-separated",
-          "note": "Current lane cannot yet separate newly accrued reward units from reward-token price effect for this crossing."
-        }
-      },
-      {
-        "id": "EV-148ae9e8668b926e6f23",
-        "type": "observer-material-change",
-        "mode": "measured",
-        "occurredAt": "2026-08-23T07:09:51.151Z",
-        "entity": "05081966.eth",
-        "headline": "05081966.eth Reference APR moved 9.58% → 9.24% (-0.34 pp).",
-        "detail": "Meaningful changes in productive capacity are part of the company’s operating history.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "811b672a950f587b7103",
-          "sourceKeys": [
-            "productivity"
-          ]
-        },
-        "metrics": {
-          "category": "productivity",
-          "metric": "aprLatestPct",
-          "previous": 9.5827,
-          "current": 9.2407
-        },
-        "attribution": null
-      },
-      {
-        "id": "EV-66268c4216d2f06c25f7",
-        "type": "observer-material-change",
-        "mode": "measured",
-        "occurredAt": "2026-08-23T07:09:51.151Z",
-        "entity": "1milliondollar.eth",
-        "headline": "1milliondollar.eth Reference APR moved 10.36% → 10.60% (+0.24 pp).",
-        "detail": "Meaningful changes in productive capacity are part of the company’s operating history.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "4bd719dbfad380ce5ac4",
-          "sourceKeys": [
-            "productivity"
-          ]
-        },
-        "metrics": {
-          "category": "productivity",
-          "metric": "aprLatestPct",
-          "previous": 10.359,
-          "current": 10.5989
-        },
-        "attribution": null
-      },
-      {
-        "id": "EV-564d695c064882e84917",
-        "type": "observer-material-change",
-        "mode": "measured",
-        "occurredAt": "2026-08-23T07:09:51.151Z",
-        "entity": "aerocvxyb.eth",
-        "headline": "aerocvxyb.eth Reference APR moved 16.94% → 16.64% (-0.30 pp).",
-        "detail": "Meaningful changes in productive capacity are part of the company’s operating history.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "1133f52e017dbc12c175",
-          "sourceKeys": [
-            "productivity"
-          ]
-        },
-        "metrics": {
-          "category": "productivity",
-          "metric": "aprLatestPct",
-          "previous": 16.9378,
-          "current": 16.6425
-        },
-        "attribution": null
-      },
-      {
-        "id": "EV-e177be6292045e868282",
-        "type": "observer-material-change",
-        "mode": "measured",
-        "occurredAt": "2026-08-23T07:09:51.151Z",
-        "entity": "Cypher",
-        "headline": "Cypher Reference APR moved 20.45% → 35.10% (+14.65 pp).",
-        "detail": "Meaningful changes in productive capacity are part of the company’s operating history.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "4fcac5aff65522f78386",
-          "sourceKeys": [
-            "productivity"
-          ]
-        },
-        "metrics": {
-          "category": "productivity",
-          "metric": "aprLatestPct",
-          "previous": 20.4547,
-          "current": 35.1037
-        },
-        "attribution": null
-      },
-      {
-        "id": "EV-78c1f36863dc7c618fd3",
-        "type": "observer-material-change",
-        "mode": "measured",
-        "occurredAt": "2026-08-23T07:09:51.151Z",
-        "entity": "defitea.eth",
-        "headline": "defitea.eth Reference APR moved 18.34% → 11.31% (-7.03 pp).",
-        "detail": "Meaningful changes in productive capacity are part of the company’s operating history.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "a185fd212793d7a98ff0",
-          "sourceKeys": [
-            "productivity"
-          ]
-        },
-        "metrics": {
-          "category": "productivity",
-          "metric": "aprLatestPct",
-          "previous": 18.3375,
-          "current": 11.308
-        },
-        "attribution": null
-      },
-      {
-        "id": "EV-10fcbae0ec5a6dda68b9",
-        "type": "observer-material-change",
-        "mode": "measured",
-        "occurredAt": "2026-08-23T07:09:51.151Z",
-        "entity": "dinaz.eth",
-        "headline": "dinaz.eth Reference APR moved 5.38% → 4.98% (-0.40 pp).",
-        "detail": "Meaningful changes in productive capacity are part of the company’s operating history.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "4b39f51bfbec8eead09d",
-          "sourceKeys": [
-            "productivity"
-          ]
-        },
-        "metrics": {
-          "category": "productivity",
-          "metric": "aprLatestPct",
-          "previous": 5.38,
-          "current": 4.98
-        },
-        "attribution": null
-      },
-      {
-        "id": "EV-55569beece3cfd61c269",
-        "type": "observer-material-change",
-        "mode": "measured",
-        "occurredAt": "2026-08-23T07:09:51.151Z",
-        "entity": "Rook's portfolio",
-        "headline": "Rook's portfolio Reference APR moved 15.75% → 14.89% (-0.85 pp).",
-        "detail": "Meaningful changes in productive capacity are part of the company’s operating history.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "3614d34d936616b6ed14",
-          "sourceKeys": [
-            "productivity"
-          ]
-        },
-        "metrics": {
-          "category": "productivity",
-          "metric": "aprLatestPct",
-          "previous": 15.7487,
-          "current": 14.894
-        },
-        "attribution": null
-      },
-      {
-        "id": "EV-7f3a1e2ae3118ba2d739",
-        "type": "observer-material-change",
-        "mode": "measured",
-        "occurredAt": "2026-08-23T07:09:51.151Z",
-        "entity": "YieldRing.eth",
-        "headline": "YieldRing.eth Reference APR moved 15.97% → 14.66% (-1.32 pp).",
-        "detail": "Meaningful changes in productive capacity are part of the company’s operating history.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "3d1079dd1137688f7d2b",
-          "sourceKeys": [
-            "productivity"
-          ]
-        },
-        "metrics": {
-          "category": "productivity",
-          "metric": "aprLatestPct",
-          "previous": 15.9722,
-          "current": 14.6562
-        },
-        "attribution": null
-      },
-      {
-        "id": "EV-440af8635bfa11b9a8b1",
-        "type": "cash-flow-counter-change",
-        "mode": "measured",
-        "occurredAt": "2026-08-23T07:09:51.151Z",
-        "entity": "defitea.eth",
-        "headline": "defitea.eth current-month cash-flow/reference-income counter moved $58.81 → $60.67.",
-        "detail": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "9e891cc2dc0f95914d3a",
-          "sourceKeys": [
-            "reporting"
-          ]
-        },
-        "metrics": {
-          "previousUsd": 58.81,
-          "currentUsd": 60.67
-        },
-        "attribution": null
-      },
-      {
-        "id": "EV-9a788bb65696b60add8c",
-        "type": "cash-flow-counter-change",
-        "mode": "measured",
-        "occurredAt": "2026-08-23T07:09:51.151Z",
-        "entity": "Monetra.eth",
-        "headline": "Monetra.eth current-month cash-flow/reference-income counter moved $0.12 → $0.13.",
-        "detail": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "8db1400bfa1213e51584",
-          "sourceKeys": [
-            "reporting"
-          ]
-        },
-        "metrics": {
-          "previousUsd": 0.1203,
-          "currentUsd": 0.1323
-        },
-        "attribution": null
-      },
-      {
-        "id": "EV-34bd255575b3f397196b",
-        "type": "generated-income-change",
-        "mode": "measured",
-        "occurredAt": "2026-08-23T07:09:51.151Z",
-        "entity": "Monetra.eth",
-        "headline": "Monetra.eth current-month generated income moved $0.1203 → $0.1323.",
-        "detail": "Generated income is a distinct history stream for capital that may compound inside positions rather than arrive as realised cash.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "7e815d16e6a17c473bb0",
-          "sourceKeys": [
-            "reporting"
-          ]
-        },
-        "metrics": {
-          "previousUsd": 0.1203,
-          "currentUsd": 0.1323
-        },
-        "attribution": null
-      },
-      {
-        "id": "EV-dce4fbe9d939404f20e3",
-        "type": "reward-value-change",
-        "mode": "measured",
-        "occurredAt": "2026-08-23T07:09:51.151Z",
-        "entity": "05081966.eth",
-        "headline": "05081966.eth accrued rewards moved $2.48 → $2.35 ($-0.13).",
-        "detail": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "742c33649dd5cee949ba",
-          "sourceKeys": [
-            "rewards"
-          ]
-        },
-        "metrics": {
-          "previousUsd": 2.484632,
-          "currentUsd": 2.35333
-        },
-        "attribution": {
-          "status": "not-separated",
-          "note": "USD movement may combine newly accrued units and reward-token price movement until route-level decomposition is canonical."
-        }
-      },
-      {
-        "id": "EV-fba8979066ca4c8a4d8c",
-        "type": "reward-value-change",
-        "mode": "measured",
-        "occurredAt": "2026-08-23T07:09:51.151Z",
-        "entity": "0x5860...83CA8.eth",
-        "headline": "0x5860...83CA8.eth accrued rewards moved $122.86 → $116.21 ($-6.65).",
-        "detail": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "a30e6aef36040d45d037",
-          "sourceKeys": [
-            "rewards"
-          ]
-        },
-        "metrics": {
-          "previousUsd": 122.858062,
-          "currentUsd": 116.206578
-        },
-        "attribution": {
-          "status": "not-separated",
-          "note": "USD movement may combine newly accrued units and reward-token price movement until route-level decomposition is canonical."
-        }
-      },
-      {
-        "id": "EV-9a3bed03d8b69788ce19",
-        "type": "reward-value-change",
-        "mode": "measured",
-        "occurredAt": "2026-08-23T07:09:51.151Z",
-        "entity": "1milliondollar.eth",
-        "headline": "1milliondollar.eth accrued rewards moved $30.20 → $28.15 ($-2.06).",
-        "detail": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "9522e7ea4457e34722fc",
-          "sourceKeys": [
-            "rewards"
-          ]
-        },
-        "metrics": {
-          "previousUsd": 30.20498,
-          "currentUsd": 28.148689
-        },
-        "attribution": {
-          "status": "not-separated",
-          "note": "USD movement may combine newly accrued units and reward-token price movement until route-level decomposition is canonical."
-        }
-      },
-      {
-        "id": "EV-d5e533983d62defec06d",
-        "type": "reward-value-change",
-        "mode": "measured",
-        "occurredAt": "2026-08-23T07:09:51.151Z",
-        "entity": "aerocvxyb.eth",
-        "headline": "aerocvxyb.eth accrued rewards moved $168.77 → $163.25 ($-5.52).",
-        "detail": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "b08f877591783d6aadc0",
-          "sourceKeys": [
-            "rewards"
-          ]
-        },
-        "metrics": {
-          "previousUsd": 168.770875,
-          "currentUsd": 163.247695
-        },
-        "attribution": {
-          "status": "not-separated",
-          "note": "USD movement may combine newly accrued units and reward-token price movement until route-level decomposition is canonical."
-        }
-      },
-      {
-        "id": "EV-fb179abf006b7951c488",
-        "type": "reward-value-change",
-        "mode": "measured",
-        "occurredAt": "2026-08-23T07:09:51.151Z",
-        "entity": "Cypher",
-        "headline": "Cypher accrued rewards moved $9.65 → $10.60 (+$0.95).",
-        "detail": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "cf83b70851687ad2fed8",
-          "sourceKeys": [
-            "rewards"
-          ]
-        },
-        "metrics": {
-          "previousUsd": 9.648064,
-          "currentUsd": 10.599472
-        },
-        "attribution": {
-          "status": "not-separated",
-          "note": "USD movement may combine newly accrued units and reward-token price movement until route-level decomposition is canonical."
-        }
-      },
-      {
-        "id": "EV-0f678a110b314b155452",
-        "type": "reward-value-change",
-        "mode": "measured",
-        "occurredAt": "2026-08-23T07:09:51.151Z",
-        "entity": "defitea.eth",
-        "headline": "defitea.eth accrued rewards moved $137.19 → $133.46 ($-3.74).",
-        "detail": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "c8076be4c42c92a19066",
-          "sourceKeys": [
-            "rewards"
-          ]
-        },
-        "metrics": {
-          "previousUsd": 137.193317,
-          "currentUsd": 133.458109
-        },
-        "attribution": {
-          "status": "not-separated",
-          "note": "USD movement may combine newly accrued units and reward-token price movement until route-level decomposition is canonical."
-        }
-      },
-      {
-        "id": "EV-149132f555847cb5fe29",
-        "type": "reward-value-change",
-        "mode": "measured",
-        "occurredAt": "2026-08-23T07:09:51.151Z",
-        "entity": "Rook's portfolio",
-        "headline": "Rook's portfolio accrued rewards moved $190.24 → $177.61 ($-12.63).",
-        "detail": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "ff1f4a5a94b5df6f522a",
-          "sourceKeys": [
-            "rewards"
-          ]
-        },
-        "metrics": {
-          "previousUsd": 190.24178,
-          "currentUsd": 177.609568
-        },
-        "attribution": {
-          "status": "not-separated",
-          "note": "USD movement may combine newly accrued units and reward-token price movement until route-level decomposition is canonical."
-        }
-      },
-      {
-        "id": "EV-e8ba87babdb14026c5ca",
-        "type": "stable-capital-change",
-        "mode": "measured",
-        "occurredAt": "2026-08-23T07:09:51.151Z",
-        "entity": "Stable Companies Index",
-        "headline": "Stable Companies current capital moved $100.3586 → $100.3020 ($-0.0566).",
-        "detail": "Current Capital is the market-value state of Stable Capital plus separately earned claimable value.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "ffdec741a242fee916bc",
-          "sourceKeys": [
-            "stableIndex"
-          ]
-        },
-        "metrics": {
-          "metric": "currentCapitalUsd",
-          "previous": 100.35859942,
-          "current": 100.301953
-        },
-        "attribution": null
-      },
-      {
-        "id": "EV-b32e926c820f5d215363",
-        "type": "observer-material-change",
-        "mode": "measured",
-        "occurredAt": "2026-08-23T07:09:51.151Z",
-        "entity": "Stable Companies Index",
-        "headline": "Verified Stable strategy performance moved $0.4574 → $0.4189.",
-        "detail": "Strategy Performance connects verified entry principal to current nominal strategy value without mixing in stable-price effects.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "c551f6b2178bf8735199",
-          "sourceKeys": [
-            "stableIndex"
-          ]
-        },
-        "metrics": {
-          "category": "stable-capital",
-          "metric": "strategyPerformanceUsd",
-          "previous": 0.45741369,
-          "current": 0.41893198
-        },
-        "attribution": null
-      },
-      {
-        "id": "EV-f09bb967ea153c8b46ef",
-        "type": "daily-reporting-observation",
-        "mode": "measured",
-        "occurredAt": "2026-08-23T07:09:51.151Z",
-        "entity": "defitea.eth",
-        "headline": "defitea.eth recorded a new daily reporting observation for 2026-08-23.",
-        "detail": "Every new daily observation extends the operating memory used by future analytics and decision support.",
-        "severity": "memory",
-        "source": {
-          "kind": "change-history",
-          "eventId": "869c6c0c729f333de484",
-          "sourceKeys": [
-            "reporting"
-          ]
-        },
-        "metrics": {
-          "previousDate": "2026-08-22",
-          "currentDate": "2026-08-23"
-        },
-        "attribution": null
-      },
-      {
-        "id": "EV-d01c08c19f524f1d45ec",
-        "type": "daily-reporting-observation",
-        "mode": "measured",
-        "occurredAt": "2026-08-23T07:09:51.151Z",
-        "entity": "Monetra.eth",
-        "headline": "Monetra.eth recorded a new daily reporting observation for 2026-08-23.",
-        "detail": "Every new daily observation extends the operating memory used by future analytics and decision support.",
-        "severity": "memory",
-        "source": {
-          "kind": "change-history",
-          "eventId": "4e1bdc4c44f1b35a9dc5",
-          "sourceKeys": [
-            "reporting"
-          ]
-        },
-        "metrics": {
-          "previousDate": "2026-08-22",
-          "currentDate": "2026-08-23"
-        },
-        "attribution": null
-      },
-      {
-        "id": "EV-6ef406af867914fde00c",
-        "type": "company-reference-apr-change",
-        "mode": "derived",
-        "occurredAt": "2026-08-23T07:06:23.124Z",
-        "entity": "Defitea",
-        "headline": "Defitea reference APR moved 11.59% → 11.28%",
-        "detail": "Company-level reference APR changed -0.31 pp. Event Intelligence does not infer the cause without protocol-specific volume/fee evidence.",
-        "severity": "watch",
-        "source": {
-          "kind": "reporting",
-          "fund": "defitea.eth",
-          "previousDate": "2026-08-22",
-          "currentDate": "2026-08-23"
-        },
-        "metrics": {
-          "previousAprPct": 11.5898,
-          "currentAprPct": 11.2755,
-          "changePp": -0.3143,
-          "relativeChangePct": -2.7119
-        },
-        "attribution": {
-          "status": "unattributed",
-          "note": "Volume/fee/revenue causality is a coverage gap until bound to a verified mechanism-specific source."
-        }
-      },
-      {
-        "id": "EV-c3d10cd8d9b0afca6c0f",
-        "type": "protocol-reference-apr-change",
-        "mode": "derived",
-        "occurredAt": "2026-08-23T07:06:23.124Z",
-        "entity": "Defitea · convex-finance",
-        "headline": "convex-finance reference APR moved 12.65% → 11.54%",
-        "detail": "The tracked productive route changed -1.11 pp between daily snapshots. Cause remains unassigned until protocol economics are measured directly.",
-        "severity": "watch",
-        "source": {
-          "kind": "reporting",
-          "fund": "defitea.eth",
-          "engineId": "convex_vlcvx",
-          "previousDate": "2026-08-22",
-          "currentDate": "2026-08-23"
-        },
-        "metrics": {
-          "previousAprPct": 12.651,
-          "currentAprPct": 11.541,
-          "changePp": -1.11,
-          "relativeChangePct": -8.774
-        },
-        "attribution": {
-          "status": "unattributed",
-          "note": "Do not equate APR movement with trading-volume movement without source-backed protocol economics."
-        }
-      },
-      {
-        "id": "EV-fd7815ec89f0f98daa7a",
-        "type": "protocol-reference-apr-change",
-        "mode": "derived",
-        "occurredAt": "2026-08-23T07:06:23.124Z",
-        "entity": "Defitea · curve-dao-token",
-        "headline": "curve-dao-token reference APR moved 1.68% → 1.74%",
-        "detail": "The tracked productive route changed +0.06 pp between daily snapshots. Cause remains unassigned until protocol economics are measured directly.",
-        "severity": "watch",
-        "source": {
-          "kind": "reporting",
-          "fund": "defitea.eth",
-          "engineId": "curve_vecrv",
-          "previousDate": "2026-08-22",
-          "currentDate": "2026-08-23"
-        },
-        "metrics": {
-          "previousAprPct": 1.6828,
-          "currentAprPct": 1.7381,
-          "changePp": 0.0553,
-          "relativeChangePct": 3.2862
-        },
-        "attribution": {
-          "status": "unattributed",
-          "note": "Do not equate APR movement with trading-volume movement without source-backed protocol economics."
-        }
-      },
-      {
-        "id": "EV-5a676ba982dcf810b46f",
-        "type": "protocol-reference-apr-change",
-        "mode": "derived",
-        "occurredAt": "2026-08-23T07:06:23.124Z",
-        "entity": "Defitea · fxn-token",
-        "headline": "fxn-token reference APR moved 20.86% → 20.77%",
-        "detail": "The tracked productive route changed -0.09 pp between daily snapshots. Cause remains unassigned until protocol economics are measured directly.",
-        "severity": "watch",
-        "source": {
-          "kind": "reporting",
-          "fund": "defitea.eth",
-          "engineId": "fx_vefxn",
-          "previousDate": "2026-08-22",
-          "currentDate": "2026-08-23"
-        },
-        "metrics": {
-          "previousAprPct": 20.86,
-          "currentAprPct": 20.77,
-          "changePp": -0.09,
-          "relativeChangePct": -0.4314
-        },
-        "attribution": {
-          "status": "unattributed",
-          "note": "Do not equate APR movement with trading-volume movement without source-backed protocol economics."
-        }
-      },
-      {
-        "id": "EV-3d536dbb92c8efb8e9f4",
-        "type": "protocol-reference-apr-change",
-        "mode": "derived",
-        "occurredAt": "2026-08-23T07:06:23.124Z",
-        "entity": "Defitea · yield-basis",
-        "headline": "yield-basis reference APR moved 5.33% → 4.98%",
-        "detail": "The tracked productive route changed -0.35 pp between daily snapshots. Cause remains unassigned until protocol economics are measured directly.",
-        "severity": "watch",
-        "source": {
-          "kind": "reporting",
-          "fund": "defitea.eth",
-          "engineId": "yieldbasis_veyb",
-          "previousDate": "2026-08-22",
-          "currentDate": "2026-08-23"
-        },
-        "metrics": {
-          "previousAprPct": 5.33,
-          "currentAprPct": 4.98,
-          "changePp": -0.35,
-          "relativeChangePct": -6.5666
-        },
-        "attribution": {
-          "status": "unattributed",
-          "note": "Do not equate APR movement with trading-volume movement without source-backed protocol economics."
-        }
       }
     ]
   },
@@ -2106,7 +2128,7 @@
   },
   "integrity": {
     "policySha256": "7a4d4e39e20c96d0621f29e7a55f4ad94710eca256bc6f4f0b2d7eb841551701",
-    "reportingSha256": "cc76da8c8c5e5fb0e4b90b968b22a88d0647404ffc79e46cf267cd23b215358c",
-    "changeHistorySha256": "4905d4b3c7dd701663a39360f9190eec341173ec7513f56d0f52ee7aedbb8eec"
+    "reportingSha256": "5ddf59958d35fbb18ac722608b0a39cfb5259e3ee5da063cbe03ff28bdf94ef0",
+    "changeHistorySha256": "c3c085b793e8827e7615409ff5e7b96ae84d9e1d2eb556c6ffff10bfb39ea8e1"
   }
 }
