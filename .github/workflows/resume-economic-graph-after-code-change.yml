@@ -5,14 +5,11 @@ on:
   push:
     branches: [main]
     paths:
-      - 'intelligence/economic-graph/economic-graph.mjs'
-      - 'intelligence/economic-graph/economic-graph-canonical-runner.mjs'
-      - 'intelligence/economic-graph/aerodrome-veaero-candidate.mjs'
-      - 'intelligence/economic-graph/vlcvx-votium-candidate.mjs'
-      - 'intelligence/economic-graph/protocol-lifecycle.mjs'
+      - 'intelligence/economic-graph/*.mjs'
       - 'intelligence/economic-graph/protocol-lifecycle-policy.json'
-      - 'intelligence/economic-graph/protocol-lifecycle-canary.mjs'
+      - 'intelligence/explanatory/*.mjs'
       - '.github/workflows/update-economic-graph.yml'
+      - '.github/workflows/update-explanatory-context.yml'
       - '.github/workflows/resume-economic-graph-after-code-change.yml'
 
 permissions:
@@ -24,9 +21,9 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  dispatch:
+  recover:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 90
     steps:
       - name: Checkout canonical main
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -34,204 +31,180 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: Verify Economic Graph engine is present
-        run: |
-          set -euo pipefail
-          test -s intelligence/economic-graph/economic-graph.mjs
-          test -s intelligence/economic-graph/economic-graph-canonical-runner.mjs
-          test -s intelligence/economic-graph/aerodrome-veaero-candidate.mjs
-          test -s intelligence/economic-graph/vlcvx-votium-candidate.mjs
-          test -s intelligence/economic-graph/aerodrome-managed-strategy-pulse.mjs
-          test -s intelligence/economic-graph/protocol-lifecycle.mjs
-          test -s intelligence/economic-graph/protocol-lifecycle-policy.json
-          test -s intelligence/economic-graph/protocol-lifecycle-canary.mjs
-          test -s .github/workflows/update-aerodrome-managed-pulse.yml
-          node --check intelligence/economic-graph/economic-graph.mjs
-          node --check intelligence/economic-graph/economic-graph-canonical-runner.mjs
-          node --check intelligence/economic-graph/aerodrome-veaero-candidate.mjs
-          node --check intelligence/economic-graph/vlcvx-votium-candidate.mjs
-          node --check intelligence/economic-graph/aerodrome-managed-strategy-pulse.mjs
-          node --check intelligence/economic-graph/protocol-lifecycle.mjs
-          node --check intelligence/economic-graph/protocol-lifecycle-canary.mjs
-          node intelligence/economic-graph/protocol-lifecycle-canary.mjs
-
-      - name: Dispatch and await canonical Economic Graph rebuild
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Verify recovery package
         shell: bash
         run: |
           set -euo pipefail
-          BEFORE="$(gh run list --workflow update-economic-graph.yml --branch main --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId // 0')"
-          gh workflow run update-economic-graph.yml --ref main
+          REQUIRED=(
+            intelligence/economic-graph/economic-graph-canonical-runner.mjs
+            intelligence/economic-graph/protocol-lifecycle.mjs
+            intelligence/economic-graph/protocol-lifecycle-policy.json
+            intelligence/economic-graph/frax-vefrax-lifecycle.mjs
+            intelligence/economic-graph/frax-ecosystem-sensor.mjs
+            intelligence/economic-graph/frax-ecosystem-sensor-canary.mjs
+            intelligence/explanatory/explanatory-context.mjs
+            intelligence/explanatory/vlcvx-votium-curve-shadow-context.mjs
+            .github/workflows/update-economic-graph.yml
+            .github/workflows/update-explanatory-context.yml
+          )
+          for f in "${REQUIRED[@]}"; do test -s "$f"; done
+          node --check intelligence/economic-graph/economic-graph-canonical-runner.mjs
+          node --check intelligence/economic-graph/frax-vefrax-lifecycle.mjs
+          node --check intelligence/economic-graph/frax-ecosystem-sensor.mjs
+          node intelligence/economic-graph/frax-ecosystem-sensor-canary.mjs
+          node --check intelligence/explanatory/explanatory-context.mjs
+          node --check intelligence/explanatory/vlcvx-votium-curve-shadow-context.mjs
 
-          RUN_ID=""
-          for attempt in $(seq 1 30); do
-            CANDIDATE="$(gh run list --workflow update-economic-graph.yml --branch main --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId // 0')"
-            if [ "$CANDIDATE" != "0" ] && [ "$CANDIDATE" != "$BEFORE" ]; then
-              RUN_ID="$CANDIDATE"
-              break
-            fi
+      - name: Install ordered-dispatch helper
+        shell: bash
+        run: |
+          cat > /tmp/dispatch-and-await.sh <<'SH'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          workflow="$1"
+          label="$2"
+          before_id="$(gh run list --workflow "$workflow" --branch main --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId // 0')"
+          dispatched_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          gh workflow run "$workflow" --ref main
+          run_id=""
+          for attempt in $(seq 1 60); do
+            run_id="$(gh run list --workflow "$workflow" --branch main --event workflow_dispatch --limit 20 --json databaseId,createdAt --jq "[.[] | select((.databaseId|tostring) != \"${before_id}\" and .createdAt >= \"${dispatched_at}\")] | sort_by(.createdAt) | last | .databaseId // empty")"
+            if [ -n "$run_id" ]; then break; fi
             sleep 2
           done
-          if [ -z "$RUN_ID" ]; then
-            echo "ERROR: could not identify newly dispatched Economic Graph rebuild"
+          if [ -z "$run_id" ]; then
+            echo "ERROR: could not identify recovery-dispatched ${label} run"
             exit 1
           fi
-          echo "Watching Economic Graph rebuild run $RUN_ID"
-          gh run watch "$RUN_ID" --exit-status
+          echo "Awaiting ${label} run ${run_id}"
+          gh run watch "$run_id" --exit-status --interval 5
+          echo "${label} run ${run_id} PASS"
+          SH
+          chmod +x /tmp/dispatch-and-await.sh
 
-      - name: Prove physical Economic Graph lifecycle state on main
+      - name: Rebuild canonical Economic Graph first
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: /tmp/dispatch-and-await.sh update-economic-graph.yml 'Economic Graph'
+
+      - name: Prove physical eight-protocol Graph and Frax ecosystem
         shell: bash
         run: |
           set -euo pipefail
           git fetch origin main
-          git show origin/main:companies/productivity-data.json > /tmp/productivity.json
           git show origin/main:intelligence/economic-graph/economic-graph.json > /tmp/economic-graph.json
           node - <<'NODE'
           const fs=require('fs');
-          const p=JSON.parse(fs.readFileSync('/tmp/productivity.json','utf8'));
           const g=JSON.parse(fs.readFileSync('/tmp/economic-graph.json','utf8'));
-          const aero=g.candidateCohorts?.['defitea-aerodrome-veaero'];
-          const ao=aero?.latest?.observation;
-          const vlcvx=g.candidateCohorts?.['defitea-convex-vlcvx-votium'];
-          const vo=vlcvx?.latest?.observation;
           const lifecycle=g.protocolLifecycle;
-          if(g.sourceState?.productivity?.generatedAt!==p.generatedAt)throw new Error('Economic Graph not bound to current canonical Productivity snapshot');
-          if(g.candidateLayer?.version!=='0.2-multi-candidate-shadow-admission'||g.candidateLayer?.status!=='shadow-admission-active')throw new Error('Multi-candidate shadow layer missing');
-          if(Number(g.candidateLayer?.candidateCount)!==2||!g.candidateLayer?.candidateIds?.includes('defitea-aerodrome-veaero')||!g.candidateLayer?.candidateIds?.includes('defitea-convex-vlcvx-votium'))throw new Error('Multi-candidate registry mismatch');
-          if(g.candidateLayer?.canonicalCohortCountUnchanged!==true||g.candidateLayer?.promotionAuthority!=='none')throw new Error('Shadow admission authority boundary missing');
-          if(Number(g.coverage?.cohortCount)!==2)throw new Error('Canonical cohort count changed during shadow admission');
-          if(!aero||aero.status!=='shadow-measured-not-promoted'||!ao)throw new Error('Aerodrome shadow cohort not materialized');
-          if(Math.abs(Number(ao.referenceProductivity?.formula?.parityDeltaPctPoints))>0.01)throw new Error('Aerodrome Reference APR formula parity failed');
-          if(!(Number(ao.actualManagedVeNft?.positionCount)>=1)||!Number.isFinite(Number(ao.actualManagedVeNft?.currentAccruedAero)))throw new Error('Aerodrome actual managed veNFT state missing');
-          if(ao.epistemic?.primaryDriver!==null||ao.epistemic?.promotionAuthority!=='none')throw new Error('Aerodrome causal/promotion authority leaked');
-          if(!vlcvx||vlcvx.status!=='shadow-measured-not-promoted'||!vo)throw new Error('vlCVX/Votium shadow cohort not materialized');
-          if(vo.companyRoute?.routeId!=='votium-union'||vo.companyRoute?.delegate?.identity!=='votium'||vo.companyRoute?.forwarding?.identity!=='union'||vo.companyRoute?.forwarding?.effective!==true)throw new Error('vlCVX Votium→Union route missing');
-          if(Math.abs(Number(vo.referenceProductivity?.components?.parityDeltaPctPoints))>0.0001)throw new Error('vlCVX Reference APR decomposition parity failed');
-          if(vo.referenceProductivity?.semanticBoundary!=='Reference APR only; not realised company income.')throw new Error('vlCVX Reference-vs-realised boundary missing');
-          if(vo.epistemic?.primaryDriver!==null||vo.epistemic?.recommendationAuthority!=='none'||vo.epistemic?.predictionAuthority!=='none'||vo.epistemic?.promotionAuthority!=='none')throw new Error('vlCVX authority leaked');
-          if(lifecycle?.version!=='0.1-protocol-intelligence-lifecycle'||lifecycle?.policyVersion!=='0.1-protocol-intelligence-lifecycle-policy')throw new Error('Protocol lifecycle not physically materialized');
-          if(lifecycle?.authority?.executionAuthority!=='none'||lifecycle?.authority?.repositoryMutationAuthority!==false||lifecycle?.authority?.workflowDispatchAuthority!==false||lifecycle?.authority?.causalClaimAuthority!=='none')throw new Error('Protocol lifecycle authority expansion');
-          const fxStage=lifecycle?.protocols?.['defitea-fxn-vefxn']?.maturityStage;
-          const curveStage=lifecycle?.protocols?.['defitea-curve-vecrv']?.maturityStage;
-          const aeroStage=lifecycle?.protocols?.['defitea-aerodrome-veaero']?.maturityStage;
-          const vlcvxStage=lifecycle?.protocols?.['defitea-convex-vlcvx-votium']?.maturityStage;
-          if(fxStage!=='canonical'||curveStage!=='canonical')throw new Error(`Canonical lifecycle regression: f(x)=${fxStage}, Curve=${curveStage}`);
-          if(!['verified','canonical'].includes(aeroStage))throw new Error(`Aerodrome lifecycle below verified: ${aeroStage}`);
-          if(!['verified','canonical'].includes(vlcvxStage))throw new Error(`vlCVX/Votium lifecycle below verified: ${vlcvxStage}`);
-          console.log('ECONOMIC GRAPH FAST RECOVERY PHYSICAL PASS',{
-            productivityGeneratedAt:p.generatedAt,
-            graphGeneratedAt:g.generatedAt,
-            canonicalCohorts:g.coverage.cohortCount,
-            candidateCount:g.candidateLayer.candidateCount,
-            lifecycle:{fxn:fxStage,curve:curveStage,aerodrome:aeroStage,vlcvx:vlcvxStage,transitions:lifecycle.transitions?.length||0},
-            aerodromeReferenceApr:ao.referenceProductivity.canonicalAprPct,
-            vlCvxReferenceApr:vo.referenceProductivity.canonicalAprPct,
-            vlCvxVotiumApr:vo.referenceProductivity.components.votiumLastCompletedRoundAprPct,
-            vlCvxRoute:vo.companyRoute.routeId,
-            promotionAuthority:g.candidateLayer.promotionAuthority,
-            executionAuthority:g.authority.executionAuthority
-          });
+          const protocols=lifecycle?.protocols||{};
+          if(lifecycle?.version!=='0.1-protocol-intelligence-lifecycle')throw new Error('Protocol lifecycle unavailable');
+          if(Number(lifecycle?.summary?.protocolCount||Object.keys(protocols).length)!==8||Object.keys(protocols).length!==8)throw new Error('Expected eight protocol lifecycle sensors');
+          if(lifecycle?.authority?.executionAuthority!=='none'||lifecycle?.authority?.causalClaimAuthority!=='none')throw new Error('Protocol lifecycle authority drift');
+          const frax=protocols['registry-frax-vefrax'];
+          const sensor=g.protocolSensors?.['registry-frax-vefrax']?.latest?.observation;
+          const evidence=g.protocolEvidence?.['registry-frax-ecosystem'];
+          const eco=evidence?.latest?.observation;
+          if(!frax||!sensor||!eco)throw new Error('Frax lifecycle/deep evidence not physically materialized');
+          if(!['shadow','verified','canonical'].includes(frax.maturityStage))throw new Error(`Unexpected Frax lifecycle stage: ${frax.maturityStage}`);
+          if(eco.version!=='0.1-frax-deep-ecosystem-sensor-family'||eco.protocolId!=='registry-frax-vefrax')throw new Error('Frax ecosystem identity/version drift');
+          if(eco.lifecycleStage!==frax.maturityStage)throw new Error('Frax lifecycle/ecosystem stage mismatch');
+          if(Number(eco.coverage?.surfaceCount)!==9||Number(eco.coverage?.measuredSurfaceCount)!==1||Number(eco.coverage?.sourceBoundUnknownSurfaceCount)!==8)throw new Error('Frax ecosystem 9/1/8 coverage contract failed');
+          const expected=['governanceVeFrax','fraxtalFloxFxtl','frxUsdSfrxUsd','fraxNet','fraxlend','fraxswapBamm','fxb','fxLiquidity','revenueRouting'];
+          for(const key of expected)if(!eco.surfaces?.[key])throw new Error(`Frax ecosystem surface missing: ${key}`);
+          if(eco.authority?.executionAuthority!=='none'||eco.authority?.causalClaimAuthority!=='none')throw new Error('Frax ecosystem authority drift');
+          if(!String(eco.epistemic?.revenueToVeFraxAprCausality||'').startsWith('UNKNOWN'))throw new Error('Revenue→veFRAX causality over-promoted');
+          if(!String(eco.epistemic?.treasuryYieldToSpecificFxPoolIncentive||'').startsWith('UNKNOWN'))throw new Error('Treasury→FX incentive causality over-promoted');
+          console.log('GRAPH + FRAX PHYSICAL PASS',{generatedAt:g.generatedAt,protocolCount:Object.keys(protocols).length,fraxStage:frax.maturityStage,surfaces:eco.coverage.surfaceCount,measured:eco.coverage.measuredSurfaceCount,unknown:eco.coverage.sourceBoundUnknownSurfaceCount});
           NODE
 
-      - name: Preflight existing Aerodrome Managed Strategy Pulse
-        id: pulse_preflight
-        shell: bash
-        run: |
-          set -euo pipefail
-          git fetch origin main
-          if ! git show origin/main:intelligence/economic-graph/aerodrome-managed-pulse.json > /tmp/aerodrome-managed-pulse.json 2>/dev/null; then
-            echo "Aerodrome Pulse missing; refresh required."
-            echo "refresh_needed=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          if node - <<'NODE'
-          const fs=require('fs');
-          const x=JSON.parse(fs.readFileSync('/tmp/aerodrome-managed-pulse.json','utf8'));
-          const o=x.latest;
-          if(x.version!=='0.1-aerodrome-managed-strategy-pulse'||x.engineVersion!=='0.1-defitea-managed-venft-same-block-pulse')process.exit(1);
-          if(x.status!=='shadow-measured-not-promoted')process.exit(1);
-          if(x.authority?.readOnly!==true||x.authority?.executionAuthority!=='none'||x.authority?.causalClaimAuthority!=='none'||x.authority?.promotionAuthority!=='none')process.exit(1);
-          if(Number(x.sourceBinding?.canonicalCohortCountAtObservation)!==2||x.sourceBinding?.canonicalCohortCountUnchanged!==true)process.exit(1);
-          if(!o||o.chain!=='Base'||o.identity?.companyRegistry!=='004'||o.identity?.managedTokenId!=='10298'||o.identity?.depositorTokenId!=='103935')process.exit(1);
-          if(o.provenance?.sameBlockRead!==true||Number(o.provenance?.blockNumber)!==Number(o.blockNumber)||o.provenance?.blockHash!==o.blockHash)process.exit(1);
-          if(!Array.isArray(o.pools)||o.pools.length!==Number(o.voting?.votedPoolCount))process.exit(1);
-          for(const p of o.pools){
-            if(!p.pool||!p.gauge?.address||!p.feeVotingReward?.address||!p.bribeVotingReward?.address)process.exit(1);
-            if(p.epistemic?.voteToRewardDeposit!=='proven-onchain-contract-relationship')process.exit(1);
-          }
-          if(!Number.isFinite(Number(o.depositorManagedRewards?.lockedAeroAmount))||Number(o.depositorManagedRewards.lockedAeroAmount)<0)process.exit(1);
-          if(o.epistemic?.referenceAprConnection!=='not-attributed-by-this-pulse'||o.epistemic?.causalAttribution!=='unresolved-beyond-contract-accounting-identities'||o.epistemic?.primaryDriver!==null||o.epistemic?.promotionAuthority!=='none')process.exit(1);
-          console.log('AERODROME PULSE PREFLIGHT PASS',{generatedAt:x.generatedAt,block:o.blockNumber});
-          NODE
-          then
-            echo "Existing Aerodrome Pulse is semantically valid; heavy refresh skipped."
-            echo "refresh_needed=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "Existing Aerodrome Pulse is missing/invalid; bounded refresh required."
-            echo "refresh_needed=true" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Dispatch and await Aerodrome Managed Strategy Pulse repair
-        if: steps.pulse_preflight.outputs.refresh_needed == 'true'
+      - name: Rebuild Explanatory only after Graph materialization
         env:
           GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          BEFORE="$(gh run list --workflow update-aerodrome-managed-pulse.yml --branch main --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId // 0')"
-          gh workflow run update-aerodrome-managed-pulse.yml --ref main
+        run: /tmp/dispatch-and-await.sh update-explanatory-context.yml 'Explanatory Context'
 
-          RUN_ID=""
-          for attempt in $(seq 1 30); do
-            CANDIDATE="$(gh run list --workflow update-aerodrome-managed-pulse.yml --branch main --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId // 0')"
-            if [ "$CANDIDATE" != "0" ] && [ "$CANDIDATE" != "$BEFORE" ]; then
-              RUN_ID="$CANDIDATE"
-              break
-            fi
-            sleep 2
-          done
-          if [ -z "$RUN_ID" ]; then
-            echo "ERROR: could not identify newly dispatched Aerodrome Pulse repair run"
-            exit 1
-          fi
-          echo "Watching Aerodrome Managed Strategy Pulse repair run $RUN_ID"
-          gh run watch "$RUN_ID" --exit-status
-
-      - name: Prove physical Aerodrome Managed Strategy Pulse on main
+      - name: Prove exact Graph to Explanatory Frax handoff
         shell: bash
         run: |
           set -euo pipefail
           git fetch origin main
-          git show origin/main:intelligence/economic-graph/aerodrome-managed-pulse.json > /tmp/aerodrome-managed-pulse.json
+          git show origin/main:intelligence/economic-graph/economic-graph.json > /tmp/economic-graph.json
+          git show origin/main:intelligence/explanatory/explanatory-context.json > /tmp/explanatory-context.json
           node - <<'NODE'
           const fs=require('fs');
-          const x=JSON.parse(fs.readFileSync('/tmp/aerodrome-managed-pulse.json','utf8'));
-          const o=x.latest;
-          if(x.version!=='0.1-aerodrome-managed-strategy-pulse'||x.engineVersion!=='0.1-defitea-managed-venft-same-block-pulse')throw new Error('Pulse version mismatch');
-          if(x.status!=='shadow-measured-not-promoted')throw new Error('Pulse shadow status missing');
-          if(x.authority?.readOnly!==true||x.authority?.executionAuthority!=='none'||x.authority?.causalClaimAuthority!=='none'||x.authority?.promotionAuthority!=='none')throw new Error('Pulse authority regression');
-          if(Number(x.sourceBinding?.canonicalCohortCountAtObservation)!==2||x.sourceBinding?.canonicalCohortCountUnchanged!==true)throw new Error('Pulse changed canonical cohort authority');
-          if(!o||o.chain!=='Base'||o.identity?.companyRegistry!=='004'||o.identity?.managedTokenId!=='10298'||o.identity?.depositorTokenId!=='103935')throw new Error('Defitea managed veNFT identity mismatch');
-          if(o.provenance?.sameBlockRead!==true||Number(o.provenance?.blockNumber)!==Number(o.blockNumber)||o.provenance?.blockHash!==o.blockHash)throw new Error('Pulse same-block provenance missing');
-          if(!Array.isArray(o.pools)||o.pools.length!==Number(o.voting?.votedPoolCount))throw new Error('Managed voted pool set incomplete');
-          for(const p of o.pools){
-            if(!p.pool||!p.gauge?.address||!p.feeVotingReward?.address||!p.bribeVotingReward?.address)throw new Error('Pool/gauge/reward graph incomplete');
-            if(p.epistemic?.voteToRewardDeposit!=='proven-onchain-contract-relationship')throw new Error('Pool accounting relationship class missing');
-          }
-          if(!Number.isFinite(Number(o.depositorManagedRewards?.lockedAeroAmount))||Number(o.depositorManagedRewards.lockedAeroAmount)<0)throw new Error('Depositor LockedManagedReward state missing');
-          if(o.epistemic?.referenceAprConnection!=='not-attributed-by-this-pulse'||o.epistemic?.causalAttribution!=='unresolved-beyond-contract-accounting-identities'||o.epistemic?.primaryDriver!==null||o.epistemic?.promotionAuthority!=='none')throw new Error('Pulse causal boundary weakened');
-          console.log('AERODROME PULSE FAST RECOVERY PHYSICAL PASS',{
-            generatedAt:x.generatedAt,
-            block:o.blockNumber,
-            managedTokenId:o.identity.managedTokenId,
-            votedPools:o.voting.votedPoolCount,
-            usedVotingPowerPct:o.voting.usedVotingPowerPct,
-            gaugeWeeklyEmissionAero:o.aggregates.totalGaugeWeeklyEmissionRateAero,
-            lockedManagedAero:o.depositorManagedRewards.lockedAeroAmount,
-            primaryDriver:o.epistemic.primaryDriver,
-            promotionAuthority:o.epistemic.promotionAuthority,
-            executionAuthority:x.authority.executionAuthority
-          });
+          const crypto=require('crypto');
+          const graphBytes=fs.readFileSync('/tmp/economic-graph.json');
+          const graphSha=crypto.createHash('sha256').update(graphBytes).digest('hex');
+          const x=JSON.parse(fs.readFileSync('/tmp/explanatory-context.json','utf8'));
+          if(x.sourceState?.economicGraph?.sha256!==graphSha)throw new Error('Explanatory not bound to exact current Graph bytes');
+          if(Number(x.coverage?.protocolLifecycleContextCount)!==8)throw new Error('Explanatory eight-protocol lifecycle context missing');
+          if(Number(x.coverage?.deepProtocolEcosystemContextCount)!==1)throw new Error('Explanatory deep ecosystem context missing');
+          const frax=x.explanations?.protocolEcosystemContexts?.['registry-frax-ecosystem'];
+          if(!frax||frax.protocolId!=='registry-frax-vefrax')throw new Error('Explanatory Frax ecosystem context unavailable');
+          if(Number(frax.coverage?.surfaceCount)!==9||Number(frax.coverage?.measuredSurfaceCount)!==1||Number(frax.coverage?.sourceBoundUnknownSurfaceCount)!==8)throw new Error('Explanatory Frax 9/1/8 coverage drift');
+          if(frax.provenance?.graphSha256!==graphSha)throw new Error('Frax Explanatory provenance not bound to exact Graph');
+          if(frax.authority?.executionAuthority!=='none'||frax.authority?.causalClaimAuthority!=='none')throw new Error('Explanatory Frax authority drift');
+          console.log('GRAPH → EXPLANATORY PHYSICAL PASS',{graphSha,generatedAt:x.generatedAt,lifecycleContexts:x.coverage.protocolLifecycleContextCount,fraxSurfaces:frax.coverage.surfaceCount});
           NODE
+
+      - name: Refresh canonical Cognitive Stack from proven Explanatory
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: /tmp/dispatch-and-await.sh refresh-cognitive-stack.yml 'Cognitive Stack'
+
+      - name: Prove Brain consumed Frax deep context
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git show origin/main:intelligence/brain-intelligence.json > /tmp/brain.json
+          node - <<'NODE'
+          const fs=require('fs');
+          const b=JSON.parse(fs.readFileSync('/tmp/brain.json','utf8'));
+          if(Number(b.currentPosture?.protocolLifecycle?.protocolCount)!==8)throw new Error('Brain eight-protocol lifecycle missing');
+          const frax=b.currentPosture?.protocolEcosystems?.contexts?.['registry-frax-ecosystem'];
+          if(!frax)throw new Error('Brain Frax ecosystem context missing');
+          if(Number(frax.surfaceCount)!==9||Number(frax.measuredSurfaceCount)!==1||Number(frax.sourceBoundUnknownSurfaceCount)!==8)throw new Error('Brain Frax 9/1/8 coverage drift');
+          if(frax.revenueToVeFraxAprCausality!=='UNKNOWN'||frax.treasuryYieldToSpecificFxPoolIncentive!=='UNKNOWN')throw new Error('Brain Frax UNKNOWN guards weakened');
+          if(b.constraints?.actionMode!=='proposal-only'||b.constraints?.autonomousCapitalActionAllowed!==false)throw new Error('Brain authority drift');
+          console.log('EXPLANATORY → BRAIN PHYSICAL PASS',{generatedAt:b.generatedAt,protocolCount:b.currentPosture.protocolLifecycle.protocolCount,frax});
+          NODE
+
+      - name: Refresh Learning after Cognitive success
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: /tmp/dispatch-and-await.sh update-learning-loop.yml 'Learning Loop'
+
+      - name: Refresh Proposal Work Queue after Learning success
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: /tmp/dispatch-and-await.sh update-proposal-work-queue.yml 'Proposal Work Queue'
+
+      - name: Refresh Downstream Continuity after Proposal success
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: /tmp/dispatch-and-await.sh refresh-downstream-continuity.yml 'Downstream Continuity'
+
+      - name: Refresh Project Memory after downstream success
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: /tmp/dispatch-and-await.sh update-project-memory-bootstrap.yml 'Project Memory Bootstrap'
+
+      - name: Refresh Intelligence Progress after Project Memory success
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: /tmp/dispatch-and-await.sh update-intelligence-progress.yml 'Intelligence Progress'
+
+      - name: Prove Project Memory is physically current after recovery
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git show origin/main:intelligence/project-memory/CURRENT.md > /tmp/CURRENT.md
+          git show origin/main:intelligence/brain-intelligence.json > /tmp/brain.json
+          git show origin/main:intelligence/explanatory/explanatory-context.json > /tmp/explanatory.json
+          test -s /tmp/CURRENT.md
+          test -s /tmp/brain.json
+          test -s /tmp/explanatory.json
+          grep -q 'The Holding' /tmp/CURRENT.md
+          echo 'GRAPH → EXPLANATORY → BRAIN → LEARNING → DOWNSTREAM → PROJECT MEMORY PHYSICAL PASS'
