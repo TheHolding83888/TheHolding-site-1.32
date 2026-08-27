@@ -1,4 +1,5 @@
 name: "The Holding Brain · Downstream Continuity"
+# holding-workflow-definition-proof: intelligence/reliability/downstream-material-change-definition-proof.mjs
 
 on:
   workflow_dispatch:
@@ -55,11 +56,14 @@ jobs:
             "intelligence/guardian/independent-guardian-reviewer.mjs"
             "intelligence/guardian/guardian-release-guard.mjs"
             "intelligence/project-memory/build-current-memory.mjs"
+            "intelligence/reliability/downstream-material-change-definition-proof.mjs"
           )
           for f in "${REQUIRED[@]}"; do test -s "$f"; done
           node intelligence/builder/builder-release-guard.mjs
           node intelligence/guardian/guardian-release-guard.mjs
           node --check intelligence/project-memory/build-current-memory.mjs
+          node --check intelligence/reliability/downstream-material-change-definition-proof.mjs
+          node intelligence/reliability/downstream-material-change-definition-proof.mjs
 
       - name: Refresh Builder → Guardian → CURRENT atomically
         shell: bash
@@ -77,6 +81,44 @@ jobs:
             "intelligence/guardian/guardian-eval.json"
             "intelligence/project-memory/CURRENT.md"
           )
+
+          snapshot_previous() {
+            git show HEAD:intelligence/builder/candidate-queue.json > /tmp/builder-queue.previous.json
+            git show HEAD:intelligence/builder/candidate-brief.md > /tmp/builder-brief.previous.md
+            git show HEAD:intelligence/builder/candidate-eval.json > /tmp/builder-eval.previous.json
+            git show HEAD:intelligence/guardian/guardian-state.json > /tmp/guardian-state.previous.json
+            git show HEAD:intelligence/guardian/guardian-brief.md > /tmp/guardian-brief.previous.md
+            git show HEAD:intelligence/guardian/guardian-eval.json > /tmp/guardian-eval.previous.json
+            for f in /tmp/builder-queue.previous.json /tmp/builder-brief.previous.md /tmp/builder-eval.previous.json /tmp/guardian-state.previous.json /tmp/guardian-brief.previous.md /tmp/guardian-eval.previous.json; do
+              test -s "$f"
+            done
+          }
+
+          apply_builder_material_gate() {
+            set +e
+            node intelligence/reliability/downstream-material-change-definition-proof.mjs --builder /tmp/builder-queue.previous.json intelligence/builder/candidate-queue.json /tmp/builder-eval.previous.json intelligence/builder/candidate-eval.json
+            code=$?
+            set -e
+            if [ "$code" -eq 10 ]; then
+              git restore --source=HEAD -- intelligence/builder/candidate-queue.json intelligence/builder/candidate-brief.md intelligence/builder/candidate-eval.json
+              echo "No material Builder delta; preserving prior reviewed Builder packet."
+            elif [ "$code" -ne 0 ]; then
+              exit "$code"
+            fi
+          }
+
+          apply_guardian_material_gate() {
+            set +e
+            node intelligence/reliability/downstream-material-change-definition-proof.mjs --guardian /tmp/guardian-state.previous.json intelligence/guardian/guardian-state.json /tmp/guardian-eval.previous.json intelligence/guardian/guardian-eval.json
+            code=$?
+            set -e
+            if [ "$code" -eq 10 ]; then
+              git restore --source=HEAD -- intelligence/guardian/guardian-state.json intelligence/guardian/guardian-brief.md intelligence/guardian/guardian-eval.json
+              echo "No material Guardian delta; preserving prior reviewed Guardian packet."
+            elif [ "$code" -ne 0 ]; then
+              exit "$code"
+            fi
+          }
 
           verify_upstream() {
             node - <<'NODE'
@@ -105,15 +147,19 @@ jobs:
             node intelligence/builder/builder-release-guard.mjs
             node intelligence/guardian/guardian-release-guard.mjs
             verify_upstream
+            snapshot_previous
 
             node intelligence/builder/builder-engine.mjs
             node intelligence/builder/independent-builder-reviewer.mjs
+            apply_builder_material_gate
 
             node - <<'NODE'
-          const fs=require('fs');
+          const fs=require('fs'), crypto=require('crypto');
+          const sha=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
           const q=JSON.parse(fs.readFileSync('intelligence/builder/candidate-queue.json','utf8'));
           const e=JSON.parse(fs.readFileSync('intelligence/builder/candidate-eval.json','utf8'));
           if(e.status!=='pass') throw new Error('Builder reviewer did not PASS');
+          if(e.source?.candidateQueueSha256!==sha('intelligence/builder/candidate-queue.json')) throw new Error('Builder reviewer/queue byte binding mismatch after material gate');
           for(const key of ['noRepositoryCodeMutation','noBranchCreation','noPullRequestCreation','noAutomaticMerge','noAutomaticRelease','noWalletAccess','noCapitalExecution']){
             if(q.constraints?.[key]!==true) throw new Error(`Builder boundary changed: ${key}`);
           }
@@ -122,6 +168,7 @@ jobs:
 
             node intelligence/guardian/guardian-engine.mjs
             node intelligence/guardian/independent-guardian-reviewer.mjs
+            apply_guardian_material_gate
 
             node - <<'NODE'
           const fs=require('fs'), crypto=require('crypto');
@@ -131,7 +178,9 @@ jobs:
           const g=JSON.parse(fs.readFileSync('intelligence/guardian/guardian-state.json','utf8'));
           const ge=JSON.parse(fs.readFileSync('intelligence/guardian/guardian-eval.json','utf8'));
           if(be.status!=='pass' || ge.status!=='pass') throw new Error('Downstream independent reviewer did not PASS');
+          if(be.source?.candidateQueueSha256!==sha('intelligence/builder/candidate-queue.json')) throw new Error('Builder reviewer/queue byte binding mismatch');
           if(g.source?.candidateQueueSha256!==sha('intelligence/builder/candidate-queue.json')) throw new Error('Guardian/Builder byte binding mismatch');
+          if(ge.source?.guardianStateSha256!==sha('intelligence/guardian/guardian-state.json')) throw new Error('Guardian reviewer/state byte binding mismatch after material gate');
           if(g.summary?.sandboxBuildAuthorizedCount!==0 || g.summary?.productionMutationAuthorizedCount!==0) throw new Error('Guardian granted mutation authority');
           if(g.constraints?.sandboxBuildAuthority!==false || g.constraints?.executionAuthority!=='none') throw new Error('Guardian execution boundary changed');
           console.log('Builder → Guardian binding PASS',{
@@ -141,6 +190,9 @@ jobs:
           });
           NODE
 
+            # CURRENT remains independently rebuilt every run so fresh Security/System
+            # Memory or other bootstrap-relevant state can materialize even when
+            # Builder and Guardian are semantically unchanged.
             node intelligence/project-memory/build-current-memory.mjs
             git diff --check
             git add "${GENERATED[@]}"
@@ -184,6 +236,8 @@ jobs:
             echo "# The Holding · Downstream Continuity"
             echo
             echo "**Canonical sequence:** Proposal → Builder → Guardian → CURRENT"
+            echo "**Material gate:** Builder + Guardian reviewed packets preserve prior bytes on proven semantic no-op"
+            echo "**CURRENT:** always rebuilt from latest independent subsystem state"
             echo "**Generated mutation boundary:** Builder state + Guardian state + CURRENT.md only"
             echo "**Repository code mutation:** none"
             echo "**Automatic approval:** none"
