@@ -40,7 +40,7 @@ for (const required of [
   'Rebuild Explanatory only after Graph materialization',
   'Prove exact Graph to Explanatory Frax handoff',
   'Refresh Observer and System Memory before cognition',
-  'Prove fresh Observer and System Memory contract',
+  'Prove dependency-scoped Observer and System Memory contract',
   'Refresh canonical Cognitive Stack from proven Explanatory and Observer',
   'Prove Brain consumed Frax deep context',
   'Refresh Project Memory after downstream success',
@@ -50,23 +50,27 @@ for (const required of [
   assert(recovery.includes(required), `Ordered recovery contract missing: ${required}`);
 }
 
+assert(recovery.includes('--scope economic-graph-recovery'), 'Scoped recovery freshness proof missing');
+assert(recovery.includes('--max-observer-age-hours 1'), 'Bounded Observer age proof missing');
+
 const graphPos = recovery.indexOf('Rebuild canonical Economic Graph first');
 const graphProofPos = recovery.indexOf('Prove physical eight-protocol Graph and Frax ecosystem');
 const explanatoryPos = recovery.indexOf('Rebuild Explanatory only after Graph materialization');
 const explanatoryProofPos = recovery.indexOf('Prove exact Graph to Explanatory Frax handoff');
 const observerPos = recovery.indexOf('Refresh Observer and System Memory before cognition');
-const observerProofPos = recovery.indexOf('Prove fresh Observer and System Memory contract');
+const observerProofPos = recovery.indexOf('Prove dependency-scoped Observer and System Memory contract');
 const cognitivePos = recovery.indexOf('Refresh canonical Cognitive Stack from proven Explanatory and Observer');
 const memoryPos = recovery.indexOf('Refresh Project Memory after downstream success');
 assert(graphPos < graphProofPos && graphProofPos < explanatoryPos && explanatoryPos < explanatoryProofPos && explanatoryProofPos < observerPos && observerPos < observerProofPos && observerProofPos < cognitivePos && cognitivePos < memoryPos, 'Graph→Explanatory→Observer→Brain→Memory recovery order drift');
 
-console.log('EXPLANATORY CONCURRENCY + OBSERVER-GATED RECOVERY CANARY PASS', {
+console.log('EXPLANATORY CONCURRENCY + DEPENDENCY-SCOPED RECOVERY CANARY PASS', {
   prLane: 'per-pr-number',
   prSupersession: true,
   productionLane: 'serialized',
   productionCancellation: false,
   sourceCodeRaceBlocked: true,
   graphModuleCoverage: 'globbed',
-  observerFreshnessGate: true,
+  scopedObserverFreshnessGate: true,
+  graphRecoveryDependencies: ['productivity', 'rewards'],
   recoveryOrder: 'Graph→Explanatory→Observer→Brain→Memory'
 });
