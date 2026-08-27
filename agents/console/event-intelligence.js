@@ -37,6 +37,12 @@
     return `${n.toFixed(1)}h`;
   }
 
+  function fmtSourceAge(source) {
+    const generatedMs = Date.parse(source?.generatedAt || '');
+    if (!Number.isFinite(generatedMs)) return 'unknown';
+    return fmtAge(Math.max(0, (Date.now() - generatedMs) / 3600000));
+  }
+
   function fmtTime(value) {
     const ms = Date.parse(value || '');
     if (!Number.isFinite(ms)) return 'unknown time';
@@ -173,8 +179,8 @@
     body.append(side, feed);
 
     const foot = el('div', 'oei-foot');
-    const reportingAge = fmtAge(data?.sourceHealth?.reporting?.ageHours);
-    const historyAge = fmtAge(data?.sourceHealth?.changeHistory?.ageHours);
+    const reportingAge = fmtSourceAge(data?.sourceHealth?.reporting);
+    const historyAge = fmtSourceAge(data?.sourceHealth?.changeHistory);
     foot.append(
       el('span', '', `Reporting age ${reportingAge} · Observer history age ${historyAge}`),
       el('span', '', 'ONCHAIN-FIRST · READ-ONLY · CAUSALITY FAIL-CLOSED · EXECUTION NONE')
