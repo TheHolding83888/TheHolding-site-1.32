@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-28T10:20:16.907Z",
+  "generatedAt": "2026-08-28T12:44:59.773Z",
   "status": "watch",
-  "snapshotHash": "0d48345aa7279021b6af0d86409e7ce533e928caa23260ee6f4fb921fbdb0e73",
+  "snapshotHash": "aa4a4baf6d7ded0848b0ec6e87f816aadd0094e2c8c29bac6ca346429a80a180",
   "repository": {
-    "filesScanned": 710,
-    "bytesScanned": 18584696,
+    "filesScanned": 713,
+    "bytesScanned": 18614750,
     "criticalHashes": {
       ".github/workflows/admit-company-010-public.yml": "5feffbf58388675952487c3462d2f9149eecec6f3795483087010dd0d3b19cfb",
       ".github/workflows/ask-experience.yml": "deb9c4e1025390563f8a866f6ddf1c7870e748cbd6aba13fdbd6da2d38e983d4",
@@ -65,7 +65,7 @@
       ".github/workflows/update-company-monthly-reports.yml": "7847a60fe6bbedd32415b8eb3f654fa433a2d9264d05adee8c27e3a469d25b0d",
       ".github/workflows/update-company-rewards.yml": "5ce2894f50205eb546fdbcf661c9a6d578f06784c1e774973f2fe6337694486f",
       ".github/workflows/update-comparative-intelligence.yml": "618f9ec51359ae75f5b8ebc6a3e2265c0913035f4b1e7d20f8788f290f47e787",
-      ".github/workflows/update-economic-graph.yml": "35cfd64f1a41997ec94dbf599bd92b12c8953f6b1284a03b15c97d653ab7b82b",
+      ".github/workflows/update-economic-graph.yml": "4f61a17e9034c68b4f8e29c27bf19a3bc1a575fad47ff7ade533dee9cd9b6017",
       ".github/workflows/update-event-intelligence.yml": "e7319d40dca7de05ba65318288c7bdc4a4423cf9cfdaab987d2eef4190f142bf",
       ".github/workflows/update-explanatory-context.yml": "657c8106c0b18d2db1fc00afd58178a07617e2678e9f6f999d80defe601aa107",
       ".github/workflows/update-guardian-state.yml": "12b24c0609d70c2ae0ab387772ccda17ed6a9ec8ffa50a46686b0bb559913b97",
@@ -370,7 +370,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Thu, 20 Aug 2026 05:31:34 GMT",
+        "lastModified": "Thu, 27 Aug 2026 15:13:48 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -406,6 +406,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "29484f3af954eed558a1f9a6465c3ba39f8696e781a2ad86c4a530ff5f4e3e80",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/update-economic-graph.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/update-economic-graph.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "35cfd64f1a41997ec94dbf599bd92b12c8953f6b1284a03b15c97d653ab7b82b",
+        "currentSha256": "4f61a17e9034c68b4f8e29c27bf19a3bc1a575fad47ff7ade533dee9cd9b6017"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -702,10 +716,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 600,
+    "runCount": 601,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/08/2026-08-28T10-20-16-907Z-0d48345aa7.json",
-    "latestRecordHash": "5151297a6c0d2048fbd163b03dc0e6106444b4adf07ee0919f811237e7c0901e",
+    "latestRecordPath": "security/security-vault/2026/08/2026-08-28T12-44-59-773Z-aa4a4baf6d.json",
+    "latestRecordHash": "7d50523bf68e068cd905fa554ff91b824fd1e581f88aad8ee1f0073d23de4cb2",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
