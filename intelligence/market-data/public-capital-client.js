@@ -1,5 +1,5 @@
 /*
- * The Holding · Public Capital Client v0.3.4
+ * The Holding · Public Capital Client v0.3.5
  * ------------------------------------------
  * Read-only browser client for generated local Market Data / Public Capital.
  * Legacy simple-price calls are intercepted locally; browsers never need to
@@ -15,11 +15,12 @@
  * ledger sourced from the same Stable Index state as the Company Passport.
  * v0.3.4 preserves two strategies per row on mobile for Defitea and Monetra,
  * with compact premium typography and no one-column collapse on narrow phones.
+ * v0.3.5 removes unqualified currentness claims from generated capital snapshots.
  */
 (function (global) {
   'use strict';
 
-  const VERSION = '0.3.4';
+  const VERSION = '0.3.5';
   const DEFAULT_URL = '/intelligence/market-data/public-capital-state.json';
   const MARKET_URL = '/intelligence/market-data/market-data.json';
   const PRODUCTIVITY_URL = '/companies/productivity-data.json';
@@ -243,7 +244,7 @@
     scope.querySelectorAll('[data-tvl="defitea"], [data-tvl-perf="defitea"]').forEach(function (el) {
       if (el.textContent !== text) { el.textContent = text; updated += 1; }
       el.setAttribute('data-th-current-tvl-authority', 'public-capital-state');
-      el.title = 'Current capital · canonical Public Capital State';
+      el.title = 'Capital snapshot · canonical Public Capital State';
     });
     return updated;
   }
@@ -550,7 +551,7 @@
       if (value && value.textContent !== valueText) { value.textContent = valueText; updated += 1; }
       if (label && label.textContent !== labelText) { label.textContent = labelText; updated += 1; }
     }
-    setStat(stats[0], capital, 'Current Capital');
+    setStat(stats[0], capital, 'Capital Snapshot');
     setStat(stats[1], apy, 'Reference APY');
     if (stats[2]) setStat(stats[2], 'Live', 'Stable Strategy Tracking');
     stats[0].setAttribute('data-th-monetra-live', 'capital');
