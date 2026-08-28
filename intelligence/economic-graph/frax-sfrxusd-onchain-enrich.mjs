@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Frax bounded onchain Economic Graph enrichment v0.4
+ * The Holding · Frax bounded onchain Economic Graph enrichment v0.5
  *
  * Runs only after the canonical Economic Graph runner. The current Graph state
  * is enriched sequentially through existing Frax surfaces using bounded read-only
@@ -31,6 +31,10 @@ import {
   collectFraxBammOnchain,
   applyFraxBammOnchainMeasurement
 } from './frax-bamm-onchain.mjs';
+import {
+  collectFraxswapFlowFees,
+  applyFraxswapFlowFees
+} from './frax-fraxswap-flow-fees.mjs';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const OUT=process.env.ECONOMIC_GRAPH_FILE || path.join(ROOT,'intelligence/economic-graph/economic-graph.json');
@@ -70,8 +74,19 @@ async function main(){
   // is still applied through this same canonical writer. A Fraxtal/RPC failure
   // degrades only the BAMM surface to UNKNOWN; it does not fabricate zero state or
   // collapse already-proven Ethereum Frax surfaces.
+  const previousBammMeasurement=previousState?.protocolEvidence?.['registry-frax-ecosystem']?.latest?.observation?.surfaces?.fraxswapBamm?.measured||null;
   const bammMeasurement=await collectFraxBammOnchain();
   applyFraxBammOnchainMeasurement({state,previousState,measurement:bammMeasurement});
+
+  // Ordinary Fraxswap Swap events are measured only after registry-wide BAMM/pair
+  // identity is proven. The interval is previous published Fraxtal block -> current
+  // exact Fraxtal block. TWAMM virtual-order flow is intentionally excluded and
+  // remains a separate measurement atom. Gross input-fee units are mechanical;
+  // feeTo/_mintFee revenue routing remains UNKNOWN until separately proven.
+  if(bammMeasurement?.status==='ok'&&bammMeasurement?.measurementClass==='MEASURED'){
+    const fraxswapFlowFees=await collectFraxswapFlowFees({currentBammMeasurement:bammMeasurement,previousBammMeasurement});
+    applyFraxswapFlowFees({state,previousState,measurement:fraxswapFlowFees});
+  }
 
   fs.writeFileSync(OUT,JSON.stringify(state,null,2)+'\n');
 
@@ -79,6 +94,7 @@ async function main(){
   const sfrxUsd=ecosystem?.surfaces?.frxUsdSfrxUsd;
   const fraxlend=ecosystem?.surfaces?.fraxlend;
   const bamm=ecosystem?.surfaces?.fraxswapBamm;
+  const flow=bamm?.measured?.swapFlowFees;
   console.log('FRAX BOUNDED ONCHAIN CANONICAL GRAPH ENRICHMENT PASS',{
     graphEngineVersion:state.engineVersion,
     measuredSurfaces:ecosystem?.coverage?.measuredSurfaceCount,
@@ -119,6 +135,18 @@ async function main(){
       allRegistryIdentitiesProven:bamm?.measured?.registry?.allRegistryIdentitiesProven,
       rpcEndpointId:bamm?.measured?.rpc?.endpointId,
       sample:Array.isArray(bamm?.measured?.bamms)?bamm.measured.bamms.slice(0,3).map(x=>({bamm:x.bamm,pair:x.pair,utilityPct:x.values?.utilityPct,borrowRatePerSecond:x.values?.borrowRatePerSecond})):[]
+    },
+    fraxswapRegularFlow:{
+      status:flow?.status||'not-run-current-bamm-unavailable',
+      measurementClass:flow?.measurementClass||'UNKNOWN',
+      fromBlockExclusive:flow?.interval?.fromBlockExclusive??null,
+      toBlockInclusive:flow?.interval?.toBlockInclusive??null,
+      fullRegistryInterval:flow?.coverage?.fullRegistryInterval??false,
+      pairCountWithRegularSwaps:flow?.summary?.pairCountWithRegularSwaps??null,
+      regularSwapEventCount:flow?.summary?.regularSwapEventCount??null,
+      feeUpdateEventCount:flow?.summary?.feeUpdateEventCount??null,
+      twammFlow:flow?.epistemic?.twammFlow||'UNKNOWN',
+      feeRecipientSplit:flow?.epistemic?.feeRecipientSplit||'UNKNOWN'
     },
     previousCheckpointSource:'explicit-published-graph-file',
     executionAuthority:ecosystem?.authority?.executionAuthority
