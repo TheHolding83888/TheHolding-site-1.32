@@ -172,6 +172,10 @@ export async function collectFraxSfrxUsdOnchain({registry=null,fetchImpl=fetch}=
           sfrxUsdTotalAssets:round(sfrxUsdTotalAssets,8),
           sharePriceFrxUsd:round(sharePriceFrxUsd,12)
         },
+        scope:{
+          frxUsdSupply:'Ethereum frxUSD contract totalSupply only; not asserted as global cross-chain frxUSD supply',
+          sfrxUsdState:'Ethereum sfrxUSD ERC4626 contract exact-block state'
+        },
         rpc:{endpointId:endpoint.id,failoverAttempts:attempts},
         identity:{
           sharePriceFormula:'sfrxUSD totalAssets / totalSupply after token-decimal normalization',
@@ -181,6 +185,7 @@ export async function collectFraxSfrxUsdOnchain({registry=null,fetchImpl=fetch}=
         epistemic:{
           sourceType:'onchain-public-rpc-exact-block',
           currentStateMeasured:true,
+          currentStateScope:'partial-Ethereum-frxUSD-sfrxUSD-surface',
           sharePriceMechanicalIdentity:'PROVEN-current-exact-block',
           historicalBackfill:false,
           unknownIsZero:false,
@@ -273,6 +278,13 @@ export function applyFraxSfrxUsdOnchainMeasurement({state,previousState,measurem
   const surfaces=Object.values(current.surfaces||{});
   current.coverage.measuredSurfaceCount=surfaces.filter(x=>String(x.measurementState||'').startsWith('MEASURED')).length;
   current.coverage.sourceBoundUnknownSurfaceCount=surfaces.length-current.coverage.measuredSurfaceCount;
+  current.relationshipGraph=surfaces.flatMap(s=>s.mechanicalRelations.map((relation,index)=>({surfaceId:s.id,index,...relation})));
+  current.coverage.relationshipCount=current.relationshipGraph.length;
+  current.coverage.relationshipClassCounts=current.relationshipGraph.reduce((acc,relation)=>{
+    const key=String(relation.class||'UNKNOWN').split('-')[0];
+    acc[key]=(acc[key]||0)+1;
+    return acc;
+  },{});
   current.status=current.coverage.sourceBoundUnknownSurfaceCount===0?'deep-sensor-family-fully-measured':'deep-sensor-family-active-partial-measurement';
   current.epistemic.measuredEconomicSurfaces=surfaces.filter(x=>String(x.measurementState||'').startsWith('MEASURED')).map(x=>x.id);
   current.epistemic.sfrxUsdCurrentState=valid?'MEASURED':'UNKNOWN';
@@ -318,6 +330,7 @@ export function applyFraxSfrxUsdOnchainMeasurement({state,previousState,measurem
   if(fraxSensor?.latest?.observation)fraxSensor.latest.observation.ecosystemFamily=fraxSensor.ecosystemFamily;
 
   if(current.coverage.surfaceCount!==9)throw new Error('Frax ecosystem surface count drift');
+  if(current.coverage.relationshipCount!==current.relationshipGraph.length)throw new Error('Frax relationship graph count drift');
   if(valid&&current.coverage.measuredSurfaceCount!==2)throw new Error('sfrxUSD measurement did not produce exactly two measured Frax surfaces');
   if(!valid&&current.coverage.measuredSurfaceCount!==1)throw new Error('Unavailable sfrxUSD measurement must preserve one measured Frax surface');
   if(current?.authority?.executionAuthority!=='none'||current?.epistemic?.executionAuthority!=='none')throw new Error('Frax sfrxUSD execution authority leaked');
