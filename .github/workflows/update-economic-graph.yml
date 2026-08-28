@@ -67,9 +67,13 @@ jobs:
           node intelligence/economic-graph/workflow-concurrency-canary.mjs
           node --check intelligence/economic-graph/frax-vefrax-lifecycle.mjs
           node --check intelligence/economic-graph/frax-vefrax-lifecycle-canary.mjs
+          node --check intelligence/economic-graph/frax-sfrxusd-onchain.mjs
+          node --check intelligence/economic-graph/frax-sfrxusd-onchain-canary.mjs
+          node --check intelligence/economic-graph/frax-sfrxusd-onchain-runner.mjs
           node -e "JSON.parse(require('fs').readFileSync('intelligence/economic-graph/protocol-lifecycle-policy.json','utf8')); console.log('PROTOCOL LIFECYCLE POLICY JSON PASS')"
           node intelligence/economic-graph/protocol-lifecycle-canary.mjs
           node intelligence/economic-graph/frax-vefrax-lifecycle-canary.mjs
+          node intelligence/economic-graph/frax-sfrxusd-onchain-canary.mjs
           node productivity/fxn-locker-apr-guard-validation.mjs
           TMP="$(mktemp)"
           ECONOMIC_GRAPH_FILE="$TMP" node intelligence/economic-graph/economic-graph.mjs --deterministic-validation
@@ -146,7 +150,7 @@ jobs:
 
       - name: Build canonical same-snapshot Economic Graph
         if: github.event_name != 'pull_request'
-        run: node intelligence/economic-graph/economic-graph-canonical-runner.mjs
+        run: node intelligence/economic-graph/frax-sfrxusd-onchain-runner.mjs
 
       - name: Validate canonical observation boundary
         if: github.event_name != 'pull_request'
@@ -191,6 +195,17 @@ jobs:
           if(fraxSensor.authority?.executionAuthority!=='none'||fraxObservation?.epistemic?.executionAuthority!=='none')throw new Error('Frax execution authority expanded');
           if(fraxObservation?.identityBoundary?.currentCanonicalPrincipal!=='FRAX'||fraxObservation?.identityBoundary?.currentCanonicalVoteEscrowLabel!=='veFRAX'||fraxObservation?.identityBoundary?.legacyOfficialApiField!=='core.vefxs.apr')throw new Error('Frax current/legacy identity boundary drift');
           if(!String(fraxObservation?.identityBoundary?.ethereumToFraxtalLockMigrationState||'').startsWith('UNKNOWN')||!String(fraxObservation?.epistemic?.revenueToVeFraxAprCausality||'').startsWith('UNKNOWN'))throw new Error('Frax migration or revenue causality was over-claimed');
+          const fraxEcosystem=x.protocolEvidence?.['registry-frax-ecosystem']?.latest?.observation;
+          const sfrx=fraxEcosystem?.surfaces?.frxUsdSfrxUsd;
+          if(fraxEcosystem?.measurementExtensions?.sfrxUsdOnchain!=='0.1-sfrxusd-exact-block-erc4626')throw new Error('Frax sfrxUSD measurement extension missing');
+          if(!['MEASURED-current-onchain-partial','UNKNOWN-current-onchain-read-unavailable'].includes(sfrx?.measurementState))throw new Error(`Frax sfrxUSD measurement state invalid: ${sfrx?.measurementState}`);
+          if(fraxEcosystem?.authority?.executionAuthority!=='none'||sfrx?.measured?.epistemic?.executionAuthority!=='none')throw new Error('Frax sfrxUSD authority expansion');
+          if(sfrx?.measurementState.startsWith('MEASURED')){
+            if(!Number.isFinite(Number(sfrx?.measured?.values?.sharePriceFrxUsd))||!(Number(sfrx.measured.values.sharePriceFrxUsd)>0))throw new Error('Measured sfrxUSD share price missing');
+            if(!Number.isFinite(Number(sfrx?.measured?.blockNumber))||!/^0x[0-9a-f]{64}$/i.test(String(sfrx?.measured?.blockHash||'')))throw new Error('Measured sfrxUSD exact-block provenance missing');
+          }else if(sfrx?.measured?.values?.sharePriceFrxUsd!==null){
+            throw new Error('UNKNOWN sfrxUSD state fabricated a share price');
+          }
           const nativeCount=Number(fraxProtocol?.longitudinalEvidence?.validatedNativePeriodCount||0);
           const requiredNative=Number(fraxProtocol?.longitudinalEvidence?.requiredValidatedNativePeriodCount||0);
           if(!(requiredNative>=2))throw new Error('Frax native-period verification minimum missing');
@@ -200,6 +215,7 @@ jobs:
             cohorts:x.coverage.cohortCount,
             fxn:{observedAt:fx.observedAt,apr:fx.liveObservedAprPct,currentWeekWsteth:fx.drivers.cumulativeThisWeekWsteth,parity:fx.aprParityDeltaPctPoints},
             curve:{observedAt:curve.observedAt,apr:curve.canonicalProductivityAprPct,formulaApr:curve.formulaReproducedAprPct,rollingFeesCrvUSD:curve.drivers.rollingFourWeekFeesCrvUSD,rollingAverageVeSupply:curve.drivers.rollingAverageVeSupply,latestWeekFeesCrvUSD:curve.drivers.latestCompletedWeek?.tokensCrvUSD},
+            fraxSfrxUsd:{state:sfrx?.measurementState,sharePrice:sfrx?.measured?.values?.sharePriceFrxUsd,blockNumber:sfrx?.measured?.blockNumber,intervalStatus:sfrx?.measured?.intervalEmbeddedYield?.status},
             lifecycle:{fxn:fxStage,curve:curveStage,aerodrome:aeroStage,vlcvx:vlcvxStage,frax:fraxStage,fraxNativePeriods:nativeCount,transitions:l.transitions?.length||0}
           });
           NODE
@@ -230,7 +246,7 @@ jobs:
               echo "Publish conflict; refusing to guess."
               exit 1
             fi
-            node intelligence/economic-graph/economic-graph-canonical-runner.mjs
+            node intelligence/economic-graph/frax-sfrxusd-onchain-runner.mjs
             git add "$GENERATED"
             if ! git diff --cached --quiet; then git commit --amend --no-edit; fi
             if git push origin HEAD:main; then
@@ -242,7 +258,9 @@ jobs:
               test "$REMOTE_COHORTS" = "2"
               REMOTE_LIFECYCLE="$(git show "origin/main:$GENERATED" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).protocolLifecycle?.version))")"
               test "$REMOTE_LIFECYCLE" = "0.1-protocol-intelligence-lifecycle"
-              echo "Verified Economic Graph v0.2 + Protocol Lifecycle v0.1 on remote main."
+              REMOTE_SFRXUSD_EXT="$(git show "origin/main:$GENERATED" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).protocolEvidence?.['registry-frax-ecosystem']?.latest?.observation?.measurementExtensions?.sfrxUsdOnchain||''))")"
+              test "$REMOTE_SFRXUSD_EXT" = "0.1-sfrxusd-exact-block-erc4626"
+              echo "Verified Economic Graph v0.2 + Protocol Lifecycle v0.1 + Frax sfrxUSD sensor v0.1 on remote main."
               exit 0
             fi
             echo "Main moved during push; retrying ($attempt/3)..."
