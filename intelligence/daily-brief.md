@@ -1,12 +1,11 @@
 # The Holding — Autonomous Change Intelligence
 
-**Generated:** 2026-08-28T18:02:38.431Z
+**Generated:** 2026-08-28T18:53:29.031Z
 **Observer:** 0.2.1-deterministic-memory-vault-corrections
 
-## 2 material changes detected across The Holding.
+## No material system changes crossed the Observer thresholds in this run.
 
-- **Stable Companies Index** — Stable Companies Reference APY moved 4.572% → 4.802%.
-- **Stable Companies Index** — Verified Stable strategy performance moved $0.4862 → $0.5203.
+The source files were observed and normalized, but no configured material-change threshold was crossed.
 
 ## Watch next
 
@@ -26,8 +25,8 @@
 
 ## Long-term memory
 
-- Memory Vault: 26 immutable/hash-chained run records since 2026-08-13T15:19:01.108Z.
-- Latest vault record: `intelligence/memory-vault/2026/08/2026-08-28T18-02-38-431Z-4b47e51b30.json`.
+- Memory Vault: 27 immutable/hash-chained run records since 2026-08-13T15:19:01.108Z.
+- Latest vault record: `intelligence/memory-vault/2026/08/2026-08-28T18-53-29-031Z-4b47e51b30.json`.
 - Operational history remains compact; the Memory Vault has no configured lifetime cap.
 - Memory correction ledger: 1 append-only annotation; original Vault records remain immutable.
 
