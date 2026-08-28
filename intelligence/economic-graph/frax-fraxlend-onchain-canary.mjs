@@ -164,3 +164,31 @@ console.log('FRAX FRAXLEND ONCHAIN SENSOR CANARY PASS',{
   unavailableFallbackMeasuredSurfaces:obs3.coverage.measuredSurfaceCount,
   executionAuthority:obs1.authority.executionAuthority
 });
+
+if(process.env.GITHUB_ACTIONS==='true'){
+  const live=await collectFraxFraxlendOnchain();
+  if(live.status!=='ok'||live.measurementClass!=='MEASURED'){
+    throw new Error(`FRAX FRAXLEND LIVE PROBE FAILED: ${live.status}; attempts=${JSON.stringify(live.rpc?.failoverAttempts||[])}`);
+  }
+  assert.equal(live.registry?.pairMembershipProven,true,'live pair must be present in official Fraxlend Pair Registry');
+  assert.equal(String(live.contracts?.deployer||'').toLowerCase(),FRAXLEND_DEPLOYER_V4_ETHEREUM.toLowerCase(),'live pair deployer drift');
+  assert.equal(String(live.contracts?.asset||'').toLowerCase(),USDC_ETHEREUM.toLowerCase(),'live pair asset drift');
+  assert.equal(String(live.contracts?.collateral||'').toLowerCase(),SFRXETH_ETHEREUM.toLowerCase(),'live pair collateral drift');
+  assert.ok(Number.isFinite(Number(live.values?.utilizationPct)),'live utilization missing');
+  assert.ok(Number.isFinite(Number(live.values?.borrowRatePerSecond)),'live borrow-rate state missing');
+  assert.ok(Number(live.values?.fTokenSharePriceAsset)>0,'live fToken share price missing');
+  assert.equal(live.epistemic?.annualizationPerformed,false,'live probe must not invent annualization');
+  assert.equal(live.epistemic?.executionAuthority,'none','live probe authority drift');
+  console.log('FRAX FRAXLEND LIVE EXACT-BLOCK PROBE PASS',{
+    observedAt:live.observedAt,
+    blockNumber:live.blockNumber,
+    blockHash:live.blockHash,
+    pair:live.contracts.pair,
+    registryPairCount:live.registry.pairCount,
+    utilizationPct:live.values.utilizationPct,
+    borrowRatePerSecond:live.values.borrowRatePerSecond,
+    fTokenSharePriceAsset:live.values.fTokenSharePriceAsset,
+    rpcEndpointId:live.rpc.endpointId,
+    executionAuthority:live.epistemic.executionAuthority
+  });
+}
