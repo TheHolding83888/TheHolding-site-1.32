@@ -45,14 +45,27 @@ for(const required of [
   "SYSTEM_MEMORY_FILE=/tmp/system-memory.json",
   "--scope economic-graph-recovery",
   "--max-observer-age-hours 1",
-  "eco.coverage?.surfaceCount)!==9",
-  "eco.coverage?.measuredSurfaceCount)!==1",
-  "eco.coverage?.sourceBoundUnknownSurfaceCount)!==8",
+  "intelligence/economic-graph/frax-sfrxusd-onchain.mjs",
+  "intelligence/economic-graph/frax-sfrxusd-onchain-canary.mjs",
+  "intelligence/economic-graph/frax-sfrxusd-onchain-enrich.mjs",
+  "measured+unknown!==surfaceCount",
+  "measurementState.startsWith('MEASURED')",
+  "measurementState.startsWith('UNKNOWN')",
+  "sfrxUSD exact-block proof/value missing",
+  "Explanatory Frax coverage not inherited from exact Graph",
+  "Brain Frax coverage not inherited from Explanatory",
   "eco.epistemic?.revenueToVeFraxAprCausality",
   "eco.epistemic?.treasuryYieldToSpecificFxPoolIncentive",
   "eco.authority?.executionAuthority!=='none'",
   "eco.authority?.causalClaimAuthority!=='none'"
 ])assert(recovery.includes(required),`Recovery workflow contract missing: ${required}`);
+
+for(const forbidden of [
+  "Number(eco.coverage?.measuredSurfaceCount)!==1",
+  "Number(eco.coverage?.sourceBoundUnknownSurfaceCount)!==8",
+  "Explanatory Frax 9/1/8 coverage drift",
+  "Brain Frax 9/1/8 coverage drift"
+])assert(!recovery.includes(forbidden),`Recovery workflow retained stale fixed-depth contract: ${forbidden}`);
 
 assert(observer.includes('workflow_dispatch:'),'Canonical Change Intelligence Observer lacks workflow_dispatch entrypoint');
 assert(observer.includes('intelligence/system-memory.json'),'Observer no longer materializes System Memory');
@@ -130,6 +143,8 @@ console.log('FRAX GRAPH→SCOPED COGNITION→MEMORY WORKFLOW DEFINITION PROOF PA
   liveVerifierPath,
   freshnessGuardPath,
   graphModuleCoverage:'globbed',
+  fraxDepthContract:'invariant-driven',
+  sfrxUsdExactBlockBoundary:true,
   sourceRaceBlocked:true,
   globalFreshnessStillFailClosed:true,
   graphRecoveryFreshnessDependencies:['productivity','rewards'],

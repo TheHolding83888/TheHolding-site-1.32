@@ -43,6 +43,9 @@ jobs:
             intelligence/economic-graph/frax-vefrax-lifecycle.mjs
             intelligence/economic-graph/frax-ecosystem-sensor.mjs
             intelligence/economic-graph/frax-ecosystem-sensor-canary.mjs
+            intelligence/economic-graph/frax-sfrxusd-onchain.mjs
+            intelligence/economic-graph/frax-sfrxusd-onchain-canary.mjs
+            intelligence/economic-graph/frax-sfrxusd-onchain-enrich.mjs
             intelligence/explanatory/explanatory-context.mjs
             intelligence/explanatory/vlcvx-votium-curve-shadow-context.mjs
             intelligence/reliability/cognitive-freshness-guard.mjs
@@ -57,6 +60,9 @@ jobs:
           node --check intelligence/economic-graph/frax-vefrax-lifecycle.mjs
           node --check intelligence/economic-graph/frax-ecosystem-sensor.mjs
           node intelligence/economic-graph/frax-ecosystem-sensor-canary.mjs
+          node --check intelligence/economic-graph/frax-sfrxusd-onchain.mjs
+          node --check intelligence/economic-graph/frax-sfrxusd-onchain-enrich.mjs
+          node intelligence/economic-graph/frax-sfrxusd-onchain-canary.mjs
           node --check intelligence/explanatory/explanatory-context.mjs
           node --check intelligence/explanatory/vlcvx-votium-curve-shadow-context.mjs
           node --check intelligence/reliability/cognitive-freshness-guard.mjs
@@ -117,13 +123,29 @@ jobs:
           if(!['shadow','verified','canonical'].includes(frax.maturityStage))throw new Error(`Unexpected Frax lifecycle stage: ${frax.maturityStage}`);
           if(eco.version!=='0.1-frax-deep-ecosystem-sensor-family'||eco.protocolId!=='registry-frax-vefrax')throw new Error('Frax ecosystem identity/version drift');
           if(eco.lifecycleStage!==frax.maturityStage)throw new Error('Frax lifecycle/ecosystem stage mismatch');
-          if(Number(eco.coverage?.surfaceCount)!==9||Number(eco.coverage?.measuredSurfaceCount)!==1||Number(eco.coverage?.sourceBoundUnknownSurfaceCount)!==8)throw new Error('Frax ecosystem 9/1/8 coverage contract failed');
+          const surfaceCount=Number(eco.coverage?.surfaceCount);
+          const measured=Number(eco.coverage?.measuredSurfaceCount);
+          const unknown=Number(eco.coverage?.sourceBoundUnknownSurfaceCount);
+          if(surfaceCount!==9||!Number.isInteger(measured)||!Number.isInteger(unknown)||measured<1||unknown<0||measured+unknown!==surfaceCount)throw new Error(`Frax ecosystem coverage invariant failed: ${surfaceCount}/${measured}/${unknown}`);
           const expected=['governanceVeFrax','fraxtalFloxFxtl','frxUsdSfrxUsd','fraxNet','fraxlend','fraxswapBamm','fxb','fxLiquidity','revenueRouting'];
           for(const key of expected)if(!eco.surfaces?.[key])throw new Error(`Frax ecosystem surface missing: ${key}`);
+          const sfrx=eco.surfaces.frxUsdSfrxUsd;
+          const measurementState=String(sfrx.measurementState||'');
+          const m=sfrx.measured;
+          if(eco.measurementExtensions?.sfrxUsdOnchain!=='0.1-sfrxusd-exact-block-erc4626')throw new Error('sfrxUSD measurement extension identity missing');
+          if(measurementState.startsWith('MEASURED')){
+            if(m?.version!=='0.1-sfrxusd-exact-block-erc4626'||m?.status!=='ok'||m?.measurementClass!=='MEASURED')throw new Error('sfrxUSD MEASURED identity/status drift');
+            if(!(Number(m.blockNumber)>0)||!/^0x[0-9a-f]{64}$/i.test(String(m.blockHash||''))||!(Number(m.values?.sharePriceFrxUsd)>0))throw new Error('sfrxUSD exact-block proof/value missing');
+            if(m.epistemic?.sourceType!=='onchain-public-rpc-exact-block'||m.epistemic?.currentStateMeasured!==true||m.epistemic?.historicalBackfill!==false||m.epistemic?.unknownIsZero!==false||m.epistemic?.causalClaimAuthority!=='none'||m.epistemic?.executionAuthority!=='none')throw new Error('sfrxUSD MEASURED epistemic boundary drift');
+            if(measured<2)throw new Error('Measured sfrxUSD surface not reflected in Frax coverage');
+          }else if(measurementState.startsWith('UNKNOWN')){
+            if(m?.version!=='0.1-sfrxusd-exact-block-erc4626'||m?.measurementClass!=='UNKNOWN'||m?.epistemic?.currentStateMeasured!==false||m?.epistemic?.historicalBackfill!==false||m?.epistemic?.unknownIsZero!==false||m?.epistemic?.executionAuthority!=='none')throw new Error('sfrxUSD UNKNOWN fail-closed boundary drift');
+            if(m?.values?.sharePriceFrxUsd!==null)throw new Error('sfrxUSD UNKNOWN must not fabricate share price');
+          }else throw new Error(`Unexpected sfrxUSD measurement state: ${measurementState}`);
           if(eco.authority?.executionAuthority!=='none'||eco.authority?.causalClaimAuthority!=='none')throw new Error('Frax ecosystem authority drift');
           if(!String(eco.epistemic?.revenueToVeFraxAprCausality||'').startsWith('UNKNOWN'))throw new Error('Revenue→veFRAX causality over-promoted');
           if(!String(eco.epistemic?.treasuryYieldToSpecificFxPoolIncentive||'').startsWith('UNKNOWN'))throw new Error('Treasury→FX incentive causality over-promoted');
-          console.log('GRAPH + FRAX PHYSICAL PASS',{generatedAt:g.generatedAt,protocolCount:Object.keys(protocols).length,fraxStage:frax.maturityStage,surfaces:eco.coverage.surfaceCount,measured:eco.coverage.measuredSurfaceCount,unknown:eco.coverage.sourceBoundUnknownSurfaceCount});
+          console.log('GRAPH + FRAX PHYSICAL PASS',{generatedAt:g.generatedAt,protocolCount:Object.keys(protocols).length,fraxStage:frax.maturityStage,surfaces:surfaceCount,measured,unknown,sfrxUsd:measurementState});
           NODE
 
       - name: Rebuild Explanatory only after Graph materialization
@@ -143,16 +165,20 @@ jobs:
           const crypto=require('crypto');
           const graphBytes=fs.readFileSync('/tmp/economic-graph.json');
           const graphSha=crypto.createHash('sha256').update(graphBytes).digest('hex');
+          const g=JSON.parse(graphBytes);
           const x=JSON.parse(fs.readFileSync('/tmp/explanatory-context.json','utf8'));
           if(x.sourceState?.economicGraph?.sha256!==graphSha)throw new Error('Explanatory not bound to exact current Graph bytes');
           if(Number(x.coverage?.protocolLifecycleContextCount)!==8)throw new Error('Explanatory eight-protocol lifecycle context missing');
           if(Number(x.coverage?.deepProtocolEcosystemContextCount)!==1)throw new Error('Explanatory deep ecosystem context missing');
+          const graphFrax=g.protocolEvidence?.['registry-frax-ecosystem']?.latest?.observation;
           const frax=x.explanations?.protocolEcosystemContexts?.['registry-frax-ecosystem'];
-          if(!frax||frax.protocolId!=='registry-frax-vefrax')throw new Error('Explanatory Frax ecosystem context unavailable');
-          if(Number(frax.coverage?.surfaceCount)!==9||Number(frax.coverage?.measuredSurfaceCount)!==1||Number(frax.coverage?.sourceBoundUnknownSurfaceCount)!==8)throw new Error('Explanatory Frax 9/1/8 coverage drift');
+          if(!graphFrax||!frax||frax.protocolId!=='registry-frax-vefrax')throw new Error('Explanatory Frax ecosystem context unavailable');
+          const graphCoverage=graphFrax.coverage||{};
+          const explanatoryCoverage=frax.coverage||{};
+          if(Number(explanatoryCoverage.surfaceCount)!==9||Number(explanatoryCoverage.measuredSurfaceCount)!==Number(graphCoverage.measuredSurfaceCount)||Number(explanatoryCoverage.sourceBoundUnknownSurfaceCount)!==Number(graphCoverage.sourceBoundUnknownSurfaceCount)||Number(explanatoryCoverage.measuredSurfaceCount)+Number(explanatoryCoverage.sourceBoundUnknownSurfaceCount)!==9)throw new Error('Explanatory Frax coverage not inherited from exact Graph');
           if(frax.provenance?.graphSha256!==graphSha)throw new Error('Frax Explanatory provenance not bound to exact Graph');
           if(frax.authority?.executionAuthority!=='none'||frax.authority?.causalClaimAuthority!=='none')throw new Error('Explanatory Frax authority drift');
-          console.log('GRAPH → EXPLANATORY PHYSICAL PASS',{graphSha,generatedAt:x.generatedAt,lifecycleContexts:x.coverage.protocolLifecycleContextCount,fraxSurfaces:frax.coverage.surfaceCount});
+          console.log('GRAPH → EXPLANATORY PHYSICAL PASS',{graphSha,generatedAt:x.generatedAt,lifecycleContexts:x.coverage.protocolLifecycleContextCount,fraxSurfaces:frax.coverage.surfaceCount,measured:frax.coverage.measuredSurfaceCount,unknown:frax.coverage.sourceBoundUnknownSurfaceCount});
           NODE
 
       - name: Refresh Observer and System Memory before cognition
@@ -184,13 +210,16 @@ jobs:
           set -euo pipefail
           git fetch origin main
           git show origin/main:intelligence/brain-intelligence.json > /tmp/brain.json
+          git show origin/main:intelligence/explanatory/explanatory-context.json > /tmp/explanatory.json
           node - <<'NODE'
           const fs=require('fs');
           const b=JSON.parse(fs.readFileSync('/tmp/brain.json','utf8'));
+          const x=JSON.parse(fs.readFileSync('/tmp/explanatory.json','utf8'));
           if(Number(b.currentPosture?.protocolLifecycle?.protocolCount)!==8)throw new Error('Brain eight-protocol lifecycle missing');
           const frax=b.currentPosture?.protocolEcosystems?.contexts?.['registry-frax-ecosystem'];
-          if(!frax)throw new Error('Brain Frax ecosystem context missing');
-          if(Number(frax.surfaceCount)!==9||Number(frax.measuredSurfaceCount)!==1||Number(frax.sourceBoundUnknownSurfaceCount)!==8)throw new Error('Brain Frax 9/1/8 coverage drift');
+          const explanatoryFrax=x.explanations?.protocolEcosystemContexts?.['registry-frax-ecosystem'];
+          if(!frax||!explanatoryFrax)throw new Error('Brain/Explanatory Frax ecosystem context missing');
+          if(Number(frax.surfaceCount)!==9||Number(frax.measuredSurfaceCount)!==Number(explanatoryFrax.coverage?.measuredSurfaceCount)||Number(frax.sourceBoundUnknownSurfaceCount)!==Number(explanatoryFrax.coverage?.sourceBoundUnknownSurfaceCount)||Number(frax.measuredSurfaceCount)+Number(frax.sourceBoundUnknownSurfaceCount)!==9)throw new Error('Brain Frax coverage not inherited from Explanatory');
           if(frax.revenueToVeFraxAprCausality!=='UNKNOWN'||frax.treasuryYieldToSpecificFxPoolIncentive!=='UNKNOWN')throw new Error('Brain Frax UNKNOWN guards weakened');
           if(b.constraints?.actionMode!=='proposal-only'||b.constraints?.autonomousCapitalActionAllowed!==false)throw new Error('Brain authority drift');
           console.log('EXPLANATORY + OBSERVER → BRAIN PHYSICAL PASS',{generatedAt:b.generatedAt,protocolCount:b.currentPosture.protocolLifecycle.protocolCount,frax});
