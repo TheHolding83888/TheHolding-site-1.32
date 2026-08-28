@@ -77,6 +77,7 @@ function unknown({current,previous,attempts,reason='UNKNOWN-fraxswap-protocol-fe
 function classifyPairLogs({logs,feeTo,topics,pair}){
   const byTx=new Map();for(const log of logs){const tx=String(log.transactionHash||'');if(!tx)throw new Error(`Missing tx hash ${pair}`);if(!byTx.has(tx))byTx.set(tx,[]);byTx.get(tx).push(log);}
   let protocolMintEvents=0n;let protocolMintUnits=0n;let mintCalls=0;let burnCalls=0;let minimumLiquidityMints=0;const protocolEvents=[];
+  const persistProtocolEvent=(p,terminal)=>({to:p.to,valueRaw:p.value.toString(),blockNumber:p.blockNumber,logIndex:p.logIndex,tx:p.tx,terminal});
   for(const [tx,rows0] of byTx){
     const rows=[...rows0].sort((a,b)=>{const ia=rpcQuantity(a.logIndex),ib=rpcQuantity(b.logIndex);return ia<ib?-1:ia>ib?1:0;});let pending=[];
     for(const log of rows){const topic0=String(log?.topics?.[0]||'').toLowerCase();
@@ -88,13 +89,13 @@ function classifyPairLogs({logs,feeTo,topics,pair}){
       if(topic0===topics.mint){
         mintCalls++;if(!pending.length)throw new Error(`Mint without zero-origin LP mint ${pair}`);
         const userMint=pending[pending.length-1];const prior=pending.slice(0,-1);
-        for(const p of prior){if(sameAddress(p.to,ZERO)){minimumLiquidityMints++;continue;}if(!sameAddress(p.to,feeTo))throw new Error(`Unexpected pre-user LP mint destination ${p.to} ${pair}`);protocolMintEvents++;protocolMintUnits+=p.value;protocolEvents.push({...p,terminal:'Mint'});}
+        for(const p of prior){if(sameAddress(p.to,ZERO)){minimumLiquidityMints++;continue;}if(!sameAddress(p.to,feeTo))throw new Error(`Unexpected pre-user LP mint destination ${p.to} ${pair}`);protocolMintEvents++;protocolMintUnits+=p.value;protocolEvents.push(persistProtocolEvent(p,'Mint'));}
         // The final zero-origin Transfer is the user LP mint by source order, even
         // if the user deliberately chose feeTo as the mint recipient.
         void userMint;pending=[];continue;
       }
       if(topic0===topics.burn){
-        burnCalls++;for(const p of pending){if(!sameAddress(p.to,feeTo))throw new Error(`Unexpected pre-burn LP mint destination ${p.to} ${pair}`);protocolMintEvents++;protocolMintUnits+=p.value;protocolEvents.push({...p,terminal:'Burn'});}pending=[];continue;
+        burnCalls++;for(const p of pending){if(!sameAddress(p.to,feeTo))throw new Error(`Unexpected pre-burn LP mint destination ${p.to} ${pair}`);protocolMintEvents++;protocolMintUnits+=p.value;protocolEvents.push(persistProtocolEvent(p,'Burn'));}pending=[];continue;
       }
       throw new Error(`Unexpected Fraxswap protocol-fee topic ${topic0}`);
     }
