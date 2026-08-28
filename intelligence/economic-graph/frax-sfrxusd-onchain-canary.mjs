@@ -131,3 +131,8 @@ console.log('FRAX sfrxUSD ONCHAIN SENSOR CANARY PASS',{
   unavailableFallbackMeasuredSurfaces:obs3.coverage.measuredSurfaceCount,
   executionAuthority:obs2.authority.executionAuthority
 });
+
+// Keep the existing PR canary entrypoint as the single bounded Frax onchain test lane.
+// The imported Fraxlend canary is deterministic locally and additionally performs
+// a fail-closed live exact-block identity/state probe when GitHub Actions executes it.
+await import('./frax-fraxlend-onchain-canary.mjs');
