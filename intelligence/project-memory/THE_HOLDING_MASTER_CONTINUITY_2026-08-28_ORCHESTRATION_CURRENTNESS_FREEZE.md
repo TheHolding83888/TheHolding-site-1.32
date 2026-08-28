@@ -117,6 +117,24 @@ Classification: **NON-BLOCKING HISTORICAL RESIDUE**.
 
 Do not expand cancellation authority or build a queue-management subsystem solely to remove these historical entries.
 
+## Inherited durable closure checkpoints
+
+This continuity inherits, rather than replaces, the prior durable closure facts required by Project Memory verification. These are historical/canonical checkpoints; changing production truth must still be re-read from live artifacts and exact workflow evidence.
+
+- **PROJECT X + HYPERLEND CLOSED** remains a durable completed milestone.
+- **resolver completeness != promotion completeness** remains the semantic guard against promoting incomplete evidence.
+- **HyperLend base lending interest = Compounded / Embedded** remains the accounting classification.
+- **rewardAssetCount = 0** remains a valid explicit no-reward-asset state where canonically established; zero is not inferred from missing evidence.
+- **generic implementation permission != merge permission** remains an authority boundary.
+- **GREEN workflow != physically materialized production artifact** remains a production-proof rule.
+- Market Data / onchain tracking retained its **26/26** reviewed canonical asset coverage under **per-asset-authority** semantics; CoinGecko remains the bounded fallback/sanity lane, not a browser price authority.
+- Market Data **divergence** telemetry and the durable milestones represented by **PR #227** and **PR #233** remain inherited.
+- **Market Data / onchain tracking: fat check** remains a prior closed production milestone; this continuity adds the later scheduler/currentness boundary without erasing that writer/authority closure.
+- **Autonomous Observational / World Learning** remains the primary always-on learning lane; **Owner Decision → Outcome Experience** remains a sparse complementary lane.
+- **Minimum recovery packet** discipline remains mandatory: CURRENT -> latest continuity -> Router -> smallest task-specific canon/live evidence set.
+- **Pendle / sPENDLE** remains fail-closed where current independent evidence is insufficient; absence of promotion is not itself a defect.
+- executionAuthority: **none** remains the active authority boundary.
+
 ## Final milestone classification
 
 ### DONE
