@@ -53,10 +53,14 @@ async function main(){
   applyFraxFraxlendOnchainMeasurement({state,previousState,measurement:fraxlendMeasurement});
 
   // Rate-model proof is explicitly bound to the exact same Fraxlend pair/block
-  // measured immediately above. Failure keeps the pair surface MEASURED while
-  // rate-model causality remains UNKNOWN; it never fabricates a rate relation.
-  const fraxlendRateModelProof=await collectFraxFraxlendRateModel({baseMeasurement:fraxlendMeasurement});
-  applyFraxFraxlendRateModel({state,proof:fraxlendRateModelProof});
+  // measured immediately above. If the bounded pair read itself is unavailable,
+  // the already-established Fraxlend UNKNOWN state is preserved and no rate
+  // relation is fabricated. A rate-model mismatch after a valid pair read is
+  // also stored as UNKNOWN by the adapter rather than weakening the proof gate.
+  if(fraxlendMeasurement?.status==='ok'&&fraxlendMeasurement?.measurementClass==='MEASURED'){
+    const fraxlendRateModelProof=await collectFraxFraxlendRateModel({baseMeasurement:fraxlendMeasurement});
+    applyFraxFraxlendRateModel({state,proof:fraxlendRateModelProof});
+  }
 
   fs.writeFileSync(OUT,JSON.stringify(state,null,2)+'\n');
 
