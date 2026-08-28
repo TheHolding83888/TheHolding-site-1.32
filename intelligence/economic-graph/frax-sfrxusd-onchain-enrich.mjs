@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Frax bounded onchain Economic Graph enrichment v0.7
+ * The Holding · Frax bounded onchain Economic Graph enrichment v0.8
  *
  * Runs only after the canonical Economic Graph runner. The current Graph state
  * is enriched sequentially through existing Frax surfaces using bounded read-only
@@ -43,6 +43,10 @@ import {
   collectFraxswapProtocolFeeRouting,
   applyFraxswapProtocolFeeRouting
 } from './frax-fraxswap-protocol-fee-routing.mjs';
+import {
+  collectFraxswapFeeToLifecycle,
+  applyFraxswapFeeToLifecycle
+} from './frax-fraxswap-feeto-lifecycle.mjs';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const OUT=process.env.ECONOMIC_GRAPH_FILE || path.join(ROOT,'intelligence/economic-graph/economic-graph.json');
@@ -77,9 +81,10 @@ async function main(){
   const bammMeasurement=await collectFraxBammOnchain();
   applyFraxBammOnchainMeasurement({state,previousState,measurement:bammMeasurement});
 
-  // Fraxswap ordinary Swap flow, TWAMM virtual execution, and protocol-fee LP
-  // mint routing are distinct atoms. They share exact published Fraxtal interval
-  // boundaries but retain separate accounting and epistemic identities.
+  // Fraxswap ordinary Swap flow, TWAMM virtual execution, protocol-fee LP
+  // mint routing, and feeTo LP lifecycle are distinct atoms. They share exact
+  // published Fraxtal interval boundaries but retain separate accounting and
+  // epistemic identities.
   if(bammMeasurement?.status==='ok'&&bammMeasurement?.measurementClass==='MEASURED'){
     const fraxswapFlowFees=await collectFraxswapFlowFees({currentBammMeasurement:bammMeasurement,previousBammMeasurement});
     applyFraxswapFlowFees({state,previousState,measurement:fraxswapFlowFees});
@@ -87,11 +92,22 @@ async function main(){
     const fraxswapTwamm=await collectFraxswapTwamm({currentBammMeasurement:bammMeasurement,previousBammMeasurement});
     applyFraxswapTwamm({state,previousState,measurement:fraxswapTwamm});
 
-    // Unlike the first two atoms, protocol-fee routing enumerates the complete
-    // Fraxswap Factory registry rather than only BAMM-associated pairs. LP units
-    // are kept pair-local because LP tokens from distinct pairs are heterogeneous.
+    // Protocol-fee routing enumerates the complete Fraxswap Factory registry
+    // rather than only BAMM-associated pairs. LP units from distinct pairs are
+    // heterogeneous and remain pair-local.
     const fraxswapProtocolFee=await collectFraxswapProtocolFeeRouting({currentBammMeasurement:bammMeasurement,previousBammMeasurement});
     applyFraxswapProtocolFeeRouting({state,previousState,measurement:fraxswapProtocolFee});
+
+    // The next bounded atom starts only after protocol-fee routing is measured.
+    // It proves pair-local feeTo holdings, exact LP transfer conservation, and
+    // strict feeTo -> pair -> burn redemptions. Downstream address semantics
+    // remain UNKNOWN and the end-to-end revenue-routing surface is not promoted.
+    const fraxswapFeeToLifecycle=await collectFraxswapFeeToLifecycle({
+      currentBammMeasurement:bammMeasurement,
+      previousBammMeasurement,
+      protocolFeeMeasurement:fraxswapProtocolFee
+    });
+    applyFraxswapFeeToLifecycle({state,previousState,measurement:fraxswapFeeToLifecycle});
   }
 
   fs.writeFileSync(OUT,JSON.stringify(state,null,2)+'\n');
@@ -103,6 +119,7 @@ async function main(){
   const flow=bamm?.measured?.swapFlowFees;
   const twamm=bamm?.measured?.twammFlow;
   const protocolFee=bamm?.measured?.protocolFeeRouting;
+  const feeToLifecycle=bamm?.measured?.feeToLpLifecycle;
   console.log('FRAX BOUNDED ONCHAIN CANONICAL GRAPH ENRICHMENT PASS',{
     graphEngineVersion:state.engineVersion,
     measuredSurfaces:ecosystem?.coverage?.measuredSurfaceCount,
@@ -152,6 +169,9 @@ async function main(){
     },
     fraxswapProtocolFeeRouting:{
       status:protocolFee?.status||'not-run-current-bamm-unavailable',measurementClass:protocolFee?.measurementClass||'UNKNOWN',factoryPairCount:protocolFee?.factory?.endPairCount??null,bammSubsetPairCount:protocolFee?.coverage?.bammSubsetPairCount??null,nonBammPairCount:protocolFee?.coverage?.nonBammPairCount??null,feeTo:protocolFee?.factory?.endFeeTo??null,checkpointFeeToParity:protocolFee?.factory?.checkpointFeeToParity??false,pairCountWithProtocolFeeMints:protocolFee?.summary?.pairCountWithProtocolFeeMints??null,protocolFeeMintEventCount:protocolFee?.summary?.protocolFeeMintEventCount??null,protocolFeeLpMintFlow:protocolFee?.epistemic?.protocolFeeLpMintFlow||'UNKNOWN',feeToIntervalStability:protocolFee?.epistemic?.feeToIntervalStability||'UNKNOWN',heterogeneousLpUnitsAggregated:protocolFee?.epistemic?.heterogeneousLpUnitsAggregated??false
+    },
+    fraxswapFeeToLpLifecycle:{
+      status:feeToLifecycle?.status||'not-run-protocol-fee-prerequisite-unavailable',measurementClass:feeToLifecycle?.measurementClass||'UNKNOWN',feeTo:feeToLifecycle?.feeTo??null,pairCount:feeToLifecycle?.summary?.pairCount??null,pairCountWithPositiveEndBalance:feeToLifecycle?.summary?.pairCountWithPositiveEndBalance??null,pairCountWithOutflows:feeToLifecycle?.summary?.pairCountWithOutflows??null,outboundTransferEventCount:feeToLifecycle?.summary?.outboundTransferEventCount??null,pairCountWithStrictRedemptions:feeToLifecycle?.summary?.pairCountWithStrictRedemptions??null,strictRedemptionCount:feeToLifecycle?.summary?.strictRedemptionCount??null,unresolvedPairTransferOutflowCount:feeToLifecycle?.summary?.unresolvedPairTransferOutflowCount??null,balanceConservation:feeToLifecycle?.epistemic?.feeToLpBalanceConservation||'UNKNOWN',redemptionFlow:feeToLifecycle?.epistemic?.feeToLpRedemptionFlow||'UNKNOWN',downstreamRecipientSemantics:feeToLifecycle?.epistemic?.downstreamRecipientSemantics||'UNKNOWN',protocolRevenueUsdClaim:feeToLifecycle?.epistemic?.protocolRevenueUsdClaim??false,veFraxDistributionClaim:feeToLifecycle?.epistemic?.veFraxDistributionClaim??false
     },
     previousCheckpointSource:'explicit-published-graph-file',
     executionAuthority:ecosystem?.authority?.executionAuthority
