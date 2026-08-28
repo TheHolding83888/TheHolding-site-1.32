@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Frax bounded onchain Economic Graph enrichment v0.3
+ * The Holding · Frax bounded onchain Economic Graph enrichment v0.4
  *
  * Runs only after the canonical Economic Graph runner. The current Graph state
  * is enriched sequentially through existing Frax surfaces using bounded read-only
@@ -27,6 +27,10 @@ import {
   collectFraxFraxlendRateModel,
   applyFraxFraxlendRateModel
 } from './frax-fraxlend-rate-model.mjs';
+import {
+  collectFraxBammOnchain,
+  applyFraxBammOnchainMeasurement
+} from './frax-bamm-onchain.mjs';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const OUT=process.env.ECONOMIC_GRAPH_FILE || path.join(ROOT,'intelligence/economic-graph/economic-graph.json');
@@ -62,11 +66,19 @@ async function main(){
     applyFraxFraxlendRateModel({state,proof:fraxlendRateModelProof});
   }
 
+  // BAMM is a separate Fraxtal exact-block domain. The registry-first measurement
+  // is still applied through this same canonical writer. A Fraxtal/RPC failure
+  // degrades only the BAMM surface to UNKNOWN; it does not fabricate zero state or
+  // collapse already-proven Ethereum Frax surfaces.
+  const bammMeasurement=await collectFraxBammOnchain();
+  applyFraxBammOnchainMeasurement({state,previousState,measurement:bammMeasurement});
+
   fs.writeFileSync(OUT,JSON.stringify(state,null,2)+'\n');
 
   const ecosystem=state?.protocolEvidence?.['registry-frax-ecosystem']?.latest?.observation;
   const sfrxUsd=ecosystem?.surfaces?.frxUsdSfrxUsd;
   const fraxlend=ecosystem?.surfaces?.fraxlend;
+  const bamm=ecosystem?.surfaces?.fraxswapBamm;
   console.log('FRAX BOUNDED ONCHAIN CANONICAL GRAPH ENRICHMENT PASS',{
     graphEngineVersion:state.engineVersion,
     measuredSurfaces:ecosystem?.coverage?.measuredSurfaceCount,
@@ -97,6 +109,16 @@ async function main(){
       rateModelParity:fraxlend?.measured?.rateModel?.parity?.accepted,
       rateModelReproduction:fraxlend?.measured?.epistemic?.borrowRateModelReproduction,
       rpcEndpointId:fraxlend?.measured?.rpc?.endpointId
+    },
+    bamm:{
+      measurementState:bamm?.measurementState,
+      observedAt:bamm?.measured?.observedAt,
+      blockNumber:bamm?.measured?.blockNumber,
+      bammCount:bamm?.measured?.registry?.bammCount,
+      activeRentedBammCount:bamm?.measured?.registry?.activeRentedBammCount,
+      allRegistryIdentitiesProven:bamm?.measured?.registry?.allRegistryIdentitiesProven,
+      rpcEndpointId:bamm?.measured?.rpc?.endpointId,
+      sample:Array.isArray(bamm?.measured?.bamms)?bamm.measured.bamms.slice(0,3).map(x=>({bamm:x.bamm,pair:x.pair,utilityPct:x.values?.utilityPct,borrowRatePerSecond:x.values?.borrowRatePerSecond})):[]
     },
     previousCheckpointSource:'explicit-published-graph-file',
     executionAuthority:ecosystem?.authority?.executionAuthority
