@@ -42,7 +42,7 @@ jobs:
           const wf=fs.readFileSync('.github/workflows/unified-capital-refresh.yml','utf8');
           if(/run:\s*node intelligence\/market-data\/market-data-engine\.mjs/.test(wf))throw new Error('Unified Capital must not execute legacy Market Data writer');
           if(/git add[\s\\\n\r\t\w./-]*intelligence\/market-data\/market-data\.json/.test(wf))throw new Error('Unified Capital must not stage canonical market-data.json');
-          if(!wf.includes('Require canonical onchain-selected Market Data'))throw new Error('canonical Market Data admission guard missing');
+          if(!wf.includes('Require canonical per-asset Market Data'))throw new Error('canonical Market Data admission guard missing');
           if(!wf.includes("prices['internet-computer']")||!wf.includes("selectedLane!=='onchain'"))throw new Error('ICP onchain consumer proof missing');
           if(!wf.includes("registry==='005'")||!wf.includes("registry==='006'"))throw new Error('Company #005/#006 ICP parity proof missing');
           console.log('Market Data writer ownership boundary PASS');
