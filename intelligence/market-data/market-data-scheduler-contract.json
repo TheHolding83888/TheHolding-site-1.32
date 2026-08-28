@@ -2,7 +2,8 @@
   "version": "0.2-market-data-scheduler-delivery-resilience",
   "status": "production",
   "workflow": "The Holding Market Data · Shared Refresh",
-  "cron": "7,22,37,52 * * * *",
+  "cron": "7,37 * * * *",
+  "recoveryCron": "22,52 * * * *",
   "cadenceMinutes": 30,
   "schedulerAttemptCadenceMinutes": 15,
   "scheduledRefreshAdmissionAgeMinutes": 25,
@@ -14,8 +15,9 @@
     "intelligence/market-data/public-capital-state.json"
   ],
   "deliveryResilience": {
+    "primaryThirtyMinuteHeartbeatPreserved": true,
+    "sameWorkflowRecoverySchedule": true,
     "singleCanonicalWriter": true,
-    "sameWorkflowRetryAttempts": true,
     "secondWriter": false,
     "externalWatchdogDispatch": false,
     "scheduledAttemptSkipsWhenSnapshotFresh": true,
