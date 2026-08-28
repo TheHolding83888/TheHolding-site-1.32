@@ -126,7 +126,24 @@ function buildFraxEcosystemContext({graph,graphSha256}){
   if(!evidence||!observation||!fraxLifecycle)fail('Frax ecosystem evidence unavailable');
   if(observation?.version!=='0.1-frax-deep-ecosystem-sensor-family')fail('Unexpected Frax ecosystem version');
   if(observation?.protocolId!==FRAX_PROTOCOL_ID||fraxLifecycle?.maturityStage!==observation?.lifecycleStage)fail('Frax ecosystem/lifecycle identity drift');
-  if(Number(observation?.coverage?.surfaceCount)!==9||Number(observation?.coverage?.measuredSurfaceCount)!==1||Number(observation?.coverage?.sourceBoundUnknownSurfaceCount)!==8)fail('Frax ecosystem coverage drift');
+
+  const surfaceCount=Number(observation?.coverage?.surfaceCount);
+  const measured=Number(observation?.coverage?.measuredSurfaceCount);
+  const unknown=Number(observation?.coverage?.sourceBoundUnknownSurfaceCount);
+  const surfaces=observation?.surfaces??{};
+  const surfaceEntries=Object.entries(surfaces);
+  if(surfaceCount!==9||surfaceEntries.length!==surfaceCount||!Number.isInteger(measured)||!Number.isInteger(unknown)||measured<1||unknown<0||measured+unknown!==surfaceCount)fail(`Frax ecosystem coverage drift: ${surfaceCount}/${measured}/${unknown}`);
+  const measuredSurfaceIds=surfaceEntries.filter(([,surface])=>String(surface?.measurementState??'').startsWith('MEASURED')).map(([id])=>id);
+  const unknownSurfaceIds=surfaceEntries.filter(([,surface])=>String(surface?.measurementState??'').startsWith('UNKNOWN')).map(([id])=>id);
+  if(measuredSurfaceIds.length!==measured||unknownSurfaceIds.length!==unknown)fail('Frax ecosystem surface-state/count mismatch');
+
+  const sfrx=surfaces.frxUsdSfrxUsd;
+  if(String(sfrx?.measurementState??'').startsWith('MEASURED')){
+    const m=sfrx?.measured;
+    if(m?.version!=='0.1-sfrxusd-exact-block-erc4626'||m?.measurementClass!=='MEASURED'||m?.epistemic?.sourceType!=='onchain-public-rpc-exact-block'||m?.epistemic?.currentStateMeasured!==true||!(Number(m?.values?.sharePriceFrxUsd)>0)||!(Number(m?.blockNumber)>0))fail('Frax sfrxUSD measured proof drift');
+    if(m?.epistemic?.historicalBackfill!==false||m?.epistemic?.unknownIsZero!==false||m?.epistemic?.causalClaimAuthority!=='none'||m?.epistemic?.executionAuthority!=='none')fail('Frax sfrxUSD epistemic boundary drift');
+  }
+
   if(observation?.epistemic?.executionAuthority!=='none'||observation?.authority?.executionAuthority!=='none'||observation?.authority?.causalClaimAuthority!=='none')fail('Frax ecosystem authority drift');
   if(!String(observation?.epistemic?.revenueToVeFraxAprCausality||'').startsWith('UNKNOWN')||!String(observation?.epistemic?.treasuryYieldToSpecificFxPoolIncentive||'').startsWith('UNKNOWN'))fail('Frax ecosystem causal boundary weakened');
   return {
@@ -140,7 +157,7 @@ function buildFraxEcosystemContext({graph,graphSha256}){
     relationshipGraph:observation.relationshipGraph,
     epistemic:observation.epistemic,
     nextMeasurementUnlocks:observation.nextMeasurementUnlocks,
-    explanation:'Frax is now represented as one lifecycle sensor with a nine-surface ecosystem family: veFRAX governance is currently measured; Fraxtal/Flox/FXTL, frxUSD/sfrxUSD, FraxNet, Fraxlend, Fraxswap/BAMM, FXB, FX liquidity and end-to-end revenue routing are source-bound but remain UNKNOWN for current economic values until reproducible ingestion exists. This prevents source topology from being mistaken for measurement or causality.',
+    explanation:`Frax is represented as one lifecycle sensor with a nine-surface ecosystem family. Current Economic Graph evidence marks ${measured} surface(s) as MEASURED (${measuredSurfaceIds.join(', ')}) and ${unknown} surface(s) as source-bound UNKNOWN (${unknownSurfaceIds.join(', ')}). Measured state is inherited from exact Graph evidence only; source topology and measured association do not authorize causal attribution, recommendation, allocation or execution claims.`,
     provenance:{economicGraphFile:GRAPH,graphSha256,observationId:observation.id,evidenceVersion:evidence.version},
     authority:observation.authority
   };
