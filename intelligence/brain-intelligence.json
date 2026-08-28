@@ -1,20 +1,20 @@
 {
   "version": "0.1-grounded-reasoning-gateway",
   "reasonerVersion": "0.1-deterministic-evidence-bound-reasoner",
-  "generatedAt": "2026-08-27T19:04:12.113Z",
+  "generatedAt": "2026-08-28T13:10:52.999Z",
   "mode": "delta",
   "status": "watch",
-  "headline": "25 evidence-bound reasoning case(s) are active across economic and security memory.",
+  "headline": "9 evidence-bound reasoning case(s) are active across economic and security memory.",
   "currentPosture": {
     "observer": {
       "mode": "delta",
-      "materialChangeCount": 20,
+      "materialChangeCount": 0,
       "watchCount": 6,
       "snapshotHash": "5b29b412447c192b08f6c85608d3aaef4f07010673f56e5ee033d56953cbf85f",
       "sourceCompositeHash": "f9e86a907bb60fe761a1309d9232df5eeeb67b0a3ec1502961a7c4374dcfdf1d"
     },
     "memory": {
-      "vaultRunCount": 19,
+      "vaultRunCount": 20,
       "vaultEventCount": 250,
       "correctionEntryCount": 1,
       "correctionPrecedence": "correction-ledger-over-target-record-field"
@@ -137,8 +137,21 @@
           "protocolId": "registry-frax-vefrax",
           "lifecycleStage": "shadow",
           "surfaceCount": 9,
-          "measuredSurfaceCount": 1,
-          "sourceBoundUnknownSurfaceCount": 8,
+          "measuredSurfaceCount": 2,
+          "sourceBoundUnknownSurfaceCount": 7,
+          "measuredSurfaceIds": [
+            "governanceVeFrax",
+            "frxUsdSfrxUsd"
+          ],
+          "sourceBoundUnknownSurfaceIds": [
+            "fraxtalFloxFxtl",
+            "fraxNet",
+            "fraxlend",
+            "fraxswapBamm",
+            "fxb",
+            "fxLiquidity",
+            "revenueRouting"
+          ],
           "revenueToVeFraxAprCausality": "UNKNOWN",
           "treasuryYieldToSpecificFxPoolIncentive": "UNKNOWN"
         }
@@ -147,342 +160,15 @@
   },
   "questions": {
     "whatChanged": {
-      "answer": "Current canonical inputs contain 20 material Observer change(s), 0 new security finding event(s), and 0 resolved security finding event(s). Canonical protocol-economic context is available across 2 cohorts (f(x) veFXN Locker; Curve veCRV Fee Distributor). f(x) remains measured context with unresolved causality; Curve exposes a proven APR mechanical identity while the upstream cause of fee-distribution changes remains unresolved. Shadow vlCVX/Votium evidence additionally proves 79/79 post-migration vote matching, 79/79 Curve gauge execution rows, and complete current pool context for 31/31 currently eligible mapped Curve gauges; causality beyond mechanical execution remains unresolved. Protocol Intelligence now exposes eight lifecycle contexts and one deep Frax ecosystem family with nine tracked surfaces; only veFRAX governance is currently measured, while eight wider ecosystem surfaces remain source-bound UNKNOWN.",
+      "answer": "No new material Observer or Security change events are present in the current canonical inputs. Existing watch items remain active. Canonical protocol-economic context is available across 2 cohorts (f(x) veFXN Locker; Curve veCRV Fee Distributor). f(x) remains measured context with unresolved causality; Curve exposes a proven APR mechanical identity while the upstream cause of fee-distribution changes remains unresolved. Shadow vlCVX/Votium evidence additionally proves 79/79 post-migration vote matching, 79/79 Curve gauge execution rows, and complete current pool context for 31/31 currently eligible mapped Curve gauges; causality beyond mechanical execution remains unresolved. Protocol Intelligence exposes eight lifecycle contexts and one deep Frax ecosystem family with nine tracked surfaces; 2 surface(s) are currently MEASURED (governanceVeFrax, frxUsdSfrxUsd), while 7 remain source-bound UNKNOWN.",
       "confidence": "high",
       "evidence": [
         {
           "source": "intelligence/change-intelligence.json",
           "pointer": "/whatChanged",
-          "value": [
-            {
-              "id": "b2cd1bc85b6a95f1e98a",
-              "detectedAt": "2026-08-27T17:46:21.337Z",
-              "category": "system",
-              "entity": "reporting",
-              "metric": "source-version",
-              "previousValue": "1.2.0-defitea-canonical-market-data",
-              "currentValue": "1.2.1-resilient-rate-coverage",
-              "unit": null,
-              "severity": "important",
-              "summary": "reporting source version changed 1.2.0-defitea-canonical-market-data → 1.2.1-resilient-rate-coverage.",
-              "whyItMatters": "A source/schema version change can unlock new capabilities or alter downstream assumptions and should be observed explicitly.",
-              "sourceKeys": [
-                "reporting"
-              ]
-            },
-            {
-              "id": "4f98541bd42d6739430a",
-              "detectedAt": "2026-08-27T17:46:21.337Z",
-              "category": "rewards",
-              "entity": "Cypher",
-              "metric": "status",
-              "previousValue": "ok",
-              "currentValue": "partial",
-              "unit": null,
-              "severity": "watch",
-              "summary": "Cypher Rewards status changed ok → partial.",
-              "whyItMatters": "Reward measurement completeness affects the reliability of current earned-but-unclaimed value.",
-              "sourceKeys": [
-                "rewards"
-              ]
-            },
-            {
-              "id": "8f444799c1828ac61206",
-              "detectedAt": "2026-08-27T17:46:21.337Z",
-              "category": "rewards",
-              "entity": "Cypher",
-              "metric": "completeness",
-              "previousValue": {
-                "pendingRoutes": 0,
-                "unpricedRewards": 0
-              },
-              "currentValue": {
-                "pendingRoutes": 1,
-                "unpricedRewards": 0
-              },
-              "unit": null,
-              "severity": "watch",
-              "summary": "Cypher Rewards completeness changed: pending routes 0 → 1, unpriced 0 → 0.",
-              "whyItMatters": "Completeness improvements turn previously partial observations into reusable verified intelligence.",
-              "sourceKeys": [
-                "rewards"
-              ]
-            },
-            {
-              "id": "4fb4026da79803618d9d",
-              "detectedAt": "2026-08-27T17:46:21.337Z",
-              "category": "productivity",
-              "entity": "1milliondollar.eth",
-              "metric": "aprLatestPct",
-              "previousValue": 10.8217,
-              "currentValue": 11.4505,
-              "unit": "percentage-points",
-              "severity": "info",
-              "summary": "1milliondollar.eth Reference APR moved 10.82% → 11.45% (+0.63 pp).",
-              "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
-              "sourceKeys": [
-                "productivity"
-              ]
-            },
-            {
-              "id": "9cac3c2143eb942aa563",
-              "detectedAt": "2026-08-27T17:46:21.337Z",
-              "category": "productivity",
-              "entity": "Cypher",
-              "metric": "aprLatestPct",
-              "previousValue": 24.0825,
-              "currentValue": 23.2581,
-              "unit": "percentage-points",
-              "severity": "info",
-              "summary": "Cypher Reference APR moved 24.08% → 23.26% (-0.82 pp).",
-              "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
-              "sourceKeys": [
-                "productivity"
-              ]
-            },
-            {
-              "id": "82d30fb161552b073f9b",
-              "detectedAt": "2026-08-27T17:46:21.337Z",
-              "category": "productivity",
-              "entity": "defitea.eth",
-              "metric": "aprLatestPct",
-              "previousValue": 11.775,
-              "currentValue": 12.0049,
-              "unit": "percentage-points",
-              "severity": "info",
-              "summary": "defitea.eth Reference APR moved 11.78% → 12.00% (+0.23 pp).",
-              "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
-              "sourceKeys": [
-                "productivity"
-              ]
-            },
-            {
-              "id": "58dbab164ea131d33f85",
-              "detectedAt": "2026-08-27T17:46:21.337Z",
-              "category": "productivity",
-              "entity": "dinaz.eth",
-              "metric": "aprLatestPct",
-              "previousValue": 4.88,
-              "currentValue": 5.71,
-              "unit": "percentage-points",
-              "severity": "info",
-              "summary": "dinaz.eth Reference APR moved 4.88% → 5.71% (+0.83 pp).",
-              "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
-              "sourceKeys": [
-                "productivity"
-              ]
-            },
-            {
-              "id": "dcd76ed96891ceacc49a",
-              "detectedAt": "2026-08-27T17:46:21.337Z",
-              "category": "productivity",
-              "entity": "Rook's portfolio",
-              "metric": "aprLatestPct",
-              "previousValue": 15.4776,
-              "currentValue": 15.086,
-              "unit": "percentage-points",
-              "severity": "info",
-              "summary": "Rook's portfolio Reference APR moved 15.48% → 15.09% (-0.39 pp).",
-              "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
-              "sourceKeys": [
-                "productivity"
-              ]
-            },
-            {
-              "id": "cba6ac4bda30eacff834",
-              "detectedAt": "2026-08-27T17:46:21.337Z",
-              "category": "productivity",
-              "entity": "YieldRing.eth",
-              "metric": "aprLatestPct",
-              "previousValue": 14.8907,
-              "currentValue": 14.006,
-              "unit": "percentage-points",
-              "severity": "info",
-              "summary": "YieldRing.eth Reference APR moved 14.89% → 14.01% (-0.88 pp).",
-              "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
-              "sourceKeys": [
-                "productivity"
-              ]
-            },
-            {
-              "id": "965d989271f0b83009c2",
-              "detectedAt": "2026-08-27T17:46:21.337Z",
-              "category": "reporting",
-              "entity": "defitea.eth",
-              "metric": "new-daily-snapshot",
-              "previousValue": "2026-08-24",
-              "currentValue": "2026-08-27",
-              "unit": null,
-              "severity": "info",
-              "summary": "defitea.eth recorded a new daily reporting observation for 2026-08-27.",
-              "whyItMatters": "Every new daily observation extends the operating memory used by future analytics and decision support.",
-              "sourceKeys": [
-                "reporting"
-              ]
-            },
-            {
-              "id": "5bc79b25d6e6ec3ed1b3",
-              "detectedAt": "2026-08-27T17:46:21.337Z",
-              "category": "reporting",
-              "entity": "defitea.eth",
-              "metric": "currentMonthCashFlowUsd",
-              "previousValue": 66.6,
-              "currentValue": 75.51,
-              "unit": "USD",
-              "severity": "info",
-              "summary": "defitea.eth current-month cash-flow/reference-income counter moved $66.60 → $75.51.",
-              "whyItMatters": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
-              "sourceKeys": [
-                "reporting"
-              ]
-            },
-            {
-              "id": "3f0f08991000c2c03bf5",
-              "detectedAt": "2026-08-27T17:46:21.337Z",
-              "category": "reporting",
-              "entity": "Monetra.eth",
-              "metric": "new-daily-snapshot",
-              "previousValue": "2026-08-24",
-              "currentValue": "2026-08-27",
-              "unit": null,
-              "severity": "info",
-              "summary": "Monetra.eth recorded a new daily reporting observation for 2026-08-27.",
-              "whyItMatters": "Every new daily observation extends the operating memory used by future analytics and decision support.",
-              "sourceKeys": [
-                "reporting"
-              ]
-            },
-            {
-              "id": "c11c02badf83b3f2bf54",
-              "detectedAt": "2026-08-27T17:46:21.337Z",
-              "category": "reporting",
-              "entity": "Monetra.eth",
-              "metric": "currentMonthCashFlowUsd",
-              "previousValue": 0.1441,
-              "currentValue": 0.1564,
-              "unit": "USD",
-              "severity": "info",
-              "summary": "Monetra.eth current-month cash-flow/reference-income counter moved $0.14 → $0.16.",
-              "whyItMatters": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
-              "sourceKeys": [
-                "reporting"
-              ]
-            },
-            {
-              "id": "28180cdcc56f11fa7f32",
-              "detectedAt": "2026-08-27T17:46:21.337Z",
-              "category": "reporting",
-              "entity": "Monetra.eth",
-              "metric": "currentMonthGeneratedIncomeUsd",
-              "previousValue": 0.1441,
-              "currentValue": 0.1564,
-              "unit": "USD",
-              "severity": "info",
-              "summary": "Monetra.eth current-month generated income moved $0.1441 → $0.1564.",
-              "whyItMatters": "Generated income is a distinct history stream for capital that may compound inside positions rather than arrive as realised cash.",
-              "sourceKeys": [
-                "reporting"
-              ]
-            },
-            {
-              "id": "59ab6a7604176892a13c",
-              "detectedAt": "2026-08-27T17:46:21.337Z",
-              "category": "rewards",
-              "entity": "05081966.eth",
-              "metric": "totalUsd",
-              "previousValue": 2.35333,
-              "currentValue": 3.075253,
-              "unit": "USD",
-              "severity": "info",
-              "summary": "05081966.eth accrued rewards moved $2.35 → $3.08 (+$0.72).",
-              "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-              "sourceKeys": [
-                "rewards"
-              ]
-            },
-            {
-              "id": "17eef3bb4bad49449c33",
-              "detectedAt": "2026-08-27T17:46:21.337Z",
-              "category": "rewards",
-              "entity": "0x5860...83CA8.eth",
-              "metric": "totalUsd",
-              "previousValue": 118.865208,
-              "currentValue": 138.340837,
-              "unit": "USD",
-              "severity": "info",
-              "summary": "0x5860...83CA8.eth accrued rewards moved $118.87 → $138.34 (+$19.48).",
-              "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-              "sourceKeys": [
-                "rewards"
-              ]
-            },
-            {
-              "id": "944ed2ab4745a074e5fc",
-              "detectedAt": "2026-08-27T17:46:21.337Z",
-              "category": "rewards",
-              "entity": "1milliondollar.eth",
-              "metric": "totalUsd",
-              "previousValue": 28.148689,
-              "currentValue": 33.342119,
-              "unit": "USD",
-              "severity": "info",
-              "summary": "1milliondollar.eth accrued rewards moved $28.15 → $33.34 (+$5.19).",
-              "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-              "sourceKeys": [
-                "rewards"
-              ]
-            },
-            {
-              "id": "466ea7716a1a81be51bb",
-              "detectedAt": "2026-08-27T17:46:21.337Z",
-              "category": "rewards",
-              "entity": "aerocvxyb.eth",
-              "metric": "totalUsd",
-              "previousValue": 165.906325,
-              "currentValue": 190.39659,
-              "unit": "USD",
-              "severity": "info",
-              "summary": "aerocvxyb.eth accrued rewards moved $165.91 → $190.40 (+$24.49).",
-              "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-              "sourceKeys": [
-                "rewards"
-              ]
-            },
-            {
-              "id": "0adbf2a9dd388f32fb16",
-              "detectedAt": "2026-08-27T17:46:21.337Z",
-              "category": "rewards",
-              "entity": "Cypher",
-              "metric": "totalUsd",
-              "previousValue": 10.599472,
-              "currentValue": 13.916627,
-              "unit": "USD",
-              "severity": "info",
-              "summary": "Cypher accrued rewards moved $10.60 → $13.92 (+$3.32).",
-              "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-              "sourceKeys": [
-                "rewards"
-              ]
-            },
-            {
-              "id": "b553f01337a65256e50f",
-              "detectedAt": "2026-08-27T17:46:21.337Z",
-              "category": "rewards",
-              "entity": "defitea.eth",
-              "metric": "totalUsd",
-              "previousValue": 133.458109,
-              "currentValue": 158.644169,
-              "unit": "USD",
-              "severity": "info",
-              "summary": "defitea.eth accrued rewards moved $133.46 → $158.64 (+$25.19).",
-              "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-              "sourceKeys": [
-                "rewards"
-              ]
-            }
-          ],
-          "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-          "observedAt": "2026-08-27T17:46:21.337Z",
+          "value": [],
+          "sourceSha256": "bc3763ff11569fa4b60ca1cb6f78017294ffefa618ee76fe7fe9a3614312fff8",
+          "observedAt": "2026-08-28T13:03:26.575Z",
           "interpretation": "direct"
         },
         {
@@ -492,8 +178,8 @@
             "newFindings": [],
             "resolvedFindings": []
           },
-          "sourceSha256": "fe8271c84fdcdf99ec5c7bda21f9f40ddd4c451779d25c966b8d8097f0d8400b",
-          "observedAt": "2026-08-27T19:04:11.121Z",
+          "sourceSha256": "a8b202aa1ead2ebaf5c9ff00f88b5d2ec797301f6ade801dd0055eeb9083da1e",
+          "observedAt": "2026-08-28T13:10:52.314Z",
           "interpretation": "direct"
         },
         {
@@ -539,7 +225,7 @@
             },
             "provenance": {
               "graphFile": "intelligence/economic-graph/economic-graph.json",
-              "graphSha256": "bbcc9978a9924b8cf7b786557fa11d7f7d93a0112dac6f7e14d2c823957715ca",
+              "graphSha256": "0402f983b74774d8e34b1c44ff9ef9bc26bd974e1b978d22224e06721dec9c2a",
               "observationId": "fxn-locker:2026-08-27:926e021a7b0298961358",
               "observedAt": "2026-08-27T16:53:36.729Z",
               "sourceUrl": "https://fx.aladdin.club/v2/lock",
@@ -552,8 +238,8 @@
             "explanation": "Canonical protocol-economic driver context is available for the Defitea veFXN cohort. The system may report these measured values and comparable deltas, but it must not say that revenue, locked supply, Total veFXN, price, incentives or another driver caused the APR until a protocol-specific formula or onchain accounting identity proves that path.",
             "promotionRule": "A driver may become ATTRIBUTED only after a protocol-specific formula or onchain accounting identity proves the causal path."
           },
-          "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-          "observedAt": "2026-08-27T19:03:54.830Z",
+          "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+          "observedAt": "2026-08-28T13:03:01.773Z",
           "interpretation": "legacy-vefxn-alias-measured-context-not-causal-attribution",
           "note": "Compatibility alias for the veFXN cohort. Canonical multi-cohort evidence is also included separately."
         },
@@ -600,7 +286,7 @@
             },
             "provenance": {
               "graphFile": "intelligence/economic-graph/economic-graph.json",
-              "graphSha256": "bbcc9978a9924b8cf7b786557fa11d7f7d93a0112dac6f7e14d2c823957715ca",
+              "graphSha256": "0402f983b74774d8e34b1c44ff9ef9bc26bd974e1b978d22224e06721dec9c2a",
               "observationId": "fxn-locker:2026-08-27:926e021a7b0298961358",
               "observedAt": "2026-08-27T16:53:36.729Z",
               "sourceUrl": "https://fx.aladdin.club/v2/lock",
@@ -613,8 +299,8 @@
             "explanation": "Canonical protocol-economic driver context is available for the Defitea veFXN cohort. The system may report these measured values and comparable deltas, but it must not say that revenue, locked supply, Total veFXN, price, incentives or another driver caused the APR until a protocol-specific formula or onchain accounting identity proves that path.",
             "promotionRule": "A driver may become ATTRIBUTED only after a protocol-specific formula or onchain accounting identity proves the causal path."
           },
-          "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-          "observedAt": "2026-08-27T19:03:54.830Z",
+          "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+          "observedAt": "2026-08-28T13:03:01.773Z",
           "interpretation": "normalized-measured-context-not-causal-attribution",
           "note": "Canonical protocol-economic cohort from Explanatory Context. Report only the causal strength explicitly proven by this cohort."
         },
@@ -683,7 +369,7 @@
             },
             "provenance": {
               "graphFile": "intelligence/economic-graph/economic-graph.json",
-              "graphSha256": "bbcc9978a9924b8cf7b786557fa11d7f7d93a0112dac6f7e14d2c823957715ca",
+              "graphSha256": "0402f983b74774d8e34b1c44ff9ef9bc26bd974e1b978d22224e06721dec9c2a",
               "observationId": "curve-vecrv:2026-08-27:aa995e8414fd3c35cc13",
               "observedAt": "2026-08-27T14:40:54.527Z",
               "sourceUrl": "https://etherscan.io/address/0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914",
@@ -698,8 +384,8 @@
             "explanation": "Curve veCRV Reference APR is mechanically reproducible from distributed crvUSD fees, veCRV supply and CRV price under the canonical completed-week formula. This proves how those measured inputs form the Reference APR. It does not prove why Curve fee distributions themselves increased or decreased; upstream protocol activity remains unresolved until fee-origin evidence is added.",
             "promotionRule": "Formula inputs may be described as mechanical APR inputs. Upstream causes of fee changes require separate canonical protocol-activity evidence before causal promotion."
           },
-          "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-          "observedAt": "2026-08-27T19:03:54.830Z",
+          "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+          "observedAt": "2026-08-28T13:03:01.773Z",
           "interpretation": "normalized-proven-mechanical-context-upstream-cause-unresolved",
           "note": "Canonical protocol-economic cohort from Explanatory Context. Report only the causal strength explicitly proven by this cohort."
         },
@@ -761,7 +447,7 @@
             },
             "provenance": {
               "economicGraphFile": "intelligence/economic-graph/economic-graph.json",
-              "graphSha256": "bbcc9978a9924b8cf7b786557fa11d7f7d93a0112dac6f7e14d2c823957715ca",
+              "graphSha256": "0402f983b74774d8e34b1c44ff9ef9bc26bd974e1b978d22224e06721dec9c2a",
               "deepEvidenceVersion": "0.1-vlcvx-votium-curve-cognitive-close",
               "sourceBinding": {
                 "roundFlow": {
@@ -781,8 +467,8 @@
                 },
                 "curvePoolContext": {
                   "file": "intelligence/economic-graph/vlcvx-votium-curve-pool-context.json",
-                  "sha256": "bf3639b2fc5e5b750bec8920c1e295dc243e4354f9b4e5cbaa9b02a5e9992ec8",
-                  "generatedAt": "2026-08-27T09:58:18.574Z"
+                  "sha256": "9e6aca8e616a852d491a958869bc7dd7135e67e21cc1d2d540b1eaa1ae31d9a0",
+                  "generatedAt": "2026-08-28T11:30:56.944Z"
                 }
               }
             },
@@ -796,8 +482,8 @@
               "promotionAuthority": "none"
             }
           },
-          "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-          "observedAt": "2026-08-27T19:03:54.830Z",
+          "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+          "observedAt": "2026-08-28T13:03:01.773Z",
           "interpretation": "shadow-cross-protocol-mechanics-and-temporal-context-causality-unresolved",
           "note": "Votium→Convex→Curve mechanical execution is proven; current Curve pool state is measured temporal context only. Do not infer incentive→vote or vote→pool causality."
         },
@@ -819,8 +505,8 @@
               "promotionAuthority": "none"
             }
           },
-          "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-          "observedAt": "2026-08-27T19:03:54.830Z",
+          "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+          "observedAt": "2026-08-28T13:03:01.773Z",
           "interpretation": "read-only-protocol-lifecycle-context",
           "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
         },
@@ -842,8 +528,8 @@
               "promotionAuthority": "none"
             }
           },
-          "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-          "observedAt": "2026-08-27T19:03:54.830Z",
+          "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+          "observedAt": "2026-08-28T13:03:01.773Z",
           "interpretation": "read-only-protocol-lifecycle-context",
           "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
         },
@@ -867,8 +553,8 @@
               "promotionAuthority": "none"
             }
           },
-          "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-          "observedAt": "2026-08-27T19:03:54.830Z",
+          "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+          "observedAt": "2026-08-28T13:03:01.773Z",
           "interpretation": "read-only-protocol-lifecycle-context",
           "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
         },
@@ -892,8 +578,8 @@
               "promotionAuthority": "none"
             }
           },
-          "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-          "observedAt": "2026-08-27T19:03:54.830Z",
+          "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+          "observedAt": "2026-08-28T13:03:01.773Z",
           "interpretation": "read-only-protocol-lifecycle-context",
           "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
         },
@@ -924,8 +610,8 @@
               "promotionAuthority": "none"
             }
           },
-          "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-          "observedAt": "2026-08-27T19:03:54.830Z",
+          "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+          "observedAt": "2026-08-28T13:03:01.773Z",
           "interpretation": "read-only-protocol-lifecycle-context",
           "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
         },
@@ -957,8 +643,8 @@
               "promotionAuthority": "none"
             }
           },
-          "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-          "observedAt": "2026-08-27T19:03:54.830Z",
+          "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+          "observedAt": "2026-08-28T13:03:01.773Z",
           "interpretation": "read-only-protocol-lifecycle-context",
           "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
         },
@@ -990,8 +676,8 @@
               "promotionAuthority": "none"
             }
           },
-          "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-          "observedAt": "2026-08-27T19:03:54.830Z",
+          "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+          "observedAt": "2026-08-28T13:03:01.773Z",
           "interpretation": "read-only-protocol-lifecycle-context",
           "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
         },
@@ -1029,8 +715,8 @@
               "promotionAuthority": "none"
             }
           },
-          "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-          "observedAt": "2026-08-27T19:03:54.830Z",
+          "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+          "observedAt": "2026-08-28T13:03:01.773Z",
           "interpretation": "read-only-protocol-lifecycle-context",
           "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
         },
@@ -1045,8 +731,8 @@
             "scope": "registry-wide-frax-ecosystem",
             "coverage": {
               "surfaceCount": 9,
-              "measuredSurfaceCount": 1,
-              "sourceBoundUnknownSurfaceCount": 8,
+              "measuredSurfaceCount": 2,
+              "sourceBoundUnknownSurfaceCount": 7,
               "surfaceIds": [
                 "governance-vefrax",
                 "fraxtal-flox-fxtl",
@@ -1184,18 +870,88 @@
                   },
                   "note": "Backing/yield composition is source topology until a current reproducible balance-sheet/accounting snapshot is ingested."
                 },
-                "measurementState": "UNKNOWN-current-value-not-ingested",
-                "measured": null,
+                "measurementState": "MEASURED-current-onchain-partial",
+                "measured": {
+                  "version": "0.1-sfrxusd-exact-block-erc4626",
+                  "status": "ok",
+                  "measurementClass": "MEASURED",
+                  "observedAt": "2026-08-28T13:02:23.000Z",
+                  "chain": "ethereum",
+                  "chainId": 1,
+                  "blockNumber": 25853908,
+                  "blockTag": "0x18a7fd4",
+                  "blockHash": "0x10b09258f7e7cdc5f11f0bfb08c506bfdad0a3ff135426290e243a90d8d230c8",
+                  "contracts": {
+                    "frxUSD": "0xCAcd6fd266aF91b8AeD52aCCc382b4e165586E29",
+                    "sfrxUSD": "0xcf62F905562626CfcDD2261162a51fd02Fc9c5b6"
+                  },
+                  "decimals": {
+                    "frxUSD": 18,
+                    "sfrxUSD": 18
+                  },
+                  "raw": {
+                    "frxUsdTotalSupply": "101798319649337437539375920",
+                    "sfrxUsdTotalSupply": "29931733863871102947981227",
+                    "sfrxUsdTotalAssets": "36154213288520075060811717"
+                  },
+                  "values": {
+                    "frxUsdSupply": 101798319.64933744,
+                    "sfrxUsdSupply": 29931733.8638711,
+                    "sfrxUsdTotalAssets": 36154213.28852008,
+                    "sharePriceFrxUsd": 1.207889040206
+                  },
+                  "scope": {
+                    "frxUsdSupply": "Ethereum frxUSD contract totalSupply only; not asserted as global cross-chain frxUSD supply",
+                    "sfrxUsdState": "Ethereum sfrxUSD ERC4626 contract exact-block state"
+                  },
+                  "rpc": {
+                    "endpointId": "publicnode",
+                    "failoverAttempts": []
+                  },
+                  "identity": {
+                    "sharePriceFormula": "sfrxUSD totalAssets / totalSupply after token-decimal normalization",
+                    "intervalYieldFormula": "ending share price / beginning share price - 1",
+                    "historyRule": "persisted adjacent Economic Graph onchain checkpoints only; no pre-tracking or APY backfill"
+                  },
+                  "epistemic": {
+                    "sourceType": "onchain-public-rpc-exact-block",
+                    "currentStateMeasured": true,
+                    "currentStateScope": "partial-Ethereum-frxUSD-sfrxUSD-surface",
+                    "sharePriceMechanicalIdentity": "PROVEN-current-exact-block",
+                    "historicalBackfill": false,
+                    "unknownIsZero": false,
+                    "productionPriceAuthority": false,
+                    "causalClaimAuthority": "none",
+                    "executionAuthority": "none"
+                  },
+                  "intervalEmbeddedYield": {
+                    "status": "ok",
+                    "accepted": true,
+                    "source": "persisted-adjacent-economic-graph-onchain-checkpoints",
+                    "startAt": "2026-08-28T12:56:59.000Z",
+                    "endAt": "2026-08-28T13:02:23.000Z",
+                    "elapsedSeconds": 324,
+                    "startBlock": 25853882,
+                    "endBlock": 25853908,
+                    "startSharePriceFrxUsd": 1.207888458389,
+                    "endSharePriceFrxUsd": 1.207889040206,
+                    "embeddedYieldPct": 0.000048168107,
+                    "annualizedApyPct": null,
+                    "annualizationState": "NOT-CALCULATED-no-annualization-methodology-added",
+                    "accountingIdentity": "ending sfrxUSD share price / beginning share price - 1",
+                    "note": "Direct interval share-price return only. No APY backfill, reserve-yield causality or veFRAX revenue attribution."
+                  }
+                },
                 "mechanicalRelations": [
                   {
                     "from": "sfrxUSD assets / shares",
                     "to": "share price",
-                    "class": "MECHANICAL-ready-for-onchain-reproduction"
+                    "class": "MECHANICAL-proven-current-exact-block"
                   },
                   {
                     "from": "share-price change",
                     "to": "embedded yield",
-                    "class": "MECHANICAL-ready-for-longitudinal-reproduction"
+                    "class": "MECHANICAL-proven-adjacent-checkpoints"
                   },
                   {
                     "from": "reserve yield",
@@ -1528,14 +1284,14 @@
                 "index": 0,
                 "from": "sfrxUSD assets / shares",
                 "to": "share price",
-                "class": "MECHANICAL-ready-for-onchain-reproduction"
+                "class": "MECHANICAL-proven-current-exact-block"
               },
               {
                 "surfaceId": "frxusd-sfrxusd",
                 "index": 1,
                 "from": "share-price change",
                 "to": "embedded yield",
-                "class": "MECHANICAL-ready-for-longitudinal-reproduction"
+                "class": "MECHANICAL-proven-adjacent-checkpoints"
               },
               {
                 "surfaceId": "frxusd-sfrxusd",
@@ -1691,11 +1447,17 @@
               "predictionAuthority": "none",
               "recommendationAuthority": "none",
               "causalClaimAuthority": "none",
-              "executionAuthority": "none"
+              "executionAuthority": "none",
+              "measuredEconomicSurfaces": [
+                "governance-vefrax",
+                "frxusd-sfrxusd"
+              ],
+              "sfrxUsdCurrentState": "MEASURED",
+              "sfrxUsdEmbeddedYield": "DERIVED-MECHANICAL"
             },
             "nextMeasurementUnlocks": [
               "Bind FraxtalPoints/Flox epoch reads to explicit epoch boundaries and company addresses.",
-              "Ingest frxUSD/sfrxUSD current ERC20/ERC4626 state plus reproducible backing/allocation evidence.",
+              "frxUSD/sfrxUSD ERC20/ERC4626 current state is now measured; continue adjacent checkpoints and separately prove backing/allocation evidence.",
               "Enumerate FraxNet jobs/flows with bounded API or onchain event history.",
               "Enumerate Fraxlend Pair Registry and reproduce utilization/rate/share-price identities.",
               "Enumerate Fraxswap/BAMM factories and reproduce pool/liquidity/fee/borrow-interest state.",
@@ -1703,11 +1465,11 @@
               "Resolve named FX pool identities before measuring liquidity/volume/fees/incentives.",
               "Prove revenue routing end-to-end before any protocol-revenue→veFRAX/company cash-flow claim."
             ],
-            "explanation": "Frax is now represented as one lifecycle sensor with a nine-surface ecosystem family: veFRAX governance is currently measured; Fraxtal/Flox/FXTL, frxUSD/sfrxUSD, FraxNet, Fraxlend, Fraxswap/BAMM, FXB, FX liquidity and end-to-end revenue routing are source-bound but remain UNKNOWN for current economic values until reproducible ingestion exists. This prevents source topology from being mistaken for measurement or causality.",
+            "explanation": "Frax is represented as one lifecycle sensor with a nine-surface ecosystem family. Current Economic Graph evidence marks 2 surface(s) as MEASURED (governanceVeFrax, frxUsdSfrxUsd) and 7 surface(s) as source-bound UNKNOWN (fraxtalFloxFxtl, fraxNet, fraxlend, fraxswapBamm, fxb, fxLiquidity, revenueRouting). Measured state is inherited from exact Graph evidence only; source topology and measured association do not authorize causal attribution, recommendation, allocation or execution claims.",
             "provenance": {
               "economicGraphFile": "intelligence/economic-graph/economic-graph.json",
-              "graphSha256": "bbcc9978a9924b8cf7b786557fa11d7f7d93a0112dac6f7e14d2c823957715ca",
-              "observationId": "frax-ecosystem:551d93462a649bd4c977d519",
+              "graphSha256": "0402f983b74774d8e34b1c44ff9ef9bc26bd974e1b978d22224e06721dec9c2a",
+              "observationId": "frax-ecosystem:9089fcd6b09c51b25e0ce6c4",
               "evidenceVersion": "0.1-frax-deep-ecosystem-sensor-family"
             },
             "authority": {
@@ -1721,10 +1483,10 @@
               "executionAuthority": "none"
             }
           },
-          "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-          "observedAt": "2026-08-27T19:03:54.830Z",
+          "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+          "observedAt": "2026-08-28T13:03:01.773Z",
           "interpretation": "frax-deep-ecosystem-measured-vs-source-bound-unknown",
-          "note": "Only the veFRAX governance surface is currently measured. Source-bound ecosystem topology remains UNKNOWN for current economic values until reproducible ingestion exists."
+          "note": "Current Explanatory evidence marks 2 Frax surface(s) MEASURED (governanceVeFrax, frxUsdSfrxUsd) and 7 source-bound UNKNOWN (fraxtalFloxFxtl, fraxNet, fraxlend, fraxswapBamm, fxb, fxLiquidity, revenueRouting). Measurement does not imply causality or execution authority."
         }
       ]
     },
@@ -1796,7 +1558,7 @@
             },
             "provenance": {
               "graphFile": "intelligence/economic-graph/economic-graph.json",
-              "graphSha256": "bbcc9978a9924b8cf7b786557fa11d7f7d93a0112dac6f7e14d2c823957715ca",
+              "graphSha256": "0402f983b74774d8e34b1c44ff9ef9bc26bd974e1b978d22224e06721dec9c2a",
               "observationId": "fxn-locker:2026-08-27:926e021a7b0298961358",
               "observedAt": "2026-08-27T16:53:36.729Z",
               "sourceUrl": "https://fx.aladdin.club/v2/lock",
@@ -1809,8 +1571,8 @@
             "explanation": "Canonical protocol-economic driver context is available for the Defitea veFXN cohort. The system may report these measured values and comparable deltas, but it must not say that revenue, locked supply, Total veFXN, price, incentives or another driver caused the APR until a protocol-specific formula or onchain accounting identity proves that path.",
             "promotionRule": "A driver may become ATTRIBUTED only after a protocol-specific formula or onchain accounting identity proves the causal path."
           },
-          "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-          "observedAt": "2026-08-27T19:03:54.830Z",
+          "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+          "observedAt": "2026-08-28T13:03:01.773Z",
           "interpretation": "legacy-vefxn-alias-measured-context-not-causal-attribution",
           "note": "Compatibility alias for the veFXN cohort. Canonical multi-cohort evidence is also included separately."
         }
@@ -1903,7 +1665,7 @@
               },
               "provenance": {
                 "graphFile": "intelligence/economic-graph/economic-graph.json",
-                "graphSha256": "bbcc9978a9924b8cf7b786557fa11d7f7d93a0112dac6f7e14d2c823957715ca",
+                "graphSha256": "0402f983b74774d8e34b1c44ff9ef9bc26bd974e1b978d22224e06721dec9c2a",
                 "observationId": "fxn-locker:2026-08-27:926e021a7b0298961358",
                 "observedAt": "2026-08-27T16:53:36.729Z",
                 "sourceUrl": "https://fx.aladdin.club/v2/lock",
@@ -1916,8 +1678,8 @@
               "explanation": "Canonical protocol-economic driver context is available for the Defitea veFXN cohort. The system may report these measured values and comparable deltas, but it must not say that revenue, locked supply, Total veFXN, price, incentives or another driver caused the APR until a protocol-specific formula or onchain accounting identity proves that path.",
               "promotionRule": "A driver may become ATTRIBUTED only after a protocol-specific formula or onchain accounting identity proves the causal path."
             },
-            "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-            "observedAt": "2026-08-27T19:03:54.830Z",
+            "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+            "observedAt": "2026-08-28T13:03:01.773Z",
             "interpretation": "normalized-measured-context-not-causal-attribution",
             "note": "Canonical protocol-economic cohort from Explanatory Context. Report only the causal strength explicitly proven by this cohort."
           }
@@ -2052,7 +1814,7 @@
               },
               "provenance": {
                 "graphFile": "intelligence/economic-graph/economic-graph.json",
-                "graphSha256": "bbcc9978a9924b8cf7b786557fa11d7f7d93a0112dac6f7e14d2c823957715ca",
+                "graphSha256": "0402f983b74774d8e34b1c44ff9ef9bc26bd974e1b978d22224e06721dec9c2a",
                 "observationId": "curve-vecrv:2026-08-27:aa995e8414fd3c35cc13",
                 "observedAt": "2026-08-27T14:40:54.527Z",
                 "sourceUrl": "https://etherscan.io/address/0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914",
@@ -2067,8 +1829,8 @@
               "explanation": "Curve veCRV Reference APR is mechanically reproducible from distributed crvUSD fees, veCRV supply and CRV price under the canonical completed-week formula. This proves how those measured inputs form the Reference APR. It does not prove why Curve fee distributions themselves increased or decreased; upstream protocol activity remains unresolved until fee-origin evidence is added.",
               "promotionRule": "Formula inputs may be described as mechanical APR inputs. Upstream causes of fee changes require separate canonical protocol-activity evidence before causal promotion."
             },
-            "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-            "observedAt": "2026-08-27T19:03:54.830Z",
+            "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+            "observedAt": "2026-08-28T13:03:01.773Z",
             "interpretation": "normalized-proven-mechanical-context-upstream-cause-unresolved",
             "note": "Canonical protocol-economic cohort from Explanatory Context. Report only the causal strength explicitly proven by this cohort."
           }
@@ -2085,7 +1847,7 @@
             "source": "security/security-intelligence.json",
             "pointer": "/currentFindings/0",
             "selector": null,
-            "sourceSha256": "fe8271c84fdcdf99ec5c7bda21f9f40ddd4c451779d25c966b8d8097f0d8400b"
+            "sourceSha256": "a8b202aa1ead2ebaf5c9ff00f88b5d2ec797301f6ade801dd0055eeb9083da1e"
           }
         ]
       },
@@ -2098,7 +1860,7 @@
             "source": "security/security-intelligence.json",
             "pointer": "/currentFindings/1",
             "selector": null,
-            "sourceSha256": "fe8271c84fdcdf99ec5c7bda21f9f40ddd4c451779d25c966b8d8097f0d8400b"
+            "sourceSha256": "a8b202aa1ead2ebaf5c9ff00f88b5d2ec797301f6ade801dd0055eeb9083da1e"
           }
         ]
       },
@@ -2111,7 +1873,7 @@
             "source": "security/security-intelligence.json",
             "pointer": "/currentFindings",
             "selector": "severity=medium&category=dom-innerhtml",
-            "sourceSha256": "fe8271c84fdcdf99ec5c7bda21f9f40ddd4c451779d25c966b8d8097f0d8400b"
+            "sourceSha256": "a8b202aa1ead2ebaf5c9ff00f88b5d2ec797301f6ade801dd0055eeb9083da1e"
           }
         ]
       },
@@ -2124,7 +1886,7 @@
             "source": "intelligence/change-intelligence.json",
             "pointer": "/watchNext/0",
             "selector": null,
-            "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d"
+            "sourceSha256": "bc3763ff11569fa4b60ca1cb6f78017294ffefa618ee76fe7fe9a3614312fff8"
           }
         ]
       },
@@ -2137,33 +1899,7 @@
             "source": "intelligence/change-intelligence.json",
             "pointer": "/watchNext/1",
             "selector": null,
-            "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d"
-          }
-        ]
-      },
-      {
-        "id": "0a48d3e91213199c79b8fa3f",
-        "entity": "Cypher",
-        "answer": "Reward measurement completeness affects the reliability of current earned-but-unclaimed value.",
-        "evidenceRefs": [
-          {
-            "source": "intelligence/change-intelligence.json",
-            "pointer": "/whatChanged/1",
-            "selector": null,
-            "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d"
-          }
-        ]
-      },
-      {
-        "id": "3aa9c2c6195481751154ecc3",
-        "entity": "Cypher",
-        "answer": "Completeness improvements turn previously partial observations into reusable verified intelligence.",
-        "evidenceRefs": [
-          {
-            "source": "intelligence/change-intelligence.json",
-            "pointer": "/whatChanged/2",
-            "selector": null,
-            "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d"
+            "sourceSha256": "bc3763ff11569fa4b60ca1cb6f78017294ffefa618ee76fe7fe9a3614312fff8"
           }
         ]
       },
@@ -2176,7 +1912,7 @@
             "source": "intelligence/change-intelligence.json",
             "pointer": "/watchNext/2",
             "selector": null,
-            "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d"
+            "sourceSha256": "bc3763ff11569fa4b60ca1cb6f78017294ffefa618ee76fe7fe9a3614312fff8"
           }
         ]
       },
@@ -2189,7 +1925,7 @@
             "source": "intelligence/change-intelligence.json",
             "pointer": "/watchNext/3",
             "selector": null,
-            "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d"
+            "sourceSha256": "bc3763ff11569fa4b60ca1cb6f78017294ffefa618ee76fe7fe9a3614312fff8"
           }
         ]
       },
@@ -2202,7 +1938,7 @@
             "source": "intelligence/change-intelligence.json",
             "pointer": "/watchNext/4",
             "selector": null,
-            "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d"
+            "sourceSha256": "bc3763ff11569fa4b60ca1cb6f78017294ffefa618ee76fe7fe9a3614312fff8"
           }
         ]
       },
@@ -2215,189 +1951,7 @@
             "source": "intelligence/change-intelligence.json",
             "pointer": "/watchNext/5",
             "selector": null,
-            "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d"
-          }
-        ]
-      },
-      {
-        "id": "ac1fadabdbf4593d941903e6",
-        "entity": "1milliondollar.eth",
-        "answer": "Meaningful changes in productive capacity are part of the company’s operating history.",
-        "evidenceRefs": [
-          {
-            "source": "intelligence/change-intelligence.json",
-            "pointer": "/whatChanged/3",
-            "selector": null,
-            "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d"
-          }
-        ]
-      },
-      {
-        "id": "7f534b7c7e7a0b2ad233f71d",
-        "entity": "Cypher",
-        "answer": "Meaningful changes in productive capacity are part of the company’s operating history.",
-        "evidenceRefs": [
-          {
-            "source": "intelligence/change-intelligence.json",
-            "pointer": "/whatChanged/4",
-            "selector": null,
-            "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d"
-          }
-        ]
-      },
-      {
-        "id": "ad562c71bfce7183385c26c7",
-        "entity": "defitea.eth",
-        "answer": "Meaningful changes in productive capacity are part of the company’s operating history.",
-        "evidenceRefs": [
-          {
-            "source": "intelligence/change-intelligence.json",
-            "pointer": "/whatChanged/5",
-            "selector": null,
-            "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d"
-          }
-        ]
-      },
-      {
-        "id": "dd80bd3468be2f8ae6e2b237",
-        "entity": "dinaz.eth",
-        "answer": "Meaningful changes in productive capacity are part of the company’s operating history.",
-        "evidenceRefs": [
-          {
-            "source": "intelligence/change-intelligence.json",
-            "pointer": "/whatChanged/6",
-            "selector": null,
-            "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d"
-          }
-        ]
-      },
-      {
-        "id": "e3954b626649a8743ddc8806",
-        "entity": "Rook's portfolio",
-        "answer": "Meaningful changes in productive capacity are part of the company’s operating history.",
-        "evidenceRefs": [
-          {
-            "source": "intelligence/change-intelligence.json",
-            "pointer": "/whatChanged/7",
-            "selector": null,
-            "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d"
-          }
-        ]
-      },
-      {
-        "id": "b4098eaa496c222590cdd846",
-        "entity": "YieldRing.eth",
-        "answer": "Meaningful changes in productive capacity are part of the company’s operating history.",
-        "evidenceRefs": [
-          {
-            "source": "intelligence/change-intelligence.json",
-            "pointer": "/whatChanged/8",
-            "selector": null,
-            "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d"
-          }
-        ]
-      },
-      {
-        "id": "2ce65a1397099e6f4d1b5339",
-        "entity": "defitea.eth",
-        "answer": "Every new daily observation extends the operating memory used by future analytics and decision support.",
-        "evidenceRefs": [
-          {
-            "source": "intelligence/change-intelligence.json",
-            "pointer": "/whatChanged/9",
-            "selector": null,
-            "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d"
-          }
-        ]
-      },
-      {
-        "id": "82183c321a64e7ad17a73fbe",
-        "entity": "defitea.eth",
-        "answer": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
-        "evidenceRefs": [
-          {
-            "source": "intelligence/change-intelligence.json",
-            "pointer": "/whatChanged/10",
-            "selector": null,
-            "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d"
-          }
-        ]
-      },
-      {
-        "id": "bcaf3605be9604b08fad3222",
-        "entity": "Monetra.eth",
-        "answer": "Every new daily observation extends the operating memory used by future analytics and decision support.",
-        "evidenceRefs": [
-          {
-            "source": "intelligence/change-intelligence.json",
-            "pointer": "/whatChanged/11",
-            "selector": null,
-            "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d"
-          }
-        ]
-      },
-      {
-        "id": "f00af0858d213b295e817c3d",
-        "entity": "Monetra.eth",
-        "answer": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
-        "evidenceRefs": [
-          {
-            "source": "intelligence/change-intelligence.json",
-            "pointer": "/whatChanged/12",
-            "selector": null,
-            "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d"
-          }
-        ]
-      },
-      {
-        "id": "6f62a398836424126877a444",
-        "entity": "Monetra.eth",
-        "answer": "Generated income is a distinct history stream for capital that may compound inside positions rather than arrive as realised cash.",
-        "evidenceRefs": [
-          {
-            "source": "intelligence/change-intelligence.json",
-            "pointer": "/whatChanged/13",
-            "selector": null,
-            "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d"
-          }
-        ]
-      },
-      {
-        "id": "508eed4f7e6bcf1a2b3a8f4c",
-        "entity": "05081966.eth",
-        "answer": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-        "evidenceRefs": [
-          {
-            "source": "intelligence/change-intelligence.json",
-            "pointer": "/whatChanged/14",
-            "selector": null,
-            "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d"
-          }
-        ]
-      },
-      {
-        "id": "d765c8ac148e96b0197871a4",
-        "entity": "0x5860...83CA8.eth",
-        "answer": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-        "evidenceRefs": [
-          {
-            "source": "intelligence/change-intelligence.json",
-            "pointer": "/whatChanged/15",
-            "selector": null,
-            "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d"
-          }
-        ]
-      },
-      {
-        "id": "303dc25c0258e1450f91883a",
-        "entity": "1milliondollar.eth",
-        "answer": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-        "evidenceRefs": [
-          {
-            "source": "intelligence/change-intelligence.json",
-            "pointer": "/whatChanged/16",
-            "selector": null,
-            "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d"
+            "sourceSha256": "bc3763ff11569fa4b60ca1cb6f78017294ffefa618ee76fe7fe9a3614312fff8"
           }
         ]
       }
@@ -2434,18 +1988,6 @@
         "confidence": "high"
       },
       {
-        "id": "0a48d3e91213199c79b8fa3f",
-        "entity": "Cypher",
-        "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-        "confidence": "high"
-      },
-      {
-        "id": "3aa9c2c6195481751154ecc3",
-        "entity": "Cypher",
-        "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-        "confidence": "high"
-      },
-      {
         "id": "752ad1fa5d5c4b4db1804346",
         "entity": "0x5860...83CA8.eth",
         "answer": "Pending reward routes make earned-value memory incomplete even when currently measured routes are correct.",
@@ -2467,90 +2009,6 @@
         "id": "d57ad616b19f94c0c5e8b6e7",
         "entity": "defitea.eth",
         "answer": "Pending reward routes make earned-value memory incomplete even when currently measured routes are correct.",
-        "confidence": "high"
-      },
-      {
-        "id": "ac1fadabdbf4593d941903e6",
-        "entity": "1milliondollar.eth",
-        "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-        "confidence": "high"
-      },
-      {
-        "id": "7f534b7c7e7a0b2ad233f71d",
-        "entity": "Cypher",
-        "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-        "confidence": "high"
-      },
-      {
-        "id": "ad562c71bfce7183385c26c7",
-        "entity": "defitea.eth",
-        "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-        "confidence": "high"
-      },
-      {
-        "id": "dd80bd3468be2f8ae6e2b237",
-        "entity": "dinaz.eth",
-        "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-        "confidence": "high"
-      },
-      {
-        "id": "e3954b626649a8743ddc8806",
-        "entity": "Rook's portfolio",
-        "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-        "confidence": "high"
-      },
-      {
-        "id": "b4098eaa496c222590cdd846",
-        "entity": "YieldRing.eth",
-        "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-        "confidence": "high"
-      },
-      {
-        "id": "2ce65a1397099e6f4d1b5339",
-        "entity": "defitea.eth",
-        "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-        "confidence": "high"
-      },
-      {
-        "id": "82183c321a64e7ad17a73fbe",
-        "entity": "defitea.eth",
-        "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-        "confidence": "high"
-      },
-      {
-        "id": "bcaf3605be9604b08fad3222",
-        "entity": "Monetra.eth",
-        "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-        "confidence": "high"
-      },
-      {
-        "id": "f00af0858d213b295e817c3d",
-        "entity": "Monetra.eth",
-        "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-        "confidence": "high"
-      },
-      {
-        "id": "6f62a398836424126877a444",
-        "entity": "Monetra.eth",
-        "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-        "confidence": "high"
-      },
-      {
-        "id": "508eed4f7e6bcf1a2b3a8f4c",
-        "entity": "05081966.eth",
-        "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-        "confidence": "high"
-      },
-      {
-        "id": "d765c8ac148e96b0197871a4",
-        "entity": "0x5860...83CA8.eth",
-        "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-        "confidence": "high"
-      },
-      {
-        "id": "303dc25c0258e1450f91883a",
-        "entity": "1milliondollar.eth",
-        "answer": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
         "confidence": "high"
       }
     ],
@@ -2596,22 +2054,6 @@
         "actionMode": "proposal-only"
       },
       {
-        "id": "0a48d3e91213199c79b8fa3f",
-        "entity": "Cypher",
-        "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-        "recommendationClass": "evidence-review",
-        "riskTier": "low",
-        "actionMode": "proposal-only"
-      },
-      {
-        "id": "3aa9c2c6195481751154ecc3",
-        "entity": "Cypher",
-        "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-        "recommendationClass": "evidence-review",
-        "riskTier": "low",
-        "actionMode": "proposal-only"
-      },
-      {
         "id": "752ad1fa5d5c4b4db1804346",
         "entity": "0x5860...83CA8.eth",
         "answer": "Resolve only the pending reward route(s) with bounded current-state reads and claimed-state checks. Preserve solved routes and never treat pending as zero.",
@@ -2640,118 +2082,6 @@
         "entity": "defitea.eth",
         "answer": "Resolve only the pending reward route(s) with bounded current-state reads and claimed-state checks. Preserve solved routes and never treat pending as zero.",
         "recommendationClass": "reward-route-resolution",
-        "riskTier": "low",
-        "actionMode": "proposal-only"
-      },
-      {
-        "id": "ac1fadabdbf4593d941903e6",
-        "entity": "1milliondollar.eth",
-        "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-        "recommendationClass": "evidence-review",
-        "riskTier": "low",
-        "actionMode": "proposal-only"
-      },
-      {
-        "id": "7f534b7c7e7a0b2ad233f71d",
-        "entity": "Cypher",
-        "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-        "recommendationClass": "evidence-review",
-        "riskTier": "low",
-        "actionMode": "proposal-only"
-      },
-      {
-        "id": "ad562c71bfce7183385c26c7",
-        "entity": "defitea.eth",
-        "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-        "recommendationClass": "evidence-review",
-        "riskTier": "low",
-        "actionMode": "proposal-only"
-      },
-      {
-        "id": "dd80bd3468be2f8ae6e2b237",
-        "entity": "dinaz.eth",
-        "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-        "recommendationClass": "evidence-review",
-        "riskTier": "low",
-        "actionMode": "proposal-only"
-      },
-      {
-        "id": "e3954b626649a8743ddc8806",
-        "entity": "Rook's portfolio",
-        "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-        "recommendationClass": "evidence-review",
-        "riskTier": "low",
-        "actionMode": "proposal-only"
-      },
-      {
-        "id": "b4098eaa496c222590cdd846",
-        "entity": "YieldRing.eth",
-        "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-        "recommendationClass": "evidence-review",
-        "riskTier": "low",
-        "actionMode": "proposal-only"
-      },
-      {
-        "id": "2ce65a1397099e6f4d1b5339",
-        "entity": "defitea.eth",
-        "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-        "recommendationClass": "evidence-review",
-        "riskTier": "low",
-        "actionMode": "proposal-only"
-      },
-      {
-        "id": "82183c321a64e7ad17a73fbe",
-        "entity": "defitea.eth",
-        "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-        "recommendationClass": "evidence-review",
-        "riskTier": "low",
-        "actionMode": "proposal-only"
-      },
-      {
-        "id": "bcaf3605be9604b08fad3222",
-        "entity": "Monetra.eth",
-        "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-        "recommendationClass": "evidence-review",
-        "riskTier": "low",
-        "actionMode": "proposal-only"
-      },
-      {
-        "id": "f00af0858d213b295e817c3d",
-        "entity": "Monetra.eth",
-        "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-        "recommendationClass": "evidence-review",
-        "riskTier": "low",
-        "actionMode": "proposal-only"
-      },
-      {
-        "id": "6f62a398836424126877a444",
-        "entity": "Monetra.eth",
-        "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-        "recommendationClass": "evidence-review",
-        "riskTier": "low",
-        "actionMode": "proposal-only"
-      },
-      {
-        "id": "508eed4f7e6bcf1a2b3a8f4c",
-        "entity": "05081966.eth",
-        "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-        "recommendationClass": "evidence-review",
-        "riskTier": "low",
-        "actionMode": "proposal-only"
-      },
-      {
-        "id": "d765c8ac148e96b0197871a4",
-        "entity": "0x5860...83CA8.eth",
-        "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-        "recommendationClass": "evidence-review",
-        "riskTier": "low",
-        "actionMode": "proposal-only"
-      },
-      {
-        "id": "303dc25c0258e1450f91883a",
-        "entity": "1milliondollar.eth",
-        "answer": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-        "recommendationClass": "evidence-review",
         "riskTier": "low",
         "actionMode": "proposal-only"
       }
@@ -2877,7 +2207,7 @@
               },
               "provenance": {
                 "economicGraphFile": "intelligence/economic-graph/economic-graph.json",
-                "graphSha256": "bbcc9978a9924b8cf7b786557fa11d7f7d93a0112dac6f7e14d2c823957715ca",
+                "graphSha256": "0402f983b74774d8e34b1c44ff9ef9bc26bd974e1b978d22224e06721dec9c2a",
                 "deepEvidenceVersion": "0.1-vlcvx-votium-curve-cognitive-close",
                 "sourceBinding": {
                   "roundFlow": {
@@ -2897,8 +2227,8 @@
                   },
                   "curvePoolContext": {
                     "file": "intelligence/economic-graph/vlcvx-votium-curve-pool-context.json",
-                    "sha256": "bf3639b2fc5e5b750bec8920c1e295dc243e4354f9b4e5cbaa9b02a5e9992ec8",
-                    "generatedAt": "2026-08-27T09:58:18.574Z"
+                    "sha256": "9e6aca8e616a852d491a958869bc7dd7135e67e21cc1d2d540b1eaa1ae31d9a0",
+                    "generatedAt": "2026-08-28T11:30:56.944Z"
                   }
                 }
               },
@@ -2912,8 +2242,8 @@
                 "promotionAuthority": "none"
               }
             },
-            "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-            "observedAt": "2026-08-27T19:03:54.830Z",
+            "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+            "observedAt": "2026-08-28T13:03:01.773Z",
             "interpretation": "shadow-cross-protocol-mechanics-and-temporal-context-causality-unresolved",
             "note": "Votium→Convex→Curve mechanical execution is proven; current Curve pool state is measured temporal context only. Do not infer incentive→vote or vote→pool causality."
           }
@@ -2955,8 +2285,8 @@
                 "promotionAuthority": "none"
               }
             },
-            "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-            "observedAt": "2026-08-27T19:03:54.830Z",
+            "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+            "observedAt": "2026-08-28T13:03:01.773Z",
             "interpretation": "read-only-protocol-lifecycle-context",
             "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
           }
@@ -2996,8 +2326,8 @@
                 "promotionAuthority": "none"
               }
             },
-            "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-            "observedAt": "2026-08-27T19:03:54.830Z",
+            "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+            "observedAt": "2026-08-28T13:03:01.773Z",
             "interpretation": "read-only-protocol-lifecycle-context",
             "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
           }
@@ -3041,8 +2371,8 @@
                 "promotionAuthority": "none"
               }
             },
-            "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-            "observedAt": "2026-08-27T19:03:54.830Z",
+            "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+            "observedAt": "2026-08-28T13:03:01.773Z",
             "interpretation": "read-only-protocol-lifecycle-context",
             "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
           }
@@ -3086,8 +2416,8 @@
                 "promotionAuthority": "none"
               }
             },
-            "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-            "observedAt": "2026-08-27T19:03:54.830Z",
+            "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+            "observedAt": "2026-08-28T13:03:01.773Z",
             "interpretation": "read-only-protocol-lifecycle-context",
             "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
           }
@@ -3145,8 +2475,8 @@
                 "promotionAuthority": "none"
               }
             },
-            "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-            "observedAt": "2026-08-27T19:03:54.830Z",
+            "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+            "observedAt": "2026-08-28T13:03:01.773Z",
             "interpretation": "read-only-protocol-lifecycle-context",
             "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
           }
@@ -3206,8 +2536,8 @@
                 "promotionAuthority": "none"
               }
             },
-            "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-            "observedAt": "2026-08-27T19:03:54.830Z",
+            "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+            "observedAt": "2026-08-28T13:03:01.773Z",
             "interpretation": "read-only-protocol-lifecycle-context",
             "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
           }
@@ -3267,8 +2597,8 @@
                 "promotionAuthority": "none"
               }
             },
-            "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-            "observedAt": "2026-08-27T19:03:54.830Z",
+            "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+            "observedAt": "2026-08-28T13:03:01.773Z",
             "interpretation": "read-only-protocol-lifecycle-context",
             "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
           }
@@ -3340,8 +2670,8 @@
                 "promotionAuthority": "none"
               }
             },
-            "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-            "observedAt": "2026-08-27T19:03:54.830Z",
+            "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+            "observedAt": "2026-08-28T13:03:01.773Z",
             "interpretation": "read-only-protocol-lifecycle-context",
             "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
           }
@@ -3350,13 +2680,13 @@
     },
     "protocolEcosystemContexts": {
       "registry-frax-ecosystem": {
-        "answer": "Frax is now represented as one lifecycle sensor with a nine-surface ecosystem family: veFRAX governance is currently measured; Fraxtal/Flox/FXTL, frxUSD/sfrxUSD, FraxNet, Fraxlend, Fraxswap/BAMM, FXB, FX liquidity and end-to-end revenue routing are source-bound but remain UNKNOWN for current economic values until reproducible ingestion exists. This prevents source topology from being mistaken for measurement or causality.",
+        "answer": "Frax is represented as one lifecycle sensor with a nine-surface ecosystem family. Current Economic Graph evidence marks 2 surface(s) as MEASURED (governanceVeFrax, frxUsdSfrxUsd) and 7 surface(s) as source-bound UNKNOWN (fraxtalFloxFxtl, fraxNet, fraxlend, fraxswapBamm, fxb, fxLiquidity, revenueRouting). Measured state is inherited from exact Graph evidence only; source topology and measured association do not authorize causal attribution, recommendation, allocation or execution claims.",
         "status": "deep-sensor-family-active-partial-measurement",
         "lifecycleStage": "shadow",
         "coverage": {
           "surfaceCount": 9,
-          "measuredSurfaceCount": 1,
-          "sourceBoundUnknownSurfaceCount": 8,
+          "measuredSurfaceCount": 2,
+          "sourceBoundUnknownSurfaceCount": 7,
           "surfaceIds": [
             "governance-vefrax",
             "fraxtal-flox-fxtl",
@@ -3494,18 +2824,88 @@
               },
               "note": "Backing/yield composition is source topology until a current reproducible balance-sheet/accounting snapshot is ingested."
             },
-            "measurementState": "UNKNOWN-current-value-not-ingested",
-            "measured": null,
+            "measurementState": "MEASURED-current-onchain-partial",
+            "measured": {
+              "version": "0.1-sfrxusd-exact-block-erc4626",
+              "status": "ok",
+              "measurementClass": "MEASURED",
+              "observedAt": "2026-08-28T13:02:23.000Z",
+              "chain": "ethereum",
+              "chainId": 1,
+              "blockNumber": 25853908,
+              "blockTag": "0x18a7fd4",
+              "blockHash": "0x10b09258f7e7cdc5f11f0bfb08c506bfdad0a3ff135426290e243a90d8d230c8",
+              "contracts": {
+                "frxUSD": "0xCAcd6fd266aF91b8AeD52aCCc382b4e165586E29",
+                "sfrxUSD": "0xcf62F905562626CfcDD2261162a51fd02Fc9c5b6"
+              },
+              "decimals": {
+                "frxUSD": 18,
+                "sfrxUSD": 18
+              },
+              "raw": {
+                "frxUsdTotalSupply": "101798319649337437539375920",
+                "sfrxUsdTotalSupply": "29931733863871102947981227",
+                "sfrxUsdTotalAssets": "36154213288520075060811717"
+              },
+              "values": {
+                "frxUsdSupply": 101798319.64933744,
+                "sfrxUsdSupply": 29931733.8638711,
+                "sfrxUsdTotalAssets": 36154213.28852008,
+                "sharePriceFrxUsd": 1.207889040206
+              },
+              "scope": {
+                "frxUsdSupply": "Ethereum frxUSD contract totalSupply only; not asserted as global cross-chain frxUSD supply",
+                "sfrxUsdState": "Ethereum sfrxUSD ERC4626 contract exact-block state"
+              },
+              "rpc": {
+                "endpointId": "publicnode",
+                "failoverAttempts": []
+              },
+              "identity": {
+                "sharePriceFormula": "sfrxUSD totalAssets / totalSupply after token-decimal normalization",
+                "intervalYieldFormula": "ending share price / beginning share price - 1",
+                "historyRule": "persisted adjacent Economic Graph onchain checkpoints only; no pre-tracking or APY backfill"
+              },
+              "epistemic": {
+                "sourceType": "onchain-public-rpc-exact-block",
+                "currentStateMeasured": true,
+                "currentStateScope": "partial-Ethereum-frxUSD-sfrxUSD-surface",
+                "sharePriceMechanicalIdentity": "PROVEN-current-exact-block",
+                "historicalBackfill": false,
+                "unknownIsZero": false,
+                "productionPriceAuthority": false,
+                "causalClaimAuthority": "none",
+                "executionAuthority": "none"
+              },
+              "intervalEmbeddedYield": {
+                "status": "ok",
+                "accepted": true,
+                "source": "persisted-adjacent-economic-graph-onchain-checkpoints",
+                "startAt": "2026-08-28T12:56:59.000Z",
+                "endAt": "2026-08-28T13:02:23.000Z",
+                "elapsedSeconds": 324,
+                "startBlock": 25853882,
+                "endBlock": 25853908,
+                "startSharePriceFrxUsd": 1.207888458389,
+                "endSharePriceFrxUsd": 1.207889040206,
+                "embeddedYieldPct": 0.000048168107,
+                "annualizedApyPct": null,
+                "annualizationState": "NOT-CALCULATED-no-annualization-methodology-added",
+                "accountingIdentity": "ending sfrxUSD share price / beginning share price - 1",
+                "note": "Direct interval share-price return only. No APY backfill, reserve-yield causality or veFRAX revenue attribution."
+              }
+            },
             "mechanicalRelations": [
               {
                 "from": "sfrxUSD assets / shares",
                 "to": "share price",
-                "class": "MECHANICAL-ready-for-onchain-reproduction"
+                "class": "MECHANICAL-proven-current-exact-block"
               },
               {
                 "from": "share-price change",
                 "to": "embedded yield",
-                "class": "MECHANICAL-ready-for-longitudinal-reproduction"
+                "class": "MECHANICAL-proven-adjacent-checkpoints"
               },
               {
                 "from": "reserve yield",
@@ -3838,14 +3238,14 @@
             "index": 0,
             "from": "sfrxUSD assets / shares",
             "to": "share price",
-            "class": "MECHANICAL-ready-for-onchain-reproduction"
+            "class": "MECHANICAL-proven-current-exact-block"
           },
           {
             "surfaceId": "frxusd-sfrxusd",
             "index": 1,
             "from": "share-price change",
             "to": "embedded yield",
-            "class": "MECHANICAL-ready-for-longitudinal-reproduction"
+            "class": "MECHANICAL-proven-adjacent-checkpoints"
           },
           {
             "surfaceId": "frxusd-sfrxusd",
@@ -4001,11 +3401,17 @@
           "predictionAuthority": "none",
           "recommendationAuthority": "none",
           "causalClaimAuthority": "none",
-          "executionAuthority": "none"
+          "executionAuthority": "none",
+          "measuredEconomicSurfaces": [
+            "governance-vefrax",
+            "frxusd-sfrxusd"
+          ],
+          "sfrxUsdCurrentState": "MEASURED",
+          "sfrxUsdEmbeddedYield": "DERIVED-MECHANICAL"
         },
         "nextMeasurementUnlocks": [
           "Bind FraxtalPoints/Flox epoch reads to explicit epoch boundaries and company addresses.",
-          "Ingest frxUSD/sfrxUSD current ERC20/ERC4626 state plus reproducible backing/allocation evidence.",
+          "frxUSD/sfrxUSD ERC20/ERC4626 current state is now measured; continue adjacent checkpoints and separately prove backing/allocation evidence.",
           "Enumerate FraxNet jobs/flows with bounded API or onchain event history.",
           "Enumerate Fraxlend Pair Registry and reproduce utilization/rate/share-price identities.",
           "Enumerate Fraxswap/BAMM factories and reproduce pool/liquidity/fee/borrow-interest state.",
@@ -4035,8 +3441,8 @@
               "scope": "registry-wide-frax-ecosystem",
               "coverage": {
                 "surfaceCount": 9,
-                "measuredSurfaceCount": 1,
-                "sourceBoundUnknownSurfaceCount": 8,
+                "measuredSurfaceCount": 2,
+                "sourceBoundUnknownSurfaceCount": 7,
                 "surfaceIds": [
                   "governance-vefrax",
                   "fraxtal-flox-fxtl",
@@ -4174,18 +3580,88 @@
                     },
                     "note": "Backing/yield composition is source topology until a current reproducible balance-sheet/accounting snapshot is ingested."
                   },
-                  "measurementState": "UNKNOWN-current-value-not-ingested",
-                  "measured": null,
+                  "measurementState": "MEASURED-current-onchain-partial",
+                  "measured": {
+                    "version": "0.1-sfrxusd-exact-block-erc4626",
+                    "status": "ok",
+                    "measurementClass": "MEASURED",
+                    "observedAt": "2026-08-28T13:02:23.000Z",
+                    "chain": "ethereum",
+                    "chainId": 1,
+                    "blockNumber": 25853908,
+                    "blockTag": "0x18a7fd4",
+                    "blockHash": "0x10b09258f7e7cdc5f11f0bfb08c506bfdad0a3ff135426290e243a90d8d230c8",
+                    "contracts": {
+                      "frxUSD": "0xCAcd6fd266aF91b8AeD52aCCc382b4e165586E29",
+                      "sfrxUSD": "0xcf62F905562626CfcDD2261162a51fd02Fc9c5b6"
+                    },
+                    "decimals": {
+                      "frxUSD": 18,
+                      "sfrxUSD": 18
+                    },
+                    "raw": {
+                      "frxUsdTotalSupply": "101798319649337437539375920",
+                      "sfrxUsdTotalSupply": "29931733863871102947981227",
+                      "sfrxUsdTotalAssets": "36154213288520075060811717"
+                    },
+                    "values": {
+                      "frxUsdSupply": 101798319.64933744,
+                      "sfrxUsdSupply": 29931733.8638711,
+                      "sfrxUsdTotalAssets": 36154213.28852008,
+                      "sharePriceFrxUsd": 1.207889040206
+                    },
+                    "scope": {
+                      "frxUsdSupply": "Ethereum frxUSD contract totalSupply only; not asserted as global cross-chain frxUSD supply",
+                      "sfrxUsdState": "Ethereum sfrxUSD ERC4626 contract exact-block state"
+                    },
+                    "rpc": {
+                      "endpointId": "publicnode",
+                      "failoverAttempts": []
+                    },
+                    "identity": {
+                      "sharePriceFormula": "sfrxUSD totalAssets / totalSupply after token-decimal normalization",
+                      "intervalYieldFormula": "ending share price / beginning share price - 1",
+                      "historyRule": "persisted adjacent Economic Graph onchain checkpoints only; no pre-tracking or APY backfill"
+                    },
+                    "epistemic": {
+                      "sourceType": "onchain-public-rpc-exact-block",
+                      "currentStateMeasured": true,
+                      "currentStateScope": "partial-Ethereum-frxUSD-sfrxUSD-surface",
+                      "sharePriceMechanicalIdentity": "PROVEN-current-exact-block",
+                      "historicalBackfill": false,
+                      "unknownIsZero": false,
+                      "productionPriceAuthority": false,
+                      "causalClaimAuthority": "none",
+                      "executionAuthority": "none"
+                    },
+                    "intervalEmbeddedYield": {
+                      "status": "ok",
+                      "accepted": true,
+                      "source": "persisted-adjacent-economic-graph-onchain-checkpoints",
+                      "startAt": "2026-08-28T12:56:59.000Z",
+                      "endAt": "2026-08-28T13:02:23.000Z",
+                      "elapsedSeconds": 324,
+                      "startBlock": 25853882,
+                      "endBlock": 25853908,
+                      "startSharePriceFrxUsd": 1.207888458389,
+                      "endSharePriceFrxUsd": 1.207889040206,
+                      "embeddedYieldPct": 0.000048168107,
+                      "annualizedApyPct": null,
+                      "annualizationState": "NOT-CALCULATED-no-annualization-methodology-added",
+                      "accountingIdentity": "ending sfrxUSD share price / beginning share price - 1",
+                      "note": "Direct interval share-price return only. No APY backfill, reserve-yield causality or veFRAX revenue attribution."
+                    }
+                  },
                   "mechanicalRelations": [
                     {
                       "from": "sfrxUSD assets / shares",
                       "to": "share price",
-                      "class": "MECHANICAL-ready-for-onchain-reproduction"
+                      "class": "MECHANICAL-proven-current-exact-block"
                     },
                     {
                       "from": "share-price change",
                       "to": "embedded yield",
-                      "class": "MECHANICAL-ready-for-longitudinal-reproduction"
+                      "class": "MECHANICAL-proven-adjacent-checkpoints"
                     },
                     {
                       "from": "reserve yield",
@@ -4518,14 +3994,14 @@
                   "index": 0,
                   "from": "sfrxUSD assets / shares",
                   "to": "share price",
-                  "class": "MECHANICAL-ready-for-onchain-reproduction"
+                  "class": "MECHANICAL-proven-current-exact-block"
                 },
                 {
                   "surfaceId": "frxusd-sfrxusd",
                   "index": 1,
                   "from": "share-price change",
                   "to": "embedded yield",
-                  "class": "MECHANICAL-ready-for-longitudinal-reproduction"
+                  "class": "MECHANICAL-proven-adjacent-checkpoints"
                 },
                 {
                   "surfaceId": "frxusd-sfrxusd",
@@ -4681,11 +4157,17 @@
                 "predictionAuthority": "none",
                 "recommendationAuthority": "none",
                 "causalClaimAuthority": "none",
-                "executionAuthority": "none"
+                "executionAuthority": "none",
+                "measuredEconomicSurfaces": [
+                  "governance-vefrax",
+                  "frxusd-sfrxusd"
+                ],
+                "sfrxUsdCurrentState": "MEASURED",
+                "sfrxUsdEmbeddedYield": "DERIVED-MECHANICAL"
               },
               "nextMeasurementUnlocks": [
                 "Bind FraxtalPoints/Flox epoch reads to explicit epoch boundaries and company addresses.",
-                "Ingest frxUSD/sfrxUSD current ERC20/ERC4626 state plus reproducible backing/allocation evidence.",
+                "frxUSD/sfrxUSD ERC20/ERC4626 current state is now measured; continue adjacent checkpoints and separately prove backing/allocation evidence.",
                 "Enumerate FraxNet jobs/flows with bounded API or onchain event history.",
                 "Enumerate Fraxlend Pair Registry and reproduce utilization/rate/share-price identities.",
                 "Enumerate Fraxswap/BAMM factories and reproduce pool/liquidity/fee/borrow-interest state.",
@@ -4693,11 +4175,11 @@
                 "Resolve named FX pool identities before measuring liquidity/volume/fees/incentives.",
                 "Prove revenue routing end-to-end before any protocol-revenue→veFRAX/company cash-flow claim."
               ],
-              "explanation": "Frax is now represented as one lifecycle sensor with a nine-surface ecosystem family: veFRAX governance is currently measured; Fraxtal/Flox/FXTL, frxUSD/sfrxUSD, FraxNet, Fraxlend, Fraxswap/BAMM, FXB, FX liquidity and end-to-end revenue routing are source-bound but remain UNKNOWN for current economic values until reproducible ingestion exists. This prevents source topology from being mistaken for measurement or causality.",
+              "explanation": "Frax is represented as one lifecycle sensor with a nine-surface ecosystem family. Current Economic Graph evidence marks 2 surface(s) as MEASURED (governanceVeFrax, frxUsdSfrxUsd) and 7 surface(s) as source-bound UNKNOWN (fraxtalFloxFxtl, fraxNet, fraxlend, fraxswapBamm, fxb, fxLiquidity, revenueRouting). Measured state is inherited from exact Graph evidence only; source topology and measured association do not authorize causal attribution, recommendation, allocation or execution claims.",
               "provenance": {
                 "economicGraphFile": "intelligence/economic-graph/economic-graph.json",
-                "graphSha256": "bbcc9978a9924b8cf7b786557fa11d7f7d93a0112dac6f7e14d2c823957715ca",
-                "observationId": "frax-ecosystem:551d93462a649bd4c977d519",
+                "graphSha256": "0402f983b74774d8e34b1c44ff9ef9bc26bd974e1b978d22224e06721dec9c2a",
+                "observationId": "frax-ecosystem:9089fcd6b09c51b25e0ce6c4",
                 "evidenceVersion": "0.1-frax-deep-ecosystem-sensor-family"
               },
               "authority": {
@@ -4711,10 +4193,10 @@
                 "executionAuthority": "none"
               }
             },
-            "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-            "observedAt": "2026-08-27T19:03:54.830Z",
+            "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+            "observedAt": "2026-08-28T13:03:01.773Z",
             "interpretation": "frax-deep-ecosystem-measured-vs-source-bound-unknown",
-            "note": "Only the veFRAX governance surface is currently measured. Source-bound ecosystem topology remains UNKNOWN for current economic values until reproducible ingestion exists."
+            "note": "Current Explanatory evidence marks 2 Frax surface(s) MEASURED (governanceVeFrax, frxUsdSfrxUsd) and 7 source-bound UNKNOWN (fraxtalFloxFxtl, fraxNet, fraxlend, fraxswapBamm, fxb, fxLiquidity, revenueRouting). Measurement does not imply causality or execution authority."
           }
         ]
       }
@@ -4750,8 +4232,8 @@
             "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
             "evidence": null
           },
-          "sourceSha256": "fe8271c84fdcdf99ec5c7bda21f9f40ddd4c451779d25c966b8d8097f0d8400b",
-          "observedAt": "2026-08-27T19:04:11.121Z",
+          "sourceSha256": "a8b202aa1ead2ebaf5c9ff00f88b5d2ec797301f6ade801dd0055eeb9083da1e",
+          "observedAt": "2026-08-28T13:10:52.314Z",
           "interpretation": "direct",
           "note": "Direct current finding emitted by The Holding Security Sentinel."
         }
@@ -4786,8 +4268,8 @@
             "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
             "evidence": null
           },
-          "sourceSha256": "fe8271c84fdcdf99ec5c7bda21f9f40ddd4c451779d25c966b8d8097f0d8400b",
-          "observedAt": "2026-08-27T19:04:11.121Z",
+          "sourceSha256": "a8b202aa1ead2ebaf5c9ff00f88b5d2ec797301f6ade801dd0055eeb9083da1e",
+          "observedAt": "2026-08-28T13:10:52.314Z",
           "interpretation": "direct",
           "note": "Direct current finding emitted by The Holding Security Sentinel."
         }
@@ -4834,8 +4316,8 @@
               }
             ]
           },
-          "sourceSha256": "fe8271c84fdcdf99ec5c7bda21f9f40ddd4c451779d25c966b8d8097f0d8400b",
-          "observedAt": "2026-08-27T19:04:11.121Z",
+          "sourceSha256": "a8b202aa1ead2ebaf5c9ff00f88b5d2ec797301f6ade801dd0055eeb9083da1e",
+          "observedAt": "2026-08-28T13:10:52.314Z",
           "interpretation": "derived-from-direct-findings",
           "selector": "severity=medium&category=dom-innerhtml",
           "note": "Count is derived deterministically from current Security Sentinel findings."
@@ -4867,8 +4349,8 @@
             "summary": "Pendle / pendle_spendle remains warming.",
             "whyItMatters": "A non-ok adapter marks a known edge where the system still lacks a fully current reproducible measurement."
           },
-          "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-          "observedAt": "2026-08-27T17:46:21.337Z",
+          "sourceSha256": "bc3763ff11569fa4b60ca1cb6f78017294ffefa618ee76fe7fe9a3614312fff8",
+          "observedAt": "2026-08-28T13:03:26.575Z",
           "interpretation": "direct",
           "note": "Direct normalized watch item emitted by The Holding Observer."
         }
@@ -4899,98 +4381,10 @@
             "summary": "defitea.eth Productivity coverage is 92.9%.",
             "whyItMatters": "Unknown productive capital is excluded rather than fabricated as zero; coverage shows exactly what is currently understood."
           },
-          "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-          "observedAt": "2026-08-27T17:46:21.337Z",
+          "sourceSha256": "bc3763ff11569fa4b60ca1cb6f78017294ffefa618ee76fe7fe9a3614312fff8",
+          "observedAt": "2026-08-28T13:03:26.575Z",
           "interpretation": "direct",
           "note": "Direct normalized watch item emitted by The Holding Observer."
-        }
-      ]
-    },
-    {
-      "id": "0a48d3e91213199c79b8fa3f",
-      "domain": "system-change",
-      "severity": "watch",
-      "category": "rewards",
-      "entity": "Cypher",
-      "signal": "Cypher Rewards status changed ok → partial.",
-      "whyItMatters": "Reward measurement completeness affects the reliability of current earned-but-unclaimed value.",
-      "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-      "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-      "recommendationClass": "evidence-review",
-      "riskTier": "low",
-      "actionMode": "proposal-only",
-      "confidence": "high",
-      "evidence": [
-        {
-          "source": "intelligence/change-intelligence.json",
-          "pointer": "/whatChanged/1",
-          "value": {
-            "id": "4f98541bd42d6739430a",
-            "detectedAt": "2026-08-27T17:46:21.337Z",
-            "category": "rewards",
-            "entity": "Cypher",
-            "metric": "status",
-            "previousValue": "ok",
-            "currentValue": "partial",
-            "unit": null,
-            "severity": "watch",
-            "summary": "Cypher Rewards status changed ok → partial.",
-            "whyItMatters": "Reward measurement completeness affects the reliability of current earned-but-unclaimed value.",
-            "sourceKeys": [
-              "rewards"
-            ]
-          },
-          "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-          "observedAt": "2026-08-27T17:46:21.337Z",
-          "interpretation": "direct",
-          "note": "Direct material-change event emitted by The Holding Observer."
-        }
-      ]
-    },
-    {
-      "id": "3aa9c2c6195481751154ecc3",
-      "domain": "system-change",
-      "severity": "watch",
-      "category": "rewards",
-      "entity": "Cypher",
-      "signal": "Cypher Rewards completeness changed: pending routes 0 → 1, unpriced 0 → 0.",
-      "whyItMatters": "Completeness improvements turn previously partial observations into reusable verified intelligence.",
-      "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-      "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-      "recommendationClass": "evidence-review",
-      "riskTier": "low",
-      "actionMode": "proposal-only",
-      "confidence": "high",
-      "evidence": [
-        {
-          "source": "intelligence/change-intelligence.json",
-          "pointer": "/whatChanged/2",
-          "value": {
-            "id": "8f444799c1828ac61206",
-            "detectedAt": "2026-08-27T17:46:21.337Z",
-            "category": "rewards",
-            "entity": "Cypher",
-            "metric": "completeness",
-            "previousValue": {
-              "pendingRoutes": 0,
-              "unpricedRewards": 0
-            },
-            "currentValue": {
-              "pendingRoutes": 1,
-              "unpricedRewards": 0
-            },
-            "unit": null,
-            "severity": "watch",
-            "summary": "Cypher Rewards completeness changed: pending routes 0 → 1, unpriced 0 → 0.",
-            "whyItMatters": "Completeness improvements turn previously partial observations into reusable verified intelligence.",
-            "sourceKeys": [
-              "rewards"
-            ]
-          },
-          "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-          "observedAt": "2026-08-27T17:46:21.337Z",
-          "interpretation": "direct",
-          "note": "Direct material-change event emitted by The Holding Observer."
         }
       ]
     },
@@ -5019,8 +4413,8 @@
             "summary": "0x5860...83CA8.eth Rewards needs attention: status=partial, pendingRoutes=1, unpricedRewards=0.",
             "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory."
           },
-          "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-          "observedAt": "2026-08-27T17:46:21.337Z",
+          "sourceSha256": "bc3763ff11569fa4b60ca1cb6f78017294ffefa618ee76fe7fe9a3614312fff8",
+          "observedAt": "2026-08-28T13:03:26.575Z",
           "interpretation": "direct",
           "note": "Direct normalized watch item emitted by The Holding Observer."
         }
@@ -5051,8 +4445,8 @@
             "summary": "aerocvxyb.eth Rewards needs attention: status=partial, pendingRoutes=2, unpricedRewards=0.",
             "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory."
           },
-          "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-          "observedAt": "2026-08-27T17:46:21.337Z",
+          "sourceSha256": "bc3763ff11569fa4b60ca1cb6f78017294ffefa618ee76fe7fe9a3614312fff8",
+          "observedAt": "2026-08-28T13:03:26.575Z",
           "interpretation": "direct",
           "note": "Direct normalized watch item emitted by The Holding Observer."
         }
@@ -5083,8 +4477,8 @@
             "summary": "Cypher Rewards needs attention: status=partial, pendingRoutes=1, unpricedRewards=0.",
             "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory."
           },
-          "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-          "observedAt": "2026-08-27T17:46:21.337Z",
+          "sourceSha256": "bc3763ff11569fa4b60ca1cb6f78017294ffefa618ee76fe7fe9a3614312fff8",
+          "observedAt": "2026-08-28T13:03:26.575Z",
           "interpretation": "direct",
           "note": "Direct normalized watch item emitted by The Holding Observer."
         }
@@ -5115,584 +4509,10 @@
             "summary": "defitea.eth Rewards needs attention: status=partial, pendingRoutes=2, unpricedRewards=0.",
             "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory."
           },
-          "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-          "observedAt": "2026-08-27T17:46:21.337Z",
+          "sourceSha256": "bc3763ff11569fa4b60ca1cb6f78017294ffefa618ee76fe7fe9a3614312fff8",
+          "observedAt": "2026-08-28T13:03:26.575Z",
           "interpretation": "direct",
           "note": "Direct normalized watch item emitted by The Holding Observer."
-        }
-      ]
-    },
-    {
-      "id": "ac1fadabdbf4593d941903e6",
-      "domain": "system-change",
-      "severity": "info",
-      "category": "productivity",
-      "entity": "1milliondollar.eth",
-      "signal": "1milliondollar.eth Reference APR moved 10.82% → 11.45% (+0.63 pp).",
-      "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
-      "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-      "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-      "recommendationClass": "evidence-review",
-      "riskTier": "low",
-      "actionMode": "proposal-only",
-      "confidence": "high",
-      "evidence": [
-        {
-          "source": "intelligence/change-intelligence.json",
-          "pointer": "/whatChanged/3",
-          "value": {
-            "id": "4fb4026da79803618d9d",
-            "detectedAt": "2026-08-27T17:46:21.337Z",
-            "category": "productivity",
-            "entity": "1milliondollar.eth",
-            "metric": "aprLatestPct",
-            "previousValue": 10.8217,
-            "currentValue": 11.4505,
-            "unit": "percentage-points",
-            "severity": "info",
-            "summary": "1milliondollar.eth Reference APR moved 10.82% → 11.45% (+0.63 pp).",
-            "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
-            "sourceKeys": [
-              "productivity"
-            ]
-          },
-          "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-          "observedAt": "2026-08-27T17:46:21.337Z",
-          "interpretation": "direct",
-          "note": "Direct material-change event emitted by The Holding Observer."
-        }
-      ]
-    },
-    {
-      "id": "7f534b7c7e7a0b2ad233f71d",
-      "domain": "system-change",
-      "severity": "info",
-      "category": "productivity",
-      "entity": "Cypher",
-      "signal": "Cypher Reference APR moved 24.08% → 23.26% (-0.82 pp).",
-      "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
-      "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-      "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-      "recommendationClass": "evidence-review",
-      "riskTier": "low",
-      "actionMode": "proposal-only",
-      "confidence": "high",
-      "evidence": [
-        {
-          "source": "intelligence/change-intelligence.json",
-          "pointer": "/whatChanged/4",
-          "value": {
-            "id": "9cac3c2143eb942aa563",
-            "detectedAt": "2026-08-27T17:46:21.337Z",
-            "category": "productivity",
-            "entity": "Cypher",
-            "metric": "aprLatestPct",
-            "previousValue": 24.0825,
-            "currentValue": 23.2581,
-            "unit": "percentage-points",
-            "severity": "info",
-            "summary": "Cypher Reference APR moved 24.08% → 23.26% (-0.82 pp).",
-            "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
-            "sourceKeys": [
-              "productivity"
-            ]
-          },
-          "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-          "observedAt": "2026-08-27T17:46:21.337Z",
-          "interpretation": "direct",
-          "note": "Direct material-change event emitted by The Holding Observer."
-        }
-      ]
-    },
-    {
-      "id": "ad562c71bfce7183385c26c7",
-      "domain": "system-change",
-      "severity": "info",
-      "category": "productivity",
-      "entity": "defitea.eth",
-      "signal": "defitea.eth Reference APR moved 11.78% → 12.00% (+0.23 pp).",
-      "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
-      "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-      "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-      "recommendationClass": "evidence-review",
-      "riskTier": "low",
-      "actionMode": "proposal-only",
-      "confidence": "high",
-      "evidence": [
-        {
-          "source": "intelligence/change-intelligence.json",
-          "pointer": "/whatChanged/5",
-          "value": {
-            "id": "82d30fb161552b073f9b",
-            "detectedAt": "2026-08-27T17:46:21.337Z",
-            "category": "productivity",
-            "entity": "defitea.eth",
-            "metric": "aprLatestPct",
-            "previousValue": 11.775,
-            "currentValue": 12.0049,
-            "unit": "percentage-points",
-            "severity": "info",
-            "summary": "defitea.eth Reference APR moved 11.78% → 12.00% (+0.23 pp).",
-            "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
-            "sourceKeys": [
-              "productivity"
-            ]
-          },
-          "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-          "observedAt": "2026-08-27T17:46:21.337Z",
-          "interpretation": "direct",
-          "note": "Direct material-change event emitted by The Holding Observer."
-        }
-      ]
-    },
-    {
-      "id": "dd80bd3468be2f8ae6e2b237",
-      "domain": "system-change",
-      "severity": "info",
-      "category": "productivity",
-      "entity": "dinaz.eth",
-      "signal": "dinaz.eth Reference APR moved 4.88% → 5.71% (+0.83 pp).",
-      "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
-      "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-      "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-      "recommendationClass": "evidence-review",
-      "riskTier": "low",
-      "actionMode": "proposal-only",
-      "confidence": "high",
-      "evidence": [
-        {
-          "source": "intelligence/change-intelligence.json",
-          "pointer": "/whatChanged/6",
-          "value": {
-            "id": "58dbab164ea131d33f85",
-            "detectedAt": "2026-08-27T17:46:21.337Z",
-            "category": "productivity",
-            "entity": "dinaz.eth",
-            "metric": "aprLatestPct",
-            "previousValue": 4.88,
-            "currentValue": 5.71,
-            "unit": "percentage-points",
-            "severity": "info",
-            "summary": "dinaz.eth Reference APR moved 4.88% → 5.71% (+0.83 pp).",
-            "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
-            "sourceKeys": [
-              "productivity"
-            ]
-          },
-          "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-          "observedAt": "2026-08-27T17:46:21.337Z",
-          "interpretation": "direct",
-          "note": "Direct material-change event emitted by The Holding Observer."
-        }
-      ]
-    },
-    {
-      "id": "e3954b626649a8743ddc8806",
-      "domain": "system-change",
-      "severity": "info",
-      "category": "productivity",
-      "entity": "Rook's portfolio",
-      "signal": "Rook's portfolio Reference APR moved 15.48% → 15.09% (-0.39 pp).",
-      "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
-      "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-      "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-      "recommendationClass": "evidence-review",
-      "riskTier": "low",
-      "actionMode": "proposal-only",
-      "confidence": "high",
-      "evidence": [
-        {
-          "source": "intelligence/change-intelligence.json",
-          "pointer": "/whatChanged/7",
-          "value": {
-            "id": "dcd76ed96891ceacc49a",
-            "detectedAt": "2026-08-27T17:46:21.337Z",
-            "category": "productivity",
-            "entity": "Rook's portfolio",
-            "metric": "aprLatestPct",
-            "previousValue": 15.4776,
-            "currentValue": 15.086,
-            "unit": "percentage-points",
-            "severity": "info",
-            "summary": "Rook's portfolio Reference APR moved 15.48% → 15.09% (-0.39 pp).",
-            "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
-            "sourceKeys": [
-              "productivity"
-            ]
-          },
-          "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-          "observedAt": "2026-08-27T17:46:21.337Z",
-          "interpretation": "direct",
-          "note": "Direct material-change event emitted by The Holding Observer."
-        }
-      ]
-    },
-    {
-      "id": "b4098eaa496c222590cdd846",
-      "domain": "system-change",
-      "severity": "info",
-      "category": "productivity",
-      "entity": "YieldRing.eth",
-      "signal": "YieldRing.eth Reference APR moved 14.89% → 14.01% (-0.88 pp).",
-      "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
-      "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-      "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-      "recommendationClass": "evidence-review",
-      "riskTier": "low",
-      "actionMode": "proposal-only",
-      "confidence": "high",
-      "evidence": [
-        {
-          "source": "intelligence/change-intelligence.json",
-          "pointer": "/whatChanged/8",
-          "value": {
-            "id": "cba6ac4bda30eacff834",
-            "detectedAt": "2026-08-27T17:46:21.337Z",
-            "category": "productivity",
-            "entity": "YieldRing.eth",
-            "metric": "aprLatestPct",
-            "previousValue": 14.8907,
-            "currentValue": 14.006,
-            "unit": "percentage-points",
-            "severity": "info",
-            "summary": "YieldRing.eth Reference APR moved 14.89% → 14.01% (-0.88 pp).",
-            "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
-            "sourceKeys": [
-              "productivity"
-            ]
-          },
-          "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-          "observedAt": "2026-08-27T17:46:21.337Z",
-          "interpretation": "direct",
-          "note": "Direct material-change event emitted by The Holding Observer."
-        }
-      ]
-    },
-    {
-      "id": "2ce65a1397099e6f4d1b5339",
-      "domain": "system-change",
-      "severity": "info",
-      "category": "reporting",
-      "entity": "defitea.eth",
-      "signal": "defitea.eth recorded a new daily reporting observation for 2026-08-27.",
-      "whyItMatters": "Every new daily observation extends the operating memory used by future analytics and decision support.",
-      "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-      "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-      "recommendationClass": "evidence-review",
-      "riskTier": "low",
-      "actionMode": "proposal-only",
-      "confidence": "high",
-      "evidence": [
-        {
-          "source": "intelligence/change-intelligence.json",
-          "pointer": "/whatChanged/9",
-          "value": {
-            "id": "965d989271f0b83009c2",
-            "detectedAt": "2026-08-27T17:46:21.337Z",
-            "category": "reporting",
-            "entity": "defitea.eth",
-            "metric": "new-daily-snapshot",
-            "previousValue": "2026-08-24",
-            "currentValue": "2026-08-27",
-            "unit": null,
-            "severity": "info",
-            "summary": "defitea.eth recorded a new daily reporting observation for 2026-08-27.",
-            "whyItMatters": "Every new daily observation extends the operating memory used by future analytics and decision support.",
-            "sourceKeys": [
-              "reporting"
-            ]
-          },
-          "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-          "observedAt": "2026-08-27T17:46:21.337Z",
-          "interpretation": "direct",
-          "note": "Direct material-change event emitted by The Holding Observer."
-        }
-      ]
-    },
-    {
-      "id": "82183c321a64e7ad17a73fbe",
-      "domain": "system-change",
-      "severity": "info",
-      "category": "reporting",
-      "entity": "defitea.eth",
-      "signal": "defitea.eth current-month cash-flow/reference-income counter moved $66.60 → $75.51.",
-      "whyItMatters": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
-      "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-      "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-      "recommendationClass": "evidence-review",
-      "riskTier": "low",
-      "actionMode": "proposal-only",
-      "confidence": "high",
-      "evidence": [
-        {
-          "source": "intelligence/change-intelligence.json",
-          "pointer": "/whatChanged/10",
-          "value": {
-            "id": "5bc79b25d6e6ec3ed1b3",
-            "detectedAt": "2026-08-27T17:46:21.337Z",
-            "category": "reporting",
-            "entity": "defitea.eth",
-            "metric": "currentMonthCashFlowUsd",
-            "previousValue": 66.6,
-            "currentValue": 75.51,
-            "unit": "USD",
-            "severity": "info",
-            "summary": "defitea.eth current-month cash-flow/reference-income counter moved $66.60 → $75.51.",
-            "whyItMatters": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
-            "sourceKeys": [
-              "reporting"
-            ]
-          },
-          "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-          "observedAt": "2026-08-27T17:46:21.337Z",
-          "interpretation": "direct",
-          "note": "Direct material-change event emitted by The Holding Observer."
-        }
-      ]
-    },
-    {
-      "id": "bcaf3605be9604b08fad3222",
-      "domain": "system-change",
-      "severity": "info",
-      "category": "reporting",
-      "entity": "Monetra.eth",
-      "signal": "Monetra.eth recorded a new daily reporting observation for 2026-08-27.",
-      "whyItMatters": "Every new daily observation extends the operating memory used by future analytics and decision support.",
-      "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-      "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-      "recommendationClass": "evidence-review",
-      "riskTier": "low",
-      "actionMode": "proposal-only",
-      "confidence": "high",
-      "evidence": [
-        {
-          "source": "intelligence/change-intelligence.json",
-          "pointer": "/whatChanged/11",
-          "value": {
-            "id": "3f0f08991000c2c03bf5",
-            "detectedAt": "2026-08-27T17:46:21.337Z",
-            "category": "reporting",
-            "entity": "Monetra.eth",
-            "metric": "new-daily-snapshot",
-            "previousValue": "2026-08-24",
-            "currentValue": "2026-08-27",
-            "unit": null,
-            "severity": "info",
-            "summary": "Monetra.eth recorded a new daily reporting observation for 2026-08-27.",
-            "whyItMatters": "Every new daily observation extends the operating memory used by future analytics and decision support.",
-            "sourceKeys": [
-              "reporting"
-            ]
-          },
-          "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-          "observedAt": "2026-08-27T17:46:21.337Z",
-          "interpretation": "direct",
-          "note": "Direct material-change event emitted by The Holding Observer."
-        }
-      ]
-    },
-    {
-      "id": "f00af0858d213b295e817c3d",
-      "domain": "system-change",
-      "severity": "info",
-      "category": "reporting",
-      "entity": "Monetra.eth",
-      "signal": "Monetra.eth current-month cash-flow/reference-income counter moved $0.14 → $0.16.",
-      "whyItMatters": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
-      "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-      "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-      "recommendationClass": "evidence-review",
-      "riskTier": "low",
-      "actionMode": "proposal-only",
-      "confidence": "high",
-      "evidence": [
-        {
-          "source": "intelligence/change-intelligence.json",
-          "pointer": "/whatChanged/12",
-          "value": {
-            "id": "c11c02badf83b3f2bf54",
-            "detectedAt": "2026-08-27T17:46:21.337Z",
-            "category": "reporting",
-            "entity": "Monetra.eth",
-            "metric": "currentMonthCashFlowUsd",
-            "previousValue": 0.1441,
-            "currentValue": 0.1564,
-            "unit": "USD",
-            "severity": "info",
-            "summary": "Monetra.eth current-month cash-flow/reference-income counter moved $0.14 → $0.16.",
-            "whyItMatters": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
-            "sourceKeys": [
-              "reporting"
-            ]
-          },
-          "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-          "observedAt": "2026-08-27T17:46:21.337Z",
-          "interpretation": "direct",
-          "note": "Direct material-change event emitted by The Holding Observer."
-        }
-      ]
-    },
-    {
-      "id": "6f62a398836424126877a444",
-      "domain": "system-change",
-      "severity": "info",
-      "category": "reporting",
-      "entity": "Monetra.eth",
-      "signal": "Monetra.eth current-month generated income moved $0.1441 → $0.1564.",
-      "whyItMatters": "Generated income is a distinct history stream for capital that may compound inside positions rather than arrive as realised cash.",
-      "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-      "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-      "recommendationClass": "evidence-review",
-      "riskTier": "low",
-      "actionMode": "proposal-only",
-      "confidence": "high",
-      "evidence": [
-        {
-          "source": "intelligence/change-intelligence.json",
-          "pointer": "/whatChanged/13",
-          "value": {
-            "id": "28180cdcc56f11fa7f32",
-            "detectedAt": "2026-08-27T17:46:21.337Z",
-            "category": "reporting",
-            "entity": "Monetra.eth",
-            "metric": "currentMonthGeneratedIncomeUsd",
-            "previousValue": 0.1441,
-            "currentValue": 0.1564,
-            "unit": "USD",
-            "severity": "info",
-            "summary": "Monetra.eth current-month generated income moved $0.1441 → $0.1564.",
-            "whyItMatters": "Generated income is a distinct history stream for capital that may compound inside positions rather than arrive as realised cash.",
-            "sourceKeys": [
-              "reporting"
-            ]
-          },
-          "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-          "observedAt": "2026-08-27T17:46:21.337Z",
-          "interpretation": "direct",
-          "note": "Direct material-change event emitted by The Holding Observer."
-        }
-      ]
-    },
-    {
-      "id": "508eed4f7e6bcf1a2b3a8f4c",
-      "domain": "system-change",
-      "severity": "info",
-      "category": "rewards",
-      "entity": "05081966.eth",
-      "signal": "05081966.eth accrued rewards moved $2.35 → $3.08 (+$0.72).",
-      "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-      "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-      "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-      "recommendationClass": "evidence-review",
-      "riskTier": "low",
-      "actionMode": "proposal-only",
-      "confidence": "high",
-      "evidence": [
-        {
-          "source": "intelligence/change-intelligence.json",
-          "pointer": "/whatChanged/14",
-          "value": {
-            "id": "59ab6a7604176892a13c",
-            "detectedAt": "2026-08-27T17:46:21.337Z",
-            "category": "rewards",
-            "entity": "05081966.eth",
-            "metric": "totalUsd",
-            "previousValue": 2.35333,
-            "currentValue": 3.075253,
-            "unit": "USD",
-            "severity": "info",
-            "summary": "05081966.eth accrued rewards moved $2.35 → $3.08 (+$0.72).",
-            "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-            "sourceKeys": [
-              "rewards"
-            ]
-          },
-          "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-          "observedAt": "2026-08-27T17:46:21.337Z",
-          "interpretation": "direct",
-          "note": "Direct material-change event emitted by The Holding Observer."
-        }
-      ]
-    },
-    {
-      "id": "d765c8ac148e96b0197871a4",
-      "domain": "system-change",
-      "severity": "info",
-      "category": "rewards",
-      "entity": "0x5860...83CA8.eth",
-      "signal": "0x5860...83CA8.eth accrued rewards moved $118.87 → $138.34 (+$19.48).",
-      "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-      "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-      "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-      "recommendationClass": "evidence-review",
-      "riskTier": "low",
-      "actionMode": "proposal-only",
-      "confidence": "high",
-      "evidence": [
-        {
-          "source": "intelligence/change-intelligence.json",
-          "pointer": "/whatChanged/15",
-          "value": {
-            "id": "17eef3bb4bad49449c33",
-            "detectedAt": "2026-08-27T17:46:21.337Z",
-            "category": "rewards",
-            "entity": "0x5860...83CA8.eth",
-            "metric": "totalUsd",
-            "previousValue": 118.865208,
-            "currentValue": 138.340837,
-            "unit": "USD",
-            "severity": "info",
-            "summary": "0x5860...83CA8.eth accrued rewards moved $118.87 → $138.34 (+$19.48).",
-            "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-            "sourceKeys": [
-              "rewards"
-            ]
-          },
-          "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-          "observedAt": "2026-08-27T17:46:21.337Z",
-          "interpretation": "direct",
-          "note": "Direct material-change event emitted by The Holding Observer."
-        }
-      ]
-    },
-    {
-      "id": "303dc25c0258e1450f91883a",
-      "domain": "system-change",
-      "severity": "info",
-      "category": "rewards",
-      "entity": "1milliondollar.eth",
-      "signal": "1milliondollar.eth accrued rewards moved $28.15 → $33.34 (+$5.19).",
-      "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-      "whatFollows": "The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.",
-      "whatShouldBeDone": "Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.",
-      "recommendationClass": "evidence-review",
-      "riskTier": "low",
-      "actionMode": "proposal-only",
-      "confidence": "high",
-      "evidence": [
-        {
-          "source": "intelligence/change-intelligence.json",
-          "pointer": "/whatChanged/16",
-          "value": {
-            "id": "944ed2ab4745a074e5fc",
-            "detectedAt": "2026-08-27T17:46:21.337Z",
-            "category": "rewards",
-            "entity": "1milliondollar.eth",
-            "metric": "totalUsd",
-            "previousValue": 28.148689,
-            "currentValue": 33.342119,
-            "unit": "USD",
-            "severity": "info",
-            "summary": "1milliondollar.eth accrued rewards moved $28.15 → $33.34 (+$5.19).",
-            "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-            "sourceKeys": [
-              "rewards"
-            ]
-          },
-          "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-          "observedAt": "2026-08-27T17:46:21.337Z",
-          "interpretation": "direct",
-          "note": "Direct material-change event emitted by The Holding Observer."
         }
       ]
     }
@@ -5712,8 +4532,8 @@
         "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
         "evidence": null
       },
-      "sourceSha256": "fe8271c84fdcdf99ec5c7bda21f9f40ddd4c451779d25c966b8d8097f0d8400b",
-      "observedAt": "2026-08-27T19:04:11.121Z",
+      "sourceSha256": "a8b202aa1ead2ebaf5c9ff00f88b5d2ec797301f6ade801dd0055eeb9083da1e",
+      "observedAt": "2026-08-28T13:10:52.314Z",
       "interpretation": "direct",
       "note": "Direct current finding emitted by The Holding Security Sentinel."
     },
@@ -5731,8 +4551,8 @@
         "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
         "evidence": null
       },
-      "sourceSha256": "fe8271c84fdcdf99ec5c7bda21f9f40ddd4c451779d25c966b8d8097f0d8400b",
-      "observedAt": "2026-08-27T19:04:11.121Z",
+      "sourceSha256": "a8b202aa1ead2ebaf5c9ff00f88b5d2ec797301f6ade801dd0055eeb9083da1e",
+      "observedAt": "2026-08-28T13:10:52.314Z",
       "interpretation": "direct",
       "note": "Direct current finding emitted by The Holding Security Sentinel."
     },
@@ -5762,8 +4582,8 @@
           }
         ]
       },
-      "sourceSha256": "fe8271c84fdcdf99ec5c7bda21f9f40ddd4c451779d25c966b8d8097f0d8400b",
-      "observedAt": "2026-08-27T19:04:11.121Z",
+      "sourceSha256": "a8b202aa1ead2ebaf5c9ff00f88b5d2ec797301f6ade801dd0055eeb9083da1e",
+      "observedAt": "2026-08-28T13:10:52.314Z",
       "interpretation": "derived-from-direct-findings",
       "selector": "severity=medium&category=dom-innerhtml",
       "note": "Count is derived deterministically from current Security Sentinel findings."
@@ -5778,8 +4598,8 @@
         "summary": "Pendle / pendle_spendle remains warming.",
         "whyItMatters": "A non-ok adapter marks a known edge where the system still lacks a fully current reproducible measurement."
       },
-      "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-      "observedAt": "2026-08-27T17:46:21.337Z",
+      "sourceSha256": "bc3763ff11569fa4b60ca1cb6f78017294ffefa618ee76fe7fe9a3614312fff8",
+      "observedAt": "2026-08-28T13:03:26.575Z",
       "interpretation": "direct",
       "note": "Direct normalized watch item emitted by The Holding Observer."
     },
@@ -5793,64 +4613,10 @@
         "summary": "defitea.eth Productivity coverage is 92.9%.",
         "whyItMatters": "Unknown productive capital is excluded rather than fabricated as zero; coverage shows exactly what is currently understood."
       },
-      "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-      "observedAt": "2026-08-27T17:46:21.337Z",
+      "sourceSha256": "bc3763ff11569fa4b60ca1cb6f78017294ffefa618ee76fe7fe9a3614312fff8",
+      "observedAt": "2026-08-28T13:03:26.575Z",
       "interpretation": "direct",
       "note": "Direct normalized watch item emitted by The Holding Observer."
-    },
-    {
-      "source": "intelligence/change-intelligence.json",
-      "pointer": "/whatChanged/1",
-      "value": {
-        "id": "4f98541bd42d6739430a",
-        "detectedAt": "2026-08-27T17:46:21.337Z",
-        "category": "rewards",
-        "entity": "Cypher",
-        "metric": "status",
-        "previousValue": "ok",
-        "currentValue": "partial",
-        "unit": null,
-        "severity": "watch",
-        "summary": "Cypher Rewards status changed ok → partial.",
-        "whyItMatters": "Reward measurement completeness affects the reliability of current earned-but-unclaimed value.",
-        "sourceKeys": [
-          "rewards"
-        ]
-      },
-      "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-      "observedAt": "2026-08-27T17:46:21.337Z",
-      "interpretation": "direct",
-      "note": "Direct material-change event emitted by The Holding Observer."
-    },
-    {
-      "source": "intelligence/change-intelligence.json",
-      "pointer": "/whatChanged/2",
-      "value": {
-        "id": "8f444799c1828ac61206",
-        "detectedAt": "2026-08-27T17:46:21.337Z",
-        "category": "rewards",
-        "entity": "Cypher",
-        "metric": "completeness",
-        "previousValue": {
-          "pendingRoutes": 0,
-          "unpricedRewards": 0
-        },
-        "currentValue": {
-          "pendingRoutes": 1,
-          "unpricedRewards": 0
-        },
-        "unit": null,
-        "severity": "watch",
-        "summary": "Cypher Rewards completeness changed: pending routes 0 → 1, unpriced 0 → 0.",
-        "whyItMatters": "Completeness improvements turn previously partial observations into reusable verified intelligence.",
-        "sourceKeys": [
-          "rewards"
-        ]
-      },
-      "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-      "observedAt": "2026-08-27T17:46:21.337Z",
-      "interpretation": "direct",
-      "note": "Direct material-change event emitted by The Holding Observer."
     },
     {
       "source": "intelligence/change-intelligence.json",
@@ -5862,8 +4628,8 @@
         "summary": "0x5860...83CA8.eth Rewards needs attention: status=partial, pendingRoutes=1, unpricedRewards=0.",
         "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory."
       },
-      "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-      "observedAt": "2026-08-27T17:46:21.337Z",
+      "sourceSha256": "bc3763ff11569fa4b60ca1cb6f78017294ffefa618ee76fe7fe9a3614312fff8",
+      "observedAt": "2026-08-28T13:03:26.575Z",
       "interpretation": "direct",
       "note": "Direct normalized watch item emitted by The Holding Observer."
     },
@@ -5877,8 +4643,8 @@
         "summary": "aerocvxyb.eth Rewards needs attention: status=partial, pendingRoutes=2, unpricedRewards=0.",
         "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory."
       },
-      "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-      "observedAt": "2026-08-27T17:46:21.337Z",
+      "sourceSha256": "bc3763ff11569fa4b60ca1cb6f78017294ffefa618ee76fe7fe9a3614312fff8",
+      "observedAt": "2026-08-28T13:03:26.575Z",
       "interpretation": "direct",
       "note": "Direct normalized watch item emitted by The Holding Observer."
     },
@@ -5892,8 +4658,8 @@
         "summary": "Cypher Rewards needs attention: status=partial, pendingRoutes=1, unpricedRewards=0.",
         "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory."
       },
-      "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-      "observedAt": "2026-08-27T17:46:21.337Z",
+      "sourceSha256": "bc3763ff11569fa4b60ca1cb6f78017294ffefa618ee76fe7fe9a3614312fff8",
+      "observedAt": "2026-08-28T13:03:26.575Z",
       "interpretation": "direct",
       "note": "Direct normalized watch item emitted by The Holding Observer."
     },
@@ -5907,346 +4673,10 @@
         "summary": "defitea.eth Rewards needs attention: status=partial, pendingRoutes=2, unpricedRewards=0.",
         "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory."
       },
-      "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-      "observedAt": "2026-08-27T17:46:21.337Z",
+      "sourceSha256": "bc3763ff11569fa4b60ca1cb6f78017294ffefa618ee76fe7fe9a3614312fff8",
+      "observedAt": "2026-08-28T13:03:26.575Z",
       "interpretation": "direct",
       "note": "Direct normalized watch item emitted by The Holding Observer."
-    },
-    {
-      "source": "intelligence/change-intelligence.json",
-      "pointer": "/whatChanged/3",
-      "value": {
-        "id": "4fb4026da79803618d9d",
-        "detectedAt": "2026-08-27T17:46:21.337Z",
-        "category": "productivity",
-        "entity": "1milliondollar.eth",
-        "metric": "aprLatestPct",
-        "previousValue": 10.8217,
-        "currentValue": 11.4505,
-        "unit": "percentage-points",
-        "severity": "info",
-        "summary": "1milliondollar.eth Reference APR moved 10.82% → 11.45% (+0.63 pp).",
-        "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
-        "sourceKeys": [
-          "productivity"
-        ]
-      },
-      "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-      "observedAt": "2026-08-27T17:46:21.337Z",
-      "interpretation": "direct",
-      "note": "Direct material-change event emitted by The Holding Observer."
-    },
-    {
-      "source": "intelligence/change-intelligence.json",
-      "pointer": "/whatChanged/4",
-      "value": {
-        "id": "9cac3c2143eb942aa563",
-        "detectedAt": "2026-08-27T17:46:21.337Z",
-        "category": "productivity",
-        "entity": "Cypher",
-        "metric": "aprLatestPct",
-        "previousValue": 24.0825,
-        "currentValue": 23.2581,
-        "unit": "percentage-points",
-        "severity": "info",
-        "summary": "Cypher Reference APR moved 24.08% → 23.26% (-0.82 pp).",
-        "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
-        "sourceKeys": [
-          "productivity"
-        ]
-      },
-      "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-      "observedAt": "2026-08-27T17:46:21.337Z",
-      "interpretation": "direct",
-      "note": "Direct material-change event emitted by The Holding Observer."
-    },
-    {
-      "source": "intelligence/change-intelligence.json",
-      "pointer": "/whatChanged/5",
-      "value": {
-        "id": "82d30fb161552b073f9b",
-        "detectedAt": "2026-08-27T17:46:21.337Z",
-        "category": "productivity",
-        "entity": "defitea.eth",
-        "metric": "aprLatestPct",
-        "previousValue": 11.775,
-        "currentValue": 12.0049,
-        "unit": "percentage-points",
-        "severity": "info",
-        "summary": "defitea.eth Reference APR moved 11.78% → 12.00% (+0.23 pp).",
-        "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
-        "sourceKeys": [
-          "productivity"
-        ]
-      },
-      "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-      "observedAt": "2026-08-27T17:46:21.337Z",
-      "interpretation": "direct",
-      "note": "Direct material-change event emitted by The Holding Observer."
-    },
-    {
-      "source": "intelligence/change-intelligence.json",
-      "pointer": "/whatChanged/6",
-      "value": {
-        "id": "58dbab164ea131d33f85",
-        "detectedAt": "2026-08-27T17:46:21.337Z",
-        "category": "productivity",
-        "entity": "dinaz.eth",
-        "metric": "aprLatestPct",
-        "previousValue": 4.88,
-        "currentValue": 5.71,
-        "unit": "percentage-points",
-        "severity": "info",
-        "summary": "dinaz.eth Reference APR moved 4.88% → 5.71% (+0.83 pp).",
-        "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
-        "sourceKeys": [
-          "productivity"
-        ]
-      },
-      "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-      "observedAt": "2026-08-27T17:46:21.337Z",
-      "interpretation": "direct",
-      "note": "Direct material-change event emitted by The Holding Observer."
-    },
-    {
-      "source": "intelligence/change-intelligence.json",
-      "pointer": "/whatChanged/7",
-      "value": {
-        "id": "dcd76ed96891ceacc49a",
-        "detectedAt": "2026-08-27T17:46:21.337Z",
-        "category": "productivity",
-        "entity": "Rook's portfolio",
-        "metric": "aprLatestPct",
-        "previousValue": 15.4776,
-        "currentValue": 15.086,
-        "unit": "percentage-points",
-        "severity": "info",
-        "summary": "Rook's portfolio Reference APR moved 15.48% → 15.09% (-0.39 pp).",
-        "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
-        "sourceKeys": [
-          "productivity"
-        ]
-      },
-      "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-      "observedAt": "2026-08-27T17:46:21.337Z",
-      "interpretation": "direct",
-      "note": "Direct material-change event emitted by The Holding Observer."
-    },
-    {
-      "source": "intelligence/change-intelligence.json",
-      "pointer": "/whatChanged/8",
-      "value": {
-        "id": "cba6ac4bda30eacff834",
-        "detectedAt": "2026-08-27T17:46:21.337Z",
-        "category": "productivity",
-        "entity": "YieldRing.eth",
-        "metric": "aprLatestPct",
-        "previousValue": 14.8907,
-        "currentValue": 14.006,
-        "unit": "percentage-points",
-        "severity": "info",
-        "summary": "YieldRing.eth Reference APR moved 14.89% → 14.01% (-0.88 pp).",
-        "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
-        "sourceKeys": [
-          "productivity"
-        ]
-      },
-      "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-      "observedAt": "2026-08-27T17:46:21.337Z",
-      "interpretation": "direct",
-      "note": "Direct material-change event emitted by The Holding Observer."
-    },
-    {
-      "source": "intelligence/change-intelligence.json",
-      "pointer": "/whatChanged/9",
-      "value": {
-        "id": "965d989271f0b83009c2",
-        "detectedAt": "2026-08-27T17:46:21.337Z",
-        "category": "reporting",
-        "entity": "defitea.eth",
-        "metric": "new-daily-snapshot",
-        "previousValue": "2026-08-24",
-        "currentValue": "2026-08-27",
-        "unit": null,
-        "severity": "info",
-        "summary": "defitea.eth recorded a new daily reporting observation for 2026-08-27.",
-        "whyItMatters": "Every new daily observation extends the operating memory used by future analytics and decision support.",
-        "sourceKeys": [
-          "reporting"
-        ]
-      },
-      "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-      "observedAt": "2026-08-27T17:46:21.337Z",
-      "interpretation": "direct",
-      "note": "Direct material-change event emitted by The Holding Observer."
-    },
-    {
-      "source": "intelligence/change-intelligence.json",
-      "pointer": "/whatChanged/10",
-      "value": {
-        "id": "5bc79b25d6e6ec3ed1b3",
-        "detectedAt": "2026-08-27T17:46:21.337Z",
-        "category": "reporting",
-        "entity": "defitea.eth",
-        "metric": "currentMonthCashFlowUsd",
-        "previousValue": 66.6,
-        "currentValue": 75.51,
-        "unit": "USD",
-        "severity": "info",
-        "summary": "defitea.eth current-month cash-flow/reference-income counter moved $66.60 → $75.51.",
-        "whyItMatters": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
-        "sourceKeys": [
-          "reporting"
-        ]
-      },
-      "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-      "observedAt": "2026-08-27T17:46:21.337Z",
-      "interpretation": "direct",
-      "note": "Direct material-change event emitted by The Holding Observer."
-    },
-    {
-      "source": "intelligence/change-intelligence.json",
-      "pointer": "/whatChanged/11",
-      "value": {
-        "id": "3f0f08991000c2c03bf5",
-        "detectedAt": "2026-08-27T17:46:21.337Z",
-        "category": "reporting",
-        "entity": "Monetra.eth",
-        "metric": "new-daily-snapshot",
-        "previousValue": "2026-08-24",
-        "currentValue": "2026-08-27",
-        "unit": null,
-        "severity": "info",
-        "summary": "Monetra.eth recorded a new daily reporting observation for 2026-08-27.",
-        "whyItMatters": "Every new daily observation extends the operating memory used by future analytics and decision support.",
-        "sourceKeys": [
-          "reporting"
-        ]
-      },
-      "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-      "observedAt": "2026-08-27T17:46:21.337Z",
-      "interpretation": "direct",
-      "note": "Direct material-change event emitted by The Holding Observer."
-    },
-    {
-      "source": "intelligence/change-intelligence.json",
-      "pointer": "/whatChanged/12",
-      "value": {
-        "id": "c11c02badf83b3f2bf54",
-        "detectedAt": "2026-08-27T17:46:21.337Z",
-        "category": "reporting",
-        "entity": "Monetra.eth",
-        "metric": "currentMonthCashFlowUsd",
-        "previousValue": 0.1441,
-        "currentValue": 0.1564,
-        "unit": "USD",
-        "severity": "info",
-        "summary": "Monetra.eth current-month cash-flow/reference-income counter moved $0.14 → $0.16.",
-        "whyItMatters": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
-        "sourceKeys": [
-          "reporting"
-        ]
-      },
-      "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-      "observedAt": "2026-08-27T17:46:21.337Z",
-      "interpretation": "direct",
-      "note": "Direct material-change event emitted by The Holding Observer."
-    },
-    {
-      "source": "intelligence/change-intelligence.json",
-      "pointer": "/whatChanged/13",
-      "value": {
-        "id": "28180cdcc56f11fa7f32",
-        "detectedAt": "2026-08-27T17:46:21.337Z",
-        "category": "reporting",
-        "entity": "Monetra.eth",
-        "metric": "currentMonthGeneratedIncomeUsd",
-        "previousValue": 0.1441,
-        "currentValue": 0.1564,
-        "unit": "USD",
-        "severity": "info",
-        "summary": "Monetra.eth current-month generated income moved $0.1441 → $0.1564.",
-        "whyItMatters": "Generated income is a distinct history stream for capital that may compound inside positions rather than arrive as realised cash.",
-        "sourceKeys": [
-          "reporting"
-        ]
-      },
-      "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-      "observedAt": "2026-08-27T17:46:21.337Z",
-      "interpretation": "direct",
-      "note": "Direct material-change event emitted by The Holding Observer."
-    },
-    {
-      "source": "intelligence/change-intelligence.json",
-      "pointer": "/whatChanged/14",
-      "value": {
-        "id": "59ab6a7604176892a13c",
-        "detectedAt": "2026-08-27T17:46:21.337Z",
-        "category": "rewards",
-        "entity": "05081966.eth",
-        "metric": "totalUsd",
-        "previousValue": 2.35333,
-        "currentValue": 3.075253,
-        "unit": "USD",
-        "severity": "info",
-        "summary": "05081966.eth accrued rewards moved $2.35 → $3.08 (+$0.72).",
-        "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-        "sourceKeys": [
-          "rewards"
-        ]
-      },
-      "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-      "observedAt": "2026-08-27T17:46:21.337Z",
-      "interpretation": "direct",
-      "note": "Direct material-change event emitted by The Holding Observer."
-    },
-    {
-      "source": "intelligence/change-intelligence.json",
-      "pointer": "/whatChanged/15",
-      "value": {
-        "id": "17eef3bb4bad49449c33",
-        "detectedAt": "2026-08-27T17:46:21.337Z",
-        "category": "rewards",
-        "entity": "0x5860...83CA8.eth",
-        "metric": "totalUsd",
-        "previousValue": 118.865208,
-        "currentValue": 138.340837,
-        "unit": "USD",
-        "severity": "info",
-        "summary": "0x5860...83CA8.eth accrued rewards moved $118.87 → $138.34 (+$19.48).",
-        "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-        "sourceKeys": [
-          "rewards"
-        ]
-      },
-      "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-      "observedAt": "2026-08-27T17:46:21.337Z",
-      "interpretation": "direct",
-      "note": "Direct material-change event emitted by The Holding Observer."
-    },
-    {
-      "source": "intelligence/change-intelligence.json",
-      "pointer": "/whatChanged/16",
-      "value": {
-        "id": "944ed2ab4745a074e5fc",
-        "detectedAt": "2026-08-27T17:46:21.337Z",
-        "category": "rewards",
-        "entity": "1milliondollar.eth",
-        "metric": "totalUsd",
-        "previousValue": 28.148689,
-        "currentValue": 33.342119,
-        "unit": "USD",
-        "severity": "info",
-        "summary": "1milliondollar.eth accrued rewards moved $28.15 → $33.34 (+$5.19).",
-        "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-        "sourceKeys": [
-          "rewards"
-        ]
-      },
-      "sourceSha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-      "observedAt": "2026-08-27T17:46:21.337Z",
-      "interpretation": "direct",
-      "note": "Direct material-change event emitted by The Holding Observer."
     },
     {
       "source": "intelligence/explanatory/explanatory-context.json",
@@ -6291,7 +4721,7 @@
         },
         "provenance": {
           "graphFile": "intelligence/economic-graph/economic-graph.json",
-          "graphSha256": "bbcc9978a9924b8cf7b786557fa11d7f7d93a0112dac6f7e14d2c823957715ca",
+          "graphSha256": "0402f983b74774d8e34b1c44ff9ef9bc26bd974e1b978d22224e06721dec9c2a",
           "observationId": "fxn-locker:2026-08-27:926e021a7b0298961358",
           "observedAt": "2026-08-27T16:53:36.729Z",
           "sourceUrl": "https://fx.aladdin.club/v2/lock",
@@ -6304,8 +4734,8 @@
         "explanation": "Canonical protocol-economic driver context is available for the Defitea veFXN cohort. The system may report these measured values and comparable deltas, but it must not say that revenue, locked supply, Total veFXN, price, incentives or another driver caused the APR until a protocol-specific formula or onchain accounting identity proves that path.",
         "promotionRule": "A driver may become ATTRIBUTED only after a protocol-specific formula or onchain accounting identity proves the causal path."
       },
-      "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-      "observedAt": "2026-08-27T19:03:54.830Z",
+      "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+      "observedAt": "2026-08-28T13:03:01.773Z",
       "interpretation": "legacy-vefxn-alias-measured-context-not-causal-attribution",
       "note": "Compatibility alias for the veFXN cohort. Canonical multi-cohort evidence is also included separately."
     },
@@ -6352,7 +4782,7 @@
         },
         "provenance": {
           "graphFile": "intelligence/economic-graph/economic-graph.json",
-          "graphSha256": "bbcc9978a9924b8cf7b786557fa11d7f7d93a0112dac6f7e14d2c823957715ca",
+          "graphSha256": "0402f983b74774d8e34b1c44ff9ef9bc26bd974e1b978d22224e06721dec9c2a",
           "observationId": "fxn-locker:2026-08-27:926e021a7b0298961358",
           "observedAt": "2026-08-27T16:53:36.729Z",
           "sourceUrl": "https://fx.aladdin.club/v2/lock",
@@ -6365,8 +4795,8 @@
         "explanation": "Canonical protocol-economic driver context is available for the Defitea veFXN cohort. The system may report these measured values and comparable deltas, but it must not say that revenue, locked supply, Total veFXN, price, incentives or another driver caused the APR until a protocol-specific formula or onchain accounting identity proves that path.",
         "promotionRule": "A driver may become ATTRIBUTED only after a protocol-specific formula or onchain accounting identity proves the causal path."
       },
-      "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-      "observedAt": "2026-08-27T19:03:54.830Z",
+      "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+      "observedAt": "2026-08-28T13:03:01.773Z",
       "interpretation": "normalized-measured-context-not-causal-attribution",
       "note": "Canonical protocol-economic cohort from Explanatory Context. Report only the causal strength explicitly proven by this cohort."
     },
@@ -6435,7 +4865,7 @@
         },
         "provenance": {
           "graphFile": "intelligence/economic-graph/economic-graph.json",
-          "graphSha256": "bbcc9978a9924b8cf7b786557fa11d7f7d93a0112dac6f7e14d2c823957715ca",
+          "graphSha256": "0402f983b74774d8e34b1c44ff9ef9bc26bd974e1b978d22224e06721dec9c2a",
           "observationId": "curve-vecrv:2026-08-27:aa995e8414fd3c35cc13",
           "observedAt": "2026-08-27T14:40:54.527Z",
           "sourceUrl": "https://etherscan.io/address/0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914",
@@ -6450,8 +4880,8 @@
         "explanation": "Curve veCRV Reference APR is mechanically reproducible from distributed crvUSD fees, veCRV supply and CRV price under the canonical completed-week formula. This proves how those measured inputs form the Reference APR. It does not prove why Curve fee distributions themselves increased or decreased; upstream protocol activity remains unresolved until fee-origin evidence is added.",
         "promotionRule": "Formula inputs may be described as mechanical APR inputs. Upstream causes of fee changes require separate canonical protocol-activity evidence before causal promotion."
       },
-      "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-      "observedAt": "2026-08-27T19:03:54.830Z",
+      "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+      "observedAt": "2026-08-28T13:03:01.773Z",
       "interpretation": "normalized-proven-mechanical-context-upstream-cause-unresolved",
       "note": "Canonical protocol-economic cohort from Explanatory Context. Report only the causal strength explicitly proven by this cohort."
     },
@@ -6513,7 +4943,7 @@
         },
         "provenance": {
           "economicGraphFile": "intelligence/economic-graph/economic-graph.json",
-          "graphSha256": "bbcc9978a9924b8cf7b786557fa11d7f7d93a0112dac6f7e14d2c823957715ca",
+          "graphSha256": "0402f983b74774d8e34b1c44ff9ef9bc26bd974e1b978d22224e06721dec9c2a",
           "deepEvidenceVersion": "0.1-vlcvx-votium-curve-cognitive-close",
           "sourceBinding": {
             "roundFlow": {
@@ -6533,8 +4963,8 @@
             },
             "curvePoolContext": {
               "file": "intelligence/economic-graph/vlcvx-votium-curve-pool-context.json",
-              "sha256": "bf3639b2fc5e5b750bec8920c1e295dc243e4354f9b4e5cbaa9b02a5e9992ec8",
-              "generatedAt": "2026-08-27T09:58:18.574Z"
+              "sha256": "9e6aca8e616a852d491a958869bc7dd7135e67e21cc1d2d540b1eaa1ae31d9a0",
+              "generatedAt": "2026-08-28T11:30:56.944Z"
             }
           }
         },
@@ -6548,8 +4978,8 @@
           "promotionAuthority": "none"
         }
       },
-      "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-      "observedAt": "2026-08-27T19:03:54.830Z",
+      "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+      "observedAt": "2026-08-28T13:03:01.773Z",
       "interpretation": "shadow-cross-protocol-mechanics-and-temporal-context-causality-unresolved",
       "note": "Votium→Convex→Curve mechanical execution is proven; current Curve pool state is measured temporal context only. Do not infer incentive→vote or vote→pool causality."
     },
@@ -6571,8 +5001,8 @@
           "promotionAuthority": "none"
         }
       },
-      "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-      "observedAt": "2026-08-27T19:03:54.830Z",
+      "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+      "observedAt": "2026-08-28T13:03:01.773Z",
       "interpretation": "read-only-protocol-lifecycle-context",
       "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
     },
@@ -6594,8 +5024,8 @@
           "promotionAuthority": "none"
         }
       },
-      "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-      "observedAt": "2026-08-27T19:03:54.830Z",
+      "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+      "observedAt": "2026-08-28T13:03:01.773Z",
       "interpretation": "read-only-protocol-lifecycle-context",
       "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
     },
@@ -6619,8 +5049,8 @@
           "promotionAuthority": "none"
         }
       },
-      "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-      "observedAt": "2026-08-27T19:03:54.830Z",
+      "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+      "observedAt": "2026-08-28T13:03:01.773Z",
       "interpretation": "read-only-protocol-lifecycle-context",
       "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
     },
@@ -6644,8 +5074,8 @@
           "promotionAuthority": "none"
         }
       },
-      "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-      "observedAt": "2026-08-27T19:03:54.830Z",
+      "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+      "observedAt": "2026-08-28T13:03:01.773Z",
       "interpretation": "read-only-protocol-lifecycle-context",
       "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
     },
@@ -6676,8 +5106,8 @@
           "promotionAuthority": "none"
         }
       },
-      "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-      "observedAt": "2026-08-27T19:03:54.830Z",
+      "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+      "observedAt": "2026-08-28T13:03:01.773Z",
       "interpretation": "read-only-protocol-lifecycle-context",
       "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
     },
@@ -6709,8 +5139,8 @@
           "promotionAuthority": "none"
         }
       },
-      "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-      "observedAt": "2026-08-27T19:03:54.830Z",
+      "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+      "observedAt": "2026-08-28T13:03:01.773Z",
       "interpretation": "read-only-protocol-lifecycle-context",
       "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
     },
@@ -6742,8 +5172,8 @@
           "promotionAuthority": "none"
         }
       },
-      "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-      "observedAt": "2026-08-27T19:03:54.830Z",
+      "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+      "observedAt": "2026-08-28T13:03:01.773Z",
       "interpretation": "read-only-protocol-lifecycle-context",
       "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
     },
@@ -6781,8 +5211,8 @@
           "promotionAuthority": "none"
         }
       },
-      "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-      "observedAt": "2026-08-27T19:03:54.830Z",
+      "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+      "observedAt": "2026-08-28T13:03:01.773Z",
       "interpretation": "read-only-protocol-lifecycle-context",
       "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
     },
@@ -6797,8 +5227,8 @@
         "scope": "registry-wide-frax-ecosystem",
         "coverage": {
           "surfaceCount": 9,
-          "measuredSurfaceCount": 1,
-          "sourceBoundUnknownSurfaceCount": 8,
+          "measuredSurfaceCount": 2,
+          "sourceBoundUnknownSurfaceCount": 7,
           "surfaceIds": [
             "governance-vefrax",
             "fraxtal-flox-fxtl",
@@ -6936,18 +5366,88 @@
               },
               "note": "Backing/yield composition is source topology until a current reproducible balance-sheet/accounting snapshot is ingested."
             },
-            "measurementState": "UNKNOWN-current-value-not-ingested",
-            "measured": null,
+            "measurementState": "MEASURED-current-onchain-partial",
+            "measured": {
+              "version": "0.1-sfrxusd-exact-block-erc4626",
+              "status": "ok",
+              "measurementClass": "MEASURED",
+              "observedAt": "2026-08-28T13:02:23.000Z",
+              "chain": "ethereum",
+              "chainId": 1,
+              "blockNumber": 25853908,
+              "blockTag": "0x18a7fd4",
+              "blockHash": "0x10b09258f7e7cdc5f11f0bfb08c506bfdad0a3ff135426290e243a90d8d230c8",
+              "contracts": {
+                "frxUSD": "0xCAcd6fd266aF91b8AeD52aCCc382b4e165586E29",
+                "sfrxUSD": "0xcf62F905562626CfcDD2261162a51fd02Fc9c5b6"
+              },
+              "decimals": {
+                "frxUSD": 18,
+                "sfrxUSD": 18
+              },
+              "raw": {
+                "frxUsdTotalSupply": "101798319649337437539375920",
+                "sfrxUsdTotalSupply": "29931733863871102947981227",
+                "sfrxUsdTotalAssets": "36154213288520075060811717"
+              },
+              "values": {
+                "frxUsdSupply": 101798319.64933744,
+                "sfrxUsdSupply": 29931733.8638711,
+                "sfrxUsdTotalAssets": 36154213.28852008,
+                "sharePriceFrxUsd": 1.207889040206
+              },
+              "scope": {
+                "frxUsdSupply": "Ethereum frxUSD contract totalSupply only; not asserted as global cross-chain frxUSD supply",
+                "sfrxUsdState": "Ethereum sfrxUSD ERC4626 contract exact-block state"
+              },
+              "rpc": {
+                "endpointId": "publicnode",
+                "failoverAttempts": []
+              },
+              "identity": {
+                "sharePriceFormula": "sfrxUSD totalAssets / totalSupply after token-decimal normalization",
+                "intervalYieldFormula": "ending share price / beginning share price - 1",
+                "historyRule": "persisted adjacent Economic Graph onchain checkpoints only; no pre-tracking or APY backfill"
+              },
+              "epistemic": {
+                "sourceType": "onchain-public-rpc-exact-block",
+                "currentStateMeasured": true,
+                "currentStateScope": "partial-Ethereum-frxUSD-sfrxUSD-surface",
+                "sharePriceMechanicalIdentity": "PROVEN-current-exact-block",
+                "historicalBackfill": false,
+                "unknownIsZero": false,
+                "productionPriceAuthority": false,
+                "causalClaimAuthority": "none",
+                "executionAuthority": "none"
+              },
+              "intervalEmbeddedYield": {
+                "status": "ok",
+                "accepted": true,
+                "source": "persisted-adjacent-economic-graph-onchain-checkpoints",
+                "startAt": "2026-08-28T12:56:59.000Z",
+                "endAt": "2026-08-28T13:02:23.000Z",
+                "elapsedSeconds": 324,
+                "startBlock": 25853882,
+                "endBlock": 25853908,
+                "startSharePriceFrxUsd": 1.207888458389,
+                "endSharePriceFrxUsd": 1.207889040206,
+                "embeddedYieldPct": 0.000048168107,
+                "annualizedApyPct": null,
+                "annualizationState": "NOT-CALCULATED-no-annualization-methodology-added",
+                "accountingIdentity": "ending sfrxUSD share price / beginning share price - 1",
+                "note": "Direct interval share-price return only. No APY backfill, reserve-yield causality or veFRAX revenue attribution."
+              }
+            },
             "mechanicalRelations": [
               {
                 "from": "sfrxUSD assets / shares",
                 "to": "share price",
-                "class": "MECHANICAL-ready-for-onchain-reproduction"
+                "class": "MECHANICAL-proven-current-exact-block"
               },
               {
                 "from": "share-price change",
                 "to": "embedded yield",
-                "class": "MECHANICAL-ready-for-longitudinal-reproduction"
+                "class": "MECHANICAL-proven-adjacent-checkpoints"
               },
               {
                 "from": "reserve yield",
@@ -7280,14 +5780,14 @@
             "index": 0,
             "from": "sfrxUSD assets / shares",
             "to": "share price",
-            "class": "MECHANICAL-ready-for-onchain-reproduction"
+            "class": "MECHANICAL-proven-current-exact-block"
           },
           {
             "surfaceId": "frxusd-sfrxusd",
             "index": 1,
             "from": "share-price change",
             "to": "embedded yield",
-            "class": "MECHANICAL-ready-for-longitudinal-reproduction"
+            "class": "MECHANICAL-proven-adjacent-checkpoints"
           },
           {
             "surfaceId": "frxusd-sfrxusd",
@@ -7443,11 +5943,17 @@
           "predictionAuthority": "none",
           "recommendationAuthority": "none",
           "causalClaimAuthority": "none",
-          "executionAuthority": "none"
+          "executionAuthority": "none",
+          "measuredEconomicSurfaces": [
+            "governance-vefrax",
+            "frxusd-sfrxusd"
+          ],
+          "sfrxUsdCurrentState": "MEASURED",
+          "sfrxUsdEmbeddedYield": "DERIVED-MECHANICAL"
         },
         "nextMeasurementUnlocks": [
           "Bind FraxtalPoints/Flox epoch reads to explicit epoch boundaries and company addresses.",
-          "Ingest frxUSD/sfrxUSD current ERC20/ERC4626 state plus reproducible backing/allocation evidence.",
+          "frxUSD/sfrxUSD ERC20/ERC4626 current state is now measured; continue adjacent checkpoints and separately prove backing/allocation evidence.",
           "Enumerate FraxNet jobs/flows with bounded API or onchain event history.",
           "Enumerate Fraxlend Pair Registry and reproduce utilization/rate/share-price identities.",
           "Enumerate Fraxswap/BAMM factories and reproduce pool/liquidity/fee/borrow-interest state.",
@@ -7455,11 +5961,11 @@
           "Resolve named FX pool identities before measuring liquidity/volume/fees/incentives.",
           "Prove revenue routing end-to-end before any protocol-revenue→veFRAX/company cash-flow claim."
         ],
-        "explanation": "Frax is now represented as one lifecycle sensor with a nine-surface ecosystem family: veFRAX governance is currently measured; Fraxtal/Flox/FXTL, frxUSD/sfrxUSD, FraxNet, Fraxlend, Fraxswap/BAMM, FXB, FX liquidity and end-to-end revenue routing are source-bound but remain UNKNOWN for current economic values until reproducible ingestion exists. This prevents source topology from being mistaken for measurement or causality.",
+        "explanation": "Frax is represented as one lifecycle sensor with a nine-surface ecosystem family. Current Economic Graph evidence marks 2 surface(s) as MEASURED (governanceVeFrax, frxUsdSfrxUsd) and 7 surface(s) as source-bound UNKNOWN (fraxtalFloxFxtl, fraxNet, fraxlend, fraxswapBamm, fxb, fxLiquidity, revenueRouting). Measured state is inherited from exact Graph evidence only; source topology and measured association do not authorize causal attribution, recommendation, allocation or execution claims.",
         "provenance": {
           "economicGraphFile": "intelligence/economic-graph/economic-graph.json",
-          "graphSha256": "bbcc9978a9924b8cf7b786557fa11d7f7d93a0112dac6f7e14d2c823957715ca",
-          "observationId": "frax-ecosystem:551d93462a649bd4c977d519",
+          "graphSha256": "0402f983b74774d8e34b1c44ff9ef9bc26bd974e1b978d22224e06721dec9c2a",
+          "observationId": "frax-ecosystem:9089fcd6b09c51b25e0ce6c4",
           "evidenceVersion": "0.1-frax-deep-ecosystem-sensor-family"
         },
         "authority": {
@@ -7473,10 +5979,10 @@
           "executionAuthority": "none"
         }
       },
-      "sourceSha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-      "observedAt": "2026-08-27T19:03:54.830Z",
+      "sourceSha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+      "observedAt": "2026-08-28T13:03:01.773Z",
       "interpretation": "frax-deep-ecosystem-measured-vs-source-bound-unknown",
-      "note": "Only the veFRAX governance surface is currently measured. Source-bound ecosystem topology remains UNKNOWN for current economic values until reproducible ingestion exists."
+      "note": "Current Explanatory evidence marks 2 Frax surface(s) MEASURED (governanceVeFrax, frxUsdSfrxUsd) and 7 source-bound UNKNOWN (fraxtalFloxFxtl, fraxNet, fraxlend, fraxswapBamm, fxb, fxLiquidity, revenueRouting). Measurement does not imply causality or execution authority."
     }
   ],
   "grounding": {
@@ -7484,41 +5990,41 @@
     "sources": {
       "change": {
         "file": "intelligence/change-intelligence.json",
-        "sha256": "6e726273987bc2e964b5e28ca99c4b9c2a1a0bec39fb00b91b69f9b20c1bac9d",
-        "generatedAt": "2026-08-27T17:46:21.337Z",
-        "ageHours": 1.297,
+        "sha256": "bc3763ff11569fa4b60ca1cb6f78017294ffefa618ee76fe7fe9a3614312fff8",
+        "generatedAt": "2026-08-28T13:03:26.575Z",
+        "ageHours": 0.124,
         "expectedMaxAgeHours": 36,
         "freshness": "fresh"
       },
       "systemMemory": {
         "file": "intelligence/system-memory.json",
-        "sha256": "63a97f102cb6a88fcf2e3195ced91ccbe5b61ceb30c4feb9fdf6246a511a06df",
-        "generatedAt": "2026-08-27T17:46:21.337Z",
-        "ageHours": 1.297,
+        "sha256": "104935fdbc2db7cc8305deefe534809f83f83237fcef8f2a32a89511af480778",
+        "generatedAt": "2026-08-28T13:03:26.575Z",
+        "ageHours": 0.124,
         "expectedMaxAgeHours": 36,
         "freshness": "fresh"
       },
       "security": {
         "file": "security/security-intelligence.json",
-        "sha256": "fe8271c84fdcdf99ec5c7bda21f9f40ddd4c451779d25c966b8d8097f0d8400b",
-        "generatedAt": "2026-08-27T19:04:11.121Z",
+        "sha256": "a8b202aa1ead2ebaf5c9ff00f88b5d2ec797301f6ade801dd0055eeb9083da1e",
+        "generatedAt": "2026-08-28T13:10:52.314Z",
         "ageHours": 0,
         "expectedMaxAgeHours": 36,
         "freshness": "fresh"
       },
       "securityMemory": {
         "file": "security/security-memory.json",
-        "sha256": "e5cb286b7e282034032ebd8b2d2439a03e24fc4e5cc3f83e318eab4aed3b6c32",
-        "generatedAt": "2026-08-27T19:04:11.121Z",
+        "sha256": "3a3b6ed075d1ba4bca433202300afdf9ff33d591366164671752d912d7ea644e",
+        "generatedAt": "2026-08-28T13:10:52.314Z",
         "ageHours": 0,
         "expectedMaxAgeHours": 36,
         "freshness": "fresh"
       },
       "explanatory": {
         "file": "intelligence/explanatory/explanatory-context.json",
-        "sha256": "c0bc9473b10c2549a2d6589c4dc182ebf2b36f98c9418b399f80e98c713e6148",
-        "generatedAt": "2026-08-27T19:03:54.830Z",
-        "ageHours": 0.005,
+        "sha256": "fd75267917d76db787c995cd0c6981e232b90cf80012dff84e2e6b0dbe71f31c",
+        "generatedAt": "2026-08-28T13:03:01.773Z",
+        "ageHours": 0.131,
         "expectedMaxAgeHours": 36,
         "freshness": "fresh"
       }
@@ -7553,9 +6059,9 @@
   },
   "bridge": {
     "purpose": "Canonical evidence-bound reasoning packet for future human/AI interpretation. Read this before opening large memory artifacts.",
-    "inputCompositeHash": "7bf850bb89419d40cbf4cffec716b066fb0f3531ca9b42ba09604b6b6f319323",
-    "snapshotHash": "a1ce2a62d1dc6965e80f2828f40a30ab0ca72ccbbd85c017cb95be471c7538b4",
-    "previousInputCompositeHash": "ef9a1089839f590dc3c5aac38d69c6400d79182e1083ffa84fc9fd8904dc5d7c"
+    "inputCompositeHash": "dad90b75342c2b7398e264447f78fa8a983d89268544cb6921adc9d3210c8e08",
+    "snapshotHash": "78e6cddfe06195ffda8893f71e184704b50dd448c5e75919f41e234ef4136292",
+    "previousInputCompositeHash": "7bf850bb89419d40cbf4cffec716b066fb0f3531ca9b42ba09604b6b6f319323"
   },
   "extensions": {
     "vlCvxVotiumCurve": "0.1-vlcvx-votium-curve-shadow-context",
