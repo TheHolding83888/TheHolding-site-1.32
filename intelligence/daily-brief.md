@@ -1,22 +1,11 @@
 # The Holding — Autonomous Change Intelligence
 
-**Generated:** 2026-08-27T17:46:21.337Z
+**Generated:** 2026-08-28T13:03:26.575Z
 **Observer:** 0.2.1-deterministic-memory-vault-corrections
 
-## 26 material changes detected across The Holding, including 1 high-signal event.
+## No material system changes crossed the Observer thresholds in this run.
 
-- **reporting** — reporting source version changed 1.2.0-defitea-canonical-market-data → 1.2.1-resilient-rate-coverage.
-- **Cypher** — Cypher Rewards status changed ok → partial.
-- **Cypher** — Cypher Rewards completeness changed: pending routes 0 → 1, unpriced 0 → 0.
-- **1milliondollar.eth** — 1milliondollar.eth Reference APR moved 10.82% → 11.45% (+0.63 pp).
-- **Cypher** — Cypher Reference APR moved 24.08% → 23.26% (-0.82 pp).
-- **defitea.eth** — defitea.eth Reference APR moved 11.78% → 12.00% (+0.23 pp).
-- **dinaz.eth** — dinaz.eth Reference APR moved 4.88% → 5.71% (+0.83 pp).
-- **Rook's portfolio** — Rook's portfolio Reference APR moved 15.48% → 15.09% (-0.39 pp).
-- **YieldRing.eth** — YieldRing.eth Reference APR moved 14.89% → 14.01% (-0.88 pp).
-- **defitea.eth** — defitea.eth recorded a new daily reporting observation for 2026-08-27.
-- **defitea.eth** — defitea.eth current-month cash-flow/reference-income counter moved $66.60 → $75.51.
-- **Monetra.eth** — Monetra.eth recorded a new daily reporting observation for 2026-08-27.
+The source files were observed and normalized, but no configured material-change threshold was crossed.
 
 ## Watch next
 
@@ -36,8 +25,8 @@
 
 ## Long-term memory
 
-- Memory Vault: 19 immutable/hash-chained run records since 2026-08-13T15:19:01.108Z.
-- Latest vault record: `intelligence/memory-vault/2026/08/2026-08-27T17-46-21-337Z-5b29b41244.json`.
+- Memory Vault: 20 immutable/hash-chained run records since 2026-08-13T15:19:01.108Z.
+- Latest vault record: `intelligence/memory-vault/2026/08/2026-08-28T13-03-26-575Z-5b29b41244.json`.
 - Operational history remains compact; the Memory Vault has no configured lifetime cap.
 - Memory correction ledger: 1 append-only annotation; original Vault records remain immutable.
 
