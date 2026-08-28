@@ -69,7 +69,7 @@ jobs:
           node --check intelligence/economic-graph/frax-vefrax-lifecycle-canary.mjs
           node --check intelligence/economic-graph/frax-sfrxusd-onchain.mjs
           node --check intelligence/economic-graph/frax-sfrxusd-onchain-canary.mjs
-          node --check intelligence/economic-graph/frax-sfrxusd-onchain-runner.mjs
+          node --check intelligence/economic-graph/frax-sfrxusd-onchain-enrich.mjs
           node -e "JSON.parse(require('fs').readFileSync('intelligence/economic-graph/protocol-lifecycle-policy.json','utf8')); console.log('PROTOCOL LIFECYCLE POLICY JSON PASS')"
           node intelligence/economic-graph/protocol-lifecycle-canary.mjs
           node intelligence/economic-graph/frax-vefrax-lifecycle-canary.mjs
@@ -150,7 +150,15 @@ jobs:
 
       - name: Build canonical same-snapshot Economic Graph
         if: github.event_name != 'pull_request'
-        run: node intelligence/economic-graph/frax-sfrxusd-onchain-runner.mjs
+        shell: bash
+        run: |
+          set -euo pipefail
+          GENERATED="intelligence/economic-graph/economic-graph.json"
+          PREVIOUS="$RUNNER_TEMP/frax-published-previous-economic-graph.json"
+          test -s "$GENERATED"
+          cp "$GENERATED" "$PREVIOUS"
+          node intelligence/economic-graph/economic-graph-canonical-runner.mjs
+          FRAX_PREVIOUS_GRAPH_FILE="$PREVIOUS" node intelligence/economic-graph/frax-sfrxusd-onchain-enrich.mjs
 
       - name: Validate canonical observation boundary
         if: github.event_name != 'pull_request'
@@ -226,6 +234,7 @@ jobs:
         run: |
           set -euo pipefail
           GENERATED="intelligence/economic-graph/economic-graph.json"
+          PREVIOUS="$RUNNER_TEMP/frax-published-previous-economic-graph.json"
           test -s "$GENERATED"
           git config user.name "The Holding Economic Graph"
           git config user.email "economic-graph@theholding.ai"
@@ -246,7 +255,9 @@ jobs:
               echo "Publish conflict; refusing to guess."
               exit 1
             fi
-            node intelligence/economic-graph/frax-sfrxusd-onchain-runner.mjs
+            git show "origin/main:$GENERATED" > "$PREVIOUS"
+            node intelligence/economic-graph/economic-graph-canonical-runner.mjs
+            FRAX_PREVIOUS_GRAPH_FILE="$PREVIOUS" node intelligence/economic-graph/frax-sfrxusd-onchain-enrich.mjs
             git add "$GENERATED"
             if ! git diff --cached --quiet; then git commit --amend --no-edit; fi
             if git push origin HEAD:main; then
