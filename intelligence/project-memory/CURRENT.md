@@ -4,7 +4,7 @@
 >
 > Start from this live `main` file. Then load only the minimum recovery packet below. Full owner/build/history canons remain machine-verified durable contracts and are loaded only when the compact router says they are relevant. Changing facts still come from live generated artifacts and exact workflow evidence, not prose memory.
 
-Canonical source state represented here: **2026-08-28T16:29:18.443Z**
+Canonical source state represented here: **2026-08-28T16:52:13.880Z**
 
 ## Minimum recovery packet
 
@@ -47,7 +47,8 @@ Current authority boundary: **execution authority = none**. No wallet signing, t
 ## Current cognitive stack
 
 - Cognitive Stack: **WATCH**; readyForManualInterpretation: true; chainHash: 7b10ec88b9c46259ab643e045f6bde123edb0ab45baee9b78b772631716c553e.
-- Security Sentinel (latest standalone state): **WATCH**; Critical 0 / High 2 / Medium 20; generatedAt 2026-08-28T16:28:05.669Z.
+- Security Sentinel (latest standalone state): **WATCH**; Critical 0 / High 2 / Medium 20; generatedAt 2026-08-28T16:52:13.880Z.
+- Cognitive Stack Security snapshot is older (2026-08-28T16:28:05.669Z); it remains the exact Security binding for that coherent Cognitive Stack packet, not the current standalone Security count.
 - Grounded Brain: **WATCH**.
 - ChatGPT Bridge: **WATCH**; cases 9; evidence 24; noExecution true.
 
