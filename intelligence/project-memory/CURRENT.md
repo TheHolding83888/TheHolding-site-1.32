@@ -4,7 +4,7 @@
 >
 > Start from this live `main` file. Then load only the minimum recovery packet below. Full owner/build/history canons remain machine-verified durable contracts and are loaded only when the compact router says they are relevant. Changing facts still come from live generated artifacts and exact workflow evidence, not prose memory.
 
-Canonical source state represented here: **2026-08-28T17:20:04.557Z**
+Canonical source state represented here: **2026-08-28T17:24:06.108Z**
 
 ## Minimum recovery packet
 
@@ -38,23 +38,22 @@ Current authority boundary: **execution authority = none**. No wallet signing, t
 
 ## Memory architecture
 
-- **System Memory** — current normalized state; generatedAt: 2026-08-28T16:54:19.731Z.
-- **Permanent Memory Vault** — 24 Observer record(s), 250 material event(s), retention: indefinite; hard lifetime cap: none.
-- **Latest Vault record** — intelligence/memory-vault/2026/08/2026-08-28T16-54-19-731Z-5b29b41244.json.
+- **System Memory** — current normalized state; generatedAt: 2026-08-28T17:22:24.114Z.
+- **Permanent Memory Vault** — 25 Observer record(s), 260 material event(s), retention: indefinite; hard lifetime cap: none.
+- **Latest Vault record** — intelligence/memory-vault/2026/08/2026-08-28T17-22-24-114Z-f6bcf5f15b.json.
 - **Decision Memory** — 2 append-only owner decision(s); executionAuthority: none.
 - **Project continuity** — CURRENT + latest master continuity + compact task router + routed specialized canons + Git history.
 
 ## Current cognitive stack
 
-- Cognitive Stack: **WATCH**; readyForManualInterpretation: true; chainHash: 5c1eaef2022c33f4f4b47002cbfd8ea879bef0909458d68acf7c2efe325f410c.
-- Security Sentinel (latest standalone state): **WATCH**; Critical 0 / High 2 / Medium 20; generatedAt 2026-08-28T17:20:04.557Z.
-- Cognitive Stack Security snapshot is older (2026-08-28T16:54:43.502Z); it remains the exact Security binding for that coherent Cognitive Stack packet, not the current standalone Security count.
+- Cognitive Stack: **WATCH**; readyForManualInterpretation: true; chainHash: fa989067dc5c061ebb787dcfce13f4b65d0c76f2fae6f33b445ab9ac07524a4e.
+- Security Sentinel (latest standalone state): **WATCH**; Critical 0 / High 2 / Medium 20; generatedAt 2026-08-28T17:22:43.899Z.
 - Grounded Brain: **WATCH**.
-- ChatGPT Bridge: **WATCH**; cases 9; evidence 24; noExecution true.
+- ChatGPT Bridge: **WATCH**; cases 19; evidence 34; noExecution true.
 
 ## Learning / Proposal / Builder / Guardian
 
-- Learning: **READY**; active cases 9; remembered cases 186; Brain observations 37; owner decisions 2; settled outcomes 0; lessons 0.
+- Learning: **READY**; active cases 19; remembered cases 196; Brain observations 38; owner decisions 2; settled outcomes 0; lessons 0.
 - Continuous learning priority: **autonomous observational/world evidence is the primary always-on lane**; Owner Decision → Outcome remains a sparse complementary lane. Neither lane gains causal, policy, capital, repository or execution authority by accumulation alone.
 - Proposal: **WATCH**; active 3; APPROVED 1; PROPOSED 2; SUPERSEDED 27; production execution disabled.
 - Builder: **WATCH**; candidates 1; CANDIDATE 1; productionMutationAuthorizedCount 0.
