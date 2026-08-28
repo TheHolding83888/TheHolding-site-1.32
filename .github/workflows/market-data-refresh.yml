@@ -5,6 +5,7 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '7,37 * * * *'
+    - cron: '22,52 * * * *'
   push:
     branches: [main]
     paths:
@@ -47,18 +48,82 @@ jobs:
           ref: main
           fetch-depth: 0
 
+      - name: Determine scheduled refresh admission
+        id: cadence
+        env:
+          ADMISSION_AGE_MINUTES: '25'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${GITHUB_EVENT_NAME}" != "schedule" ]; then
+            echo "due=true" >> "$GITHUB_OUTPUT"
+            echo "reason=non-schedule-recovery-or-source-change" >> "$GITHUB_OUTPUT"
+            echo "Non-schedule Market Data wake admitted."
+            exit 0
+          fi
+          python3 - "$GITHUB_OUTPUT" <<'PY'
+          import datetime as dt
+          import json
+          import os
+          import sys
+
+          output_path = sys.argv[1]
+          threshold = float(os.environ['ADMISSION_AGE_MINUTES'])
+          state_path = 'intelligence/market-data/market-data.json'
+          due = True
+          reason = 'missing-or-invalid-canonical-timestamp'
+          age_minutes = None
+
+          try:
+              with open(state_path, 'r', encoding='utf-8') as handle:
+                  state = json.load(handle)
+              raw = state.get('observedAt') or state.get('generatedAt')
+              if not raw:
+                  raise ValueError('canonical Market Data timestamp missing')
+              observed = dt.datetime.fromisoformat(str(raw).replace('Z', '+00:00'))
+              if observed.tzinfo is None:
+                  observed = observed.replace(tzinfo=dt.timezone.utc)
+              raw_age = (dt.datetime.now(dt.timezone.utc) - observed).total_seconds() / 60
+              if raw_age < -5:
+                  due = True
+                  reason = 'canonical-timestamp-in-future'
+                  age_minutes = raw_age
+              else:
+                  age_minutes = max(0.0, raw_age)
+                  due = age_minutes >= threshold
+                  reason = 'stale-enough-to-refresh' if due else 'fresh-retry-slot-suppressed'
+          except Exception as error:
+              print(f'::warning::Scheduled admission could not prove freshness: {error}')
+
+          with open(output_path, 'a', encoding='utf-8') as output:
+              output.write(f"due={'true' if due else 'false'}\n")
+              output.write(f"reason={reason}\n")
+              if age_minutes is not None:
+                  output.write(f"age_minutes={age_minutes:.2f}\n")
+
+          print('Scheduled Market Data admission', {
+              'due': due,
+              'reason': reason,
+              'ageMinutes': None if age_minutes is None else round(age_minutes, 2),
+              'thresholdMinutes': threshold
+          })
+          PY
+
       - name: Setup Node.js
+        if: steps.cadence.outputs.due == 'true'
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
 
       - name: Verify Shared Market Data scheduler contract
+        if: steps.cadence.outputs.due == 'true'
         run: |
           set -euo pipefail
           node --check intelligence/reliability/market-data-scheduler-workflow-definition-proof.mjs
           node intelligence/reliability/market-data-scheduler-workflow-definition-proof.mjs
 
       - name: Validate shared Market Data engines
+        if: steps.cadence.outputs.due == 'true'
         run: |
           set -euo pipefail
           node --check intelligence/market-data/market-data-engine.mjs
@@ -70,11 +135,13 @@ jobs:
           node --check intelligence/market-data/onchain-price-resolver.mjs
 
       - name: Reuse daily CoinGecko source lane without external request
+        if: steps.cadence.outputs.due == 'true'
         env:
           MARKET_DATA_DAILY_REFRESH: 'false'
         run: node intelligence/market-data/market-data-engine.mjs
 
       - name: Observe all onchain prices
+        if: steps.cadence.outputs.due == 'true'
         id: shadow
         run: |
           set +e
@@ -91,14 +158,17 @@ jobs:
           fi
 
       - name: Materialize per-asset production authority
+        if: steps.cadence.outputs.due == 'true'
         env:
           MARKET_DATA_FORCE_COINGECKO_FAILBACK: 'false'
         run: node intelligence/market-data/market-data-authority-materializer.mjs
 
       - name: Rebuild public fund + company capital view
+        if: steps.cadence.outputs.due == 'true'
         run: node intelligence/market-data/public-capital-engine.mjs
 
       - name: Validate canonical quantities and 26-asset authority
+        if: steps.cadence.outputs.due == 'true'
         run: |
           set -euo pipefail
           node - <<'NODE'
@@ -143,6 +213,7 @@ jobs:
           git diff --check
 
       - name: Publish generated shared state safely
+        if: steps.cadence.outputs.due == 'true'
         run: |
           set -euo pipefail
           git config user.name "The Holding Market Data Orchestrator"
