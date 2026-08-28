@@ -1,12 +1,12 @@
 # The Holding Guardian Capability Gate
 
-Generated: 2026-08-27T19:51:24.991Z
+Generated: 2026-08-28T13:12:24.498Z
 
 Research-only: 1 · Blocked: 0 · Sandbox build authority: 0
 
 ## Gate decisions
 
-- **GRD-6b3d632e2f17868d26a8582f · dom-provenance-triage** – RESEARCH_ONLY · BLD-ce47e70ea4ab75e5c23e607d
+- **GRD-6cdfc2838065e8321a805417 · dom-provenance-triage** – RESEARCH_ONLY · BLD-ce47e70ea4ab75e5c23e607d
 
 ## Boundary
 
