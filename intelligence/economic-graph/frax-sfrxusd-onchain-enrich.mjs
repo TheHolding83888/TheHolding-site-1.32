@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Frax bounded onchain Economic Graph enrichment v0.5
+ * The Holding · Frax bounded onchain Economic Graph enrichment v0.6
  *
  * Runs only after the canonical Economic Graph runner. The current Graph state
  * is enriched sequentially through existing Frax surfaces using bounded read-only
@@ -35,6 +35,10 @@ import {
   collectFraxswapFlowFees,
   applyFraxswapFlowFees
 } from './frax-fraxswap-flow-fees.mjs';
+import {
+  collectFraxswapTwamm,
+  applyFraxswapTwamm
+} from './frax-fraxswap-twamm.mjs';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const OUT=process.env.ECONOMIC_GRAPH_FILE || path.join(ROOT,'intelligence/economic-graph/economic-graph.json');
@@ -78,14 +82,17 @@ async function main(){
   const bammMeasurement=await collectFraxBammOnchain();
   applyFraxBammOnchainMeasurement({state,previousState,measurement:bammMeasurement});
 
-  // Ordinary Fraxswap Swap events are measured only after registry-wide BAMM/pair
-  // identity is proven. The interval is previous published Fraxtal block -> current
-  // exact Fraxtal block. TWAMM virtual-order flow is intentionally excluded and
-  // remains a separate measurement atom. Gross input-fee units are mechanical;
-  // feeTo/_mintFee revenue routing remains UNKNOWN until separately proven.
+  // Fraxswap pair identity is shared, but ordinary Swap flow and TWAMM virtual
+  // execution are intentionally separate economic atoms. Both consume the same
+  // bounded pair registry and the same pair of published Fraxtal checkpoints.
+  // Gross fee units remain mechanical only; feeTo/_mintFee revenue routing is
+  // still UNKNOWN until separately proven.
   if(bammMeasurement?.status==='ok'&&bammMeasurement?.measurementClass==='MEASURED'){
     const fraxswapFlowFees=await collectFraxswapFlowFees({currentBammMeasurement:bammMeasurement,previousBammMeasurement});
     applyFraxswapFlowFees({state,previousState,measurement:fraxswapFlowFees});
+
+    const fraxswapTwamm=await collectFraxswapTwamm({currentBammMeasurement:bammMeasurement,previousBammMeasurement});
+    applyFraxswapTwamm({state,previousState,measurement:fraxswapTwamm});
   }
 
   fs.writeFileSync(OUT,JSON.stringify(state,null,2)+'\n');
@@ -95,6 +102,7 @@ async function main(){
   const fraxlend=ecosystem?.surfaces?.fraxlend;
   const bamm=ecosystem?.surfaces?.fraxswapBamm;
   const flow=bamm?.measured?.swapFlowFees;
+  const twamm=bamm?.measured?.twammFlow;
   console.log('FRAX BOUNDED ONCHAIN CANONICAL GRAPH ENRICHMENT PASS',{
     graphEngineVersion:state.engineVersion,
     measuredSurfaces:ecosystem?.coverage?.measuredSurfaceCount,
@@ -147,6 +155,22 @@ async function main(){
       feeUpdateEventCount:flow?.summary?.feeUpdateEventCount??null,
       twammFlow:flow?.epistemic?.twammFlow||'UNKNOWN',
       feeRecipientSplit:flow?.epistemic?.feeRecipientSplit||'UNKNOWN'
+    },
+    fraxswapTwamm:{
+      status:twamm?.status||'not-run-current-bamm-unavailable',
+      measurementClass:twamm?.measurementClass||'UNKNOWN',
+      fromBlockExclusive:twamm?.interval?.fromBlockExclusive??null,
+      toBlockInclusive:twamm?.interval?.toBlockInclusive??null,
+      fullRegistryInterval:twamm?.coverage?.fullRegistryInterval??false,
+      pairCountWithVirtualExecution:twamm?.summary?.pairCountWithVirtualExecution??null,
+      pairCountWithNewLongTermOrders:twamm?.summary?.pairCountWithNewLongTermOrders??null,
+      virtualExecutionEventCount:twamm?.summary?.virtualExecutionEventCount??null,
+      newLongTermOrderCount:twamm?.summary?.newLongTermOrderCount??null,
+      cancelEventCount:twamm?.summary?.cancelEventCount??null,
+      withdrawEventCount:twamm?.summary?.withdrawEventCount??null,
+      feeUpdateEventCount:twamm?.summary?.feeUpdateEventCount??null,
+      ordinarySwapFlow:twamm?.epistemic?.ordinarySwapFlow||'UNKNOWN',
+      feeRecipientSplit:twamm?.epistemic?.feeRecipientSplit||'UNKNOWN'
     },
     previousCheckpointSource:'explicit-published-graph-file',
     executionAuthority:ecosystem?.authority?.executionAuthority
