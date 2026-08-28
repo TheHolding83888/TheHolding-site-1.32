@@ -67,7 +67,21 @@ export function applyBrainVlCvxVotiumCurveShadowContext(){
 
   const fraxLifecycle=lifecycleContexts?.[FRAX_PROTOCOL_ID];
   if(!fraxLifecycle||fraxEcosystem?.protocolId!==FRAX_PROTOCOL_ID||fraxEcosystem?.lifecycleStage!==fraxLifecycle?.maturityStage)fail('Frax lifecycle/ecosystem identity drift');
-  if(Number(fraxEcosystem?.coverage?.surfaceCount)!==9||Number(fraxEcosystem?.coverage?.measuredSurfaceCount)!==1||Number(fraxEcosystem?.coverage?.sourceBoundUnknownSurfaceCount)!==8)fail('Frax ecosystem coverage drift');
+  const fraxSurfaceCount=Number(fraxEcosystem?.coverage?.surfaceCount);
+  const fraxMeasured=Number(fraxEcosystem?.coverage?.measuredSurfaceCount);
+  const fraxUnknown=Number(fraxEcosystem?.coverage?.sourceBoundUnknownSurfaceCount);
+  const fraxSurfaces=fraxEcosystem?.surfaces??{};
+  const fraxSurfaceEntries=Object.entries(fraxSurfaces);
+  if(fraxSurfaceCount!==9||fraxSurfaceEntries.length!==fraxSurfaceCount||!Number.isInteger(fraxMeasured)||!Number.isInteger(fraxUnknown)||fraxMeasured<1||fraxUnknown<0||fraxMeasured+fraxUnknown!==fraxSurfaceCount)fail(`Frax ecosystem coverage drift: ${fraxSurfaceCount}/${fraxMeasured}/${fraxUnknown}`);
+  const fraxMeasuredSurfaceIds=fraxSurfaceEntries.filter(([,surface])=>String(surface?.measurementState??'').startsWith('MEASURED')).map(([id])=>id);
+  const fraxUnknownSurfaceIds=fraxSurfaceEntries.filter(([,surface])=>String(surface?.measurementState??'').startsWith('UNKNOWN')).map(([id])=>id);
+  if(fraxMeasuredSurfaceIds.length!==fraxMeasured||fraxUnknownSurfaceIds.length!==fraxUnknown)fail('Frax ecosystem surface-state/count mismatch');
+  const sfrx=fraxSurfaces.frxUsdSfrxUsd;
+  if(String(sfrx?.measurementState??'').startsWith('MEASURED')){
+    const m=sfrx?.measured;
+    if(m?.version!=='0.1-sfrxusd-exact-block-erc4626'||m?.measurementClass!=='MEASURED'||m?.epistemic?.sourceType!=='onchain-public-rpc-exact-block'||m?.epistemic?.currentStateMeasured!==true||!(Number(m?.values?.sharePriceFrxUsd)>0)||!(Number(m?.blockNumber)>0))fail('Frax sfrxUSD measured proof drift');
+    if(m?.epistemic?.historicalBackfill!==false||m?.epistemic?.unknownIsZero!==false||m?.epistemic?.causalClaimAuthority!=='none'||m?.epistemic?.executionAuthority!=='none')fail('Frax sfrxUSD epistemic boundary drift');
+  }
   if(!String(fraxEcosystem?.epistemic?.revenueToVeFraxAprCausality||'').startsWith('UNKNOWN')||!String(fraxEcosystem?.epistemic?.treasuryYieldToSpecificFxPoolIncentive||'').startsWith('UNKNOWN'))fail('Frax ecosystem causal boundary weakened');
   if(fraxEcosystem?.authority?.executionAuthority!=='none'||fraxEcosystem?.authority?.causalClaimAuthority!=='none'||fraxEcosystem?.authority?.lifecyclePromotionAuthority!=='none')fail('Frax ecosystem authority drift');
   for(const item of Object.values(lifecycleContexts)){
@@ -97,7 +111,7 @@ export function applyBrainVlCvxVotiumCurveShadowContext(){
     pointer:`/explanations/protocolEcosystemContexts/${FRAX_ECOSYSTEM_ID}`,
     value:fraxEcosystem,sha:explanatorySha,observedAt,
     interpretation:'frax-deep-ecosystem-measured-vs-source-bound-unknown',
-    note:'Only the veFRAX governance surface is currently measured. Source-bound ecosystem topology remains UNKNOWN for current economic values until reproducible ingestion exists.'
+    note:`Current Explanatory evidence marks ${fraxMeasured} Frax surface(s) MEASURED (${fraxMeasuredSurfaceIds.join(', ')}) and ${fraxUnknown} source-bound UNKNOWN (${fraxUnknownSurfaceIds.join(', ')}). Measurement does not imply causality or execution authority.`
   });
 
   const flowQuestion={
@@ -166,9 +180,11 @@ export function applyBrainVlCvxVotiumCurveShadowContext(){
       contexts:{[FRAX_ECOSYSTEM_ID]:{
         protocolId:FRAX_PROTOCOL_ID,
         lifecycleStage:fraxEcosystem.lifecycleStage,
-        surfaceCount:fraxEcosystem.coverage.surfaceCount,
-        measuredSurfaceCount:fraxEcosystem.coverage.measuredSurfaceCount,
-        sourceBoundUnknownSurfaceCount:fraxEcosystem.coverage.sourceBoundUnknownSurfaceCount,
+        surfaceCount:fraxSurfaceCount,
+        measuredSurfaceCount:fraxMeasured,
+        sourceBoundUnknownSurfaceCount:fraxUnknown,
+        measuredSurfaceIds:fraxMeasuredSurfaceIds,
+        sourceBoundUnknownSurfaceIds:fraxUnknownSurfaceIds,
         revenueToVeFraxAprCausality:'UNKNOWN',
         treasuryYieldToSpecificFxPoolIncentive:'UNKNOWN'
       }}
@@ -181,7 +197,7 @@ export function applyBrainVlCvxVotiumCurveShadowContext(){
     protocolEcosystemContexts:{[FRAX_ECOSYSTEM_ID]:fraxQuestion}
   };
   if(brain?.questions?.whatChanged){
-    brain.questions.whatChanged.answer=`${brain.questions.whatChanged.answer} Shadow vlCVX/Votium evidence additionally proves 79/79 post-migration vote matching, 79/79 Curve gauge execution rows, and complete current pool context for 31/31 currently eligible mapped Curve gauges; causality beyond mechanical execution remains unresolved. Protocol Intelligence now exposes eight lifecycle contexts and one deep Frax ecosystem family with nine tracked surfaces; only veFRAX governance is currently measured, while eight wider ecosystem surfaces remain source-bound UNKNOWN.`;
+    brain.questions.whatChanged.answer=`${brain.questions.whatChanged.answer} Shadow vlCVX/Votium evidence additionally proves 79/79 post-migration vote matching, 79/79 Curve gauge execution rows, and complete current pool context for 31/31 currently eligible mapped Curve gauges; causality beyond mechanical execution remains unresolved. Protocol Intelligence exposes eight lifecycle contexts and one deep Frax ecosystem family with nine tracked surfaces; ${fraxMeasured} surface(s) are currently MEASURED (${fraxMeasuredSurfaceIds.join(', ')}), while ${fraxUnknown} remain source-bound UNKNOWN.`;
     brain.questions.whatChanged.evidence=dedupeEvidence([...(brain.questions.whatChanged.evidence??[]),flowEv,...Object.values(lifecycleEvidence),fraxEv]);
   }
   brain.evidenceLedger=dedupeEvidence([...(brain.evidenceLedger??[]),flowEv,...Object.values(lifecycleEvidence),fraxEv]);
@@ -237,9 +253,9 @@ export function applyBrainVlCvxVotiumCurveShadowContext(){
       '',fraxMarker,
       '- Live lifecycle sensors: 8',
       `- Frax lifecycle stage: ${fraxLifecycle.maturityStage}`,
-      '- Frax ecosystem tracked surfaces: 9',
-      '- Current measured Frax ecosystem surfaces: 1 — veFRAX governance',
-      '- Source-bound UNKNOWN Frax ecosystem surfaces: 8',
+      `- Frax ecosystem tracked surfaces: ${fraxSurfaceCount}`,
+      `- Current MEASURED Frax ecosystem surfaces: ${fraxMeasured} — ${fraxMeasuredSurfaceIds.join(', ')}`,
+      `- Source-bound UNKNOWN Frax ecosystem surfaces: ${fraxUnknown} — ${fraxUnknownSurfaceIds.join(', ')}`,
       '- Revenue → veFRAX APR: UNKNOWN',
       '- Treasury yield → specific FX-pool incentive: UNKNOWN',
       '- Lifecycle / recommendation / causal / execution authority: none',''
@@ -254,9 +270,9 @@ export function applyBrainVlCvxVotiumCurveShadowContext(){
     lifecycleStageCounts:brain.currentPosture.protocolLifecycle.stageCounts,
     fraxStage:brain.currentPosture.protocolLifecycle.frax.maturityStage,
     deepEcosystemContexts:brain.currentPosture.protocolEcosystems.contextCount,
-    fraxSurfaces:fraxEcosystem.coverage.surfaceCount,
-    fraxMeasuredSurfaces:fraxEcosystem.coverage.measuredSurfaceCount,
-    fraxUnknownSurfaces:fraxEcosystem.coverage.sourceBoundUnknownSurfaceCount,
+    fraxSurfaces:fraxSurfaceCount,
+    fraxMeasuredSurfaces:fraxMeasured,
+    fraxUnknownSurfaces:fraxUnknown,
     curveExecutedGaugeRows:context.coverage.curveExecutedVotiumGaugeRows,
     currentPoolContexts:context.coverage.currentCurvePoolContextsComplete,
     exactFeeUsd:context.downstreamCurrentContext.exactFeeUsd,
