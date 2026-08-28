@@ -139,3 +139,4 @@ await import('./frax-fraxlend-onchain-canary.mjs');
 await import('./frax-fraxlend-rate-model-canary.mjs');
 await import('./frax-bamm-onchain-canary.mjs');
 await import('./frax-fraxswap-flow-fees-canary.mjs');
+await import('./frax-fraxswap-twamm-canary.mjs');
