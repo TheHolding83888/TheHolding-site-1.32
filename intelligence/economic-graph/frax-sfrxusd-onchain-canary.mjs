@@ -133,7 +133,8 @@ console.log('FRAX sfrxUSD ONCHAIN SENSOR CANARY PASS',{
 });
 
 // Keep the existing PR canary entrypoint as the single bounded Frax onchain test lane.
-// Imported Fraxlend canaries perform deterministic tests locally and fail-closed
+// Imported protocol atom canaries perform deterministic tests locally and fail-closed
 // live exact-block proofs when GitHub Actions executes this entrypoint.
 await import('./frax-fraxlend-onchain-canary.mjs');
 await import('./frax-fraxlend-rate-model-canary.mjs');
+await import('./frax-bamm-onchain-canary.mjs');
