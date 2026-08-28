@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Frax bounded onchain Economic Graph enrichment v0.6
+ * The Holding · Frax bounded onchain Economic Graph enrichment v0.7
  *
  * Runs only after the canonical Economic Graph runner. The current Graph state
  * is enriched sequentially through existing Frax surfaces using bounded read-only
@@ -39,6 +39,10 @@ import {
   collectFraxswapTwamm,
   applyFraxswapTwamm
 } from './frax-fraxswap-twamm.mjs';
+import {
+  collectFraxswapProtocolFeeRouting,
+  applyFraxswapProtocolFeeRouting
+} from './frax-fraxswap-protocol-fee-routing.mjs';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const OUT=process.env.ECONOMIC_GRAPH_FILE || path.join(ROOT,'intelligence/economic-graph/economic-graph.json');
@@ -64,35 +68,30 @@ async function main(){
   const fraxlendMeasurement=await collectFraxFraxlendOnchain();
   applyFraxFraxlendOnchainMeasurement({state,previousState,measurement:fraxlendMeasurement});
 
-  // Rate-model proof is explicitly bound to the exact same Fraxlend pair/block
-  // measured immediately above. If the bounded pair read itself is unavailable,
-  // the already-established Fraxlend UNKNOWN state is preserved and no rate
-  // relation is fabricated. A rate-model mismatch after a valid pair read is
-  // also stored as UNKNOWN by the adapter rather than weakening the proof gate.
   if(fraxlendMeasurement?.status==='ok'&&fraxlendMeasurement?.measurementClass==='MEASURED'){
     const fraxlendRateModelProof=await collectFraxFraxlendRateModel({baseMeasurement:fraxlendMeasurement});
     applyFraxFraxlendRateModel({state,proof:fraxlendRateModelProof});
   }
 
-  // BAMM is a separate Fraxtal exact-block domain. The registry-first measurement
-  // is still applied through this same canonical writer. A Fraxtal/RPC failure
-  // degrades only the BAMM surface to UNKNOWN; it does not fabricate zero state or
-  // collapse already-proven Ethereum Frax surfaces.
   const previousBammMeasurement=previousState?.protocolEvidence?.['registry-frax-ecosystem']?.latest?.observation?.surfaces?.fraxswapBamm?.measured||null;
   const bammMeasurement=await collectFraxBammOnchain();
   applyFraxBammOnchainMeasurement({state,previousState,measurement:bammMeasurement});
 
-  // Fraxswap pair identity is shared, but ordinary Swap flow and TWAMM virtual
-  // execution are intentionally separate economic atoms. Both consume the same
-  // bounded pair registry and the same pair of published Fraxtal checkpoints.
-  // Gross fee units remain mechanical only; feeTo/_mintFee revenue routing is
-  // still UNKNOWN until separately proven.
+  // Fraxswap ordinary Swap flow, TWAMM virtual execution, and protocol-fee LP
+  // mint routing are distinct atoms. They share exact published Fraxtal interval
+  // boundaries but retain separate accounting and epistemic identities.
   if(bammMeasurement?.status==='ok'&&bammMeasurement?.measurementClass==='MEASURED'){
     const fraxswapFlowFees=await collectFraxswapFlowFees({currentBammMeasurement:bammMeasurement,previousBammMeasurement});
     applyFraxswapFlowFees({state,previousState,measurement:fraxswapFlowFees});
 
     const fraxswapTwamm=await collectFraxswapTwamm({currentBammMeasurement:bammMeasurement,previousBammMeasurement});
     applyFraxswapTwamm({state,previousState,measurement:fraxswapTwamm});
+
+    // Unlike the first two atoms, protocol-fee routing enumerates the complete
+    // Fraxswap Factory registry rather than only BAMM-associated pairs. LP units
+    // are kept pair-local because LP tokens from distinct pairs are heterogeneous.
+    const fraxswapProtocolFee=await collectFraxswapProtocolFeeRouting({currentBammMeasurement:bammMeasurement,previousBammMeasurement});
+    applyFraxswapProtocolFeeRouting({state,previousState,measurement:fraxswapProtocolFee});
   }
 
   fs.writeFileSync(OUT,JSON.stringify(state,null,2)+'\n');
@@ -103,6 +102,7 @@ async function main(){
   const bamm=ecosystem?.surfaces?.fraxswapBamm;
   const flow=bamm?.measured?.swapFlowFees;
   const twamm=bamm?.measured?.twammFlow;
+  const protocolFee=bamm?.measured?.protocolFeeRouting;
   console.log('FRAX BOUNDED ONCHAIN CANONICAL GRAPH ENRICHMENT PASS',{
     graphEngineVersion:state.engineVersion,
     measuredSurfaces:ecosystem?.coverage?.measuredSurfaceCount,
@@ -145,32 +145,13 @@ async function main(){
       sample:Array.isArray(bamm?.measured?.bamms)?bamm.measured.bamms.slice(0,3).map(x=>({bamm:x.bamm,pair:x.pair,utilityPct:x.values?.utilityPct,borrowRatePerSecond:x.values?.borrowRatePerSecond})):[]
     },
     fraxswapRegularFlow:{
-      status:flow?.status||'not-run-current-bamm-unavailable',
-      measurementClass:flow?.measurementClass||'UNKNOWN',
-      fromBlockExclusive:flow?.interval?.fromBlockExclusive??null,
-      toBlockInclusive:flow?.interval?.toBlockInclusive??null,
-      fullRegistryInterval:flow?.coverage?.fullRegistryInterval??false,
-      pairCountWithRegularSwaps:flow?.summary?.pairCountWithRegularSwaps??null,
-      regularSwapEventCount:flow?.summary?.regularSwapEventCount??null,
-      feeUpdateEventCount:flow?.summary?.feeUpdateEventCount??null,
-      twammFlow:flow?.epistemic?.twammFlow||'UNKNOWN',
-      feeRecipientSplit:flow?.epistemic?.feeRecipientSplit||'UNKNOWN'
+      status:flow?.status||'not-run-current-bamm-unavailable',measurementClass:flow?.measurementClass||'UNKNOWN',fromBlockExclusive:flow?.interval?.fromBlockExclusive??null,toBlockInclusive:flow?.interval?.toBlockInclusive??null,fullRegistryInterval:flow?.coverage?.fullRegistryInterval??false,pairCountWithRegularSwaps:flow?.summary?.pairCountWithRegularSwaps??null,regularSwapEventCount:flow?.summary?.regularSwapEventCount??null,feeUpdateEventCount:flow?.summary?.feeUpdateEventCount??null,twammFlow:flow?.epistemic?.twammFlow||'UNKNOWN',feeRecipientSplit:flow?.epistemic?.feeRecipientSplit||'UNKNOWN'
     },
     fraxswapTwamm:{
-      status:twamm?.status||'not-run-current-bamm-unavailable',
-      measurementClass:twamm?.measurementClass||'UNKNOWN',
-      fromBlockExclusive:twamm?.interval?.fromBlockExclusive??null,
-      toBlockInclusive:twamm?.interval?.toBlockInclusive??null,
-      fullRegistryInterval:twamm?.coverage?.fullRegistryInterval??false,
-      pairCountWithVirtualExecution:twamm?.summary?.pairCountWithVirtualExecution??null,
-      pairCountWithNewLongTermOrders:twamm?.summary?.pairCountWithNewLongTermOrders??null,
-      virtualExecutionEventCount:twamm?.summary?.virtualExecutionEventCount??null,
-      newLongTermOrderCount:twamm?.summary?.newLongTermOrderCount??null,
-      cancelEventCount:twamm?.summary?.cancelEventCount??null,
-      withdrawEventCount:twamm?.summary?.withdrawEventCount??null,
-      feeUpdateEventCount:twamm?.summary?.feeUpdateEventCount??null,
-      ordinarySwapFlow:twamm?.epistemic?.ordinarySwapFlow||'UNKNOWN',
-      feeRecipientSplit:twamm?.epistemic?.feeRecipientSplit||'UNKNOWN'
+      status:twamm?.status||'not-run-current-bamm-unavailable',measurementClass:twamm?.measurementClass||'UNKNOWN',fromBlockExclusive:twamm?.interval?.fromBlockExclusive??null,toBlockInclusive:twamm?.interval?.toBlockInclusive??null,fullRegistryInterval:twamm?.coverage?.fullRegistryInterval??false,pairCountWithVirtualExecution:twamm?.summary?.pairCountWithVirtualExecution??null,pairCountWithNewLongTermOrders:twamm?.summary?.pairCountWithNewLongTermOrders??null,virtualExecutionEventCount:twamm?.summary?.virtualExecutionEventCount??null,newLongTermOrderCount:twamm?.summary?.newLongTermOrderCount??null,cancelEventCount:twamm?.summary?.cancelEventCount??null,withdrawEventCount:twamm?.summary?.withdrawEventCount??null,feeUpdateEventCount:twamm?.summary?.feeUpdateEventCount??null,ordinarySwapFlow:twamm?.epistemic?.ordinarySwapFlow||'UNKNOWN',feeRecipientSplit:twamm?.epistemic?.feeRecipientSplit||'UNKNOWN'
+    },
+    fraxswapProtocolFeeRouting:{
+      status:protocolFee?.status||'not-run-current-bamm-unavailable',measurementClass:protocolFee?.measurementClass||'UNKNOWN',factoryPairCount:protocolFee?.factory?.endPairCount??null,bammSubsetPairCount:protocolFee?.coverage?.bammSubsetPairCount??null,nonBammPairCount:protocolFee?.coverage?.nonBammPairCount??null,feeTo:protocolFee?.factory?.endFeeTo??null,checkpointFeeToParity:protocolFee?.factory?.checkpointFeeToParity??false,pairCountWithProtocolFeeMints:protocolFee?.summary?.pairCountWithProtocolFeeMints??null,protocolFeeMintEventCount:protocolFee?.summary?.protocolFeeMintEventCount??null,protocolFeeLpMintFlow:protocolFee?.epistemic?.protocolFeeLpMintFlow||'UNKNOWN',feeToIntervalStability:protocolFee?.epistemic?.feeToIntervalStability||'UNKNOWN',heterogeneousLpUnitsAggregated:protocolFee?.epistemic?.heterogeneousLpUnitsAggregated??false
     },
     previousCheckpointSource:'explicit-published-graph-file',
     executionAuthority:ecosystem?.authority?.executionAuthority
