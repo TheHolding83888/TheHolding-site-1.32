@@ -190,6 +190,16 @@ Reopen only on fresh production evidence of:
 - repeated truthfulness failure;
 - repeated material operational cost.
 
+## Detailed final closure checkpoint
+
+The exact post-closure evidence chain, including #435 verification history, post-merge materialization, external-provider tails, historical queue residue, freeze rules and resume law, is preserved separately at:
+
+[`checkpoints/ORCHESTRATION_CURRENTNESS_FINAL_CLOSURE_CHECKPOINT_2026-08-28.md`](./checkpoints/ORCHESTRATION_CURRENTNESS_FINAL_CLOSURE_CHECKPOINT_2026-08-28.md)
+
+Use that file as **detailed historical closure evidence**, not as a substitute for fresh live truth. `CURRENT.md` remains intentionally compact and generated; it should continue routing through this master continuity rather than carrying the full checkpoint payload.
+
+Creating the checkpoint does not start the next intelligence/sensor milestone.
+
 ## Next primary milestone
 
 After this closure, engineering focus moves away from plumbing and back to intelligence depth:
@@ -217,4 +227,5 @@ Permanent truth rule:
 3. Load latest continuity and Router.
 4. Treat this document as the closure boundary unless fresh production evidence proves a regression.
 5. Do not reopen orchestration merely because GitHub or Cloudflare still has an external provider tail.
-6. Resume the prospective / sensor milestone from preserved checkpoints and live evidence.
+6. Use the detailed final closure checkpoint only when exact closure evidence is needed.
+7. Resume the prospective / sensor milestone from preserved checkpoints and live evidence only after the owner starts that next process.
