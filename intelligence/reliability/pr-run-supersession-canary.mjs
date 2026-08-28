@@ -29,6 +29,7 @@ assert(policy.trigger.allowedUpstreamEvents.includes('pull_request_target'), 'bo
 assert(policy.trigger?.bootstrapWakeSource === 'The Holding Production Deployment Smoke', 'bootstrap wake source drift');
 assert(policy.trigger?.upstreamCompletionOnly === true, 'upstream completion gate missing');
 assert(policy.trigger?.addsPullRequestFanout === false, 'controller may not add pull_request fanout');
+assert(policy.trigger?.ignoreMainUpstreamBranch === true, 'main upstream workflow_run filter missing from policy');
 assert(policy.scope?.cancellableRunEvent === 'pull_request', 'cancellation target must remain pull_request-only');
 assert(policy.scope?.requiresSamePullRequestNumber === true, 'same PR gate missing');
 assert(policy.scope?.requiresSameHeadBranch === true, 'same head branch gate missing');
@@ -44,6 +45,9 @@ assert(policy.authority?.workflowDispatchAuthority === false, 'workflow dispatch
 assert(policy.authority?.workflowCancellationAuthority === 'superseded-pull-request-runs-only', 'cancellation authority widened');
 assert(policy.authority?.executionAuthority === 'none', 'execution authority expanded');
 
+const workflowRunBlock = workflow.match(/\n  workflow_run:\n([\s\S]*?)\n  workflow_dispatch:/)?.[1] || '';
+assert(/branches-ignore:\s*\n\s*-\s*main\s*(?:\n|$)/.test(workflowRunBlock), 'workflow_run must filter main before creating supersession runs');
+
 for (const required of [
   '# holding-control-plane: workflow-controller',
   '# holding-control-domain: pull-request-supersession-only',
@@ -54,6 +58,8 @@ for (const required of [
   'The Holding Security · Public Surface Privacy Guard',
   'The Holding Production Deployment Smoke',
   'types: [completed]',
+  'branches-ignore:',
+  '- main',
   'actions: write',
   'contents: read',
   'pull-requests: read',
@@ -97,6 +103,7 @@ console.log('PR RUN SUPERSESSION CANARY PASS', {
   trigger: policy.trigger.primaryEvent,
   upstreamEvents: policy.trigger.allowedUpstreamEvents,
   bootstrapWakeSource: policy.trigger.bootstrapWakeSource,
+  mainUpstreamWake: 'filtered-at-trigger',
   closedPrWake: 'safe-noop',
   addsPullRequestFanout: policy.trigger.addsPullRequestFanout,
   cancellationAuthority: policy.authority.workflowCancellationAuthority,

@@ -11,6 +11,7 @@
     "upstreamCompletionOnly": true,
     "manualRecoveryAllowed": true,
     "addsPullRequestFanout": false,
+    "ignoreMainUpstreamBranch": true,
     "bootstrapWakeSource": "The Holding Production Deployment Smoke"
   },
   "scope": {
@@ -39,6 +40,7 @@
   },
   "safetyLaw": [
     "A completed trusted upstream PR guard may wake the controller, including the existing read-only pull_request_target deployment smoke used as the bootstrap path when ordinary pull_request jobs are congested.",
+    "Completed upstream guard runs on main are filtered at the workflow_run trigger and must not create supersession runs.",
     "A late callback for a pull request that GitHub already reports as closed is a successful no-op: no cancellation query is executed and no authority is exercised.",
     "An unresolved, malformed or unexpected target state still fails closed.",
     "Wake-source event class does not widen cancellation scope: a run is cancellable only when it belongs to the same open pull request and same PR head branch, is itself a pull_request event, is not completed, and its head SHA differs from the current PR head SHA read from GitHub at execution time.",
