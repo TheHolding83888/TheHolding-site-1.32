@@ -1,7 +1,7 @@
 {
   "version": "0.1-economic-graph",
   "engineVersion": "0.2-defitea-fxn-curve-multi-cohort",
-  "generatedAt": "2026-08-28T12:45:25.463Z",
+  "generatedAt": "2026-08-28T12:57:07.986Z",
   "status": "partial-first-cohort",
   "statusCompatibility": {
     "deprecated": true,
@@ -5297,7 +5297,7 @@
   "protocolLifecycle": {
     "version": "0.1-protocol-intelligence-lifecycle",
     "policyVersion": "0.1-protocol-intelligence-lifecycle-policy",
-    "generatedAt": "2026-08-28T12:45:25.463Z",
+    "generatedAt": "2026-08-28T12:57:07.986Z",
     "status": "active",
     "stageOrder": [
       "discovery",
@@ -14376,7 +14376,7 @@
             "surfaceCount": 9,
             "measuredSurfaceCount": 2,
             "sourceBoundUnknownSurfaceCount": 7,
-            "latestObservationId": "frax-ecosystem:c752e6046c577a1a278edfcb",
+            "latestObservationId": "frax-ecosystem:9d72ea2f76e8ba7182258245",
             "measurementExtensions": {
               "sfrxUsdOnchain": "0.1-sfrxusd-exact-block-erc4626"
             }
@@ -15357,7 +15357,7 @@
         "surfaceCount": 9,
         "measuredSurfaceCount": 2,
         "sourceBoundUnknownSurfaceCount": 7,
-        "latestObservationId": "frax-ecosystem:c752e6046c577a1a278edfcb",
+        "latestObservationId": "frax-ecosystem:9d72ea2f76e8ba7182258245",
         "measurementExtensions": {
           "sfrxUsdOnchain": "0.1-sfrxusd-exact-block-erc4626"
         }
@@ -15557,7 +15557,7 @@
       "latest": {
         "observation": {
           "version": "0.1-frax-deep-ecosystem-sensor-family",
-          "observedAt": "2026-08-28T12:45:25.463Z",
+          "observedAt": "2026-08-28T12:57:07.986Z",
           "protocolId": "registry-frax-vefrax",
           "lifecycleStage": "shadow",
           "status": "deep-sensor-family-active-partial-measurement",
@@ -15708,12 +15708,12 @@
                 "version": "0.1-sfrxusd-exact-block-erc4626",
                 "status": "ok",
                 "measurementClass": "MEASURED",
-                "observedAt": "2026-08-28T12:45:23.000Z",
+                "observedAt": "2026-08-28T12:56:59.000Z",
                 "chain": "ethereum",
                 "chainId": 1,
-                "blockNumber": 25853824,
-                "blockTag": "0x18a7f80",
-                "blockHash": "0xdc361ec50cf4ff0e4b0f912a4b5bb6efffe4b62709db8105ad4106fb95dcab49",
+                "blockNumber": 25853882,
+                "blockTag": "0x18a7fba",
+                "blockHash": "0xe9aa3d43bd369f4a262b581179b0aad8d8031e6eac61f3a93b6ab510292c2e3b",
                 "contracts": {
                   "frxUSD": "0xCAcd6fd266aF91b8AeD52aCCc382b4e165586E29",
                   "sfrxUSD": "0xcf62F905562626CfcDD2261162a51fd02Fc9c5b6"
@@ -15723,15 +15723,15 @@
                   "sfrxUSD": 18
                 },
                 "raw": {
-                  "frxUsdTotalSupply": "101798080125377437364173524",
+                  "frxUsdTotalSupply": "101798319649337437539375920",
                   "sfrxUsdTotalSupply": "29931733863871102947981227",
-                  "sfrxUsdTotalAssets": "36154158464235563233906131"
+                  "sfrxUsdTotalAssets": "36154195873738338066720794"
                 },
                 "values": {
-                  "frxUsdSupply": 101798080.12537743,
+                  "frxUsdSupply": 101798319.64933744,
                   "sfrxUsdSupply": 29931733.8638711,
-                  "sfrxUsdTotalAssets": 36154158.46423557,
-                  "sharePriceFrxUsd": 1.207887208561
+                  "sfrxUsdTotalAssets": 36154195.87373834,
+                  "sharePriceFrxUsd": 1.207888458389
                 },
                 "scope": {
                   "frxUsdSupply": "Ethereum frxUSD contract totalSupply only; not asserted as global cross-chain frxUSD supply",
@@ -15758,12 +15758,21 @@
                   "executionAuthority": "none"
                 },
                 "intervalEmbeddedYield": {
-                  "status": "warming-first-onchain-checkpoint",
-                  "accepted": false,
-                  "startAt": null,
-                  "endAt": "2026-08-28T12:45:23.000Z",
-                  "embeddedYieldPct": null,
-                  "source": "persisted-adjacent-economic-graph-onchain-checkpoints"
+                  "status": "ok",
+                  "accepted": true,
+                  "source": "persisted-adjacent-economic-graph-onchain-checkpoints",
+                  "startAt": "2026-08-28T12:45:23.000Z",
+                  "endAt": "2026-08-28T12:56:59.000Z",
+                  "elapsedSeconds": 696,
+                  "startBlock": 25853824,
+                  "endBlock": 25853882,
+                  "startSharePriceFrxUsd": 1.207887208561,
+                  "endSharePriceFrxUsd": 1.207888458389,
+                  "embeddedYieldPct": 0.000103472244,
+                  "annualizedApyPct": null,
+                  "annualizationState": "NOT-CALCULATED-no-annualization-methodology-added",
+                  "accountingIdentity": "ending sfrxUSD share price / beginning share price - 1",
+                  "note": "Direct interval share-price return only. No APY backfill, reserve-yield causality or veFRAX revenue attribution."
                 }
               },
               "mechanicalRelations": [
@@ -15775,7 +15784,7 @@
                 {
                   "from": "share-price change",
                   "to": "embedded yield",
-                  "class": "MECHANICAL-warming-adjacent-checkpoints"
+                  "class": "MECHANICAL-proven-adjacent-checkpoints"
                 },
                 {
                   "from": "reserve yield",
@@ -16115,7 +16124,7 @@
               "index": 1,
               "from": "share-price change",
               "to": "embedded yield",
-              "class": "MECHANICAL-warming-adjacent-checkpoints"
+              "class": "MECHANICAL-proven-adjacent-checkpoints"
             },
             {
               "surfaceId": "frxusd-sfrxusd",
@@ -16277,7 +16286,7 @@
               "frxusd-sfrxusd"
             ],
             "sfrxUsdCurrentState": "MEASURED",
-            "sfrxUsdEmbeddedYield": "WARMING"
+            "sfrxUsdEmbeddedYield": "DERIVED-MECHANICAL"
           },
           "nextMeasurementUnlocks": [
             "Bind FraxtalPoints/Flox epoch reads to explicit epoch boundaries and company addresses.",
@@ -16299,13 +16308,13 @@
             "causalClaimAuthority": "none",
             "executionAuthority": "none"
           },
-          "id": "frax-ecosystem:c752e6046c577a1a278edfcb",
+          "id": "frax-ecosystem:9d72ea2f76e8ba7182258245",
           "measurementExtensions": {
             "sfrxUsdOnchain": "0.1-sfrxusd-exact-block-erc4626"
           }
         }
       },
-      "observationCount": 5,
+      "observationCount": 6,
       "observations": [
         {
           "version": "0.1-frax-deep-ecosystem-sensor-family",
@@ -19768,6 +19777,764 @@
             "executionAuthority": "none"
           },
           "id": "frax-ecosystem:c752e6046c577a1a278edfcb",
+          "measurementExtensions": {
+            "sfrxUsdOnchain": "0.1-sfrxusd-exact-block-erc4626"
+          }
+        },
+        {
+          "version": "0.1-frax-deep-ecosystem-sensor-family",
+          "observedAt": "2026-08-28T12:57:07.986Z",
+          "protocolId": "registry-frax-vefrax",
+          "lifecycleStage": "shadow",
+          "status": "deep-sensor-family-active-partial-measurement",
+          "scope": "registry-wide-frax-ecosystem",
+          "coverage": {
+            "surfaceCount": 9,
+            "measuredSurfaceCount": 2,
+            "sourceBoundUnknownSurfaceCount": 7,
+            "surfaceIds": [
+              "governance-vefrax",
+              "fraxtal-flox-fxtl",
+              "frxusd-sfrxusd",
+              "fraxnet",
+              "fraxlend",
+              "fraxswap-bamm",
+              "fxb",
+              "fx-liquidity",
+              "revenue-routing"
+            ],
+            "relationshipCount": 28,
+            "relationshipClassCounts": {
+              "MEASURED": 2,
+              "UNKNOWN": 11,
+              "MECHANICAL": 14,
+              "CORRELATED": 1
+            }
+          },
+          "surfaces": {
+            "governanceVeFrax": {
+              "id": "governance-vefrax",
+              "label": "FRAX / veFRAX",
+              "mechanism": "governance lock productivity + registry exposure + native-period maturity",
+              "atoms": [
+                "FRAX locked",
+                "veFRAX voting weight",
+                "Reference APR",
+                "company exposure",
+                "position exposure",
+                "native period boundaries",
+                "actual distributed reward asset"
+              ],
+              "sourceContract": {
+                "primary": "https://api.frax.finance/combineddata/",
+                "product": "https://app.frax.finance/fxtl-vefxs",
+                "note": "Canonical Productivity currently measures veFRAX governance productivity from the official Frax API/frontend."
+              },
+              "measurementState": "MEASURED-partial-current-governance-surface",
+              "measured": {
+                "referenceAprPct": 5.3934,
+                "companyCount": 3,
+                "positionCount": 3,
+                "canonicalSnapshotCount": 4,
+                "validatedNativePeriodCount": 0,
+                "lifecycleStage": "shadow"
+              },
+              "mechanicalRelations": [
+                {
+                  "from": "canonical Frax productivity source",
+                  "to": "Reference APR",
+                  "class": "MEASURED"
+                },
+                {
+                  "from": "registry positions",
+                  "to": "company exposure",
+                  "class": "MEASURED"
+                },
+                {
+                  "from": "protocol revenue",
+                  "to": "veFRAX APR",
+                  "class": "UNKNOWN"
+                }
+              ]
+            },
+            "fraxtalFloxFxtl": {
+              "id": "fraxtal-flox-fxtl",
+              "label": "Fraxtal / Flox / FXTL",
+              "mechanism": "activity and effective-balance based ecosystem points",
+              "atoms": [
+                "epoch id",
+                "epoch boundaries",
+                "gas/activity",
+                "eligible balances",
+                "effective balance",
+                "multiplier",
+                "FXTL earned",
+                "FXTL balance",
+                "company FXTL exposure"
+              ],
+              "sourceContract": {
+                "docs": "https://docs.frax.com/fraxtal/fraxtal-incentives/fraxtal-point-system",
+                "pointsContract": {
+                  "chain": "Fraxtal",
+                  "address": "0xaB4b7c5C9A7C8EbB97877085A6C3550ad4Ed3f97"
+                },
+                "note": "FXTL is a points ledger. Tokenization/conversion assumptions are not measurement authority."
+              },
+              "measurementState": "UNKNOWN-current-value-not-ingested",
+              "measured": null,
+              "mechanicalRelations": [
+                {
+                  "from": "eligible activity/balance",
+                  "to": "effective balance",
+                  "class": "MECHANICAL-source-documented-not-currently-reproduced"
+                },
+                {
+                  "from": "effective balance + multiplier",
+                  "to": "FXTL earned",
+                  "class": "MECHANICAL-source-documented-not-currently-reproduced"
+                },
+                {
+                  "from": "FXTL points",
+                  "to": "future token value",
+                  "class": "UNKNOWN"
+                }
+              ]
+            },
+            "frxUsdSfrxUsd": {
+              "id": "frxusd-sfrxusd",
+              "label": "frxUSD / sfrxUSD",
+              "mechanism": "stablecoin reserves + ERC4626 savings yield + benchmark yield allocation",
+              "atoms": [
+                "frxUSD supply",
+                "sfrxUSD supply",
+                "sfrxUSD assets",
+                "share price",
+                "yield rate",
+                "reserve composition",
+                "Treasury/RWA allocation",
+                "AMO allocation",
+                "carry allocation",
+                "mint/redeem volume"
+              ],
+              "sourceContract": {
+                "docs": "https://docs.frax.com/frxusd",
+                "addresses": "https://docs.frax.com/protocol/assets/frxusd/addresses",
+                "frxUsd": {
+                  "ethereum": "0xCAcd6fd266aF91b8AeD52aCCc382b4e165586E29",
+                  "fraxtal": "0xfc00000000000000000000000000000000000001"
+                },
+                "sfrxUsd": {
+                  "ethereum": "0xcf62F905562626CfcDD2261162a51fd02Fc9c5b6",
+                  "fraxtal": "0xfc00000000000000000000000000000000000008"
+                },
+                "note": "Backing/yield composition is source topology until a current reproducible balance-sheet/accounting snapshot is ingested."
+              },
+              "measurementState": "MEASURED-current-onchain-partial",
+              "measured": {
+                "version": "0.1-sfrxusd-exact-block-erc4626",
+                "status": "ok",
+                "measurementClass": "MEASURED",
+                "observedAt": "2026-08-28T12:56:59.000Z",
+                "chain": "ethereum",
+                "chainId": 1,
+                "blockNumber": 25853882,
+                "blockTag": "0x18a7fba",
+                "blockHash": "0xe9aa3d43bd369f4a262b581179b0aad8d8031e6eac61f3a93b6ab510292c2e3b",
+                "contracts": {
+                  "frxUSD": "0xCAcd6fd266aF91b8AeD52aCCc382b4e165586E29",
+                  "sfrxUSD": "0xcf62F905562626CfcDD2261162a51fd02Fc9c5b6"
+                },
+                "decimals": {
+                  "frxUSD": 18,
+                  "sfrxUSD": 18
+                },
+                "raw": {
+                  "frxUsdTotalSupply": "101798319649337437539375920",
+                  "sfrxUsdTotalSupply": "29931733863871102947981227",
+                  "sfrxUsdTotalAssets": "36154195873738338066720794"
+                },
+                "values": {
+                  "frxUsdSupply": 101798319.64933744,
+                  "sfrxUsdSupply": 29931733.8638711,
+                  "sfrxUsdTotalAssets": 36154195.87373834,
+                  "sharePriceFrxUsd": 1.207888458389
+                },
+                "scope": {
+                  "frxUsdSupply": "Ethereum frxUSD contract totalSupply only; not asserted as global cross-chain frxUSD supply",
+                  "sfrxUsdState": "Ethereum sfrxUSD ERC4626 contract exact-block state"
+                },
+                "rpc": {
+                  "endpointId": "publicnode",
+                  "failoverAttempts": []
+                },
+                "identity": {
+                  "sharePriceFormula": "sfrxUSD totalAssets / totalSupply after token-decimal normalization",
+                  "intervalYieldFormula": "ending share price / beginning share price - 1",
+                  "historyRule": "persisted adjacent Economic Graph onchain checkpoints only; no pre-tracking or APY backfill"
+                },
+                "epistemic": {
+                  "sourceType": "onchain-public-rpc-exact-block",
+                  "currentStateMeasured": true,
+                  "currentStateScope": "partial-Ethereum-frxUSD-sfrxUSD-surface",
+                  "sharePriceMechanicalIdentity": "PROVEN-current-exact-block",
+                  "historicalBackfill": false,
+                  "unknownIsZero": false,
+                  "productionPriceAuthority": false,
+                  "causalClaimAuthority": "none",
+                  "executionAuthority": "none"
+                },
+                "intervalEmbeddedYield": {
+                  "status": "ok",
+                  "accepted": true,
+                  "source": "persisted-adjacent-economic-graph-onchain-checkpoints",
+                  "startAt": "2026-08-28T12:45:23.000Z",
+                  "endAt": "2026-08-28T12:56:59.000Z",
+                  "elapsedSeconds": 696,
+                  "startBlock": 25853824,
+                  "endBlock": 25853882,
+                  "startSharePriceFrxUsd": 1.207887208561,
+                  "endSharePriceFrxUsd": 1.207888458389,
+                  "embeddedYieldPct": 0.000103472244,
+                  "annualizedApyPct": null,
+                  "annualizationState": "NOT-CALCULATED-no-annualization-methodology-added",
+                  "accountingIdentity": "ending sfrxUSD share price / beginning share price - 1",
+                  "note": "Direct interval share-price return only. No APY backfill, reserve-yield causality or veFRAX revenue attribution."
+                }
+              },
+              "mechanicalRelations": [
+                {
+                  "from": "sfrxUSD assets / shares",
+                  "to": "share price",
+                  "class": "MECHANICAL-proven-current-exact-block"
+                },
+                {
+                  "from": "share-price change",
+                  "to": "embedded yield",
+                  "class": "MECHANICAL-proven-adjacent-checkpoints"
+                },
+                {
+                  "from": "reserve yield",
+                  "to": "specific FX-pool incentive",
+                  "class": "UNKNOWN"
+                }
+              ]
+            },
+            "fraxNet": {
+              "id": "fraxnet",
+              "label": "FraxNet",
+              "mechanism": "cross-chain mint/redeem and canonical frxUSD routing",
+              "atoms": [
+                "supported mint routes",
+                "supported redemption routes",
+                "deposit jobs",
+                "redemption jobs",
+                "active jobs",
+                "minted frxUSD",
+                "redeemed frxUSD",
+                "source chain",
+                "destination chain",
+                "custodian route"
+              ],
+              "sourceContract": {
+                "docs": "https://docs.frax.com/fraxnet",
+                "api": "https://api-net.frax.com",
+                "apiDocs": "https://docs.frax.com/fraxnet/api",
+                "factory": {
+                  "chain": "Ethereum",
+                  "address": "0xA3D62f83C433e2A56Af392E08a705A52DEd63696"
+                },
+                "note": "Cross-chain mint/redeem routes are documented mechanics. Current flow volume remains UNKNOWN until transaction/API history is ingested."
+              },
+              "measurementState": "UNKNOWN-current-value-not-ingested",
+              "measured": null,
+              "mechanicalRelations": [
+                {
+                  "from": "approved collateral deposit",
+                  "to": "frxUSD mint",
+                  "class": "MECHANICAL-source-documented-not-currently-reproduced"
+                },
+                {
+                  "from": "frxUSD redemption",
+                  "to": "USDC/custodian redemption path",
+                  "class": "MECHANICAL-source-documented-not-currently-reproduced"
+                },
+                {
+                  "from": "cross-chain route",
+                  "to": "economic demand conclusion",
+                  "class": "UNKNOWN"
+                }
+              ]
+            },
+            "fraxlend": {
+              "id": "fraxlend",
+              "label": "Fraxlend",
+              "mechanism": "isolated lending pairs and protocol-owned lending AMO",
+              "atoms": [
+                "pair",
+                "asset",
+                "collateral",
+                "total assets",
+                "total borrows",
+                "utilization",
+                "borrow rate",
+                "interest accrued",
+                "fToken shares",
+                "fToken share price",
+                "AMO supplied capital",
+                "protocol income"
+              ],
+              "sourceContract": {
+                "docs": "https://docs.frax.com/protocol/subprotocols/fraxlend/overview",
+                "note": "Pair-level utilization, borrow rates, interest and fToken share-price state require pair-registry/onchain ingestion."
+              },
+              "measurementState": "UNKNOWN-current-value-not-ingested",
+              "measured": null,
+              "mechanicalRelations": [
+                {
+                  "from": "total borrows / lendable capital",
+                  "to": "utilization",
+                  "class": "MECHANICAL-ready-for-onchain-reproduction"
+                },
+                {
+                  "from": "utilization + rate model",
+                  "to": "borrow rate",
+                  "class": "MECHANICAL-ready-for-onchain-reproduction"
+                },
+                {
+                  "from": "interest accrual",
+                  "to": "fToken share price",
+                  "class": "MECHANICAL-ready-for-onchain-reproduction"
+                },
+                {
+                  "from": "Fraxlend activity",
+                  "to": "veFRAX distribution",
+                  "class": "UNKNOWN"
+                }
+              ]
+            },
+            "fraxswapBamm": {
+              "id": "fraxswap-bamm",
+              "label": "Fraxswap / BAMM",
+              "mechanism": "AMM/TWAMM liquidity + rented liquidity lending",
+              "atoms": [
+                "pair",
+                "reserves",
+                "liquidity",
+                "volume",
+                "swap fees",
+                "TWAMM long-term order flow",
+                "BAMM deposits",
+                "rented liquidity",
+                "utilization",
+                "borrow interest",
+                "lender yield"
+              ],
+              "sourceContract": {
+                "fraxswapDocs": "https://docs.frax.com/protocol/subprotocols/fraxswap/overview",
+                "fraxswapAddresses": "https://docs.frax.com/protocol/subprotocols/fraxswap/addresses",
+                "bammDocs": "https://docs.frax.com/protocol/subprotocols/bamm/overview",
+                "bammAddresses": "https://docs.frax.com/protocol/subprotocols/bamm/addresses",
+                "fraxtalFraxswapFactory": "0xE30521fe7f3bEB6Ad556887b50739d6C7CA667E6",
+                "fraxtalBammFactory": "0x19928170D739139bfbBb6614007F8EEeD17DB0Ba",
+                "note": "Fraxswap/BAMM topology is bound; pool liquidity, fees, TWAMM activity, rented liquidity and borrow interest remain UNKNOWN until current state is ingested."
+              },
+              "measurementState": "UNKNOWN-current-value-not-ingested",
+              "measured": null,
+              "mechanicalRelations": [
+                {
+                  "from": "swap volume",
+                  "to": "swap fees",
+                  "class": "MECHANICAL-ready-for-pair-level-reproduction"
+                },
+                {
+                  "from": "rented liquidity",
+                  "to": "borrow interest",
+                  "class": "MECHANICAL-ready-for-BAMM-reproduction"
+                },
+                {
+                  "from": "Fraxswap/BAMM fees",
+                  "to": "veFRAX cash flow",
+                  "class": "UNKNOWN"
+                }
+              ]
+            },
+            "fxb": {
+              "id": "fxb",
+              "label": "FXB",
+              "mechanism": "zero-coupon bond term structure / maturity curve",
+              "atoms": [
+                "series",
+                "maturity",
+                "spot price",
+                "discount to face",
+                "implied annualized yield",
+                "supply",
+                "auction state",
+                "redemption asset identity"
+              ],
+              "sourceContract": {
+                "docs": "https://docs.frax.com/protocol/assets/frxusd/fxb",
+                "addressDocs": "https://docs.frax.com/protocol/assets/frxusd/addresses",
+                "knownSeries": [
+                  {
+                    "maturity": "2026-12-31",
+                    "ethereum": "0x76237BCfDbe8e06FB774663add96216961df4ff3",
+                    "fraxtal": "0x8e9C334afc76106F08E0383907F4Fca9bB10BA3e"
+                  },
+                  {
+                    "maturity": "2029-12-31",
+                    "ethereum": null,
+                    "fraxtal": "0xF1e2b576aF4C6a7eE966b14C810b772391e92153"
+                  },
+                  {
+                    "maturity": "2055-12-31",
+                    "ethereum": null,
+                    "fraxtal": "0xc38173D34afaEA88Bc482813B3CD267bc8A1EA83"
+                  }
+                ],
+                "identityBoundary": "Current Frax documentation describes FXB settlement in LFRAX. Do not silently relabel LFRAX as frxUSD without explicit accounting evidence."
+              },
+              "measurementState": "UNKNOWN-current-value-not-ingested",
+              "measured": null,
+              "mechanicalRelations": [
+                {
+                  "from": "spot price + face value + time to maturity",
+                  "to": "implied yield",
+                  "class": "MECHANICAL-ready-for-onchain-reproduction"
+                },
+                {
+                  "from": "FXB demand",
+                  "to": "frxUSD peg effect",
+                  "class": "CORRELATED-until-transactional-causality-proven"
+                },
+                {
+                  "from": "LFRAX identity",
+                  "to": "frxUSD identity",
+                  "class": "UNKNOWN-do-not-assume-equivalence"
+                }
+              ]
+            },
+            "fxLiquidity": {
+              "id": "fx-liquidity",
+              "label": "FX / tokenized-currency liquidity",
+              "mechanism": "frxUSD liquidity against tokenized currencies and stable assets",
+              "atoms": [
+                "pool identity",
+                "chain",
+                "paired asset",
+                "liquidity",
+                "volume",
+                "fees",
+                "base yield",
+                "incentives",
+                "price deviation",
+                "capital migration"
+              ],
+              "sourceContract": {
+                "docs": "https://docs.frax.com/protocol",
+                "note": "International/tokenized-currency FX-pool economics require explicit pool identities and current onchain/API measurements; no Treasury-yield→specific-pool incentive edge is assumed."
+              },
+              "measurementState": "UNKNOWN-current-value-not-ingested",
+              "measured": null,
+              "mechanicalRelations": [
+                {
+                  "from": "pool reserves",
+                  "to": "liquidity",
+                  "class": "MECHANICAL-ready-for-onchain-reproduction"
+                },
+                {
+                  "from": "Treasury yield",
+                  "to": "specific FX-pool incentive/yield",
+                  "class": "UNKNOWN-no-accounting-edge"
+                }
+              ]
+            },
+            "revenueRouting": {
+              "id": "revenue-routing",
+              "label": "Protocol revenue → veFRAX → company cash flow",
+              "mechanism": "end-to-end accounting chain for eligible revenue and actual distributions",
+              "atoms": [
+                "economic activity",
+                "gross protocol revenue",
+                "costs",
+                "revenue share",
+                "eligible net revenue",
+                "veFRAX allocation",
+                "actual distribution asset",
+                "company claimable",
+                "company claimed",
+                "company realised cash flow"
+              ],
+              "sourceContract": {
+                "docs": "https://docs.frax.com/protocol",
+                "note": "Economic activity→revenue source→costs/revenue share→eligible net revenue→veFRAX allocation→actual distribution→company cash flow must be proven link-by-link. Current end-to-end identity is UNKNOWN."
+              },
+              "measurementState": "UNKNOWN-current-value-not-ingested",
+              "measured": null,
+              "mechanicalRelations": [
+                {
+                  "from": "economic activity",
+                  "to": "gross protocol revenue",
+                  "class": "UNKNOWN-until-source-specific-accounting"
+                },
+                {
+                  "from": "gross revenue - costs/revenue share",
+                  "to": "eligible net revenue",
+                  "class": "MECHANICAL-only-after-ledger-fields-exist"
+                },
+                {
+                  "from": "eligible net revenue",
+                  "to": "veFRAX allocation",
+                  "class": "UNKNOWN-until-governance/accounting-proof"
+                },
+                {
+                  "from": "actual distribution",
+                  "to": "company cash flow",
+                  "class": "UNKNOWN-until-company-route-is-proven"
+                }
+              ]
+            }
+          },
+          "relationshipGraph": [
+            {
+              "surfaceId": "governance-vefrax",
+              "index": 0,
+              "from": "canonical Frax productivity source",
+              "to": "Reference APR",
+              "class": "MEASURED"
+            },
+            {
+              "surfaceId": "governance-vefrax",
+              "index": 1,
+              "from": "registry positions",
+              "to": "company exposure",
+              "class": "MEASURED"
+            },
+            {
+              "surfaceId": "governance-vefrax",
+              "index": 2,
+              "from": "protocol revenue",
+              "to": "veFRAX APR",
+              "class": "UNKNOWN"
+            },
+            {
+              "surfaceId": "fraxtal-flox-fxtl",
+              "index": 0,
+              "from": "eligible activity/balance",
+              "to": "effective balance",
+              "class": "MECHANICAL-source-documented-not-currently-reproduced"
+            },
+            {
+              "surfaceId": "fraxtal-flox-fxtl",
+              "index": 1,
+              "from": "effective balance + multiplier",
+              "to": "FXTL earned",
+              "class": "MECHANICAL-source-documented-not-currently-reproduced"
+            },
+            {
+              "surfaceId": "fraxtal-flox-fxtl",
+              "index": 2,
+              "from": "FXTL points",
+              "to": "future token value",
+              "class": "UNKNOWN"
+            },
+            {
+              "surfaceId": "frxusd-sfrxusd",
+              "index": 0,
+              "from": "sfrxUSD assets / shares",
+              "to": "share price",
+              "class": "MECHANICAL-proven-current-exact-block"
+            },
+            {
+              "surfaceId": "frxusd-sfrxusd",
+              "index": 1,
+              "from": "share-price change",
+              "to": "embedded yield",
+              "class": "MECHANICAL-proven-adjacent-checkpoints"
+            },
+            {
+              "surfaceId": "frxusd-sfrxusd",
+              "index": 2,
+              "from": "reserve yield",
+              "to": "specific FX-pool incentive",
+              "class": "UNKNOWN"
+            },
+            {
+              "surfaceId": "fraxnet",
+              "index": 0,
+              "from": "approved collateral deposit",
+              "to": "frxUSD mint",
+              "class": "MECHANICAL-source-documented-not-currently-reproduced"
+            },
+            {
+              "surfaceId": "fraxnet",
+              "index": 1,
+              "from": "frxUSD redemption",
+              "to": "USDC/custodian redemption path",
+              "class": "MECHANICAL-source-documented-not-currently-reproduced"
+            },
+            {
+              "surfaceId": "fraxnet",
+              "index": 2,
+              "from": "cross-chain route",
+              "to": "economic demand conclusion",
+              "class": "UNKNOWN"
+            },
+            {
+              "surfaceId": "fraxlend",
+              "index": 0,
+              "from": "total borrows / lendable capital",
+              "to": "utilization",
+              "class": "MECHANICAL-ready-for-onchain-reproduction"
+            },
+            {
+              "surfaceId": "fraxlend",
+              "index": 1,
+              "from": "utilization + rate model",
+              "to": "borrow rate",
+              "class": "MECHANICAL-ready-for-onchain-reproduction"
+            },
+            {
+              "surfaceId": "fraxlend",
+              "index": 2,
+              "from": "interest accrual",
+              "to": "fToken share price",
+              "class": "MECHANICAL-ready-for-onchain-reproduction"
+            },
+            {
+              "surfaceId": "fraxlend",
+              "index": 3,
+              "from": "Fraxlend activity",
+              "to": "veFRAX distribution",
+              "class": "UNKNOWN"
+            },
+            {
+              "surfaceId": "fraxswap-bamm",
+              "index": 0,
+              "from": "swap volume",
+              "to": "swap fees",
+              "class": "MECHANICAL-ready-for-pair-level-reproduction"
+            },
+            {
+              "surfaceId": "fraxswap-bamm",
+              "index": 1,
+              "from": "rented liquidity",
+              "to": "borrow interest",
+              "class": "MECHANICAL-ready-for-BAMM-reproduction"
+            },
+            {
+              "surfaceId": "fraxswap-bamm",
+              "index": 2,
+              "from": "Fraxswap/BAMM fees",
+              "to": "veFRAX cash flow",
+              "class": "UNKNOWN"
+            },
+            {
+              "surfaceId": "fxb",
+              "index": 0,
+              "from": "spot price + face value + time to maturity",
+              "to": "implied yield",
+              "class": "MECHANICAL-ready-for-onchain-reproduction"
+            },
+            {
+              "surfaceId": "fxb",
+              "index": 1,
+              "from": "FXB demand",
+              "to": "frxUSD peg effect",
+              "class": "CORRELATED-until-transactional-causality-proven"
+            },
+            {
+              "surfaceId": "fxb",
+              "index": 2,
+              "from": "LFRAX identity",
+              "to": "frxUSD identity",
+              "class": "UNKNOWN-do-not-assume-equivalence"
+            },
+            {
+              "surfaceId": "fx-liquidity",
+              "index": 0,
+              "from": "pool reserves",
+              "to": "liquidity",
+              "class": "MECHANICAL-ready-for-onchain-reproduction"
+            },
+            {
+              "surfaceId": "fx-liquidity",
+              "index": 1,
+              "from": "Treasury yield",
+              "to": "specific FX-pool incentive/yield",
+              "class": "UNKNOWN-no-accounting-edge"
+            },
+            {
+              "surfaceId": "revenue-routing",
+              "index": 0,
+              "from": "economic activity",
+              "to": "gross protocol revenue",
+              "class": "UNKNOWN-until-source-specific-accounting"
+            },
+            {
+              "surfaceId": "revenue-routing",
+              "index": 1,
+              "from": "gross revenue - costs/revenue share",
+              "to": "eligible net revenue",
+              "class": "MECHANICAL-only-after-ledger-fields-exist"
+            },
+            {
+              "surfaceId": "revenue-routing",
+              "index": 2,
+              "from": "eligible net revenue",
+              "to": "veFRAX allocation",
+              "class": "UNKNOWN-until-governance/accounting-proof"
+            },
+            {
+              "surfaceId": "revenue-routing",
+              "index": 3,
+              "from": "actual distribution",
+              "to": "company cash flow",
+              "class": "UNKNOWN-until-company-route-is-proven"
+            }
+          ],
+          "epistemic": {
+            "sourceReadinessIsMeasurement": false,
+            "documentedMechanismIsCurrentMeasurement": false,
+            "topologyIsCausality": false,
+            "unknownIsZero": false,
+            "currentMeasuredEconomicSurface": "governance-vefrax",
+            "revenueToVeFraxAprCausality": "UNKNOWN",
+            "treasuryYieldToSpecificFxPoolIncentive": "UNKNOWN",
+            "legacyEthereumToFraxtalLockMigration": "UNKNOWN",
+            "currentFraxNativePeriodDepth": 0,
+            "predictionAuthority": "none",
+            "recommendationAuthority": "none",
+            "causalClaimAuthority": "none",
+            "executionAuthority": "none",
+            "measuredEconomicSurfaces": [
+              "governance-vefrax",
+              "frxusd-sfrxusd"
+            ],
+            "sfrxUsdCurrentState": "MEASURED",
+            "sfrxUsdEmbeddedYield": "DERIVED-MECHANICAL"
+          },
+          "nextMeasurementUnlocks": [
+            "Bind FraxtalPoints/Flox epoch reads to explicit epoch boundaries and company addresses.",
+            "frxUSD/sfrxUSD ERC20/ERC4626 current state is now measured; continue adjacent checkpoints and separately prove backing/allocation evidence.",
+            "Enumerate FraxNet jobs/flows with bounded API or onchain event history.",
+            "Enumerate Fraxlend Pair Registry and reproduce utilization/rate/share-price identities.",
+            "Enumerate Fraxswap/BAMM factories and reproduce pool/liquidity/fee/borrow-interest state.",
+            "Read FXB series price/supply/maturity state and reproduce implied yield.",
+            "Resolve named FX pool identities before measuring liquidity/volume/fees/incentives.",
+            "Prove revenue routing end-to-end before any protocol-revenue→veFRAX/company cash-flow claim."
+          ],
+          "authority": {
+            "readOnly": true,
+            "lifecyclePromotionAuthority": "none",
+            "repositoryMutationAuthority": false,
+            "workflowDispatchAuthority": false,
+            "allocationAuthority": false,
+            "recommendationAuthority": false,
+            "causalClaimAuthority": "none",
+            "executionAuthority": "none"
+          },
+          "id": "frax-ecosystem:9d72ea2f76e8ba7182258245",
           "measurementExtensions": {
             "sfrxUsdOnchain": "0.1-sfrxusd-exact-block-erc4626"
           }
