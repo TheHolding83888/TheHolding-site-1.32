@@ -1,13 +1,13 @@
 # The Holding Brain — Grounded Reasoning Brief
 
-Generated: 2026-08-28T18:03:03.356Z
+Generated: 2026-08-28T19:04:33.759Z
 Mode: delta
 Status: watch
 
-## 11 evidence-bound reasoning case(s) are active across economic and security memory.
+## 9 evidence-bound reasoning case(s) are active across economic and security memory.
 
 ### What changed
-Current canonical inputs contain 2 material Observer change(s), 0 new security finding event(s), and 0 resolved security finding event(s). Canonical protocol-economic context is available across 2 cohorts (f(x) veFXN Locker; Curve veCRV Fee Distributor). f(x) remains measured context with unresolved causality; Curve exposes a proven APR mechanical identity while the upstream cause of fee-distribution changes remains unresolved.
+No new material Observer or Security change events are present in the current canonical inputs. Existing watch items remain active. Canonical protocol-economic context is available across 2 cohorts (f(x) veFXN Locker; Curve veCRV Fee Distributor). f(x) remains measured context with unresolved causality; Curve exposes a proven APR mechanical identity while the upstream cause of fee-distribution changes remains unresolved.
 
 ### Protocol economic contexts · 2 cohorts
 
@@ -100,22 +100,6 @@ Current canonical inputs contain 2 material Observer change(s), 0 new security f
 - Proposed next step: Resolve only the pending reward route(s) with bounded current-state reads and claimed-state checks. Preserve solved routes and never treat pending as zero.
 - Action mode: proposal-only
 - Evidence: intelligence/change-intelligence.json/watchNext/5
-
-#### 10. Stable Companies Index
-- Signal: Stable Companies Reference APY moved 4.572% → 4.802%.
-- Why it matters: Reference APY captures current productive capacity and helps separate rate changes from realised performance.
-- What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
-- Proposed next step: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
-- Action mode: proposal-only
-- Evidence: intelligence/change-intelligence.json/whatChanged/0
-
-#### 11. Stable Companies Index
-- Signal: Verified Stable strategy performance moved $0.4862 → $0.5203.
-- Why it matters: Strategy Performance connects verified entry principal to current nominal strategy value without mixing in stable-price effects.
-- What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
-- Proposed next step: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
-- Action mode: proposal-only
-- Evidence: intelligence/change-intelligence.json/whatChanged/1
 
 ---
 

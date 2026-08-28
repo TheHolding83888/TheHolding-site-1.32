@@ -1,16 +1,16 @@
 # The Holding Brain — ChatGPT Bridge
 
-Generated: 2026-08-28T18:03:03.996Z
+Generated: 2026-08-28T19:04:34.735Z
 Bridge status: watch
 Grounded Brain: watch · delta
-Brain generated: 2026-08-28T18:03:03.356Z
-Brain snapshot: 554c269490907ed6e01e5d2a9a4aef60fd02cc699cf555d2b0e5a5cf3a09a4a5
-Cases: 11
-Evidence objects: 26
+Brain generated: 2026-08-28T19:04:33.759Z
+Brain snapshot: 0f408f1914401754cdd221ca0eeed241627a17d7e070bebdd36f870eb383a54a
+Cases: 9
+Evidence objects: 24
 
 ## What changed
 
-Current canonical inputs contain 2 material Observer change(s), 0 new security finding event(s), and 0 resolved security finding event(s). Canonical protocol-economic context is available across 2 cohorts (f(x) veFXN Locker; Curve veCRV Fee Distributor). f(x) remains measured context with unresolved causality; Curve exposes a proven APR mechanical identity while the upstream cause of fee-distribution changes remains unresolved. Shadow vlCVX/Votium evidence additionally proves 79/79 post-migration vote matching, 79/79 Curve gauge execution rows, and complete current pool context for 31/31 currently eligible mapped Curve gauges; causality beyond mechanical execution remains unresolved. Protocol Intelligence exposes eight lifecycle contexts and one deep Frax ecosystem family with nine tracked surfaces; 4 surface(s) are currently MEASURED (governanceVeFrax, frxUsdSfrxUsd, fraxlend, fraxswapBamm), while 5 remain source-bound UNKNOWN.
+No new material Observer or Security change events are present in the current canonical inputs. Existing watch items remain active. Canonical protocol-economic context is available across 2 cohorts (f(x) veFXN Locker; Curve veCRV Fee Distributor). f(x) remains measured context with unresolved causality; Curve exposes a proven APR mechanical identity while the upstream cause of fee-distribution changes remains unresolved. Shadow vlCVX/Votium evidence additionally proves 79/79 post-migration vote matching, 79/79 Curve gauge execution rows, and complete current pool context for 31/31 currently eligible mapped Curve gauges; causality beyond mechanical execution remains unresolved. Protocol Intelligence exposes eight lifecycle contexts and one deep Frax ecosystem family with nine tracked surfaces; 4 surface(s) are currently MEASURED (governanceVeFrax, frxUsdSfrxUsd, fraxlend, fraxswapBamm), while 5 remain source-bound UNKNOWN.
 
 ## Active deterministic cases
 
@@ -27,7 +27,7 @@ What follows: The signal is real, but the current deterministic policy has no ca
 
 Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 
-Evidence: EV-31b3d861496fd676
+Evidence: EV-8599ec54c9b7349f
 
 ### 2. .github/workflows/production-deployment-smoke.yml
 
@@ -42,7 +42,7 @@ What follows: The signal is real, but the current deterministic policy has no ca
 
 Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 
-Evidence: EV-7557f3bb7cd14050
+Evidence: EV-1ff73a15700497d3
 
 ### 3. 20 current findings
 
@@ -57,7 +57,7 @@ What follows: A DOM execution sink exists. Risk depends on whether external or u
 
 Deterministic action: Classify the sink by provenance first. Replace with textContent or safe DOM construction only where untrusted/dynamic data can reach the sink; avoid blind bulk rewrites.
 
-Evidence: EV-92726d8becd99ee1
+Evidence: EV-30d4ca614e12e64b
 
 ### 4. pendle_spendle
 
@@ -72,7 +72,7 @@ What follows: Until the adapter returns to a reproducible ok state, any full-cur
 
 Deterministic action: Keep the adapter explicitly warming/unknown and use the normal bounded resolver or collector path when the required interval/source becomes available. Do not substitute zero.
 
-Evidence: EV-2ba88f5376d5cc68
+Evidence: EV-f972fafa482665c7
 
 ### 5. defitea.eth
 
@@ -87,7 +87,7 @@ What follows: The covered productive rate remains useful only within its stated 
 
 Deterministic action: Prioritize the unresolved adapter(s) contributing to the coverage gap, preserve covered-rate semantics, and promote to full coverage only after reproducible evidence exists.
 
-Evidence: EV-2420f9934e0f05bc
+Evidence: EV-0f9fb4e7dc601cbd
 
 ### 6. 0x5860...83CA8.eth
 
@@ -102,7 +102,7 @@ What follows: Pending reward routes make earned-value memory incomplete even whe
 
 Deterministic action: Resolve only the pending reward route(s) with bounded current-state reads and claimed-state checks. Preserve solved routes and never treat pending as zero.
 
-Evidence: EV-e862226f30750876
+Evidence: EV-08590468cebea223
 
 ### 7. aerocvxyb.eth
 
@@ -117,7 +117,7 @@ What follows: Pending reward routes make earned-value memory incomplete even whe
 
 Deterministic action: Resolve only the pending reward route(s) with bounded current-state reads and claimed-state checks. Preserve solved routes and never treat pending as zero.
 
-Evidence: EV-9d25c2791c9d9029
+Evidence: EV-6aaca2e609f6a186
 
 ### 8. Cypher
 
@@ -132,7 +132,7 @@ What follows: Pending reward routes make earned-value memory incomplete even whe
 
 Deterministic action: Resolve only the pending reward route(s) with bounded current-state reads and claimed-state checks. Preserve solved routes and never treat pending as zero.
 
-Evidence: EV-659d8072ab15b626
+Evidence: EV-4528c6ef4d578b3c
 
 ### 9. defitea.eth
 
@@ -147,37 +147,7 @@ What follows: Pending reward routes make earned-value memory incomplete even whe
 
 Deterministic action: Resolve only the pending reward route(s) with bounded current-state reads and claimed-state checks. Preserve solved routes and never treat pending as zero.
 
-Evidence: EV-5f72649641a86cc1
-
-### 10. Stable Companies Index
-
-Case: `0ec590ab062e95b093f765f8`
-Domain: system-change · Severity: info · Risk: low
-
-Signal: Stable Companies Reference APY moved 4.572% → 4.802%.
-
-Why it matters: Reference APY captures current productive capacity and helps separate rate changes from realised performance.
-
-What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
-
-Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
-
-Evidence: EV-eedb743d43c3f454
-
-### 11. Stable Companies Index
-
-Case: `0f305b19431c9cd6bdf26070`
-Domain: system-change · Severity: info · Risk: low
-
-Signal: Verified Stable strategy performance moved $0.4862 → $0.5203.
-
-Why it matters: Strategy Performance connects verified entry principal to current nominal strategy value without mixing in stable-price effects.
-
-What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
-
-Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
-
-Evidence: EV-0a0a4181dec0bb86
+Evidence: EV-1d4174889842c198
 
 ## Manual ChatGPT handoff
 
