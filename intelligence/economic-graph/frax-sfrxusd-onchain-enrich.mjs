@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Frax bounded onchain Economic Graph enrichment v0.2
+ * The Holding · Frax bounded onchain Economic Graph enrichment v0.3
  *
  * Runs only after the canonical Economic Graph runner. The current Graph state
  * is enriched sequentially through existing Frax surfaces using bounded read-only
@@ -23,6 +23,10 @@ import {
   collectFraxFraxlendOnchain,
   applyFraxFraxlendOnchainMeasurement
 } from './frax-fraxlend-onchain.mjs';
+import {
+  collectFraxFraxlendRateModel,
+  applyFraxFraxlendRateModel
+} from './frax-fraxlend-rate-model.mjs';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const OUT=process.env.ECONOMIC_GRAPH_FILE || path.join(ROOT,'intelligence/economic-graph/economic-graph.json');
@@ -47,6 +51,16 @@ async function main(){
 
   const fraxlendMeasurement=await collectFraxFraxlendOnchain();
   applyFraxFraxlendOnchainMeasurement({state,previousState,measurement:fraxlendMeasurement});
+
+  // Rate-model proof is explicitly bound to the exact same Fraxlend pair/block
+  // measured immediately above. If the bounded pair read itself is unavailable,
+  // the already-established Fraxlend UNKNOWN state is preserved and no rate
+  // relation is fabricated. A rate-model mismatch after a valid pair read is
+  // also stored as UNKNOWN by the adapter rather than weakening the proof gate.
+  if(fraxlendMeasurement?.status==='ok'&&fraxlendMeasurement?.measurementClass==='MEASURED'){
+    const fraxlendRateModelProof=await collectFraxFraxlendRateModel({baseMeasurement:fraxlendMeasurement});
+    applyFraxFraxlendRateModel({state,proof:fraxlendRateModelProof});
+  }
 
   fs.writeFileSync(OUT,JSON.stringify(state,null,2)+'\n');
 
@@ -77,6 +91,11 @@ async function main(){
       fTokenSharePriceAsset:fraxlend?.measured?.values?.fTokenSharePriceAsset,
       intervalStatus:fraxlend?.measured?.intervalEmbeddedYield?.status,
       intervalEmbeddedYieldPct:fraxlend?.measured?.intervalEmbeddedYield?.embeddedYieldPct,
+      rateModelStatus:fraxlend?.measured?.rateModel?.status,
+      rateModelClass:fraxlend?.measured?.rateModel?.measurementClass,
+      rateModelMechanismState:fraxlend?.measured?.rateModel?.mechanismState,
+      rateModelParity:fraxlend?.measured?.rateModel?.parity?.accepted,
+      rateModelReproduction:fraxlend?.measured?.epistemic?.borrowRateModelReproduction,
       rpcEndpointId:fraxlend?.measured?.rpc?.endpointId
     },
     previousCheckpointSource:'explicit-published-graph-file',
