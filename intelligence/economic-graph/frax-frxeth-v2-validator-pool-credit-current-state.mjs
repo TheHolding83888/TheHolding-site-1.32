@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Frax frxETH V2 ValidatorPool credit exact-block state v0.1.5
+ * The Holding · Frax frxETH V2 ValidatorPool credit exact-block state v0.1.6
  *
  * ValidatorPool identity comes from the source-bound LendingPool VPoolDeployed
  * event. Current pool truth remains exact-block RPC. Deep event discovery is a
@@ -9,10 +9,15 @@
  * failovers. Every discovered pool is re-proven at the canonical current block
  * through the current-state endpoint before it can become MEASURED.
  *
+ * Timeout recovery uses adaptive bisection rather than fixed 20k fan-out. Once
+ * a history provider times out, subsequent subrange requests are paced so a
+ * successful sparse-history bootstrap does not immediately turn into a public
+ * provider rate-limit burst. Current-state RPC behavior is unchanged.
+ *
  * When history transport is unavailable, compact per-endpoint classifications
  * are preserved in UNKNOWN telemetry and status so production can distinguish
  * provider denial, timeout, range limits and malformed RPC responses without
- * adding request fan-out or weakening current-state authority.
+ * weakening current-state authority.
  *
  * Validator performance, staking rewards and protocol revenue are deliberately
  * not inferred from pool balances or credit accounting.
@@ -22,7 +27,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const FRAX_FRXETH_V2_VALIDATOR_POOL_CREDIT_VERSION='0.1.5-frxeth-v2-validator-pool-credit-phase-aware-history-diagnostics-exact-block';
+export const FRAX_FRXETH_V2_VALIDATOR_POOL_CREDIT_VERSION='0.1.6-frxeth-v2-validator-pool-credit-rate-aware-history-bootstrap-exact-block';
 export const FRAX_ECOSYSTEM_EVIDENCE_ID='registry-frax-ecosystem';
 export const FRAX_PROTOCOL_ID='registry-frax-vefrax';
 export const FRAX_FRXETH_SURFACE_KEY='frxEthSfrxEth';
@@ -35,6 +40,7 @@ const RPC_TIMEOUT_MS=12_000;
 const MAX_BATCH_CALLS=32;
 const MAX_LOG_REQUESTS=2_000;
 const HISTORY_TIMEOUT_CHUNK_BLOCKS=20_000n;
+const HISTORY_PACED_INTERVAL_MS=275;
 const MAX_POOLS=200;
 const MAX_OBSERVATIONS=1000;
 const EXPECTED_SOURCE_COMMIT='83dfe93b4a32b9ca0ab93d6e7c059fcd977320d4';
@@ -62,6 +68,7 @@ function callData(selector,...words){return `${selector}${words.join('')}`;}
 function units(raw,decimals=18){const sign=raw<0n?'-':'';const abs=raw<0n?-raw:raw,base=10n**BigInt(decimals),whole=abs/base,fraction=(abs%base).toString().padStart(decimals,'0').replace(/0+$/,'');return Number(`${sign}${whole}${fraction?'.'+fraction:''}`);}
 function round(value,digits=12){const n=Number(value);return Number.isFinite(n)?Number(n.toFixed(digits)):null;}
 function safeInt(value,label){const n=Number(value);if(!Number.isSafeInteger(n))throw new Error(`${label} outside safe integer range`);return n;}
+function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms));}
 
 export function validateFraxFrxEthValidatorPoolRegistry(registry){
   if(registry?.version!=='0.1-frxeth-current-state-registry'||registry?.network!=='ethereum'||Number(registry?.chainId)!==1)throw new Error('frxETH ValidatorPool registry identity drift');
@@ -113,11 +120,18 @@ function classifyHistoryError(error){
 }
 
 async function collectLogsProviderResilient(url,{address,topic,fromBlock,toBlock,fetchImpl}){
-  const logs=[];const telemetry={providerTransport:'single-request-full-range-first',initialSpanBlocks:Number(toBlock-fromBlock+1n),requestCount:0,adaptiveSplitCount:0,timeoutObservedCount:0,timeoutChunkFallbackCount:0,timeoutChunkBlocks:Number(HISTORY_TIMEOUT_CHUNK_BLOCKS),smallestSuccessfulSpanBlocks:null};
-  let requestId=700_000;
+  const logs=[];const telemetry={providerTransport:'single-request-full-range-first',initialSpanBlocks:Number(toBlock-fromBlock+1n),requestCount:0,adaptiveSplitCount:0,timeoutObservedCount:0,timeoutChunkFallbackCount:0,timeoutChunkBlocks:Number(HISTORY_TIMEOUT_CHUNK_BLOCKS),timeoutBisectionCount:0,pacingActivated:false,pacedRequestCount:0,minRequestIntervalMs:HISTORY_PACED_INTERVAL_MS,smallestSuccessfulSpanBlocks:null};
+  let requestId=700_000,pacingActive=false,lastRequestStartedAt=0;
+  async function paceIfNeeded(){
+    if(!pacingActive)return;
+    const wait=Math.max(0,HISTORY_PACED_INTERVAL_MS-(Date.now()-lastRequestStartedAt));
+    if(wait>0)await sleep(wait);
+    telemetry.pacedRequestCount++;
+  }
   async function scan(from,to){
     if(telemetry.requestCount>=MAX_LOG_REQUESTS)throw new Error(`eth_getLogs request cap ${MAX_LOG_REQUESTS} exceeded`);
-    telemetry.requestCount++;
+    await paceIfNeeded();
+    telemetry.requestCount++;lastRequestStartedAt=Date.now();
     const req={jsonrpc:'2.0',id:requestId++,method:'eth_getLogs',params:[{address,fromBlock:hexQuantity(from),toBlock:hexQuantity(to),topics:[topic]}]};
     try{
       const row=await postSingle(url,req,fetchImpl),rows=row.result;
@@ -125,13 +139,11 @@ async function collectLogsProviderResilient(url,{address,topic,fromBlock,toBlock
       const span=Number(to-from+1n);telemetry.smallestSuccessfulSpanBlocks=telemetry.smallestSuccessfulSpanBlocks===null?span:Math.min(telemetry.smallestSuccessfulSpanBlocks,span);logs.push(...rows);return;
     }catch(error){
       if(from>=to)throw error;
-      const span=to-from+1n;
       if(isHistoryTimeout(error)){
         telemetry.timeoutObservedCount++;
-        if(span<=HISTORY_TIMEOUT_CHUNK_BLOCKS)throw error;
-        telemetry.adaptiveSplitCount++;telemetry.timeoutChunkFallbackCount++;
-        for(let cursor=from;cursor<=to;cursor+=HISTORY_TIMEOUT_CHUNK_BLOCKS){const end=cursor+HISTORY_TIMEOUT_CHUNK_BLOCKS-1n<to?cursor+HISTORY_TIMEOUT_CHUNK_BLOCKS-1n:to;await scan(cursor,end);}
-        return;
+        pacingActive=true;telemetry.pacingActivated=true;
+        telemetry.adaptiveSplitCount++;telemetry.timeoutChunkFallbackCount++;telemetry.timeoutBisectionCount++;
+        const mid=(from+to)>>1n;await scan(from,mid);await scan(mid+1n,to);return;
       }
       if(!isAdaptiveLogRangeError(error))throw error;
       telemetry.adaptiveSplitCount++;
@@ -215,7 +227,7 @@ export async function collectFraxFrxEthV2ValidatorPoolCreditCurrentState({regist
 
       const previous=normalizedPrevious(previousMeasurement,lendingPool,currentBlock),discovered=new Map();if(previous)for(const item of previous.rows)discovered.set(normalize(item.address),item);
       const scanStart=previous?previous.block+1n:LENDING_POOL_DEPLOYMENT_BLOCK;
-      let logDiscovery={transport:'public-history-rpc-failover',endpointId:null,endpointRole:null,failoverAttempts:[],providerTransport:'not-needed-no-new-blocks',initialSpanBlocks:0,requestCount:0,adaptiveSplitCount:0,timeoutObservedCount:0,timeoutChunkFallbackCount:0,timeoutChunkBlocks:Number(HISTORY_TIMEOUT_CHUNK_BLOCKS),smallestSuccessfulSpanBlocks:null};
+      let logDiscovery={transport:'public-history-rpc-failover',endpointId:null,endpointRole:null,failoverAttempts:[],providerTransport:'not-needed-no-new-blocks',initialSpanBlocks:0,requestCount:0,adaptiveSplitCount:0,timeoutObservedCount:0,timeoutChunkFallbackCount:0,timeoutChunkBlocks:Number(HISTORY_TIMEOUT_CHUNK_BLOCKS),timeoutBisectionCount:0,pacingActivated:false,pacedRequestCount:0,minRequestIntervalMs:HISTORY_PACED_INTERVAL_MS,smallestSuccessfulSpanBlocks:null};
       if(scanStart<=currentBlock){
         const discovery=await collectLogsHistoryFailover(historyCandidates({primaryEndpoint:endpoint,currentEndpoints:endpoints,historyRegistry:history}),{address:lendingPool,topic:vPoolTopic,fromBlock:scanStart,toBlock:currentBlock,fetchImpl});logDiscovery=discovery.telemetry;
         for(const log of discovery.logs){
