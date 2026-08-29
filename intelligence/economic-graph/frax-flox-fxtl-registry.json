@@ -1,0 +1,68 @@
+{
+  "version": "0.1-frax-flox-fxtl-current-registry",
+  "purpose": "Source-pinned, read-only identity for the current Fraxtal FXTL points ledger and documented Flox/Flox Farms mechanics. This registry is topology and source authority, not a point valuation or a reconstruction of the offchain Flox algorithm.",
+  "network": {
+    "name": "fraxtal",
+    "chainId": 252
+  },
+  "pointsContract": {
+    "label": "FxtlPoints",
+    "address": "0xaB4b7c5C9A7C8EbB97877085A6C3550ad4Ed3f97",
+    "expectedName": "FXTL Points",
+    "expectedSymbol": "FXTL",
+    "expectedDecimals": 0
+  },
+  "officialSources": {
+    "pointSystem": {
+      "repository": "FraxFinance/docs",
+      "path": "pages/fraxtal/fraxtal-incentives/fraxtal-point-system.mdx",
+      "blobSha": "87407bfaddefbc4cfb8ff6e9fa6ae91f697d03eb"
+    },
+    "blockspaceOverview": {
+      "repository": "FraxFinance/docs",
+      "path": "pages/fraxtal/fraxtal-incentives/fraxtal-blockspace-incentives/overview.mdx",
+      "blobSha": "7b1470d727657fd840bc8ba5e1790e402e8bc0db"
+    },
+    "floxFarms": {
+      "repository": "FraxFinance/docs",
+      "path": "pages/fraxtal/fraxtal-incentives/flox-farms.mdx",
+      "blobSha": "a668fd235180359597867767b8eba5630a203ba8"
+    },
+    "fxtlPointsContract": {
+      "repository": "FraxFinance/fraxtal-contracts",
+      "path": "src/contracts/VestedFXS-and-Flox/Flox/FxtlPoints.sol",
+      "blobSha": "be9da71067b2bb932f4b77870c46e0f330a1e3e0"
+    }
+  },
+  "documentedMechanics": {
+    "blockspaceEpochInitialCadence": "7-days-initially",
+    "blockspaceInputs": [
+      "EOA gas activity",
+      "contract gas activity",
+      "rank/importance algorithm",
+      "selected asset-balance context"
+    ],
+    "farmBalanceSnapshotCadence": "hourly",
+    "farmUsesEffectiveBalance": true,
+    "farmPointBasis": "effective balance value in frxUSD multiplied by farm-specific multiplier and a dynamic base earning rate",
+    "baseEarningRateDynamic": true,
+    "pointsOneToOneWithFrxUsd": false,
+    "ledgerTransferable": false,
+    "ledgerDecimals": 0
+  },
+  "semantics": {
+    "configIsSourceBoundTopology": true,
+    "configIsLiveMeasurement": false,
+    "totalSupplyIsPointLedgerStateNotTokenMarketCap": true,
+    "pointsAreNotUsd": true,
+    "pointsAreNotTokenValue": true,
+    "documentedEpochCadenceIsNotCurrentEpochProof": true,
+    "documentedFarmFormulaIsNotCurrentFarmMeasurement": true,
+    "missingCompanyBalanceIsNotZero": true,
+    "offchainFloxRankNotRecomputedByThisAtom": true,
+    "unknownIsZero": false,
+    "causalClaimAuthority": "none",
+    "recommendationAuthority": "none",
+    "executionAuthority": "none"
+  }
+}
