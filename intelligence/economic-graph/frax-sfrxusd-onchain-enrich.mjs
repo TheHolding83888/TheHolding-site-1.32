@@ -16,6 +16,7 @@ import { collectFraxFraxlendOnchain, applyFraxFraxlendOnchainMeasurement } from 
 import { collectFraxFraxlendRateModel, applyFraxFraxlendRateModel } from './frax-fraxlend-rate-model.mjs';
 import { collectFraxFxbOnchain, applyFraxFxbOnchainMeasurement } from './frax-fxb-onchain.mjs';
 import { collectFraxNetCurrentState, applyFraxNetCurrentState } from './frax-fraxnet-current-state.mjs';
+import { collectFloxFxtlCurrentState, applyFloxFxtlCurrentState } from './frax-flox-fxtl-current-state.mjs';
 import { collectFraxBammOnchain, applyFraxBammOnchainMeasurement } from './frax-bamm-onchain.mjs';
 import { collectFraxswapFlowFees, applyFraxswapFlowFees } from './frax-fraxswap-flow-fees.mjs';
 import { collectFraxswapTwamm, applyFraxswapTwamm } from './frax-fraxswap-twamm.mjs';
@@ -64,6 +65,13 @@ async function main(){
   const fraxNetMeasurement=await collectFraxNetCurrentState();
   applyFraxNetCurrentState({state,previousState,measurement:fraxNetMeasurement});
 
+  // Flox / FXTL stays in this same sequential writer. Exact-block FxtlPoints
+  // ledger identity and total point supply are MEASURED. Flox Rank, current
+  // epoch boundaries, farm effective balances/multipliers, company balances and
+  // any future token/USD value remain explicitly UNKNOWN in this atom.
+  const floxFxtlMeasurement=await collectFloxFxtlCurrentState();
+  applyFloxFxtlCurrentState({state,previousState,measurement:floxFxtlMeasurement});
+
   const previousFraxEcosystem=previousState?.protocolEvidence?.['registry-frax-ecosystem']?.latest?.observation||null;
   const previousBammMeasurement=previousFraxEcosystem?.surfaces?.fraxswapBamm?.measured||null;
   const previousFeeToHistory=previousFraxEcosystem?.surfaces?.revenueRouting?.measured?.fraxswapFeeToHistoricalBackfill||null;
@@ -104,6 +112,7 @@ async function main(){
   const fraxlend=ecosystem?.surfaces?.fraxlend;
   const fxb=ecosystem?.surfaces?.fxb;
   const fraxNet=ecosystem?.surfaces?.fraxNet;
+  const floxFxtl=ecosystem?.surfaces?.fraxtalFloxFxtl;
   const bamm=ecosystem?.surfaces?.fraxswapBamm;
   const revenue=ecosystem?.surfaces?.revenueRouting;
   const flow=bamm?.measured?.swapFlowFees;
@@ -148,6 +157,16 @@ async function main(){
       relayJobCounts:fraxNet?.measured?.api?.activeJobs?.counts??null,
       crossChainFlowVolume:fraxNet?.measured?.epistemic?.crossChainFlowVolume||'UNKNOWN',
       processingEndpointsCalled:fraxNet?.measured?.epistemic?.processingEndpointsCalled??false
+    },
+    floxFxtl:{
+      measurementState:floxFxtl?.measurementState,
+      status:floxFxtl?.measured?.status||'UNKNOWN',
+      blockNumber:floxFxtl?.measured?.network?.blockNumber??null,
+      totalSupplyPoints:floxFxtl?.measured?.ledger?.totalSupplyPoints??null,
+      currentEpoch:floxFxtl?.measured?.epistemic?.currentEpoch||'UNKNOWN',
+      currentFarmEconomics:floxFxtl?.measured?.epistemic?.currentFarmEffectiveBalances||'UNKNOWN',
+      companyPointExposure:floxFxtl?.measured?.epistemic?.companyPointExposure||'UNKNOWN',
+      pointUsdValue:floxFxtl?.measured?.epistemic?.pointUsdValue||'UNKNOWN'
     },
     bamm:{
       measurementState:bamm?.measurementState,

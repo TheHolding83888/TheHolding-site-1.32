@@ -145,3 +145,4 @@ await import('./frax-fraxswap-feeto-lifecycle-canary.mjs');
 await import('./frax-fraxswap-feeto-history-backfill-canary.mjs');
 await import('./frax-fxb-onchain-canary.mjs');
 await import('./frax-fraxnet-current-state-canary.mjs');
+await import('./frax-flox-fxtl-current-state-canary.mjs');
