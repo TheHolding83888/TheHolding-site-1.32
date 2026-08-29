@@ -1,13 +1,13 @@
 # The Holding Brain — Grounded Reasoning Brief
 
-Generated: 2026-08-29T18:06:08.382Z
+Generated: 2026-08-29T18:39:54.386Z
 Mode: delta
 Status: watch
 
 ## 9 evidence-bound reasoning case(s) are active across economic and security memory.
 
 ### What changed
-Current canonical inputs contain 0 material Observer change(s), 0 new security finding event(s), and 1 resolved security finding event(s). Canonical protocol-economic context is available across 2 cohorts (f(x) veFXN Locker; Curve veCRV Fee Distributor). f(x) remains measured context with unresolved causality; Curve exposes a proven APR mechanical identity while the upstream cause of fee-distribution changes remains unresolved.
+No new material Observer or Security change events are present in the current canonical inputs. Existing watch items remain active. Canonical protocol-economic context is available across 2 cohorts (f(x) veFXN Locker; Curve veCRV Fee Distributor). f(x) remains measured context with unresolved causality; Curve exposes a proven APR mechanical identity while the upstream cause of fee-distribution changes remains unresolved.
 
 ### Protocol economic contexts · 2 cohorts
 
