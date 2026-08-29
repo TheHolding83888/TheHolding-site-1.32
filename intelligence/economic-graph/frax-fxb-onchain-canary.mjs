@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import { applyFraxEcosystemSensor } from './frax-ecosystem-sensor.mjs';
 import { collectFraxFxbOnchain, applyFraxFxbOnchainMeasurement } from './frax-fxb-onchain.mjs';
 
@@ -13,14 +14,15 @@ const selectors=sigHashes.map(x=>x.slice(0,10));
 function uint(v){return `0x${BigInt(v).toString(16).padStart(64,'0')}`;}
 function addressResult(v){return `0x${v.toLowerCase().replace(/^0x/,'').padStart(64,'0')}`;}
 function config(){return {
-  version:'0.1-frax-fxb-series-registry',
+  version:'0.2-frax-fxb-series-registry-current-subprotocol-source',
   officialSources:{docs:'synthetic'},
-  semantics:{originOnlyBackingMeasurement:true,executionAuthority:'none'},
+  semantics:{originOnlyBackingMeasurement:true,currentSeriesOnly:true,legacySeriesExcludedFromCurrentCoverage:true,redemptionAssetIdentityFunction:'token()',executionAuthority:'none'},
   networks:{ethereum:{chainId:1,lFrax:ETH_LFRAX},fraxtal:{chainId:252,lFrax:FXTL_LFRAX}},
   series:[
     {id:'E',label:'ETH FXB',originNetwork:'ethereum',originAddress:ETH_SERIES,bridgedMirrors:[],documentedMaturityDate:'2020-01-01'},
     {id:'F',label:'FXTL FXB',originNetwork:'fraxtal',originAddress:FXTL_SERIES,bridgedMirrors:[],documentedMaturityDate:'2030-01-01'}
   ],
+  documentedLegacySeries:[{id:'L',originAddress:'0xcccccccccccccccccccccccccccccccccccccccc',reason:'synthetic legacy'}],
   documentedUnresolvedSeries:[{id:'U',originAddress:null,reason:'synthetic unresolved'}]
 };}
 function endpoints(){return {ethereum:[{id:'eth-ok',url:'https://eth.test'}],fraxtal:[{id:'fxtl-ok',url:'https://fxtl.test'}]};}
@@ -51,6 +53,17 @@ function baseState(){return {
   protocolSensors:{'registry-frax-vefrax':{latest:{observation:{epistemic:{executionAuthority:'none'},identityBoundary:{currentCanonicalPrincipal:'FRAX',currentCanonicalVoteEscrowLabel:'veFRAX'},referenceProductivity:{currentAprPct:5.25},registryExposure:{companyCount:3,positionCount:3},longitudinalEvidence:{canonicalSnapshotCount:4,validatedNativePeriodCount:0}}}}}
 };}
 
+const currentRegistry=JSON.parse(fs.readFileSync(new URL('./frax-fxb-series-registry.json',import.meta.url),'utf8'));
+assert.equal(currentRegistry.version,'0.2-frax-fxb-series-registry-current-subprotocol-source');
+assert.equal(currentRegistry.officialSources.currentAddressesPath,'pages/protocol/subprotocols/fxb/addresses.mdx');
+assert.equal(currentRegistry.officialSources.currentAddressesSha,'ee2b2723086fc7a58c0161f329e0b30eedd77191');
+assert.equal(currentRegistry.semantics.redemptionAssetIdentityFunction,'token()');
+assert.deepEqual(currentRegistry.series.map(x=>x.id),['FXB2025','FXB2026','FXB2027','FXB2029','FXB2055']);
+assert.equal(currentRegistry.series.some(x=>x.id==='FXB2024'),false);
+assert.equal(currentRegistry.series.find(x=>x.id==='FXB2027')?.originAddress,'0x6c9f4E6089c8890AfEE2bcBA364C2712f88fA818');
+assert.equal(currentRegistry.documentedUnresolvedSeries.length,0);
+assert.equal(currentRegistry.documentedLegacySeries.some(x=>x.id==='FXB2024'),true);
+
 const measurement=await collectFraxFxbOnchain({config:config(),endpointsOverride:endpoints(),fetchImpl:makeFetch()});
 assert.equal(measurement.status,'ok');
 assert.equal(measurement.measurementClass,'MEASURED');
@@ -58,10 +71,14 @@ assert.equal(measurement.coverage.fullConfiguredOriginSeriesCoverage,true);
 assert.equal(measurement.coverage.measuredOriginSeriesCount,2);
 assert.equal(measurement.coverage.activeSeriesCount,1);
 assert.equal(measurement.coverage.maturedSeriesCount,1);
+assert.equal(measurement.coverage.legacySeriesExcludedCount,1);
 assert.deepEqual(measurement.coverage.seriesWithBackingDeficit,[]);
+assert.equal(measurement.series[0].proof.lFraxIdentityProven,true);
 assert.equal(measurement.series[0].proof.mintedMinusRedeemedEqualsSupply,true);
+assert.equal(measurement.series[0].observed.redemptionTokenAddress.toLowerCase(),ETH_LFRAX.toLowerCase());
 assert.equal(measurement.series[0].observed.totalSupplyLfraxFace,'900');
 assert.equal(measurement.series[0].observed.backingCoverageRatio,'1');
+assert.equal(measurement.epistemic.redemptionAssetIdentity,'MEASURED-token()-common-v1.2-v2-interface');
 assert.equal(measurement.epistemic.spotPrice,'UNKNOWN-not-measured-by-this-atom');
 assert.equal(measurement.epistemic.executionAuthority,'none');
 assert.doesNotThrow(()=>JSON.stringify(measurement));
@@ -71,6 +88,7 @@ const obs=state.protocolEvidence['registry-frax-ecosystem'].latest.observation;
 assert.equal(obs.surfaces.fxb.measurementState,'MEASURED-current-origin-series-state-partial-term-curve');
 assert.equal(obs.coverage.measuredSurfaceCount,2);
 assert.equal(obs.coverage.sourceBoundUnknownSurfaceCount,7);
+assert.equal(obs.surfaces.fxb.mechanicalRelations[0].from,'FXB token() + configured origin chain');
 assert.equal(obs.epistemic.fxbSpotPrice,'UNKNOWN');
 assert.equal(obs.epistemic.fxbImpliedYield,'UNKNOWN');
 assert.equal(obs.authority.executionAuthority,'none');
@@ -83,12 +101,30 @@ const obs2=state2.protocolEvidence['registry-frax-ecosystem'].latest.observation
 assert.equal(obs2.surfaces.fxb.measurementState,'UNKNOWN-current-value-not-ingested');
 assert.equal(obs2.coverage.measuredSurfaceCount,1);assert.equal(obs2.coverage.sourceBoundUnknownSurfaceCount,8);
 
-console.log('FRAX FXB ORIGIN SERIES SENSOR CANARY PASS',{
+console.log('FRAX FXB CURRENT ORIGIN SERIES SENSOR CANARY PASS',{
   measuredSeries:measurement.coverage.measuredOriginSeriesCount,
   activeSeries:measurement.coverage.activeSeriesCount,
   maturedSeries:measurement.coverage.maturedSeriesCount,
   unresolvedDocumentedSeries:measurement.coverage.unresolvedDocumentedSeriesCount,
   measuredSurfaces:obs.coverage.measuredSurfaceCount,
+  redemptionIdentity:measurement.epistemic.redemptionAssetIdentity,
   spotPrice:measurement.epistemic.spotPrice,
   executionAuthority:measurement.epistemic.executionAuthority
 });
+
+if(process.env.GITHUB_ACTIONS==='true'){
+  const live=await collectFraxFxbOnchain();
+  if(live.status!=='ok'||live.measurementClass!=='MEASURED'||live.coverage?.fullConfiguredOriginSeriesCoverage!==true)throw new Error(`FRAX FXB LIVE CURRENT-SERIES PROOF FAILED ${JSON.stringify(live.rpc)}`);
+  if(live.coverage.configuredOriginSeriesCount!==5||live.coverage.measuredOriginSeriesCount!==5||live.coverage.unresolvedDocumentedSeriesCount!==0)throw new Error(`FRAX FXB live current-series coverage mismatch ${JSON.stringify(live.coverage)}`);
+  const ids=live.series.map(x=>x.id);
+  for(const id of ['FXB2025','FXB2026','FXB2027','FXB2029','FXB2055'])if(!ids.includes(id))throw new Error(`FRAX FXB live current series missing ${id}`);
+  if(ids.includes('FXB2024'))throw new Error('FRAX FXB legacy 2024 leaked into current completeness');
+  if(live.series.some(x=>x.proof?.lFraxIdentityProven!==true||x.proof?.mintedMinusRedeemedEqualsSupply!==true||x.proof?.redeemabilityMatchesBlockTimestamp!==true))throw new Error('FRAX FXB live current-series proof invariant failed');
+  if(live.epistemic?.executionAuthority!=='none')throw new Error('FRAX FXB live execution authority drift');
+  console.log('FRAX FXB LIVE CURRENT-SERIES EXACT-BLOCK PROOF PASS',{
+    observedAt:live.observedAt,
+    networks:live.networks,
+    series:live.series.map(x=>({id:x.id,network:x.originNetwork,address:x.originAddress,maturity:x.observed.maturityIso,isRedeemable:x.observed.isRedeemable,supply:x.observed.totalSupplyLfraxFace,backing:x.observed.backingLfrax,backingDeficitRaw:x.observed.backingDeficitRaw})),
+    executionAuthority:live.epistemic.executionAuthority
+  });
+}
