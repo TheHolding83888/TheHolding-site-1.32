@@ -1,0 +1,57 @@
+{
+  "version": "0.1-frax-current-yield-distribution-registry",
+  "network": {
+    "name": "fraxtal",
+    "chainId": 252
+  },
+  "yieldDistributor": {
+    "proxy": "0x21359d1697e610e25C8229B2C57907378eD09A2E",
+    "implementation": "0x08de0C3BCBa9529fe59FA4e4593805Bd55A54B0B",
+    "expectedEmittedToken": "0xFc00000000000000000000000000000000000002",
+    "expectedVeFxsAggregator": "0x176A4e081653EbB8a2246BAfbfCf663782426531",
+    "defaultYieldDurationSeconds": 604800
+  },
+  "officialSources": {
+    "constants": {
+      "repository": "FraxFinance/fraxtal-contracts",
+      "ref": "master",
+      "path": "src/Constants.sol",
+      "blobSha": "f710ea5d2b315c0e4ef9d552fec7a4b5c3162917"
+    },
+    "yieldDistributor": {
+      "repository": "FraxFinance/fraxtal-contracts",
+      "ref": "master",
+      "path": "src/contracts/VestedFXS-and-Flox/VestedFXS/YieldDistributor.sol",
+      "blobSha": "8922b543ae15e732b638f2bf94883506b31adc23"
+    },
+    "deployYieldDistributor": {
+      "repository": "FraxFinance/fraxtal-contracts",
+      "ref": "master",
+      "path": "src/script/VestedFXS-and-Flox/DeployYieldDistributor.s.sol",
+      "blobSha": "72120baf993c79a0f07bbcdf71d1eca1b9b9ebea"
+    }
+  },
+  "documentedMechanics": {
+    "distributesFraxProtocolYieldByVeFxsBalance": true,
+    "productionEmittedTokenIsFxsProxy": true,
+    "productionVeFxsAggregatorIsCanonicalProxy": true,
+    "notifyRewardAmountRequiresAuthorizedNotifier": true,
+    "rewardPeriodUsesYieldRateTimesYieldDuration": true,
+    "claimTransfersEmittedToken": true,
+    "emittedTokenRecoveryForbidden": true
+  },
+  "semantics": {
+    "configIsSourceBoundTopology": true,
+    "configIsLiveMeasurement": false,
+    "currentDistributorStateCanBeMeasured": true,
+    "distributorFundingSourceIsNotProvenByContractState": true,
+    "fraxswapFeeToIsNotAutomaticallyDistributorFunding": true,
+    "fundedDistributorBalanceIsNotRealizedCompanyCashFlow": true,
+    "protocolYieldLabelIsSourceAttributedNotSourceOfFundsProof": true,
+    "missingObservationIsNotZero": true,
+    "unknownIsZero": false,
+    "causalClaimAuthority": "none",
+    "recommendationAuthority": "none",
+    "executionAuthority": "none"
+  }
+}
