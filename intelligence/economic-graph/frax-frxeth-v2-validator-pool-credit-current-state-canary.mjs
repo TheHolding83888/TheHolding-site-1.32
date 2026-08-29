@@ -19,6 +19,7 @@ function words(...values){return `0x${values.map(word).join('')}`;}
 function addresses(...values){return `0x${values.map(addressWord).join('')}`;}
 function quantity(value){return `0x${BigInt(value).toString(16)}`;}
 function rpcRegistry(){return {networks:{ethereum:{chainId:1,rpcFailover:[{id:'first-fails',url:'https://first.invalid'},{id:'second-ok',url:'https://second.invalid'}]}}};}
+function historyRpcRegistry(){return {version:'0.1-frxeth-validator-pool-history-rpc',network:'ethereum',chainId:1,endpoints:[{id:'history-ok',url:'https://history.invalid',capability:'synthetic-complete-history',source:'synthetic',authority:'discovery-only'}],semantics:{eventHistoryDiscoveryOnly:true,currentStateAuthority:false,priceAuthority:false,candidateIdentityRequiresExactBlockReproof:true,completeHistoryRequiredForMeasuredRegistry:true,unknownIsNotZero:true,executionAuthority:'none'}};}
 function sigHash(selector){return `${selector}${'0'.repeat(56)}`;}
 const SIGS={
   'validatorPoolAccounts(address)':'0x11111111',
@@ -39,8 +40,9 @@ const DEPLOYMENTS=[deploymentLog({owner:OWNER_A,pool:POOL_A,block:21_404_240n,in
 function makeFetch({allFail=false,block=BLOCK}={}){
   return async (url,options)=>{
     if(allFail||url.includes('first.invalid'))throw new Error('synthetic rpc outage');
-    const payload=JSON.parse(options.body);
-    if(payload.length>1&&payload.some(req=>req.method==='eth_getLogs'))throw new Error('synthetic provider rejects batched eth_getLogs');
+    const parsed=JSON.parse(options.body),isBatch=Array.isArray(parsed),payload=isBatch?parsed:[parsed];
+    if(url.includes('history.invalid')&&payload.some(req=>req.method!=='eth_getLogs'))throw new Error('history transport must never receive current-state calls');
+    if(url.includes('second.invalid')&&payload.some(req=>req.method==='eth_getLogs'))return {ok:false,status:403,async json(){throw new Error('should not decode 403');}};
     const rows=payload.map(req=>{
       if(req.method==='eth_blockNumber')return {jsonrpc:'2.0',id:req.id,result:quantity(block)};
       if(req.method==='eth_getBlockByNumber')return {jsonrpc:'2.0',id:req.id,result:{number:req.params[0],timestamp:'0x65920080',hash:`0x${'ab'.repeat(32)}`}};
@@ -49,8 +51,9 @@ function makeFetch({allFail=false,block=BLOCK}={}){
         const selector=SIGS[signature];if(!selector)throw new Error(`unexpected signature ${signature}`);return {jsonrpc:'2.0',id:req.id,result:sigHash(selector)};
       }
       if(req.method==='eth_getLogs'){
+        assert.ok(url.includes('history.invalid'),'deep history must use discovery-only transport after primary 403');
         const filter=req.params[0],from=BigInt(filter.fromBlock),to=BigInt(filter.toBlock);
-        if(to-from+1n>30n)return {jsonrpc:'2.0',id:req.id,error:{code:-32005,message:'block range too wide for synthetic provider'}};
+        if(to-from+1n>30n)return {jsonrpc:'2.0',id:req.id,error:{code:-32005,message:'block range too wide for synthetic archive provider'}};
         const logs=DEPLOYMENTS.filter(row=>{const b=BigInt(row.blockNumber);return b>=from&&b<=to&&b<=block;});return {jsonrpc:'2.0',id:req.id,result:logs};
       }
       if(req.method==='eth_getCode')return {jsonrpc:'2.0',id:req.id,result:'0x6001600055'};
@@ -58,7 +61,7 @@ function makeFetch({allFail=false,block=BLOCK}={}){
         const target=String(req.params[0]).toLowerCase();const balance=target===POOL_A?3n*E18:target===POOL_B?2n*E18:0n;return {jsonrpc:'2.0',id:req.id,result:quantity(balance)};
       }
       if(req.method!=='eth_call')throw new Error(`unexpected ${req.method}`);
-      assert.equal(req.params[1],quantity(block));
+      assert.ok(url.includes('second.invalid'),'current exact-block calls must remain on canonical current-state RPC');assert.equal(req.params[1],quantity(block));
       const target=String(req.params[0].to).toLowerCase(),data=String(req.params[0].data).toLowerCase(),selector=data.slice(0,10);
       if(target===registry.operations.lendingPool.toLowerCase()){
         if(selector===SIGS['DEFAULT_CREDIT_PER_VALIDATOR_I48_E12()'])return {jsonrpc:'2.0',id:req.id,result:words(24_000_000_000_000n)};
@@ -82,7 +85,7 @@ function makeFetch({allFail=false,block=BLOCK}={}){
       }
       throw new Error(`unexpected call ${target} ${selector}`);
     });
-    return {ok:true,async json(){return rows;}};
+    return {ok:true,status:200,async json(){return isBatch?rows:rows[0];}};
   };
 }
 
@@ -92,18 +95,19 @@ function baseState(){
   return {generatedAt:'2026-08-29T15:15:00.000Z',authority:{executionAuthority:'none',causalClaimAuthority:'none'},protocolEvidence:{'registry-frax-ecosystem':{latest:{observation},observations:[observation],observationCount:1,status:observation.status}},protocolSensors:{'registry-frax-vefrax':{ecosystemFamily:{measurementExtensions:{...observation.measurementExtensions}},epistemic:{executionAuthority:'none'}}}};
 }
 
-const measured=await collectFraxFrxEthV2ValidatorPoolCreditCurrentState({registry,rpcRegistry:rpcRegistry(),fetchImpl:makeFetch(),checkpoint:{blockTag:BLOCK_TAG}});
+const measured=await collectFraxFrxEthV2ValidatorPoolCreditCurrentState({registry,rpcRegistry:rpcRegistry(),historyRpcRegistry:historyRpcRegistry(),fetchImpl:makeFetch(),checkpoint:{blockTag:BLOCK_TAG}});
 assert.equal(measured.status,'ok');assert.equal(measured.measurementClass,'MEASURED');assert.equal(measured.rpc.endpointId,'second-ok');assert.equal(measured.rpc.reusedCheckpoint,true);
-assert.equal(measured.rpc.logDiscovery.transport,'single-request-full-range-first');assert.ok(measured.rpc.logDiscovery.adaptiveSplitCount>0);assert.ok(measured.rpc.logDiscovery.requestCount>1);assert.ok(measured.rpc.logDiscovery.smallestSuccessfulSpanBlocks<=30);
+assert.equal(measured.rpc.logDiscovery.transport,'public-history-rpc-failover');assert.equal(measured.rpc.logDiscovery.endpointId,'history-ok');assert.equal(measured.rpc.logDiscovery.endpointRole,'dedicated-history-rpc');assert.equal(measured.rpc.logDiscovery.failoverAttempts.length,1);assert.equal(measured.rpc.logDiscovery.failoverAttempts[0].endpointId,'second-ok');assert.match(measured.rpc.logDiscovery.failoverAttempts[0].error,/403/);assert.equal(measured.rpc.logDiscovery.providerTransport,'single-request-full-range-first');assert.ok(measured.rpc.logDiscovery.adaptiveSplitCount>0);assert.ok(measured.rpc.logDiscovery.requestCount>1);assert.ok(measured.rpc.logDiscovery.smallestSuccessfulSpanBlocks<=30);
+assert.equal(measured.epistemic.currentStateAuthorityEndpoint,'second-ok');assert.equal(measured.epistemic.historyTransportAuthority,'discovery-only');assert.equal(measured.epistemic.candidateIdentityReproof,'MEASURED-current-code-pointer-account-arithmetic');
 assert.equal(measured.coverage.completeVPoolDeployedHistory,true);assert.equal(measured.summary.deployedPoolCount,2);assert.equal(measured.summary.initializedPoolCount,2);assert.equal(measured.summary.totalValidatorCount,3);assert.equal(measured.summary.totalCreditEth,78);assert.equal(measured.summary.totalLiveBorrowEth,20);assert.equal(measured.summary.totalBorrowAllowanceEth,15);assert.equal(measured.summary.totalNativePoolBalanceEth,5);assert.equal(measured.summary.activeBorrowingPoolCount,1);assert.equal(measured.summary.insolventPoolCount,0);assert.equal(measured.validatorPools[0].solvency.mechanicalParity,true);assert.equal(measured.validatorPools[0].solvency.creditUtilizationPct,41.66666667);assert.equal(measured.epistemic.stakingRewards,'UNKNOWN-native-balance-is-not-reward-attribution');assert.equal(measured.epistemic.protocolRevenue,'UNKNOWN-not-measured-by-this-atom');assert.equal(measured.epistemic.executionAuthority,'none');
 
 const state=baseState();applyFraxFrxEthV2ValidatorPoolCreditCurrentState({state,measurement:measured});const obs=state.protocolEvidence['registry-frax-ecosystem'].latest.observation,surface=obs.surfaces.frxEthSfrxEth;
 assert.equal(obs.coverage.surfaceCount,11);assert.equal(obs.coverage.measuredSurfaceCount,11);assert.equal(obs.coverage.sourceBoundUnknownSurfaceCount,0);assert.equal(surface.measured.v2Internals.validatorPoolCredit.summary.totalValidatorCount,3);assert.equal(surface.measured.epistemic.validatorPoolCredit,'MEASURED-plus-DERIVED-source-formula-parity');assert.equal(surface.measured.epistemic.stakingRewards,'UNKNOWN-native-balance-is-not-reward-attribution');assert.equal(obs.epistemic.frxEthV2ValidatorPoolRegistry,'MEASURED-VPoolDeployed-history');assert.equal(obs.epistemic.frxEthV2ValidatorPerformance,'UNKNOWN');assert.match(obs.nextMeasurementUnlocks[0],/BeaconOracle/);assert.equal(obs.authority.executionAuthority,'none');
 
-const increment=await collectFraxFrxEthV2ValidatorPoolCreditCurrentState({registry,rpcRegistry:rpcRegistry(),fetchImpl:makeFetch({block:BLOCK+1n}),checkpoint:{blockTag:quantity(BLOCK+1n)},previousMeasurement:measured});
-assert.equal(increment.status,'ok');assert.equal(increment.rpc.incrementalDiscovery,true);assert.equal(increment.coverage.deployedPoolCount,2);assert.equal(increment.coverage.newPoolsDiscoveredThisRun,0);assert.equal(increment.rpc.logDiscovery.transport,'single-request-full-range-first');assert.equal(increment.rpc.logDiscovery.adaptiveSplitCount,0);
+const increment=await collectFraxFrxEthV2ValidatorPoolCreditCurrentState({registry,rpcRegistry:rpcRegistry(),historyRpcRegistry:historyRpcRegistry(),fetchImpl:makeFetch({block:BLOCK+1n}),checkpoint:{blockTag:quantity(BLOCK+1n)},previousMeasurement:measured});
+assert.equal(increment.status,'ok');assert.equal(increment.rpc.incrementalDiscovery,true);assert.equal(increment.coverage.deployedPoolCount,2);assert.equal(increment.coverage.newPoolsDiscoveredThisRun,0);assert.equal(increment.rpc.logDiscovery.transport,'public-history-rpc-failover');assert.equal(increment.rpc.logDiscovery.endpointId,'history-ok');assert.equal(increment.rpc.logDiscovery.adaptiveSplitCount,0);
 
-const unavailable=await collectFraxFrxEthV2ValidatorPoolCreditCurrentState({registry,rpcRegistry:rpcRegistry(),fetchImpl:makeFetch({allFail:true}),checkpoint:{blockTag:BLOCK_TAG}});assert.match(unavailable.status,/^UNKNOWN/);assert.equal(unavailable.measurementClass,'UNKNOWN');
+const unavailable=await collectFraxFrxEthV2ValidatorPoolCreditCurrentState({registry,rpcRegistry:rpcRegistry(),historyRpcRegistry:historyRpcRegistry(),fetchImpl:makeFetch({allFail:true}),checkpoint:{blockTag:BLOCK_TAG}});assert.match(unavailable.status,/^UNKNOWN/);assert.equal(unavailable.measurementClass,'UNKNOWN');
 const state2=baseState();applyFraxFrxEthV2ValidatorPoolCreditCurrentState({state:state2,measurement:unavailable});assert.equal(state2.protocolEvidence['registry-frax-ecosystem'].latest.observation.epistemic.frxEthV2ValidatorPoolRegistry,'UNKNOWN');assert.equal(state2.protocolEvidence['registry-frax-ecosystem'].latest.observation.authority.executionAuthority,'none');
 
-console.log('FRAX frxETH V2 VALIDATOR POOL CREDIT CANARY PASS',{blockNumber:measured.blockNumber,deployedPools:measured.summary.deployedPoolCount,validators:measured.summary.totalValidatorCount,totalCreditEth:measured.summary.totalCreditEth,totalBorrowEth:measured.summary.totalLiveBorrowEth,activeBorrowingPools:measured.summary.activeBorrowingPoolCount,logTransport:measured.rpc.logDiscovery.transport,adaptiveSplits:measured.rpc.logDiscovery.adaptiveSplitCount,stakingRewards:measured.epistemic.stakingRewards,executionAuthority:obs.authority.executionAuthority});
+console.log('FRAX frxETH V2 VALIDATOR POOL CREDIT CANARY PASS',{blockNumber:measured.blockNumber,deployedPools:measured.summary.deployedPoolCount,validators:measured.summary.totalValidatorCount,totalCreditEth:measured.summary.totalCreditEth,totalBorrowEth:measured.summary.totalLiveBorrowEth,activeBorrowingPools:measured.summary.activeBorrowingPoolCount,currentStateRpc:measured.rpc.endpointId,historyRpc:measured.rpc.logDiscovery.endpointId,historyRole:measured.rpc.logDiscovery.endpointRole,providerTransport:measured.rpc.logDiscovery.providerTransport,adaptiveSplits:measured.rpc.logDiscovery.adaptiveSplitCount,stakingRewards:measured.epistemic.stakingRewards,executionAuthority:obs.authority.executionAuthority});
