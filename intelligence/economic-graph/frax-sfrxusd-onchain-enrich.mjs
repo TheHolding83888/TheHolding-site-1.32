@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Frax bounded onchain Economic Graph enrichment v0.8
+ * The Holding · Frax bounded onchain Economic Graph enrichment v0.9
  *
  * Runs only after the canonical Economic Graph runner. The current Graph state
  * is enriched sequentially through existing Frax surfaces using bounded read-only
@@ -47,6 +47,10 @@ import {
   collectFraxswapFeeToLifecycle,
   applyFraxswapFeeToLifecycle
 } from './frax-fraxswap-feeto-lifecycle.mjs';
+import {
+  collectFraxswapFeeToHistoryBackfill,
+  applyFraxswapFeeToHistoryBackfill
+} from './frax-fraxswap-feeto-history-backfill.mjs';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const OUT=process.env.ECONOMIC_GRAPH_FILE || path.join(ROOT,'intelligence/economic-graph/economic-graph.json');
@@ -77,14 +81,16 @@ async function main(){
     applyFraxFraxlendRateModel({state,proof:fraxlendRateModelProof});
   }
 
-  const previousBammMeasurement=previousState?.protocolEvidence?.['registry-frax-ecosystem']?.latest?.observation?.surfaces?.fraxswapBamm?.measured||null;
+  const previousFraxEcosystem=previousState?.protocolEvidence?.['registry-frax-ecosystem']?.latest?.observation||null;
+  const previousBammMeasurement=previousFraxEcosystem?.surfaces?.fraxswapBamm?.measured||null;
+  const previousFeeToHistory=previousFraxEcosystem?.surfaces?.revenueRouting?.measured?.fraxswapFeeToHistoricalBackfill||null;
   const bammMeasurement=await collectFraxBammOnchain();
   applyFraxBammOnchainMeasurement({state,previousState,measurement:bammMeasurement});
 
   // Fraxswap ordinary Swap flow, TWAMM virtual execution, protocol-fee LP
-  // mint routing, and feeTo LP lifecycle are distinct atoms. They share exact
-  // published Fraxtal interval boundaries but retain separate accounting and
-  // epistemic identities.
+  // mint routing, feeTo LP lifecycle, and historical feeTo recovery are distinct
+  // atoms. They share exact published Fraxtal boundaries where applicable while
+  // retaining separate accounting and epistemic identities.
   if(bammMeasurement?.status==='ok'&&bammMeasurement?.measurementClass==='MEASURED'){
     const fraxswapFlowFees=await collectFraxswapFlowFees({currentBammMeasurement:bammMeasurement,previousBammMeasurement});
     applyFraxswapFlowFees({state,previousState,measurement:fraxswapFlowFees});
@@ -98,16 +104,27 @@ async function main(){
     const fraxswapProtocolFee=await collectFraxswapProtocolFeeRouting({currentBammMeasurement:bammMeasurement,previousBammMeasurement});
     applyFraxswapProtocolFeeRouting({state,previousState,measurement:fraxswapProtocolFee});
 
-    // The next bounded atom starts only after protocol-fee routing is measured.
-    // It proves pair-local feeTo holdings, exact LP transfer conservation, and
-    // strict feeTo -> pair -> burn redemptions. Downstream address semantics
-    // remain UNKNOWN and the end-to-end revenue-routing surface is not promoted.
+    // Current-interval feeTo lifecycle proves pair-local holdings, exact LP
+    // transfer conservation, and strict feeTo -> pair -> burn redemptions.
     const fraxswapFeeToLifecycle=await collectFraxswapFeeToLifecycle({
       currentBammMeasurement:bammMeasurement,
       previousBammMeasurement,
       protocolFeeMeasurement:fraxswapProtocolFee
     });
     applyFraxswapFeeToLifecycle({state,previousState,measurement:fraxswapFeeToLifecycle});
+
+    // Historical recovery is deliberately resumable and bounded. It walks
+    // backwards from the published checkpoint, discovers exact _mintFee
+    // recipients, and independently backfills LP ledgers for every recipient.
+    // setFeeTo has no event in the pinned factory source, so continuous feeTo
+    // state remains UNKNOWN even when protocol-fee mint recipients are exact.
+    const fraxswapFeeToHistory=await collectFraxswapFeeToHistoryBackfill({
+      currentBammMeasurement:bammMeasurement,
+      previousBammMeasurement,
+      protocolFeeMeasurement:fraxswapProtocolFee,
+      previousBackfillMeasurement:previousFeeToHistory
+    });
+    applyFraxswapFeeToHistoryBackfill({state,previousState,measurement:fraxswapFeeToHistory});
   }
 
   fs.writeFileSync(OUT,JSON.stringify(state,null,2)+'\n');
@@ -116,10 +133,12 @@ async function main(){
   const sfrxUsd=ecosystem?.surfaces?.frxUsdSfrxUsd;
   const fraxlend=ecosystem?.surfaces?.fraxlend;
   const bamm=ecosystem?.surfaces?.fraxswapBamm;
+  const revenue=ecosystem?.surfaces?.revenueRouting;
   const flow=bamm?.measured?.swapFlowFees;
   const twamm=bamm?.measured?.twammFlow;
   const protocolFee=bamm?.measured?.protocolFeeRouting;
   const feeToLifecycle=bamm?.measured?.feeToLpLifecycle;
+  const feeToHistory=revenue?.measured?.fraxswapFeeToHistoricalBackfill;
   console.log('FRAX BOUNDED ONCHAIN CANONICAL GRAPH ENRICHMENT PASS',{
     graphEngineVersion:state.engineVersion,
     measuredSurfaces:ecosystem?.coverage?.measuredSurfaceCount,
@@ -172,6 +191,9 @@ async function main(){
     },
     fraxswapFeeToLpLifecycle:{
       status:feeToLifecycle?.status||'not-run-protocol-fee-prerequisite-unavailable',measurementClass:feeToLifecycle?.measurementClass||'UNKNOWN',feeTo:feeToLifecycle?.feeTo??null,pairCount:feeToLifecycle?.summary?.pairCount??null,pairCountWithPositiveEndBalance:feeToLifecycle?.summary?.pairCountWithPositiveEndBalance??null,pairCountWithOutflows:feeToLifecycle?.summary?.pairCountWithOutflows??null,outboundTransferEventCount:feeToLifecycle?.summary?.outboundTransferEventCount??null,pairCountWithStrictRedemptions:feeToLifecycle?.summary?.pairCountWithStrictRedemptions??null,strictRedemptionCount:feeToLifecycle?.summary?.strictRedemptionCount??null,unresolvedPairTransferOutflowCount:feeToLifecycle?.summary?.unresolvedPairTransferOutflowCount??null,balanceConservation:feeToLifecycle?.epistemic?.feeToLpBalanceConservation||'UNKNOWN',redemptionFlow:feeToLifecycle?.epistemic?.feeToLpRedemptionFlow||'UNKNOWN',downstreamRecipientSemantics:feeToLifecycle?.epistemic?.downstreamRecipientSemantics||'UNKNOWN',protocolRevenueUsdClaim:feeToLifecycle?.epistemic?.protocolRevenueUsdClaim??false,veFraxDistributionClaim:feeToLifecycle?.epistemic?.veFraxDistributionClaim??false
+    },
+    fraxswapFeeToHistoricalBackfill:{
+      status:feeToHistory?.status||'not-run-protocol-fee-prerequisite-unavailable',measurementClass:feeToHistory?.measurementClass||'UNKNOWN',anchorBlockInclusive:feeToHistory?.coverage?.anchorBlockInclusive??null,factoryDeploymentBlock:feeToHistory?.coverage?.factoryDeploymentBlock??null,discoveryCoveredFromBlockInclusive:feeToHistory?.coverage?.discovery?.coveredFromBlockInclusive??null,discoveryCoveredToBlockInclusive:feeToHistory?.coverage?.discovery?.coveredToBlockInclusive??null,discoveryNextToBlockInclusive:feeToHistory?.coverage?.discovery?.nextToBlockInclusive??null,trackedFeeToRecipients:feeToHistory?.summary?.trackedFeeToRecipientCount??null,historicalProtocolFeeRecipients:feeToHistory?.summary?.historicalProtocolFeeRecipientCount??null,protocolFeeMintEventsBackfilled:feeToHistory?.summary?.protocolFeeMintEventCountBackfilled??null,outboundLpTransfersBackfilled:feeToHistory?.summary?.outboundLpTransferEventCountBackfilled??null,strictRedemptionsBackfilled:feeToHistory?.summary?.strictRedemptionCountBackfilled??null,unresolvedPairOutflowsBackfilled:feeToHistory?.summary?.unresolvedPairOutflowCountBackfilled??null,historicalFlowCompleteness:feeToHistory?.epistemic?.historicalFlowCompleteness||'UNKNOWN',continuousFeeToStateHistory:feeToHistory?.epistemic?.continuousFeeToStateHistory||'UNKNOWN',downstreamRecipientSemantics:feeToHistory?.epistemic?.downstreamRecipientSemantics||'UNKNOWN'
     },
     previousCheckpointSource:'explicit-published-graph-file',
     executionAuthority:ecosystem?.authority?.executionAuthority
