@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Frax frxETH V2 ValidatorPool credit exact-block state v0.1.4
+ * The Holding · Frax frxETH V2 ValidatorPool credit exact-block state v0.1.5
  *
  * ValidatorPool identity comes from the source-bound LendingPool VPoolDeployed
  * event. Current pool truth remains exact-block RPC. Deep event discovery is a
@@ -22,7 +22,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const FRAX_FRXETH_V2_VALIDATOR_POOL_CREDIT_VERSION='0.1.4-frxeth-v2-validator-pool-credit-history-diagnostics-exact-block';
+export const FRAX_FRXETH_V2_VALIDATOR_POOL_CREDIT_VERSION='0.1.5-frxeth-v2-validator-pool-credit-phase-aware-history-diagnostics-exact-block';
 export const FRAX_ECOSYSTEM_EVIDENCE_ID='registry-frax-ecosystem';
 export const FRAX_PROTOCOL_ID='registry-frax-vefrax';
 export const FRAX_FRXETH_SURFACE_KEY='frxEthSfrxEth';
@@ -259,9 +259,15 @@ export async function collectFraxFrxEthV2ValidatorPoolCreditCurrentState({regist
         epistemic:{sourceType:'onchain-public-rpc-exact-block-plus-bounded-public-history-rpc',currentStateAuthorityEndpoint:endpoint.id,historyTransportAuthority:'discovery-only',candidateIdentityReproof:'MEASURED-current-code-pointer-account-arithmetic',validatorPoolRegistry:'MEASURED-VPoolDeployed-history',creditAccounting:'MEASURED-plus-DERIVED-source-formula-parity',borrowAccounting:'MEASURED-live-and-stored-cross-contract-parity',borrowAllowance:'MEASURED-current-LendingPool-account',solvency:'MEASURED-return-plus-DERIVED-source-formula-parity',validatorPoolNativeEthBalance:'MEASURED-not-attributed-to-staking-rewards',validatorPerformance:'UNKNOWN-not-measured-by-this-atom',stakingRewards:'UNKNOWN-native-balance-is-not-reward-attribution',protocolRevenue:'UNKNOWN-not-measured-by-this-atom',companyCashFlow:'UNKNOWN-not-measured-by-this-atom',unknownIsZero:false,causalClaimAuthority:'none',executionAuthority:'none'}
       };
     }catch(error){
+      const historyUnavailable=error?.code==='VPOOL_HISTORY_UNAVAILABLE';
       const historyRows=Array.isArray(error?.historyFailoverAttempts)?error.historyFailoverAttempts:[];
       if(historyRows.length)historyFailoverAttempts.push(...historyRows.map(row=>({...row,currentStateEndpointId:endpoint?.id||null})));
-      attempts.push({endpointId:endpoint?.id||null,classification:error?.code==='VPOOL_HISTORY_UNAVAILABLE'?'HISTORY_UNAVAILABLE':null,error:String(error instanceof Error?error.message:error).slice(0,320)});
+      attempts.push({endpointId:endpoint?.id||null,classification:historyUnavailable?'HISTORY_UNAVAILABLE':null,error:String(error instanceof Error?error.message:error).slice(0,320)});
+      if(historyUnavailable){
+        const compact=historyRows.map(row=>`${row.endpointId||'unknown'}:${row.classification||'OTHER'}`).join(',');
+        const reason=`UNKNOWN-HISTORY-DISCOVERY-${compact||'HISTORY_UNAVAILABLE'}`.replace(/\s+/g,'-').slice(0,280);
+        return unknownMeasurement(source,reason,attempts,historyFailoverAttempts);
+      }
     }
   }
   const last=attempts.at(-1)?.error||'no-rpc-attempts';
