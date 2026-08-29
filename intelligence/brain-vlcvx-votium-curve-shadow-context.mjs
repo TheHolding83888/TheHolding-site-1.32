@@ -239,6 +239,8 @@ export function applyBrainVlCvxVotiumCurveShadowContext(){
     const fraxMarker='### Protocol lifecycle + Frax ecosystem context';
     const cutPoints=[brief.indexOf(`\n${flowMarker}`),brief.indexOf(`\n${fraxMarker}`)].filter(x=>x>=0);
     if(cutPoints.length)brief=brief.slice(0,Math.min(...cutPoints)).trimEnd();
+    const measuredSurfaceSuffix=fraxMeasuredSurfaceIds.length?` — ${fraxMeasuredSurfaceIds.join(', ')}`:'';
+    const unknownSurfaceSuffix=fraxUnknownSurfaceIds.length?` — ${fraxUnknownSurfaceIds.join(', ')}`:'';
     const section=[
       '',flowMarker,
       `- Context ID: ${CONTEXT_ID}`,
@@ -254,13 +256,15 @@ export function applyBrainVlCvxVotiumCurveShadowContext(){
       '- Live lifecycle sensors: 8',
       `- Frax lifecycle stage: ${fraxLifecycle.maturityStage}`,
       `- Frax ecosystem tracked surfaces: ${fraxSurfaceCount}`,
-      `- Current MEASURED Frax ecosystem surfaces: ${fraxMeasured} — ${fraxMeasuredSurfaceIds.join(', ')}`,
-      `- Source-bound UNKNOWN Frax ecosystem surfaces: ${fraxUnknown} — ${fraxUnknownSurfaceIds.join(', ')}`,
+      `- Current MEASURED Frax ecosystem surfaces: ${fraxMeasured}${measuredSurfaceSuffix}`,
+      `- Source-bound UNKNOWN Frax ecosystem surfaces: ${fraxUnknown}${unknownSurfaceSuffix}`,
       '- Revenue → veFRAX APR: UNKNOWN',
       '- Treasury yield → specific FX-pool incentive: UNKNOWN',
       '- Lifecycle / recommendation / causal / execution authority: none',''
     ].join('\n');
-    fs.writeFileSync(BRIEF,brief+section,'utf8');
+    const renderedBrief=brief+section;
+    if(/[ \t]+$/m.test(renderedBrief))fail('Brain brief renderer produced trailing whitespace');
+    fs.writeFileSync(BRIEF,renderedBrief,'utf8');
   }
 
   console.log('BRAIN PROTOCOL LIFECYCLE + FRAX ECOSYSTEM CONTEXT PASS',{
