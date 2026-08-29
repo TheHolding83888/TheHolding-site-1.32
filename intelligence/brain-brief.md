@@ -1,6 +1,6 @@
 # The Holding Brain — Grounded Reasoning Brief
 
-Generated: 2026-08-29T18:39:54.386Z
+Generated: 2026-08-29T19:48:08.097Z
 Mode: delta
 Status: watch
 
