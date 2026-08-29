@@ -1,0 +1,51 @@
+{
+  "version": "0.1-fpi-fpis-current-state-registry",
+  "protocol": "Frax",
+  "surfaceId": "fpiFpisVeFpis",
+  "network": "ethereum",
+  "chainId": 1,
+  "assets": {
+    "FPI": {
+      "address": "0x5Ca135cB8527d76e932f34B5145575F9d8cbE08E",
+      "decimals": 18,
+      "role": "Frax Price Index token"
+    },
+    "FPIS": {
+      "address": "0xc2544A32872A91F4A553b404C6950e89De901fdb",
+      "decimals": 18,
+      "role": "legacy FPI governance token"
+    }
+  },
+  "contracts": {
+    "fpiControllerPool": "0x2397321b301B80A1C0911d6f9ED4b6033d43cF51",
+    "cpiTrackerOracleV2": "0x66B7DFF2Ac66dc4d6FBB3Db1CB627BBb01fF3146",
+    "legacyVeFPIS": "0x574C154C83432B0A45BA3ad2429C3fA242eD7359"
+  },
+  "sources": {
+    "officialSolidityRepo": "FraxFinance/frax-solidity",
+    "officialSolidityCommit": "30532c8cefcbf5c7efafcff4369261bd435a4859",
+    "officialConstants": "https://github.com/FraxFinance/frax-solidity/blob/30532c8cefcbf5c7efafcff4369261bd435a4859/src/types/constants.ts",
+    "controllerSource": "https://github.com/FraxFinance/frax-solidity/blob/30532c8cefcbf5c7efafcff4369261bd435a4859/src/hardhat/contracts/FPI/FPIControllerPool.sol",
+    "officialVeFpisRepo": "FraxFinance/frax-vefpis",
+    "officialVeFpisCommit": "a36de907af20f7a7b62e977354f3bf6d0d454795",
+    "veFpisSource": "https://github.com/FraxFinance/frax-vefpis/blob/a36de907af20f7a7b62e977354f3bf6d0d454795/src/hardhat/contracts/Curve/veFPIS.vy",
+    "fpiDocs": "https://docs.frax.com/protocol/assets/fpi"
+  },
+  "sourceSemantics": {
+    "controller": "Official source describes a legacy Ethereum FPI Controller Pool targeting the CPI peg through FRAX mint/redeem and TWAMM controls. Current reads prove only this deployed contract state; they do not prove that it is the sole current global FPI control plane.",
+    "veFPIS": "Official veFPIS source defines totalSupply as voting power and totalFPISSupply as tracked underlying FPIS in the escrow. These are distinct measurements.",
+    "revenue": "Treasury yield, seigniorage, revenue distribution and downstream company cash flow are outside this atom and remain UNKNOWN."
+  },
+  "epistemic": {
+    "addressIdentity": "SOURCE-PINNED-official-Frax-code",
+    "currentStateRequiredForMeasurement": true,
+    "legacyEthereumSurface": true,
+    "currentFraxtalFpisLocker": "OUT-OF-SCOPE",
+    "treasuryYield": "UNKNOWN",
+    "seigniorageDistribution": "UNKNOWN",
+    "revenueRouting": "UNKNOWN",
+    "unknownIsZero": false,
+    "causalClaimAuthority": "none",
+    "executionAuthority": "none"
+  }
+}
