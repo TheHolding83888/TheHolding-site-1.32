@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Frax bounded onchain Economic Graph enrichment v0.9
+ * The Holding · Frax bounded onchain Economic Graph enrichment v1.0
  *
  * Runs only after the canonical Economic Graph runner. The current Graph state
  * is enriched sequentially through existing Frax surfaces using bounded read-only
@@ -27,6 +27,10 @@ import {
   collectFraxFraxlendRateModel,
   applyFraxFraxlendRateModel
 } from './frax-fraxlend-rate-model.mjs';
+import {
+  collectFraxFxbOnchain,
+  applyFraxFxbOnchainMeasurement
+} from './frax-fxb-onchain.mjs';
 import {
   collectFraxBammOnchain,
   applyFraxBammOnchainMeasurement
@@ -81,6 +85,13 @@ async function main(){
     applyFraxFraxlendRateModel({state,proof:fraxlendRateModelProof});
   }
 
+  // FXB is deliberately config-driven: origin series identities live in the
+  // registry, while the collector is generic across Ethereum and Fraxtal.
+  // This atom measures contract/maturity/mint-redeem/backing state only;
+  // spot price and implied term yield remain a separate epistemic surface.
+  const fxbMeasurement=await collectFraxFxbOnchain();
+  applyFraxFxbOnchainMeasurement({state,previousState,measurement:fxbMeasurement});
+
   const previousFraxEcosystem=previousState?.protocolEvidence?.['registry-frax-ecosystem']?.latest?.observation||null;
   const previousBammMeasurement=previousFraxEcosystem?.surfaces?.fraxswapBamm?.measured||null;
   const previousFeeToHistory=previousFraxEcosystem?.surfaces?.revenueRouting?.measured?.fraxswapFeeToHistoricalBackfill||null;
@@ -132,6 +143,7 @@ async function main(){
   const ecosystem=state?.protocolEvidence?.['registry-frax-ecosystem']?.latest?.observation;
   const sfrxUsd=ecosystem?.surfaces?.frxUsdSfrxUsd;
   const fraxlend=ecosystem?.surfaces?.fraxlend;
+  const fxb=ecosystem?.surfaces?.fxb;
   const bamm=ecosystem?.surfaces?.fraxswapBamm;
   const revenue=ecosystem?.surfaces?.revenueRouting;
   const flow=bamm?.measured?.swapFlowFees;
@@ -169,6 +181,19 @@ async function main(){
       rateModelParity:fraxlend?.measured?.rateModel?.parity?.accepted,
       rateModelReproduction:fraxlend?.measured?.epistemic?.borrowRateModelReproduction,
       rpcEndpointId:fraxlend?.measured?.rpc?.endpointId
+    },
+    fxb:{
+      measurementState:fxb?.measurementState,
+      status:fxb?.measured?.status||'UNKNOWN',
+      measurementClass:fxb?.measured?.measurementClass||'UNKNOWN',
+      configuredOriginSeries:fxb?.measured?.coverage?.configuredOriginSeriesCount??null,
+      measuredOriginSeries:fxb?.measured?.coverage?.measuredOriginSeriesCount??null,
+      activeSeries:fxb?.measured?.coverage?.activeSeriesCount??null,
+      maturedSeries:fxb?.measured?.coverage?.maturedSeriesCount??null,
+      unresolvedDocumentedSeries:fxb?.measured?.coverage?.unresolvedDocumentedSeriesCount??null,
+      seriesWithBackingDeficit:fxb?.measured?.coverage?.seriesWithBackingDeficit??null,
+      spotPrice:fxb?.measured?.epistemic?.spotPrice||'UNKNOWN',
+      impliedYield:fxb?.measured?.epistemic?.impliedYield||'UNKNOWN'
     },
     bamm:{
       measurementState:bamm?.measurementState,

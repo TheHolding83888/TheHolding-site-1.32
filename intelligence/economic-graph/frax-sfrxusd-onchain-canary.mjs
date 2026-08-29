@@ -143,3 +143,4 @@ await import('./frax-fraxswap-twamm-canary.mjs');
 await import('./frax-fraxswap-protocol-fee-routing-canary.mjs');
 await import('./frax-fraxswap-feeto-lifecycle-canary.mjs');
 await import('./frax-fraxswap-feeto-history-backfill-canary.mjs');
+await import('./frax-fxb-onchain-canary.mjs');
