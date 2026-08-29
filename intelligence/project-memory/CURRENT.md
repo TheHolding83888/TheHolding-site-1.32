@@ -4,7 +4,7 @@
 >
 > Start from this live `main` file. Then load only the minimum recovery packet below. Full owner/build/history canons remain machine-verified durable contracts and are loaded only when the compact router says they are relevant. Changing facts still come from live generated artifacts and exact workflow evidence, not prose memory.
 
-Canonical source state represented here: **2026-08-29T09:51:53.883Z**
+Canonical source state represented here: **2026-08-29T10:21:57.763Z**
 
 ## Minimum recovery packet
 
@@ -38,16 +38,16 @@ Current authority boundary: **execution authority = none**. No wallet signing, t
 
 ## Memory architecture
 
-- **System Memory** — current normalized state; generatedAt: 2026-08-29T08:43:45.151Z.
-- **Permanent Memory Vault** — 35 Observer record(s), 262 material event(s), retention: indefinite; hard lifetime cap: none.
-- **Latest Vault record** — intelligence/memory-vault/2026/08/2026-08-29T08-43-45-151Z-3fdb9d58ea.json.
+- **System Memory** — current normalized state; generatedAt: 2026-08-29T09:55:45.382Z.
+- **Permanent Memory Vault** — 36 Observer record(s), 262 material event(s), retention: indefinite; hard lifetime cap: none.
+- **Latest Vault record** — intelligence/memory-vault/2026/08/2026-08-29T09-55-45-382Z-3fdb9d58ea.json.
 - **Decision Memory** — 2 append-only owner decision(s); executionAuthority: none.
 - **Project continuity** — CURRENT + latest master continuity + compact task router + routed specialized canons + Git history.
 
 ## Current cognitive stack
 
 - Cognitive Stack: **WATCH**; readyForManualInterpretation: true; chainHash: 9811cd9ca1c372be11a066cb32b9009f3c0c4e2149743d22c2ccf3fbca663337.
-- Security Sentinel (latest standalone state): **WATCH**; Critical 0 / High 2 / Medium 21; generatedAt 2026-08-29T09:51:53.883Z.
+- Security Sentinel (latest standalone state): **WATCH**; Critical 0 / High 2 / Medium 20; generatedAt 2026-08-29T10:21:57.763Z.
 - Cognitive Stack Security snapshot is older (2026-08-29T09:34:51.565Z); it remains the exact Security binding for that coherent Cognitive Stack packet, not the current standalone Security count.
 - Grounded Brain: **WATCH**.
 - ChatGPT Bridge: **WATCH**; cases 9; evidence 24; noExecution true.
