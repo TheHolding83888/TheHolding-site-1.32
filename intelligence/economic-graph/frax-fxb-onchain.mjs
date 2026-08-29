@@ -1,19 +1,16 @@
 #!/usr/bin/env node
 /**
- * The Holding · Frax FXB current origin-series exact-block sensor v0.2
+ * The Holding · Frax FXB current origin-series exact-block sensor v0.3
  *
  * Measures every current source-bound FXB origin contract from the config
- * registry across Ethereum and Fraxtal. Legacy series and bridged mirrors are
- * excluded from current completeness and are never double-counted as backing.
+ * registry across Ethereum and Fraxtal. Current official series span multiple
+ * FXB contract generations, so redemption identity is proven through the
+ * source-bounded interface set: token() for current implementations, with
+ * FRAX() as the explicit legacy v1.1 compatibility interface.
  *
- * Proven current state per origin series:
- * - redemption-token identity via token(), common to current FXB v1.2/v2 source;
- * - maturity timestamp and current redeemability;
- * - total minted, total redeemed, and total supply accounting identity;
- * - Legacy Frax Dollar held by the origin FXB contract against outstanding FXB.
- *
- * Spot / auction price and implied term yield remain a separate atom.
- * UNKNOWN is never zero.
+ * Legacy series and bridged mirrors are excluded from current completeness and
+ * are never double-counted as backing. Spot / auction price and implied term
+ * yield remain a separate atom. UNKNOWN is never zero.
  */
 import crypto from 'node:crypto';
 import fs from 'node:fs';
@@ -22,7 +19,7 @@ import { fileURLToPath } from 'node:url';
 import { FRAXTAL_CHAIN_ID, FRAXTAL_RPC_ENDPOINTS } from './frax-bamm-onchain.mjs';
 import { FRAX_ECOSYSTEM_EVIDENCE_ID, FRAX_PROTOCOL_ID } from './frax-ecosystem-sensor.mjs';
 
-export const FRAX_FXB_ONCHAIN_VERSION='0.2-frax-fxb-current-origin-series-token-identity';
+export const FRAX_FXB_ONCHAIN_VERSION='0.3-frax-fxb-current-origin-series-mixed-interface';
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const SERIES_REGISTRY_FILE=path.join(ROOT,'intelligence/economic-graph/frax-fxb-series-registry.json');
 const RPC_REGISTRY_FILE=path.join(ROOT,'intelligence/market-data/onchain-price-source-registry.json');
@@ -63,7 +60,8 @@ async function postBatch(url,payload,fetchImpl){
 
 function loadConfig(config){
   const x=config||readJson(SERIES_REGISTRY_FILE);
-  if(x?.version!=='0.2-frax-fxb-series-registry-current-subprotocol-source'||x?.semantics?.executionAuthority!=='none'||x?.semantics?.originOnlyBackingMeasurement!==true||x?.semantics?.currentSeriesOnly!==true||x?.semantics?.legacySeriesExcludedFromCurrentCoverage!==true||x?.semantics?.redemptionAssetIdentityFunction!=='token()')throw new Error('FXB series registry identity drift');
+  const identityFns=x?.semantics?.redemptionAssetIdentityFunctions;
+  if(x?.version!=='0.3-frax-fxb-series-registry-current-source-mixed-interface'||x?.semantics?.executionAuthority!=='none'||x?.semantics?.originOnlyBackingMeasurement!==true||x?.semantics?.currentSeriesOnly!==true||x?.semantics?.legacySeriesExcludedFromCurrentCoverage!==true||x?.semantics?.mixedLegacyAndCurrentContractInterfacesAllowed!==true||!Array.isArray(identityFns)||identityFns.join('|')!=='token()|FRAX()')throw new Error('FXB series registry identity drift');
   if(!Array.isArray(x.series)||!x.series.length)throw new Error('FXB series registry empty');
   if(new Set(x.series.map(s=>s.id)).size!==x.series.length)throw new Error('FXB current series duplicate identity');
   if(x.series.some(s=>!s?.originNetwork||!/^0x[0-9a-f]{40}$/i.test(String(s?.originAddress||''))))throw new Error('FXB current series source identity incomplete');
@@ -84,7 +82,7 @@ function unknown({attempts,reason='UNKNOWN-fxb-origin-series-read-failed',config
     series:[],coverage:{configuredOriginSeriesCount:Array.isArray(config?.series)?config.series.length:null,measuredOriginSeriesCount:0,unresolvedDocumentedSeriesCount:Array.isArray(config?.documentedUnresolvedSeries)?config.documentedUnresolvedSeries.length:null,fullConfiguredOriginSeriesCoverage:false},
     rpc:{networks:networkResults,failoverAttempts:attempts||[]},
     provenance:{seriesRegistryVersion:config?.version||null,officialSources:config?.officialSources||null},
-    epistemic:{originSeriesState:'UNKNOWN',originBacking:'UNKNOWN',mintRedeemSupplyIdentity:'UNKNOWN',spotPrice:'UNKNOWN-not-measured-by-this-atom',impliedYield:'UNKNOWN-no-measured-price',bridgedMirrorBacking:'UNKNOWN-not-independent-origin-backing',legacySeriesState:'HISTORICAL-not-current-completeness',unknownIsZero:false,causalClaimAuthority:'none',executionAuthority:'none'}
+    epistemic:{originSeriesState:'UNKNOWN',originBacking:'UNKNOWN',mintRedeemSupplyIdentity:'UNKNOWN',redemptionAssetIdentity:'UNKNOWN',spotPrice:'UNKNOWN-not-measured-by-this-atom',impliedYield:'UNKNOWN-no-measured-price',bridgedMirrorBacking:'UNKNOWN-not-independent-origin-backing',legacySeriesState:'HISTORICAL-not-current-completeness',unknownIsZero:false,causalClaimAuthority:'none',executionAuthority:'none'}
   };
 }
 
@@ -92,7 +90,7 @@ async function collectNetwork({network,networkConfig,endpoints,series,fetchImpl}
   const attempts=[];
   for(const endpoint of endpoints){
     try{
-      const signatures=['token()','MATURITY_TIMESTAMP()','totalSupply()','totalFxbMinted()','totalFxbRedeemed()','isRedeemable()','balanceOf(address)'];
+      const signatures=['token()','FRAX()','MATURITY_TIMESTAMP()','totalSupply()','totalFxbMinted()','totalFxbRedeemed()','isRedeemable()','balanceOf(address)'];
       const sigReq=signatures.map((s,i)=>({jsonrpc:'2.0',id:i+1,method:'web3_sha3',params:[asciiHex(s)]}));
       sigReq.push({jsonrpc:'2.0',id:100,method:'eth_blockNumber',params:[]});
       const first=await postBatch(endpoint.url,sigReq,fetchImpl);
@@ -107,23 +105,37 @@ async function collectNetwork({network,networkConfig,endpoints,series,fetchImpl}
       const out=[];
       for(const s of series){
         try{
+          let redemptionToken=null,redemptionIdentityFunction=null,identityTokenError=null;
+          try{
+            const row=await postBatch(endpoint.url,[call(900,s.originAddress,selector('token()'))],fetchImpl);
+            redemptionToken=addressWord(row.get(900).result);
+            redemptionIdentityFunction='token()';
+          }catch(error){identityTokenError=error instanceof Error?error.message:String(error);}
+          if(!redemptionToken){
+            try{
+              const row=await postBatch(endpoint.url,[call(901,s.originAddress,selector('FRAX()'))],fetchImpl);
+              redemptionToken=addressWord(row.get(901).result);
+              redemptionIdentityFunction='FRAX()';
+            }catch(error){throw new Error(`redemption identity unavailable: token()=${identityTokenError}; FRAX()=${error instanceof Error?error.message:String(error)}`);}
+          }
           let id=1000;
-          const names=['token()','MATURITY_TIMESTAMP()','totalSupply()','totalFxbMinted()','totalFxbRedeemed()','isRedeemable()'];
+          const names=['MATURITY_TIMESTAMP()','totalSupply()','totalFxbMinted()','totalFxbRedeemed()','isRedeemable()'];
           const ids=Object.fromEntries(names.map(name=>[name,id++]));
           ids.backing=id++;
           const requests=names.map(name=>call(ids[name],s.originAddress,selector(name)));
           requests.push(call(ids.backing,networkConfig.lFrax,selector('balanceOf(address)')+addrArg(s.originAddress)));
-          const rows=await postBatch(endpoint.url,requests,fetchImpl);
-          const redemptionToken=addressWord(rows.get(ids['token()']).result),maturity=word(rows.get(ids['MATURITY_TIMESTAMP()']).result),supply=word(rows.get(ids['totalSupply()']).result),minted=word(rows.get(ids['totalFxbMinted()']).result),redeemed=word(rows.get(ids['totalFxbRedeemed()']).result),redeemable=word(rows.get(ids['isRedeemable()']).result)!==0n,backing=word(rows.get(ids.backing).result);
+          let rows;
+          try{rows=await postBatch(endpoint.url,requests,fetchImpl);}catch(error){throw new Error(`state/accounting call failed: ${error instanceof Error?error.message:String(error)}`);}
+          const maturity=word(rows.get(ids['MATURITY_TIMESTAMP()']).result),supply=word(rows.get(ids['totalSupply()']).result),minted=word(rows.get(ids['totalFxbMinted()']).result),redeemed=word(rows.get(ids['totalFxbRedeemed()']).result),redeemable=word(rows.get(ids['isRedeemable()']).result)!==0n,backing=word(rows.get(ids.backing).result);
           const identityOk=sameAddress(redemptionToken,networkConfig.lFrax),supplyIdentityOk=minted>=redeemed&&minted-redeemed===supply,redeemabilityIdentityOk=redeemable===(BigInt(blockTimestamp)>=maturity),backingDeficit=backing>=supply?0n:supply-backing;
           if(!identityOk)throw new Error(`LFRAX identity mismatch ${redemptionToken}`);
           if(!supplyIdentityOk)throw new Error('minted-redeemed-supply identity mismatch');
           if(!redeemabilityIdentityOk)throw new Error('redeemability timestamp identity mismatch');
           out.push({
             id:s.id,label:s.label,originNetwork:network,originAddress:s.originAddress,bridgedMirrors:s.bridgedMirrors||[],documentedMaturityDate:s.documentedMaturityDate,
-            observed:{redemptionTokenAddress:redemptionToken,maturityTimestamp:Number(maturity),maturityIso:new Date(Number(maturity)*1000).toISOString(),isRedeemable:redeemable,totalSupplyRaw:supply.toString(),totalSupplyLfraxFace:units18(supply),totalFxbMintedRaw:minted.toString(),totalFxbRedeemedRaw:redeemed.toString(),backingLfraxRaw:backing.toString(),backingLfrax:units18(backing),backingCoverageRatio:ratio18(backing,supply),backingDeficitRaw:backingDeficit.toString(),secondsToMaturity:Number(maturity)-blockTimestamp},
-            proof:{lFraxIdentityProven:identityOk,mintedMinusRedeemedEqualsSupply:supplyIdentityOk,redeemabilityMatchesBlockTimestamp:redeemabilityIdentityOk,backingAtLeastOutstandingSupply:backingDeficit===0n},
-            epistemic:{originContractState:'MEASURED-exact-block',redemptionAssetIdentity:'MEASURED-token()-exact-contract-call',mintRedeemSupplyIdentity:'DERIVED-MECHANICAL-exact-contract-accounting',originBackingBalance:'MEASURED-exact-block',spotPrice:'UNKNOWN-not-measured-by-this-atom',impliedYield:'UNKNOWN-no-measured-price',bridgedMirrorBacking:'UNKNOWN-topology-only'}
+            observed:{redemptionIdentityFunction,redemptionTokenAddress:redemptionToken,maturityTimestamp:Number(maturity),maturityIso:new Date(Number(maturity)*1000).toISOString(),isRedeemable:redeemable,totalSupplyRaw:supply.toString(),totalSupplyLfraxFace:units18(supply),totalFxbMintedRaw:minted.toString(),totalFxbRedeemedRaw:redeemed.toString(),backingLfraxRaw:backing.toString(),backingLfrax:units18(backing),backingCoverageRatio:ratio18(backing,supply),backingDeficitRaw:backingDeficit.toString(),secondsToMaturity:Number(maturity)-blockTimestamp},
+            proof:{lFraxIdentityProven:identityOk,redemptionIdentityInterfaceProven:redemptionIdentityFunction,mintedMinusRedeemedEqualsSupply:supplyIdentityOk,redeemabilityMatchesBlockTimestamp:redeemabilityIdentityOk,backingAtLeastOutstandingSupply:backingDeficit===0n},
+            epistemic:{originContractState:'MEASURED-exact-block',redemptionAssetIdentity:`MEASURED-${redemptionIdentityFunction}-exact-contract-call`,mintRedeemSupplyIdentity:'DERIVED-MECHANICAL-exact-contract-accounting',originBackingBalance:'MEASURED-exact-block',spotPrice:'UNKNOWN-not-measured-by-this-atom',impliedYield:'UNKNOWN-no-measured-price',bridgedMirrorBacking:'UNKNOWN-topology-only'}
           });
         }catch(error){throw new Error(`FXB ${s.id} current-origin read failed: ${error instanceof Error?error.message:String(error)}`);}
       }
@@ -146,13 +158,14 @@ export async function collectFraxFxbOnchain({config=null,rpcRegistry=null,fetchI
   const attempts=results.flatMap(x=>x.rpc?.failoverAttempts||[]),measuredSeries=results.flatMap(x=>x.series||[]),full=results.every(x=>x.status==='ok')&&measuredSeries.length===cfg.series.length;
   const networkResults=Object.fromEntries(results.map(x=>[x.network,{chainId:x.chainId,status:x.status,blockNumber:x.blockNumber,blockHash:x.blockHash,blockTimestamp:x.blockTimestamp,observedAt:x.observedAt,rpcEndpointId:x.rpc?.endpointId||null}]));
   if(!full)return unknown({attempts,reason:'UNKNOWN-fxb-incomplete-origin-series-coverage',config:cfg,networkResults});
+  const interfaceCounts=measuredSeries.reduce((a,x)=>{const k=x.observed.redemptionIdentityFunction;a[k]=(a[k]||0)+1;return a;},{});
   return {
     version:FRAX_FXB_ONCHAIN_VERSION,status:'ok',measurementClass:'MEASURED',observedAt:new Date(Math.max(...results.map(x=>x.blockTimestamp))*1000).toISOString(),
     networks:networkResults,series:measuredSeries,
-    coverage:{configuredOriginSeriesCount:cfg.series.length,measuredOriginSeriesCount:measuredSeries.length,unresolvedDocumentedSeriesCount:(cfg.documentedUnresolvedSeries||[]).length,unresolvedDocumentedSeries:cfg.documentedUnresolvedSeries||[],legacySeriesExcludedCount:(cfg.documentedLegacySeries||[]).length,fullConfiguredOriginSeriesCoverage:true,originNetworkCount:results.length,activeSeriesCount:measuredSeries.filter(x=>!x.observed.isRedeemable).length,maturedSeriesCount:measuredSeries.filter(x=>x.observed.isRedeemable).length,seriesWithBackingDeficit:measuredSeries.filter(x=>x.observed.backingDeficitRaw!=='0').map(x=>x.id)},
+    coverage:{configuredOriginSeriesCount:cfg.series.length,measuredOriginSeriesCount:measuredSeries.length,unresolvedDocumentedSeriesCount:(cfg.documentedUnresolvedSeries||[]).length,unresolvedDocumentedSeries:cfg.documentedUnresolvedSeries||[],legacySeriesExcludedCount:(cfg.documentedLegacySeries||[]).length,fullConfiguredOriginSeriesCoverage:true,originNetworkCount:results.length,redemptionIdentityInterfaceCounts:interfaceCounts,activeSeriesCount:measuredSeries.filter(x=>!x.observed.isRedeemable).length,maturedSeriesCount:measuredSeries.filter(x=>x.observed.isRedeemable).length,seriesWithBackingDeficit:measuredSeries.filter(x=>x.observed.backingDeficitRaw!=='0').map(x=>x.id)},
     rpc:{networks:Object.fromEntries(results.map(x=>[x.network,x.rpc])),failoverAttempts:attempts},
-    provenance:{seriesRegistryVersion:cfg.version,officialSources:cfg.officialSources,contractFunctions:['token()','MATURITY_TIMESTAMP()','totalSupply()','totalFxbMinted()','totalFxbRedeemed()','isRedeemable()','LFRAX.balanceOf(FXB)']},
-    epistemic:{originSeriesState:'MEASURED-exact-block-current-series-multi-chain',originBacking:'MEASURED-exact-block-origin-only',mintRedeemSupplyIdentity:'DERIVED-MECHANICAL-totalFxbMinted-minus-totalFxbRedeemed-equals-totalSupply',redeemabilityIdentity:'DERIVED-MECHANICAL-block-timestamp-vs-maturity',redemptionAssetIdentity:'MEASURED-token()-common-v1.2-v2-interface',spotPrice:'UNKNOWN-not-measured-by-this-atom',impliedYield:'UNKNOWN-no-measured-price',auctionState:'UNKNOWN-separate-atom',bridgedMirrorBacking:'UNKNOWN-topology-only-not-double-counted',legacySeriesState:'HISTORICAL-excluded-from-current-completeness',documentedUnresolvedSeries:(cfg.documentedUnresolvedSeries||[]).length?'UNKNOWN-source-incomplete':'MEASURED-none-in-current-source',unknownIsZero:false,causalClaimAuthority:'none',executionAuthority:'none'}
+    provenance:{seriesRegistryVersion:cfg.version,officialSources:cfg.officialSources,contractFunctions:['token() with source-proven legacy FRAX() fallback','MATURITY_TIMESTAMP()','totalSupply()','totalFxbMinted()','totalFxbRedeemed()','isRedeemable()','LFRAX.balanceOf(FXB)']},
+    epistemic:{originSeriesState:'MEASURED-exact-block-current-series-multi-chain',originBacking:'MEASURED-exact-block-origin-only',mintRedeemSupplyIdentity:'DERIVED-MECHANICAL-totalFxbMinted-minus-totalFxbRedeemed-equals-totalSupply',redeemabilityIdentity:'DERIVED-MECHANICAL-block-timestamp-vs-maturity',redemptionAssetIdentity:'MEASURED-source-bounded-mixed-interface-token-or-legacy-FRAX',spotPrice:'UNKNOWN-not-measured-by-this-atom',impliedYield:'UNKNOWN-no-measured-price',auctionState:'UNKNOWN-separate-atom',bridgedMirrorBacking:'UNKNOWN-topology-only-not-double-counted',legacySeriesState:'HISTORICAL-excluded-from-current-completeness',documentedUnresolvedSeries:(cfg.documentedUnresolvedSeries||[]).length?'UNKNOWN-source-incomplete':'MEASURED-none-in-current-source',unknownIsZero:false,causalClaimAuthority:'none',executionAuthority:'none'}
   };
 }
 
@@ -165,7 +178,7 @@ export function applyFraxFxbOnchainMeasurement({state,previousState,measurement}
   fxb.measured=measurement;
   fxb.measurementState=valid?'MEASURED-current-origin-series-state-partial-term-curve':'UNKNOWN-current-value-not-ingested';
   fxb.mechanicalRelations=[
-    {from:'FXB token() + configured origin chain',to:'Legacy Frax Dollar redemption-asset identity',class:valid?'MEASURED-exact-block':'UNKNOWN'},
+    {from:'FXB token() or source-proven legacy FRAX() + configured origin chain',to:'Legacy Frax Dollar redemption-asset identity',class:valid?'MEASURED-exact-block':'UNKNOWN'},
     {from:'totalFxbMinted - totalFxbRedeemed',to:'FXB totalSupply',class:valid?'MECHANICAL-exact-accounting-identity':'UNKNOWN'},
     {from:'origin FXB-held LFRAX',to:'outstanding 1:1 redemption backing state',class:valid?'MEASURED-exact-block-origin-only':'UNKNOWN'},
     {from:'block timestamp + MATURITY_TIMESTAMP',to:'isRedeemable',class:valid?'MECHANICAL-exact-time-identity':'UNKNOWN'},
@@ -176,12 +189,12 @@ export function applyFraxFxbOnchainMeasurement({state,previousState,measurement}
   current.measurementExtensions={...(current.measurementExtensions||{}),fxbOnchain:FRAX_FXB_ONCHAIN_VERSION};
   current.epistemic={...(current.epistemic||{}),fxbOriginSeriesState:valid?measurement.epistemic.originSeriesState:'UNKNOWN',fxbOriginBacking:valid?measurement.epistemic.originBacking:'UNKNOWN',fxbMintRedeemSupplyIdentity:valid?measurement.epistemic.mintRedeemSupplyIdentity:'UNKNOWN',fxbSpotPrice:'UNKNOWN',fxbImpliedYield:'UNKNOWN',fxbBridgedMirrorBacking:'UNKNOWN-topology-only-not-double-counted'};
   const surfaces=Object.values(current.surfaces||{}),measured=surfaces.filter(s=>String(s.measurementState||'').startsWith('MEASURED'));current.coverage.measuredSurfaceCount=measured.length;current.coverage.sourceBoundUnknownSurfaceCount=surfaces.length-measured.length;current.relationshipGraph=surfaces.flatMap(s=>s.mechanicalRelations.map((r,index)=>({surfaceId:s.id,index,...r})));current.coverage.relationshipCount=current.relationshipGraph.length;current.coverage.relationshipClassCounts=current.relationshipGraph.reduce((a,r)=>{const k=String(r.class||'UNKNOWN').split('-')[0];a[k]=(a[k]||0)+1;return a;},{});
-  current.id=`frax-ecosystem:${sha256(stableStringify({priorId:base.id,fxb:valid?{networks:measurement.networks,series:measurement.series.map(x=>[x.id,x.originNetwork,x.originAddress,x.observed.maturityTimestamp,x.observed.totalSupplyRaw,x.observed.totalFxbMintedRaw,x.observed.totalFxbRedeemedRaw,x.observed.backingLfraxRaw,x.observed.isRedeemable])}:{status:measurement?.status||'UNKNOWN'},surfaceIds:current.coverage.surfaceIds})).slice(0,24)}`;
+  current.id=`frax-ecosystem:${sha256(stableStringify({priorId:base.id,fxb:valid?{networks:measurement.networks,series:measurement.series.map(x=>[x.id,x.originNetwork,x.originAddress,x.observed.redemptionIdentityFunction,x.observed.maturityTimestamp,x.observed.totalSupplyRaw,x.observed.totalFxbMintedRaw,x.observed.totalFxbRedeemedRaw,x.observed.backingLfraxRaw,x.observed.isRedeemable])}:{status:measurement?.status||'UNKNOWN'},surfaceIds:current.coverage.surfaceIds})).slice(0,24)}`;
   const prevRows=Array.isArray(previousState?.protocolEvidence?.[FRAX_ECOSYSTEM_EVIDENCE_ID]?.observations)?previousState.protocolEvidence[FRAX_ECOSYSTEM_EVIDENCE_ID].observations:[];const rows=[...prevRows];if(!rows.some(r=>r?.id===current.id))rows.push(current);evidence.latest={observation:current};evidence.status=current.status;evidence.observations=rows.slice(-MAX_OBSERVATIONS);evidence.observationCount=evidence.observations.length;evidence.measurementExtensions={...(evidence.measurementExtensions||{}),fxbOnchain:FRAX_FXB_ONCHAIN_VERSION};
   fraxSensor.ecosystemFamily={...(fraxSensor.ecosystemFamily||{}),status:current.status,measuredSurfaceCount:current.coverage.measuredSurfaceCount,sourceBoundUnknownSurfaceCount:current.coverage.sourceBoundUnknownSurfaceCount,latestObservationId:current.id,measurementExtensions:{...(fraxSensor.ecosystemFamily?.measurementExtensions||{}),fxbOnchain:FRAX_FXB_ONCHAIN_VERSION}};if(fraxSensor?.latest?.observation)fraxSensor.latest.observation.ecosystemFamily=fraxSensor.ecosystemFamily;
   if(current.coverage.measuredSurfaceCount+current.coverage.sourceBoundUnknownSurfaceCount!==current.coverage.surfaceCount)throw new Error('Frax FXB depth accounting drift');
   if(valid&&measurement.coverage.measuredOriginSeriesCount!==measurement.series.length)throw new Error('FXB series materialization mismatch');
-  if(valid&&measurement.series.some(x=>x.proof?.lFraxIdentityProven!==true||x.proof?.mintedMinusRedeemedEqualsSupply!==true||x.proof?.redeemabilityMatchesBlockTimestamp!==true))throw new Error('FXB proof invariant drift');
+  if(valid&&measurement.series.some(x=>x.proof?.lFraxIdentityProven!==true||!['token()','FRAX()'].includes(x.proof?.redemptionIdentityInterfaceProven)||x.proof?.mintedMinusRedeemedEqualsSupply!==true||x.proof?.redeemabilityMatchesBlockTimestamp!==true))throw new Error('FXB proof invariant drift');
   if(current?.authority?.executionAuthority!=='none'||current?.epistemic?.executionAuthority!=='none'||measurement?.epistemic?.executionAuthority!=='none')throw new Error('FXB execution authority leaked');
   return state;
 }
