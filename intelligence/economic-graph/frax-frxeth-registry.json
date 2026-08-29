@@ -1,0 +1,52 @@
+{
+  "version": "0.1-frxeth-current-state-registry",
+  "protocol": "Frax",
+  "surfaceId": "frxEthSfrxEth",
+  "network": "ethereum",
+  "chainId": 1,
+  "assets": {
+    "frxETH": {
+      "address": "0x5E8422345238F34275888049021821E8E08CAa1f",
+      "role": "ETH-pegged liquid staking asset"
+    },
+    "sfrxETH": {
+      "address": "0xac3E018457B222d93114458476f3E3416Abbe38F",
+      "role": "ERC4626 yield-accruing frxETH vault share"
+    }
+  },
+  "operations": {
+    "beaconOracle": "0xA2901F3EE8f4E9F5baC5379BC0CD1F8341280AB5",
+    "curveLsdAmo": "0xEcb9bBb97BD3C23e8f176075EDB3c68B9a1869Ae",
+    "etherRouter": "0x5acAf61d339dd123e60ba450Ea38fbC49445007C",
+    "fraxEtherMinterV2": "0x7Bc6bad540453360F744666D625fec0ee1320cA3",
+    "redemptionQueueV2": "0xfDC69e6BE352BD5644C438302DE4E311AAD5565b",
+    "lendingPool": "0x24A1d1671a3Bd1C3cABb9B10724a4127d84e1Da0",
+    "variableInterestRate": "0x2fA48925696EbBF1F4Fc08228dA06021f1806544"
+  },
+  "sources": {
+    "ecosystemOverview": "https://docs.frax.com/protocol",
+    "frxEthOverview": "https://docs.frax.com/protocol/assets/frxeth/overview",
+    "frxEthV2Overview": "https://docs.frax.com/protocol/assets/frxeth/frxethv2/overview",
+    "frxEthV2Technical": "https://docs.frax.com/protocol/assets/frxeth/frxethv2/technical",
+    "addresses": "https://docs.frax.com/protocol/assets/frxeth/addresses",
+    "fraxFactsReconciliation": "https://facts.frax.finance/",
+    "officialSourceRepo": "FraxFinance/frxETH-v2-public",
+    "officialSourceCommit": "83dfe93b4a32b9ca0ab93d6e7c059fcd977320d4",
+    "officialSourceConstants": "https://github.com/FraxFinance/frxETH-v2-public/blob/83dfe93b4a32b9ca0ab93d6e7c059fcd977320d4/src/Constants.sol"
+  },
+  "sourceSemantics": {
+    "frxETH": "Current Frax documentation identifies frxETH as a core issued Frax asset and liquid ETH staking derivative.",
+    "sfrxETH": "Current Frax documentation identifies sfrxETH as the ERC4626 yield-accruing complement to frxETH.",
+    "v2": "Current Frax V2 documentation describes external validator pools, ETH borrowing against escrowed exit messages, EtherRouter routing, Curve AMO idle-ETH deployment, redemptions, and lending interest.",
+    "facts": "Frax Facts is discovery/reconciliation context only. Its rendered aggregates are not sole measurement authority and unavailable/loading values must never be interpreted as zero."
+  },
+  "epistemic": {
+    "addressIdentity": "SOURCE-PINNED-official-docs-and-official-source",
+    "currentStateRequiredForMeasurement": true,
+    "documentedMechanicsAreCurrentFlow": false,
+    "factsAggregateIsMeasurementAuthority": false,
+    "unknownIsZero": false,
+    "causalClaimAuthority": "none",
+    "executionAuthority": "none"
+  }
+}
