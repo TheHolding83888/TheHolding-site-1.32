@@ -65,4 +65,5 @@ await import('./frax-flox-fxtl-current-state-canary.mjs');
 await import('./frax-fx-liquidity-current-state-canary.mjs');
 await import('./frax-revenue-routing-current-state-canary.mjs');
 await import('./frax-frxeth-current-state-canary.mjs');
+await import('./frax-fpi-fpis-current-state-canary.mjs');
 await import('./protocol-evidence-history-retention-canary.mjs');

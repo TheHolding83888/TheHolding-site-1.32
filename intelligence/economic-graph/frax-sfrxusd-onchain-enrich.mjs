@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Frax bounded onchain Economic Graph enrichment v1.5
+ * The Holding · Frax bounded onchain Economic Graph enrichment v1.6
  *
  * One canonical sequential Frax writer path. Each protocol atom remains a
  * bounded read-only measurement with its own epistemic contract, but all atoms
@@ -29,6 +29,7 @@ import { collectFraxswapFeeToLifecycle, applyFraxswapFeeToLifecycle } from './fr
 import { collectFraxswapFeeToHistoryBackfill, applyFraxswapFeeToHistoryBackfill } from './frax-fraxswap-feeto-history-backfill.mjs';
 import { collectFraxRevenueRoutingCurrentState, applyFraxRevenueRoutingCurrentState } from './frax-revenue-routing-current-state.mjs';
 import { collectFraxFrxEthCurrentState, applyFraxFrxEthCurrentState } from './frax-frxeth-current-state.mjs';
+import { collectFraxFpiFpisCurrentState, applyFraxFpiFpisCurrentState } from './frax-fpi-fpis-current-state.mjs';
 import { compactProtocolEvidenceHistory } from './protocol-evidence-history-retention.mjs';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
@@ -104,12 +105,15 @@ async function main(){
   const revenueRoutingMeasurement=await collectFraxRevenueRoutingCurrentState();
   applyFraxRevenueRoutingCurrentState({state,previousState,measurement:revenueRoutingMeasurement});
 
-  // Frax fat-audit scope extension #1: frxETH / sfrxETH. This intentionally runs
-  // after the original nine-surface chain so older bounded atom contracts remain
-  // stable. The reusable collector measures current ERC20/ERC4626 state while
-  // V2 lending/validator/revenue internals remain separate future sub-atoms.
+  // Frax fat-audit scope extension #1: frxETH / sfrxETH.
   const frxEthMeasurement=await collectFraxFrxEthCurrentState();
   applyFraxFrxEthCurrentState({state,previousState,measurement:frxEthMeasurement});
+
+  // Frax fat-audit scope extension #2: source-pinned legacy Ethereum FPI/FPIS.
+  // This is deliberately after frxETH so the existing extension contract remains
+  // stable. Current Fraxtal FPIS Locker and revenue economics remain UNKNOWN.
+  const fpiFpisMeasurement=await collectFraxFpiFpisCurrentState();
+  applyFraxFpiFpisCurrentState({state,previousState,measurement:fpiFpisMeasurement});
 
   if(state?.authority?.executionAuthority!=='none')throw new Error('Frax bounded enrichment execution authority drift');
 
@@ -129,6 +133,7 @@ async function main(){
   const bamm=ecosystem?.surfaces?.fraxswapBamm;
   const revenue=ecosystem?.surfaces?.revenueRouting;
   const frxEth=ecosystem?.surfaces?.frxEthSfrxEth;
+  const fpiFpis=ecosystem?.surfaces?.fpiFpisVeFpis;
   const flow=bamm?.measured?.swapFlowFees;
   const twamm=bamm?.measured?.twammFlow;
   const protocolFee=bamm?.measured?.protocolFeeRouting;
@@ -154,6 +159,7 @@ async function main(){
     fraxswapFeeToHistoricalBackfill:{status:feeToHistory?.status||'not-run-protocol-fee-prerequisite-unavailable',protocolFeeMintEventsBackfilled:feeToHistory?.summary?.protocolFeeMintEventCountBackfilled??null,strictRedemptionsBackfilled:feeToHistory?.summary?.strictRedemptionCountBackfilled??null,continuousFeeToStateHistory:feeToHistory?.epistemic?.continuousFeeToStateHistory||'UNKNOWN'},
     revenueRoutingYieldDistribution:{measurementState:revenue?.measurementState,status:yieldDistribution?.status||'UNKNOWN',blockNumber:yieldDistribution?.network?.blockNumber??null,proxy:yieldDistribution?.distributor?.proxy??null,implementation:yieldDistribution?.distributor?.implementation??null,emittedToken:yieldDistribution?.distributor?.emittedToken??null,yieldRateRaw:yieldDistribution?.distributor?.yieldRateRaw??null,yieldDurationRaw:yieldDistribution?.distributor?.yieldDurationRaw??null,rewardArithmeticParity:yieldDistribution?.distributor?.rewardArithmeticParity??false,distributorInventoryRaw:yieldDistribution?.distributor?.emittedTokenBalanceRaw??null,upstreamFundingSource:yieldDistribution?.epistemic?.distributorFundingSource||'UNKNOWN',fraxswapFeeToLink:yieldDistribution?.epistemic?.fraxswapFeeToToDistributor||'UNKNOWN',companyCashFlow:yieldDistribution?.epistemic?.companyCashFlow||'UNKNOWN'},
     frxEth:{measurementState:frxEth?.measurementState,status:frxEth?.measured?.status||'UNKNOWN',blockNumber:frxEth?.measured?.blockNumber??null,frxEthSupply:frxEth?.measured?.asset?.totalSupply??null,sfrxEthSupply:frxEth?.measured?.vault?.totalSupply??null,sfrxEthTotalAssets:frxEth?.measured?.vault?.totalAssets??null,sharePriceFrxEth:frxEth?.measured?.vault?.sharePriceAsset??null,intervalStatus:frxEth?.measured?.intervalEmbeddedYield?.status||'UNKNOWN',validatorEconomics:frxEth?.measured?.epistemic?.validatorEconomics||'UNKNOWN',lendingIncome:frxEth?.measured?.epistemic?.lendingIncome||'UNKNOWN'},
+    fpiFpis:{measurementState:fpiFpis?.measurementState,status:fpiFpis?.measured?.status||'UNKNOWN',blockNumber:fpiFpis?.measured?.blockNumber??null,fpiSupply:fpiFpis?.measured?.tokens?.FPI?.totalSupply??null,fpisSupply:fpiFpis?.measured?.tokens?.FPIS?.totalSupply??null,veFpisVotingPower:fpiFpis?.measured?.legacyVeFPIS?.totalVotingPower??null,veFpisTrackedPrincipal:fpiFpis?.measured?.legacyVeFPIS?.trackedFpisPrincipal??null,trackedPrincipalPct:fpiFpis?.measured?.legacyVeFPIS?.trackedPrincipalPctOfFpisSupply??null,pegState:fpiFpis?.measured?.pegState?.status||'UNKNOWN',treasuryYield:fpiFpis?.measured?.epistemic?.treasuryYield||'UNKNOWN',revenueRouting:fpiFpis?.measured?.epistemic?.revenueRouting||'UNKNOWN'},
     historyRetention:{version:retention.version,historicalRows:retention.historicalObservationCount,beforeBytes:retention.beforeBytes,afterBytes:retention.afterBytes,reductionPct:retention.reductionPct,softLimitBytes:retention.softLimitBytes},
     previousCheckpointSource:'explicit-published-graph-file',
     executionAuthority:ecosystem?.authority?.executionAuthority
