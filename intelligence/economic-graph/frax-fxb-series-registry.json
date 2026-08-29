@@ -1,20 +1,33 @@
 {
-  "version": "0.1-frax-fxb-series-registry",
-  "purpose": "Source-bound FXB series identities for bounded exact-block observation. Origin contracts are measured; bridged mirrors are topology only unless separately proven.",
+  "version": "0.2-frax-fxb-series-registry-current-subprotocol-source",
+  "purpose": "Current source-bound FXB origin-series identities for bounded exact-block observation. Current origin contracts are measured; bridged mirrors and legacy series are topology/history only unless separately proven.",
   "officialSources": {
-    "docs": "https://docs.frax.com/protocol/assets/frxusd/fxb",
+    "docs": "https://docs.frax.com/protocol/subprotocols/fxb",
     "docsRepository": "FraxFinance/docs",
-    "docsMainnetConstantsPath": "misc/constants/mainnet.ts",
-    "docsMainnetConstantsSha": "35a1daf13441f28c46742b67363103c835c2a7aa",
-    "fxbDocsPath": "pages/protocol/assets/frxusd/fxb.mdx",
-    "fxbDocsSha": "c56326476849f1ede2d6288541f222f939508d60",
-    "contractSource": "verified FXB.sol / frax-bonds source referenced by official Frax docs"
+    "docsRef": "182443ff06970ebbe219dce9ffa6d0525e1d19e0",
+    "currentAddressesPath": "pages/protocol/subprotocols/fxb/addresses.mdx",
+    "currentAddressesSha": "ee2b2723086fc7a58c0161f329e0b30eedd77191",
+    "overviewPath": "pages/protocol/subprotocols/fxb/overview.mdx",
+    "overviewSha": "66e6b83d1249c5daef4e35621afeb1e147d45294",
+    "technicalPath": "pages/protocol/subprotocols/fxb/technical.mdx",
+    "technicalSha": "d8b19653f3d08b4a41d26521053d6516188960ff",
+    "tokenAddressPath": "misc/constants/mainnet.ts",
+    "tokenAddressSha": "35a1daf13441f28c46742b67363103c835c2a7aa",
+    "contractRepository": "FraxFinance/frax-bonds",
+    "contractRef": "4ef235e68c8277ad3dbc676762fffe663c9896fc",
+    "fxbV2Path": "src/contracts/FXB.sol",
+    "fxbV2Sha": "446d24ae4d9efffe83b4a9a5e428a174f2f0dd15",
+    "fxbV1LfraxPath": "src/contracts/FXB_LFRAX.sol",
+    "fxbV1LfraxSha": "2c3d483afaf289ff459d1a6c55502be4d1b4e04b"
   },
   "semantics": {
     "faceValueAsset": "LFRAX",
     "faceValueUnitsPerFxb": "1",
+    "currentSeriesOnly": true,
+    "legacySeriesExcludedFromCurrentCoverage": true,
     "originOnlyBackingMeasurement": true,
     "bridgedMirrorIsNotIndependentBacking": true,
+    "redemptionAssetIdentityFunction": "token()",
     "spotPriceMeasured": false,
     "impliedYieldMeasured": false,
     "unknownIsNotZero": true,
@@ -36,15 +49,6 @@
   },
   "series": [
     {
-      "id": "FXB2024",
-      "label": "FXB 2024-12-31",
-      "originNetwork": "ethereum",
-      "originAddress": "0xF8FDe8A259A3698902C88bdB1E13Ff28Cd7f6F09",
-      "bridgedMirrors": [{"network":"fraxtal","address":"0xa71bB8c79dc8FfA90A6Dd711aA9Fbe5114c19cba"}],
-      "documentedMaturityDate": "2024-12-31",
-      "lifecycleExpectation": "matured"
-    },
-    {
       "id": "FXB2025",
       "label": "FXB 2025-12-31",
       "originNetwork": "fraxtal",
@@ -58,9 +62,18 @@
       "label": "FXB 2026-12-31",
       "originNetwork": "ethereum",
       "originAddress": "0x76237BCfDbe8e06FB774663add96216961df4ff3",
-      "bridgedMirrors": [{"network":"fraxtal","address":"0x8e9C334afc76106F08E0383907F4Fca9bB10BA3e"}],
+      "bridgedMirrors": [],
       "documentedMaturityDate": "2026-12-31",
       "lifecycleExpectation": "active-or-matured-by-observation-time"
+    },
+    {
+      "id": "FXB2027",
+      "label": "FXB 2027-12-31",
+      "originNetwork": "fraxtal",
+      "originAddress": "0x6c9f4E6089c8890AfEE2bcBA364C2712f88fA818",
+      "bridgedMirrors": [],
+      "documentedMaturityDate": "2027-12-31",
+      "lifecycleExpectation": "active"
     },
     {
       "id": "FXB2029",
@@ -81,13 +94,14 @@
       "lifecycleExpectation": "active"
     }
   ],
-  "documentedUnresolvedSeries": [
+  "documentedLegacySeries": [
     {
-      "id": "FXB2027",
-      "label": "FXB 2027-12-31",
-      "originNetwork": "fraxtal",
-      "originAddress": null,
-      "reason": "Official Frax docs currently list FXB2027 addresses as N/A; do not invent an address or current state."
+      "id": "FXB2024",
+      "label": "FXB 2024-12-31",
+      "originNetwork": "ethereum",
+      "originAddress": "0xF8FDe8A259A3698902C88bdB1E13Ff28Cd7f6F09",
+      "reason": "Present in legacy Frax asset documentation but absent from the current FXB subprotocol address table; excluded from current-series completeness."
     }
-  ]
+  ],
+  "documentedUnresolvedSeries": []
 }
