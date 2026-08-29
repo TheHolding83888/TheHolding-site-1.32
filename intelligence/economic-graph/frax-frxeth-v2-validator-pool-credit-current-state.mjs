@@ -34,6 +34,7 @@ const HISTORY_RPC_REGISTRY_FILE=path.join(ROOT,'intelligence/economic-graph/frax
 const RPC_TIMEOUT_MS=12_000;
 const MAX_BATCH_CALLS=32;
 const MAX_LOG_REQUESTS=2_000;
+const HISTORY_TIMEOUT_CHUNK_BLOCKS=20_000n;
 const MAX_POOLS=200;
 const MAX_OBSERVATIONS=1000;
 const EXPECTED_SOURCE_COMMIT='83dfe93b4a32b9ca0ab93d6e7c059fcd977320d4';
@@ -99,10 +100,11 @@ async function postSingle(url,req,fetchImpl){
 async function batched(url,payload,fetchImpl){const out=new Map();for(let i=0;i<payload.length;i+=MAX_BATCH_CALLS){const rows=await postBatch(url,payload.slice(i,i+MAX_BATCH_CALLS),fetchImpl);for(const [key,row] of rows)out.set(key,row);}return out;}
 function call(id,to,data,blockTag){return {jsonrpc:'2.0',id,method:'eth_call',params:[{to,data},blockTag]};}
 function isAdaptiveLogRangeError(error){const text=String(error instanceof Error?error.message:error).toLowerCase();return /block.?range|range too|range limit|query returned more|too many results|response size|result size|max(imum)?.?range|limit exceeded/.test(text);}
+function isHistoryTimeout(error){const text=String(error instanceof Error?error.message:error).toLowerCase();return /abort|timeout|timed out|signal/.test(text);}
 function classifyHistoryError(error){
   const text=String(error instanceof Error?error.message:error).toLowerCase();
   const http=text.match(/rpc http (\d{3})/);if(http)return `HTTP${http[1]}`;
-  if(/abort|timeout|timed out|signal/.test(text))return 'TIMEOUT';
+  if(isHistoryTimeout(error))return 'TIMEOUT';
   if(/enotfound|eai_again|dns|resolve/.test(text))return 'DNS';
   if(isAdaptiveLogRangeError(error))return 'RANGE_LIMIT';
   if(/json|unexpected token|response is not/.test(text))return 'MALFORMED_RESPONSE';
@@ -111,7 +113,7 @@ function classifyHistoryError(error){
 }
 
 async function collectLogsProviderResilient(url,{address,topic,fromBlock,toBlock,fetchImpl}){
-  const logs=[];const telemetry={providerTransport:'single-request-full-range-first',initialSpanBlocks:Number(toBlock-fromBlock+1n),requestCount:0,adaptiveSplitCount:0,smallestSuccessfulSpanBlocks:null};
+  const logs=[];const telemetry={providerTransport:'single-request-full-range-first',initialSpanBlocks:Number(toBlock-fromBlock+1n),requestCount:0,adaptiveSplitCount:0,timeoutObservedCount:0,timeoutChunkFallbackCount:0,timeoutChunkBlocks:Number(HISTORY_TIMEOUT_CHUNK_BLOCKS),smallestSuccessfulSpanBlocks:null};
   let requestId=700_000;
   async function scan(from,to){
     if(telemetry.requestCount>=MAX_LOG_REQUESTS)throw new Error(`eth_getLogs request cap ${MAX_LOG_REQUESTS} exceeded`);
@@ -122,7 +124,16 @@ async function collectLogsProviderResilient(url,{address,topic,fromBlock,toBlock
       if(!Array.isArray(rows))throw new Error('VPoolDeployed logs result is not array');
       const span=Number(to-from+1n);telemetry.smallestSuccessfulSpanBlocks=telemetry.smallestSuccessfulSpanBlocks===null?span:Math.min(telemetry.smallestSuccessfulSpanBlocks,span);logs.push(...rows);return;
     }catch(error){
-      if(from>=to||!isAdaptiveLogRangeError(error))throw error;
+      if(from>=to)throw error;
+      const span=to-from+1n;
+      if(isHistoryTimeout(error)){
+        telemetry.timeoutObservedCount++;
+        if(span<=HISTORY_TIMEOUT_CHUNK_BLOCKS)throw error;
+        telemetry.adaptiveSplitCount++;telemetry.timeoutChunkFallbackCount++;
+        for(let cursor=from;cursor<=to;cursor+=HISTORY_TIMEOUT_CHUNK_BLOCKS){const end=cursor+HISTORY_TIMEOUT_CHUNK_BLOCKS-1n<to?cursor+HISTORY_TIMEOUT_CHUNK_BLOCKS-1n:to;await scan(cursor,end);}
+        return;
+      }
+      if(!isAdaptiveLogRangeError(error))throw error;
       telemetry.adaptiveSplitCount++;
       const mid=(from+to)>>1n;await scan(from,mid);await scan(mid+1n,to);
     }
@@ -204,7 +215,7 @@ export async function collectFraxFrxEthV2ValidatorPoolCreditCurrentState({regist
 
       const previous=normalizedPrevious(previousMeasurement,lendingPool,currentBlock),discovered=new Map();if(previous)for(const item of previous.rows)discovered.set(normalize(item.address),item);
       const scanStart=previous?previous.block+1n:LENDING_POOL_DEPLOYMENT_BLOCK;
-      let logDiscovery={transport:'public-history-rpc-failover',endpointId:null,endpointRole:null,failoverAttempts:[],providerTransport:'not-needed-no-new-blocks',initialSpanBlocks:0,requestCount:0,adaptiveSplitCount:0,smallestSuccessfulSpanBlocks:null};
+      let logDiscovery={transport:'public-history-rpc-failover',endpointId:null,endpointRole:null,failoverAttempts:[],providerTransport:'not-needed-no-new-blocks',initialSpanBlocks:0,requestCount:0,adaptiveSplitCount:0,timeoutObservedCount:0,timeoutChunkFallbackCount:0,timeoutChunkBlocks:Number(HISTORY_TIMEOUT_CHUNK_BLOCKS),smallestSuccessfulSpanBlocks:null};
       if(scanStart<=currentBlock){
         const discovery=await collectLogsHistoryFailover(historyCandidates({primaryEndpoint:endpoint,currentEndpoints:endpoints,historyRegistry:history}),{address:lendingPool,topic:vPoolTopic,fromBlock:scanStart,toBlock:currentBlock,fetchImpl});logDiscovery=discovery.telemetry;
         for(const log of discovery.logs){
