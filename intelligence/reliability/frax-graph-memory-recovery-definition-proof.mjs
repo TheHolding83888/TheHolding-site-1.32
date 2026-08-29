@@ -8,6 +8,7 @@ const cognitivePath='.github/workflows/refresh-cognitive-stack.yml';
 const liveVerifierPath='.github/workflows/verify-economic-graph-live-build.yml';
 const freshnessGuardPath='intelligence/reliability/cognitive-freshness-guard.mjs';
 const freshnessCanaryPath='intelligence/reliability/cognitive-freshness-guard-canary.mjs';
+const validatorPoolHistoryConfigPath='intelligence/economic-graph/frax-frxeth-validator-pool-history-rpc.json';
 
 const recovery=fs.readFileSync(recoveryPath,'utf8');
 const explanatory=fs.readFileSync(explanatoryPath,'utf8');
@@ -22,6 +23,7 @@ function assert(condition,message){if(!condition)throw new Error(message);}
 for(const required of [
   "intelligence/economic-graph/*.mjs",
   "intelligence/explanatory/*.mjs",
+  validatorPoolHistoryConfigPath,
   'permissions:',
   'contents: read',
   'actions: write',
@@ -66,6 +68,9 @@ for(const required of [
   "eco.authority?.executionAuthority!=='none'",
   "eco.authority?.causalClaimAuthority!=='none'"
 ])assert(recovery.includes(required),`Recovery workflow contract missing: ${required}`);
+
+const validatorPoolHistoryConfigOccurrences=recovery.split(validatorPoolHistoryConfigPath).length-1;
+assert(validatorPoolHistoryConfigOccurrences>=2,'ValidatorPool history config must wake recovery and be verified in the recovery package');
 
 for(const forbidden of [
   "surfaceCount!==9",
@@ -155,6 +160,7 @@ console.log('FRAX GRAPH→SCOPED COGNITION→MEMORY WORKFLOW DEFINITION PROOF PA
   graphModuleCoverage:'globbed',
   fraxDepthContract:'base-plus-materialized-scope-extensions',
   sfrxUsdExactBlockBoundary:true,
+  validatorPoolHistoryConfigRecovery:true,
   sourceRaceBlocked:true,
   globalFreshnessStillFailClosed:true,
   graphRecoveryFreshnessDependencies:['productivity','rewards'],
