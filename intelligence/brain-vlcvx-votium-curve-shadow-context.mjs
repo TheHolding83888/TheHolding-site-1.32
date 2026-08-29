@@ -24,6 +24,7 @@ const FRAX_PROTOCOL_ID='registry-frax-vefrax';
 const FRAX_ECOSYSTEM_ID='registry-frax-ecosystem';
 const BASE_FRAX_SURFACE_KEYS=['governanceVeFrax','fraxtalFloxFxtl','frxUsdSfrxUsd','fraxNet','fraxlend','fraxswapBamm','fxb','fxLiquidity','revenueRouting'];
 const FRXETH_EXTENSION_VERSION='0.1-frxeth-sfrxeth-exact-block-scope-extension';
+const MAX_BRAIN_OUTPUT_BYTES=90_000_000;
 
 function fail(message){throw new Error(message);}
 function sha256(value){return crypto.createHash('sha256').update(value).digest('hex');}
@@ -33,18 +34,49 @@ function stableValue(value){
   return value;
 }
 function stableStringify(value){return JSON.stringify(stableValue(value));}
+function evidenceLocator(item){
+  return stableStringify({source:item?.source,pointer:item?.pointer,selector:item?.selector??null});
+}
 function dedupeEvidence(items){
   const seen=new Set(),out=[];
   for(const item of items){
-    const key=stableStringify({source:item?.source,pointer:item?.pointer,selector:item?.selector??null,value:item?.value,sourceSha256:item?.sourceSha256});
+    const key=stableStringify({
+      source:item?.source,
+      pointer:item?.pointer,
+      selector:item?.selector??null,
+      value:item?.value,
+      valueSha256:item?.valueSha256??null,
+      sourceSha256:item?.sourceSha256
+    });
     if(seen.has(key))continue;
     seen.add(key);out.push(item);
   }
   return out;
 }
+function mergeEvidence(existing,additions){
+  const replacementLocators=new Set(additions.map(evidenceLocator));
+  return dedupeEvidence([
+    ...(existing??[]).filter(item=>!replacementLocators.has(evidenceLocator(item))),
+    ...additions
+  ]);
+}
 function readJson(file){return JSON.parse(fs.readFileSync(file,'utf8'));}
 function evidence({pointer,value,sha,observedAt,interpretation,note}){
   return {source:EXPLANATORY,pointer,value,sourceSha256:sha,observedAt,interpretation,note};
+}
+function referencedEvidence({pointer,value,sha,observedAt,interpretation,note}){
+  const canonicalValue=stableStringify(value);
+  return {
+    source:EXPLANATORY,
+    pointer,
+    sourceSha256:sha,
+    valueSha256:sha256(canonicalValue),
+    valueBytes:Buffer.byteLength(canonicalValue,'utf8'),
+    valueStorage:'source-pointer-integrity-bound',
+    observedAt,
+    interpretation,
+    note
+  };
 }
 function validateFraxScope(fraxEcosystem,fraxSurfaces){
   const extensions=fraxEcosystem?.scopeExtensions??{};
@@ -130,11 +162,11 @@ export function applyBrainVlCvxVotiumCurveShadowContext(){
     interpretation:'read-only-protocol-lifecycle-context',
     note:'Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority.'
   })]));
-  const fraxEv=evidence({
+  const fraxEv=referencedEvidence({
     pointer:`/explanations/protocolEcosystemContexts/${FRAX_ECOSYSTEM_ID}`,
     value:fraxEcosystem,sha:explanatorySha,observedAt,
     interpretation:'frax-deep-ecosystem-measured-vs-source-bound-unknown',
-    note:`Current Explanatory evidence marks ${fraxMeasured} Frax surface(s) MEASURED (${fraxMeasuredSurfaceIds.join(', ')}) and ${fraxUnknown} source-bound UNKNOWN (${fraxUnknownSurfaceIds.join(', ')}). Measurement does not imply causality or execution authority.`
+    note:`Current Explanatory evidence marks ${fraxMeasured} Frax surface(s) MEASURED (${fraxMeasuredSurfaceIds.join(', ')}) and ${fraxUnknown} source-bound UNKNOWN (${fraxUnknownSurfaceIds.join(', ')}). Full Frax context remains materialized once under protocolEcosystemContexts; this evidence row is exact-source-pointer/hash bound to avoid duplicate payload amplification.`
   });
 
   const flowQuestion={
@@ -221,11 +253,12 @@ export function applyBrainVlCvxVotiumCurveShadowContext(){
     protocolLifecycleContexts:lifecycleQuestions,
     protocolEcosystemContexts:{[FRAX_ECOSYSTEM_ID]:fraxQuestion}
   };
+  const extensionEvidence=[flowEv,...Object.values(lifecycleEvidence),fraxEv];
   if(brain?.questions?.whatChanged){
     brain.questions.whatChanged.answer=`${brain.questions.whatChanged.answer} Shadow vlCVX/Votium evidence additionally proves 79/79 post-migration vote matching, 79/79 Curve gauge execution rows, and complete current pool context for 31/31 currently eligible mapped Curve gauges; causality beyond mechanical execution remains unresolved. Protocol Intelligence exposes eight lifecycle contexts and one deep Frax ecosystem family with ${fraxSurfaceCount} tracked surfaces; ${fraxMeasured} surface(s) are currently MEASURED (${fraxMeasuredSurfaceIds.join(', ')}), while ${fraxUnknown} remain source-bound UNKNOWN.`;
-    brain.questions.whatChanged.evidence=dedupeEvidence([...(brain.questions.whatChanged.evidence??[]),flowEv,...Object.values(lifecycleEvidence),fraxEv]);
+    brain.questions.whatChanged.evidence=mergeEvidence(brain.questions.whatChanged.evidence,extensionEvidence);
   }
-  brain.evidenceLedger=dedupeEvidence([...(brain.evidenceLedger??[]),flowEv,...Object.values(lifecycleEvidence),fraxEv]);
+  brain.evidenceLedger=mergeEvidence(brain.evidenceLedger,extensionEvidence);
   brain.grounding={
     ...(brain.grounding??{}),
     principles:[...new Set([
@@ -242,7 +275,10 @@ export function applyBrainVlCvxVotiumCurveShadowContext(){
     generatedAt:null,
     bridge:{...brain.bridge,snapshotHash:null}
   }));
-  fs.writeFileSync(BRAIN,JSON.stringify(brain,null,2)+'\n');
+  const serializedBrain=JSON.stringify(brain,null,2)+'\n';
+  const brainOutputBytes=Buffer.byteLength(serializedBrain,'utf8');
+  if(brainOutputBytes>MAX_BRAIN_OUTPUT_BYTES)fail(`Brain output size guard exceeded: ${brainOutputBytes} > ${MAX_BRAIN_OUTPUT_BYTES}`);
+  fs.writeFileSync(BRAIN,serializedBrain);
 
   if(fs.existsSync(HISTORY)){
     const history=readJson(HISTORY);
@@ -303,6 +339,9 @@ export function applyBrainVlCvxVotiumCurveShadowContext(){
     fraxScopeExtensions:Object.keys(fraxScopeExtensions),
     fraxMeasuredSurfaces:fraxMeasured,
     fraxUnknownSurfaces:fraxUnknown,
+    fraxEvidenceStorage:fraxEv.valueStorage,
+    fraxEvidenceBytes:fraxEv.valueBytes,
+    brainOutputBytes,
     curveExecutedGaugeRows:context.coverage.curveExecutedVotiumGaugeRows,
     currentPoolContexts:context.coverage.currentCurvePoolContextsComplete,
     exactFeeUsd:context.downstreamCurrentContext.exactFeeUsd,
