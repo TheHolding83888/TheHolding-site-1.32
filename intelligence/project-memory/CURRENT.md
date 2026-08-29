@@ -4,7 +4,7 @@
 >
 > Start from this live `main` file. Then load only the minimum recovery packet below. Full owner/build/history canons remain machine-verified durable contracts and are loaded only when the compact router says they are relevant. Changing facts still come from live generated artifacts and exact workflow evidence, not prose memory.
 
-Canonical source state represented here: **2026-08-29T13:14:37.251Z**
+Canonical source state represented here: **2026-08-29T13:53:12.773Z**
 
 ## Minimum recovery packet
 
@@ -46,14 +46,14 @@ Current authority boundary: **execution authority = none**. No wallet signing, t
 
 ## Current cognitive stack
 
-- Cognitive Stack: **WATCH**; readyForManualInterpretation: true; chainHash: 1a2348bc4b11ab01abc1c56ef728fc76bde662173f113936b110c9557870f684.
-- Security Sentinel (latest standalone state): **WATCH**; Critical 0 / High 2 / Medium 20; generatedAt 2026-08-29T13:13:08.670Z.
+- Cognitive Stack: **WATCH**; readyForManualInterpretation: true; chainHash: ae780aff323212a2c2dda0dfa5eb1c620b55c47ceafb88f0956bc1989f92082a.
+- Security Sentinel (latest standalone state): **WATCH**; Critical 0 / High 2 / Medium 20; generatedAt 2026-08-29T13:52:41.405Z.
 - Grounded Brain: **WATCH**.
 - ChatGPT Bridge: **WATCH**; cases 9; evidence 24; noExecution true.
 
 ## Learning / Proposal / Builder / Guardian
 
-- Learning: **READY**; active cases 9; remembered cases 198; Brain observations 53; owner decisions 2; settled outcomes 0; lessons 0.
+- Learning: **READY**; active cases 9; remembered cases 198; Brain observations 54; owner decisions 2; settled outcomes 0; lessons 0.
 - Continuous learning priority: **autonomous observational/world evidence is the primary always-on lane**; Owner Decision → Outcome remains a sparse complementary lane. Neither lane gains causal, policy, capital, repository or execution authority by accumulation alone.
 - Proposal: **WATCH**; active 3; APPROVED 1; PROPOSED 2; SUPERSEDED 27; production execution disabled.
 - Builder: **WATCH**; candidates 1; CANDIDATE 1; productionMutationAuthorizedCount 0.
