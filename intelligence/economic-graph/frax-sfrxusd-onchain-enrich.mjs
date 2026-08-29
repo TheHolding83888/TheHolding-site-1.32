@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Frax bounded onchain Economic Graph enrichment v1.9
+ * The Holding · Frax bounded onchain Economic Graph enrichment v1.10
  *
  * One canonical sequential Frax writer path. Each protocol atom remains a
  * bounded read-only measurement with its own epistemic contract, but all atoms
@@ -32,6 +32,7 @@ import { collectFraxFrxEthCurrentState, applyFraxFrxEthCurrentState } from './fr
 import { collectFraxFrxEthV2EtherRouterCurrentState, applyFraxFrxEthV2EtherRouterCurrentState } from './frax-frxeth-v2-ether-router-current-state.mjs';
 import { collectFraxFrxEthV2LendingPoolCurrentState, applyFraxFrxEthV2LendingPoolCurrentState } from './frax-frxeth-v2-lending-pool-current-state.mjs';
 import { collectFraxFrxEthV2RedemptionQueueCurrentState, applyFraxFrxEthV2RedemptionQueueCurrentState } from './frax-frxeth-v2-redemption-queue-current-state.mjs';
+import { collectFraxFrxEthV2ValidatorPoolCreditCurrentState, applyFraxFrxEthV2ValidatorPoolCreditCurrentState } from './frax-frxeth-v2-validator-pool-credit-current-state.mjs';
 import { collectFraxFpiFpisCurrentState, applyFraxFpiFpisCurrentState } from './frax-fpi-fpis-current-state.mjs';
 import { compactProtocolEvidenceHistory } from './protocol-evidence-history-retention.mjs';
 
@@ -76,6 +77,7 @@ async function main(){
   const previousFraxEcosystem=previousState?.protocolEvidence?.[FRAX_EVIDENCE_ID]?.latest?.observation||null;
   const previousBammMeasurement=previousFraxEcosystem?.surfaces?.fraxswapBamm?.measured||null;
   const previousFeeToHistory=previousFraxEcosystem?.surfaces?.revenueRouting?.measured?.fraxswapFeeToHistoricalBackfill||null;
+  const previousValidatorPoolCredit=previousFraxEcosystem?.surfaces?.frxEthSfrxEth?.measured?.v2Internals?.validatorPoolCredit||null;
   const bammMeasurement=await collectFraxBammOnchain();
   applyFraxBammOnchainMeasurement({state,previousState,measurement:bammMeasurement});
 
@@ -129,6 +131,12 @@ async function main(){
   const frxEthRedemptionQueueMeasurement=await collectFraxFrxEthV2RedemptionQueueCurrentState({checkpoint:frxEthMeasurement?.status==='ok'?frxEthMeasurement:null});
   applyFraxFrxEthV2RedemptionQueueCurrentState({state,measurement:frxEthRedemptionQueueMeasurement});
 
+  // Discover ValidatorPools from source-bound LendingPool deployment history,
+  // then measure credit, allowance, live debt and solvency at the same frxETH
+  // exact block. Native pool balances are not promoted to staking rewards.
+  const frxEthValidatorPoolCreditMeasurement=await collectFraxFrxEthV2ValidatorPoolCreditCurrentState({checkpoint:frxEthMeasurement?.status==='ok'?frxEthMeasurement:null,previousMeasurement:previousValidatorPoolCredit});
+  applyFraxFrxEthV2ValidatorPoolCreditCurrentState({state,measurement:frxEthValidatorPoolCreditMeasurement});
+
   // Frax fat-audit scope extension #2: source-pinned legacy Ethereum FPI/FPIS.
   // This is deliberately after frxETH so the existing extension contract remains
   // stable. Current Fraxtal FPIS Locker and revenue economics remain UNKNOWN.
@@ -162,6 +170,7 @@ async function main(){
   const yieldDistribution=revenue?.measured?.yieldDistributionCurrent;
   const frxEthLendingPool=frxEth?.measured?.v2Internals?.lendingPool;
   const frxEthRedemptionQueue=frxEth?.measured?.v2Internals?.redemptionQueue;
+  const frxEthValidatorPoolCredit=frxEth?.measured?.v2Internals?.validatorPoolCredit;
 
   console.log('FRAX BOUNDED ONCHAIN CANONICAL GRAPH ENRICHMENT PASS',{
     graphEngineVersion:state.engineVersion,
@@ -183,6 +192,7 @@ async function main(){
     frxEth:{measurementState:frxEth?.measurementState,status:frxEth?.measured?.status||'UNKNOWN',blockNumber:frxEth?.measured?.blockNumber??null,frxEthSupply:frxEth?.measured?.asset?.totalSupply??null,sfrxEthSupply:frxEth?.measured?.vault?.totalSupply??null,sfrxEthTotalAssets:frxEth?.measured?.vault?.totalAssets??null,sharePriceFrxEth:frxEth?.measured?.vault?.sharePriceAsset??null,intervalStatus:frxEth?.measured?.intervalEmbeddedYield?.status||'UNKNOWN',validatorEconomics:frxEth?.measured?.epistemic?.validatorEconomics||'UNKNOWN',lendingIncome:frxEth?.measured?.epistemic?.lendingIncome||'UNKNOWN'},
     frxEthV2LendingPool:{status:frxEthLendingPool?.status||'UNKNOWN',blockNumber:frxEthLendingPool?.blockNumber??null,totalBorrowEth:frxEthLendingPool?.lendingPool?.totalBorrow?.amountEth??null,utilizationPct:frxEthLendingPool?.lendingPool?.utilization?.livePct??null,annualizedNominalRatePct:frxEthLendingPool?.lendingPool?.currentRateInfo?.annualizedNominalRatePct??null,interestAccruedEth:frxEthLendingPool?.lendingPool?.interestAccrued?.eth??null,pendingInterestPreviewEth:frxEthLendingPool?.preview?.interestEarned?.eth??null,previewState:frxEthLendingPool?.preview?.status||'UNKNOWN',registryPointerParity:frxEthLendingPool?.lendingPool?.registryPointerParity??null,protocolRevenue:frxEthLendingPool?.epistemic?.protocolRevenue||'UNKNOWN'},
     frxEthV2RedemptionQueue:{status:frxEthRedemptionQueue?.status||'UNKNOWN',blockNumber:frxEthRedemptionQueue?.blockNumber??null,liabilitiesEth:frxEthRedemptionQueue?.redemptionQueue?.accounting?.etherLiabilities?.eth??null,unclaimedFeesFrxEth:frxEthRedemptionQueue?.redemptionQueue?.accounting?.unclaimedFees?.frxEth??null,pendingFeesFrxEth:frxEthRedemptionQueue?.redemptionQueue?.accounting?.pendingFees?.frxEth??null,nativeEth:frxEthRedemptionQueue?.redemptionQueue?.nativeEthBalance?.eth??null,liquidityStatus:frxEthRedemptionQueue?.redemptionQueue?.liquidity?.status||'UNKNOWN',netEthBalanceEth:frxEthRedemptionQueue?.redemptionQueue?.liquidity?.netEthBalanceEth??null,shortageEth:frxEthRedemptionQueue?.redemptionQueue?.liquidity?.shortageEth??null,queueLengthSecs:frxEthRedemptionQueue?.redemptionQueue?.state?.queueLengthSecs??null,redemptionFeePct:frxEthRedemptionQueue?.redemptionQueue?.state?.redemptionFeePct??null,registryPointerParity:frxEthRedemptionQueue?.redemptionQueue?.registryPointerParity??null,aggregateProtocolRevenue:frxEthRedemptionQueue?.epistemic?.aggregateProtocolRevenue||'UNKNOWN'},
+    frxEthV2ValidatorPoolCredit:{status:frxEthValidatorPoolCredit?.status||'UNKNOWN',blockNumber:frxEthValidatorPoolCredit?.blockNumber??null,deployedPools:frxEthValidatorPoolCredit?.summary?.deployedPoolCount??null,validators:frxEthValidatorPoolCredit?.summary?.totalValidatorCount??null,totalCreditEth:frxEthValidatorPoolCredit?.summary?.totalCreditEth??null,totalLiveBorrowEth:frxEthValidatorPoolCredit?.summary?.totalLiveBorrowEth??null,totalBorrowAllowanceEth:frxEthValidatorPoolCredit?.summary?.totalBorrowAllowanceEth??null,activeBorrowingPools:frxEthValidatorPoolCredit?.summary?.activeBorrowingPoolCount??null,insolventPools:frxEthValidatorPoolCredit?.summary?.insolventPoolCount??null,nativePoolBalanceEth:frxEthValidatorPoolCredit?.summary?.totalNativePoolBalanceEth??null,stakingRewards:frxEthValidatorPoolCredit?.epistemic?.stakingRewards||'UNKNOWN',protocolRevenue:frxEthValidatorPoolCredit?.epistemic?.protocolRevenue||'UNKNOWN'},
     fpiFpis:{measurementState:fpiFpis?.measurementState,status:fpiFpis?.measured?.status||'UNKNOWN',blockNumber:fpiFpis?.measured?.blockNumber??null,fpiSupply:fpiFpis?.measured?.tokens?.FPI?.totalSupply??null,fpisSupply:fpiFpis?.measured?.tokens?.FPIS?.totalSupply??null,veFpisVotingPower:fpiFpis?.measured?.legacyVeFPIS?.totalVotingPower??null,veFpisTrackedPrincipal:fpiFpis?.measured?.legacyVeFPIS?.trackedFpisPrincipal??null,trackedPrincipalPct:fpiFpis?.measured?.legacyVeFPIS?.trackedPrincipalPctOfFpisSupply??null,pegState:fpiFpis?.measured?.pegState?.status||'UNKNOWN',treasuryYield:fpiFpis?.measured?.epistemic?.treasuryYield||'UNKNOWN',revenueRouting:fpiFpis?.measured?.epistemic?.revenueRouting||'UNKNOWN'},
     historyRetention:{version:retention.version,historicalRows:retention.historicalObservationCount,beforeBytes:retention.beforeBytes,afterBytes:retention.afterBytes,reductionPct:retention.reductionPct,softLimitBytes:retention.softLimitBytes},
     previousCheckpointSource:'explicit-published-graph-file',
