@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Frax bounded onchain Economic Graph enrichment v1.8
+ * The Holding · Frax bounded onchain Economic Graph enrichment v1.9
  *
  * One canonical sequential Frax writer path. Each protocol atom remains a
  * bounded read-only measurement with its own epistemic contract, but all atoms
@@ -31,6 +31,7 @@ import { collectFraxRevenueRoutingCurrentState, applyFraxRevenueRoutingCurrentSt
 import { collectFraxFrxEthCurrentState, applyFraxFrxEthCurrentState } from './frax-frxeth-current-state.mjs';
 import { collectFraxFrxEthV2EtherRouterCurrentState, applyFraxFrxEthV2EtherRouterCurrentState } from './frax-frxeth-v2-ether-router-current-state.mjs';
 import { collectFraxFrxEthV2LendingPoolCurrentState, applyFraxFrxEthV2LendingPoolCurrentState } from './frax-frxeth-v2-lending-pool-current-state.mjs';
+import { collectFraxFrxEthV2RedemptionQueueCurrentState, applyFraxFrxEthV2RedemptionQueueCurrentState } from './frax-frxeth-v2-redemption-queue-current-state.mjs';
 import { collectFraxFpiFpisCurrentState, applyFraxFpiFpisCurrentState } from './frax-fpi-fpis-current-state.mjs';
 import { compactProtocolEvidenceHistory } from './protocol-evidence-history-retention.mjs';
 
@@ -122,6 +123,12 @@ async function main(){
   const frxEthLendingPoolMeasurement=await collectFraxFrxEthV2LendingPoolCurrentState({checkpoint:frxEthMeasurement?.status==='ok'?frxEthMeasurement:null});
   applyFraxFrxEthV2LendingPoolCurrentState({state,measurement:frxEthLendingPoolMeasurement});
 
+  // Keep RedemptionQueue as its own bounded atom on the same frxETH checkpoint.
+  // Read liabilities, fee accounting and shortage/surplus mechanics only; no
+  // redemption, fee collection, cache mutation or execution path is invoked.
+  const frxEthRedemptionQueueMeasurement=await collectFraxFrxEthV2RedemptionQueueCurrentState({checkpoint:frxEthMeasurement?.status==='ok'?frxEthMeasurement:null});
+  applyFraxFrxEthV2RedemptionQueueCurrentState({state,measurement:frxEthRedemptionQueueMeasurement});
+
   // Frax fat-audit scope extension #2: source-pinned legacy Ethereum FPI/FPIS.
   // This is deliberately after frxETH so the existing extension contract remains
   // stable. Current Fraxtal FPIS Locker and revenue economics remain UNKNOWN.
@@ -154,6 +161,7 @@ async function main(){
   const feeToHistory=revenue?.measured?.fraxswapFeeToHistoricalBackfill;
   const yieldDistribution=revenue?.measured?.yieldDistributionCurrent;
   const frxEthLendingPool=frxEth?.measured?.v2Internals?.lendingPool;
+  const frxEthRedemptionQueue=frxEth?.measured?.v2Internals?.redemptionQueue;
 
   console.log('FRAX BOUNDED ONCHAIN CANONICAL GRAPH ENRICHMENT PASS',{
     graphEngineVersion:state.engineVersion,
@@ -174,6 +182,7 @@ async function main(){
     revenueRoutingYieldDistribution:{measurementState:revenue?.measurementState,status:yieldDistribution?.status||'UNKNOWN',blockNumber:yieldDistribution?.network?.blockNumber??null,proxy:yieldDistribution?.distributor?.proxy??null,implementation:yieldDistribution?.distributor?.implementation??null,emittedToken:yieldDistribution?.distributor?.emittedToken??null,yieldRateRaw:yieldDistribution?.distributor?.yieldRateRaw??null,yieldDurationRaw:yieldDistribution?.distributor?.yieldDurationRaw??null,rewardArithmeticParity:yieldDistribution?.distributor?.rewardArithmeticParity??false,distributorInventoryRaw:yieldDistribution?.distributor?.emittedTokenBalanceRaw??null,upstreamFundingSource:yieldDistribution?.epistemic?.distributorFundingSource||'UNKNOWN',fraxswapFeeToLink:yieldDistribution?.epistemic?.fraxswapFeeToToDistributor||'UNKNOWN',companyCashFlow:yieldDistribution?.epistemic?.companyCashFlow||'UNKNOWN'},
     frxEth:{measurementState:frxEth?.measurementState,status:frxEth?.measured?.status||'UNKNOWN',blockNumber:frxEth?.measured?.blockNumber??null,frxEthSupply:frxEth?.measured?.asset?.totalSupply??null,sfrxEthSupply:frxEth?.measured?.vault?.totalSupply??null,sfrxEthTotalAssets:frxEth?.measured?.vault?.totalAssets??null,sharePriceFrxEth:frxEth?.measured?.vault?.sharePriceAsset??null,intervalStatus:frxEth?.measured?.intervalEmbeddedYield?.status||'UNKNOWN',validatorEconomics:frxEth?.measured?.epistemic?.validatorEconomics||'UNKNOWN',lendingIncome:frxEth?.measured?.epistemic?.lendingIncome||'UNKNOWN'},
     frxEthV2LendingPool:{status:frxEthLendingPool?.status||'UNKNOWN',blockNumber:frxEthLendingPool?.blockNumber??null,totalBorrowEth:frxEthLendingPool?.lendingPool?.totalBorrow?.amountEth??null,utilizationPct:frxEthLendingPool?.lendingPool?.utilization?.livePct??null,annualizedNominalRatePct:frxEthLendingPool?.lendingPool?.currentRateInfo?.annualizedNominalRatePct??null,interestAccruedEth:frxEthLendingPool?.lendingPool?.interestAccrued?.eth??null,pendingInterestPreviewEth:frxEthLendingPool?.preview?.interestEarned?.eth??null,previewState:frxEthLendingPool?.preview?.status||'UNKNOWN',registryPointerParity:frxEthLendingPool?.lendingPool?.registryPointerParity??null,protocolRevenue:frxEthLendingPool?.epistemic?.protocolRevenue||'UNKNOWN'},
+    frxEthV2RedemptionQueue:{status:frxEthRedemptionQueue?.status||'UNKNOWN',blockNumber:frxEthRedemptionQueue?.blockNumber??null,liabilitiesEth:frxEthRedemptionQueue?.redemptionQueue?.accounting?.etherLiabilities?.eth??null,unclaimedFeesFrxEth:frxEthRedemptionQueue?.redemptionQueue?.accounting?.unclaimedFees?.frxEth??null,pendingFeesFrxEth:frxEthRedemptionQueue?.redemptionQueue?.accounting?.pendingFees?.frxEth??null,nativeEth:frxEthRedemptionQueue?.redemptionQueue?.nativeEthBalance?.eth??null,liquidityStatus:frxEthRedemptionQueue?.redemptionQueue?.liquidity?.status||'UNKNOWN',netEthBalanceEth:frxEthRedemptionQueue?.redemptionQueue?.liquidity?.netEthBalanceEth??null,shortageEth:frxEthRedemptionQueue?.redemptionQueue?.liquidity?.shortageEth??null,queueLengthSecs:frxEthRedemptionQueue?.redemptionQueue?.state?.queueLengthSecs??null,redemptionFeePct:frxEthRedemptionQueue?.redemptionQueue?.state?.redemptionFeePct??null,registryPointerParity:frxEthRedemptionQueue?.redemptionQueue?.registryPointerParity??null,aggregateProtocolRevenue:frxEthRedemptionQueue?.epistemic?.aggregateProtocolRevenue||'UNKNOWN'},
     fpiFpis:{measurementState:fpiFpis?.measurementState,status:fpiFpis?.measured?.status||'UNKNOWN',blockNumber:fpiFpis?.measured?.blockNumber??null,fpiSupply:fpiFpis?.measured?.tokens?.FPI?.totalSupply??null,fpisSupply:fpiFpis?.measured?.tokens?.FPIS?.totalSupply??null,veFpisVotingPower:fpiFpis?.measured?.legacyVeFPIS?.totalVotingPower??null,veFpisTrackedPrincipal:fpiFpis?.measured?.legacyVeFPIS?.trackedFpisPrincipal??null,trackedPrincipalPct:fpiFpis?.measured?.legacyVeFPIS?.trackedPrincipalPctOfFpisSupply??null,pegState:fpiFpis?.measured?.pegState?.status||'UNKNOWN',treasuryYield:fpiFpis?.measured?.epistemic?.treasuryYield||'UNKNOWN',revenueRouting:fpiFpis?.measured?.epistemic?.revenueRouting||'UNKNOWN'},
     historyRetention:{version:retention.version,historicalRows:retention.historicalObservationCount,beforeBytes:retention.beforeBytes,afterBytes:retention.afterBytes,reductionPct:retention.reductionPct,softLimitBytes:retention.softLimitBytes},
     previousCheckpointSource:'explicit-published-graph-file',
