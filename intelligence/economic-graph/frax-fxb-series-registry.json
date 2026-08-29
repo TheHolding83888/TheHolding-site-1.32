@@ -1,6 +1,6 @@
 {
-  "version": "0.2-frax-fxb-series-registry-current-subprotocol-source",
-  "purpose": "Current source-bound FXB origin-series identities for bounded exact-block observation. Current origin contracts are measured; bridged mirrors and legacy series are topology/history only unless separately proven.",
+  "version": "0.3-frax-fxb-series-registry-current-source-mixed-interface",
+  "purpose": "Current source-bound FXB origin-series identities for bounded exact-block observation. Current origin contracts span legacy and current FXB interface generations; legacy series and bridged mirrors are excluded from current backing completeness.",
   "officialSources": {
     "docs": "https://docs.frax.com/protocol/subprotocols/fxb",
     "docsRepository": "FraxFinance/docs",
@@ -17,6 +17,7 @@
     "contractRef": "4ef235e68c8277ad3dbc676762fffe663c9896fc",
     "fxbV2Path": "src/contracts/FXB.sol",
     "fxbV2Sha": "446d24ae4d9efffe83b4a9a5e428a174f2f0dd15",
+    "fxbV2LegacyInterfaceEvidence": "FXB.sol explicitly states FRAX() supports the legacy v1.1.0 interface and returns token.",
     "fxbV1LfraxPath": "src/contracts/FXB_LFRAX.sol",
     "fxbV1LfraxSha": "2c3d483afaf289ff459d1a6c55502be4d1b4e04b"
   },
@@ -27,7 +28,8 @@
     "legacySeriesExcludedFromCurrentCoverage": true,
     "originOnlyBackingMeasurement": true,
     "bridgedMirrorIsNotIndependentBacking": true,
-    "redemptionAssetIdentityFunction": "token()",
+    "redemptionAssetIdentityFunctions": ["token()", "FRAX()"],
+    "mixedLegacyAndCurrentContractInterfacesAllowed": true,
     "spotPriceMeasured": false,
     "impliedYieldMeasured": false,
     "unknownIsNotZero": true,
