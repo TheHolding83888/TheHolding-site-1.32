@@ -22,6 +22,8 @@ const BRIEF='intelligence/brain-brief.md';
 const CONTEXT_ID='defitea-convex-vlcvx-votium';
 const FRAX_PROTOCOL_ID='registry-frax-vefrax';
 const FRAX_ECOSYSTEM_ID='registry-frax-ecosystem';
+const BASE_FRAX_SURFACE_KEYS=['governanceVeFrax','fraxtalFloxFxtl','frxUsdSfrxUsd','fraxNet','fraxlend','fraxswapBamm','fxb','fxLiquidity','revenueRouting'];
+const FRXETH_EXTENSION_VERSION='0.1-frxeth-sfrxeth-exact-block-scope-extension';
 
 function fail(message){throw new Error(message);}
 function sha256(value){return crypto.createHash('sha256').update(value).digest('hex');}
@@ -43,6 +45,15 @@ function dedupeEvidence(items){
 function readJson(file){return JSON.parse(fs.readFileSync(file,'utf8'));}
 function evidence({pointer,value,sha,observedAt,interpretation,note}){
   return {source:EXPLANATORY,pointer,value,sourceSha256:sha,observedAt,interpretation,note};
+}
+function validateFraxScope(fraxEcosystem,fraxSurfaces){
+  const extensions=fraxEcosystem?.scopeExtensions??{};
+  const extensionKeys=Object.values(extensions).map(extension=>extension?.surfaceKey).filter(Boolean);
+  if(extensionKeys.length!==new Set(extensionKeys).size)fail('Duplicate Frax scope-extension surface key');
+  const expectedKeys=[...BASE_FRAX_SURFACE_KEYS,...extensionKeys],actualKeys=Object.keys(fraxSurfaces);
+  if(expectedKeys.length!==new Set(expectedKeys).size)fail('Frax scope manifest collides with base surface');
+  if(expectedKeys.length!==actualKeys.length||expectedKeys.some(key=>!actualKeys.includes(key))||actualKeys.some(key=>!expectedKeys.includes(key)))fail(`Frax scope manifest mismatch: expected ${expectedKeys.length}, got ${actualKeys.length}`);
+  return extensions;
 }
 
 export function applyBrainVlCvxVotiumCurveShadowContext(){
@@ -71,8 +82,9 @@ export function applyBrainVlCvxVotiumCurveShadowContext(){
   const fraxMeasured=Number(fraxEcosystem?.coverage?.measuredSurfaceCount);
   const fraxUnknown=Number(fraxEcosystem?.coverage?.sourceBoundUnknownSurfaceCount);
   const fraxSurfaces=fraxEcosystem?.surfaces??{};
+  const fraxScopeExtensions=validateFraxScope(fraxEcosystem,fraxSurfaces);
   const fraxSurfaceEntries=Object.entries(fraxSurfaces);
-  if(fraxSurfaceCount!==9||fraxSurfaceEntries.length!==fraxSurfaceCount||!Number.isInteger(fraxMeasured)||!Number.isInteger(fraxUnknown)||fraxMeasured<1||fraxUnknown<0||fraxMeasured+fraxUnknown!==fraxSurfaceCount)fail(`Frax ecosystem coverage drift: ${fraxSurfaceCount}/${fraxMeasured}/${fraxUnknown}`);
+  if(fraxSurfaceCount!==fraxSurfaceEntries.length||fraxSurfaceCount<BASE_FRAX_SURFACE_KEYS.length||!Number.isInteger(fraxMeasured)||!Number.isInteger(fraxUnknown)||fraxMeasured<1||fraxUnknown<0||fraxMeasured+fraxUnknown!==fraxSurfaceCount)fail(`Frax ecosystem coverage drift: ${fraxSurfaceCount}/${fraxMeasured}/${fraxUnknown}`);
   const fraxMeasuredSurfaceIds=fraxSurfaceEntries.filter(([,surface])=>String(surface?.measurementState??'').startsWith('MEASURED')).map(([id])=>id);
   const fraxUnknownSurfaceIds=fraxSurfaceEntries.filter(([,surface])=>String(surface?.measurementState??'').startsWith('UNKNOWN')).map(([id])=>id);
   if(fraxMeasuredSurfaceIds.length!==fraxMeasured||fraxUnknownSurfaceIds.length!==fraxUnknown)fail('Frax ecosystem surface-state/count mismatch');
@@ -81,6 +93,17 @@ export function applyBrainVlCvxVotiumCurveShadowContext(){
     const m=sfrx?.measured;
     if(m?.version!=='0.1-sfrxusd-exact-block-erc4626'||m?.measurementClass!=='MEASURED'||m?.epistemic?.sourceType!=='onchain-public-rpc-exact-block'||m?.epistemic?.currentStateMeasured!==true||!(Number(m?.values?.sharePriceFrxUsd)>0)||!(Number(m?.blockNumber)>0))fail('Frax sfrxUSD measured proof drift');
     if(m?.epistemic?.historicalBackfill!==false||m?.epistemic?.unknownIsZero!==false||m?.epistemic?.causalClaimAuthority!=='none'||m?.epistemic?.executionAuthority!=='none')fail('Frax sfrxUSD epistemic boundary drift');
+  }
+  const frxEthExtension=fraxScopeExtensions.frxEth;
+  if(frxEthExtension){
+    if(frxEthExtension?.version!==FRXETH_EXTENSION_VERSION||frxEthExtension?.surfaceKey!=='frxEthSfrxEth'||frxEthExtension?.surfaceId!=='frxeth-sfrxeth')fail('Frax frxETH scope-extension identity drift');
+    const frxEth=fraxSurfaces.frxEthSfrxEth;
+    if(!frxEth)fail('Frax frxETH scope extension surface missing');
+    if(String(frxEth?.measurementState??'').startsWith('MEASURED')){
+      const m=frxEth?.measured;
+      if(m?.version!==FRXETH_EXTENSION_VERSION||m?.measurementClass!=='MEASURED'||m?.epistemic?.sourceType!=='onchain-public-rpc-exact-block'||m?.epistemic?.currentStateMeasured!==true||!(Number(m?.vault?.sharePriceAsset)>0)||!(Number(m?.blockNumber)>0))fail('Frax frxETH measured proof drift');
+      if(m?.sourceBinding?.officialSourceCommit!=='83dfe93b4a32b9ca0ab93d6e7c059fcd977320d4'||m?.epistemic?.fraxFactsMeasurementAuthority!==false||m?.epistemic?.unknownIsZero!==false||m?.epistemic?.causalClaimAuthority!=='none'||m?.epistemic?.executionAuthority!=='none')fail('Frax frxETH source/epistemic boundary drift');
+    }
   }
   if(!String(fraxEcosystem?.epistemic?.revenueToVeFraxAprCausality||'').startsWith('UNKNOWN')||!String(fraxEcosystem?.epistemic?.treasuryYieldToSpecificFxPoolIncentive||'').startsWith('UNKNOWN'))fail('Frax ecosystem causal boundary weakened');
   if(fraxEcosystem?.authority?.executionAuthority!=='none'||fraxEcosystem?.authority?.causalClaimAuthority!=='none'||fraxEcosystem?.authority?.lifecyclePromotionAuthority!=='none')fail('Frax ecosystem authority drift');
@@ -133,6 +156,7 @@ export function applyBrainVlCvxVotiumCurveShadowContext(){
     answer:fraxEcosystem.explanation,
     status:fraxEcosystem.status,
     lifecycleStage:fraxEcosystem.lifecycleStage,
+    scopeExtensions:fraxScopeExtensions,
     coverage:fraxEcosystem.coverage,
     surfaces:fraxEcosystem.surfaces,
     relationshipGraph:fraxEcosystem.relationshipGraph,
@@ -181,6 +205,7 @@ export function applyBrainVlCvxVotiumCurveShadowContext(){
         protocolId:FRAX_PROTOCOL_ID,
         lifecycleStage:fraxEcosystem.lifecycleStage,
         surfaceCount:fraxSurfaceCount,
+        scopeExtensionIds:Object.keys(fraxScopeExtensions),
         measuredSurfaceCount:fraxMeasured,
         sourceBoundUnknownSurfaceCount:fraxUnknown,
         measuredSurfaceIds:fraxMeasuredSurfaceIds,
@@ -197,7 +222,7 @@ export function applyBrainVlCvxVotiumCurveShadowContext(){
     protocolEcosystemContexts:{[FRAX_ECOSYSTEM_ID]:fraxQuestion}
   };
   if(brain?.questions?.whatChanged){
-    brain.questions.whatChanged.answer=`${brain.questions.whatChanged.answer} Shadow vlCVX/Votium evidence additionally proves 79/79 post-migration vote matching, 79/79 Curve gauge execution rows, and complete current pool context for 31/31 currently eligible mapped Curve gauges; causality beyond mechanical execution remains unresolved. Protocol Intelligence exposes eight lifecycle contexts and one deep Frax ecosystem family with nine tracked surfaces; ${fraxMeasured} surface(s) are currently MEASURED (${fraxMeasuredSurfaceIds.join(', ')}), while ${fraxUnknown} remain source-bound UNKNOWN.`;
+    brain.questions.whatChanged.answer=`${brain.questions.whatChanged.answer} Shadow vlCVX/Votium evidence additionally proves 79/79 post-migration vote matching, 79/79 Curve gauge execution rows, and complete current pool context for 31/31 currently eligible mapped Curve gauges; causality beyond mechanical execution remains unresolved. Protocol Intelligence exposes eight lifecycle contexts and one deep Frax ecosystem family with ${fraxSurfaceCount} tracked surfaces; ${fraxMeasured} surface(s) are currently MEASURED (${fraxMeasuredSurfaceIds.join(', ')}), while ${fraxUnknown} remain source-bound UNKNOWN.`;
     brain.questions.whatChanged.evidence=dedupeEvidence([...(brain.questions.whatChanged.evidence??[]),flowEv,...Object.values(lifecycleEvidence),fraxEv]);
   }
   brain.evidenceLedger=dedupeEvidence([...(brain.evidenceLedger??[]),flowEv,...Object.values(lifecycleEvidence),fraxEv]);
@@ -275,6 +300,7 @@ export function applyBrainVlCvxVotiumCurveShadowContext(){
     fraxStage:brain.currentPosture.protocolLifecycle.frax.maturityStage,
     deepEcosystemContexts:brain.currentPosture.protocolEcosystems.contextCount,
     fraxSurfaces:fraxSurfaceCount,
+    fraxScopeExtensions:Object.keys(fraxScopeExtensions),
     fraxMeasuredSurfaces:fraxMeasured,
     fraxUnknownSurfaces:fraxUnknown,
     curveExecutedGaugeRows:context.coverage.curveExecutedVotiumGaugeRows,
