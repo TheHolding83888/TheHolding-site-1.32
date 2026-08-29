@@ -1,11 +1,14 @@
 #!/usr/bin/env node
 /**
- * The Holding · Frax bounded onchain Economic Graph enrichment v1.2
+ * The Holding · Frax bounded onchain Economic Graph enrichment v1.3
  *
  * One canonical sequential Frax writer path. Each protocol atom remains a
  * bounded read-only measurement with its own epistemic contract, but all atoms
- * enrich the same Economic Graph artifact. No new workflow, scheduler,
- * orchestrator, price authority, methodology or execution authority.
+ * enrich the same Economic Graph artifact. Rich current evidence remains full;
+ * duplicated historical protocol-evidence payloads are compacted once at the
+ * end of the writer so repository size grows slower than capability.
+ * No new workflow, scheduler, orchestrator, price authority, methodology or
+ * execution authority.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -24,10 +27,12 @@ import { collectFraxswapTwamm, applyFraxswapTwamm } from './frax-fraxswap-twamm.
 import { collectFraxswapProtocolFeeRouting, applyFraxswapProtocolFeeRouting } from './frax-fraxswap-protocol-fee-routing.mjs';
 import { collectFraxswapFeeToLifecycle, applyFraxswapFeeToLifecycle } from './frax-fraxswap-feeto-lifecycle.mjs';
 import { collectFraxswapFeeToHistoryBackfill, applyFraxswapFeeToHistoryBackfill } from './frax-fraxswap-feeto-history-backfill.mjs';
+import { compactProtocolEvidenceHistory } from './protocol-evidence-history-retention.mjs';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const OUT=process.env.ECONOMIC_GRAPH_FILE || path.join(ROOT,'intelligence/economic-graph/economic-graph.json');
 const PREVIOUS=process.env.FRAX_PREVIOUS_GRAPH_FILE || null;
+const FRAX_EVIDENCE_ID='registry-frax-ecosystem';
 
 function readJson(file,label){
   if(!file)throw new Error(`${label} path missing`);
@@ -62,7 +67,7 @@ async function main(){
   const floxFxtlMeasurement=await collectFloxFxtlCurrentState();
   applyFloxFxtlCurrentState({state,previousState,measurement:floxFxtlMeasurement});
 
-  const previousFraxEcosystem=previousState?.protocolEvidence?.['registry-frax-ecosystem']?.latest?.observation||null;
+  const previousFraxEcosystem=previousState?.protocolEvidence?.[FRAX_EVIDENCE_ID]?.latest?.observation||null;
   const previousBammMeasurement=previousFraxEcosystem?.surfaces?.fraxswapBamm?.measured||null;
   const previousFeeToHistory=previousFraxEcosystem?.surfaces?.revenueRouting?.measured?.fraxswapFeeToHistoricalBackfill||null;
   const bammMeasurement=await collectFraxBammOnchain();
@@ -93,9 +98,14 @@ async function main(){
   }
 
   if(state?.authority?.executionAuthority!=='none')throw new Error('Frax bounded enrichment execution authority drift');
-  fs.writeFileSync(OUT,JSON.stringify(state,null,2)+'\n');
 
-  const ecosystem=state?.protocolEvidence?.['registry-frax-ecosystem']?.latest?.observation;
+  // The full current Frax observation stays intact under latest.observation.
+  // Historical duplicates are compacted only after every atom has finished so
+  // no collector loses its published previous-checkpoint semantics.
+  const retention=compactProtocolEvidenceHistory({state,evidenceId:FRAX_EVIDENCE_ID});
+  fs.writeFileSync(OUT,retention.serialized);
+
+  const ecosystem=state?.protocolEvidence?.[FRAX_EVIDENCE_ID]?.latest?.observation;
   const sfrxUsd=ecosystem?.surfaces?.frxUsdSfrxUsd;
   const fraxlend=ecosystem?.surfaces?.fraxlend;
   const fxb=ecosystem?.surfaces?.fxb;
@@ -126,6 +136,7 @@ async function main(){
     fraxswapProtocolFeeRouting:{status:protocolFee?.status||'not-run-current-bamm-unavailable',protocolFeeMintEventCount:protocolFee?.summary?.protocolFeeMintEventCount??null},
     fraxswapFeeToLpLifecycle:{status:feeToLifecycle?.status||'not-run-protocol-fee-prerequisite-unavailable',outboundTransferEventCount:feeToLifecycle?.summary?.outboundTransferEventCount??null,strictRedemptionCount:feeToLifecycle?.summary?.strictRedemptionCount??null},
     fraxswapFeeToHistoricalBackfill:{status:feeToHistory?.status||'not-run-protocol-fee-prerequisite-unavailable',protocolFeeMintEventsBackfilled:feeToHistory?.summary?.protocolFeeMintEventCountBackfilled??null,strictRedemptionsBackfilled:feeToHistory?.summary?.strictRedemptionCountBackfilled??null,continuousFeeToStateHistory:feeToHistory?.epistemic?.continuousFeeToStateHistory||'UNKNOWN'},
+    historyRetention:{version:retention.version,historicalRows:retention.historicalObservationCount,beforeBytes:retention.beforeBytes,afterBytes:retention.afterBytes,reductionPct:retention.reductionPct,softLimitBytes:retention.softLimitBytes},
     previousCheckpointSource:'explicit-published-graph-file',
     executionAuthority:ecosystem?.authority?.executionAuthority
   });
