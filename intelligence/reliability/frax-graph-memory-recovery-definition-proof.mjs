@@ -48,7 +48,14 @@ for(const required of [
   "intelligence/economic-graph/frax-sfrxusd-onchain.mjs",
   "intelligence/economic-graph/frax-sfrxusd-onchain-canary.mjs",
   "intelligence/economic-graph/frax-sfrxusd-onchain-enrich.mjs",
+  "const surfaces=eco.surfaces||{}",
+  "const baseExpected=[",
+  "surfaceCount!==actualSurfaceKeys.length",
   "measured+unknown!==surfaceCount",
+  "const graphSurfaceCount=Number(graphCoverage.surfaceCount)",
+  "explanatorySurfaceCount!==graphSurfaceCount",
+  "const explanatorySurfaceCount=Number(explanatoryFrax.coverage?.surfaceCount)",
+  "Number(frax.surfaceCount)!==explanatorySurfaceCount",
   "measurementState.startsWith('MEASURED')",
   "measurementState.startsWith('UNKNOWN')",
   "sfrxUSD exact-block proof/value missing",
@@ -61,6 +68,9 @@ for(const required of [
 ])assert(recovery.includes(required),`Recovery workflow contract missing: ${required}`);
 
 for(const forbidden of [
+  "surfaceCount!==9",
+  "Number(explanatoryCoverage.surfaceCount)!==9",
+  "Number(frax.surfaceCount)!==9",
   "Number(eco.coverage?.measuredSurfaceCount)!==1",
   "Number(eco.coverage?.sourceBoundUnknownSurfaceCount)!==8",
   "Explanatory Frax 9/1/8 coverage drift",
@@ -143,7 +153,7 @@ console.log('FRAX GRAPH→SCOPED COGNITION→MEMORY WORKFLOW DEFINITION PROOF PA
   liveVerifierPath,
   freshnessGuardPath,
   graphModuleCoverage:'globbed',
-  fraxDepthContract:'invariant-driven',
+  fraxDepthContract:'base-plus-materialized-scope-extensions',
   sfrxUsdExactBlockBoundary:true,
   sourceRaceBlocked:true,
   globalFreshnessStillFailClosed:true,
