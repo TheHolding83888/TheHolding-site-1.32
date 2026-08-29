@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Frax frxETH V2 ValidatorPool credit exact-block state v0.1.3
+ * The Holding · Frax frxETH V2 ValidatorPool credit exact-block state v0.1.4
  *
  * ValidatorPool identity comes from the source-bound LendingPool VPoolDeployed
  * event. Current pool truth remains exact-block RPC. Deep event discovery is a
@@ -8,6 +8,11 @@
  * then discovery-only public archive endpoints, then remaining canonical RPC
  * failovers. Every discovered pool is re-proven at the canonical current block
  * through the current-state endpoint before it can become MEASURED.
+ *
+ * When history transport is unavailable, compact per-endpoint classifications
+ * are preserved in UNKNOWN telemetry and status so production can distinguish
+ * provider denial, timeout, range limits and malformed RPC responses without
+ * adding request fan-out or weakening current-state authority.
  *
  * Validator performance, staking rewards and protocol revenue are deliberately
  * not inferred from pool balances or credit accounting.
@@ -17,7 +22,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const FRAX_FRXETH_V2_VALIDATOR_POOL_CREDIT_VERSION='0.1.3-frxeth-v2-validator-pool-credit-history-failover-exact-block';
+export const FRAX_FRXETH_V2_VALIDATOR_POOL_CREDIT_VERSION='0.1.4-frxeth-v2-validator-pool-credit-history-diagnostics-exact-block';
 export const FRAX_ECOSYSTEM_EVIDENCE_ID='registry-frax-ecosystem';
 export const FRAX_PROTOCOL_ID='registry-frax-vefrax';
 export const FRAX_FRXETH_SURFACE_KEY='frxEthSfrxEth';
@@ -94,6 +99,16 @@ async function postSingle(url,req,fetchImpl){
 async function batched(url,payload,fetchImpl){const out=new Map();for(let i=0;i<payload.length;i+=MAX_BATCH_CALLS){const rows=await postBatch(url,payload.slice(i,i+MAX_BATCH_CALLS),fetchImpl);for(const [key,row] of rows)out.set(key,row);}return out;}
 function call(id,to,data,blockTag){return {jsonrpc:'2.0',id,method:'eth_call',params:[{to,data},blockTag]};}
 function isAdaptiveLogRangeError(error){const text=String(error instanceof Error?error.message:error).toLowerCase();return /block.?range|range too|range limit|query returned more|too many results|response size|result size|max(imum)?.?range|limit exceeded/.test(text);}
+function classifyHistoryError(error){
+  const text=String(error instanceof Error?error.message:error).toLowerCase();
+  const http=text.match(/rpc http (\d{3})/);if(http)return `HTTP${http[1]}`;
+  if(/abort|timeout|timed out|signal/.test(text))return 'TIMEOUT';
+  if(/enotfound|eai_again|dns|resolve/.test(text))return 'DNS';
+  if(isAdaptiveLogRangeError(error))return 'RANGE_LIMIT';
+  if(/json|unexpected token|response is not/.test(text))return 'MALFORMED_RESPONSE';
+  if(/rpc eth_getlogs error/.test(text))return 'RPC_ERROR';
+  return 'OTHER';
+}
 
 async function collectLogsProviderResilient(url,{address,topic,fromBlock,toBlock,fetchImpl}){
   const logs=[];const telemetry={providerTransport:'single-request-full-range-first',initialSpanBlocks:Number(toBlock-fromBlock+1n),requestCount:0,adaptiveSplitCount:0,smallestSuccessfulSpanBlocks:null};
@@ -130,9 +145,10 @@ async function collectLogsHistoryFailover(candidates,args){
     try{
       const result=await collectLogsProviderResilient(endpoint.url,args);
       return {logs:result.logs,telemetry:{transport:'public-history-rpc-failover',endpointId:endpoint.id||null,endpointRole:endpoint.historyRole||null,failoverAttempts:attempts,...result.telemetry}};
-    }catch(error){attempts.push({endpointId:endpoint?.id||null,endpointRole:endpoint?.historyRole||null,error:String(error instanceof Error?error.message:error).slice(0,220)});}
+    }catch(error){attempts.push({endpointId:endpoint?.id||null,endpointRole:endpoint?.historyRole||null,classification:classifyHistoryError(error),error:String(error instanceof Error?error.message:error).slice(0,220)});}
   }
-  const last=attempts.at(-1)?.error||'no history RPC attempts';throw new Error(`VPoolDeployed history unavailable: ${last}`);
+  const compact=attempts.map(row=>`${row.endpointId||'unknown'}:${row.classification}`).join(',');
+  const failure=new Error(`HISTORY_FAILOVER[${compact}]`);failure.code='VPOOL_HISTORY_UNAVAILABLE';failure.historyFailoverAttempts=attempts;throw failure;
 }
 
 function normalizedPrevious(previous,lendingPool,currentBlock){
@@ -143,18 +159,18 @@ function normalizedPrevious(previous,lendingPool,currentBlock){
   return {block,rows};
 }
 
-function unknownMeasurement(source,reason,attempts=[]){
+function unknownMeasurement(source,reason,attempts=[],historyFailoverAttempts=[]){
   return {
     version:FRAX_FRXETH_V2_VALIDATOR_POOL_CREDIT_VERSION,status:reason,measurementClass:'UNKNOWN',observedAt:null,network:'ethereum',chainId:1,blockNumber:null,blockTag:null,blockHash:null,
     lendingPool:{address:source?.operations?.lendingPool||null,deployedCodePresent:null,constants:null},coverage:{completeVPoolDeployedHistory:false,discoveryStartBlock:Number(LENDING_POOL_DEPLOYMENT_BLOCK),deployedPoolCount:null,initializedPoolCount:null},validatorPools:[],summary:null,
-    rpc:{endpointId:null,failoverAttempts:attempts,reusedCheckpoint:false,incrementalDiscovery:false,logDiscovery:null},
+    rpc:{endpointId:null,failoverAttempts:attempts,historyFailoverAttempts,reusedCheckpoint:false,incrementalDiscovery:false,logDiscovery:null},
     epistemic:{sourceType:'onchain-public-rpc-exact-block-plus-bounded-public-history-rpc',validatorPoolRegistry:'UNKNOWN',creditAccounting:'UNKNOWN',borrowAccounting:'UNKNOWN',borrowAllowance:'UNKNOWN',solvency:'UNKNOWN',validatorPerformance:'UNKNOWN',stakingRewards:'UNKNOWN',protocolRevenue:'UNKNOWN',companyCashFlow:'UNKNOWN',unknownIsZero:false,causalClaimAuthority:'none',executionAuthority:'none'}
   };
 }
 
 export async function collectFraxFrxEthV2ValidatorPoolCreditCurrentState({registry=null,rpcRegistry=null,historyRpcRegistry=null,fetchImpl=fetch,checkpoint=null,previousMeasurement=null}={}){
   const source=validateFraxFrxEthValidatorPoolRegistry(registry||readJson(REGISTRY_FILE));
-  const rpc=rpcRegistry||readJson(RPC_REGISTRY_FILE),network=rpc?.networks?.ethereum,endpoints=Array.isArray(network?.rpcFailover)?network.rpcFailover:[],attempts=[];
+  const rpc=rpcRegistry||readJson(RPC_REGISTRY_FILE),network=rpc?.networks?.ethereum,endpoints=Array.isArray(network?.rpcFailover)?network.rpcFailover:[],attempts=[],historyFailoverAttempts=[];
   const history=validateFraxFrxEthValidatorPoolHistoryRpcRegistry(historyRpcRegistry||readJson(HISTORY_RPC_REGISTRY_FILE));
   if(Number(network?.chainId)!==1||!endpoints.length)throw new Error('Ethereum RPC registry unavailable');
   const lendingPool=source.operations.lendingPool;
@@ -228,12 +244,17 @@ export async function collectFraxFrxEthV2ValidatorPoolCreditCurrentState({regist
         lendingPool:{address:lendingPool,deployedCodePresent:true,constants:{defaultCreditPerValidatorRawI48E12:defaultCredit.toString(),defaultCreditPerValidatorEth:round(Number(defaultCredit)/1e12),maximumCreditPerValidatorRawI48E12:maximumCredit.toString(),maximumCreditPerValidatorEth:round(Number(maximumCredit)/1e12),missingCreditPerValidatorMultiplierRaw:creditMultiplier.toString()}},
         coverage:{completeVPoolDeployedHistory:true,discoveryStartBlock:Number(LENDING_POOL_DEPLOYMENT_BLOCK),discoveryEndBlock:blockNumber,deployedPoolCount:validatorPools.length,initializedPoolCount,newPoolsDiscoveredThisRun:validatorPools.length-(previous?.rows?.length||0)},validatorPools,
         summary:{deployedPoolCount:validatorPools.length,initializedPoolCount,distinctCurrentOwnerCount:ownerSet.size,totalValidatorCount,totalCreditRaw:totalCredit.toString(),totalCreditEth:round(units(totalCredit)),totalLiveBorrowRaw:totalBorrowed.toString(),totalLiveBorrowEth:round(units(totalBorrowed)),totalBorrowAllowanceRaw:totalBorrowAllowance.toString(),totalBorrowAllowanceEth:round(units(totalBorrowAllowance)),totalNativePoolBalanceRaw:totalNativeBalance.toString(),totalNativePoolBalanceEth:round(units(totalNativeBalance)),activeBorrowingPoolCount,insolventPoolCount,liquidatedPoolCount},
-        rpc:{endpointId:endpoint.id,failoverAttempts:attempts,reusedCheckpoint:Boolean(checkpoint?.blockTag),incrementalDiscovery:Boolean(previous),previousDiscoveryBlock:previous?Number(previous.block):null,logDiscovery},
+        rpc:{endpointId:endpoint.id,failoverAttempts:attempts,historyFailoverAttempts:[],reusedCheckpoint:Boolean(checkpoint?.blockTag),incrementalDiscovery:Boolean(previous),previousDiscoveryBlock:previous?Number(previous.block):null,logDiscovery},
         epistemic:{sourceType:'onchain-public-rpc-exact-block-plus-bounded-public-history-rpc',currentStateAuthorityEndpoint:endpoint.id,historyTransportAuthority:'discovery-only',candidateIdentityReproof:'MEASURED-current-code-pointer-account-arithmetic',validatorPoolRegistry:'MEASURED-VPoolDeployed-history',creditAccounting:'MEASURED-plus-DERIVED-source-formula-parity',borrowAccounting:'MEASURED-live-and-stored-cross-contract-parity',borrowAllowance:'MEASURED-current-LendingPool-account',solvency:'MEASURED-return-plus-DERIVED-source-formula-parity',validatorPoolNativeEthBalance:'MEASURED-not-attributed-to-staking-rewards',validatorPerformance:'UNKNOWN-not-measured-by-this-atom',stakingRewards:'UNKNOWN-native-balance-is-not-reward-attribution',protocolRevenue:'UNKNOWN-not-measured-by-this-atom',companyCashFlow:'UNKNOWN-not-measured-by-this-atom',unknownIsZero:false,causalClaimAuthority:'none',executionAuthority:'none'}
       };
-    }catch(error){attempts.push({endpointId:endpoint?.id||null,error:String(error instanceof Error?error.message:error).slice(0,220)});}
+    }catch(error){
+      const historyRows=Array.isArray(error?.historyFailoverAttempts)?error.historyFailoverAttempts:[];
+      if(historyRows.length)historyFailoverAttempts.push(...historyRows.map(row=>({...row,currentStateEndpointId:endpoint?.id||null})));
+      attempts.push({endpointId:endpoint?.id||null,classification:error?.code==='VPOOL_HISTORY_UNAVAILABLE'?'HISTORY_UNAVAILABLE':null,error:String(error instanceof Error?error.message:error).slice(0,320)});
+    }
   }
-  return unknownMeasurement(source,attempts.length?`UNKNOWN-${attempts.at(-1).error.replace(/\s+/g,'-').slice(0,120)}`:'UNKNOWN-no-rpc-attempts',attempts);
+  const last=attempts.at(-1)?.error||'no-rpc-attempts';
+  return unknownMeasurement(source,attempts.length?`UNKNOWN-${last.replace(/\s+/g,'-').slice(0,280)}`:'UNKNOWN-no-rpc-attempts',attempts,historyFailoverAttempts);
 }
 
 function rebuildRelationships(current){const surfaces=Object.values(current?.surfaces||{});current.relationshipGraph=surfaces.flatMap(item=>(Array.isArray(item?.mechanicalRelations)?item.mechanicalRelations:[]).map((relation,index)=>({surfaceId:item.id,index,...relation})));current.coverage.relationshipCount=current.relationshipGraph.length;current.coverage.relationshipClassCounts=current.relationshipGraph.reduce((acc,relation)=>{const key=String(relation.class||'UNKNOWN').split('-')[0];acc[key]=(acc[key]||0)+1;return acc;},{});}
