@@ -21,6 +21,8 @@ const OUT=process.env.EXPLANATORY_CONTEXT_FILE||'intelligence/explanatory/explan
 const CANDIDATE_ID='defitea-convex-vlcvx-votium';
 const FRAX_PROTOCOL_ID='registry-frax-vefrax';
 const FRAX_ECOSYSTEM_ID='registry-frax-ecosystem';
+const BASE_FRAX_SURFACE_KEYS=['governanceVeFrax','fraxtalFloxFxtl','frxUsdSfrxUsd','fraxNet','fraxlend','fraxswapBamm','fxb','fxLiquidity','revenueRouting'];
+const FRXETH_EXTENSION_VERSION='0.1-frxeth-sfrxeth-exact-block-scope-extension';
 
 function fail(message){throw new Error(message);}
 function sha256(bytes){return crypto.createHash('sha256').update(bytes).digest('hex');}
@@ -119,6 +121,18 @@ function lifecycleSummary(graph){
   }]));
 }
 
+function validateFraxScope(observation,surfaces){
+  const extensions=observation?.scopeExtensions??{};
+  const extensionEntries=Object.entries(extensions);
+  const extensionKeys=extensionEntries.map(([,extension])=>extension?.surfaceKey).filter(Boolean);
+  if(extensionKeys.length!==new Set(extensionKeys).size)fail('Duplicate Frax scope-extension surface key');
+  const expectedKeys=[...BASE_FRAX_SURFACE_KEYS,...extensionKeys];
+  const actualKeys=Object.keys(surfaces);
+  if(expectedKeys.length!==new Set(expectedKeys).size)fail('Frax scope manifest collides with base surface');
+  if(expectedKeys.length!==actualKeys.length||expectedKeys.some(key=>!actualKeys.includes(key))||actualKeys.some(key=>!expectedKeys.includes(key)))fail(`Frax scope manifest mismatch: expected ${expectedKeys.length}, got ${actualKeys.length}`);
+  return extensions;
+}
+
 function buildFraxEcosystemContext({graph,graphSha256}){
   const evidence=graph?.protocolEvidence?.[FRAX_ECOSYSTEM_ID];
   const observation=evidence?.latest?.observation;
@@ -131,8 +145,9 @@ function buildFraxEcosystemContext({graph,graphSha256}){
   const measured=Number(observation?.coverage?.measuredSurfaceCount);
   const unknown=Number(observation?.coverage?.sourceBoundUnknownSurfaceCount);
   const surfaces=observation?.surfaces??{};
+  const scopeExtensions=validateFraxScope(observation,surfaces);
   const surfaceEntries=Object.entries(surfaces);
-  if(surfaceCount!==9||surfaceEntries.length!==surfaceCount||!Number.isInteger(measured)||!Number.isInteger(unknown)||measured<1||unknown<0||measured+unknown!==surfaceCount)fail(`Frax ecosystem coverage drift: ${surfaceCount}/${measured}/${unknown}`);
+  if(surfaceCount!==surfaceEntries.length||surfaceCount<BASE_FRAX_SURFACE_KEYS.length||!Number.isInteger(measured)||!Number.isInteger(unknown)||measured<1||unknown<0||measured+unknown!==surfaceCount)fail(`Frax ecosystem coverage drift: ${surfaceCount}/${measured}/${unknown}`);
   const measuredSurfaceIds=surfaceEntries.filter(([,surface])=>String(surface?.measurementState??'').startsWith('MEASURED')).map(([id])=>id);
   const unknownSurfaceIds=surfaceEntries.filter(([,surface])=>String(surface?.measurementState??'').startsWith('UNKNOWN')).map(([id])=>id);
   if(measuredSurfaceIds.length!==measured||unknownSurfaceIds.length!==unknown)fail('Frax ecosystem surface-state/count mismatch');
@@ -144,6 +159,19 @@ function buildFraxEcosystemContext({graph,graphSha256}){
     if(m?.epistemic?.historicalBackfill!==false||m?.epistemic?.unknownIsZero!==false||m?.epistemic?.causalClaimAuthority!=='none'||m?.epistemic?.executionAuthority!=='none')fail('Frax sfrxUSD epistemic boundary drift');
   }
 
+  const frxEthExtension=scopeExtensions.frxEth;
+  if(frxEthExtension){
+    if(frxEthExtension?.version!==FRXETH_EXTENSION_VERSION||frxEthExtension?.surfaceKey!=='frxEthSfrxEth'||frxEthExtension?.surfaceId!=='frxeth-sfrxeth')fail('Frax frxETH scope-extension identity drift');
+    const frxEth=surfaces.frxEthSfrxEth;
+    if(!frxEth)fail('Frax frxETH scope extension surface missing');
+    if(String(frxEth?.measurementState??'').startsWith('MEASURED')){
+      const m=frxEth?.measured;
+      if(m?.version!==FRXETH_EXTENSION_VERSION||m?.measurementClass!=='MEASURED'||m?.epistemic?.sourceType!=='onchain-public-rpc-exact-block'||m?.epistemic?.currentStateMeasured!==true||!(Number(m?.vault?.sharePriceAsset)>0)||!(Number(m?.blockNumber)>0))fail('Frax frxETH measured proof drift');
+      if(m?.sourceBinding?.officialSourceCommit!=='83dfe93b4a32b9ca0ab93d6e7c059fcd977320d4'||m?.epistemic?.fraxFactsMeasurementAuthority!==false||m?.epistemic?.unknownIsZero!==false||m?.epistemic?.causalClaimAuthority!=='none'||m?.epistemic?.executionAuthority!=='none')fail('Frax frxETH source/epistemic boundary drift');
+      if(!m?.operationalCode||!Object.values(m.operationalCode).every(item=>item?.deployed===true))fail('Frax frxETH operational code proof incomplete');
+    }
+  }
+
   if(observation?.epistemic?.executionAuthority!=='none'||observation?.authority?.executionAuthority!=='none'||observation?.authority?.causalClaimAuthority!=='none')fail('Frax ecosystem authority drift');
   if(!String(observation?.epistemic?.revenueToVeFraxAprCausality||'').startsWith('UNKNOWN')||!String(observation?.epistemic?.treasuryYieldToSpecificFxPoolIncentive||'').startsWith('UNKNOWN'))fail('Frax ecosystem causal boundary weakened');
   return {
@@ -152,12 +180,13 @@ function buildFraxEcosystemContext({graph,graphSha256}){
     status:observation.status,
     lifecycleStage:observation.lifecycleStage,
     scope:observation.scope,
+    scopeExtensions,
     coverage:observation.coverage,
     surfaces:observation.surfaces,
     relationshipGraph:observation.relationshipGraph,
     epistemic:observation.epistemic,
     nextMeasurementUnlocks:observation.nextMeasurementUnlocks,
-    explanation:`Frax is represented as one lifecycle sensor with a nine-surface ecosystem family. Current Economic Graph evidence marks ${measured} surface(s) as MEASURED (${measuredSurfaceIds.join(', ')}) and ${unknown} surface(s) as source-bound UNKNOWN (${unknownSurfaceIds.join(', ')}). Measured state is inherited from exact Graph evidence only; source topology and measured association do not authorize causal attribution, recommendation, allocation or execution claims.`,
+    explanation:`Frax is represented as one lifecycle sensor with a ${surfaceCount}-surface ecosystem family. Current Economic Graph evidence marks ${measured} surface(s) as MEASURED (${measuredSurfaceIds.join(', ')}) and ${unknown} surface(s) as source-bound UNKNOWN (${unknownSurfaceIds.join(', ')}). Scope extensions are accepted only when explicitly declared by the Graph. Measured state is inherited from exact Graph evidence only; source topology and measured association do not authorize causal attribution, recommendation, allocation or execution claims.`,
     provenance:{economicGraphFile:GRAPH,graphSha256,observationId:observation.id,evidenceVersion:evidence.version},
     authority:observation.authority
   };

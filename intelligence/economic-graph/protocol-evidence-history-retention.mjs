@@ -6,7 +6,7 @@
  * keeps compact, truth-preserving summaries instead of duplicating full event
  * ledgers and pair registries on every snapshot. This prevents the canonical
  * Economic Graph artifact from growing past GitHub's file limit while keeping
- * exact current evidence, coverage, provenance hashes and epistemic classes.
+ * exact current evidence, coverage, scope, provenance hashes and epistemic classes.
  *
  * No evidence is promoted or reclassified here. Full historical payloads remain
  * recoverable from Git history by their retained SHA-256 identity.
@@ -105,11 +105,14 @@ export function compactProtocolEvidenceObservation(observation){
     protocolId:observation.protocolId??null,
     lifecycleStage:observation.lifecycleStage??null,
     status:observation.status??null,
+    scope:compactValue(observation.scope),
+    scopeExtensions:compactValue(observation.scopeExtensions),
     coverage:compactValue(observation.coverage),
     measurementExtensions:compactValue(observation.measurementExtensions),
     surfaces,
     relationshipGraph:compactValue(observation.relationshipGraph),
     epistemic:compactValue(observation.epistemic),
+    nextMeasurementUnlocks:compactValue(observation.nextMeasurementUnlocks),
     authority:compactValue(observation.authority),
     historyRetention:{
       version:PROTOCOL_EVIDENCE_HISTORY_RETENTION_VERSION,
@@ -117,7 +120,7 @@ export function compactProtocolEvidenceObservation(observation){
       originalBytes:Buffer.byteLength(raw,'utf8'),
       originalPayloadSha256:sha256Text(raw),
       fullPayloadLocation:'Git history; current full payload remains protocolEvidence[evidenceId].latest.observation',
-      semantics:'Compaction preserves historical identity, coverage, measurement states, evidence classes, authority and bounded measurement summaries. It does not promote UNKNOWN, association, flow or causality.'
+      semantics:'Compaction preserves historical identity, scope, coverage, measurement states, evidence classes, authority and bounded measurement summaries. It does not promote UNKNOWN, association, flow or causality.'
     }
   };
 }
