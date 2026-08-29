@@ -1,6 +1,6 @@
 # The Holding Brain — Grounded Reasoning Brief
 
-Generated: 2026-08-29T10:22:31.143Z
+Generated: 2026-08-29T12:58:46.872Z
 Mode: delta
 Status: watch
 
@@ -121,8 +121,8 @@ Every reasoning case is evidence-bound and proposal-only.
 ### Protocol lifecycle + Frax ecosystem context
 - Live lifecycle sensors: 8
 - Frax lifecycle stage: shadow
-- Frax ecosystem tracked surfaces: 10
-- Current MEASURED Frax ecosystem surfaces: 10 — governanceVeFrax, fraxtalFloxFxtl, frxUsdSfrxUsd, fraxNet, fraxlend, fraxswapBamm, fxb, fxLiquidity, revenueRouting, frxEthSfrxEth
+- Frax ecosystem tracked surfaces: 11
+- Current MEASURED Frax ecosystem surfaces: 11 — governanceVeFrax, fraxtalFloxFxtl, frxUsdSfrxUsd, fraxNet, fraxlend, fraxswapBamm, fxb, fxLiquidity, revenueRouting, frxEthSfrxEth, fpiFpisVeFpis
 - Source-bound UNKNOWN Frax ecosystem surfaces: 0
 - Revenue → veFRAX APR: UNKNOWN
 - Treasury yield → specific FX-pool incentive: UNKNOWN
