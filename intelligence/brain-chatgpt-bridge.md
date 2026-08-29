@@ -1,10 +1,10 @@
 # The Holding Brain — ChatGPT Bridge
 
-Generated: 2026-08-29T15:04:53.533Z
+Generated: 2026-08-29T15:27:09.354Z
 Bridge status: watch
 Grounded Brain: watch · delta
-Brain generated: 2026-08-29T15:04:52.115Z
-Brain snapshot: 6b7060ce21c774c30bc854c069b545ee5768bb74a261bb8533254e62af7aa0cb
+Brain generated: 2026-08-29T15:27:07.465Z
+Brain snapshot: b8c643eb58a30f3dc8a4b9717ee649414f01fc43d40f38e4facf545b2cd18763
 Cases: 9
 Evidence objects: 24
 
@@ -27,7 +27,7 @@ What follows: The signal is real, but the current deterministic policy has no ca
 
 Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 
-Evidence: EV-d2859c4722f10e72
+Evidence: EV-97d73ec003d82c1c
 
 ### 2. .github/workflows/production-deployment-smoke.yml
 
@@ -42,7 +42,7 @@ What follows: The signal is real, but the current deterministic policy has no ca
 
 Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 
-Evidence: EV-9eb5ea16a90c3b63
+Evidence: EV-4ea9d5616d7b63e0
 
 ### 3. 20 current findings
 
@@ -57,7 +57,7 @@ What follows: A DOM execution sink exists. Risk depends on whether external or u
 
 Deterministic action: Classify the sink by provenance first. Replace with textContent or safe DOM construction only where untrusted/dynamic data can reach the sink; avoid blind bulk rewrites.
 
-Evidence: EV-b320423d45067b4a
+Evidence: EV-c509989c1fc4d945
 
 ### 4. pendle_spendle
 
@@ -72,7 +72,7 @@ What follows: Until the adapter returns to a reproducible ok state, any full-cur
 
 Deterministic action: Keep the adapter explicitly warming/unknown and use the normal bounded resolver or collector path when the required interval/source becomes available. Do not substitute zero.
 
-Evidence: EV-aaa63431d3239f20
+Evidence: EV-9d6e32d608dca452
 
 ### 5. defitea.eth
 
@@ -87,7 +87,7 @@ What follows: The covered productive rate remains useful only within its stated 
 
 Deterministic action: Prioritize the unresolved adapter(s) contributing to the coverage gap, preserve covered-rate semantics, and promote to full coverage only after reproducible evidence exists.
 
-Evidence: EV-05a821bed4c20539
+Evidence: EV-a4e619ef9988d28c
 
 ### 6. 0x5860...83CA8.eth
 
@@ -102,7 +102,7 @@ What follows: Pending reward routes make earned-value memory incomplete even whe
 
 Deterministic action: Resolve only the pending reward route(s) with bounded current-state reads and claimed-state checks. Preserve solved routes and never treat pending as zero.
 
-Evidence: EV-3f9d9288cfdfa193
+Evidence: EV-44a31c301bfd98ee
 
 ### 7. aerocvxyb.eth
 
@@ -117,7 +117,7 @@ What follows: Pending reward routes make earned-value memory incomplete even whe
 
 Deterministic action: Resolve only the pending reward route(s) with bounded current-state reads and claimed-state checks. Preserve solved routes and never treat pending as zero.
 
-Evidence: EV-8152da4e8498f1ef
+Evidence: EV-b225d1d8426bdd36
 
 ### 8. Cypher
 
@@ -132,7 +132,7 @@ What follows: Pending reward routes make earned-value memory incomplete even whe
 
 Deterministic action: Resolve only the pending reward route(s) with bounded current-state reads and claimed-state checks. Preserve solved routes and never treat pending as zero.
 
-Evidence: EV-d434b342a3387fee
+Evidence: EV-40d884cf7f2aa751
 
 ### 9. defitea.eth
 
@@ -147,7 +147,7 @@ What follows: Pending reward routes make earned-value memory incomplete even whe
 
 Deterministic action: Resolve only the pending reward route(s) with bounded current-state reads and claimed-state checks. Preserve solved routes and never treat pending as zero.
 
-Evidence: EV-b309a8059d9e8dda
+Evidence: EV-89d6ca5672fc6c94
 
 ## Manual ChatGPT handoff
 
