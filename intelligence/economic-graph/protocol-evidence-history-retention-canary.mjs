@@ -7,7 +7,10 @@ import {
 } from './protocol-evidence-history-retention.mjs';
 
 const EVIDENCE_ID='registry-frax-ecosystem';
-const SYNTHETIC_SOFT_LIMIT_BYTES=600_000;
+// Synthetic fixture now includes an additional representative rich frxETH scope
+// surface. Keep this fixture ceiling independent from the production 90 MB cap;
+// it only proves that compaction remains materially effective and bounded.
+const SYNTHETIC_SOFT_LIMIT_BYTES=800_000;
 function sha256Text(text){return crypto.createHash('sha256').update(text).digest('hex');}
 function largeLedger(seed){
   return Array.from({length:800},(_,i)=>({
@@ -80,7 +83,7 @@ const result=compactProtocolEvidenceHistory({state,evidenceId:EVIDENCE_ID,softLi
 const evidence=state.protocolEvidence[EVIDENCE_ID];
 assert.equal(result.version,PROTOCOL_EVIDENCE_HISTORY_RETENTION_VERSION);
 assert.ok(result.afterBytes<result.beforeBytes,'retention must shrink rich duplicated history');
-assert.ok(result.afterBytes<SYNTHETIC_SOFT_LIMIT_BYTES,'retained graph must remain below configured soft limit');
+assert.ok(result.afterBytes<SYNTHETIC_SOFT_LIMIT_BYTES,'retained graph must remain below configured synthetic soft limit');
 assert.equal(JSON.stringify(evidence.latest.observation),latestJson,'latest rich observation must remain byte-identical at JSON level');
 assert.equal(evidence.historyRetention.latestPayloadSha256,latestHash);
 assert.equal(evidence.observations.length,4);
@@ -109,6 +112,7 @@ console.log('PROTOCOL EVIDENCE HISTORY RETENTION CANARY PASS',{
   afterBytes:result.afterBytes,
   reductionPct:result.reductionPct,
   historicalRows:result.historicalObservationCount,
+  syntheticSoftLimitBytes:SYNTHETIC_SOFT_LIMIT_BYTES,
   latestPayloadSha256:evidence.historyRetention.latestPayloadSha256,
   frxEthScopeExtension:evidence.observations.at(-1).scopeExtensions.frxEth.surfaceId,
   revenueRouting:evidence.observations.at(-1).surfaces.revenueRouting.measurementState,
