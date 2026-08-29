@@ -1,6 +1,6 @@
 # The Holding — Cognitive Stack State
 
-Generated: 2026-08-29T09:34:59.373Z
+Generated: 2026-08-29T10:22:33.480Z
 Status: watch
 Ready for manual interpretation: YES
 Immediate human review: YES
@@ -8,7 +8,7 @@ Immediate human review: YES
 ## Release coherence
 
 Release: 0.2.1-release-coherence · exact true
-Manifest: fb5ab1ecbabb66eda7d624579df384fe20af1c28c49fa1fb8ee0598ff383d80c
+Manifest: 183be0adfa8158bc7ece8642eeadcad636dc5e4ec46f6d70101aeff79195412b
 
 ## Operating topology
 
@@ -32,7 +32,7 @@ Execution enabled: NO
 
 ## Integrity
 
-Chain hash: 9811cd9ca1c372be11a066cb32b9009f3c0c4e2149743d22c2ccf3fbca663337
+Chain hash: e9ffdbe30e355bf03de2d7ef1367afb7232a5c07d0520041f0467d4639c6e42e
 
 Warnings: 2 high security finding(s) require explicit human review
 
