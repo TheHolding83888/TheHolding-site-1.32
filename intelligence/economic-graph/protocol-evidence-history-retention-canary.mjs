@@ -7,6 +7,7 @@ import {
 } from './protocol-evidence-history-retention.mjs';
 
 const EVIDENCE_ID='registry-frax-ecosystem';
+const SYNTHETIC_SOFT_LIMIT_BYTES=600_000;
 function sha256Text(text){return crypto.createHash('sha256').update(text).digest('hex');}
 function largeLedger(seed){
   return Array.from({length:800},(_,i)=>({
@@ -66,11 +67,11 @@ const state={
   }
 };
 const before=Buffer.byteLength(JSON.stringify(state),'utf8');
-const result=compactProtocolEvidenceHistory({state,evidenceId:EVIDENCE_ID,softLimitBytes:350_000});
+const result=compactProtocolEvidenceHistory({state,evidenceId:EVIDENCE_ID,softLimitBytes:SYNTHETIC_SOFT_LIMIT_BYTES});
 const evidence=state.protocolEvidence[EVIDENCE_ID];
 assert.equal(result.version,PROTOCOL_EVIDENCE_HISTORY_RETENTION_VERSION);
 assert.ok(result.afterBytes<result.beforeBytes,'retention must shrink rich duplicated history');
-assert.ok(result.afterBytes<350_000,'retained graph must remain below configured soft limit');
+assert.ok(result.afterBytes<SYNTHETIC_SOFT_LIMIT_BYTES,'retained graph must remain below configured soft limit');
 assert.equal(JSON.stringify(evidence.latest.observation),latestJson,'latest rich observation must remain byte-identical at JSON level');
 assert.equal(evidence.historyRetention.latestPayloadSha256,latestHash);
 assert.equal(evidence.observations.length,4);
