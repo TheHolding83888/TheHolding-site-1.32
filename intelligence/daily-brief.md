@@ -1,6 +1,6 @@
 # The Holding — Autonomous Change Intelligence
 
-**Generated:** 2026-08-29T14:13:20.942Z
+**Generated:** 2026-08-29T14:33:37.872Z
 **Observer:** 0.2.1-deterministic-memory-vault-corrections
 
 ## No material system changes crossed the Observer thresholds in this run.
@@ -25,8 +25,8 @@ The source files were observed and normalized, but no configured material-change
 
 ## Long-term memory
 
-- Memory Vault: 39 immutable/hash-chained run records since 2026-08-13T15:19:01.108Z.
-- Latest vault record: `intelligence/memory-vault/2026/08/2026-08-29T14-13-20-942Z-709675479b.json`.
+- Memory Vault: 40 immutable/hash-chained run records since 2026-08-13T15:19:01.108Z.
+- Latest vault record: `intelligence/memory-vault/2026/08/2026-08-29T14-33-37-872Z-709675479b.json`.
 - Operational history remains compact; the Memory Vault has no configured lifetime cap.
 - Memory correction ledger: 1 append-only annotation; original Vault records remain immutable.
 
