@@ -63,3 +63,4 @@ await import('./frax-fxb-onchain-canary.mjs');
 await import('./frax-fraxnet-current-state-canary.mjs');
 await import('./frax-flox-fxtl-current-state-canary.mjs');
 await import('./frax-fx-liquidity-current-state-canary.mjs');
+await import('./protocol-evidence-history-retention-canary.mjs');
