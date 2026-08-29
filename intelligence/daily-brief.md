@@ -1,21 +1,11 @@
 # The Holding — Autonomous Change Intelligence
 
-**Generated:** 2026-08-29T12:46:24.872Z
+**Generated:** 2026-08-29T12:58:18.396Z
 **Observer:** 0.2.1-deterministic-memory-vault-corrections
 
-## 11 material changes detected across The Holding.
+## No material system changes crossed the Observer thresholds in this run.
 
-- **defitea.eth** — defitea.eth recorded a new daily reporting observation for 2026-08-29.
-- **defitea.eth** — defitea.eth current-month cash-flow/reference-income counter moved $79.65 → $83.81.
-- **Monetra.eth** — Monetra.eth recorded a new daily reporting observation for 2026-08-29.
-- **Monetra.eth** — Monetra.eth current-month cash-flow/reference-income counter moved $0.17 → $0.18.
-- **Monetra.eth** — Monetra.eth current-month generated income moved $0.1693 → $0.1825.
-- **0x5860...83CA8.eth** — 0x5860...83CA8.eth accrued rewards moved $133.79 → $134.91 (+$1.12).
-- **1milliondollar.eth** — 1milliondollar.eth accrued rewards moved $31.99 → $31.08 ($-0.91).
-- **aerocvxyb.eth** — aerocvxyb.eth accrued rewards moved $187.06 → $188.61 (+$1.55).
-- **defitea.eth** — defitea.eth accrued rewards moved $155.38 → $153.95 ($-1.44).
-- **Rook's portfolio** — Rook's portfolio accrued rewards moved $204.55 → $198.61 ($-5.94).
-- **Stable Companies Index** — Observed embedded income since tracking moved $0.0127 → $0.0089.
+The source files were observed and normalized, but no configured material-change threshold was crossed.
 
 ## Watch next
 
@@ -35,8 +25,8 @@
 
 ## Long-term memory
 
-- Memory Vault: 37 immutable/hash-chained run records since 2026-08-13T15:19:01.108Z.
-- Latest vault record: `intelligence/memory-vault/2026/08/2026-08-29T12-46-24-872Z-22f95b5088.json`.
+- Memory Vault: 38 immutable/hash-chained run records since 2026-08-13T15:19:01.108Z.
+- Latest vault record: `intelligence/memory-vault/2026/08/2026-08-29T12-58-18-396Z-709675479b.json`.
 - Operational history remains compact; the Memory Vault has no configured lifetime cap.
 - Memory correction ledger: 1 append-only annotation; original Vault records remain immutable.
 
