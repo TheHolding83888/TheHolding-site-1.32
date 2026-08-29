@@ -1,0 +1,52 @@
+{
+  "version": "0.1-frax-fx-liquidity-registry",
+  "purpose": "Bounded current Fraxtal frxUSD exchange-liquidity measurement through the reusable constant-product asset-liquidity collector.",
+  "adapter": "constant-product-v2-factory",
+  "network": {
+    "name": "fraxtal",
+    "chainId": 252
+  },
+  "factory": {
+    "label": "Fraxswap Factory",
+    "address": "0xE30521fe7f3bEB6Ad556887b50739d6C7CA667E6"
+  },
+  "baseAsset": {
+    "label": "frxUSD",
+    "address": "0xfc00000000000000000000000000000000000001",
+    "decimals": 18
+  },
+  "source": {
+    "repository": "FraxFinance/frax-solidity",
+    "ref": "30532c8cefcbf5c7efafcff4369261bd435a4859",
+    "contracts": [
+      "Fraxswap/core/FraxswapFactory.sol",
+      "Fraxswap/core/FraxswapPair.sol"
+    ],
+    "identityNote": "Factory and pair interface are the same source-pinned Fraxswap identities already used by the production BAMM / flow / protocol-fee sensors."
+  },
+  "scope": {
+    "surface": "fxLiquidity",
+    "selection": "all current Fraxswap Factory pairs on Fraxtal containing canonical Fraxtal frxUSD",
+    "partial": true,
+    "doesNotAssertAllCounterAssetsAreTokenizedCurrencies": true
+  },
+  "semantics": {
+    "configIsSourceBoundTopology": true,
+    "configIsLiveMeasurement": false,
+    "fullFactoryRegistryRequired": true,
+    "sameBaseAssetReserveMayBeAggregated": true,
+    "counterpartUnitsAggregated": false,
+    "usdValuationPerformed": false,
+    "volumeMeasured": false,
+    "feesMeasured": false,
+    "incentivesMeasured": false,
+    "priceDeviationMeasured": false,
+    "capitalMigrationMeasured": false,
+    "pairPresenceIsNotCapitalFlow": true,
+    "reserveChangeIsNotCapitalMigrationWithoutTransactionIdentity": true,
+    "unknownIsZero": false,
+    "causalClaimAuthority": "none",
+    "recommendationAuthority": "none",
+    "executionAuthority": "none"
+  }
+}
