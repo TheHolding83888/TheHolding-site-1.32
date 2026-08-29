@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Frax bounded onchain Economic Graph enrichment v1.3
+ * The Holding · Frax bounded onchain Economic Graph enrichment v1.4
  *
  * One canonical sequential Frax writer path. Each protocol atom remains a
  * bounded read-only measurement with its own epistemic contract, but all atoms
@@ -27,6 +27,7 @@ import { collectFraxswapTwamm, applyFraxswapTwamm } from './frax-fraxswap-twamm.
 import { collectFraxswapProtocolFeeRouting, applyFraxswapProtocolFeeRouting } from './frax-fraxswap-protocol-fee-routing.mjs';
 import { collectFraxswapFeeToLifecycle, applyFraxswapFeeToLifecycle } from './frax-fraxswap-feeto-lifecycle.mjs';
 import { collectFraxswapFeeToHistoryBackfill, applyFraxswapFeeToHistoryBackfill } from './frax-fraxswap-feeto-history-backfill.mjs';
+import { collectFraxRevenueRoutingCurrentState, applyFraxRevenueRoutingCurrentState } from './frax-revenue-routing-current-state.mjs';
 import { compactProtocolEvidenceHistory } from './protocol-evidence-history-retention.mjs';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
@@ -97,6 +98,13 @@ async function main(){
     applyFraxswapFeeToHistoryBackfill({state,previousState,measurement:feeToHistory});
   }
 
+  // Final top-level Frax surface: current veFXS-weighted YieldDistributor state.
+  // This measures the distribution lane but deliberately does not infer the
+  // source of distributor funds, Fraxswap feeTo linkage, USD protocol revenue,
+  // or any specific company cash-flow realization.
+  const revenueRoutingMeasurement=await collectFraxRevenueRoutingCurrentState();
+  applyFraxRevenueRoutingCurrentState({state,previousState,measurement:revenueRoutingMeasurement});
+
   if(state?.authority?.executionAuthority!=='none')throw new Error('Frax bounded enrichment execution authority drift');
 
   // The full current Frax observation stays intact under latest.observation.
@@ -119,6 +127,7 @@ async function main(){
   const protocolFee=bamm?.measured?.protocolFeeRouting;
   const feeToLifecycle=bamm?.measured?.feeToLpLifecycle;
   const feeToHistory=revenue?.measured?.fraxswapFeeToHistoricalBackfill;
+  const yieldDistribution=revenue?.measured?.yieldDistributionCurrent;
 
   console.log('FRAX BOUNDED ONCHAIN CANONICAL GRAPH ENRICHMENT PASS',{
     graphEngineVersion:state.engineVersion,
@@ -136,6 +145,7 @@ async function main(){
     fraxswapProtocolFeeRouting:{status:protocolFee?.status||'not-run-current-bamm-unavailable',protocolFeeMintEventCount:protocolFee?.summary?.protocolFeeMintEventCount??null},
     fraxswapFeeToLpLifecycle:{status:feeToLifecycle?.status||'not-run-protocol-fee-prerequisite-unavailable',outboundTransferEventCount:feeToLifecycle?.summary?.outboundTransferEventCount??null,strictRedemptionCount:feeToLifecycle?.summary?.strictRedemptionCount??null},
     fraxswapFeeToHistoricalBackfill:{status:feeToHistory?.status||'not-run-protocol-fee-prerequisite-unavailable',protocolFeeMintEventsBackfilled:feeToHistory?.summary?.protocolFeeMintEventCountBackfilled??null,strictRedemptionsBackfilled:feeToHistory?.summary?.strictRedemptionCountBackfilled??null,continuousFeeToStateHistory:feeToHistory?.epistemic?.continuousFeeToStateHistory||'UNKNOWN'},
+    revenueRoutingYieldDistribution:{measurementState:revenue?.measurementState,status:yieldDistribution?.status||'UNKNOWN',blockNumber:yieldDistribution?.network?.blockNumber??null,proxy:yieldDistribution?.distributor?.proxy??null,implementation:yieldDistribution?.distributor?.implementation??null,emittedToken:yieldDistribution?.distributor?.emittedToken??null,yieldRateRaw:yieldDistribution?.distributor?.yieldRateRaw??null,yieldDurationRaw:yieldDistribution?.distributor?.yieldDurationRaw??null,rewardArithmeticParity:yieldDistribution?.distributor?.rewardArithmeticParity??false,distributorInventoryRaw:yieldDistribution?.distributor?.emittedTokenBalanceRaw??null,upstreamFundingSource:yieldDistribution?.epistemic?.distributorFundingSource||'UNKNOWN',fraxswapFeeToLink:yieldDistribution?.epistemic?.fraxswapFeeToToDistributor||'UNKNOWN',companyCashFlow:yieldDistribution?.epistemic?.companyCashFlow||'UNKNOWN'},
     historyRetention:{version:retention.version,historicalRows:retention.historicalObservationCount,beforeBytes:retention.beforeBytes,afterBytes:retention.afterBytes,reductionPct:retention.reductionPct,softLimitBytes:retention.softLimitBytes},
     previousCheckpointSource:'explicit-published-graph-file',
     executionAuthority:ecosystem?.authority?.executionAuthority
