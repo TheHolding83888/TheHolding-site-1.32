@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Frax bounded onchain Economic Graph enrichment v1.6
+ * The Holding · Frax bounded onchain Economic Graph enrichment v1.7
  *
  * One canonical sequential Frax writer path. Each protocol atom remains a
  * bounded read-only measurement with its own epistemic contract, but all atoms
@@ -29,6 +29,7 @@ import { collectFraxswapFeeToLifecycle, applyFraxswapFeeToLifecycle } from './fr
 import { collectFraxswapFeeToHistoryBackfill, applyFraxswapFeeToHistoryBackfill } from './frax-fraxswap-feeto-history-backfill.mjs';
 import { collectFraxRevenueRoutingCurrentState, applyFraxRevenueRoutingCurrentState } from './frax-revenue-routing-current-state.mjs';
 import { collectFraxFrxEthCurrentState, applyFraxFrxEthCurrentState } from './frax-frxeth-current-state.mjs';
+import { collectFraxFrxEthV2EtherRouterCurrentState, applyFraxFrxEthV2EtherRouterCurrentState } from './frax-frxeth-v2-ether-router-current-state.mjs';
 import { collectFraxFpiFpisCurrentState, applyFraxFpiFpisCurrentState } from './frax-fpi-fpis-current-state.mjs';
 import { compactProtocolEvidenceHistory } from './protocol-evidence-history-retention.mjs';
 
@@ -108,6 +109,11 @@ async function main(){
   // Frax fat-audit scope extension #1: frxETH / sfrxETH.
   const frxEthMeasurement=await collectFraxFrxEthCurrentState();
   applyFraxFrxEthCurrentState({state,previousState,measurement:frxEthMeasurement});
+
+  // Reuse the same frxETH exact Ethereum checkpoint for a deeper V2 sub-atom.
+  // Force-live is view-only: no EtherRouter cache write or execution authority.
+  const frxEthEtherRouterMeasurement=await collectFraxFrxEthV2EtherRouterCurrentState({checkpoint:frxEthMeasurement?.status==='ok'?frxEthMeasurement:null});
+  applyFraxFrxEthV2EtherRouterCurrentState({state,measurement:frxEthEtherRouterMeasurement});
 
   // Frax fat-audit scope extension #2: source-pinned legacy Ethereum FPI/FPIS.
   // This is deliberately after frxETH so the existing extension contract remains
