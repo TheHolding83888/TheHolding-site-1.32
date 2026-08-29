@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
- * The Holding · Frax frxETH V2 ValidatorPool credit exact-block state v0.1.1
+ * The Holding · Frax frxETH V2 ValidatorPool credit exact-block state v0.1.2
  *
  * Discovers ValidatorPools from LendingPool VPoolDeployed logs, then measures
  * current credit, allowance, borrow, solvency and pool identity at the same
  * Ethereum checkpoint selected by the base frxETH atom. Historical log
- * discovery uses single-request transport with bounded adaptive range splitting
- * because public RPC providers may reject JSON-RPC batches of eth_getLogs.
+ * discovery starts with one full-range single-request eth_getLogs call and only
+ * splits adaptively when a provider explicitly reports a range/result limit.
  * Validator performance, staking rewards and protocol revenue are deliberately
  * not inferred from pool balances or credit accounting.
  */
@@ -15,7 +15,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const FRAX_FRXETH_V2_VALIDATOR_POOL_CREDIT_VERSION='0.1.1-frxeth-v2-validator-pool-credit-provider-resilient-exact-block';
+export const FRAX_FRXETH_V2_VALIDATOR_POOL_CREDIT_VERSION='0.1.2-frxeth-v2-validator-pool-credit-full-range-bootstrap-exact-block';
 export const FRAX_ECOSYSTEM_EVIDENCE_ID='registry-frax-ecosystem';
 export const FRAX_PROTOCOL_ID='registry-frax-vefrax';
 export const FRAX_FRXETH_SURFACE_KEY='frxEthSfrxEth';
@@ -25,7 +25,6 @@ const REGISTRY_FILE=path.join(ROOT,'intelligence/economic-graph/frax-frxeth-regi
 const RPC_REGISTRY_FILE=path.join(ROOT,'intelligence/market-data/onchain-price-source-registry.json');
 const RPC_TIMEOUT_MS=12_000;
 const MAX_BATCH_CALLS=32;
-const MAX_LOG_BLOCK_SPAN=10_000n;
 const MAX_LOG_REQUESTS=2_000;
 const MAX_POOLS=200;
 const MAX_OBSERVATIONS=1000;
@@ -74,7 +73,7 @@ async function batched(url,payload,fetchImpl){const out=new Map();for(let i=0;i<
 function call(id,to,data,blockTag){return {jsonrpc:'2.0',id,method:'eth_call',params:[{to,data},blockTag]};}
 function isAdaptiveLogRangeError(error){const text=String(error instanceof Error?error.message:error).toLowerCase();return /block.?range|range too|range limit|query returned more|too many results|response size|result size|max(imum)?.?range|limit exceeded/.test(text);}
 async function collectLogsProviderResilient(url,{address,topic,fromBlock,toBlock,fetchImpl}){
-  const logs=[];const telemetry={transport:'single-request',initialSpanBlocks:Number(MAX_LOG_BLOCK_SPAN),requestCount:0,adaptiveSplitCount:0,smallestSuccessfulSpanBlocks:null};
+  const logs=[];const telemetry={transport:'single-request-full-range-first',initialSpanBlocks:Number(toBlock-fromBlock+1n),requestCount:0,adaptiveSplitCount:0,smallestSuccessfulSpanBlocks:null};
   let requestId=700_000;
   async function scan(from,to){
     if(telemetry.requestCount>=MAX_LOG_REQUESTS)throw new Error(`eth_getLogs request cap ${MAX_LOG_REQUESTS} exceeded`);
@@ -92,7 +91,7 @@ async function collectLogsProviderResilient(url,{address,topic,fromBlock,toBlock
       await scan(from,mid);await scan(mid+1n,to);
     }
   }
-  for(let from=fromBlock;from<=toBlock;from+=MAX_LOG_BLOCK_SPAN){const to=from+MAX_LOG_BLOCK_SPAN-1n>toBlock?toBlock:from+MAX_LOG_BLOCK_SPAN-1n;await scan(from,to);}
+  await scan(fromBlock,toBlock);
   return {logs,telemetry};
 }
 
@@ -151,7 +150,7 @@ export async function collectFraxFrxEthV2ValidatorPoolCreditCurrentState({regist
       const previous=normalizedPrevious(previousMeasurement,lendingPool,currentBlock);
       const discovered=new Map();if(previous)for(const item of previous.rows)discovered.set(normalize(item.address),item);
       const scanStart=previous?previous.block+1n:LENDING_POOL_DEPLOYMENT_BLOCK;
-      let logDiscovery={transport:'single-request',initialSpanBlocks:Number(MAX_LOG_BLOCK_SPAN),requestCount:0,adaptiveSplitCount:0,smallestSuccessfulSpanBlocks:null};
+      let logDiscovery={transport:'single-request-full-range-first',initialSpanBlocks:scanStart<=currentBlock?Number(currentBlock-scanStart+1n):0,requestCount:0,adaptiveSplitCount:0,smallestSuccessfulSpanBlocks:null};
       if(scanStart<=currentBlock){
         const discovery=await collectLogsProviderResilient(endpoint.url,{address:lendingPool,topic:vPoolTopic,fromBlock:scanStart,toBlock:currentBlock,fetchImpl});logDiscovery=discovery.telemetry;
         for(const log of discovery.logs){
