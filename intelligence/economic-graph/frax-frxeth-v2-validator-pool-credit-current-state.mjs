@@ -1,19 +1,21 @@
 #!/usr/bin/env node
 /**
- * The Holding · Frax frxETH V2 ValidatorPool credit exact-block state v0.1
+ * The Holding · Frax frxETH V2 ValidatorPool credit exact-block state v0.1.1
  *
  * Discovers ValidatorPools from LendingPool VPoolDeployed logs, then measures
  * current credit, allowance, borrow, solvency and pool identity at the same
- * Ethereum checkpoint selected by the base frxETH atom. Validator performance,
- * staking rewards and protocol revenue are deliberately not inferred from pool
- * balances or credit accounting.
+ * Ethereum checkpoint selected by the base frxETH atom. Historical log
+ * discovery uses single-request transport with bounded adaptive range splitting
+ * because public RPC providers may reject JSON-RPC batches of eth_getLogs.
+ * Validator performance, staking rewards and protocol revenue are deliberately
+ * not inferred from pool balances or credit accounting.
  */
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const FRAX_FRXETH_V2_VALIDATOR_POOL_CREDIT_VERSION='0.1-frxeth-v2-validator-pool-credit-exact-block';
+export const FRAX_FRXETH_V2_VALIDATOR_POOL_CREDIT_VERSION='0.1.1-frxeth-v2-validator-pool-credit-provider-resilient-exact-block';
 export const FRAX_ECOSYSTEM_EVIDENCE_ID='registry-frax-ecosystem';
 export const FRAX_PROTOCOL_ID='registry-frax-vefrax';
 export const FRAX_FRXETH_SURFACE_KEY='frxEthSfrxEth';
@@ -24,6 +26,7 @@ const RPC_REGISTRY_FILE=path.join(ROOT,'intelligence/market-data/onchain-price-s
 const RPC_TIMEOUT_MS=12_000;
 const MAX_BATCH_CALLS=32;
 const MAX_LOG_BLOCK_SPAN=10_000n;
+const MAX_LOG_REQUESTS=2_000;
 const MAX_POOLS=200;
 const MAX_OBSERVATIONS=1000;
 const EXPECTED_SOURCE_COMMIT='83dfe93b4a32b9ca0ab93d6e7c059fcd977320d4';
@@ -69,6 +72,29 @@ async function postBatch(url,payload,fetchImpl){
 }
 async function batched(url,payload,fetchImpl){const out=new Map();for(let i=0;i<payload.length;i+=MAX_BATCH_CALLS){const rows=await postBatch(url,payload.slice(i,i+MAX_BATCH_CALLS),fetchImpl);for(const [key,row] of rows)out.set(key,row);}return out;}
 function call(id,to,data,blockTag){return {jsonrpc:'2.0',id,method:'eth_call',params:[{to,data},blockTag]};}
+function isAdaptiveLogRangeError(error){const text=String(error instanceof Error?error.message:error).toLowerCase();return /block.?range|range too|range limit|query returned more|too many results|response size|result size|max(imum)?.?range|limit exceeded/.test(text);}
+async function collectLogsProviderResilient(url,{address,topic,fromBlock,toBlock,fetchImpl}){
+  const logs=[];const telemetry={transport:'single-request',initialSpanBlocks:Number(MAX_LOG_BLOCK_SPAN),requestCount:0,adaptiveSplitCount:0,smallestSuccessfulSpanBlocks:null};
+  let requestId=700_000;
+  async function scan(from,to){
+    if(telemetry.requestCount>=MAX_LOG_REQUESTS)throw new Error(`eth_getLogs request cap ${MAX_LOG_REQUESTS} exceeded`);
+    telemetry.requestCount++;
+    const id=requestId++;
+    const req={jsonrpc:'2.0',id,method:'eth_getLogs',params:[{address,fromBlock:hexQuantity(from),toBlock:hexQuantity(to),topics:[topic]}]};
+    try{
+      const response=await postBatch(url,[req],fetchImpl);const rows=response.get(id).result;
+      if(!Array.isArray(rows))throw new Error('VPoolDeployed logs result is not array');
+      const span=Number(to-from+1n);telemetry.smallestSuccessfulSpanBlocks=telemetry.smallestSuccessfulSpanBlocks===null?span:Math.min(telemetry.smallestSuccessfulSpanBlocks,span);logs.push(...rows);return;
+    }catch(error){
+      if(from>=to||!isAdaptiveLogRangeError(error))throw error;
+      telemetry.adaptiveSplitCount++;
+      const mid=(from+to)>>1n;
+      await scan(from,mid);await scan(mid+1n,to);
+    }
+  }
+  for(let from=fromBlock;from<=toBlock;from+=MAX_LOG_BLOCK_SPAN){const to=from+MAX_LOG_BLOCK_SPAN-1n>toBlock?toBlock:from+MAX_LOG_BLOCK_SPAN-1n;await scan(from,to);}
+  return {logs,telemetry};
+}
 
 function normalizedPrevious(previous,lendingPool,currentBlock){
   if(previous?.status!=='ok'||previous?.measurementClass!=='MEASURED'||!sameAddress(previous?.lendingPool?.address,lendingPool)||!Array.isArray(previous?.validatorPools)||!previous?.coverage?.completeVPoolDeployedHistory)return null;
@@ -82,7 +108,7 @@ function unknownMeasurement(source,reason,attempts=[]){
   return {
     version:FRAX_FRXETH_V2_VALIDATOR_POOL_CREDIT_VERSION,status:reason,measurementClass:'UNKNOWN',observedAt:null,network:'ethereum',chainId:1,blockNumber:null,blockTag:null,blockHash:null,
     lendingPool:{address:source?.operations?.lendingPool||null,deployedCodePresent:null,constants:null},coverage:{completeVPoolDeployedHistory:false,discoveryStartBlock:Number(LENDING_POOL_DEPLOYMENT_BLOCK),deployedPoolCount:null,initializedPoolCount:null},validatorPools:[],summary:null,
-    rpc:{endpointId:null,failoverAttempts:attempts,reusedCheckpoint:false,incrementalDiscovery:false},
+    rpc:{endpointId:null,failoverAttempts:attempts,reusedCheckpoint:false,incrementalDiscovery:false,logDiscovery:null},
     epistemic:{sourceType:'onchain-public-rpc-exact-block',validatorPoolRegistry:'UNKNOWN',creditAccounting:'UNKNOWN',borrowAccounting:'UNKNOWN',borrowAllowance:'UNKNOWN',solvency:'UNKNOWN',validatorPerformance:'UNKNOWN',stakingRewards:'UNKNOWN',protocolRevenue:'UNKNOWN',companyCashFlow:'UNKNOWN',unknownIsZero:false,causalClaimAuthority:'none',executionAuthority:'none'}
   };
 }
@@ -123,27 +149,27 @@ export async function collectFraxFrxEthV2ValidatorPoolCreditCurrentState({regist
       for(let id=11;id<=19;id++)if(!/^0x[0-9a-f]{64}$/i.test(hash(id)))throw new Error(`Signature hash ${id} invalid`);
 
       const previous=normalizedPrevious(previousMeasurement,lendingPool,currentBlock);
-      const discovered=new Map();
-      if(previous)for(const item of previous.rows)discovered.set(normalize(item.address),item);
+      const discovered=new Map();if(previous)for(const item of previous.rows)discovered.set(normalize(item.address),item);
       const scanStart=previous?previous.block+1n:LENDING_POOL_DEPLOYMENT_BLOCK;
-      let nextId=1000;
+      let logDiscovery={transport:'single-request',initialSpanBlocks:Number(MAX_LOG_BLOCK_SPAN),requestCount:0,adaptiveSplitCount:0,smallestSuccessfulSpanBlocks:null};
       if(scanStart<=currentBlock){
-        const logCalls=[];
-        for(let from=scanStart;from<=currentBlock;from+=MAX_LOG_BLOCK_SPAN){const to=(from+MAX_LOG_BLOCK_SPAN-1n>currentBlock)?currentBlock:from+MAX_LOG_BLOCK_SPAN-1n;logCalls.push({jsonrpc:'2.0',id:nextId++,method:'eth_getLogs',params:[{address:lendingPool,fromBlock:hexQuantity(from),toBlock:hexQuantity(to),topics:[vPoolTopic]}]});}
-        const logResults=await batched(endpoint.url,logCalls,fetchImpl);
-        for(const req of logCalls){const logs=logResults.get(req.id).result;if(!Array.isArray(logs))throw new Error('VPoolDeployed logs result is not array');for(const log of logs){if(!sameAddress(log?.address,lendingPool)||String(log?.topics?.[0]||'').toLowerCase()!==vPoolTopic)throw new Error('VPoolDeployed log identity mismatch');const clean=cleanHex(log.data);if(clean.length!==128)throw new Error('VPoolDeployed event ABI shape drift');const deploymentOwner=decodeAddress(log.data,0),address=decodeAddress(log.data,1),deploymentBlock=safeInt(decodeQuantity(log.blockNumber),'deployment block');if(!validAddress(deploymentOwner)||!validAddress(address)||deploymentBlock<Number(LENDING_POOL_DEPLOYMENT_BLOCK)||deploymentBlock>blockNumber)throw new Error('VPoolDeployed decoded identity invalid');const key=normalize(address);if(discovered.has(key))throw new Error(`Duplicate VPoolDeployed identity ${address}`);discovered.set(key,{address,deploymentOwner,deploymentBlock,deploymentTxHash:String(log.transactionHash||'')||null});}}
+        const discovery=await collectLogsProviderResilient(endpoint.url,{address:lendingPool,topic:vPoolTopic,fromBlock:scanStart,toBlock:currentBlock,fetchImpl});logDiscovery=discovery.telemetry;
+        for(const log of discovery.logs){
+          if(!sameAddress(log?.address,lendingPool)||String(log?.topics?.[0]||'').toLowerCase()!==vPoolTopic)throw new Error('VPoolDeployed log identity mismatch');
+          const clean=cleanHex(log.data);if(clean.length!==128)throw new Error('VPoolDeployed event ABI shape drift');
+          const deploymentOwner=decodeAddress(log.data,0),address=decodeAddress(log.data,1),deploymentBlock=safeInt(decodeQuantity(log.blockNumber),'deployment block');
+          if(!validAddress(deploymentOwner)||!validAddress(address)||deploymentBlock<Number(LENDING_POOL_DEPLOYMENT_BLOCK)||deploymentBlock>blockNumber)throw new Error('VPoolDeployed decoded identity invalid');
+          const key=normalize(address);if(discovered.has(key))throw new Error(`Duplicate VPoolDeployed identity ${address}`);
+          discovered.set(key,{address,deploymentOwner,deploymentBlock,deploymentTxHash:String(log.transactionHash||'')||null});
+        }
       }
       const deploymentRows=[...discovered.values()].sort((a,b)=>a.deploymentBlock-b.deploymentBlock||normalize(a.address).localeCompare(normalize(b.address)));
       if(deploymentRows.length>MAX_POOLS)throw new Error(`ValidatorPool count exceeds bounded cap ${MAX_POOLS}`);
 
+      let nextId=1000;
       const accountSelector=selector(11),solvencySelector=selector(12),ownerSelector=selector(13),poolLpSelector=selector(14),liveBorrowSelector=selector(15),storedBorrowSelector=selector(16);
-      const globalCalls=[
-        call(nextId++,lendingPool,selector(17),blockTag),
-        call(nextId++,lendingPool,selector(18),blockTag),
-        call(nextId++,lendingPool,selector(19),blockTag)
-      ];
-      const globalIds=globalCalls.map(row=>row.id);
-      const poolCalls=[];const poolIds=[];
+      const globalCalls=[call(nextId++,lendingPool,selector(17),blockTag),call(nextId++,lendingPool,selector(18),blockTag),call(nextId++,lendingPool,selector(19),blockTag)];
+      const globalIds=globalCalls.map(row=>row.id);const poolCalls=[];const poolIds=[];
       for(const row of deploymentRows){
         const ids={row,code:nextId++,balance:nextId++,account:nextId++,solvency:nextId++,owner:nextId++,lendingPool:nextId++,liveBorrow:nextId++,storedBorrow:nextId++};
         poolCalls.push(
@@ -151,20 +177,14 @@ export async function collectFraxFrxEthV2ValidatorPoolCreditCurrentState({regist
           {jsonrpc:'2.0',id:ids.balance,method:'eth_getBalance',params:[row.address,blockTag]},
           call(ids.account,lendingPool,callData(accountSelector,addressWord(row.address)),blockTag),
           call(ids.solvency,lendingPool,callData(solvencySelector,addressWord(row.address),boolWord(true),uintWord(0),uintWord(0)),blockTag),
-          call(ids.owner,row.address,ownerSelector,blockTag),
-          call(ids.lendingPool,row.address,poolLpSelector,blockTag),
-          call(ids.liveBorrow,row.address,liveBorrowSelector,blockTag),
-          call(ids.storedBorrow,row.address,storedBorrowSelector,blockTag)
-        );
-        poolIds.push(ids);
+          call(ids.owner,row.address,ownerSelector,blockTag),call(ids.lendingPool,row.address,poolLpSelector,blockTag),call(ids.liveBorrow,row.address,liveBorrowSelector,blockTag),call(ids.storedBorrow,row.address,storedBorrowSelector,blockTag)
+        );poolIds.push(ids);
       }
       const callResults=await batched(endpoint.url,[...globalCalls,...poolCalls],fetchImpl);
       const defaultCredit=decodeWord(callResults.get(globalIds[0]).result),maximumCredit=decodeWord(callResults.get(globalIds[1]).result),creditMultiplier=decodeWord(callResults.get(globalIds[2]).result);
       if(defaultCredit!==24_000_000_000_000n||maximumCredit!==31_000_000_000_000n||creditMultiplier!==1_000_000n)throw new Error('ValidatorPool source/live credit constants drift');
 
-      const validatorPools=[];
-      let initializedPoolCount=0,totalValidatorCount=0,totalCredit=0n,totalBorrowed=0n,totalBorrowAllowance=0n,totalNativeBalance=0n,activeBorrowingPoolCount=0,insolventPoolCount=0,liquidatedPoolCount=0;
-      const ownerSet=new Set();
+      const validatorPools=[];let initializedPoolCount=0,totalValidatorCount=0,totalCredit=0n,totalBorrowed=0n,totalBorrowAllowance=0n,totalNativeBalance=0n,activeBorrowingPoolCount=0,insolventPoolCount=0,liquidatedPoolCount=0;const ownerSet=new Set();
       for(const ids of poolIds){
         const code=String(callResults.get(ids.code).result||'');if(!/^0x[0-9a-f]+$/i.test(code)||code==='0x'||code==='0x0')throw new Error(`ValidatorPool deployed code missing ${ids.row.address}`);
         const nativeBalance=decodeQuantity(callResults.get(ids.balance).result);
@@ -174,33 +194,22 @@ export async function collectFraxFrxEthV2ValidatorPoolCreditCurrentState({regist
         const isSolvent=decodeWord(solvency,0)!==0n,borrowAmount=decodeWord(solvency,1),creditAmount=decodeWord(solvency,2);
         const currentOwner=decodeAddress(callResults.get(ids.owner).result),currentLendingPool=decodeAddress(callResults.get(ids.lendingPool).result),liveBorrow=decodeWord(callResults.get(ids.liveBorrow).result);
         const storedBorrow=callResults.get(ids.storedBorrow).result;if(cleanHex(storedBorrow).length<2*64)throw new Error('stored borrow ABI shape drift');const storedBorrowAmount=decodeWord(storedBorrow,0),storedBorrowShares=decodeWord(storedBorrow,1);
-        if(!isInitialized)throw new Error(`VPoolDeployed pool not initialized ${ids.row.address}`);
-        if(!sameAddress(currentLendingPool,lendingPool))throw new Error(`ValidatorPool LendingPool pointer drift ${ids.row.address}`);
+        if(!isInitialized)throw new Error(`VPoolDeployed pool not initialized ${ids.row.address}`);if(!sameAddress(currentLendingPool,lendingPool))throw new Error(`ValidatorPool LendingPool pointer drift ${ids.row.address}`);
         const expectedCredit=creditPerValidator*creditMultiplier*validatorCount;if(expectedCredit!==creditAmount)throw new Error(`ValidatorPool credit arithmetic drift ${ids.row.address}`);
         const expectedSolvent=(creditAmount>=borrowAmount)&&!wasLiquidated;if(expectedSolvent!==isSolvent)throw new Error(`ValidatorPool solvency arithmetic drift ${ids.row.address}`);
-        if(liveBorrow!==borrowAmount)throw new Error(`ValidatorPool live borrow parity drift ${ids.row.address}`);
-        if(storedBorrowShares!==borrowShares)throw new Error(`ValidatorPool stored borrow-share parity drift ${ids.row.address}`);
-        if(creditPerValidator>maximumCredit)throw new Error(`ValidatorPool credit-per-validator exceeds source maximum ${ids.row.address}`);
-        const headroom=creditAmount>=borrowAmount?creditAmount-borrowAmount:0n;
-        const creditUtilizationPct=creditAmount>0n?round(Number(borrowAmount)*100/Number(creditAmount),8):null;
-        validatorPools.push({
-          ...ids.row,currentOwner,lendingPool:currentLendingPool,deployedCodePresent:true,nativeEthBalance:{raw:nativeBalance.toString(),eth:round(units(nativeBalance))},
-          account:{isInitialized,wasLiquidated,lastWithdrawalTimestamp:safeInt(lastWithdrawal,'last withdrawal'),validatorCount:safeInt(validatorCount,'validator count'),creditPerValidatorRawI48E12:creditPerValidator.toString(),creditPerValidatorEth:round(Number(creditPerValidator)/1e12),borrowAllowanceRaw:borrowAllowance.toString(),borrowAllowanceEth:round(units(borrowAllowance)),borrowSharesRaw:borrowShares.toString()},
-          solvency:{isSolvent,borrowAmountRaw:borrowAmount.toString(),borrowAmountEth:round(units(borrowAmount)),creditAmountRaw:creditAmount.toString(),creditAmountEth:round(units(creditAmount)),creditHeadroomRaw:headroom.toString(),creditHeadroomEth:round(units(headroom)),creditUtilizationPct,mechanicalParity:true},
-          borrowParity:{liveBorrowRaw:liveBorrow.toString(),liveBorrowEth:round(units(liveBorrow)),storedBorrowAmountRaw:storedBorrowAmount.toString(),storedBorrowAmountEth:round(units(storedBorrowAmount)),storedBorrowSharesRaw:storedBorrowShares.toString(),liveWouldBeSolventBorrowParity:true,storedBorrowShareParity:true}
-        });
+        if(liveBorrow!==borrowAmount)throw new Error(`ValidatorPool live borrow parity drift ${ids.row.address}`);if(storedBorrowShares!==borrowShares)throw new Error(`ValidatorPool stored borrow-share parity drift ${ids.row.address}`);if(creditPerValidator>maximumCredit)throw new Error(`ValidatorPool credit-per-validator exceeds source maximum ${ids.row.address}`);
+        const headroom=creditAmount>=borrowAmount?creditAmount-borrowAmount:0n;const creditUtilizationPct=creditAmount>0n?round(Number(borrowAmount)*100/Number(creditAmount),8):null;
+        validatorPools.push({...ids.row,currentOwner,lendingPool:currentLendingPool,deployedCodePresent:true,nativeEthBalance:{raw:nativeBalance.toString(),eth:round(units(nativeBalance))},account:{isInitialized,wasLiquidated,lastWithdrawalTimestamp:safeInt(lastWithdrawal,'last withdrawal'),validatorCount:safeInt(validatorCount,'validator count'),creditPerValidatorRawI48E12:creditPerValidator.toString(),creditPerValidatorEth:round(Number(creditPerValidator)/1e12),borrowAllowanceRaw:borrowAllowance.toString(),borrowAllowanceEth:round(units(borrowAllowance)),borrowSharesRaw:borrowShares.toString()},solvency:{isSolvent,borrowAmountRaw:borrowAmount.toString(),borrowAmountEth:round(units(borrowAmount)),creditAmountRaw:creditAmount.toString(),creditAmountEth:round(units(creditAmount)),creditHeadroomRaw:headroom.toString(),creditHeadroomEth:round(units(headroom)),creditUtilizationPct,mechanicalParity:true},borrowParity:{liveBorrowRaw:liveBorrow.toString(),liveBorrowEth:round(units(liveBorrow)),storedBorrowAmountRaw:storedBorrowAmount.toString(),storedBorrowAmountEth:round(units(storedBorrowAmount)),storedBorrowSharesRaw:storedBorrowShares.toString(),liveWouldBeSolventBorrowParity:true,storedBorrowShareParity:true}});
         initializedPoolCount++;totalValidatorCount+=safeInt(validatorCount,'validator count');totalCredit+=creditAmount;totalBorrowed+=borrowAmount;totalBorrowAllowance+=borrowAllowance;totalNativeBalance+=nativeBalance;if(borrowAmount>0n)activeBorrowingPoolCount++;if(!isSolvent)insolventPoolCount++;if(wasLiquidated)liquidatedPoolCount++;ownerSet.add(normalize(currentOwner));
       }
 
       return {
-        version:FRAX_FRXETH_V2_VALIDATOR_POOL_CREDIT_VERSION,status:'ok',measurementClass:'MEASURED',observedAt:new Date(timestampSeconds*1000).toISOString(),network:'ethereum',chainId:1,blockNumber,blockTag,blockHash:block.hash,
-        sourceRegistryVersion:source.version,
+        version:FRAX_FRXETH_V2_VALIDATOR_POOL_CREDIT_VERSION,status:'ok',measurementClass:'MEASURED',observedAt:new Date(timestampSeconds*1000).toISOString(),network:'ethereum',chainId:1,blockNumber,blockTag,blockHash:block.hash,sourceRegistryVersion:source.version,
         sourceBinding:{officialSourceRepo:source.sources.officialSourceRepo,officialSourceCommit:source.sources.officialSourceCommit,lendingPoolSource:'src/contracts/lending-pool/LendingPool.sol',lendingPoolCoreSource:'src/contracts/lending-pool/LendingPoolCore.sol',validatorPoolSource:'src/contracts/ValidatorPool.sol',deploymentEvent:'VPoolDeployed(address,address)',discoveryStartBlock:Number(LENDING_POOL_DEPLOYMENT_BLOCK),discoveryStartRole:'conservative LendingPool deployment bound; pool identities themselves are exact-RPC event measured'},
         lendingPool:{address:lendingPool,deployedCodePresent:true,constants:{defaultCreditPerValidatorRawI48E12:defaultCredit.toString(),defaultCreditPerValidatorEth:round(Number(defaultCredit)/1e12),maximumCreditPerValidatorRawI48E12:maximumCredit.toString(),maximumCreditPerValidatorEth:round(Number(maximumCredit)/1e12),missingCreditPerValidatorMultiplierRaw:creditMultiplier.toString()}},
-        coverage:{completeVPoolDeployedHistory:true,discoveryStartBlock:Number(LENDING_POOL_DEPLOYMENT_BLOCK),discoveryEndBlock:blockNumber,deployedPoolCount:validatorPools.length,initializedPoolCount,newPoolsDiscoveredThisRun:validatorPools.length-(previous?.rows?.length||0)},
-        validatorPools,
+        coverage:{completeVPoolDeployedHistory:true,discoveryStartBlock:Number(LENDING_POOL_DEPLOYMENT_BLOCK),discoveryEndBlock:blockNumber,deployedPoolCount:validatorPools.length,initializedPoolCount,newPoolsDiscoveredThisRun:validatorPools.length-(previous?.rows?.length||0)},validatorPools,
         summary:{deployedPoolCount:validatorPools.length,initializedPoolCount,distinctCurrentOwnerCount:ownerSet.size,totalValidatorCount,totalCreditRaw:totalCredit.toString(),totalCreditEth:round(units(totalCredit)),totalLiveBorrowRaw:totalBorrowed.toString(),totalLiveBorrowEth:round(units(totalBorrowed)),totalBorrowAllowanceRaw:totalBorrowAllowance.toString(),totalBorrowAllowanceEth:round(units(totalBorrowAllowance)),totalNativePoolBalanceRaw:totalNativeBalance.toString(),totalNativePoolBalanceEth:round(units(totalNativeBalance)),activeBorrowingPoolCount,insolventPoolCount,liquidatedPoolCount},
-        rpc:{endpointId:endpoint.id,failoverAttempts:attempts,reusedCheckpoint:Boolean(checkpoint?.blockTag),incrementalDiscovery:Boolean(previous),previousDiscoveryBlock:previous?Number(previous.block):null},
+        rpc:{endpointId:endpoint.id,failoverAttempts:attempts,reusedCheckpoint:Boolean(checkpoint?.blockTag),incrementalDiscovery:Boolean(previous),previousDiscoveryBlock:previous?Number(previous.block):null,logDiscovery},
         epistemic:{sourceType:'onchain-public-rpc-exact-block-plus-source-bound-event-history',validatorPoolRegistry:'MEASURED-VPoolDeployed-history',creditAccounting:'MEASURED-plus-DERIVED-source-formula-parity',borrowAccounting:'MEASURED-live-and-stored-cross-contract-parity',borrowAllowance:'MEASURED-current-LendingPool-account',solvency:'MEASURED-return-plus-DERIVED-source-formula-parity',validatorPoolNativeEthBalance:'MEASURED-not-attributed-to-staking-rewards',validatorPerformance:'UNKNOWN-not-measured-by-this-atom',stakingRewards:'UNKNOWN-native-balance-is-not-reward-attribution',protocolRevenue:'UNKNOWN-not-measured-by-this-atom',companyCashFlow:'UNKNOWN-not-measured-by-this-atom',unknownIsZero:false,causalClaimAuthority:'none',executionAuthority:'none'}
       };
     }catch(error){attempts.push({endpointId:endpoint?.id||null,error:String(error instanceof Error?error.message:error).slice(0,220)});}
@@ -209,41 +218,21 @@ export async function collectFraxFrxEthV2ValidatorPoolCreditCurrentState({regist
 }
 
 function rebuildRelationships(current){
-  const surfaces=Object.values(current?.surfaces||{});
-  current.relationshipGraph=surfaces.flatMap(item=>(Array.isArray(item?.mechanicalRelations)?item.mechanicalRelations:[]).map((relation,index)=>({surfaceId:item.id,index,...relation})));
-  current.coverage.relationshipCount=current.relationshipGraph.length;
-  current.coverage.relationshipClassCounts=current.relationshipGraph.reduce((acc,relation)=>{const key=String(relation.class||'UNKNOWN').split('-')[0];acc[key]=(acc[key]||0)+1;return acc;},{});
+  const surfaces=Object.values(current?.surfaces||{});current.relationshipGraph=surfaces.flatMap(item=>(Array.isArray(item?.mechanicalRelations)?item.mechanicalRelations:[]).map((relation,index)=>({surfaceId:item.id,index,...relation})));
+  current.coverage.relationshipCount=current.relationshipGraph.length;current.coverage.relationshipClassCounts=current.relationshipGraph.reduce((acc,relation)=>{const key=String(relation.class||'UNKNOWN').split('-')[0];acc[key]=(acc[key]||0)+1;return acc;},{});
 }
 
 export function applyFraxFrxEthV2ValidatorPoolCreditCurrentState({state,measurement}){
   if(!state||typeof state!=='object')throw new Error('Frax frxETH V2 ValidatorPool adapter requires Economic Graph state');
   if(state?.authority?.executionAuthority!=='none'||state?.authority?.causalClaimAuthority!=='none')throw new Error('Frax frxETH V2 ValidatorPool adapter refuses Graph authority drift');
-  const evidence=state?.protocolEvidence?.[FRAX_ECOSYSTEM_EVIDENCE_ID],current=evidence?.latest?.observation;
-  if(!current||current.protocolId!==FRAX_PROTOCOL_ID)throw new Error('Frax frxETH V2 ValidatorPool adapter requires Frax ecosystem observation');
-  const surface=current?.surfaces?.[FRAX_FRXETH_SURFACE_KEY];
-  if(!surface||!String(surface.measurementState||'').startsWith('MEASURED'))throw new Error('Frax frxETH V2 ValidatorPool adapter requires measured frxETH surface');
+  const evidence=state?.protocolEvidence?.[FRAX_ECOSYSTEM_EVIDENCE_ID],current=evidence?.latest?.observation;if(!current||current.protocolId!==FRAX_PROTOCOL_ID)throw new Error('Frax frxETH V2 ValidatorPool adapter requires Frax ecosystem observation');
+  const surface=current?.surfaces?.[FRAX_FRXETH_SURFACE_KEY];if(!surface||!String(surface.measurementState||'').startsWith('MEASURED'))throw new Error('Frax frxETH V2 ValidatorPool adapter requires measured frxETH surface');
   if(!surface?.measured?.v2Internals?.lendingPool||!surface?.measured?.v2Internals?.redemptionQueue)throw new Error('Frax frxETH V2 ValidatorPool adapter requires prior LendingPool and RedemptionQueue sub-atoms');
   const coverageBefore={surfaceCount:current.coverage.surfaceCount,measuredSurfaceCount:current.coverage.measuredSurfaceCount,sourceBoundUnknownSurfaceCount:current.coverage.sourceBoundUnknownSurfaceCount};
-
-  surface.measured.v2Internals=surface.measured.v2Internals||{};
-  surface.measured.v2Internals.validatorPoolCredit=measurement;
-  surface.measured.epistemic=surface.measured.epistemic||{};
+  surface.measured.v2Internals=surface.measured.v2Internals||{};surface.measured.v2Internals.validatorPoolCredit=measurement;surface.measured.epistemic=surface.measured.epistemic||{};
   const measured=measurement?.status==='ok'&&measurement?.measurementClass==='MEASURED';
-  surface.measured.epistemic.validatorPoolRegistry=measured?'MEASURED-VPoolDeployed-history':'UNKNOWN';
-  surface.measured.epistemic.validatorPoolCredit=measured?'MEASURED-plus-DERIVED-source-formula-parity':'UNKNOWN';
-  surface.measured.epistemic.validatorPoolBorrow=measured?'MEASURED-live-and-stored-cross-contract-parity':'UNKNOWN';
-  surface.measured.epistemic.validatorPoolSolvency=measured?'MEASURED-plus-DERIVED-source-formula-parity':'UNKNOWN';
-  surface.measured.epistemic.validatorPerformance='UNKNOWN-not-measured-by-this-atom';
-  surface.measured.epistemic.stakingRewards='UNKNOWN-native-balance-is-not-reward-attribution';
-  surface.measured.epistemic.executionAuthority='none';
-
-  current.epistemic.frxEthV2ValidatorPoolRegistry=measured?'MEASURED-VPoolDeployed-history':'UNKNOWN';
-  current.epistemic.frxEthV2ValidatorPoolCredit=measured?'MEASURED-plus-DERIVED-source-formula-parity':'UNKNOWN';
-  current.epistemic.frxEthV2ValidatorPoolBorrow=measured?'MEASURED-live-and-stored-cross-contract-parity':'UNKNOWN';
-  current.epistemic.frxEthV2ValidatorPoolSolvency=measured?'MEASURED-plus-DERIVED-source-formula-parity':'UNKNOWN';
-  current.epistemic.frxEthV2ValidatorPerformance='UNKNOWN';
-  current.epistemic.frxEthV2StakingRewards='UNKNOWN';
-
+  surface.measured.epistemic.validatorPoolRegistry=measured?'MEASURED-VPoolDeployed-history':'UNKNOWN';surface.measured.epistemic.validatorPoolCredit=measured?'MEASURED-plus-DERIVED-source-formula-parity':'UNKNOWN';surface.measured.epistemic.validatorPoolBorrow=measured?'MEASURED-live-and-stored-cross-contract-parity':'UNKNOWN';surface.measured.epistemic.validatorPoolSolvency=measured?'MEASURED-plus-DERIVED-source-formula-parity':'UNKNOWN';surface.measured.epistemic.validatorPerformance='UNKNOWN-not-measured-by-this-atom';surface.measured.epistemic.stakingRewards='UNKNOWN-native-balance-is-not-reward-attribution';surface.measured.epistemic.executionAuthority='none';
+  current.epistemic.frxEthV2ValidatorPoolRegistry=measured?'MEASURED-VPoolDeployed-history':'UNKNOWN';current.epistemic.frxEthV2ValidatorPoolCredit=measured?'MEASURED-plus-DERIVED-source-formula-parity':'UNKNOWN';current.epistemic.frxEthV2ValidatorPoolBorrow=measured?'MEASURED-live-and-stored-cross-contract-parity':'UNKNOWN';current.epistemic.frxEthV2ValidatorPoolSolvency=measured?'MEASURED-plus-DERIVED-source-formula-parity':'UNKNOWN';current.epistemic.frxEthV2ValidatorPerformance='UNKNOWN';current.epistemic.frxEthV2StakingRewards='UNKNOWN';
   surface.mechanicalRelations=(surface.mechanicalRelations||[]).filter(item=>item?.extension!=='frxeth-v2-validator-pool-credit');
   surface.mechanicalRelations.push(
     {from:'LendingPool.VPoolDeployed history',to:'current ValidatorPool registry',class:measured?'MEASURED-source-bound-event-history':'UNKNOWN',extension:'frxeth-v2-validator-pool-credit',note:'Pool identities come from LendingPool events and are re-proven with current code / LendingPool pointer checks.'},
@@ -251,23 +240,12 @@ export function applyFraxFrxEthV2ValidatorPoolCreditCurrentState({state,measurem
     {from:'ValidatorPool getAmountBorrowed + LendingPool wouldBeSolvent',to:'current live borrow',class:measured?'MEASURED-cross-contract-parity':'UNKNOWN',extension:'frxeth-v2-validator-pool-credit',note:'Live debt includes read-only interest preview; no addInterest state mutation is called.'},
     {from:'creditAmount >= liveBorrow and not liquidated',to:'validator-pool solvency',class:measured?'DERIVED-mechanical-arithmetic-parity':'UNKNOWN',extension:'frxeth-v2-validator-pool-credit',note:'Mechanical source contract condition only; no forecast or validator-performance claim.'}
   );
-
   current.measurementExtensions={...(current.measurementExtensions||{}),frxEthV2ValidatorPoolCreditCurrentState:FRAX_FRXETH_V2_VALIDATOR_POOL_CREDIT_VERSION};
-  current.nextMeasurementUnlocks=(current.nextMeasurementUnlocks||[]).filter(item=>!String(item).startsWith('Measure frxETH V2 '));
-  current.nextMeasurementUnlocks.push(measured?'Audit frxETH V2 BeaconOracle / validator outcome economics as a separate bounded atom; do not infer staking rewards from ValidatorPool native balances.':'Measure frxETH V2 ValidatorPool deployment registry, credit, borrow allowance, live debt and solvency from exact-block source-pinned state.');
-
+  current.nextMeasurementUnlocks=(current.nextMeasurementUnlocks||[]).filter(item=>!String(item).startsWith('Measure frxETH V2 '));current.nextMeasurementUnlocks.push(measured?'Audit frxETH V2 BeaconOracle / validator outcome economics as a separate bounded atom; do not infer staking rewards from ValidatorPool native balances.':'Measure frxETH V2 ValidatorPool deployment registry, credit, borrow allowance, live debt and solvency from exact-block source-pinned state.');
   if(current.coverage.surfaceCount!==coverageBefore.surfaceCount||current.coverage.measuredSurfaceCount!==coverageBefore.measuredSurfaceCount||current.coverage.sourceBoundUnknownSurfaceCount!==coverageBefore.sourceBoundUnknownSurfaceCount)throw new Error('frxETH V2 ValidatorPool sub-atom must not change top-level Frax coverage');
-  rebuildRelationships(current);
-  current.authority={...(current.authority||{}),causalClaimAuthority:'none',executionAuthority:'none'};
-  current.observedAt=state.generatedAt||current.observedAt;
+  rebuildRelationships(current);current.authority={...(current.authority||{}),causalClaimAuthority:'none',executionAuthority:'none'};current.observedAt=state.generatedAt||current.observedAt;
   current.id=`frax-ecosystem:${sha256(stableStringify({baseObservationId:current.id||null,extension:FRAX_FRXETH_V2_VALIDATOR_POOL_CREDIT_VERSION,blockHash:measurement?.blockHash||null,pools:measurement?.summary?.deployedPoolCount??null,validators:measurement?.summary?.totalValidatorCount??null,credit:measurement?.summary?.totalCreditRaw||null,borrow:measurement?.summary?.totalLiveBorrowRaw||null,insolvent:measurement?.summary?.insolventPoolCount??null,executionAuthority:'none'})).slice(0,16)}`;
-
-  evidence.latest={observedAt:current.observedAt,observation:current};
-  const observations=Array.isArray(evidence.observations)?evidence.observations:[];
-  evidence.observations=[...observations,current].slice(-MAX_OBSERVATIONS);
-  evidence.observationCount=evidence.observations.length;evidence.status=current.status;
-  const sensor=state?.protocolSensors?.[FRAX_PROTOCOL_ID];
-  if(sensor){sensor.ecosystemFamily=sensor.ecosystemFamily||{};sensor.ecosystemFamily.measurementExtensions=current.measurementExtensions;sensor.ecosystemFamily.coverage=current.coverage;sensor.ecosystemFamily.latestEvidenceId=current.id;sensor.epistemic={...(sensor.epistemic||{}),frxEthV2ValidatorPoolCreditCurrentState:measured?'MEASURED':'UNKNOWN',executionAuthority:'none'};}
-  if(current.authority.executionAuthority!=='none')throw new Error('Frax frxETH V2 ValidatorPool execution authority drift');
-  return current;
+  evidence.latest={observedAt:current.observedAt,observation:current};const observations=Array.isArray(evidence.observations)?evidence.observations:[];evidence.observations=[...observations,current].slice(-MAX_OBSERVATIONS);evidence.observationCount=evidence.observations.length;evidence.status=current.status;
+  const sensor=state?.protocolSensors?.[FRAX_PROTOCOL_ID];if(sensor){sensor.ecosystemFamily=sensor.ecosystemFamily||{};sensor.ecosystemFamily.measurementExtensions=current.measurementExtensions;sensor.ecosystemFamily.coverage=current.coverage;sensor.ecosystemFamily.latestEvidenceId=current.id;sensor.epistemic={...(sensor.epistemic||{}),frxEthV2ValidatorPoolCreditCurrentState:measured?'MEASURED':'UNKNOWN',executionAuthority:'none'};}
+  if(current.authority.executionAuthority!=='none')throw new Error('Frax frxETH V2 ValidatorPool execution authority drift');return current;
 }
