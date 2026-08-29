@@ -2,20 +2,20 @@
   "version": "0.1-chatgpt-bridge",
   "bridgeVersion": "0.1-deterministic-public-cognitive-handoff",
   "engineVersion": "0.2-chatgpt-bridge-engine-upstream-bound",
-  "generatedAt": "2026-08-29T12:58:48.499Z",
+  "generatedAt": "2026-08-29T13:13:11.089Z",
   "status": "watch",
   "sourceBrain": {
     "file": "intelligence/brain-intelligence.json",
     "version": "0.1-grounded-reasoning-gateway",
     "reasonerVersion": "0.1-deterministic-evidence-bound-reasoner",
-    "generatedAt": "2026-08-29T12:58:46.872Z",
+    "generatedAt": "2026-08-29T13:13:09.463Z",
     "ageHours": 0,
     "mode": "delta",
     "status": "watch",
     "headline": "9 evidence-bound reasoning case(s) are active across economic and security memory.",
-    "sha256": "50867a9325dfb18cd030999334288bfe19f918444616ca347907ae74e0214262",
-    "snapshotHash": "078647cc0ae5893abf62a5dd878716d3543dda9dfa81b91175addc9981c05e0c",
-    "inputCompositeHash": "bf1943f5dc2c7951d1eab099a51379fd6b86740f196aa20cc8632d7b857f34d1"
+    "sha256": "11d1fcdec31f969dd7f2af7fc90bd9a533b44aca3b668cf800b4ccf59285e92b",
+    "snapshotHash": "04ea8070c6581a25bf7281eb200f47c98072cebbadf336842726ff8eab2ef03a",
+    "inputCompositeHash": "757beab1fd9660f2c4041da93c8130d03bfcd30485a8fac0b5a34301d745f5ef"
   },
   "currentPosture": {
     "observer": {
@@ -180,7 +180,7 @@
     "confidence": "high",
     "evidenceIds": [
       "EV-6489c94372f80406",
-      "EV-9abd0661892d391d",
+      "EV-8d5a6e2efd5eaf2a",
       "EV-06c3da3675063ff0",
       "EV-01b4df675825c328",
       "EV-a98aa60b7ba3702e",
@@ -212,7 +212,7 @@
       "confidence": "high",
       "actionMode": "proposal-only",
       "evidenceIds": [
-        "EV-d3ad27c1d2ca6315"
+        "EV-1d208c1bcea4e189"
       ]
     },
     {
@@ -230,7 +230,7 @@
       "confidence": "high",
       "actionMode": "proposal-only",
       "evidenceIds": [
-        "EV-8a4abdabb728f34c"
+        "EV-ee961fca43ddc23d"
       ]
     },
     {
@@ -248,7 +248,7 @@
       "confidence": "high",
       "actionMode": "proposal-only",
       "evidenceIds": [
-        "EV-d86385c96214943f"
+        "EV-cc80f2149f49c72b"
       ]
     },
     {
@@ -505,6 +505,27 @@
       "note": "Direct normalized watch item emitted by The Holding Observer."
     },
     {
+      "evidenceId": "EV-1d208c1bcea4e189",
+      "source": "security/security-intelligence.json",
+      "pointer": "/currentFindings/0",
+      "selector": null,
+      "observedAt": "2026-08-29T13:13:08.670Z",
+      "interpretation": "direct",
+      "sourceSha256": "c3c3e27d6043c20cf3e40a960e0d8ba5980030e3c6a77b24e3dc74f41f6368f7",
+      "value": {
+        "id": "119c887e98b579ae9b0ac6bbead75c30b398a9d45d207b24f62f24bc71907fae",
+        "severity": "high",
+        "category": "privileged-trigger",
+        "file": ".github/workflows/production-boundary-guard.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Workflow uses pull_request_target.",
+        "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
+        "evidence": null
+      },
+      "note": "Direct current finding emitted by The Holding Security Sentinel."
+    },
+    {
       "evidenceId": "EV-4cb48e96c8f6851e",
       "source": "intelligence/explanatory/explanatory-context.json",
       "pointer": "/explanations/protocolLifecycleContexts/registry-yieldbasis-multimechanism",
@@ -664,25 +685,17 @@
       "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
     },
     {
-      "evidenceId": "EV-8a4abdabb728f34c",
+      "evidenceId": "EV-8d5a6e2efd5eaf2a",
       "source": "security/security-intelligence.json",
-      "pointer": "/currentFindings/1",
+      "pointer": "/whatChanged",
       "selector": null,
-      "observedAt": "2026-08-29T12:58:45.970Z",
+      "observedAt": "2026-08-29T13:13:08.670Z",
       "interpretation": "direct",
-      "sourceSha256": "01237dc9a9b0a54ce90ec5e4ac427fbd66b393c58c824fc467b0a3c5d45ed5e2",
+      "sourceSha256": "c3c3e27d6043c20cf3e40a960e0d8ba5980030e3c6a77b24e3dc74f41f6368f7",
       "value": {
-        "id": "796045f38b2faae4de28f58e9aa997ac2e1b7aea1e07a3743ee30a3c25e207d5",
-        "severity": "high",
-        "category": "privileged-trigger",
-        "file": ".github/workflows/production-deployment-smoke.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Workflow uses pull_request_target.",
-        "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
-        "evidence": null
-      },
-      "note": "Direct current finding emitted by The Holding Security Sentinel."
+        "newFindings": [],
+        "resolvedFindings": []
+      }
     },
     {
       "evidenceId": "EV-971d6e438c1e9315",
@@ -783,19 +796,6 @@
         }
       },
       "note": "Votium→Convex→Curve mechanical execution is proven; current Curve pool state is measured temporal context only. Do not infer incentive→vote or vote→pool causality."
-    },
-    {
-      "evidenceId": "EV-9abd0661892d391d",
-      "source": "security/security-intelligence.json",
-      "pointer": "/whatChanged",
-      "selector": null,
-      "observedAt": "2026-08-29T12:58:45.970Z",
-      "interpretation": "direct",
-      "sourceSha256": "01237dc9a9b0a54ce90ec5e4ac427fbd66b393c58c824fc467b0a3c5d45ed5e2",
-      "value": {
-        "newFindings": [],
-        "resolvedFindings": []
-      }
     },
     {
       "evidenceId": "EV-a35acf7aa621ac9b",
@@ -927,6 +927,39 @@
       "note": "Direct normalized watch item emitted by The Holding Observer."
     },
     {
+      "evidenceId": "EV-cc80f2149f49c72b",
+      "source": "security/security-intelligence.json",
+      "pointer": "/currentFindings",
+      "selector": "severity=medium&category=dom-innerhtml",
+      "observedAt": "2026-08-29T13:13:08.670Z",
+      "interpretation": "derived-from-direct-findings",
+      "sourceSha256": "c3c3e27d6043c20cf3e40a960e0d8ba5980030e3c6a77b24e3dc74f41f6368f7",
+      "value": {
+        "derivedCount": 20,
+        "representative": [
+          {
+            "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
+            "file": "agents/console/learning-notice.html",
+            "line": 25,
+            "summary": "Dynamic innerHTML assignment detected."
+          },
+          {
+            "id": "e40fc26b6c2f3b41f6e59082836967486e559beeb8327a4ec2e5ca8bd209f924",
+            "file": "agents/console/owner-intelligence.js",
+            "line": 113,
+            "summary": "Dynamic innerHTML assignment detected."
+          },
+          {
+            "id": "fa4963c3ca96ad9b844920953a4c78a8ab0bf2a8289b6f1311715f20a3ac8356",
+            "file": "companies/company-010-public-adapter.js",
+            "line": 97,
+            "summary": "Dynamic innerHTML assignment detected."
+          }
+        ]
+      },
+      "note": "Count is derived deterministically from current Security Sentinel findings."
+    },
+    {
       "evidenceId": "EV-ce2d659c69b9c60c",
       "source": "intelligence/explanatory/explanatory-context.json",
       "pointer": "/explanations/protocolLifecycleContexts/defitea-pendle-spendle",
@@ -988,60 +1021,6 @@
       "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
     },
     {
-      "evidenceId": "EV-d3ad27c1d2ca6315",
-      "source": "security/security-intelligence.json",
-      "pointer": "/currentFindings/0",
-      "selector": null,
-      "observedAt": "2026-08-29T12:58:45.970Z",
-      "interpretation": "direct",
-      "sourceSha256": "01237dc9a9b0a54ce90ec5e4ac427fbd66b393c58c824fc467b0a3c5d45ed5e2",
-      "value": {
-        "id": "119c887e98b579ae9b0ac6bbead75c30b398a9d45d207b24f62f24bc71907fae",
-        "severity": "high",
-        "category": "privileged-trigger",
-        "file": ".github/workflows/production-boundary-guard.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Workflow uses pull_request_target.",
-        "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
-        "evidence": null
-      },
-      "note": "Direct current finding emitted by The Holding Security Sentinel."
-    },
-    {
-      "evidenceId": "EV-d86385c96214943f",
-      "source": "security/security-intelligence.json",
-      "pointer": "/currentFindings",
-      "selector": "severity=medium&category=dom-innerhtml",
-      "observedAt": "2026-08-29T12:58:45.970Z",
-      "interpretation": "derived-from-direct-findings",
-      "sourceSha256": "01237dc9a9b0a54ce90ec5e4ac427fbd66b393c58c824fc467b0a3c5d45ed5e2",
-      "value": {
-        "derivedCount": 20,
-        "representative": [
-          {
-            "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
-            "file": "agents/console/learning-notice.html",
-            "line": 25,
-            "summary": "Dynamic innerHTML assignment detected."
-          },
-          {
-            "id": "e40fc26b6c2f3b41f6e59082836967486e559beeb8327a4ec2e5ca8bd209f924",
-            "file": "agents/console/owner-intelligence.js",
-            "line": 113,
-            "summary": "Dynamic innerHTML assignment detected."
-          },
-          {
-            "id": "fa4963c3ca96ad9b844920953a4c78a8ab0bf2a8289b6f1311715f20a3ac8356",
-            "file": "companies/company-010-public-adapter.js",
-            "line": 97,
-            "summary": "Dynamic innerHTML assignment detected."
-          }
-        ]
-      },
-      "note": "Count is derived deterministically from current Security Sentinel findings."
-    },
-    {
       "evidenceId": "EV-d95932b2e8a18ccd",
       "source": "intelligence/change-intelligence.json",
       "pointer": "/watchNext/3",
@@ -1091,6 +1070,27 @@
         "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory."
       },
       "note": "Direct normalized watch item emitted by The Holding Observer."
+    },
+    {
+      "evidenceId": "EV-ee961fca43ddc23d",
+      "source": "security/security-intelligence.json",
+      "pointer": "/currentFindings/1",
+      "selector": null,
+      "observedAt": "2026-08-29T13:13:08.670Z",
+      "interpretation": "direct",
+      "sourceSha256": "c3c3e27d6043c20cf3e40a960e0d8ba5980030e3c6a77b24e3dc74f41f6368f7",
+      "value": {
+        "id": "796045f38b2faae4de28f58e9aa997ac2e1b7aea1e07a3743ee30a3c25e207d5",
+        "severity": "high",
+        "category": "privileged-trigger",
+        "file": ".github/workflows/production-deployment-smoke.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Workflow uses pull_request_target.",
+        "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
+        "evidence": null
+      },
+      "note": "Direct current finding emitted by The Holding Security Sentinel."
     },
     {
       "evidenceId": "EV-fa42b026858ab049",
@@ -1196,16 +1196,16 @@
         {
           "key": "security",
           "file": "security/security-intelligence.json",
-          "sha256": "01237dc9a9b0a54ce90ec5e4ac427fbd66b393c58c824fc467b0a3c5d45ed5e2",
-          "generatedAt": "2026-08-29T12:58:45.970Z",
+          "sha256": "c3c3e27d6043c20cf3e40a960e0d8ba5980030e3c6a77b24e3dc74f41f6368f7",
+          "generatedAt": "2026-08-29T13:13:08.670Z",
           "exactByteMatch": true,
           "packagedRawContent": false
         },
         {
           "key": "securityMemory",
           "file": "security/security-memory.json",
-          "sha256": "c998554e8c2dc4844e5f776120ce1309b965e04cc46fc33a84ca36bd1cf6887e",
-          "generatedAt": "2026-08-29T12:58:45.970Z",
+          "sha256": "6c0b59441dbbb7fcb5c1e0e222b7f0b743568db6b4ea7bc50691c4de53a97365",
+          "generatedAt": "2026-08-29T13:13:08.670Z",
           "exactByteMatch": true,
           "packagedRawContent": false
         },
@@ -1267,9 +1267,9 @@
     "secretsIncludedByDesign": false
   },
   "bridge": {
-    "semanticKey": "befbb93ba13c2b5afcf8d078d8fc61459433f91ab00162d2ceb8d68ad27998ce",
-    "instanceKey": "b9ea3c6d56cc95546498660da2a91ef1b35be4b2c29f5fb5e08ff2f77fa61006",
-    "outputSnapshotHash": "694d2c8d866523e22ea56a82d528f0ac278c7d55f348d1b982d1e9148d85eec2",
+    "semanticKey": "a87fc1ac4e292aecc29c237bada9312f7d65714c46d6e8928a2429085e303c81",
+    "instanceKey": "9549da545793eedfb084b281752bb0f6a2332a1a844ca00a73a9155ae6791837",
+    "outputSnapshotHash": "8ee46d8985c81bc0d8e3be106333c2f2e9d4da3c048b6513276125fa7e5cfb68",
     "manualTrigger": "When the owner asks ChatGPT to check/interpret the Brain, read this live Bridge first and keep conclusions inside its evidence/action boundaries."
   }
 }
