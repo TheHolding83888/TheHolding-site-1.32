@@ -1,0 +1,71 @@
+{
+  "version": "0.9.0",
+  "generatedAt": "2026-08-30T08:12:00Z",
+  "methodology": "World-native spatial adapters for currently indexed digital property. The adapter describes how to read coordinates from canonical market-snapshot records; it does not duplicate mutable listing prices or invent a universal metaverse coordinate system.",
+  "viewportPolicy": "indexed_observations_only",
+  "universalMap": false,
+  "worlds": [
+    {
+      "id": "sandbox",
+      "name": "The Sandbox",
+      "platform": "The Sandbox",
+      "status": "active",
+      "coordinateSystem": "The Sandbox native LAND coordinates",
+      "extractor": "coordinates_field",
+      "field": "coordinates",
+      "format": "x, y",
+      "axisX": "X",
+      "axisY": "Y",
+      "sourceChecked": "2026-08-30",
+      "source": "https://www.sandbox.game/en/nft-lands/",
+      "truthNote": "Viewport is fitted to the indexed Realty observations, not presented as a complete official world map."
+    },
+    {
+      "id": "decentraland",
+      "name": "Decentraland",
+      "platform": "Decentraland",
+      "status": "active",
+      "coordinateSystem": "Decentraland LAND parcel coordinates",
+      "extractor": "parcel_name",
+      "pattern": "Parcel <x>,<y>",
+      "axisX": "X",
+      "axisY": "Y",
+      "sourceChecked": "2026-08-30",
+      "source": "https://decentraland.org/",
+      "truthNote": "Only parcels with explicit coordinate-bearing Realty records are plotted."
+    },
+    {
+      "id": "otherside",
+      "name": "Otherside",
+      "platform": "Otherside",
+      "status": "pending",
+      "coordinateSystem": null,
+      "extractor": null,
+      "sourceChecked": "2026-08-30",
+      "source": "https://otherside.xyz/",
+      "truthNote": "The current Realty source contract has Otherdeed identity and market context but no admitted x/y spatial coordinate for plotting."
+    },
+    {
+      "id": "somnium",
+      "name": "Somnium Space",
+      "platform": "Somnium Space",
+      "status": "pending",
+      "coordinateSystem": null,
+      "extractor": null,
+      "sourceChecked": "2026-08-30",
+      "source": "https://somniumspace.com/",
+      "truthNote": "The current Realty source contract has parcel identity and market context but no admitted map coordinate."
+    },
+    {
+      "id": "voxels",
+      "name": "Voxels",
+      "platform": "Voxels",
+      "status": "pending",
+      "coordinateSystem": null,
+      "extractor": null,
+      "sourceChecked": "2026-08-30",
+      "source": "https://www.voxels.com/",
+      "truthNote": "Market family is tracked, while listing and spatial ingestion are still pending."
+    }
+  ]
+}
