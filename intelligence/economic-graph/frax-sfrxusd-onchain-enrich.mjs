@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Frax bounded onchain Economic Graph enrichment v1.11
+ * The Holding · Frax bounded onchain Economic Graph enrichment v1.12
  *
  * One canonical sequential Frax writer path. Each protocol atom remains a
  * bounded read-only measurement with its own epistemic contract, but all atoms
@@ -30,6 +30,7 @@ import { collectFraxswapFeeToHistoryBackfill, applyFraxswapFeeToHistoryBackfill 
 import { collectFraxRevenueRoutingCurrentState, applyFraxRevenueRoutingCurrentState } from './frax-revenue-routing-current-state.mjs';
 import { collectFraxFrxEthCurrentState, applyFraxFrxEthCurrentState } from './frax-frxeth-current-state.mjs';
 import { collectFraxFrxEthV2EtherRouterCurrentState, applyFraxFrxEthV2EtherRouterCurrentState } from './frax-frxeth-v2-ether-router-current-state.mjs';
+import { collectFraxFrxEthV2EtherRouterFlow, applyFraxFrxEthV2EtherRouterFlow } from './frax-frxeth-v2-ether-router-flow.mjs';
 import { collectFraxFrxEthV2LendingPoolCurrentState, applyFraxFrxEthV2LendingPoolCurrentState } from './frax-frxeth-v2-lending-pool-current-state.mjs';
 import { collectFraxFrxEthV2RedemptionQueueCurrentState, applyFraxFrxEthV2RedemptionQueueCurrentState } from './frax-frxeth-v2-redemption-queue-current-state.mjs';
 import { collectFraxFrxEthV2ValidatorPoolCreditCurrentState, applyFraxFrxEthV2ValidatorPoolCreditCurrentState } from './frax-frxeth-v2-validator-pool-credit-current-state.mjs';
@@ -78,6 +79,8 @@ async function main(){
   const previousFraxEcosystem=previousState?.protocolEvidence?.[FRAX_EVIDENCE_ID]?.latest?.observation||null;
   const previousBammMeasurement=previousFraxEcosystem?.surfaces?.fraxswapBamm?.measured||null;
   const previousFeeToHistory=previousFraxEcosystem?.surfaces?.revenueRouting?.measured?.fraxswapFeeToHistoricalBackfill||null;
+  const previousFrxEthEtherRouter=previousFraxEcosystem?.surfaces?.frxEthSfrxEth?.measured?.v2Internals?.etherRouter||null;
+  const previousFrxEthEtherRouterFlow=previousFraxEcosystem?.surfaces?.frxEthSfrxEth?.measured?.v2Internals?.etherRouterFlow||null;
   const previousFrxEthLendingPool=previousFraxEcosystem?.surfaces?.frxEthSfrxEth?.measured?.v2Internals?.lendingPool||null;
   const previousFrxEthLendingFlow=previousFraxEcosystem?.surfaces?.frxEthSfrxEth?.measured?.v2Internals?.lendingFlow||null;
   const previousValidatorPoolCredit=previousFraxEcosystem?.surfaces?.frxEthSfrxEth?.measured?.v2Internals?.validatorPoolCredit||null;
@@ -121,6 +124,16 @@ async function main(){
   // Force-live is view-only: no EtherRouter cache write or execution authority.
   const frxEthEtherRouterMeasurement=await collectFraxFrxEthV2EtherRouterCurrentState({checkpoint:frxEthMeasurement?.status==='ok'?frxEthMeasurement:null});
   applyFraxFrxEthV2EtherRouterCurrentState({state,measurement:frxEthEtherRouterMeasurement});
+
+  // Measure realized outbound routing between adjacent published EtherRouter
+  // checkpoints. depositEther()/receive() have no complete event surface, so
+  // full flow reconciliation and protocol revenue remain explicitly UNKNOWN.
+  const frxEthEtherRouterFlowMeasurement=await collectFraxFrxEthV2EtherRouterFlow({
+    currentEtherRouterMeasurement:frxEthEtherRouterMeasurement,
+    previousEtherRouterMeasurement:previousFrxEthEtherRouter,
+    previousMeasurement:previousFrxEthEtherRouterFlow
+  });
+  applyFraxFrxEthV2EtherRouterFlow({state,measurement:frxEthEtherRouterFlowMeasurement});
 
   // Keep LendingPool as a separate bounded atom while reusing the same frxETH
   // exact-block checkpoint. Native utilization and addInterest preview are
@@ -182,6 +195,7 @@ async function main(){
   const feeToLifecycle=bamm?.measured?.feeToLpLifecycle;
   const feeToHistory=revenue?.measured?.fraxswapFeeToHistoricalBackfill;
   const yieldDistribution=revenue?.measured?.yieldDistributionCurrent;
+  const frxEthEtherRouterFlow=frxEth?.measured?.v2Internals?.etherRouterFlow;
   const frxEthLendingPool=frxEth?.measured?.v2Internals?.lendingPool;
   const frxEthRedemptionQueue=frxEth?.measured?.v2Internals?.redemptionQueue;
   const frxEthValidatorPoolCredit=frxEth?.measured?.v2Internals?.validatorPoolCredit;
@@ -205,6 +219,7 @@ async function main(){
     fraxswapFeeToHistoricalBackfill:{status:feeToHistory?.status||'not-run-protocol-fee-prerequisite-unavailable',protocolFeeMintEventsBackfilled:feeToHistory?.summary?.protocolFeeMintEventCountBackfilled??null,strictRedemptionsBackfilled:feeToHistory?.summary?.strictRedemptionCountBackfilled??null,continuousFeeToStateHistory:feeToHistory?.epistemic?.continuousFeeToStateHistory||'UNKNOWN'},
     revenueRoutingYieldDistribution:{measurementState:revenue?.measurementState,status:yieldDistribution?.status||'UNKNOWN',blockNumber:yieldDistribution?.network?.blockNumber??null,proxy:yieldDistribution?.distributor?.proxy??null,implementation:yieldDistribution?.distributor?.implementation??null,emittedToken:yieldDistribution?.distributor?.emittedToken??null,yieldRateRaw:yieldDistribution?.distributor?.yieldRateRaw??null,yieldDurationRaw:yieldDistribution?.distributor?.yieldDurationRaw??null,rewardArithmeticParity:yieldDistribution?.distributor?.rewardArithmeticParity??false,distributorInventoryRaw:yieldDistribution?.distributor?.emittedTokenBalanceRaw??null,upstreamFundingSource:yieldDistribution?.epistemic?.distributorFundingSource||'UNKNOWN',fraxswapFeeToLink:yieldDistribution?.epistemic?.fraxswapFeeToToDistributor||'UNKNOWN',companyCashFlow:yieldDistribution?.epistemic?.companyCashFlow||'UNKNOWN'},
     frxEth:{measurementState:frxEth?.measurementState,status:frxEth?.measured?.status||'UNKNOWN',blockNumber:frxEth?.measured?.blockNumber??null,frxEthSupply:frxEth?.measured?.asset?.totalSupply??null,sfrxEthSupply:frxEth?.measured?.vault?.totalSupply??null,sfrxEthTotalAssets:frxEth?.measured?.vault?.totalAssets??null,sharePriceFrxEth:frxEth?.measured?.vault?.sharePriceAsset??null,intervalStatus:frxEth?.measured?.intervalEmbeddedYield?.status||'UNKNOWN',validatorEconomics:frxEth?.measured?.epistemic?.validatorEconomics||'UNKNOWN',lendingIncome:frxEth?.measured?.epistemic?.lendingIncome||'UNKNOWN'},
+    frxEthV2EtherRouterFlow:{status:frxEthEtherRouterFlow?.status||'UNKNOWN',fromBlockExclusive:frxEthEtherRouterFlow?.interval?.fromBlockExclusive??null,toBlockNumber:frxEthEtherRouterFlow?.interval?.toBlockNumber??null,eventCount:frxEthEtherRouterFlow?.interval?.summary?.eventCount??null,sweptEth:frxEthEtherRouterFlow?.interval?.summary?.sweptEth??null,requestedToRecipientEth:frxEthEtherRouterFlow?.interval?.summary?.requestedToRecipientEth??null,requestedToRedemptionQueueEth:frxEthEtherRouterFlow?.interval?.summary?.requestedToRedemptionQueueEth??null,eventReportedOutflowEth:frxEthEtherRouterFlow?.interval?.summary?.eventReportedOutflowEth??null,fullFlowReconciliation:frxEthEtherRouterFlow?.epistemic?.fullFlowReconciliation||'UNKNOWN',protocolRevenue:frxEthEtherRouterFlow?.epistemic?.protocolRevenue||'UNKNOWN'},
     frxEthV2LendingPool:{status:frxEthLendingPool?.status||'UNKNOWN',blockNumber:frxEthLendingPool?.blockNumber??null,totalBorrowEth:frxEthLendingPool?.lendingPool?.totalBorrow?.amountEth??null,utilizationPct:frxEthLendingPool?.lendingPool?.utilization?.livePct??null,annualizedNominalRatePct:frxEthLendingPool?.lendingPool?.currentRateInfo?.annualizedNominalRatePct??null,interestAccruedEth:frxEthLendingPool?.lendingPool?.interestAccrued?.eth??null,pendingInterestPreviewEth:frxEthLendingPool?.preview?.interestEarned?.eth??null,previewState:frxEthLendingPool?.preview?.status||'UNKNOWN',registryPointerParity:frxEthLendingPool?.lendingPool?.registryPointerParity??null,protocolRevenue:frxEthLendingPool?.epistemic?.protocolRevenue||'UNKNOWN'},
     frxEthV2RedemptionQueue:{status:frxEthRedemptionQueue?.status||'UNKNOWN',blockNumber:frxEthRedemptionQueue?.blockNumber??null,liabilitiesEth:frxEthRedemptionQueue?.redemptionQueue?.accounting?.etherLiabilities?.eth??null,unclaimedFeesFrxEth:frxEthRedemptionQueue?.redemptionQueue?.accounting?.unclaimedFees?.frxEth??null,pendingFeesFrxEth:frxEthRedemptionQueue?.redemptionQueue?.accounting?.pendingFees?.frxEth??null,nativeEth:frxEthRedemptionQueue?.redemptionQueue?.nativeEthBalance?.eth??null,liquidityStatus:frxEthRedemptionQueue?.redemptionQueue?.liquidity?.status||'UNKNOWN',netEthBalanceEth:frxEthRedemptionQueue?.redemptionQueue?.liquidity?.netEthBalanceEth??null,shortageEth:frxEthRedemptionQueue?.redemptionQueue?.liquidity?.shortageEth??null,queueLengthSecs:frxEthRedemptionQueue?.redemptionQueue?.state?.queueLengthSecs??null,redemptionFeePct:frxEthRedemptionQueue?.redemptionQueue?.state?.redemptionFeePct??null,registryPointerParity:frxEthRedemptionQueue?.redemptionQueue?.registryPointerParity??null,aggregateProtocolRevenue:frxEthRedemptionQueue?.epistemic?.aggregateProtocolRevenue||'UNKNOWN'},
     frxEthV2ValidatorPoolCredit:{status:frxEthValidatorPoolCredit?.status||'UNKNOWN',blockNumber:frxEthValidatorPoolCredit?.blockNumber??null,deployedPools:frxEthValidatorPoolCredit?.summary?.deployedPoolCount??null,validators:frxEthValidatorPoolCredit?.summary?.totalValidatorCount??null,totalCreditEth:frxEthValidatorPoolCredit?.summary?.totalCreditEth??null,totalLiveBorrowEth:frxEthValidatorPoolCredit?.summary?.totalLiveBorrowEth??null,totalBorrowAllowanceEth:frxEthValidatorPoolCredit?.summary?.totalBorrowAllowanceEth??null,activeBorrowingPools:frxEthValidatorPoolCredit?.summary?.activeBorrowingPoolCount??null,insolventPools:frxEthValidatorPoolCredit?.summary?.insolventPoolCount??null,nativePoolBalanceEth:frxEthValidatorPoolCredit?.summary?.totalNativePoolBalanceEth??null,stakingRewards:frxEthValidatorPoolCredit?.epistemic?.stakingRewards||'UNKNOWN',protocolRevenue:frxEthValidatorPoolCredit?.epistemic?.protocolRevenue||'UNKNOWN'},
