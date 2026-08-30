@@ -23,6 +23,7 @@ The strategic analogy is a property-native combination of a discovery portal, ma
 - `/realty/digital/` — metaverse/digital-property explorer
 - `/realty/worlds/` — world-native spatial discovery for digital property
 - `/realty/data-health/` — deterministic observation-age and review-priority surface
+- `/realty/history/` — append-only Property Memory / History Explorer
 - `/realty/compare/` — Reality Lens and up-to-four-property shortlist
 - `/realty/watchlist/` — browser-local saved assets
 - `/realty/sources/` — source/access/media/commercialization governance
@@ -39,7 +40,8 @@ The strategic analogy is a property-native combination of a discovery portal, ma
 - `/realty/data/atlas.json` — physical geographic anchors and precision contract
 - `/realty/data/world-spatial.json` — digital-world coordinate adapters; reads coordinates from canonical market records instead of duplicating mutable market truth
 - `/realty/data/freshness-policy.json` — observation-age states and thresholds; freshness is not accuracy/confidence
-- `/realty/data/history/` — append-only observation-history foundation
+- `/realty/data/history/index.json` — append-only history ledger + current-snapshot join and chart discipline
+- `/realty/data/history/*.json` — immutable archived source observations
 
 Changing prices, yields, asks, floors, offers and listing states belong in machine observations, not prose documentation.
 
@@ -77,10 +79,12 @@ Hard rules:
 10. An indexed-observation viewport is not a claim of a complete official world map.
 11. Freshness measures observation age only: `fresh != guaranteed correct`; `stale != false`.
 12. A freshness label does not imply a collector/scheduler exists.
-13. Aggregation is not homogenization: legal rights, eligibility, liquidity and income mechanics differ across issuers/worlds.
-14. Each changing observation keeps source URL/source label/source-check date.
-15. Exact third-party media is a separate display-rights layer.
-16. A public webpage is not blanket permission for scaled automated extraction or commercial reuse.
+13. Two independent observations can prove a change but do not establish a trend.
+14. A field appearing/disappearing between snapshots is a coverage change, not automatically an economic market move.
+15. Aggregation is not homogenization: legal rights, eligibility, liquidity and income mechanics differ across issuers/worlds.
+16. Each changing observation keeps source URL/source label/source-check date.
+17. Exact third-party media is a separate display-rights layer.
+18. A public webpage is not blanket permission for scaled automated extraction or commercial reuse.
 
 A beautiful explicit absence is preferred to invented completeness.
 
@@ -94,6 +98,20 @@ Data Health v1.0 deterministically evaluates the admitted `sourceChecked` date a
 - `Unknown` — missing/invalid/future date.
 
 The thresholds are an operational review-priority policy, not a market-confidence score. They do not create any background collection cadence by themselves. A future collection system can use field-specific cadences once scale makes that necessary.
+
+## Property Memory / history
+
+History is append-only evidence, not a synthetic backtest.
+
+- archived snapshots remain immutable;
+- current `market-snapshot.json` is joined at read time rather than copied into a second live truth;
+- repeated asset IDs can be compared across independent observation points;
+- only fields present in both observations are treated as comparable changes;
+- missing/present transitions are labelled coverage gaps;
+- two observation points show exact `previous → current` changes but no trend line;
+- the current chart policy requires at least three independent observations before a trend visualization is admissible.
+
+Before a future current snapshot is materially replaced, preserve the outgoing observation in append-only history when it is an independent source observation worth retaining.
 
 ## Source strategy
 
@@ -151,7 +169,7 @@ Added only when justified by live gaps:
 - broader source-backed inventory and provider coverage
 - richer provider/market pages and fees/jurisdiction/ownership details
 - richer world-specific spatial adapters as admissible coordinates become available
-- accumulated price/yield/listing history and charts once enough independent observations exist
+- deeper history/charts after enough independent observations accumulate
 - saved search and alerts when real monitoring infrastructure is justified
 - field-specific source freshness/collection cadence once automated ingestion is justified
 - Ask Realty / property intelligence on top of canonical history
