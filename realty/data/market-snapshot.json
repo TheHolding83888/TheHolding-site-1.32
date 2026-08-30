@@ -1,7 +1,7 @@
 {
-  "version": "0.2.1",
-  "generatedAt": "2026-08-30T06:35:00Z",
-  "methodology": "source-linked market snapshot; no fabricated values; missing fields stay null; current observations may change at source",
+  "version": "0.3.0",
+  "generatedAt": "2026-08-30T09:00:00Z",
+  "methodology": "source-linked market snapshot; no fabricated values; missing fields stay null; current observations may change at source; source-published return labels remain provider-specific",
   "realWorld": [
     {
       "id": "lofty-country-club",
@@ -178,6 +178,46 @@
       "source": "https://www.reental.co/en/properties",
       "sourceLabel": "Reental · first-party",
       "notes": "Estimated annual return is a source projection, not a realised yield."
+    },
+    {
+      "id": "blocksquare-sky-mansion-palm-jumeirah",
+      "platform": "Blocksquare",
+      "marketSurface": "Oceanpoint",
+      "name": "Sky Mansion, Palm Jumeirah, Dubai",
+      "location": "Dubai, UAE",
+      "type": "Tokenized Property",
+      "state": "Listed",
+      "incomeState": "Rental income eligible",
+      "returnObservation": {
+        "valuePct": 9.3,
+        "label": "Yield",
+        "basis": "source-published",
+        "realization": "not independently classified"
+      },
+      "sourceChecked": "2026-08-30",
+      "source": "https://oceanpoint.fi/",
+      "sourceLabel": "Oceanpoint · Blocksquare first-party",
+      "notes": "Oceanpoint currently labels this property 9.3% yield. Realty preserves the source label and does not infer whether the figure is trailing, forward or realised."
+    },
+    {
+      "id": "blocksquare-ljubljana-restaurant",
+      "platform": "Blocksquare",
+      "marketSurface": "Oceanpoint",
+      "name": "Restaurant in old town Ljubljana, Slovenia",
+      "location": "Ljubljana, Slovenia",
+      "type": "Tokenized Property",
+      "state": "Listed",
+      "incomeState": "Rental income eligible",
+      "returnObservation": {
+        "valuePct": 4.2,
+        "label": "Yield",
+        "basis": "source-published",
+        "realization": "not independently classified"
+      },
+      "sourceChecked": "2026-08-30",
+      "source": "https://oceanpoint.fi/trade",
+      "sourceLabel": "Oceanpoint · Blocksquare first-party",
+      "notes": "Oceanpoint Trade currently labels this property 4.2% yield. Realty preserves the source label and does not infer whether the figure is trailing, forward or realised."
     }
   ],
   "digitalWorld": [
@@ -310,15 +350,95 @@
     }
   ],
   "marketDirectory": [
-    {"id":"lofty","world":"physical","name":"Lofty","role":"Fractional U.S. rental-property marketplace","coverage":"Active listing coverage","source":"https://www.lofty.ai/marketplace","status":"Tracked"},
-    {"id":"reental","world":"physical","name":"Reental","role":"Tokenized real-estate projects","coverage":"Active + funded project coverage","source":"https://www.reental.co/en/properties","status":"Tracked"},
-    {"id":"realt","world":"physical","name":"RealT","role":"Fractional tokenized rental real estate","coverage":"Market family tracked · listing ingestion pending","source":"https://realt.co/","status":"Source integration"},
-    {"id":"blocksquare","world":"physical","name":"Blocksquare","role":"Tokenization infrastructure + marketplace network","coverage":"Network tracked · normalized listing ingestion pending","source":"https://blocksquare.io/","status":"Source integration"},
-    {"id":"propy","world":"physical","name":"Propy","role":"Whole-property transaction and title rails","coverage":"Market family tracked · property ingestion pending","source":"https://propy.com/","status":"Source integration"},
-    {"id":"sandbox","world":"digital","name":"The Sandbox","role":"Native LAND & Estates marketplace","coverage":"Active first-party LAND coverage","source":"https://www.sandbox.game/en/nft-lands/","status":"Tracked"},
-    {"id":"decentraland","world":"digital","name":"Decentraland","role":"LAND parcels and estates","coverage":"Selected source-market observations","source":"https://decentraland.org/","status":"Tracked"},
-    {"id":"otherside","world":"digital","name":"Otherside","role":"Otherdeed virtual land","coverage":"Selected source-market observations","source":"https://opensea.io/collection/otherdeed","status":"Tracked"},
-    {"id":"somnium","world":"digital","name":"Somnium Space","role":"VR parcels and estates","coverage":"Selected source-market observations","source":"https://somniumspace.com/","status":"Tracked"},
-    {"id":"voxels","world":"digital","name":"Voxels","role":"Virtual parcels and built spaces","coverage":"Market family tracked · listing ingestion pending","source":"https://www.voxels.com/","status":"Source integration"}
+    {
+      "id": "lofty",
+      "world": "physical",
+      "name": "Lofty",
+      "role": "Fractional U.S. rental-property marketplace",
+      "coverage": "Active listing coverage",
+      "source": "https://www.lofty.ai/marketplace",
+      "status": "Tracked"
+    },
+    {
+      "id": "reental",
+      "world": "physical",
+      "name": "Reental",
+      "role": "Tokenized real-estate projects",
+      "coverage": "Active + funded project coverage",
+      "source": "https://www.reental.co/en/properties",
+      "status": "Tracked"
+    },
+    {
+      "id": "realt",
+      "world": "physical",
+      "name": "RealT",
+      "role": "Fractional tokenized rental real estate",
+      "coverage": "Market family tracked · listing ingestion pending",
+      "source": "https://realt.co/",
+      "status": "Source integration"
+    },
+    {
+      "id": "blocksquare",
+      "world": "physical",
+      "name": "Blocksquare",
+      "role": "Tokenization infrastructure + marketplace network",
+      "coverage": "Selected Oceanpoint / Blocksquare first-party property observations",
+      "source": "https://oceanpoint.fi/trade",
+      "status": "Tracked"
+    },
+    {
+      "id": "propy",
+      "world": "physical",
+      "name": "Propy",
+      "role": "Whole-property transaction and title rails",
+      "coverage": "Market family tracked · property ingestion pending",
+      "source": "https://propy.com/",
+      "status": "Source integration"
+    },
+    {
+      "id": "sandbox",
+      "world": "digital",
+      "name": "The Sandbox",
+      "role": "Native LAND & Estates marketplace",
+      "coverage": "Active first-party LAND coverage",
+      "source": "https://www.sandbox.game/en/nft-lands/",
+      "status": "Tracked"
+    },
+    {
+      "id": "decentraland",
+      "world": "digital",
+      "name": "Decentraland",
+      "role": "LAND parcels and estates",
+      "coverage": "Selected source-market observations",
+      "source": "https://decentraland.org/",
+      "status": "Tracked"
+    },
+    {
+      "id": "otherside",
+      "world": "digital",
+      "name": "Otherside",
+      "role": "Otherdeed virtual land",
+      "coverage": "Selected source-market observations",
+      "source": "https://opensea.io/collection/otherdeed",
+      "status": "Tracked"
+    },
+    {
+      "id": "somnium",
+      "world": "digital",
+      "name": "Somnium Space",
+      "role": "VR parcels and estates",
+      "coverage": "Selected source-market observations",
+      "source": "https://somniumspace.com/",
+      "status": "Tracked"
+    },
+    {
+      "id": "voxels",
+      "world": "digital",
+      "name": "Voxels",
+      "role": "Virtual parcels and built spaces",
+      "coverage": "Market family tracked · listing ingestion pending",
+      "source": "https://www.voxels.com/",
+      "status": "Source integration"
+    }
   ]
 }
