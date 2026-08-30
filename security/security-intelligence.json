@@ -1,7 +1,7 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-30T08:57:41.856Z",
+  "generatedAt": "2026-08-30T09:22:33.342Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
@@ -13,7 +13,7 @@
   },
   "source": {
     "filesScanned": 843,
-    "bytesScanned": 20269477,
+    "bytesScanned": 20275634,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -55,8 +55,43 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [],
-    "resolvedFindings": []
+    "newFindings": [
+      {
+        "id": "f5ee660ba47eabaefe78ac2c602ba13ac83d69edc4663d54db9e866e9f8f7529",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "realty/discover/index.html",
+        "line": 29,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "f5ee660ba47eabaefe78ac2c602ba13ac83d69edc4663d54db9e866e9f8f7529",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "realty/discover/index.html",
+        "line": 29,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      }
+    ],
+    "resolvedFindings": [
+      {
+        "id": "b41316e8004999e8a6569aac3dd16baa272ae3edd8a9fc63bf312e5cc2c3d413",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "realty/discover/index.html",
+        "line": 23,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      }
+    ]
   },
   "currentFindings": [
     {
@@ -286,17 +321,6 @@
       "evidence": null
     },
     {
-      "id": "b41316e8004999e8a6569aac3dd16baa272ae3edd8a9fc63bf312e5cc2c3d413",
-      "severity": "medium",
-      "category": "dom-innerhtml",
-      "file": "realty/discover/index.html",
-      "line": 23,
-      "entity": null,
-      "summary": "Dynamic innerHTML assignment detected.",
-      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-      "evidence": null
-    },
-    {
       "id": "3072d663d323dd12cef8f6a0d1201cedc24ade5d304e3949622fadf8add98e3d",
       "severity": "medium",
       "category": "dom-innerhtml",
@@ -319,11 +343,22 @@
       "evidence": null
     },
     {
-      "id": "b1603aa46114933994805405bed6dc71e841c4a3f9638ba184c797029d26ca31",
+      "id": "f5ee660ba47eabaefe78ac2c602ba13ac83d69edc4663d54db9e866e9f8f7529",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "realty/discover/index.html",
-      "line": 27,
+      "line": 29,
+      "entity": null,
+      "summary": "Dynamic innerHTML assignment detected.",
+      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+      "evidence": null
+    },
+    {
+      "id": "f5ee660ba47eabaefe78ac2c602ba13ac83d69edc4663d54db9e866e9f8f7529",
+      "severity": "medium",
+      "category": "dom-innerhtml",
+      "file": "realty/discover/index.html",
+      "line": 29,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
@@ -727,12 +762,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "28d74ddb3211cdb0a5439963c9ad2054ee3ebeedc62b98a309cc5b6667108723",
+    "snapshotHash": "833856f15e84167628beab910a17130bec02eb2fde1fecece0772cbba8e5b091",
     "securityVault": {
-      "runCount": 698,
+      "runCount": 699,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-30T08-57-41-856Z-28d74ddb32.json",
-      "latestRecordHash": "2bdc98c69e44675a1a43eceb980ea13eb0481ca9aebfe61e923c0b20cdabac8c",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-30T09-22-33-342Z-833856f15e.json",
+      "latestRecordHash": "4a2fd8437879be478b0cba201809e5a7b7a3c8454a942b762488f0b74c895a45",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
