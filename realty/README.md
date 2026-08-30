@@ -28,14 +28,14 @@ The strategic analogy is a property-native combination of a discovery portal, ma
 - `/realty/compare/` — Reality Lens and up-to-four-property shortlist
 - `/realty/watchlist/` — browser-local saved assets
 - `/realty/sources/` — source/access/media/commercialization governance
-- `/realty/property/?id=...` — physical property detail
-- `/realty/parcel/?id=...` — digital parcel detail
+- `/realty/property/?id=...` — physical Asset Passport joining listing truth, market semantics, freshness, history and source profile
+- `/realty/parcel/?id=...` — digital Asset Passport preserving ask/offer/floor/sale and native-world semantics
 
 ## Current machine-readable contracts
 
 - `/realty/data/market-snapshot.json` — current source-linked property/parcel observations + Market Directory
 - `/realty/data/market-profiles.json` — market-level ownership, minimum-entry, income, return, liquidity, geography and coverage semantics
-- `/realty/data/platform-economics.json` — platform-level investor access/income semantics used by Income Layer and Discovery
+- `/realty/data/platform-economics.json` — platform-level investor access/income semantics used by Income Layer, Discovery and Asset Passports
 - `/realty/data/source-governance.json` — conservative source access/media/commercialization policy
 - `/realty/data/property-media.json` — exact third-party property-media provenance and display policy
 - `/realty/data/atlas.json` — physical geographic anchors and precision contract
@@ -83,10 +83,12 @@ Hard rules:
 13. Two independent observations can prove a change but do not establish a trend.
 14. A field appearing/disappearing between snapshots is a coverage change, not automatically an economic market move.
 15. Universal search can share filters but does not create a universal numeric score, price or APR ranking across unlike assets.
-16. Aggregation is not homogenization: legal rights, eligibility, liquidity and income mechanics differ across issuers/worlds.
-17. Each changing observation keeps source URL/source label/source-check date.
-18. Exact third-party media is a separate display-rights layer.
-19. A public webpage is not blanket permission for scaled automated extraction or commercial reuse.
+16. Asset Passports can join asset-level and market-level context, but the joined view must keep each field's source semantics intact.
+17. An invalid/missing asset id must show an explicit not-found state; it must never silently substitute the first record.
+18. Aggregation is not homogenization: legal rights, eligibility, liquidity and income mechanics differ across issuers/worlds.
+19. Each changing observation keeps source URL/source label/source-check date.
+20. Exact third-party media is a separate display-rights layer.
+21. A public webpage is not blanket permission for scaled automated extraction or commercial reuse.
 
 A beautiful explicit absence is preferred to invented completeness.
 
@@ -101,6 +103,29 @@ Universal Discovery joins the current physical and digital index at read time.
 - saved searches use `localStorage` key `theholding-realty-saved-discovery-v1` and remain in the current browser only;
 - saved search is **not** an alert, subscription or monitoring schedule;
 - future alerts can use the same saved-query contract only after a real recurring ingestion/backend need is proven.
+
+## Asset Passport
+
+Asset Passport v1.3 makes the detail page the canonical human-readable junction for an indexed asset.
+
+Physical passports join, without conflating:
+- current listing/property observation;
+- exact source-labelled entry/return/income fields;
+- market-level ownership/right and liquidity semantics;
+- deterministic freshness state;
+- physical property profile/media rights layer when available;
+- previous comparable source observation when admitted;
+- Watchlist + Compare + Atlas + Market Profile + Data Health + Property Memory links.
+
+Digital passports join, without conflating:
+- exact parcel/asset observation;
+- ask / best offer / collection floor / last sale as separate signals;
+- native-world ownership and liquidity semantics;
+- native coordinate state where admissible;
+- deterministic freshness state;
+- Watchlist + World Atlas + Market Profile + Data Health + Property Memory links.
+
+No passport field gains authority merely because multiple Realty contracts are displayed together. Asset truth remains asset-level; market semantics remain market-level; freshness remains observation age; execution remains at source.
 
 ## Observation freshness
 
