@@ -143,7 +143,35 @@ Keep canonical cadence/authority semantics from the full canon. Do not infer cur
 
 ---
 
-## 9. ASK / REAL USE / EXPERIENCE ACTIVATION
+## 9. REALTY / PROPERTY INTELLIGENCE
+
+Use for The Holding Realty, tokenized physical real estate, metaverse/digital property, property discovery, Income Layer, Realty source governance, property history, comparison/watchlists and Atlas/geography.
+
+Load:
+- `THE_HOLDING_REALTY_PRODUCT_CANON_AND_CHAT_HANDOFF_2026-08-30.md`;
+- live `/realty/README.md`;
+- live `/realty/data/market-snapshot.json`;
+- `realty/data/source-governance.json` when touching sources, media, automation, permissions or commercialization;
+- `realty/data/platform-economics.json` when touching minimum entry, income, return or distribution semantics;
+- `realty/data/atlas.json` when touching geography/maps;
+- relevant live Realty page/assets for the current UX objective;
+- exact PR/run evidence only when diagnosing implementation or deployment.
+
+Hard laws:
+- source-first / free-first; reuse existing Holding Market Data/oracle lanes before creating duplicate pricing infrastructure;
+- missing/UNKNOWN != zero;
+- estimated/projected return != realised yield/cash flow;
+- ask != best offer != collection floor != last sale;
+- provider presence != listing coverage;
+- city/market coordinate != exact property boundary;
+- exact third-party media requires explicit display-rights governance;
+- current execution is source-routed/discovery only; no custody or capital execution;
+- no Realty-specific workflow/backend/control-plane expansion without a demonstrated scale/reliability gap;
+- changing prices/yields/listings must be re-read from live machine/source evidence, never from prose handoff.
+
+---
+
+## 10. ASK / REAL USE / EXPERIENCE ACTIVATION
 
 Load only when Ask behavior, epistemic trust or real-use learning is the target:
 - latest Ask/real-use continuity relevant to the failure class;
@@ -155,7 +183,7 @@ Fail closed on unsupported facts. Confidence labels must remain source-bound.
 
 ---
 
-## 10. PRODUCTION RECOVERY / WORKFLOW CONTROL PLANE / ACTIONS FAN-OUT
+## 11. PRODUCTION RECOVERY / WORKFLOW CONTROL PLANE / ACTIONS FAN-OUT
 
 Load:
 - `THE_HOLDING_PRODUCTION_RECOVERY_FAIL_CLOSED_HANDOFF_CANON_2026-08-22.md`;
@@ -171,7 +199,7 @@ Optimization law:
 
 ---
 
-## 11. WHEN TO LOAD COLD CORE CANONS
+## 12. WHEN TO LOAD COLD CORE CANONS
 
 Load full Owner Collaboration / Build Discipline only when:
 - authority or approval boundaries are ambiguous;
@@ -188,7 +216,7 @@ Load README only for memory architecture documentation/audit, never to discover 
 
 ---
 
-## 12. STOP RULE
+## 13. STOP RULE
 
 If the compact route provides enough context and live evidence verifies the fact, stop loading memory.
 
