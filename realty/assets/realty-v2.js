@@ -13,10 +13,11 @@
  function compareLoad(){try{return JSON.parse(localStorage.getItem(compareKey)||'[]').filter(Boolean).slice(0,4)}catch(e){return []}}
  function compareSave(v){localStorage.setItem(compareKey,JSON.stringify(v.slice(0,4)))}
  function compareHas(id){return compareLoad().includes(id)}
- function compareToggle(id){let a=compareLoad();if(a.includes(id))a=a.filter(x=>x!==id);else if(a.length<4)a=[...a,id];compareSave(a);compareSync();window.dispatchEvent(new CustomEvent('realty-compare-change',{detail:a}));return a.includes(id)}
+ function compareSet(ids){const a=[...new Set((ids||[]).filter(Boolean))].slice(0,4);compareSave(a);compareSync();window.dispatchEvent(new CustomEvent('realty-compare-change',{detail:a}));return a}
+ function compareToggle(id){let a=compareLoad();if(a.includes(id))a=a.filter(x=>x!==id);else if(a.length<4)a=[...a,id];compareSet(a);return a.includes(id)}
  function compareSync(){const a=compareLoad();document.querySelectorAll('[data-compare-id]').forEach(b=>{const on=a.includes(b.dataset.compareId);b.setAttribute('aria-pressed',String(on));b.textContent=on?'✓ Compare':'＋ Compare';b.disabled=!on&&a.length>=4});let tray=document.getElementById('realtyCompareTray');if(!a.length){if(tray)tray.remove();return}if(!tray){tray=document.createElement('div');tray.id='realtyCompareTray';tray.className='compare-tray';tray.innerHTML='<div><span>Property shortlist</span><b id="realtyCompareCount"></b></div><a href="/realty/compare/">Compare now →</a>';document.body.append(tray)}const c=tray.querySelector('#realtyCompareCount');if(c)c.textContent=a.length+' / 4 selected'}
  document.addEventListener('click',e=>{const b=e.target.closest('[data-compare-id]');if(!b)return;e.preventDefault();e.stopPropagation();compareToggle(b.dataset.compareId)});
- window.RealtyCompare={load:compareLoad,has:compareHas,toggle:compareToggle,sync:compareSync,clear(){compareSave([]);compareSync();window.dispatchEvent(new CustomEvent('realty-compare-change',{detail:[]}))}};
+ window.RealtyCompare={load:compareLoad,has:compareHas,toggle:compareToggle,set:compareSet,sync:compareSync,clear(){compareSet([])}};
 
  let mediaPromise=null;
  function media(){return mediaPromise||(mediaPromise=fetch('/realty/data/property-media.json').then(r=>{if(!r.ok)throw new Error('media');return r.json()}).catch(()=>({records:{}})))}
