@@ -1,6 +1,7 @@
 (function(){
  'use strict';
- const q=s=>document.querySelector(s), qa=s=>[...document.querySelectorAll(s)];
+ const q=s=>document.querySelector(s);
+ const themeKey='theholding-realty-theme';
  const state={snapshot:null};
  const fmtNumber=n=>Number(n).toLocaleString(undefined,{maximumFractionDigits:0});
  const money=(n,c='$')=>n==null?'Not disclosed':c+Number(n).toLocaleString(undefined,{maximumFractionDigits:2});
@@ -17,8 +18,9 @@
  };
  const digitalPrice=x=>x.askNative||x.topOfferNative||(x.bestOfferUsd!=null?money(x.bestOfferUsd):'Not disclosed');
  function setText(sel,value){const el=q(sel);if(el)el.textContent=value}
- function themeIcon(){const b=q('[data-theme-toggle]');if(!b)return;const dark=document.documentElement.dataset.theme==='dark';b.textContent=dark?'☀':'◐';b.setAttribute('aria-label',dark?'Switch to light mode':'Switch to dark mode')}
- document.addEventListener('click',e=>{if(e.target.closest('[data-theme-toggle]'))requestAnimationFrame(themeIcon)});
+ function themeIcon(){const b=q('[data-theme-toggle]');if(!b)return;const dark=document.documentElement.dataset.theme==='dark';b.textContent=dark?'☀':'◐';b.setAttribute('aria-label',dark?'Switch to light mode':'Switch to dark mode');b.setAttribute('title',dark?'Light mode':'Dark mode')}
+ function toggleTheme(){const root=document.documentElement;root.dataset.theme=root.dataset.theme==='dark'?'light':'dark';try{localStorage.setItem(themeKey,root.dataset.theme)}catch(e){}themeIcon()}
+ document.addEventListener('click',e=>{if(e.target.closest('[data-theme-toggle]')){e.preventDefault();toggleTheme()}});
 
  function makeCard(x,kind){
    const a=document.createElement('a');
@@ -47,7 +49,7 @@
    const preferred=['blocksquare-sky-mansion-palm-jumeirah','lofty-fallwood','sandbox-happyland','otherside-18123'];
    let selected=preferred.map(id=>all.find(x=>x.id===id)).filter(Boolean);
    if(selected.length<4)selected=[...selected,...all.filter(x=>!selected.includes(x)).slice(0,4-selected.length)];
-   const holder=q('#v15Featured');if(holder){holder.replaceChildren(...selected.map(x=>makeCard(x,x.__kind)))}
+   const holder=q('#v15Featured');if(holder)holder.replaceChildren(...selected.map(x=>makeCard(x,x.__kind)));
    const physicalMarkets=[...new Set((d.realWorld||[]).map(x=>x.platform||x.marketSurface).filter(Boolean))];
    const digitalMarkets=[...new Set((d.digitalWorld||[]).map(x=>x.world).filter(Boolean))];
    setText('[data-market-count="physical"]',physicalMarkets.length+' observed');setText('[data-market-count="digital"]',digitalMarkets.length+' observed');
