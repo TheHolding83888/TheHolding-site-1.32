@@ -21,7 +21,7 @@
  function setText(sel,value){const el=q(sel);if(el)el.textContent=value}
  function themeIcon(){const b=q('[data-theme-toggle]');if(!b)return;const dark=document.documentElement.dataset.theme==='dark';b.textContent=dark?'☀':'◐';b.setAttribute('aria-label',dark?'Switch to light mode':'Switch to dark mode');b.setAttribute('title',dark?'Light mode':'Dark mode')}
  function toggleTheme(){const root=document.documentElement;root.dataset.theme=root.dataset.theme==='dark'?'light':'dark';try{localStorage.setItem(themeKey,root.dataset.theme)}catch(e){}themeIcon()}
- function toggleMenu(force){const menu=q('[data-v15-mobile-menu]');if(!menu)return;const next=typeof force==='boolean'?force:!menu.classList.contains('open');menu.classList.toggle('open',next);menu.setAttribute('aria-hidden',String(!next));const button=q('[data-v15-menu]');if(button)button.setAttribute('aria-expanded',String(next))}
+ function toggleMenu(force){const menu=q('[data-v15-mobile-menu]');if(!menu)return;const next=typeof force==='boolean'?force:!menu.classList.contains('open');menu.classList.toggle('open',next);menu.hidden=!next;menu.setAttribute('aria-hidden',String(!next));const button=q('[data-v15-menu]');if(button)button.setAttribute('aria-expanded',String(next))}
  document.addEventListener('click',e=>{
    if(e.target.closest('[data-theme-toggle]')){e.preventDefault();toggleTheme();return}
    if(e.target.closest('[data-v15-menu]')){e.preventDefault();toggleMenu();return}
@@ -66,5 +66,5 @@
    const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),8000);
    fetch('/realty/data/market-snapshot.json',{cache:'no-store',signal:controller.signal}).then(r=>{if(!r.ok)throw new Error('snapshot '+r.status);return r.json()}).then(render).catch(()=>{const h=q('#v15Featured');if(h)h.innerHTML='<div style="grid-column:1/-1;padding:24px;color:var(--muted);font-size:10px">Market snapshot temporarily unavailable. The portal shell remains available.</div>'}).finally(()=>clearTimeout(timer));
  }
- themeIcon();load();
+ themeIcon();toggleMenu(false);load();
 })();
