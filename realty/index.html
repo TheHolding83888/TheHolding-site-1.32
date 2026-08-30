@@ -9,25 +9,17 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="image" href="/realty/assets/demo/v22/hero-demo-exact.avif" type="image/avif">
-<link rel="preload" as="image" href="/realty/assets/demo/v22/physical-demo-exact.avif" type="image/avif">
-<link rel="preload" as="image" href="/realty/assets/demo/v22/digital-demo-exact.avif" type="image/avif">
+<link rel="preload" as="image" href="/realty/assets/demo/v36/physical-desktop-hq.webp" type="image/webp" media="(min-width:761px)">
+<link rel="preload" as="image" href="/realty/assets/demo/v36/digital-desktop-hq.webp" type="image/webp" media="(min-width:761px)">
+<link rel="preload" as="image" href="/realty/assets/demo/v36/physical-mobile-hq.webp" type="image/webp" media="(max-width:760px)">
+<link rel="preload" as="image" href="/realty/assets/demo/v36/digital-mobile-hq.webp" type="image/webp" media="(max-width:760px)">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/realty/assets/realty-v3.css?v=20260830-1841">
-<link rel="stylesheet" href="/realty/assets/realty-v31-fix.css?v=20260830-1926">
-<link rel="stylesheet" href="/realty/assets/realty-v32.css?v=20260830-1926">
-<link rel="stylesheet" href="/realty/assets/realty-v33.css?v=20260830-1949">
+<link rel="stylesheet" href="/realty/assets/realty-v36.css?v=20260830-2230">
 <script>
 try{const saved=localStorage.getItem('theholding-realty-theme');document.documentElement.dataset.theme=saved||(matchMedia('(max-width:760px)').matches?'light':'dark')}catch(e){document.documentElement.dataset.theme='dark'}
 </script>
 </head>
 <body>
-<svg class="realty-filter-defs" aria-hidden="true" focusable="false">
-  <defs>
-    <filter id="realty-sharpen" x="-8%" y="-8%" width="116%" height="116%" color-interpolation-filters="sRGB">
-      <feConvolveMatrix order="3" kernelMatrix="0 -0.18 0 -0.18 1.72 -0.18 0 -0.18 0" preserveAlpha="true"/>
-    </filter>
-  </defs>
-</svg>
 <header class="topbar">
   <div class="topin">
     <a class="brand" href="/">THE HOLDING</a>
@@ -68,7 +60,10 @@ try{const saved=localStorage.getItem('theholding-realty-theme');document.documen
     <section class="worlds" aria-label="Choose a Realty world">
       <a class="world-card physical" id="real-world" href="#physical-markets">
         <div class="world-art" aria-hidden="true">
-          <img src="/realty/assets/demo/v22/physical-demo-exact.avif" data-fallback="/realty/assets/demo/physical-world-demo-v20.webp" data-last-fallback="/realty/assets/demo/physical-world.svg" alt="" loading="eager" decoding="async">
+          <picture>
+            <source media="(max-width:760px)" srcset="/realty/assets/demo/v36/physical-mobile-hq.webp">
+            <img src="/realty/assets/demo/v36/physical-desktop-hq.webp" alt="" loading="eager" decoding="async">
+          </picture>
         </div>
         <div class="world-copy">
           <div class="world-label"><span class="round-icon"><svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16M6 20V9l6-4 6 4v11"/><path d="M9 12h2m2 0h2m-6 4h2m2 0h2M10 20v-4h4v4"/></svg></span><span>Physical World</span></div>
@@ -80,7 +75,10 @@ try{const saved=localStorage.getItem('theholding-realty-theme');document.documen
       </a>
       <a class="world-card digital" id="metaverse" href="#digital-markets">
         <div class="world-art" aria-hidden="true">
-          <img src="/realty/assets/demo/v22/digital-demo-exact.avif" data-fallback="/realty/assets/demo/digital-world-demo-v20.webp" data-last-fallback="/realty/assets/demo/digital-world.svg" alt="" loading="eager" decoding="async">
+          <picture>
+            <source media="(max-width:760px)" srcset="/realty/assets/demo/v36/digital-mobile-hq.webp">
+            <img src="/realty/assets/demo/v36/digital-desktop-hq.webp" alt="" loading="eager" decoding="async">
+          </picture>
         </div>
         <div class="world-copy">
           <div class="world-label"><span class="round-icon"><svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9Z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></svg></span><span>Digital World</span></div>
@@ -139,11 +137,11 @@ try{const saved=localStorage.getItem('theholding-realty-theme');document.documen
       <div class="mobile-preview-head"><h2 id="mobile-preview-title">Explore the Two Markets</h2><p>Two property worlds, one clean discovery surface.</p></div>
       <div class="mobile-preview-grid">
         <article class="mobile-preview-card physical">
-          <div class="preview-art"><img src="/realty/assets/demo/v22/physical-demo-exact.avif" data-fallback="/realty/assets/demo/physical-world-demo-v20.webp" data-last-fallback="/realty/assets/demo/physical-world.svg" alt="" loading="lazy" decoding="async"></div>
+          <div class="preview-art"><img src="/realty/assets/demo/v36/physical-mobile-hq.webp" alt="" loading="lazy" decoding="async"></div>
           <div class="mobile-preview-copy"><small>Real World</small><h3>Property Rails</h3><p>Tokenized property platforms and official marketplaces.</p></div>
         </article>
         <article class="mobile-preview-card digital">
-          <div class="preview-art"><img src="/realty/assets/demo/v22/digital-demo-exact.avif" data-fallback="/realty/assets/demo/digital-world-demo-v20.webp" data-last-fallback="/realty/assets/demo/digital-world.svg" alt="" loading="lazy" decoding="async"></div>
+          <div class="preview-art"><img src="/realty/assets/demo/v36/digital-mobile-hq.webp" alt="" loading="lazy" decoding="async"></div>
           <div class="mobile-preview-copy"><small>Metaverse</small><h3>Virtual Worlds</h3><p>Digital land and property across leading ecosystems.</p></div>
         </article>
       </div>
