@@ -1,0 +1,253 @@
+/* The Holding Realty v2.2 — exact approved-demo art + dark/light geometry parity.
+   Presentation only. Stable v1.6 remains the data/runtime controller. */
+
+:root{
+  --v22-gold:#d9b66d;
+  --v22-gold-soft:#ead09b;
+  --v22-violet:#aa7cff;
+  --v22-violet-soft:#c8a9ff;
+}
+
+/* Same desktop geometry in both themes. */
+@media (min-width:861px){
+  .landing-v22 .v20-app{
+    max-width:1536px!important;
+    margin:0 auto!important;
+    display:grid!important;
+    grid-template-columns:160px minmax(0,1fr)!important;
+    gap:18px!important;
+    padding:32px 22px 22px!important;
+  }
+  .landing-v22 .v20-sidebar{
+    display:flex!important;
+    flex-direction:column!important;
+    gap:8px!important;
+    padding-top:0!important;
+  }
+  .landing-v22 .v20-sidebar a{
+    min-height:52px!important;
+    padding:0 15px!important;
+    border-radius:10px!important;
+    gap:11px!important;
+    font-size:12.5px!important;
+  }
+  .landing-v22 .v20-sidebar .ico{
+    width:29px!important;
+    height:29px!important;
+    display:grid!important;
+    place-items:center!important;
+  }
+  .landing-v22 .v20-sidebar .ico svg{
+    width:22px!important;
+    height:22px!important;
+    fill:none!important;
+    stroke:currentColor!important;
+    stroke-width:1.35!important;
+    stroke-linecap:round!important;
+    stroke-linejoin:round!important;
+  }
+
+  /* Exact approved demo crop — no synthetic replacement art. */
+  .landing-v22 .v20-hero{
+    position:relative!important;
+    height:252px!important;
+    border-radius:16px!important;
+    overflow:hidden!important;
+    isolation:isolate!important;
+  }
+  .landing-v22 .v20-hero .v16-hero-art{
+    position:absolute!important;
+    inset:0!important;
+    background-image:url('/realty/assets/demo/v22/hero-demo-exact.avif')!important;
+    background-size:cover!important;
+    background-position:center center!important;
+    background-repeat:no-repeat!important;
+    opacity:1!important;
+    filter:none!important;
+    transform:none!important;
+    image-rendering:auto!important;
+  }
+  .landing-v22 .v20-hero .v16-hero-copy{
+    position:relative!important;
+    z-index:4!important;
+    width:55%!important;
+    height:100%!important;
+    padding:34px 24px 20px 22px!important;
+  }
+  .landing-v22 .v20-hero h1{
+    font-size:55px!important;
+    line-height:.92!important;
+    letter-spacing:.045em!important;
+    white-space:nowrap!important;
+    margin:0 0 13px!important;
+  }
+  .landing-v22 .v20-hero .v16-hero-kpis{margin-top:24px!important}
+
+  .landing-v22 .v20-gateways{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    gap:16px!important;
+    margin-top:16px!important;
+  }
+  .landing-v22 .v20-gateways .v16-gateway{
+    height:184px!important;
+    border-radius:16px!important;
+    overflow:hidden!important;
+    isolation:isolate!important;
+  }
+  .landing-v22 .v20-gateways .v16-gateway.physical .v16-gateway-art{
+    inset:0!important;
+    background-image:url('/realty/assets/demo/v22/physical-demo-exact.avif')!important;
+    background-size:cover!important;
+    background-position:center center!important;
+    background-repeat:no-repeat!important;
+    opacity:1!important;
+    filter:none!important;
+    transform:none!important;
+  }
+  .landing-v22 .v20-gateways .v16-gateway.digital .v16-gateway-art{
+    inset:0!important;
+    background-image:url('/realty/assets/demo/v22/digital-demo-exact.avif')!important;
+    background-size:cover!important;
+    background-position:center center!important;
+    background-repeat:no-repeat!important;
+    opacity:1!important;
+    filter:none!important;
+    transform:none!important;
+  }
+  .landing-v22 .v20-gateways .v16-gateway-copy{
+    left:21px!important;
+    top:0!important;
+    bottom:0!important;
+    width:68%!important;
+    padding:18px 0!important;
+    display:grid!important;
+    grid-template-rows:36px 37px 38px 31px!important;
+    align-content:center!important;
+    row-gap:3px!important;
+    transform:none!important;
+  }
+  .landing-v22 .v20-gateways .v16-gateway-label{
+    margin:0!important;
+    min-height:36px!important;
+    display:flex!important;
+    align-items:center!important;
+  }
+  .landing-v22 .v20-gateways .v16-gateway h2{
+    margin:0!important;
+    font-size:29px!important;
+    line-height:1!important;
+    white-space:nowrap!important;
+  }
+  .landing-v22 .v20-gateways .v16-gateway p{margin:0!important}
+  .landing-v22 .v20-gateways .v16-gateway .go{margin:0!important;align-self:end!important;justify-self:start!important}
+}
+
+/* Real visible gateway symbols. */
+.landing-v22 .v16-gateway-label i{
+  width:36px!important;
+  height:36px!important;
+  flex:0 0 36px!important;
+  border-radius:50%!important;
+  display:grid!important;
+  place-items:center!important;
+  overflow:hidden!important;
+  background:rgba(4,7,10,.52)!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.035),0 0 22px rgba(0,0,0,.22)!important;
+}
+.landing-v22 .v16-gateway-label i svg{
+  display:block!important;
+  width:22px!important;
+  height:22px!important;
+  fill:none!important;
+  stroke:currentColor!important;
+  stroke-width:1.35!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+  opacity:1!important;
+}
+.landing-v22 .v16-gateway.physical .v16-gateway-label i{color:var(--v22-gold)!important;border-color:var(--v22-gold)!important}
+.landing-v22 .v16-gateway.digital .v16-gateway-label i{color:var(--v22-violet)!important;border-color:var(--v22-violet)!important}
+
+/* Dark: preserve accepted premium palette around the exact crops. */
+[data-theme="dark"] .landing-v22 .v20-hero{
+  background:#020508!important;
+  border:1px solid #2b333d!important;
+  box-shadow:0 18px 45px rgba(0,0,0,.24)!important;
+}
+[data-theme="dark"] .landing-v22 .v20-hero:before{
+  content:""!important;
+  position:absolute!important;
+  inset:0!important;
+  z-index:2!important;
+  pointer-events:none!important;
+  background:radial-gradient(circle at 55% 52%,rgba(228,190,116,.08),transparent 25%),radial-gradient(circle at 84% 48%,rgba(142,73,255,.13),transparent 31%)!important;
+}
+[data-theme="dark"] .landing-v22 .v20-hero:after{
+  z-index:3!important;
+  background:linear-gradient(90deg,#020508 0%,rgba(2,5,8,.985) 25%,rgba(2,5,8,.83) 39%,rgba(2,5,8,.32) 51%,rgba(2,5,8,.03) 66%,rgba(2,5,8,0) 100%)!important;
+}
+[data-theme="dark"] .landing-v22 .v20-gateways .v16-gateway{border:1px solid #2d3540!important;background:#06090d!important;box-shadow:0 14px 34px rgba(0,0,0,.18)!important}
+[data-theme="dark"] .landing-v22 .v20-gateways .v16-gateway.physical:after{background:linear-gradient(90deg,rgba(3,6,9,.995) 0%,rgba(3,6,9,.92) 24%,rgba(3,6,9,.69) 39%,rgba(3,6,9,.19) 57%,rgba(3,6,9,0) 78%)!important}
+[data-theme="dark"] .landing-v22 .v20-gateways .v16-gateway.digital:after{background:linear-gradient(90deg,rgba(6,5,13,.995) 0%,rgba(6,5,13,.91) 24%,rgba(9,6,19,.66) 39%,rgba(18,7,39,.16) 57%,rgba(27,8,58,0) 80%)!important}
+
+/* Light: SAME positions, dimensions and sidebar; only palette/overlay changes. */
+[data-theme="light"] body.landing-v22{background:#f7f5ef!important;color:#171614!important}
+[data-theme="light"] .landing-v22 .v20-top{background:rgba(250,249,245,.97)!important;border-bottom-color:#ddd7cc!important}
+[data-theme="light"] .landing-v22 .v20-brand{color:#201e1a!important}
+[data-theme="light"] .landing-v22 .v20-app{max-width:1536px!important;grid-template-columns:160px minmax(0,1fr)!important;gap:18px!important;padding:32px 22px 22px!important}
+[data-theme="light"] .landing-v22 .v20-sidebar{display:flex!important}
+[data-theme="light"] .landing-v22 .v20-sidebar a{color:#625e57!important;border-color:transparent!important;background:transparent!important}
+[data-theme="light"] .landing-v22 .v20-sidebar a:hover{color:#171512!important;background:#eeeae1!important}
+[data-theme="light"] .landing-v22 .v20-sidebar a.active{color:#171512!important;background:linear-gradient(180deg,#fffefa,#f0ede5)!important;border:1px solid #d6d0c5!important;box-shadow:0 10px 25px rgba(74,60,36,.08)!important}
+[data-theme="light"] .landing-v22 .v20-sidebar .ico{color:#aa8540!important}
+[data-theme="light"] .landing-v22 .v20-sidebar a:nth-child(4) .ico{color:#8054c7!important}
+
+[data-theme="light"] .landing-v22 .v20-hero{height:252px!important;background:#fbfaf6!important;border:1px solid #d8d2c7!important;box-shadow:0 16px 38px rgba(74,60,36,.08)!important}
+[data-theme="light"] .landing-v22 .v20-hero .v16-hero-art{inset:0!important;background-image:url('/realty/assets/demo/v22/hero-demo-exact.avif')!important;background-size:cover!important;background-position:center center!important;filter:saturate(.96) brightness(1.08)!important;opacity:.76!important}
+[data-theme="light"] .landing-v22 .v20-hero:before{content:""!important;position:absolute!important;inset:0!important;z-index:2!important;pointer-events:none!important;background:radial-gradient(circle at 83% 48%,rgba(128,76,203,.10),transparent 31%)!important}
+[data-theme="light"] .landing-v22 .v20-hero:after{z-index:3!important;background:linear-gradient(90deg,#fbfaf6 0%,rgba(251,250,246,.995) 25%,rgba(251,250,246,.94) 38%,rgba(251,250,246,.58) 51%,rgba(251,250,246,.12) 68%,rgba(251,250,246,0) 100%)!important}
+[data-theme="light"] .landing-v22 .v20-hero .v16-hero-copy{width:55%!important;padding:34px 24px 20px 22px!important;color:#201d18!important}
+[data-theme="light"] .landing-v22 .v20-hero h1{font-size:55px!important;line-height:.92!important;white-space:nowrap!important;color:#211e19!important}
+[data-theme="light"] .landing-v22 .v20-hero .v16-hero-lead{color:#2f2b25!important}
+[data-theme="light"] .landing-v22 .v20-hero .v16-hero-sub{color:#666057!important}
+[data-theme="light"] .landing-v22 .v20-hero .v16-hero-kpi{border-right-color:#d6cfc3!important}
+[data-theme="light"] .landing-v22 .v20-hero .v16-hero-kpi span{color:#777066!important}
+[data-theme="light"] .landing-v22 .v20-hero .v16-hero-kpi b{color:#211d18!important}
+
+[data-theme="light"] .landing-v22 .v20-gateways{grid-template-columns:1fr 1fr!important;gap:16px!important;margin-top:16px!important}
+[data-theme="light"] .landing-v22 .v20-gateways .v16-gateway{height:184px!important;border-radius:16px!important;border:1px solid #d7d0c4!important;box-shadow:0 12px 28px rgba(65,52,33,.08)!important;background:#101419!important}
+[data-theme="light"] .landing-v22 .v20-gateways .v16-gateway.physical .v16-gateway-art{background-image:url('/realty/assets/demo/v22/physical-demo-exact.avif')!important;filter:brightness(1.05) saturate(1.02)!important;opacity:1!important}
+[data-theme="light"] .landing-v22 .v20-gateways .v16-gateway.digital .v16-gateway-art{background-image:url('/realty/assets/demo/v22/digital-demo-exact.avif')!important;filter:brightness(1.05) saturate(1.04)!important;opacity:1!important}
+[data-theme="light"] .landing-v22 .v20-gateways .v16-gateway-copy{left:21px!important;top:0!important;bottom:0!important;width:68%!important;padding:18px 0!important;display:grid!important;grid-template-rows:36px 37px 38px 31px!important;align-content:center!important;row-gap:3px!important}
+[data-theme="light"] .landing-v22 .v20-gateways .v16-gateway.physical:after{background:linear-gradient(90deg,rgba(8,11,15,.97) 0%,rgba(8,11,15,.88) 26%,rgba(8,11,15,.59) 41%,rgba(8,11,15,.13) 59%,rgba(8,11,15,0) 80%)!important}
+[data-theme="light"] .landing-v22 .v20-gateways .v16-gateway.digital:after{background:linear-gradient(90deg,rgba(8,6,15,.97) 0%,rgba(8,6,15,.87) 26%,rgba(15,8,27,.57) 41%,rgba(20,8,40,.12) 60%,rgba(27,8,58,0) 81%)!important}
+[data-theme="light"] .landing-v22 .v20-gateways .v16-gateway h2,[data-theme="light"] .landing-v22 .v20-gateways .v16-gateway p,[data-theme="light"] .landing-v22 .v20-gateways .v16-gateway .go{color:#f5f0e8!important}
+
+/* Mobile: same hierarchy in both themes; exact crops remain the source artwork. */
+@media (max-width:860px){
+  .landing-v22 .v20-app{display:block!important;max-width:none!important;padding:18px 14px 20px!important}
+  .landing-v22 .v20-sidebar{display:none!important}
+  .landing-v22 .v20-hero{height:360px!important;border-radius:14px!important;overflow:hidden!important}
+  .landing-v22 .v20-hero .v16-hero-art{
+    inset:0!important;
+    background-image:url('/realty/assets/demo/v22/hero-demo-exact.avif')!important;
+    background-size:auto 62%!important;
+    background-position:right bottom!important;
+    background-repeat:no-repeat!important;
+    filter:none!important;
+    opacity:1!important;
+  }
+  .landing-v22 .v20-hero .v16-hero-copy{width:100%!important;padding:24px 20px!important;position:relative!important;z-index:4!important}
+  .landing-v22 .v20-hero h1{font-size:40px!important;line-height:.96!important;white-space:normal!important}
+  .landing-v22 .v20-gateways{display:grid!important;grid-template-columns:1fr!important;gap:13px!important;margin-top:13px!important}
+  .landing-v22 .v20-gateways .v16-gateway{height:194px!important;border-radius:14px!important;overflow:hidden!important}
+  .landing-v22 .v20-gateways .v16-gateway.physical .v16-gateway-art{background-image:url('/realty/assets/demo/v22/physical-demo-exact.avif')!important;background-size:cover!important;background-position:67% center!important;filter:none!important;opacity:1!important}
+  .landing-v22 .v20-gateways .v16-gateway.digital .v16-gateway-art{background-image:url('/realty/assets/demo/v22/digital-demo-exact.avif')!important;background-size:cover!important;background-position:66% center!important;filter:none!important;opacity:1!important}
+  .landing-v22 .v20-gateways .v16-gateway-copy{left:18px!important;top:0!important;bottom:0!important;width:78%!important;padding:15px 0!important;display:grid!important;grid-template-rows:36px 35px 42px 31px!important;align-content:center!important;row-gap:2px!important}
+  .landing-v22 .v16-gateway-label i{width:34px!important;height:34px!important;flex-basis:34px!important}
+  .landing-v22 .v16-gateway-label i svg{width:21px!important;height:21px!important}
+  [data-theme="light"] .landing-v22 .v20-hero{height:360px!important}
+  [data-theme="light"] .landing-v22 .v20-hero .v16-hero-art{background-size:auto 62%!important;background-position:right bottom!important;opacity:.72!important}
+  [data-theme="light"] .landing-v22 .v20-hero:after{background:linear-gradient(180deg,#fbfaf6 0%,rgba(251,250,246,.98) 49%,rgba(251,250,246,.66) 66%,rgba(251,250,246,.10) 100%)!important}
+}
