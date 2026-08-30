@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-29T19:55:19.580Z",
+  "generatedAt": "2026-08-30T00:39:49.543Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 2,
-    "medium": 20,
+    "medium": 21,
     "low": 0,
     "info": 0
   },
   "source": {
     "filesScanned": 793,
-    "bytesScanned": 19745728,
+    "bytesScanned": 19745849,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -55,7 +55,22 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [],
+    "newFindings": [
+      {
+        "id": "251e7da0a76db941eed25c232bde774308256f4ef958cb26e92c9c0891586a13",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/update-economic-graph.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/update-economic-graph.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "4f61a17e9034c68b4f8e29c27bf19a3bc1a575fad47ff7ade533dee9cd9b6017",
+          "currentSha256": "fd0efc6d74bb8e79dba4f24bbbacf733eba83e3aaf6ec4044212ca5ddd13ef84"
+        }
+      }
+    ],
     "resolvedFindings": []
   },
   "currentFindings": [
@@ -80,6 +95,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "251e7da0a76db941eed25c232bde774308256f4ef958cb26e92c9c0891586a13",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/update-economic-graph.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/update-economic-graph.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "4f61a17e9034c68b4f8e29c27bf19a3bc1a575fad47ff7ade533dee9cd9b6017",
+        "currentSha256": "fd0efc6d74bb8e79dba4f24bbbacf733eba83e3aaf6ec4044212ca5ddd13ef84"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -386,12 +415,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "48b1d4cbcd2b1f21e1086347bf78da783f6c9a47a1c9a87387af4787cdcef5bd",
+    "snapshotHash": "1b52870e8614841b7bfea7f17d3dca1a15de8d1fb29d848dadbc8620b14fa294",
     "securityVault": {
-      "runCount": 675,
+      "runCount": 676,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-29T19-55-19-580Z-48b1d4cbcd.json",
-      "latestRecordHash": "fa8c45b0c373c8e85f905ce1b3142fb50f9e3554b4085a2bea1d6d902bf06ae3",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-30T00-39-49-543Z-1b52870e86.json",
+      "latestRecordHash": "077f3d2faeda997390faa0e125dd393939cbdee6e09baa19daed13eeea7db9da",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
