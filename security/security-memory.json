@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-30T08:20:52.771Z",
+  "generatedAt": "2026-08-30T08:52:56.651Z",
   "status": "watch",
-  "snapshotHash": "bed12b69c955275be7a110d5b12650f4da833a0a1a624c7a55dc6dff8a33785d",
+  "snapshotHash": "6e56112904096bfb5b131325a0aca24473fbe1bc99a95a87843b8afdd3cb940a",
   "repository": {
-    "filesScanned": 840,
-    "bytesScanned": 20234273,
+    "filesScanned": 842,
+    "bytesScanned": 20254318,
     "criticalHashes": {
       ".github/workflows/admit-company-010-public.yml": "5feffbf58388675952487c3462d2f9149eecec6f3795483087010dd0d3b19cfb",
       ".github/workflows/ask-experience.yml": "deb9c4e1025390563f8a866f6ddf1c7870e748cbd6aba13fdbd6da2d38e983d4",
@@ -349,6 +349,16 @@
         "rationale": null
       },
       {
+        "file": "realty/discover/index.html",
+        "status": "unreviewed",
+        "classification": null,
+        "sinkCount": 4,
+        "expectedCount": null,
+        "currentGitBlobSha1": "6bfd583c6bccfcd6efc252736ef181855a628e02",
+        "reviewedGitBlobSha1": null,
+        "rationale": null
+      },
+      {
         "file": "realty/history/index.html",
         "status": "unreviewed",
         "classification": null,
@@ -439,7 +449,7 @@
     "summary": {
       "reviewedDomFileCount": 4,
       "reviewedDomSinkCount": 21,
-      "unreviewedDomFileCount": 13,
+      "unreviewedDomFileCount": 14,
       "trustedExternalScriptCount": 1,
       "trustedExternalScriptUsageCount": 7
     }
@@ -666,6 +676,50 @@
       "category": "dom-innerhtml",
       "file": "realty/data-health/index.html",
       "line": 18,
+      "entity": null,
+      "summary": "Dynamic innerHTML assignment detected.",
+      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+      "evidence": null
+    },
+    {
+      "id": "b41316e8004999e8a6569aac3dd16baa272ae3edd8a9fc63bf312e5cc2c3d413",
+      "severity": "medium",
+      "category": "dom-innerhtml",
+      "file": "realty/discover/index.html",
+      "line": 23,
+      "entity": null,
+      "summary": "Dynamic innerHTML assignment detected.",
+      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+      "evidence": null
+    },
+    {
+      "id": "3072d663d323dd12cef8f6a0d1201cedc24ade5d304e3949622fadf8add98e3d",
+      "severity": "medium",
+      "category": "dom-innerhtml",
+      "file": "realty/discover/index.html",
+      "line": 25,
+      "entity": null,
+      "summary": "Dynamic innerHTML assignment detected.",
+      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+      "evidence": null
+    },
+    {
+      "id": "b1603aa46114933994805405bed6dc71e841c4a3f9638ba184c797029d26ca31",
+      "severity": "medium",
+      "category": "dom-innerhtml",
+      "file": "realty/discover/index.html",
+      "line": 27,
+      "entity": null,
+      "summary": "Dynamic innerHTML assignment detected.",
+      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+      "evidence": null
+    },
+    {
+      "id": "b1603aa46114933994805405bed6dc71e841c4a3f9638ba184c797029d26ca31",
+      "severity": "medium",
+      "category": "dom-innerhtml",
+      "file": "realty/discover/index.html",
+      "line": 27,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
@@ -1059,10 +1113,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 696,
+    "runCount": 697,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/08/2026-08-30T08-20-52-771Z-bed12b69c9.json",
-    "latestRecordHash": "837a92f6c60b14eaa4bb2b3230cda49eb5996dd24991a81810e8e7618575fe12",
+    "latestRecordPath": "security/security-vault/2026/08/2026-08-30T08-52-56-651Z-6e56112904.json",
+    "latestRecordHash": "7545a58a630b657118e349157f4146ce52d698f1588515e05f33d44cfe389c40",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
