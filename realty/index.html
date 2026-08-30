@@ -15,11 +15,19 @@
 <link rel="stylesheet" href="/realty/assets/realty-v3.css?v=20260830-1841">
 <link rel="stylesheet" href="/realty/assets/realty-v31-fix.css?v=20260830-1926">
 <link rel="stylesheet" href="/realty/assets/realty-v32.css?v=20260830-1926">
+<link rel="stylesheet" href="/realty/assets/realty-v33.css?v=20260830-1949">
 <script>
 try{const saved=localStorage.getItem('theholding-realty-theme');document.documentElement.dataset.theme=saved||(matchMedia('(max-width:760px)').matches?'light':'dark')}catch(e){document.documentElement.dataset.theme='dark'}
 </script>
 </head>
 <body>
+<svg class="realty-filter-defs" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="realty-sharpen" x="-8%" y="-8%" width="116%" height="116%" color-interpolation-filters="sRGB">
+      <feConvolveMatrix order="3" kernelMatrix="0 -0.18 0 -0.18 1.72 -0.18 0 -0.18 0" preserveAlpha="true"/>
+    </filter>
+  </defs>
+</svg>
 <header class="topbar">
   <div class="topin">
     <a class="brand" href="/">THE HOLDING</a>
@@ -66,6 +74,7 @@ try{const saved=localStorage.getItem('theholding-realty-theme');document.documen
           <div class="world-label"><span class="round-icon"><svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16M6 20V9l6-4 6 4v11"/><path d="M9 12h2m2 0h2m-6 4h2m2 0h2M10 20v-4h4v4"/></svg></span><span>Physical World</span></div>
           <h2>REAL-WORLD REALTY</h2>
           <p>Tokenized property, tangible assets and real-world marketplaces.</p>
+          <div class="mobile-tags" aria-hidden="true"><span>Tokenized</span><span>Property</span></div>
           <span class="cta">Explore platforms →</span>
         </div>
       </a>
@@ -77,9 +86,17 @@ try{const saved=localStorage.getItem('theholding-realty-theme');document.documen
           <div class="world-label"><span class="round-icon"><svg class="icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9Z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></svg></span><span>Digital World</span></div>
           <h2>VIRTUAL REALTY</h2>
           <p>Digital land, estates and property across leading metaverse ecosystems.</p>
+          <div class="mobile-tags" aria-hidden="true"><span>Land</span><span>Worlds</span></div>
           <span class="cta">Explore worlds →</span>
         </div>
       </a>
+    </section>
+
+    <section class="mobile-metrics" aria-label="Realty market coverage">
+      <div class="metric-mini"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c2.2 2.2 3.3 4.9 3.3 8S14.2 17.8 12 20c-2.2-2.2-3.3-4.9-3.3-8S9.8 6.2 12 4Z"/></svg><span>Markets<br>Tracked</span><strong>10</strong></div>
+      <div class="metric-mini"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V8l7-4 7 4v12M3 20h18M9 11h2m2 0h2m-6 4h2m2 0h2"/></svg><span>Real-World<br>Platforms</span><strong>5</strong></div>
+      <div class="metric-mini"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9Zm0 9 8-4.5M12 12 4 7.5M12 12v9"/></svg><span>Metaverse<br>Worlds</span><strong>5</strong></div>
+      <div class="metric-mini"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 12h8m-4-4 4 4-4 4M5 5h14v14H5z"/></svg><span>Direct<br>Links</span><strong>10</strong></div>
     </section>
 
     <section class="section" aria-labelledby="choose-market-title">
@@ -118,6 +135,20 @@ try{const saved=localStorage.getItem('theholding-realty-theme');document.documen
       </div>
     </section>
 
+    <section class="mobile-preview" aria-labelledby="mobile-preview-title">
+      <div class="mobile-preview-head"><h2 id="mobile-preview-title">Explore the Two Markets</h2><p>Two property worlds, one clean discovery surface.</p></div>
+      <div class="mobile-preview-grid">
+        <article class="mobile-preview-card physical">
+          <div class="preview-art"><img src="/realty/assets/demo/v22/physical-demo-exact.avif" data-fallback="/realty/assets/demo/physical-world-demo-v20.webp" data-last-fallback="/realty/assets/demo/physical-world.svg" alt="" loading="lazy" decoding="async"></div>
+          <div class="mobile-preview-copy"><small>Real World</small><h3>Property Rails</h3><p>Tokenized property platforms and official marketplaces.</p></div>
+        </article>
+        <article class="mobile-preview-card digital">
+          <div class="preview-art"><img src="/realty/assets/demo/v22/digital-demo-exact.avif" data-fallback="/realty/assets/demo/digital-world-demo-v20.webp" data-last-fallback="/realty/assets/demo/digital-world.svg" alt="" loading="lazy" decoding="async"></div>
+          <div class="mobile-preview-copy"><small>Metaverse</small><h3>Virtual Worlds</h3><p>Digital land and property across leading ecosystems.</p></div>
+        </article>
+      </div>
+    </section>
+
     <section class="section" aria-labelledby="future-title">
       <div class="section-head"><h2 id="future-title">What This Portal Will Become</h2><p>Keep the public surface simple now; add deeper intelligence as partnerships and permissions mature.</p></div>
       <div class="future">
@@ -141,10 +172,24 @@ try{const saved=localStorage.getItem('theholding-realty-theme');document.documen
   const menu=document.querySelector('[data-mobile-menu]');
   btn?.addEventListener('click',()=>{const open=menu.classList.toggle('open');btn.setAttribute('aria-expanded',String(open));});
   menu?.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{menu.classList.remove('open');btn?.setAttribute('aria-expanded','false');}));
-  document.querySelectorAll('.hero-art img,.world-art img').forEach(img=>{
+  document.querySelectorAll('img[data-fallback],img[data-last-fallback]').forEach(img=>{
     img.addEventListener('error',()=>{
       if(img.dataset.fallback){img.src=img.dataset.fallback;delete img.dataset.fallback;return;}
       if(img.dataset.lastFallback){img.src=img.dataset.lastFallback;delete img.dataset.lastFallback;}
+    });
+  });
+  document.querySelectorAll('.world-card[href^="#"]').forEach(card=>{
+    card.addEventListener('click',event=>{
+      const selector=card.getAttribute('href');
+      const target=selector&&document.querySelector(selector);
+      if(!target)return;
+      event.preventDefault();
+      const mobile=matchMedia('(max-width:760px)').matches;
+      const isDigital=card.classList.contains('digital');
+      const offset=mobile?(isDigital?215:140):(isDigital?205:150);
+      const top=Math.max(0,target.getBoundingClientRect().top+window.scrollY-offset);
+      window.scrollTo({top,behavior:'smooth'});
+      try{history.replaceState(null,'',selector)}catch(e){}
     });
   });
 })();
