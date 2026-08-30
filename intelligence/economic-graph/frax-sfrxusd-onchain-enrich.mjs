@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Frax bounded onchain Economic Graph enrichment v1.10
+ * The Holding · Frax bounded onchain Economic Graph enrichment v1.11
  *
  * One canonical sequential Frax writer path. Each protocol atom remains a
  * bounded read-only measurement with its own epistemic contract, but all atoms
@@ -33,6 +33,7 @@ import { collectFraxFrxEthV2EtherRouterCurrentState, applyFraxFrxEthV2EtherRoute
 import { collectFraxFrxEthV2LendingPoolCurrentState, applyFraxFrxEthV2LendingPoolCurrentState } from './frax-frxeth-v2-lending-pool-current-state.mjs';
 import { collectFraxFrxEthV2RedemptionQueueCurrentState, applyFraxFrxEthV2RedemptionQueueCurrentState } from './frax-frxeth-v2-redemption-queue-current-state.mjs';
 import { collectFraxFrxEthV2ValidatorPoolCreditCurrentState, applyFraxFrxEthV2ValidatorPoolCreditCurrentState } from './frax-frxeth-v2-validator-pool-credit-current-state.mjs';
+import { collectFraxFrxEthV2LendingFlowCurrentState, applyFraxFrxEthV2LendingFlowCurrentState } from './frax-frxeth-v2-lending-flow-current-state.mjs';
 import { collectFraxFpiFpisCurrentState, applyFraxFpiFpisCurrentState } from './frax-fpi-fpis-current-state.mjs';
 import { compactProtocolEvidenceHistory } from './protocol-evidence-history-retention.mjs';
 
@@ -77,6 +78,8 @@ async function main(){
   const previousFraxEcosystem=previousState?.protocolEvidence?.[FRAX_EVIDENCE_ID]?.latest?.observation||null;
   const previousBammMeasurement=previousFraxEcosystem?.surfaces?.fraxswapBamm?.measured||null;
   const previousFeeToHistory=previousFraxEcosystem?.surfaces?.revenueRouting?.measured?.fraxswapFeeToHistoricalBackfill||null;
+  const previousFrxEthLendingPool=previousFraxEcosystem?.surfaces?.frxEthSfrxEth?.measured?.v2Internals?.lendingPool||null;
+  const previousFrxEthLendingFlow=previousFraxEcosystem?.surfaces?.frxEthSfrxEth?.measured?.v2Internals?.lendingFlow||null;
   const previousValidatorPoolCredit=previousFraxEcosystem?.surfaces?.frxEthSfrxEth?.measured?.v2Internals?.validatorPoolCredit||null;
   const bammMeasurement=await collectFraxBammOnchain();
   applyFraxBammOnchainMeasurement({state,previousState,measurement:bammMeasurement});
@@ -137,6 +140,17 @@ async function main(){
   const frxEthValidatorPoolCreditMeasurement=await collectFraxFrxEthV2ValidatorPoolCreditCurrentState({checkpoint:frxEthMeasurement?.status==='ok'?frxEthMeasurement:null,previousMeasurement:previousValidatorPoolCredit});
   applyFraxFrxEthV2ValidatorPoolCreditCurrentState({state,measurement:frxEthValidatorPoolCreditMeasurement});
 
+  // Adjacent published LendingPool checkpoints unlock bounded realized event
+  // accounting. AddInterest fields that the pinned source never assigns remain
+  // raw evidence only; interest accrual and withdrawal cost recovery are not
+  // promoted to protocol revenue or company cash flow.
+  const frxEthLendingFlowMeasurement=await collectFraxFrxEthV2LendingFlowCurrentState({
+    currentLendingPoolMeasurement:frxEthLendingPoolMeasurement,
+    previousLendingPoolMeasurement:previousFrxEthLendingPool,
+    previousMeasurement:previousFrxEthLendingFlow
+  });
+  applyFraxFrxEthV2LendingFlowCurrentState({state,measurement:frxEthLendingFlowMeasurement});
+
   // Frax fat-audit scope extension #2: source-pinned legacy Ethereum FPI/FPIS.
   // This is deliberately after frxETH so the existing extension contract remains
   // stable. Current Fraxtal FPIS Locker and revenue economics remain UNKNOWN.
@@ -171,6 +185,7 @@ async function main(){
   const frxEthLendingPool=frxEth?.measured?.v2Internals?.lendingPool;
   const frxEthRedemptionQueue=frxEth?.measured?.v2Internals?.redemptionQueue;
   const frxEthValidatorPoolCredit=frxEth?.measured?.v2Internals?.validatorPoolCredit;
+  const frxEthLendingFlow=frxEth?.measured?.v2Internals?.lendingFlow;
 
   console.log('FRAX BOUNDED ONCHAIN CANONICAL GRAPH ENRICHMENT PASS',{
     graphEngineVersion:state.engineVersion,
@@ -193,6 +208,7 @@ async function main(){
     frxEthV2LendingPool:{status:frxEthLendingPool?.status||'UNKNOWN',blockNumber:frxEthLendingPool?.blockNumber??null,totalBorrowEth:frxEthLendingPool?.lendingPool?.totalBorrow?.amountEth??null,utilizationPct:frxEthLendingPool?.lendingPool?.utilization?.livePct??null,annualizedNominalRatePct:frxEthLendingPool?.lendingPool?.currentRateInfo?.annualizedNominalRatePct??null,interestAccruedEth:frxEthLendingPool?.lendingPool?.interestAccrued?.eth??null,pendingInterestPreviewEth:frxEthLendingPool?.preview?.interestEarned?.eth??null,previewState:frxEthLendingPool?.preview?.status||'UNKNOWN',registryPointerParity:frxEthLendingPool?.lendingPool?.registryPointerParity??null,protocolRevenue:frxEthLendingPool?.epistemic?.protocolRevenue||'UNKNOWN'},
     frxEthV2RedemptionQueue:{status:frxEthRedemptionQueue?.status||'UNKNOWN',blockNumber:frxEthRedemptionQueue?.blockNumber??null,liabilitiesEth:frxEthRedemptionQueue?.redemptionQueue?.accounting?.etherLiabilities?.eth??null,unclaimedFeesFrxEth:frxEthRedemptionQueue?.redemptionQueue?.accounting?.unclaimedFees?.frxEth??null,pendingFeesFrxEth:frxEthRedemptionQueue?.redemptionQueue?.accounting?.pendingFees?.frxEth??null,nativeEth:frxEthRedemptionQueue?.redemptionQueue?.nativeEthBalance?.eth??null,liquidityStatus:frxEthRedemptionQueue?.redemptionQueue?.liquidity?.status||'UNKNOWN',netEthBalanceEth:frxEthRedemptionQueue?.redemptionQueue?.liquidity?.netEthBalanceEth??null,shortageEth:frxEthRedemptionQueue?.redemptionQueue?.liquidity?.shortageEth??null,queueLengthSecs:frxEthRedemptionQueue?.redemptionQueue?.state?.queueLengthSecs??null,redemptionFeePct:frxEthRedemptionQueue?.redemptionQueue?.state?.redemptionFeePct??null,registryPointerParity:frxEthRedemptionQueue?.redemptionQueue?.registryPointerParity??null,aggregateProtocolRevenue:frxEthRedemptionQueue?.epistemic?.aggregateProtocolRevenue||'UNKNOWN'},
     frxEthV2ValidatorPoolCredit:{status:frxEthValidatorPoolCredit?.status||'UNKNOWN',blockNumber:frxEthValidatorPoolCredit?.blockNumber??null,deployedPools:frxEthValidatorPoolCredit?.summary?.deployedPoolCount??null,validators:frxEthValidatorPoolCredit?.summary?.totalValidatorCount??null,totalCreditEth:frxEthValidatorPoolCredit?.summary?.totalCreditEth??null,totalLiveBorrowEth:frxEthValidatorPoolCredit?.summary?.totalLiveBorrowEth??null,totalBorrowAllowanceEth:frxEthValidatorPoolCredit?.summary?.totalBorrowAllowanceEth??null,activeBorrowingPools:frxEthValidatorPoolCredit?.summary?.activeBorrowingPoolCount??null,insolventPools:frxEthValidatorPoolCredit?.summary?.insolventPoolCount??null,nativePoolBalanceEth:frxEthValidatorPoolCredit?.summary?.totalNativePoolBalanceEth??null,stakingRewards:frxEthValidatorPoolCredit?.epistemic?.stakingRewards||'UNKNOWN',protocolRevenue:frxEthValidatorPoolCredit?.epistemic?.protocolRevenue||'UNKNOWN'},
+    frxEthV2LendingFlow:{status:frxEthLendingFlow?.status||'UNKNOWN',fromBlockExclusive:frxEthLendingFlow?.interval?.fromBlockExclusive??null,toBlockNumber:frxEthLendingFlow?.interval?.toBlockNumber??null,eventCount:frxEthLendingFlow?.interval?.summary?.eventCount??null,interestEarnedEth:frxEthLendingFlow?.interval?.summary?.interestEarnedEth??null,withdrawalFeeEth:frxEthLendingFlow?.interval?.summary?.withdrawalFeeEth??null,borrowEth:frxEthLendingFlow?.interval?.summary?.borrowEth??null,repayEth:frxEthLendingFlow?.interval?.summary?.repayEth??null,interestEventCounterParity:frxEthLendingFlow?.interval?.interestEventCounterParity??null,protocolRevenue:frxEthLendingFlow?.epistemic?.protocolRevenue||'UNKNOWN'},
     fpiFpis:{measurementState:fpiFpis?.measurementState,status:fpiFpis?.measured?.status||'UNKNOWN',blockNumber:fpiFpis?.measured?.blockNumber??null,fpiSupply:fpiFpis?.measured?.tokens?.FPI?.totalSupply??null,fpisSupply:fpiFpis?.measured?.tokens?.FPIS?.totalSupply??null,veFpisVotingPower:fpiFpis?.measured?.legacyVeFPIS?.totalVotingPower??null,veFpisTrackedPrincipal:fpiFpis?.measured?.legacyVeFPIS?.trackedFpisPrincipal??null,trackedPrincipalPct:fpiFpis?.measured?.legacyVeFPIS?.trackedPrincipalPctOfFpisSupply??null,pegState:fpiFpis?.measured?.pegState?.status||'UNKNOWN',treasuryYield:fpiFpis?.measured?.epistemic?.treasuryYield||'UNKNOWN',revenueRouting:fpiFpis?.measured?.epistemic?.revenueRouting||'UNKNOWN'},
     historyRetention:{version:retention.version,historicalRows:retention.historicalObservationCount,beforeBytes:retention.beforeBytes,afterBytes:retention.afterBytes,reductionPct:retention.reductionPct,softLimitBytes:retention.softLimitBytes},
     previousCheckpointSource:'explicit-published-graph-file',
