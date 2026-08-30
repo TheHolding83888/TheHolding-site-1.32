@@ -4,117 +4,134 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
 <meta name="theme-color" content="#050608">
-<title>The Holding Realty — Physical & Digital Property Intelligence</title>
-<meta name="description" content="A source-backed property discovery and intelligence terminal for tokenized real estate and metaverse land.">
+<title>The Holding Realty — Physical & Digital Property Markets</title>
+<meta name="description" content="The Holding Realty is a simplified discovery portal for tokenized real estate platforms and metaverse property markets.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/realty/assets/realty-v2.css">
-<link rel="stylesheet" href="/realty/assets/realty-shell-v20.css">
-<link rel="stylesheet" href="/realty/assets/realty-shell-v22.css">
-<script>try{document.documentElement.dataset.theme=localStorage.getItem('theholding-realty-theme')||'dark'}catch(e){document.documentElement.dataset.theme='dark'}</script>
+<link rel="stylesheet" href="/realty/assets/realty-v3.css?v=20260830-1841">
+<script>
+try{const saved=localStorage.getItem('theholding-realty-theme');document.documentElement.dataset.theme=saved||(matchMedia('(max-width:760px)').matches?'light':'dark')}catch(e){document.documentElement.dataset.theme='dark'}
+</script>
 </head>
-<body class="landing-v16 landing-v20 landing-v22">
-<header class="v16-top v20-top">
-  <div class="v16-topin v20-topin">
-    <a class="v16-brand v20-brand" href="/" aria-label="The Holding home">
-      <span class="v20-brandmark" aria-hidden="true"><i></i><i></i><i></i></span>
-      <span>THE HOLDING</span>
-    </a>
-    <div class="v20-topspace" aria-hidden="true"></div>
-    <div class="v16-toptools v20-toptools">
-      <button class="v16-ask v20-ask" type="button" disabled aria-disabled="true">⌁&nbsp; Ask The Holding</button>
-      <button class="v16-theme" data-theme-toggle aria-label="Toggle theme">☀</button>
-      <button class="v16-mobile-btn" data-v16-mobilebtn aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
-    </div>
+<body>
+<header class="topbar">
+  <div class="topin">
+    <a class="brand" href="/">THE HOLDING</a>
+    <div class="topspace"></div>
+    <a class="top-action" href="/">← The Holding</a>
+    <button class="theme-btn" type="button" data-theme-toggle aria-label="Toggle theme">☀</button>
+    <button class="menu-btn" type="button" data-menu-toggle aria-label="Open Realty menu" aria-expanded="false"><i></i><i></i><i></i></button>
   </div>
+  <nav class="mobile-menu" data-mobile-menu aria-label="Realty mobile menu">
+    <a href="/realty/">Overview</a>
+    <a href="#real-world">Real World</a>
+    <a href="#metaverse">Metaverse</a>
+    <a href="/realty/sources/">Sources</a>
+    <a href="/">The Holding</a>
+  </nav>
 </header>
-<div class="v16-mobilemenu" data-v16-mobilemenu aria-hidden="true" hidden>
-  <a href="/realty/">Overview</a>
-  <a href="/realty/discover/">Discover</a>
-  <a href="/realty/physical/">Real World</a>
-  <a href="/realty/digital/">Metaverse</a>
-  <a href="/realty/watchlist/">Watchlist</a>
-  <a href="/realty/atlas/">Atlas</a>
-  <a href="/realty/sources/">Sources</a>
-  <a href="/">The Holding</a>
-</div>
-<div class="v16-app v20-app">
-  <aside class="v16-sidebar v20-sidebar" aria-label="Realty sections">
-    <a class="active" href="/realty/"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20h-5v-6H9v6H4Z"/></svg></span><span>Overview</span></a>
-    <a href="/realty/discover/"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 5 5"/></svg></span><span>Discover</span></a>
-    <a href="/realty/physical/"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.4 3.6 5.2 3.6 8.5S14.4 18.1 12 20.5C9.6 18.1 8.4 15.3 8.4 12S9.6 5.9 12 3.5Z"/></svg></span><span>Real World</span></a>
-    <a href="/realty/digital/"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9Z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></svg></span><span>Metaverse</span></a>
-    <a href="/realty/watchlist/"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1L3.2 9.4l6.1-.9Z"/></svg></span><span>Watchlist</span></a>
-    <a href="/realty/atlas/"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/><path d="M12 1.5v4M12 18.5v4M1.5 12h4M18.5 12h4"/></svg></span><span>Atlas</span></a>
-    <a href="/realty/sources/"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.5"/></svg></span><span>Sources</span></a>
+
+<div class="shell">
+  <aside class="sidebar" aria-label="Realty sections">
+    <a class="active" href="/realty/"><span class="ico">⌂</span><span>Overview</span></a>
+    <a href="#real-world"><span class="ico">◎</span><span>Real World</span></a>
+    <a href="#metaverse"><span class="ico">◇</span><span>Metaverse</span></a>
+    <a href="/realty/sources/"><span class="ico">◉</span><span>Sources</span></a>
   </aside>
-  <main class="v16-main v20-main" id="main-content">
-    <section class="v16-hero v20-hero" aria-labelledby="realty-title">
-      <div class="v16-hero-art" aria-hidden="true"></div>
-      <div class="v16-hero-copy">
-        <h1 id="realty-title"><span class="v20-title-holding">THE HOLDING</span> <span class="v20-title-realty">REALTY</span></h1>
-        <p class="v16-hero-lead">One portal. Two worlds of real estate.</p>
-        <p class="v16-hero-sub">Physical assets. Digital worlds. Real opportunities.</p>
-        <div class="v16-hero-kpis" aria-label="Source-backed Realty coverage">
-          <div class="v16-hero-kpi"><span>Tracked Markets</span><b data-kpi="markets">—</b></div>
-          <div class="v16-hero-kpi"><span>Indexed Assets</span><b data-kpi="assets">—</b></div>
-          <div class="v16-hero-kpi"><span>Return Records</span><b data-kpi="returns">—</b></div>
-        </div>
+
+  <main class="main" id="main-content">
+    <section class="hero" aria-labelledby="realty-title">
+      <div class="hero-art" aria-hidden="true"></div>
+      <div class="hero-content">
+        <span class="early">Market Portal – Early Access</span>
+        <h1 id="realty-title">THE HOLDING <em>REALTY</em></h1>
+        <p>One portal for tokenized real estate and metaverse property.</p>
+        <p>Two markets. One intelligence layer.</p>
       </div>
     </section>
-    <section class="v16-gateways v20-gateways" aria-label="Realty worlds">
-      <a class="v16-gateway physical" href="/realty/physical/">
-        <div class="v16-gateway-art" aria-hidden="true"></div>
-        <div class="v16-gateway-copy">
-          <div class="v16-gateway-label"><i><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.4 3.6 5.2 3.6 8.5S14.4 18.1 12 20.5C9.6 18.1 8.4 15.3 8.4 12S9.6 5.9 12 3.5Z"/></svg></i><span>Physical World · <span data-world="physical">—</span></span></div>
-          <h2>TOKENIZED REAL ESTATE</h2>
-          <p>Fractional ownership, income-producing property and tokenized real-world rails.</p>
-          <span class="go">Explore Market&nbsp; →</span>
+
+    <section class="worlds" aria-label="Choose a Realty world">
+      <a class="world-card physical" id="real-world" href="#physical-markets">
+        <div class="world-art" aria-hidden="true"></div>
+        <div class="world-copy">
+          <div class="world-label"><span class="round-icon">◎</span><span>Physical World</span></div>
+          <h2>REAL-WORLD REALTY</h2>
+          <p>Tokenized property, tangible assets and real-world marketplaces.</p>
+          <span class="cta">Explore platforms →</span>
         </div>
       </a>
-      <a class="v16-gateway digital" href="/realty/digital/">
-        <div class="v16-gateway-art" aria-hidden="true"></div>
-        <div class="v16-gateway-copy">
-          <div class="v16-gateway-label"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9Z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></svg></i><span>Digital World · <span data-world="digital">—</span></span></div>
-          <h2>METAVERSE REAL ESTATE</h2>
-          <p>LAND, estates and native property across leading virtual-world ecosystems.</p>
-          <span class="go">Explore Market&nbsp; →</span>
+      <a class="world-card digital" id="metaverse" href="#digital-markets">
+        <div class="world-art" aria-hidden="true"></div>
+        <div class="world-copy">
+          <div class="world-label"><span class="round-icon">◇</span><span>Digital World</span></div>
+          <h2>VIRTUAL REALTY</h2>
+          <p>Digital land, estates and property across leading metaverse ecosystems.</p>
+          <span class="cta">Explore worlds →</span>
         </div>
       </a>
     </section>
-    <section class="v16-overview" aria-label="Market overview">
-      <div class="v16-overview-title">Market<br>Overview</div>
-      <div class="v16-overview-cell gold"><span>Physical Records</span><b data-overview="physical">—</b><small>source-backed</small><svg class="v16-spark" viewBox="0 0 60 22" aria-hidden="true"><path d="M1 18L8 16L14 17L20 10L27 12L34 5L40 9L47 4L59 7"/></svg></div>
-      <div class="v16-overview-cell violet"><span>Digital Records</span><b data-overview="digital">—</b><small>source-backed</small><svg class="v16-spark" viewBox="0 0 60 22" aria-hidden="true"><path d="M1 17L8 14L15 16L23 11L30 13L37 6L43 8L50 3L59 5"/></svg></div>
-      <div class="v16-overview-cell green"><span>Income / Return</span><b data-overview="returns">—</b><small>labelled signals</small><svg class="v16-spark" viewBox="0 0 60 22" aria-hidden="true"><path d="M1 19L8 18L15 14L22 15L29 11L36 12L43 8L50 9L59 4"/></svg></div>
-      <div class="v16-overview-cell"><span>Tracked Markets</span><b data-overview="markets">—</b><small>admitted coverage</small><svg class="v16-spark" viewBox="0 0 60 22" aria-hidden="true"><path d="M1 16L10 16L10 13L21 13L21 10L32 10L32 8L45 8L45 5L59 5"/></svg></div>
-      <div class="v16-overview-cell"><span>Latest Source Check</span><b data-overview="latest" style="font-size:14px">—</b><small>freshness ≠ accuracy</small><svg class="v16-spark" viewBox="0 0 60 22" aria-hidden="true"><path d="M1 17L9 15L18 16L27 10L36 11L45 7L52 8L59 3"/></svg></div>
-    </section>
-    <section class="v16-markets" aria-label="Realty markets">
-      <div class="v16-board physical">
-        <div class="v16-board-head"><div class="v16-board-title"><i>◎</i><span>Tokenized Real Estate</span></div><a class="v16-viewall" href="/realty/physical/">View all&nbsp; →</a></div>
-        <div class="v16-platforms"><span><i>R</i>RealT</span><span><i>L</i>Lofty</span><span><i>P</i>Propy</span><span><i>B</i>Blocksquare</span><span><i>r</i>Reental</span></div>
-        <div class="v16-cardgrid" id="v16PhysicalCards" aria-live="polite"><div style="grid-column:1/-1;padding:18px;color:#8d929a;font-size:8px">Loading physical observations…</div></div>
+
+    <section class="section" aria-labelledby="choose-market-title">
+      <div class="section-head">
+        <span class="section-kicker">Direct access · official destinations</span>
+        <h2 id="choose-market-title">Choose Your Market</h2>
+        <p>Open a platform or world directly. The Holding does not custody or execute transactions.</p>
       </div>
-      <div class="v16-board digital">
-        <div class="v16-board-head"><div class="v16-board-title"><i>◇</i><span>Metaverse Real Estate</span></div><a class="v16-viewall" href="/realty/digital/">View all&nbsp; →</a></div>
-        <div class="v16-platforms"><span><i>D</i>Decentraland</span><span><i>S</i>The Sandbox</span><span><i>O</i>Otherside</span><span><i>S</i>Somnium</span><span><i>V</i>Voxels</span></div>
-        <div class="v16-cardgrid" id="v16DigitalCards" aria-live="polite"><div style="grid-column:1/-1;padding:18px;color:#8d929a;font-size:8px">Loading digital observations…</div></div>
+
+      <div class="market-group" id="physical-markets">
+        <div class="market-title">
+          <span class="bigico">▥</span>
+          <div><h3>Tokenized Real Estate</h3><p>Leading platforms and tokenization rails.</p></div>
+        </div>
+        <div class="brand-grid">
+          <a class="brand-link" href="https://realt.co/marketplace/" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?sz=64&domain_url=https://realt.co" alt=""><span class="brand-name">RealT<small>Marketplace</small></span></a>
+          <a class="brand-link" href="https://www.lofty.ai/marketplace" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?sz=64&domain_url=https://www.lofty.ai" alt=""><span class="brand-name">Lofty<small>Marketplace</small></span></a>
+          <a class="brand-link" href="https://propy.com/" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?sz=64&domain_url=https://propy.com" alt=""><span class="brand-name">Propy<small>Properties</small></span></a>
+          <a class="brand-link" href="https://blocksquare.io/products" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?sz=64&domain_url=https://blocksquare.io" alt=""><span class="brand-name">Blocksquare<small>Tokenization</small></span></a>
+          <a class="brand-link" href="https://www.reental.co/en/properties" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?sz=64&domain_url=https://www.reental.co" alt=""><span class="brand-name">Reental<small>Properties</small></span></a>
+        </div>
+      </div>
+
+      <div class="market-group" id="digital-markets">
+        <div class="market-title">
+          <span class="bigico">◇</span>
+          <div><h3>Metaverse Real Estate</h3><p>Land and property across virtual worlds.</p></div>
+        </div>
+        <div class="brand-grid">
+          <a class="brand-link" href="https://decentraland.org/marketplace/" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?sz=64&domain_url=https://decentraland.org" alt=""><span class="brand-name">Decentraland<small>Marketplace</small></span></a>
+          <a class="brand-link" href="https://www.sandbox.game/en/map/" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?sz=64&domain_url=https://www.sandbox.game" alt=""><span class="brand-name">The Sandbox<small>Map</small></span></a>
+          <a class="brand-link" href="https://otherside.xyz/" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?sz=64&domain_url=https://otherside.xyz" alt=""><span class="brand-name">Otherside<small>World</small></span></a>
+          <a class="brand-link" href="https://somniumspace.com/" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?sz=64&domain_url=https://somniumspace.com" alt=""><span class="brand-name">Somnium Space<small>World</small></span></a>
+          <a class="brand-link" href="https://www.voxels.com/" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?sz=64&domain_url=https://www.voxels.com" alt=""><span class="brand-name">Voxels<small>World</small></span></a>
+        </div>
       </div>
     </section>
-    <section class="v16-capabilities" aria-label="Realty capability layer">
-      <a class="v16-cap" href="/realty/discover/"><i>⌕</i><div><h3>Aggregated Markets</h3><p>Discover across multiple property rails and worlds.</p></div></a>
-      <a class="v16-cap" href="/realty/sources/"><i>◎</i><div><h3>Transparent Data</h3><p>Source lineage, rights policy and freshness.</p></div></a>
-      <a class="v16-cap" href="/realty/compare/"><i>⇄</i><div><h3>Smart Comparison</h3><p>Compare entry and returns without false equivalence.</p></div></a>
-      <a class="v16-cap" href="/realty/watchlist/"><i>☆</i><div><h3>Watch & Save</h3><p>Keep a local shortlist of interesting assets.</p></div></a>
-      <a class="v16-cap" href="/realty/atlas/"><i>⌖</i><div><h3>Spatial View</h3><p>Physical atlas and world-native coordinates.</p></div></a>
-      <a class="v16-cap" href="/realty/history/"><i>↗</i><div><h3>Intelligence Layer</h3><p>Property memory and observed change through time.</p></div></a>
+
+    <section class="section" aria-labelledby="future-title">
+      <div class="section-head"><h2 id="future-title">What This Portal Will Become</h2><p>Keep the public surface simple now; add deeper intelligence as partnerships and permissions mature.</p></div>
+      <div class="future">
+        <article class="future-card"><i>⌕</i><h3>Market Discovery</h3><p>Browse tokenized real-world and metaverse markets from one place.</p></article>
+        <article class="future-card"><i>⇄</i><h3>Platform Comparison</h3><p>Compare rails, access models, liquidity and market structure.</p></article>
+        <article class="future-card"><i>↗</i><h3>Market Tracking</h3><p>Track market-level changes without publishing unsupported asset-level data.</p></article>
+        <article class="future-card"><i>◉</i><h3>Realty Intelligence</h3><p>Build a source-backed intelligence layer as official integrations expand.</p></article>
+      </div>
     </section>
-    <footer class="v16-footer"><div><strong>THE HOLDING</strong>&nbsp;&nbsp; © 2026 · Realty</div><div>Discovery only · source execution · no custody · no fabricated market data</div></footer>
+
+    <footer class="footer"><div><strong>THE HOLDING</strong> · Realty</div><div>Discovery only · external marketplaces · no custody · no fabricated listings</div></footer>
   </main>
 </div>
-<script src="/realty/assets/realty-shell-v16.js" defer></script>
-<script src="/realty/assets/realty-demo-art-v20.js" defer></script>
+
+<script>
+(() => {
+  const root=document.documentElement;
+  const theme=document.querySelector('[data-theme-toggle]');
+  theme?.addEventListener('click',()=>{const next=root.dataset.theme==='dark'?'light':'dark';root.dataset.theme=next;try{localStorage.setItem('theholding-realty-theme',next)}catch(e){};});
+  const btn=document.querySelector('[data-menu-toggle]');
+  const menu=document.querySelector('[data-mobile-menu]');
+  btn?.addEventListener('click',()=>{const open=menu.classList.toggle('open');btn.setAttribute('aria-expanded',String(open));});
+  menu?.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{menu.classList.remove('open');btn?.setAttribute('aria-expanded','false');}));
+})();
+</script>
 </body>
 </html>
