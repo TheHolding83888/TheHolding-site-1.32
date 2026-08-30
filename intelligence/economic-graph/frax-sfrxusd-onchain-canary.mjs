@@ -66,6 +66,7 @@ await import('./frax-fx-liquidity-current-state-canary.mjs');
 await import('./frax-revenue-routing-current-state-canary.mjs');
 await import('./frax-frxeth-current-state-canary.mjs');
 await import('./frax-frxeth-v2-ether-router-current-state-canary.mjs');
+await import('./frax-frxeth-v2-ether-router-amo-composition-canary.mjs');
 await import('./frax-frxeth-v2-ether-router-flow-canary.mjs');
 await import('./frax-frxeth-v2-lending-pool-current-state-canary.mjs');
 await import('./frax-frxeth-v2-redemption-queue-current-state-canary.mjs');
