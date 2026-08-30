@@ -250,16 +250,23 @@ jobs:
 
           for attempt in 1 2 3; do
             git fetch origin main
+            REMOTE_GRAPH_SHA="$(git rev-parse "origin/main:$GENERATED")"
+            PREVIOUS_GRAPH_SHA="$(git hash-object "$PREVIOUS")"
             if ! git rebase origin/main; then
               git rebase --abort || true
               echo "Publish conflict; refusing to guess."
               exit 1
             fi
-            git show "origin/main:$GENERATED" > "$PREVIOUS"
-            node intelligence/economic-graph/economic-graph-canonical-runner.mjs
-            FRAX_PREVIOUS_GRAPH_FILE="$PREVIOUS" node intelligence/economic-graph/frax-sfrxusd-onchain-enrich.mjs
-            git add "$GENERATED"
-            if ! git diff --cached --quiet; then git commit --amend --no-edit; fi
+            if [ "$REMOTE_GRAPH_SHA" != "$PREVIOUS_GRAPH_SHA" ]; then
+              echo "Remote Economic Graph changed during build; rebuilding against the newer published graph."
+              git show "origin/main:$GENERATED" > "$PREVIOUS"
+              node intelligence/economic-graph/economic-graph-canonical-runner.mjs
+              FRAX_PREVIOUS_GRAPH_FILE="$PREVIOUS" node intelligence/economic-graph/frax-sfrxusd-onchain-enrich.mjs
+              git add "$GENERATED"
+              if ! git diff --cached --quiet; then git commit --amend --no-edit; fi
+            else
+              echo "Remote Economic Graph unchanged; preserving completed Frax enrichment after unrelated main movement."
+            fi
             if git push origin HEAD:main; then
               git fetch origin main
               git cat-file -e "origin/main:$GENERATED"
