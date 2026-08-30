@@ -1,7 +1,7 @@
 {
   "version": "0.1-operating-event-intelligence",
   "engineVersion": "0.1-source-backed-event-synthesizer",
-  "generatedAt": "2026-08-30T12:05:58.109Z",
+  "generatedAt": "2026-08-30T12:11:09.996Z",
   "status": "ok",
   "purpose": "Source-backed operating event telemetry for The Holding console and future Curators.",
   "authority": {
@@ -123,14 +123,14 @@
   "sourceHealth": {
     "status": "fresh",
     "reporting": {
-      "generatedAt": "2026-08-30T10:40:46.259Z",
-      "ageHours": 1.42,
+      "generatedAt": "2026-08-30T12:10:22.498Z",
+      "ageHours": 0.01,
       "maxAgeHours": 36,
-      "sha256": "0c88f8bf727b74be3f80dd91a8eb0535b2500b5cbcadefd60adfbcb8ee8b62d2"
+      "sha256": "b1c090fb931837d568dd8f189924295c6c0310ddb5ad823095be012b49e5e71c"
     },
     "changeHistory": {
       "generatedAt": "2026-08-30T12:05:34.875Z",
-      "ageHours": 0.01,
+      "ageHours": 0.09,
       "maxAgeHours": 36,
       "sha256": "c6156e42ee7735a2437259edf0e824f15bcb30854585895ee3e9fabef1ea0dcc"
     }
@@ -140,6 +140,32 @@
     "totalDerivedFromAvailableHistory": 419,
     "maxItems": 80,
     "items": [
+      {
+        "id": "EV-ee2aa70cb3608fe78892",
+        "type": "company-reference-apr-change",
+        "mode": "derived",
+        "occurredAt": "2026-08-30T12:10:22.498Z",
+        "entity": "Defitea",
+        "headline": "Defitea reference APR moved 11.55% → 11.58%",
+        "detail": "Company-level reference APR changed +0.02 pp. Event Intelligence does not infer the cause without protocol-specific volume/fee evidence.",
+        "severity": "watch",
+        "source": {
+          "kind": "reporting",
+          "fund": "defitea.eth",
+          "previousDate": "2026-08-29",
+          "currentDate": "2026-08-30"
+        },
+        "metrics": {
+          "previousAprPct": 11.5538,
+          "currentAprPct": 11.5788,
+          "changePp": 0.025,
+          "relativeChangePct": 0.2164
+        },
+        "attribution": {
+          "status": "unattributed",
+          "note": "Volume/fee/revenue causality is a coverage gap until bound to a verified mechanism-specific source."
+        }
+      },
       {
         "id": "EV-21ebd04b565019ce39ea",
         "type": "cash-flow-counter-change",
@@ -423,32 +449,6 @@
           "currentDate": "2026-08-30"
         },
         "attribution": null
-      },
-      {
-        "id": "EV-16e75ddad556036ffb0a",
-        "type": "company-reference-apr-change",
-        "mode": "derived",
-        "occurredAt": "2026-08-30T10:40:46.259Z",
-        "entity": "Defitea",
-        "headline": "Defitea reference APR moved 11.55% → 11.58%",
-        "detail": "Company-level reference APR changed +0.02 pp. Event Intelligence does not infer the cause without protocol-specific volume/fee evidence.",
-        "severity": "watch",
-        "source": {
-          "kind": "reporting",
-          "fund": "defitea.eth",
-          "previousDate": "2026-08-29",
-          "currentDate": "2026-08-30"
-        },
-        "metrics": {
-          "previousAprPct": 11.5538,
-          "currentAprPct": 11.5786,
-          "changePp": 0.0248,
-          "relativeChangePct": 0.2146
-        },
-        "attribution": {
-          "status": "unattributed",
-          "note": "Volume/fee/revenue causality is a coverage gap until bound to a verified mechanism-specific source."
-        }
       },
       {
         "id": "EV-0cb61f8b4227cdf7c822",
@@ -2102,7 +2102,7 @@
   },
   "integrity": {
     "policySha256": "7a4d4e39e20c96d0621f29e7a55f4ad94710eca256bc6f4f0b2d7eb841551701",
-    "reportingSha256": "0c88f8bf727b74be3f80dd91a8eb0535b2500b5cbcadefd60adfbcb8ee8b62d2",
+    "reportingSha256": "b1c090fb931837d568dd8f189924295c6c0310ddb5ad823095be012b49e5e71c",
     "changeHistorySha256": "c6156e42ee7735a2437259edf0e824f15bcb30854585895ee3e9fabef1ea0dcc"
   }
 }
