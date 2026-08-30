@@ -1,10 +1,10 @@
 # The Holding Brain — ChatGPT Bridge
 
-Generated: 2026-08-30T13:01:27.196Z
+Generated: 2026-08-30T13:50:08.227Z
 Bridge status: watch
 Grounded Brain: watch · delta
-Brain generated: 2026-08-30T13:01:25.517Z
-Brain snapshot: 22b0f264f2c7038b3b0b97f306787fa3125de535bc0399950f5acced66d19597
+Brain generated: 2026-08-30T13:50:06.544Z
+Brain snapshot: 7cf924848856050d6579a2a437e2c90964d638f488936bcb2f60ff949cfecf9c
 Cases: 21
 Evidence objects: 36
 
@@ -27,7 +27,7 @@ What follows: The signal is real, but the current deterministic policy has no ca
 
 Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 
-Evidence: EV-d9d5a27dd73524f9
+Evidence: EV-d7f7899175caed86
 
 ### 2. .github/workflows/production-deployment-smoke.yml
 
@@ -42,14 +42,14 @@ What follows: The signal is real, but the current deterministic policy has no ca
 
 Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 
-Evidence: EV-a1bb43f019c3ef63
+Evidence: EV-c5b366aed49f398f
 
-### 3. 53 current findings
+### 3. 54 current findings
 
-Case: `eab78a9662206a0ee6393b24`
+Case: `cfa62b0ef2034341ffc47d64`
 Domain: security · Severity: medium · Risk: medium
 
-Signal: 53 current medium security finding(s) in category dom-innerhtml.
+Signal: 54 current medium security finding(s) in category dom-innerhtml.
 
 Why it matters: If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.
 
@@ -57,7 +57,7 @@ What follows: A DOM execution sink exists. Risk depends on whether external or u
 
 Deterministic action: Classify the sink by provenance first. Replace with textContent or safe DOM construction only where untrusted/dynamic data can reach the sink; avoid blind bulk rewrites.
 
-Evidence: EV-5e038dd516cc1450
+Evidence: EV-00e877d0589dce86
 
 ### 4. pendle_spendle
 

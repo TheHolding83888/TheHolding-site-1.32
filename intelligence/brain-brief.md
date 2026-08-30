@@ -1,6 +1,6 @@
 # The Holding Brain — Grounded Reasoning Brief
 
-Generated: 2026-08-30T13:01:25.517Z
+Generated: 2026-08-30T13:50:06.544Z
 Mode: delta
 Status: watch
 
@@ -45,8 +45,8 @@ Current canonical inputs contain 12 material Observer change(s), 0 new security 
 - Action mode: proposal-only
 - Evidence: security/security-intelligence.json/currentFindings/1
 
-#### 3. 53 current findings
-- Signal: 53 current medium security finding(s) in category dom-innerhtml.
+#### 3. 54 current findings
+- Signal: 54 current medium security finding(s) in category dom-innerhtml.
 - Why it matters: If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.
 - What follows: A DOM execution sink exists. Risk depends on whether external or user-controlled values can reach it.
 - Proposed next step: Classify the sink by provenance first. Replace with textContent or safe DOM construction only where untrusted/dynamic data can reach the sink; avoid blind bulk rewrites.

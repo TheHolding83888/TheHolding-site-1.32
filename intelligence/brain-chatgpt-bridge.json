@@ -2,20 +2,20 @@
   "version": "0.1-chatgpt-bridge",
   "bridgeVersion": "0.1-deterministic-public-cognitive-handoff",
   "engineVersion": "0.2-chatgpt-bridge-engine-upstream-bound",
-  "generatedAt": "2026-08-30T13:01:27.196Z",
+  "generatedAt": "2026-08-30T13:50:08.227Z",
   "status": "watch",
   "sourceBrain": {
     "file": "intelligence/brain-intelligence.json",
     "version": "0.1-grounded-reasoning-gateway",
     "reasonerVersion": "0.1-deterministic-evidence-bound-reasoner",
-    "generatedAt": "2026-08-30T13:01:25.517Z",
+    "generatedAt": "2026-08-30T13:50:06.544Z",
     "ageHours": 0,
     "mode": "delta",
     "status": "watch",
     "headline": "21 evidence-bound reasoning case(s) are active across economic and security memory.",
-    "sha256": "a5101e05d3122db5151048365b2f14e2e0402b74578fa8a3ef880ff2f4689964",
-    "snapshotHash": "22b0f264f2c7038b3b0b97f306787fa3125de535bc0399950f5acced66d19597",
-    "inputCompositeHash": "5b870f46796b9f777b7f9f7f80f2df58425fe1e038bcb40e34288dcbe8e637a0"
+    "sha256": "873db834b0826c9ec0b4510db8a3414b6934f68489068650da33cc052352c7b1",
+    "snapshotHash": "7cf924848856050d6579a2a437e2c90964d638f488936bcb2f60ff949cfecf9c",
+    "inputCompositeHash": "3da0c37d1eefec10e99e01eee40bbe4929903077baaf404dc782ea408db6b043"
   },
   "currentPosture": {
     "observer": {
@@ -86,7 +86,7 @@
       "status": "watch",
       "critical": 0,
       "high": 2,
-      "medium": 53,
+      "medium": 54,
       "newFindingEvents": 0,
       "resolvedFindingEvents": 0
     },
@@ -180,20 +180,20 @@
     "confidence": "high",
     "evidenceIds": [
       "EV-0230683fd38c558b",
-      "EV-cfb703a4de6d3ae0",
-      "EV-eb93957b438a8adf",
-      "EV-c2a9fa981c339d3e",
-      "EV-3bc1ebb4438db5ef",
-      "EV-7a0a0589db139810",
-      "EV-7dc181636f7f25f3",
-      "EV-d6aee69505a4fae9",
-      "EV-f8dd7a32f2fe6cae",
-      "EV-84b72f8e35df07d8",
-      "EV-9fc7a69c6e41690a",
-      "EV-30e3d62129d37616",
-      "EV-cad1b4d75854f5aa",
-      "EV-318ae6b61b2b92b0",
-      "EV-5f2eb435eedaf3b2"
+      "EV-2d990e07b08552c0",
+      "EV-6b78215f5e2693eb",
+      "EV-6b299f8886381265",
+      "EV-f612e0725cc11c45",
+      "EV-82124e3e4f3e6f01",
+      "EV-4d71a056bd00102a",
+      "EV-23476f64befbbbab",
+      "EV-83ee089ed2b7bf6e",
+      "EV-3dbf2c9c5794656b",
+      "EV-117eae61aa5a373a",
+      "EV-157b61a4c5f9bee6",
+      "EV-f9392fb0f131e541",
+      "EV-8fc80fa3691bb134",
+      "EV-425b6849f5ea012a"
     ]
   },
   "cases": [
@@ -212,7 +212,7 @@
       "confidence": "high",
       "actionMode": "proposal-only",
       "evidenceIds": [
-        "EV-d9d5a27dd73524f9"
+        "EV-d7f7899175caed86"
       ]
     },
     {
@@ -230,16 +230,16 @@
       "confidence": "high",
       "actionMode": "proposal-only",
       "evidenceIds": [
-        "EV-a1bb43f019c3ef63"
+        "EV-c5b366aed49f398f"
       ]
     },
     {
-      "caseId": "eab78a9662206a0ee6393b24",
+      "caseId": "cfa62b0ef2034341ffc47d64",
       "domain": "security",
       "severity": "medium",
       "category": "dom-innerhtml",
-      "entity": "53 current findings",
-      "signal": "53 current medium security finding(s) in category dom-innerhtml.",
+      "entity": "54 current findings",
+      "signal": "54 current medium security finding(s) in category dom-innerhtml.",
       "deterministicWhyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
       "deterministicWhatFollows": "A DOM execution sink exists. Risk depends on whether external or user-controlled values can reach it.",
       "deterministicAction": "Classify the sink by provenance first. Replace with textContent or safe DOM construction only where untrusted/dynamic data can reach the sink; avoid blind bulk rewrites.",
@@ -248,7 +248,7 @@
       "confidence": "high",
       "actionMode": "proposal-only",
       "evidenceIds": [
-        "EV-5e038dd516cc1450"
+        "EV-00e877d0589dce86"
       ]
     },
     {
@@ -578,6 +578,39 @@
   ],
   "evidenceCatalog": [
     {
+      "evidenceId": "EV-00e877d0589dce86",
+      "source": "security/security-intelligence.json",
+      "pointer": "/currentFindings",
+      "selector": "severity=medium&category=dom-innerhtml",
+      "observedAt": "2026-08-30T13:50:05.820Z",
+      "interpretation": "derived-from-direct-findings",
+      "sourceSha256": "ba20fe24a67f6ce835ea1478e30ca4df0a33bd24042d1aea16ee2986ccfae3ca",
+      "value": {
+        "derivedCount": 54,
+        "representative": [
+          {
+            "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
+            "file": "agents/console/learning-notice.html",
+            "line": 25,
+            "summary": "Dynamic innerHTML assignment detected."
+          },
+          {
+            "id": "e40fc26b6c2f3b41f6e59082836967486e559beeb8327a4ec2e5ca8bd209f924",
+            "file": "agents/console/owner-intelligence.js",
+            "line": 113,
+            "summary": "Dynamic innerHTML assignment detected."
+          },
+          {
+            "id": "fa4963c3ca96ad9b844920953a4c78a8ab0bf2a8289b6f1311715f20a3ac8356",
+            "file": "companies/company-010-public-adapter.js",
+            "line": 97,
+            "summary": "Dynamic innerHTML assignment detected."
+          }
+        ]
+      },
+      "note": "Count is derived deterministically from current Security Sentinel findings."
+    },
+    {
       "evidenceId": "EV-0230683fd38c558b",
       "source": "intelligence/change-intelligence.json",
       "pointer": "/whatChanged",
@@ -783,39 +816,47 @@
       ]
     },
     {
-      "evidenceId": "EV-21741ea3ebdef22d",
-      "source": "intelligence/change-intelligence.json",
-      "pointer": "/whatChanged/5",
+      "evidenceId": "EV-117eae61aa5a373a",
+      "source": "intelligence/explanatory/explanatory-context.json",
+      "pointer": "/explanations/protocolLifecycleContexts/defitea-pendle-spendle",
       "selector": null,
-      "observedAt": "2026-08-30T12:05:34.875Z",
-      "interpretation": "direct",
-      "sourceSha256": "bd2eeaf212f4a70da941e7b6cbe31e8ec1c1bac9f79f3bb2c2be46561fe18683",
+      "observedAt": "2026-08-30T13:49:37.534Z",
+      "interpretation": "read-only-protocol-lifecycle-context",
+      "sourceSha256": "fb099ab4603e09b9afb0ca7e88bb999c354278d13feea70ab94cbbbb95033280",
       "value": {
-        "id": "d8f600ee63a8d33cc675",
-        "detectedAt": "2026-08-30T12:05:34.875Z",
-        "category": "rewards",
-        "entity": "0x5860...83CA8.eth",
-        "metric": "totalUsd",
-        "previousValue": 134.909109,
-        "currentValue": 133.90983,
-        "unit": "USD",
-        "severity": "info",
-        "summary": "0x5860...83CA8.eth accrued rewards moved $134.91 → $133.91 ($-1.00).",
-        "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
-        "sourceKeys": [
-          "rewards"
-        ]
+        "protocolId": "defitea-pendle-spendle",
+        "protocol": null,
+        "mechanism": null,
+        "maturityStage": "shadow",
+        "status": null,
+        "longitudinalEvidence": {
+          "validatedObservationCount": 0,
+          "validatedPeriodCount": 0,
+          "requiredValidatedPeriodCount": 2,
+          "validatedPeriodKeys": []
+        },
+        "blockers": [
+          "current-reference-apr-validated",
+          "validated-longitudinal-depth",
+          "revenue-buyback-distribution-identity"
+        ],
+        "nextUnlock": null,
+        "authority": {
+          "executionAuthority": "none",
+          "causalClaimAuthority": "none",
+          "promotionAuthority": "none"
+        }
       },
-      "note": "Direct material-change event emitted by The Holding Observer."
+      "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
     },
     {
-      "evidenceId": "EV-30e3d62129d37616",
+      "evidenceId": "EV-157b61a4c5f9bee6",
       "source": "intelligence/explanatory/explanatory-context.json",
       "pointer": "/explanations/protocolLifecycleContexts/registry-yieldbasis-multimechanism",
       "selector": null,
-      "observedAt": "2026-08-30T04:02:06.170Z",
+      "observedAt": "2026-08-30T13:49:37.534Z",
       "interpretation": "read-only-protocol-lifecycle-context",
-      "sourceSha256": "dc30587a74a8453885fc12f6701148b7f3f9ec675dad76480bd338bd0c5895aa",
+      "sourceSha256": "fb099ab4603e09b9afb0ca7e88bb999c354278d13feea70ab94cbbbb95033280",
       "value": {
         "protocolId": "registry-yieldbasis-multimechanism",
         "protocol": null,
@@ -844,36 +885,86 @@
       "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
     },
     {
-      "evidenceId": "EV-318ae6b61b2b92b0",
-      "source": "intelligence/explanatory/explanatory-context.json",
-      "pointer": "/explanations/protocolLifecycleContexts/registry-frax-vefrax",
+      "evidenceId": "EV-21741ea3ebdef22d",
+      "source": "intelligence/change-intelligence.json",
+      "pointer": "/whatChanged/5",
       "selector": null,
-      "observedAt": "2026-08-30T04:02:06.170Z",
-      "interpretation": "read-only-protocol-lifecycle-context",
-      "sourceSha256": "dc30587a74a8453885fc12f6701148b7f3f9ec675dad76480bd338bd0c5895aa",
+      "observedAt": "2026-08-30T12:05:34.875Z",
+      "interpretation": "direct",
+      "sourceSha256": "bd2eeaf212f4a70da941e7b6cbe31e8ec1c1bac9f79f3bb2c2be46561fe18683",
       "value": {
-        "protocolId": "registry-frax-vefrax",
+        "id": "d8f600ee63a8d33cc675",
+        "detectedAt": "2026-08-30T12:05:34.875Z",
+        "category": "rewards",
+        "entity": "0x5860...83CA8.eth",
+        "metric": "totalUsd",
+        "previousValue": 134.909109,
+        "currentValue": 133.90983,
+        "unit": "USD",
+        "severity": "info",
+        "summary": "0x5860...83CA8.eth accrued rewards moved $134.91 → $133.91 ($-1.00).",
+        "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+        "sourceKeys": [
+          "rewards"
+        ]
+      },
+      "note": "Direct material-change event emitted by The Holding Observer."
+    },
+    {
+      "evidenceId": "EV-23476f64befbbbab",
+      "source": "intelligence/explanatory/explanatory-context.json",
+      "pointer": "/explanations/protocolLifecycleContexts/defitea-curve-vecrv",
+      "selector": null,
+      "observedAt": "2026-08-30T13:49:37.534Z",
+      "interpretation": "read-only-protocol-lifecycle-context",
+      "sourceSha256": "fb099ab4603e09b9afb0ca7e88bb999c354278d13feea70ab94cbbbb95033280",
+      "value": {
+        "protocolId": "defitea-curve-vecrv",
         "protocol": null,
         "mechanism": null,
-        "maturityStage": "shadow",
+        "maturityStage": "canonical",
         "status": null,
-        "longitudinalEvidence": {
-          "canonicalSnapshotCount": 4,
-          "canonicalSnapshotKeys": [
-            "2026-W32",
-            "2026-W33",
-            "2026-W34",
-            "2026-W35"
-          ],
-          "validatedNativePeriodCount": 0,
-          "requiredValidatedNativePeriodCount": 2,
-          "validatedNativePeriodKeys": [],
-          "depthClass": "canonical-productivity-snapshots-only-not-native-epoch-proof"
-        },
+        "longitudinalEvidence": null,
+        "blockers": [],
+        "nextUnlock": null,
+        "authority": {
+          "executionAuthority": "none",
+          "causalClaimAuthority": "none",
+          "promotionAuthority": "none"
+        }
+      },
+      "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
+    },
+    {
+      "evidenceId": "EV-2d990e07b08552c0",
+      "source": "security/security-intelligence.json",
+      "pointer": "/whatChanged",
+      "selector": null,
+      "observedAt": "2026-08-30T13:50:05.820Z",
+      "interpretation": "direct",
+      "sourceSha256": "ba20fe24a67f6ce835ea1478e30ca4df0a33bd24042d1aea16ee2986ccfae3ca",
+      "value": {
+        "newFindings": [],
+        "resolvedFindings": []
+      }
+    },
+    {
+      "evidenceId": "EV-3dbf2c9c5794656b",
+      "source": "intelligence/explanatory/explanatory-context.json",
+      "pointer": "/explanations/protocolLifecycleContexts/defitea-convex-vlcvx-votium",
+      "selector": null,
+      "observedAt": "2026-08-30T13:49:37.534Z",
+      "interpretation": "read-only-protocol-lifecycle-context",
+      "sourceSha256": "fb099ab4603e09b9afb0ca7e88bb999c354278d13feea70ab94cbbbb95033280",
+      "value": {
+        "protocolId": "defitea-convex-vlcvx-votium",
+        "protocol": null,
+        "mechanism": null,
+        "maturityStage": "verified",
+        "status": null,
+        "longitudinalEvidence": null,
         "blockers": [
-          "distinct-native-frax-period-depth",
-          "ethereum-fraxtal-lock-topology-reconciled",
-          "frax-revenue-to-vefrax-apr-accounting-identity"
+          "aligned-longitudinal-response"
         ],
         "nextUnlock": null,
         "authority": {
@@ -885,91 +976,39 @@
       "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
     },
     {
-      "evidenceId": "EV-3bc1ebb4438db5ef",
+      "evidenceId": "EV-425b6849f5ea012a",
       "source": "intelligence/explanatory/explanatory-context.json",
-      "pointer": "/explanations/protocolAprChangeContexts/defitea-curve-vecrv",
+      "pointer": "/explanations/protocolEcosystemContexts/registry-frax-ecosystem",
       "selector": null,
-      "observedAt": "2026-08-30T04:02:06.170Z",
-      "interpretation": "normalized-proven-mechanical-context-upstream-cause-unresolved",
-      "sourceSha256": "dc30587a74a8453885fc12f6701148b7f3f9ec675dad76480bd338bd0c5895aa",
+      "observedAt": "2026-08-30T13:49:37.534Z",
+      "interpretation": "frax-deep-ecosystem-measured-vs-source-bound-unknown",
+      "sourceSha256": "fb099ab4603e09b9afb0ca7e88bb999c354278d13feea70ab94cbbbb95033280",
+      "note": "Current Explanatory evidence marks 11 Frax surface(s) MEASURED (governanceVeFrax, fraxtalFloxFxtl, frxUsdSfrxUsd, fraxNet, fraxlend, fraxswapBamm, fxb, fxLiquidity, revenueRouting, frxEthSfrxEth, fpiFpisVeFpis) and 0 source-bound UNKNOWN (). Full Frax context remains materialized once under protocolEcosystemContexts; this evidence row is exact-source-pointer/hash bound to avoid duplicate payload amplification."
+    },
+    {
+      "evidenceId": "EV-4d71a056bd00102a",
+      "source": "intelligence/explanatory/explanatory-context.json",
+      "pointer": "/explanations/protocolLifecycleContexts/defitea-fxn-vefxn",
+      "selector": null,
+      "observedAt": "2026-08-30T13:49:37.534Z",
+      "interpretation": "read-only-protocol-lifecycle-context",
+      "sourceSha256": "fb099ab4603e09b9afb0ca7e88bb999c354278d13feea70ab94cbbbb95033280",
       "value": {
-        "question": "How is the current Curve veCRV Reference APR mechanically formed, and do we know why its upstream fee inputs changed?",
-        "status": "mechanics-proven-upstream-cause-unresolved",
-        "coverage": {
-          "cohortId": "defitea-curve-vecrv",
-          "cohort": "Defitea -> Curve veCRV Fee Distributor",
-          "companyRegistry": "004",
-          "company": "defitea.eth",
-          "protocol": "Curve",
-          "mechanism": "veCRV Fee Distributor",
-          "asset": "CRV"
-        },
-        "apr": {
-          "canonicalProductivityPct": 1.8433,
-          "formulaReproducedPct": 1.843246,
-          "formulaParityDeltaPctPoints": 0.000054,
-          "currentObservationStatus": "ok",
-          "deltaFromPriorGraphObservationPctPoints": 0.1291
-        },
-        "measuredDrivers": {
-          "crvPriceUsd": 0.3317597,
-          "rollingFourWeekFeesCrvUSD": 367449.3905497147,
-          "rollingAverageVeSupply": 781697784.8302846,
-          "rollingAverageAprPct": 1.84325,
-          "weeksUsed": 4,
-          "rollingWindowStart": "2026-07-30T00:00:00.000Z",
-          "rollingWindowEnd": "2026-08-27T00:00:00.000Z",
-          "latestCompletedWeek": {
-            "week": 1787184000,
-            "periodStart": "2026-08-20T00:00:00.000Z",
-            "periodEnd": "2026-08-27T00:00:00.000Z",
-            "tokensCrvUSD": 105296.76945962243,
-            "veSupply": 777928715.0780392,
-            "aprPct": 2.1216
-          }
-        },
-        "measuredMovement": {
-          "priorObservationId": "curve-vecrv:2026-08-26:ec9f716a086ea11fc07a",
-          "elapsedHours": 32.5638,
-          "aprDeltaPctPoints": 0.1291,
-          "crvPriceDeltaUsd": 0.01120559,
-          "rollingAverageVeSupplyDelta": null,
-          "rollingFourWeekFeesDeltaCrvUSD": null,
-          "rollingWindowComparable": false,
-          "rollingWindowNonComparableReason": "rolling-completed-week-window-changed",
-          "latestWeekFeesDeltaCrvUSD": null,
-          "latestWeekVeSupplyDelta": null,
-          "latestWeekAprDeltaPctPoints": null,
-          "latestWeekComparable": false,
-          "latestWeekNonComparableReason": "latest-completed-week-changed"
-        },
-        "mechanics": {
-          "status": "proven-canonical-collector-identity",
-          "weeklyIdentity": "weeklyAprPct = (tokensCrvUSD / veSupply) / crvPriceUsd * 52 * 100",
-          "rollingIdentity": "canonicalProductivityAprPct = arithmetic mean(completed-week aprPct values used by Productivity)",
-          "reproducedCanonicalAprPct": 1.843246,
-          "parityDeltaPctPoints": 0.000054,
-          "mechanicalAttribution": "proven-within-apr-formula",
-          "provenRelation": "For the canonical veCRV fee APR, distributed crvUSD fees are the numerator, veCRV supply and CRV price are denominator inputs, and the rolling Reference APR is the arithmetic mean of completed-week formula outputs."
-        },
-        "provenance": {
-          "graphFile": "intelligence/economic-graph/economic-graph.json",
-          "graphSha256": "704cef9bf1823a4f7b3b60d4bd381f3d70db29ce4b6ca592d94abfb7a3d9f676",
-          "observationId": "curve-vecrv:2026-08-27:aa995e8414fd3c35cc13",
-          "observedAt": "2026-08-27T14:40:54.527Z",
-          "sourceUrl": "https://etherscan.io/address/0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914",
-          "sourceType": "onchain",
-          "sourceMetric": "veCRV crvUSD fee APR · 4 completed weeks average",
-          "contract": "0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914",
-          "productivitySha256": "c59347abe6bc4f81dd8757f374de8ef1c13bf0e0c81a18d84ea3d85b3adb3e90"
-        },
-        "causalAttribution": "unresolved-beyond-formula",
-        "primaryDriver": null,
-        "causalClass": "proven-mechanical-identity-upstream-cause-unresolved",
-        "explanation": "Curve veCRV Reference APR is mechanically reproducible from distributed crvUSD fees, veCRV supply and CRV price under the canonical completed-week formula. This proves how those measured inputs form the Reference APR. It does not prove why Curve fee distributions themselves increased or decreased; upstream protocol activity remains unresolved until fee-origin evidence is added.",
-        "promotionRule": "Formula inputs may be described as mechanical APR inputs. Upstream causes of fee changes require separate canonical protocol-activity evidence before causal promotion."
+        "protocolId": "defitea-fxn-vefxn",
+        "protocol": null,
+        "mechanism": null,
+        "maturityStage": "canonical",
+        "status": null,
+        "longitudinalEvidence": null,
+        "blockers": [],
+        "nextUnlock": null,
+        "authority": {
+          "executionAuthority": "none",
+          "causalClaimAuthority": "none",
+          "promotionAuthority": "none"
+        }
       },
-      "note": "Canonical protocol-economic cohort from Explanatory Context. Report only the causal strength explicitly proven by this cohort."
+      "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
     },
     {
       "evidenceId": "EV-56a14db3b20ab444",
@@ -996,49 +1035,6 @@
         ]
       },
       "note": "Direct material-change event emitted by The Holding Observer."
-    },
-    {
-      "evidenceId": "EV-5e038dd516cc1450",
-      "source": "security/security-intelligence.json",
-      "pointer": "/currentFindings",
-      "selector": "severity=medium&category=dom-innerhtml",
-      "observedAt": "2026-08-30T13:01:24.834Z",
-      "interpretation": "derived-from-direct-findings",
-      "sourceSha256": "69d7ac5ff050a1c4c04fe3c44432c7453fe3e4b8fffbbd117627e27aadf01c99",
-      "value": {
-        "derivedCount": 53,
-        "representative": [
-          {
-            "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
-            "file": "agents/console/learning-notice.html",
-            "line": 25,
-            "summary": "Dynamic innerHTML assignment detected."
-          },
-          {
-            "id": "e40fc26b6c2f3b41f6e59082836967486e559beeb8327a4ec2e5ca8bd209f924",
-            "file": "agents/console/owner-intelligence.js",
-            "line": 113,
-            "summary": "Dynamic innerHTML assignment detected."
-          },
-          {
-            "id": "fa4963c3ca96ad9b844920953a4c78a8ab0bf2a8289b6f1311715f20a3ac8356",
-            "file": "companies/company-010-public-adapter.js",
-            "line": 97,
-            "summary": "Dynamic innerHTML assignment detected."
-          }
-        ]
-      },
-      "note": "Count is derived deterministically from current Security Sentinel findings."
-    },
-    {
-      "evidenceId": "EV-5f2eb435eedaf3b2",
-      "source": "intelligence/explanatory/explanatory-context.json",
-      "pointer": "/explanations/protocolEcosystemContexts/registry-frax-ecosystem",
-      "selector": null,
-      "observedAt": "2026-08-30T04:02:06.170Z",
-      "interpretation": "frax-deep-ecosystem-measured-vs-source-bound-unknown",
-      "sourceSha256": "dc30587a74a8453885fc12f6701148b7f3f9ec675dad76480bd338bd0c5895aa",
-      "note": "Current Explanatory evidence marks 11 Frax surface(s) MEASURED (governanceVeFrax, fraxtalFloxFxtl, frxUsdSfrxUsd, fraxNet, fraxlend, fraxswapBamm, fxb, fxLiquidity, revenueRouting, frxEthSfrxEth, fpiFpisVeFpis) and 0 source-bound UNKNOWN (). Full Frax context remains materialized once under protocolEcosystemContexts; this evidence row is exact-source-pointer/hash bound to avoid duplicate payload amplification."
     },
     {
       "evidenceId": "EV-5f52234bcab033f6",
@@ -1084,6 +1080,132 @@
       "note": "Direct material-change event emitted by The Holding Observer."
     },
     {
+      "evidenceId": "EV-6b299f8886381265",
+      "source": "intelligence/explanatory/explanatory-context.json",
+      "pointer": "/explanations/protocolAprChangeContexts/defitea-fxn-vefxn",
+      "selector": null,
+      "observedAt": "2026-08-30T13:49:37.534Z",
+      "interpretation": "normalized-measured-context-not-causal-attribution",
+      "sourceSha256": "fb099ab4603e09b9afb0ca7e88bb999c354278d13feea70ab94cbbbb95033280",
+      "value": {
+        "question": "What measured protocol-economic context is available around the current veFXN Reference APR, and can it prove why APR changed?",
+        "status": "context-available-causal-attribution-unresolved",
+        "coverage": {
+          "cohortId": "defitea-fxn-vefxn",
+          "cohort": "Defitea -> f(x) veFXN",
+          "companyRegistry": "004",
+          "company": "defitea.eth",
+          "protocol": "f(x)",
+          "mechanism": "veFXN Locker",
+          "asset": "FXN"
+        },
+        "apr": {
+          "liveObservedPct": 24.74,
+          "canonicalProductivityPct": 24.74,
+          "parityDeltaPctPoints": 0,
+          "currentObservationStatus": "ok",
+          "deltaFromPriorGraphObservationPctPoints": 0
+        },
+        "measuredDrivers": {
+          "fxnLocked": 542775.48,
+          "fxnCirculatingSupplyLockedPct": 78.22,
+          "totalVeFxn": 471574.03,
+          "cumulativeThisWeekWsteth": 0.05,
+          "previousWeekWsteth": 10,
+          "averageLockRaw": "3.48 Years",
+          "accumulateTillRaw": "Sep 2, 2026 11:59 PM"
+        },
+        "measuredMovement": {
+          "priorObservationId": "fxn-locker:2026-08-27:52c25d1fb9385c58e144",
+          "elapsedHours": 0.4737,
+          "fxnLockedDelta": 0,
+          "fxnCirculatingSupplyLockedPctDeltaPoints": 0,
+          "totalVeFxnDelta": -7.19,
+          "currentWeekRevenueDeltaWsteth": 0,
+          "revenueDeltaComparable": true,
+          "revenueDeltaNonComparableReason": null
+        },
+        "provenance": {
+          "graphFile": "intelligence/economic-graph/economic-graph.json",
+          "graphSha256": "899257995505607458f5bd1a8fb6d7aabe64cf0aaa45864e5f46d229d37d0912",
+          "observationId": "fxn-locker:2026-08-27:926e021a7b0298961358",
+          "observedAt": "2026-08-27T16:53:36.729Z",
+          "sourceUrl": "https://fx.aladdin.club/v2/lock",
+          "sourceType": "official-frontend-exact-locker-block",
+          "rawBlockHash": "0b9296f34c98cd7be95d7ffffba3c1e758126079ad7a96ab189bc83f39f9b034"
+        },
+        "causalAttribution": "unresolved",
+        "primaryDriver": null,
+        "causalClass": "measured-context-only",
+        "explanation": "Canonical protocol-economic driver context is available for the Defitea veFXN cohort. The system may report these measured values and comparable deltas, but it must not say that revenue, locked supply, Total veFXN, price, incentives or another driver caused the APR until a protocol-specific formula or onchain accounting identity proves that path.",
+        "promotionRule": "A driver may become ATTRIBUTED only after a protocol-specific formula or onchain accounting identity proves the causal path."
+      },
+      "note": "Canonical protocol-economic cohort from Explanatory Context. Report only the causal strength explicitly proven by this cohort."
+    },
+    {
+      "evidenceId": "EV-6b78215f5e2693eb",
+      "source": "intelligence/explanatory/explanatory-context.json",
+      "pointer": "/explanations/protocolAprChangeContext",
+      "selector": null,
+      "observedAt": "2026-08-30T13:49:37.534Z",
+      "interpretation": "legacy-vefxn-alias-measured-context-not-causal-attribution",
+      "sourceSha256": "fb099ab4603e09b9afb0ca7e88bb999c354278d13feea70ab94cbbbb95033280",
+      "value": {
+        "question": "What measured protocol-economic context is available around the current veFXN Reference APR, and can it prove why APR changed?",
+        "status": "context-available-causal-attribution-unresolved",
+        "coverage": {
+          "cohortId": "defitea-fxn-vefxn",
+          "cohort": "Defitea -> f(x) veFXN",
+          "companyRegistry": "004",
+          "company": "defitea.eth",
+          "protocol": "f(x)",
+          "mechanism": "veFXN Locker",
+          "asset": "FXN"
+        },
+        "apr": {
+          "liveObservedPct": 24.74,
+          "canonicalProductivityPct": 24.74,
+          "parityDeltaPctPoints": 0,
+          "currentObservationStatus": "ok",
+          "deltaFromPriorGraphObservationPctPoints": 0
+        },
+        "measuredDrivers": {
+          "fxnLocked": 542775.48,
+          "fxnCirculatingSupplyLockedPct": 78.22,
+          "totalVeFxn": 471574.03,
+          "cumulativeThisWeekWsteth": 0.05,
+          "previousWeekWsteth": 10,
+          "averageLockRaw": "3.48 Years",
+          "accumulateTillRaw": "Sep 2, 2026 11:59 PM"
+        },
+        "measuredMovement": {
+          "priorObservationId": "fxn-locker:2026-08-27:52c25d1fb9385c58e144",
+          "elapsedHours": 0.4737,
+          "fxnLockedDelta": 0,
+          "fxnCirculatingSupplyLockedPctDeltaPoints": 0,
+          "totalVeFxnDelta": -7.19,
+          "currentWeekRevenueDeltaWsteth": 0,
+          "revenueDeltaComparable": true,
+          "revenueDeltaNonComparableReason": null
+        },
+        "provenance": {
+          "graphFile": "intelligence/economic-graph/economic-graph.json",
+          "graphSha256": "899257995505607458f5bd1a8fb6d7aabe64cf0aaa45864e5f46d229d37d0912",
+          "observationId": "fxn-locker:2026-08-27:926e021a7b0298961358",
+          "observedAt": "2026-08-27T16:53:36.729Z",
+          "sourceUrl": "https://fx.aladdin.club/v2/lock",
+          "sourceType": "official-frontend-exact-locker-block",
+          "rawBlockHash": "0b9296f34c98cd7be95d7ffffba3c1e758126079ad7a96ab189bc83f39f9b034"
+        },
+        "causalAttribution": "unresolved",
+        "primaryDriver": null,
+        "causalClass": "measured-context-only",
+        "explanation": "Canonical protocol-economic driver context is available for the Defitea veFXN cohort. The system may report these measured values and comparable deltas, but it must not say that revenue, locked supply, Total veFXN, price, incentives or another driver caused the APR until a protocol-specific formula or onchain accounting identity proves that path.",
+        "promotionRule": "A driver may become ATTRIBUTED only after a protocol-specific formula or onchain accounting identity proves the causal path."
+      },
+      "note": "Compatibility alias for the veFXN cohort. Canonical multi-cohort evidence is also included separately."
+    },
+    {
       "evidenceId": "EV-743f5742115169bf",
       "source": "intelligence/change-intelligence.json",
       "pointer": "/whatChanged/6",
@@ -1110,13 +1232,13 @@
       "note": "Direct material-change event emitted by The Holding Observer."
     },
     {
-      "evidenceId": "EV-7a0a0589db139810",
+      "evidenceId": "EV-82124e3e4f3e6f01",
       "source": "intelligence/explanatory/explanatory-context.json",
       "pointer": "/explanations/protocolFlowContexts/defitea-convex-vlcvx-votium",
       "selector": null,
-      "observedAt": "2026-08-30T04:02:06.170Z",
+      "observedAt": "2026-08-30T13:49:37.534Z",
       "interpretation": "shadow-cross-protocol-mechanics-and-temporal-context-causality-unresolved",
-      "sourceSha256": "dc30587a74a8453885fc12f6701148b7f3f9ec675dad76480bd338bd0c5895aa",
+      "sourceSha256": "fb099ab4603e09b9afb0ca7e88bb999c354278d13feea70ab94cbbbb95033280",
       "value": {
         "contextId": "defitea-convex-vlcvx-votium",
         "status": "shadow-cross-protocol-context-answerable-causality-unresolved",
@@ -1172,7 +1294,7 @@
         },
         "provenance": {
           "economicGraphFile": "intelligence/economic-graph/economic-graph.json",
-          "graphSha256": "704cef9bf1823a4f7b3b60d4bd381f3d70db29ce4b6ca592d94abfb7a3d9f676",
+          "graphSha256": "899257995505607458f5bd1a8fb6d7aabe64cf0aaa45864e5f46d229d37d0912",
           "deepEvidenceVersion": "0.1-vlcvx-votium-curve-cognitive-close",
           "sourceBinding": {
             "roundFlow": {
@@ -1192,8 +1314,8 @@
             },
             "curvePoolContext": {
               "file": "intelligence/economic-graph/vlcvx-votium-curve-pool-context.json",
-              "sha256": "0ce4308f92d2ed1fab921fac588b23baf2df67c128bf5a1459da0f8abf8e75ea",
-              "generatedAt": "2026-08-29T20:59:01.543Z"
+              "sha256": "7c6979c8ab4b9bb374c73c33c64ee08b00249c4c4ca21e43825fe918e36f8853",
+              "generatedAt": "2026-08-30T12:01:02.135Z"
             }
           }
         },
@@ -1208,31 +1330,6 @@
         }
       },
       "note": "Votium→Convex→Curve mechanical execution is proven; current Curve pool state is measured temporal context only. Do not infer incentive→vote or vote→pool causality."
-    },
-    {
-      "evidenceId": "EV-7dc181636f7f25f3",
-      "source": "intelligence/explanatory/explanatory-context.json",
-      "pointer": "/explanations/protocolLifecycleContexts/defitea-fxn-vefxn",
-      "selector": null,
-      "observedAt": "2026-08-30T04:02:06.170Z",
-      "interpretation": "read-only-protocol-lifecycle-context",
-      "sourceSha256": "dc30587a74a8453885fc12f6701148b7f3f9ec675dad76480bd338bd0c5895aa",
-      "value": {
-        "protocolId": "defitea-fxn-vefxn",
-        "protocol": null,
-        "mechanism": null,
-        "maturityStage": "canonical",
-        "status": null,
-        "longitudinalEvidence": null,
-        "blockers": [],
-        "nextUnlock": null,
-        "authority": {
-          "executionAuthority": "none",
-          "causalClaimAuthority": "none",
-          "promotionAuthority": "none"
-        }
-      },
-      "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
     },
     {
       "evidenceId": "EV-83a884f8c46347ce",
@@ -1252,22 +1349,63 @@
       "note": "Direct normalized watch item emitted by The Holding Observer."
     },
     {
-      "evidenceId": "EV-84b72f8e35df07d8",
+      "evidenceId": "EV-83ee089ed2b7bf6e",
       "source": "intelligence/explanatory/explanatory-context.json",
-      "pointer": "/explanations/protocolLifecycleContexts/defitea-convex-vlcvx-votium",
+      "pointer": "/explanations/protocolLifecycleContexts/defitea-aerodrome-veaero",
       "selector": null,
-      "observedAt": "2026-08-30T04:02:06.170Z",
+      "observedAt": "2026-08-30T13:49:37.534Z",
       "interpretation": "read-only-protocol-lifecycle-context",
-      "sourceSha256": "dc30587a74a8453885fc12f6701148b7f3f9ec675dad76480bd338bd0c5895aa",
+      "sourceSha256": "fb099ab4603e09b9afb0ca7e88bb999c354278d13feea70ab94cbbbb95033280",
       "value": {
-        "protocolId": "defitea-convex-vlcvx-votium",
+        "protocolId": "defitea-aerodrome-veaero",
         "protocol": null,
         "mechanism": null,
         "maturityStage": "verified",
         "status": null,
         "longitudinalEvidence": null,
         "blockers": [
-          "aligned-longitudinal-response"
+          "pool-volume-context"
+        ],
+        "nextUnlock": null,
+        "authority": {
+          "executionAuthority": "none",
+          "causalClaimAuthority": "none",
+          "promotionAuthority": "none"
+        }
+      },
+      "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
+    },
+    {
+      "evidenceId": "EV-8fc80fa3691bb134",
+      "source": "intelligence/explanatory/explanatory-context.json",
+      "pointer": "/explanations/protocolLifecycleContexts/registry-frax-vefrax",
+      "selector": null,
+      "observedAt": "2026-08-30T13:49:37.534Z",
+      "interpretation": "read-only-protocol-lifecycle-context",
+      "sourceSha256": "fb099ab4603e09b9afb0ca7e88bb999c354278d13feea70ab94cbbbb95033280",
+      "value": {
+        "protocolId": "registry-frax-vefrax",
+        "protocol": null,
+        "mechanism": null,
+        "maturityStage": "shadow",
+        "status": null,
+        "longitudinalEvidence": {
+          "canonicalSnapshotCount": 4,
+          "canonicalSnapshotKeys": [
+            "2026-W32",
+            "2026-W33",
+            "2026-W34",
+            "2026-W35"
+          ],
+          "validatedNativePeriodCount": 0,
+          "requiredValidatedNativePeriodCount": 2,
+          "validatedNativePeriodKeys": [],
+          "depthClass": "canonical-productivity-snapshots-only-not-native-epoch-proof"
+        },
+        "blockers": [
+          "distinct-native-frax-period-depth",
+          "ethereum-fraxtal-lock-topology-reconciled",
+          "frax-revenue-to-vefrax-apr-accounting-identity"
         ],
         "nextUnlock": null,
         "authority": {
@@ -1331,61 +1469,6 @@
       "note": "Direct material-change event emitted by The Holding Observer."
     },
     {
-      "evidenceId": "EV-9fc7a69c6e41690a",
-      "source": "intelligence/explanatory/explanatory-context.json",
-      "pointer": "/explanations/protocolLifecycleContexts/defitea-pendle-spendle",
-      "selector": null,
-      "observedAt": "2026-08-30T04:02:06.170Z",
-      "interpretation": "read-only-protocol-lifecycle-context",
-      "sourceSha256": "dc30587a74a8453885fc12f6701148b7f3f9ec675dad76480bd338bd0c5895aa",
-      "value": {
-        "protocolId": "defitea-pendle-spendle",
-        "protocol": null,
-        "mechanism": null,
-        "maturityStage": "shadow",
-        "status": null,
-        "longitudinalEvidence": {
-          "validatedObservationCount": 0,
-          "validatedPeriodCount": 0,
-          "requiredValidatedPeriodCount": 2,
-          "validatedPeriodKeys": []
-        },
-        "blockers": [
-          "current-reference-apr-validated",
-          "validated-longitudinal-depth",
-          "revenue-buyback-distribution-identity"
-        ],
-        "nextUnlock": null,
-        "authority": {
-          "executionAuthority": "none",
-          "causalClaimAuthority": "none",
-          "promotionAuthority": "none"
-        }
-      },
-      "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
-    },
-    {
-      "evidenceId": "EV-a1bb43f019c3ef63",
-      "source": "security/security-intelligence.json",
-      "pointer": "/currentFindings/1",
-      "selector": null,
-      "observedAt": "2026-08-30T13:01:24.834Z",
-      "interpretation": "direct",
-      "sourceSha256": "69d7ac5ff050a1c4c04fe3c44432c7453fe3e4b8fffbbd117627e27aadf01c99",
-      "value": {
-        "id": "796045f38b2faae4de28f58e9aa997ac2e1b7aea1e07a3743ee30a3c25e207d5",
-        "severity": "high",
-        "category": "privileged-trigger",
-        "file": ".github/workflows/production-deployment-smoke.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Workflow uses pull_request_target.",
-        "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
-        "evidence": null
-      },
-      "note": "Direct current finding emitted by The Holding Security Sentinel."
-    },
-    {
       "evidenceId": "EV-add67158624ca0ba",
       "source": "intelligence/change-intelligence.json",
       "pointer": "/whatChanged/8",
@@ -1439,67 +1522,25 @@
       "note": "Direct material-change event emitted by The Holding Observer."
     },
     {
-      "evidenceId": "EV-c2a9fa981c339d3e",
-      "source": "intelligence/explanatory/explanatory-context.json",
-      "pointer": "/explanations/protocolAprChangeContexts/defitea-fxn-vefxn",
+      "evidenceId": "EV-c5b366aed49f398f",
+      "source": "security/security-intelligence.json",
+      "pointer": "/currentFindings/1",
       "selector": null,
-      "observedAt": "2026-08-30T04:02:06.170Z",
-      "interpretation": "normalized-measured-context-not-causal-attribution",
-      "sourceSha256": "dc30587a74a8453885fc12f6701148b7f3f9ec675dad76480bd338bd0c5895aa",
+      "observedAt": "2026-08-30T13:50:05.820Z",
+      "interpretation": "direct",
+      "sourceSha256": "ba20fe24a67f6ce835ea1478e30ca4df0a33bd24042d1aea16ee2986ccfae3ca",
       "value": {
-        "question": "What measured protocol-economic context is available around the current veFXN Reference APR, and can it prove why APR changed?",
-        "status": "context-available-causal-attribution-unresolved",
-        "coverage": {
-          "cohortId": "defitea-fxn-vefxn",
-          "cohort": "Defitea -> f(x) veFXN",
-          "companyRegistry": "004",
-          "company": "defitea.eth",
-          "protocol": "f(x)",
-          "mechanism": "veFXN Locker",
-          "asset": "FXN"
-        },
-        "apr": {
-          "liveObservedPct": 24.74,
-          "canonicalProductivityPct": 24.74,
-          "parityDeltaPctPoints": 0,
-          "currentObservationStatus": "ok",
-          "deltaFromPriorGraphObservationPctPoints": 0
-        },
-        "measuredDrivers": {
-          "fxnLocked": 542775.48,
-          "fxnCirculatingSupplyLockedPct": 78.22,
-          "totalVeFxn": 471574.03,
-          "cumulativeThisWeekWsteth": 0.05,
-          "previousWeekWsteth": 10,
-          "averageLockRaw": "3.48 Years",
-          "accumulateTillRaw": "Sep 2, 2026 11:59 PM"
-        },
-        "measuredMovement": {
-          "priorObservationId": "fxn-locker:2026-08-27:52c25d1fb9385c58e144",
-          "elapsedHours": 0.4737,
-          "fxnLockedDelta": 0,
-          "fxnCirculatingSupplyLockedPctDeltaPoints": 0,
-          "totalVeFxnDelta": -7.19,
-          "currentWeekRevenueDeltaWsteth": 0,
-          "revenueDeltaComparable": true,
-          "revenueDeltaNonComparableReason": null
-        },
-        "provenance": {
-          "graphFile": "intelligence/economic-graph/economic-graph.json",
-          "graphSha256": "704cef9bf1823a4f7b3b60d4bd381f3d70db29ce4b6ca592d94abfb7a3d9f676",
-          "observationId": "fxn-locker:2026-08-27:926e021a7b0298961358",
-          "observedAt": "2026-08-27T16:53:36.729Z",
-          "sourceUrl": "https://fx.aladdin.club/v2/lock",
-          "sourceType": "official-frontend-exact-locker-block",
-          "rawBlockHash": "0b9296f34c98cd7be95d7ffffba3c1e758126079ad7a96ab189bc83f39f9b034"
-        },
-        "causalAttribution": "unresolved",
-        "primaryDriver": null,
-        "causalClass": "measured-context-only",
-        "explanation": "Canonical protocol-economic driver context is available for the Defitea veFXN cohort. The system may report these measured values and comparable deltas, but it must not say that revenue, locked supply, Total veFXN, price, incentives or another driver caused the APR until a protocol-specific formula or onchain accounting identity proves that path.",
-        "promotionRule": "A driver may become ATTRIBUTED only after a protocol-specific formula or onchain accounting identity proves the causal path."
+        "id": "796045f38b2faae4de28f58e9aa997ac2e1b7aea1e07a3743ee30a3c25e207d5",
+        "severity": "high",
+        "category": "privileged-trigger",
+        "file": ".github/workflows/production-deployment-smoke.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Workflow uses pull_request_target.",
+        "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
+        "evidence": null
       },
-      "note": "Canonical protocol-economic cohort from Explanatory Context. Report only the causal strength explicitly proven by this cohort."
+      "note": "Direct current finding emitted by The Holding Security Sentinel."
     },
     {
       "evidenceId": "EV-cabc69d1f1c6381e",
@@ -1517,41 +1558,6 @@
         "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory."
       },
       "note": "Direct normalized watch item emitted by The Holding Observer."
-    },
-    {
-      "evidenceId": "EV-cad1b4d75854f5aa",
-      "source": "intelligence/explanatory/explanatory-context.json",
-      "pointer": "/explanations/protocolLifecycleContexts/registry-velodrome-vevelo",
-      "selector": null,
-      "observedAt": "2026-08-30T04:02:06.170Z",
-      "interpretation": "read-only-protocol-lifecycle-context",
-      "sourceSha256": "dc30587a74a8453885fc12f6701148b7f3f9ec675dad76480bd338bd0c5895aa",
-      "value": {
-        "protocolId": "registry-velodrome-vevelo",
-        "protocol": null,
-        "mechanism": null,
-        "maturityStage": "shadow",
-        "status": null,
-        "longitudinalEvidence": {
-          "validatedObservationCount": 9,
-          "validatedSnapshotCount": 1,
-          "requiredValidatedSnapshotCount": 2,
-          "validatedSnapshotKeys": [
-            "2026-W35"
-          ]
-        },
-        "blockers": [
-          "distinct-snapshot-depth",
-          "end-to-end-vote-gauge-pool-fee-accounting"
-        ],
-        "nextUnlock": null,
-        "authority": {
-          "executionAuthority": "none",
-          "causalClaimAuthority": "none",
-          "promotionAuthority": "none"
-        }
-      },
-      "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
     },
     {
       "evidenceId": "EV-cdc6caefc8535fb8",
@@ -1588,51 +1594,13 @@
       "note": "Direct normalized watch item emitted by The Holding Observer."
     },
     {
-      "evidenceId": "EV-cfb703a4de6d3ae0",
-      "source": "security/security-intelligence.json",
-      "pointer": "/whatChanged",
-      "selector": null,
-      "observedAt": "2026-08-30T13:01:24.834Z",
-      "interpretation": "direct",
-      "sourceSha256": "69d7ac5ff050a1c4c04fe3c44432c7453fe3e4b8fffbbd117627e27aadf01c99",
-      "value": {
-        "newFindings": [],
-        "resolvedFindings": []
-      }
-    },
-    {
-      "evidenceId": "EV-d6aee69505a4fae9",
-      "source": "intelligence/explanatory/explanatory-context.json",
-      "pointer": "/explanations/protocolLifecycleContexts/defitea-curve-vecrv",
-      "selector": null,
-      "observedAt": "2026-08-30T04:02:06.170Z",
-      "interpretation": "read-only-protocol-lifecycle-context",
-      "sourceSha256": "dc30587a74a8453885fc12f6701148b7f3f9ec675dad76480bd338bd0c5895aa",
-      "value": {
-        "protocolId": "defitea-curve-vecrv",
-        "protocol": null,
-        "mechanism": null,
-        "maturityStage": "canonical",
-        "status": null,
-        "longitudinalEvidence": null,
-        "blockers": [],
-        "nextUnlock": null,
-        "authority": {
-          "executionAuthority": "none",
-          "causalClaimAuthority": "none",
-          "promotionAuthority": "none"
-        }
-      },
-      "note": "Lifecycle maturity is evidence-gated and does not grant recommendation, promotion or execution authority."
-    },
-    {
-      "evidenceId": "EV-d9d5a27dd73524f9",
+      "evidenceId": "EV-d7f7899175caed86",
       "source": "security/security-intelligence.json",
       "pointer": "/currentFindings/0",
       "selector": null,
-      "observedAt": "2026-08-30T13:01:24.834Z",
+      "observedAt": "2026-08-30T13:50:05.820Z",
       "interpretation": "direct",
-      "sourceSha256": "69d7ac5ff050a1c4c04fe3c44432c7453fe3e4b8fffbbd117627e27aadf01c99",
+      "sourceSha256": "ba20fe24a67f6ce835ea1478e30ca4df0a33bd24042d1aea16ee2986ccfae3ca",
       "value": {
         "id": "119c887e98b579ae9b0ac6bbead75c30b398a9d45d207b24f62f24bc71907fae",
         "severity": "high",
@@ -1752,69 +1720,6 @@
       "note": "Direct material-change event emitted by The Holding Observer."
     },
     {
-      "evidenceId": "EV-eb93957b438a8adf",
-      "source": "intelligence/explanatory/explanatory-context.json",
-      "pointer": "/explanations/protocolAprChangeContext",
-      "selector": null,
-      "observedAt": "2026-08-30T04:02:06.170Z",
-      "interpretation": "legacy-vefxn-alias-measured-context-not-causal-attribution",
-      "sourceSha256": "dc30587a74a8453885fc12f6701148b7f3f9ec675dad76480bd338bd0c5895aa",
-      "value": {
-        "question": "What measured protocol-economic context is available around the current veFXN Reference APR, and can it prove why APR changed?",
-        "status": "context-available-causal-attribution-unresolved",
-        "coverage": {
-          "cohortId": "defitea-fxn-vefxn",
-          "cohort": "Defitea -> f(x) veFXN",
-          "companyRegistry": "004",
-          "company": "defitea.eth",
-          "protocol": "f(x)",
-          "mechanism": "veFXN Locker",
-          "asset": "FXN"
-        },
-        "apr": {
-          "liveObservedPct": 24.74,
-          "canonicalProductivityPct": 24.74,
-          "parityDeltaPctPoints": 0,
-          "currentObservationStatus": "ok",
-          "deltaFromPriorGraphObservationPctPoints": 0
-        },
-        "measuredDrivers": {
-          "fxnLocked": 542775.48,
-          "fxnCirculatingSupplyLockedPct": 78.22,
-          "totalVeFxn": 471574.03,
-          "cumulativeThisWeekWsteth": 0.05,
-          "previousWeekWsteth": 10,
-          "averageLockRaw": "3.48 Years",
-          "accumulateTillRaw": "Sep 2, 2026 11:59 PM"
-        },
-        "measuredMovement": {
-          "priorObservationId": "fxn-locker:2026-08-27:52c25d1fb9385c58e144",
-          "elapsedHours": 0.4737,
-          "fxnLockedDelta": 0,
-          "fxnCirculatingSupplyLockedPctDeltaPoints": 0,
-          "totalVeFxnDelta": -7.19,
-          "currentWeekRevenueDeltaWsteth": 0,
-          "revenueDeltaComparable": true,
-          "revenueDeltaNonComparableReason": null
-        },
-        "provenance": {
-          "graphFile": "intelligence/economic-graph/economic-graph.json",
-          "graphSha256": "704cef9bf1823a4f7b3b60d4bd381f3d70db29ce4b6ca592d94abfb7a3d9f676",
-          "observationId": "fxn-locker:2026-08-27:926e021a7b0298961358",
-          "observedAt": "2026-08-27T16:53:36.729Z",
-          "sourceUrl": "https://fx.aladdin.club/v2/lock",
-          "sourceType": "official-frontend-exact-locker-block",
-          "rawBlockHash": "0b9296f34c98cd7be95d7ffffba3c1e758126079ad7a96ab189bc83f39f9b034"
-        },
-        "causalAttribution": "unresolved",
-        "primaryDriver": null,
-        "causalClass": "measured-context-only",
-        "explanation": "Canonical protocol-economic driver context is available for the Defitea veFXN cohort. The system may report these measured values and comparable deltas, but it must not say that revenue, locked supply, Total veFXN, price, incentives or another driver caused the APR until a protocol-specific formula or onchain accounting identity proves that path.",
-        "promotionRule": "A driver may become ATTRIBUTED only after a protocol-specific formula or onchain accounting identity proves the causal path."
-      },
-      "note": "Compatibility alias for the veFXN cohort. Canonical multi-cohort evidence is also included separately."
-    },
-    {
       "evidenceId": "EV-edb55888a9d29504",
       "source": "intelligence/change-intelligence.json",
       "pointer": "/watchNext/1",
@@ -1832,22 +1737,117 @@
       "note": "Direct normalized watch item emitted by The Holding Observer."
     },
     {
-      "evidenceId": "EV-f8dd7a32f2fe6cae",
+      "evidenceId": "EV-f612e0725cc11c45",
       "source": "intelligence/explanatory/explanatory-context.json",
-      "pointer": "/explanations/protocolLifecycleContexts/defitea-aerodrome-veaero",
+      "pointer": "/explanations/protocolAprChangeContexts/defitea-curve-vecrv",
       "selector": null,
-      "observedAt": "2026-08-30T04:02:06.170Z",
-      "interpretation": "read-only-protocol-lifecycle-context",
-      "sourceSha256": "dc30587a74a8453885fc12f6701148b7f3f9ec675dad76480bd338bd0c5895aa",
+      "observedAt": "2026-08-30T13:49:37.534Z",
+      "interpretation": "normalized-proven-mechanical-context-upstream-cause-unresolved",
+      "sourceSha256": "fb099ab4603e09b9afb0ca7e88bb999c354278d13feea70ab94cbbbb95033280",
       "value": {
-        "protocolId": "defitea-aerodrome-veaero",
+        "question": "How is the current Curve veCRV Reference APR mechanically formed, and do we know why its upstream fee inputs changed?",
+        "status": "mechanics-proven-upstream-cause-unresolved",
+        "coverage": {
+          "cohortId": "defitea-curve-vecrv",
+          "cohort": "Defitea -> Curve veCRV Fee Distributor",
+          "companyRegistry": "004",
+          "company": "defitea.eth",
+          "protocol": "Curve",
+          "mechanism": "veCRV Fee Distributor",
+          "asset": "CRV"
+        },
+        "apr": {
+          "canonicalProductivityPct": 1.8433,
+          "formulaReproducedPct": 1.843246,
+          "formulaParityDeltaPctPoints": 0.000054,
+          "currentObservationStatus": "ok",
+          "deltaFromPriorGraphObservationPctPoints": 0.1291
+        },
+        "measuredDrivers": {
+          "crvPriceUsd": 0.3317597,
+          "rollingFourWeekFeesCrvUSD": 367449.3905497147,
+          "rollingAverageVeSupply": 781697784.8302846,
+          "rollingAverageAprPct": 1.84325,
+          "weeksUsed": 4,
+          "rollingWindowStart": "2026-07-30T00:00:00.000Z",
+          "rollingWindowEnd": "2026-08-27T00:00:00.000Z",
+          "latestCompletedWeek": {
+            "week": 1787184000,
+            "periodStart": "2026-08-20T00:00:00.000Z",
+            "periodEnd": "2026-08-27T00:00:00.000Z",
+            "tokensCrvUSD": 105296.76945962243,
+            "veSupply": 777928715.0780392,
+            "aprPct": 2.1216
+          }
+        },
+        "measuredMovement": {
+          "priorObservationId": "curve-vecrv:2026-08-26:ec9f716a086ea11fc07a",
+          "elapsedHours": 32.5638,
+          "aprDeltaPctPoints": 0.1291,
+          "crvPriceDeltaUsd": 0.01120559,
+          "rollingAverageVeSupplyDelta": null,
+          "rollingFourWeekFeesDeltaCrvUSD": null,
+          "rollingWindowComparable": false,
+          "rollingWindowNonComparableReason": "rolling-completed-week-window-changed",
+          "latestWeekFeesDeltaCrvUSD": null,
+          "latestWeekVeSupplyDelta": null,
+          "latestWeekAprDeltaPctPoints": null,
+          "latestWeekComparable": false,
+          "latestWeekNonComparableReason": "latest-completed-week-changed"
+        },
+        "mechanics": {
+          "status": "proven-canonical-collector-identity",
+          "weeklyIdentity": "weeklyAprPct = (tokensCrvUSD / veSupply) / crvPriceUsd * 52 * 100",
+          "rollingIdentity": "canonicalProductivityAprPct = arithmetic mean(completed-week aprPct values used by Productivity)",
+          "reproducedCanonicalAprPct": 1.843246,
+          "parityDeltaPctPoints": 0.000054,
+          "mechanicalAttribution": "proven-within-apr-formula",
+          "provenRelation": "For the canonical veCRV fee APR, distributed crvUSD fees are the numerator, veCRV supply and CRV price are denominator inputs, and the rolling Reference APR is the arithmetic mean of completed-week formula outputs."
+        },
+        "provenance": {
+          "graphFile": "intelligence/economic-graph/economic-graph.json",
+          "graphSha256": "899257995505607458f5bd1a8fb6d7aabe64cf0aaa45864e5f46d229d37d0912",
+          "observationId": "curve-vecrv:2026-08-27:aa995e8414fd3c35cc13",
+          "observedAt": "2026-08-27T14:40:54.527Z",
+          "sourceUrl": "https://etherscan.io/address/0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914",
+          "sourceType": "onchain",
+          "sourceMetric": "veCRV crvUSD fee APR · 4 completed weeks average",
+          "contract": "0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914",
+          "productivitySha256": "c59347abe6bc4f81dd8757f374de8ef1c13bf0e0c81a18d84ea3d85b3adb3e90"
+        },
+        "causalAttribution": "unresolved-beyond-formula",
+        "primaryDriver": null,
+        "causalClass": "proven-mechanical-identity-upstream-cause-unresolved",
+        "explanation": "Curve veCRV Reference APR is mechanically reproducible from distributed crvUSD fees, veCRV supply and CRV price under the canonical completed-week formula. This proves how those measured inputs form the Reference APR. It does not prove why Curve fee distributions themselves increased or decreased; upstream protocol activity remains unresolved until fee-origin evidence is added.",
+        "promotionRule": "Formula inputs may be described as mechanical APR inputs. Upstream causes of fee changes require separate canonical protocol-activity evidence before causal promotion."
+      },
+      "note": "Canonical protocol-economic cohort from Explanatory Context. Report only the causal strength explicitly proven by this cohort."
+    },
+    {
+      "evidenceId": "EV-f9392fb0f131e541",
+      "source": "intelligence/explanatory/explanatory-context.json",
+      "pointer": "/explanations/protocolLifecycleContexts/registry-velodrome-vevelo",
+      "selector": null,
+      "observedAt": "2026-08-30T13:49:37.534Z",
+      "interpretation": "read-only-protocol-lifecycle-context",
+      "sourceSha256": "fb099ab4603e09b9afb0ca7e88bb999c354278d13feea70ab94cbbbb95033280",
+      "value": {
+        "protocolId": "registry-velodrome-vevelo",
         "protocol": null,
         "mechanism": null,
-        "maturityStage": "verified",
+        "maturityStage": "shadow",
         "status": null,
-        "longitudinalEvidence": null,
+        "longitudinalEvidence": {
+          "validatedObservationCount": 10,
+          "validatedSnapshotCount": 1,
+          "requiredValidatedSnapshotCount": 2,
+          "validatedSnapshotKeys": [
+            "2026-W35"
+          ]
+        },
         "blockers": [
-          "pool-volume-context"
+          "distinct-snapshot-depth",
+          "end-to-end-vote-gauge-pool-fee-accounting"
         ],
         "nextUnlock": null,
         "authority": {
@@ -1921,24 +1921,24 @@
         {
           "key": "security",
           "file": "security/security-intelligence.json",
-          "sha256": "69d7ac5ff050a1c4c04fe3c44432c7453fe3e4b8fffbbd117627e27aadf01c99",
-          "generatedAt": "2026-08-30T13:01:24.834Z",
+          "sha256": "ba20fe24a67f6ce835ea1478e30ca4df0a33bd24042d1aea16ee2986ccfae3ca",
+          "generatedAt": "2026-08-30T13:50:05.820Z",
           "exactByteMatch": true,
           "packagedRawContent": false
         },
         {
           "key": "securityMemory",
           "file": "security/security-memory.json",
-          "sha256": "3e900657232cbed0e8a7f45da913164fb4d8a4a1ff390f25925978a380001f18",
-          "generatedAt": "2026-08-30T13:01:24.834Z",
+          "sha256": "af937d900a179eb560fe2d8b3ea08047641133816d51ccd79d1def87138afcd4",
+          "generatedAt": "2026-08-30T13:50:05.820Z",
           "exactByteMatch": true,
           "packagedRawContent": false
         },
         {
           "key": "explanatory",
           "file": "intelligence/explanatory/explanatory-context.json",
-          "sha256": "dc30587a74a8453885fc12f6701148b7f3f9ec675dad76480bd338bd0c5895aa",
-          "generatedAt": "2026-08-30T04:02:06.170Z",
+          "sha256": "fb099ab4603e09b9afb0ca7e88bb999c354278d13feea70ab94cbbbb95033280",
+          "generatedAt": "2026-08-30T13:49:37.534Z",
           "exactByteMatch": true,
           "packagedRawContent": false
         }
@@ -1992,9 +1992,9 @@
     "secretsIncludedByDesign": false
   },
   "bridge": {
-    "semanticKey": "e7ce11453b9b3c810648b7333e8bedf334cefbcf3571b332020212ce1754a5ae",
-    "instanceKey": "046812f04363b0629b1039c1df042e4b665d174f79798b5104de41062fad886b",
-    "outputSnapshotHash": "1cff0caa26609795ab369bf7766411ae75b7c6ec6857b24517de51cb5b982ca5",
+    "semanticKey": "9227fd1489f5fcf4cd12bef2339991adf071119ee9316763f8336db44bfa40a1",
+    "instanceKey": "44bebac6f94ac09f7e2872c0073b4cb1c83ccc2914ff9e968711c11bcd40a01e",
+    "outputSnapshotHash": "5acd98b135d73f10c35d6f52090d15e222fa49d836e00d389f96e3956c41ef84",
     "manualTrigger": "When the owner asks ChatGPT to check/interpret the Brain, read this live Bridge first and keep conclusions inside its evidence/action boundaries."
   }
 }
