@@ -15,6 +15,7 @@ The strategic analogy is a property-native combination of a discovery portal, ma
 ## Current routes
 
 - `/realty/` — two-world portal and market board
+- `/realty/discover/` — Universal Discovery across currently indexed physical and digital records + browser-local saved searches
 - `/realty/markets/` — normalized Market Directory
 - `/realty/market/?id=...` — market/provider profile with ownership, entry, income, return, liquidity, coverage and source lineage
 - `/realty/atlas/` — physical geographic discovery using explicit city/market precision
@@ -34,7 +35,7 @@ The strategic analogy is a property-native combination of a discovery portal, ma
 
 - `/realty/data/market-snapshot.json` — current source-linked property/parcel observations + Market Directory
 - `/realty/data/market-profiles.json` — market-level ownership, minimum-entry, income, return, liquidity, geography and coverage semantics
-- `/realty/data/platform-economics.json` — platform-level investor access/income semantics used by Income Layer
+- `/realty/data/platform-economics.json` — platform-level investor access/income semantics used by Income Layer and Discovery
 - `/realty/data/source-governance.json` — conservative source access/media/commercialization policy
 - `/realty/data/property-media.json` — exact third-party property-media provenance and display policy
 - `/realty/data/atlas.json` — physical geographic anchors and precision contract
@@ -81,12 +82,25 @@ Hard rules:
 12. A freshness label does not imply a collector/scheduler exists.
 13. Two independent observations can prove a change but do not establish a trend.
 14. A field appearing/disappearing between snapshots is a coverage change, not automatically an economic market move.
-15. Aggregation is not homogenization: legal rights, eligibility, liquidity and income mechanics differ across issuers/worlds.
-16. Each changing observation keeps source URL/source label/source-check date.
-17. Exact third-party media is a separate display-rights layer.
-18. A public webpage is not blanket permission for scaled automated extraction or commercial reuse.
+15. Universal search can share filters but does not create a universal numeric score, price or APR ranking across unlike assets.
+16. Aggregation is not homogenization: legal rights, eligibility, liquidity and income mechanics differ across issuers/worlds.
+17. Each changing observation keeps source URL/source label/source-check date.
+18. Exact third-party media is a separate display-rights layer.
+19. A public webpage is not blanket permission for scaled automated extraction or commercial reuse.
 
 A beautiful explicit absence is preferred to invented completeness.
+
+## Universal Discovery / saved search
+
+Universal Discovery joins the current physical and digital index at read time.
+
+- common filters: text, world, market/provider, property type, return/income signal and observation freshness;
+- no cross-world numeric ranking by synthetic price, yield or score;
+- exact asset cards preserve source-specific return/market semantics;
+- URL query parameters make a filtered discovery view shareable/reloadable;
+- saved searches use `localStorage` key `theholding-realty-saved-discovery-v1` and remain in the current browser only;
+- saved search is **not** an alert, subscription or monitoring schedule;
+- future alerts can use the same saved-query contract only after a real recurring ingestion/backend need is proven.
 
 ## Observation freshness
 
@@ -145,7 +159,7 @@ Realty remains intentionally lightweight relative to product depth:
 
 - static HTML/CSS/JS
 - compact JSON contracts
-- local browser state for watchlist/shortlist
+- local browser state for watchlist/shortlist/saved discovery
 - no dedicated Realty backend
 - no Realty-specific collector/workflow fan-out
 
@@ -170,9 +184,9 @@ Added only when justified by live gaps:
 - richer provider/market pages and fees/jurisdiction/ownership details
 - richer world-specific spatial adapters as admissible coordinates become available
 - deeper history/charts after enough independent observations accumulate
-- saved search and alerts when real monitoring infrastructure is justified
+- alerts only when real recurring ingestion/notification infrastructure is justified
 - field-specific source freshness/collection cadence once automated ingestion is justified
-- Ask Realty / property intelligence on top of canonical history
+- Ask Realty / property intelligence on top of canonical history and discovery
 - partner/referral routing with explicit commercial disclosure
 - eventual portfolio/company integration
 - Realty Index / Opportunity Radar only after comparable methodology exists
