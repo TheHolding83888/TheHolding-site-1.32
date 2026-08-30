@@ -3,7 +3,6 @@
  const q=s=>document.querySelector(s);
  const themeKey='theholding-realty-theme';
  const state={snapshot:null};
- const menuCss=document.createElement('link');menuCss.rel='stylesheet';menuCss.href='/realty/assets/realty-shell-v15-menu.css';document.head.append(menuCss);
  const fmtNumber=n=>Number(n).toLocaleString(undefined,{maximumFractionDigits:0});
  const money=(n,c='$')=>n==null?'Not disclosed':c+Number(n).toLocaleString(undefined,{maximumFractionDigits:2});
  const returnLabel=x=>{
