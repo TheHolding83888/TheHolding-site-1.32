@@ -1,0 +1,1 @@
+High-resolution binary demo assets are stored in this branch and referenced by realty-shell-v23.css.
