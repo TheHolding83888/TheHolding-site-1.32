@@ -3,6 +3,7 @@
  const q=s=>document.querySelector(s);
  const themeKey='theholding-realty-theme';
  const state={snapshot:null};
+ const menuCss=document.createElement('link');menuCss.rel='stylesheet';menuCss.href='/realty/assets/realty-shell-v15-menu.css';document.head.append(menuCss);
  const fmtNumber=n=>Number(n).toLocaleString(undefined,{maximumFractionDigits:0});
  const money=(n,c='$')=>n==null?'Not disclosed':c+Number(n).toLocaleString(undefined,{maximumFractionDigits:2});
  const returnLabel=x=>{
@@ -20,7 +21,14 @@
  function setText(sel,value){const el=q(sel);if(el)el.textContent=value}
  function themeIcon(){const b=q('[data-theme-toggle]');if(!b)return;const dark=document.documentElement.dataset.theme==='dark';b.textContent=dark?'☀':'◐';b.setAttribute('aria-label',dark?'Switch to light mode':'Switch to dark mode');b.setAttribute('title',dark?'Light mode':'Dark mode')}
  function toggleTheme(){const root=document.documentElement;root.dataset.theme=root.dataset.theme==='dark'?'light':'dark';try{localStorage.setItem(themeKey,root.dataset.theme)}catch(e){}themeIcon()}
- document.addEventListener('click',e=>{if(e.target.closest('[data-theme-toggle]')){e.preventDefault();toggleTheme()}});
+ function toggleMenu(force){const menu=q('[data-v15-mobile-menu]');if(!menu)return;const next=typeof force==='boolean'?force:!menu.classList.contains('open');menu.classList.toggle('open',next);menu.setAttribute('aria-hidden',String(!next));const button=q('[data-v15-menu]');if(button)button.setAttribute('aria-expanded',String(next))}
+ document.addEventListener('click',e=>{
+   if(e.target.closest('[data-theme-toggle]')){e.preventDefault();toggleTheme();return}
+   if(e.target.closest('[data-v15-menu]')){e.preventDefault();toggleMenu();return}
+   if(e.target.closest('[data-v15-mobile-menu] a')){toggleMenu(false);return}
+   if(q('[data-v15-mobile-menu].open')&&!e.target.closest('[data-v15-mobile-menu]'))toggleMenu(false)
+ });
+ document.addEventListener('keydown',e=>{if(e.key==='Escape')toggleMenu(false)});
 
  function makeCard(x,kind){
    const a=document.createElement('a');
