@@ -69,6 +69,15 @@ async function post(url,payload,fetchImpl){
   return byId;
 }
 
+async function postOne(url,payload,fetchImpl){
+  const response=await fetchImpl(url,{method:'POST',headers:{'content-type':'application/json',accept:'application/json'},body:JSON.stringify(payload),signal:AbortSignal.timeout(RPC_TIMEOUT_MS)});
+  if(!response.ok)throw new Error(`RPC HTTP ${response.status}`);
+  const body=await response.json();if(Array.isArray(body)||!body||typeof body!=='object')throw new Error('RPC single response is invalid');
+  if(body.error)throw new Error(`RPC ${payload.method} error: ${body.error?.message||'unknown error'}`);
+  if(body.result===undefined||body.result===null)throw new Error(`RPC ${payload.method} result missing`);
+  return body.result;
+}
+
 function unknown(source,reason,attempts=[]){return {
   version:FRAX_FRXETH_V2_LENDING_FLOW_VERSION,status:reason,measurementClass:'UNKNOWN',observedAt:null,network:'ethereum',chainId:1,blockNumber:null,blockTag:null,blockHash:null,
   lendingPool:{address:source?.operations?.lendingPool||null,vPoolWithdrawalFee:null,maxWithdrawalFee:null},interval:null,cumulativeSinceTracking:null,recentEvents:[],rpc:{endpointId:null,failoverAttempts:attempts},
@@ -145,13 +154,13 @@ export async function collectFraxFrxEthV2LendingFlowCurrentState({registry=null,
       const hash=id=>String(signatureRows.get(id).result||'').toLowerCase();for(const id of [10,11,20,21,22,23])if(!/^0x[0-9a-f]{64}$/.test(hash(id)))throw new Error(`web3_sha3 signature ${id} invalid`);
       const selectors={withdrawalFee:hash(10).slice(0,10),maxWithdrawalFee:hash(11).slice(0,10)};
       const topics={addInterest:hash(20),withdrawalRegistered:hash(21),borrow:hash(22),repay:hash(23)};
-      const stateAndLogs=await post(endpoint.url,[
+      const stateRows=await post(endpoint.url,[
         {jsonrpc:'2.0',id:30,method:'eth_call',params:[{to:lendingPool,data:selectors.withdrawalFee},current.blockTag]},
-        {jsonrpc:'2.0',id:31,method:'eth_call',params:[{to:lendingPool,data:selectors.maxWithdrawalFee},current.blockTag]},
-        {jsonrpc:'2.0',id:40,method:'eth_getLogs',params:[{address:lendingPool,fromBlock:hexQuantity(previousBlock+1n),toBlock:current.blockTag,topics:[[topics.addInterest,topics.withdrawalRegistered,topics.borrow,topics.repay]]}]}
+        {jsonrpc:'2.0',id:31,method:'eth_call',params:[{to:lendingPool,data:selectors.maxWithdrawalFee},current.blockTag]}
       ],fetchImpl);
-      const withdrawalFee=decodeWord(stateAndLogs.get(30).result),maxWithdrawalFee=decodeWord(stateAndLogs.get(31).result);if(maxWithdrawalFee!==3000n||withdrawalFee>maxWithdrawalFee)throw new Error('ValidatorPool withdrawal fee source/live bound drift');
-      const logs=stateAndLogs.get(40).result;if(!Array.isArray(logs)||logs.length>MAX_EVENTS)throw new Error(`Lending-flow event window exceeds cap ${MAX_EVENTS}`);
+      const logs=await postOne(endpoint.url,{jsonrpc:'2.0',id:40,method:'eth_getLogs',params:[{address:lendingPool,fromBlock:hexQuantity(previousBlock+1n),toBlock:current.blockTag,topics:[[topics.addInterest,topics.withdrawalRegistered,topics.borrow,topics.repay]]}]},fetchImpl);
+      const withdrawalFee=decodeWord(stateRows.get(30).result),maxWithdrawalFee=decodeWord(stateRows.get(31).result);if(maxWithdrawalFee!==3000n||withdrawalFee>maxWithdrawalFee)throw new Error('ValidatorPool withdrawal fee source/live bound drift');
+      if(!Array.isArray(logs)||logs.length>MAX_EVENTS)throw new Error(`Lending-flow event window exceeds cap ${MAX_EVENTS}`);
       const events=logs.map(log=>{if(normalize(log?.address)!==normalize(lendingPool))throw new Error('Lending-flow log address drift');const b=quantity(log.blockNumber);if(b<=previousBlock||b>currentBlock)throw new Error('Lending-flow log escaped adjacent checkpoint window');return decodeLog(log,topics);}).sort((a,b)=>a.blockNumber-b.blockNumber||a.logIndex-b.logIndex);
       const summary=summarize(events),eventInterest=BigInt(summary.interestEarnedRaw),interestCounterParity=eventInterest===expectedInterestDelta;if(!interestCounterParity)throw new Error(`AddInterest event/counter parity failed: events=${eventInterest} counterDelta=${expectedInterestDelta}`);
       const interval={fromBlockExclusive:Number(previousBlock),fromBlockHash:previous.blockHash,toBlockNumber:Number(currentBlock),toBlockHash:current.blockHash,eventQueryComplete:true,interestCounterDeltaRaw:expectedInterestDelta.toString(),interestCounterDeltaEth:round(units(expectedInterestDelta)),interestEventCounterParity:true,summary};
@@ -161,7 +170,7 @@ export async function collectFraxFrxEthV2LendingFlowCurrentState({registry=null,
         sourceBinding:{officialSourceRepo:source.sources.officialSourceRepo,officialSourceCommit:source.sources.officialSourceCommit,lendingPoolCoreSource:'src/contracts/lending-pool/LendingPoolCore.sol',lendingPoolSource:'src/contracts/lending-pool/LendingPool.sol',validatorPoolSource:'src/contracts/ValidatorPool.sol',etherRouterSource:'src/contracts/ether-router/EtherRouter.sol'},
         lendingPool:{address:lendingPool,vPoolWithdrawalFee:{raw:withdrawalFee.toString(),pct:round(Number(withdrawalFee)/10_000,6),precisionRaw:'1000000'},maxWithdrawalFee:{raw:maxWithdrawalFee.toString(),pct:0.3}},
         interval,cumulativeSinceTracking:cumulative(previousMeasurement,interval,Number(previousBlock)),recentEvents,
-        rpc:{endpointId:endpoint.id,failoverAttempts:attempts,reusedCurrentLendingCheckpoint:true,reusedPreviousLendingCheckpoint:true},
+        rpc:{endpointId:endpoint.id,failoverAttempts:attempts,reusedCurrentLendingCheckpoint:true,reusedPreviousLendingCheckpoint:true,ethGetLogsTransport:'single-request-not-batched'},
         epistemic:{sourceType:'onchain-public-rpc-adjacent-checkpoint-event-accounting',lendingInterestAccrual:'MEASURED-AddInterest-event-plus-interestAccrued-counter-parity',interestCashRealization:'UNKNOWN-accrual-is-not-cash-receipt',withdrawalFeeFlow:'MEASURED-WithdrawalRegistered-event-amount-plus-SOURCE-PINNED-ValidatorPool-to-EtherRouter-route',withdrawalFeeEconomicRole:'ATTRIBUTED-source-comment-cost-recovery-for-slippage-LP-fees-and-beacon-gas-not-profit',reportedAddInterestFeeFields:'MEASURED-raw-event-fields-NOT-PROMOTED-pinned-_addInterest-does-not-assign-fee-returns',protocolRevenue:'UNKNOWN-interest-accrual-and-cost-recovery-fees-are-not-sufficient-for-net-protocol-revenue',validatorPerformance:'UNKNOWN-not-measured-by-this-atom',stakingRewards:'UNKNOWN-not-measured-by-this-atom',companyCashFlow:'UNKNOWN-not-measured-by-this-atom',unknownIsZero:false,causalClaimAuthority:'none',executionAuthority:'none'}
       };
     }catch(error){attempts.push({endpointId:endpoint?.id||null,error:String(error instanceof Error?error.message:error).slice(0,240)});}
