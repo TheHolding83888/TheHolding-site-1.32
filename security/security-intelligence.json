@@ -1,7 +1,7 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-30T00:39:49.543Z",
+  "generatedAt": "2026-08-30T02:49:00.340Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
@@ -13,7 +13,7 @@
   },
   "source": {
     "filesScanned": 793,
-    "bytesScanned": 19745849,
+    "bytesScanned": 19746451,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Wed, 26 Aug 2026 13:28:52 GMT",
+        "lastModified": "Tue, 25 Aug 2026 21:43:14 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -56,6 +56,22 @@
   },
   "whatChanged": {
     "newFindings": [
+      {
+        "id": "07ab4e675919f4d0e7c5af721f57001f405d583c7bd6259a9b4ae7e99bbb9d3b",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/update-economic-graph.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/update-economic-graph.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "fd0efc6d74bb8e79dba4f24bbbacf733eba83e3aaf6ec4044212ca5ddd13ef84",
+          "currentSha256": "a8f6d1ef3779347f3a73af9f95e8976bcd0ed2619b9f3802b2c3c129b23b8fed"
+        }
+      }
+    ],
+    "resolvedFindings": [
       {
         "id": "251e7da0a76db941eed25c232bde774308256f4ef958cb26e92c9c0891586a13",
         "severity": "medium",
@@ -70,8 +86,7 @@
           "currentSha256": "fd0efc6d74bb8e79dba4f24bbbacf733eba83e3aaf6ec4044212ca5ddd13ef84"
         }
       }
-    ],
-    "resolvedFindings": []
+    ]
   },
   "currentFindings": [
     {
@@ -97,7 +112,7 @@
       "evidence": null
     },
     {
-      "id": "251e7da0a76db941eed25c232bde774308256f4ef958cb26e92c9c0891586a13",
+      "id": "07ab4e675919f4d0e7c5af721f57001f405d583c7bd6259a9b4ae7e99bbb9d3b",
       "severity": "medium",
       "category": "critical-surface-change",
       "file": ".github/workflows/update-economic-graph.yml",
@@ -106,8 +121,8 @@
       "summary": "Security-sensitive surface changed: .github/workflows/update-economic-graph.yml.",
       "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
       "evidence": {
-        "previousSha256": "4f61a17e9034c68b4f8e29c27bf19a3bc1a575fad47ff7ade533dee9cd9b6017",
-        "currentSha256": "fd0efc6d74bb8e79dba4f24bbbacf733eba83e3aaf6ec4044212ca5ddd13ef84"
+        "previousSha256": "fd0efc6d74bb8e79dba4f24bbbacf733eba83e3aaf6ec4044212ca5ddd13ef84",
+        "currentSha256": "a8f6d1ef3779347f3a73af9f95e8976bcd0ed2619b9f3802b2c3c129b23b8fed"
       }
     },
     {
@@ -415,12 +430,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "1b52870e8614841b7bfea7f17d3dca1a15de8d1fb29d848dadbc8620b14fa294",
+    "snapshotHash": "c9e3e6c569e0592c6488035e4c1579bcf7602a9e5b1aa5e69edd58523f60b834",
     "securityVault": {
-      "runCount": 676,
+      "runCount": 677,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/08/2026-08-30T00-39-49-543Z-1b52870e86.json",
-      "latestRecordHash": "077f3d2faeda997390faa0e125dd393939cbdee6e09baa19daed13eeea7db9da",
+      "latestRecordPath": "security/security-vault/2026/08/2026-08-30T02-49-00-340Z-c9e3e6c569.json",
+      "latestRecordHash": "02ebbf3d3c65dfaf4e52e6837e8b588e128d0391be5adf2d2fa115c9527f2fce",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
