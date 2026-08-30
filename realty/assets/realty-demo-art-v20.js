@@ -1,6 +1,16 @@
-/* Realty v2.1 premium presentation layer.
+/* Realty v2.3 premium presentation layer.
    Stable v1.6 remains the only market/data controller. */
 (() => {
+  /* Load the additive owner-approved banner placement layer without touching data/runtime semantics. */
+  if (!document.querySelector('link[data-realty-v23]')) {
+    const style = document.createElement('link');
+    style.rel = 'stylesheet';
+    style.href = '/realty/assets/realty-shell-v23.css?v=20260830-1824';
+    style.dataset.realtyV23 = 'true';
+    document.head.appendChild(style);
+  }
+  if (document.body) document.body.classList.add('landing-v23');
+
   const brandMark = document.querySelector('.v20-brandmark');
   if (brandMark) brandMark.remove();
 
@@ -34,6 +44,7 @@
   };
 
   const run = () => {
+    document.body?.classList.add('landing-v23');
     hydrateLogos('.v16-board.physical .v16-platforms', physical);
     hydrateLogos('.v16-board.digital .v16-platforms', digital);
   };
