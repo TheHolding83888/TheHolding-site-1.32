@@ -1,0 +1,35 @@
+{
+  "version": "1.0.0",
+  "generatedAt": "2026-08-30T08:18:00Z",
+  "methodology": "Freshness describes observation age only. It is not a confidence score, accuracy guarantee, source-quality rating or automatic collection schedule.",
+  "clock": "UTC calendar days",
+  "thresholds": {
+    "currentMaxDays": 7,
+    "agingMaxDays": 30
+  },
+  "states": {
+    "current": {
+      "label": "Current",
+      "meaning": "Source observation checked 0–7 UTC calendar days ago."
+    },
+    "aging": {
+      "label": "Aging",
+      "meaning": "Source observation checked 8–30 UTC calendar days ago; review priority is increasing."
+    },
+    "stale": {
+      "label": "Stale",
+      "meaning": "Source observation checked more than 30 UTC calendar days ago; re-verification is recommended before relying on changing market fields."
+    },
+    "unknown": {
+      "label": "Unknown",
+      "meaning": "No valid sourceChecked date is available. Missing age never becomes zero or current."
+    }
+  },
+  "hardRules": [
+    "Fresh does not mean guaranteed correct.",
+    "Stale does not mean false.",
+    "Freshness does not replace source provenance.",
+    "A freshness state does not imply a background collector exists.",
+    "Different fields may eventually require different collection cadences; this v1.0 policy evaluates the admitted observation date only."
+  ]
+}
