@@ -1,6 +1,30 @@
-/* Realty v2.1 premium presentation layer.
+/* Realty v2.2 premium presentation layer.
    Stable v1.6 remains the only market/data controller. */
 (() => {
+  /* Load the additive v2.2 presentation contract without touching market semantics. */
+  document.body.classList.add('landing-v22');
+  if (!document.querySelector('link[data-realty-v22]')) {
+    const css = document.createElement('link');
+    css.rel = 'stylesheet';
+    css.href = '/realty/assets/realty-shell-v22.css';
+    css.dataset.realtyV22 = 'true';
+    document.head.appendChild(css);
+  }
+
+  [
+    '/realty/assets/demo/v22/hero-demo-exact.avif',
+    '/realty/assets/demo/v22/physical-demo-exact.avif',
+    '/realty/assets/demo/v22/digital-demo-exact.avif'
+  ].forEach((href) => {
+    if (document.querySelector(`link[rel="preload"][href="${href}"]`)) return;
+    const preload = document.createElement('link');
+    preload.rel = 'preload';
+    preload.as = 'image';
+    preload.type = 'image/avif';
+    preload.href = href;
+    document.head.appendChild(preload);
+  });
+
   const brandMark = document.querySelector('.v20-brandmark');
   if (brandMark) brandMark.remove();
 
