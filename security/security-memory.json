@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-08-30T06:33:45.565Z",
+  "generatedAt": "2026-08-30T06:56:30.550Z",
   "status": "watch",
-  "snapshotHash": "118c0282226609a4dc7b090f3cbb8992a8cc011b155f9419b53e2d059828c9d4",
+  "snapshotHash": "306ff4f4a728f7566b25576a744589c2e3b51e33c8ec249f4f331c24c77bc0c0",
   "repository": {
-    "filesScanned": 822,
-    "bytesScanned": 20068527,
+    "filesScanned": 824,
+    "bytesScanned": 20079466,
     "criticalHashes": {
       ".github/workflows/admit-company-010-public.yml": "5feffbf58388675952487c3462d2f9149eecec6f3795483087010dd0d3b19cfb",
       ".github/workflows/ask-experience.yml": "deb9c4e1025390563f8a866f6ddf1c7870e748cbd6aba13fdbd6da2d38e983d4",
@@ -329,6 +329,16 @@
         "rationale": null
       },
       {
+        "file": "realty/sources/index.html",
+        "status": "unreviewed",
+        "classification": null,
+        "sinkCount": 1,
+        "expectedCount": null,
+        "currentGitBlobSha1": "1f9abe67a4ef1ef8f01cf18de0169f4f6b2ff63d",
+        "reviewedGitBlobSha1": null,
+        "rationale": null
+      },
+      {
         "file": "yield-reports/index.html",
         "status": "unreviewed",
         "classification": "trusted-canonical-reporting-data",
@@ -370,7 +380,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Wed, 26 Aug 2026 05:19:45 GMT",
+        "lastModified": "Wed, 26 Aug 2026 13:28:52 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -379,7 +389,7 @@
     "summary": {
       "reviewedDomFileCount": 4,
       "reviewedDomSinkCount": 21,
-      "unreviewedDomFileCount": 7,
+      "unreviewedDomFileCount": 8,
       "trustedExternalScriptCount": 1,
       "trustedExternalScriptUsageCount": 7
     }
@@ -507,6 +517,17 @@
       "category": "dom-innerhtml",
       "file": "onboarding/company-010-public-admission.mjs",
       "line": 67,
+      "entity": null,
+      "summary": "Dynamic innerHTML assignment detected.",
+      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+      "evidence": null
+    },
+    {
+      "id": "4da58a6a644e275328266a001731c1811e42430eaf2d5fc30280fe1b34666b8a",
+      "severity": "medium",
+      "category": "dom-innerhtml",
+      "file": "realty/sources/index.html",
+      "line": 2,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
@@ -702,10 +723,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 688,
+    "runCount": 689,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/08/2026-08-30T06-33-45-565Z-118c028222.json",
-    "latestRecordHash": "107171f4e30f3ece8da57fb28ba138d8ec34cc0e373a2659202b0b6072d39d51",
+    "latestRecordPath": "security/security-vault/2026/08/2026-08-30T06-56-30-550Z-306ff4f4a7.json",
+    "latestRecordHash": "88f91582c02c236914b6bc13c1a25575a9b117e713b8b597f38d4a906f1dff56",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
