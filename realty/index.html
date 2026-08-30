@@ -1,10 +1,141 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5"><meta name="theme-color" content="#090b11"><title>The Holding Realty — Physical & Digital Property Intelligence</title><meta name="description" content="A source-backed discovery and intelligence portal for tokenized real estate and metaverse land."><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"><link rel="stylesheet" href="/realty/assets/realty-v2.css"><script>try{document.documentElement.dataset.theme=localStorage.getItem('theholding-realty-theme')||'dark'}catch(e){}</script></head><body><nav class="nav"><div class="navin"><a class="brand" href="/realty/">THE HOLDING <span style="color:var(--gold);font-size:.55em;letter-spacing:.08em">REALTY</span></a><div class="navlinks"><a href="/realty/" class="active">Overview</a><a href="/realty/markets/">Markets</a><a href="/realty/physical/">Physical</a><a href="/realty/income/">Income</a><a href="/realty/digital/">Digital</a><a href="/realty/compare/">Compare</a><a href="/realty/watchlist/">Watchlist</a><a href="/">The Holding</a></div><div class="tools"><a class="pill" href="/realty/discover/">Discover</a><button class="theme" data-theme-toggle aria-label="Toggle theme">◐</button></div></div></nav>
-<main class="wrap"><section class="hero"><div class="eyebrow">Property intelligence · physical + digital</div><h1>Two worlds.<br>One property terminal.</h1><div class="lead">Tokenized real-world property and metaverse land, normalized into one premium discovery layer.</div><p class="sub">The Holding Realty does not recreate every marketplace. It sits above fragmented property rails, preserving source provenance while making different markets easier to discover, compare, save and remember through time.</p><div class="portal-actions"><a class="pill" href="/realty/discover/">Search all property</a><a class="pill" href="/realty/markets/">Explore markets</a><a class="pill" href="/realty/income/">Explore income</a><a class="pill" href="/realty/data-health/">Data Health</a><a class="pill" href="/realty/history/">History</a><a class="pill" href="/realty/watchlist/">Watchlist</a></div>
-<div class="worlds"><a class="world physical" href="/realty/physical/"><div class="art city"></div><div class="worldcontent"><small>Physical World</small><h2>Tokenized Real Estate</h2><p>Income-producing property, fractional ownership, development projects and whole-property RWA rails.</p><div class="chips"><span class="chip">Lofty</span><span class="chip">RealT</span><span class="chip">Reental</span><span class="chip">Blocksquare</span><span class="chip">Propy</span></div></div></a><a class="world digital" href="/realty/digital/"><div class="art gridart"></div><div class="worldcontent"><small>Digital World</small><h2>Metaverse Real Estate</h2><p>LAND, estates and spatial property across the major virtual worlds and NFT markets.</p><div class="chips"><span class="chip">Decentraland</span><span class="chip">The Sandbox</span><span class="chip">Otherside</span><span class="chip">Somnium</span><span class="chip">Voxels</span></div></div></a></div></section>
-<section class="metrics" id="metrics"><div class="metric"><span>Tracked markets</span><b>—</b></div><div class="metric"><span>Source-backed observations</span><b>—</b></div><div class="metric"><span>Income / return records</span><b>—</b></div><div class="metric"><span>Data rule</span><b style="font-size:23px">Truth first</b></div></section>
-<section class="section"><div class="sectionhead"><div><div class="eyebrow">Market board</div><h2>Source snapshots</h2></div><div class="sectioncopy">The board is populated from the same machine-readable Realty snapshot used by the deeper market pages. Observation age is evaluated in <a href="/realty/data-health/" style="color:var(--gold)">Data Health</a>; independent saved observations live in <a href="/realty/history/" style="color:var(--gold)">History →</a>.</div></div><div class="cards" id="featured"></div></section>
-<section class="section"><div class="sectionhead"><div><div class="eyebrow">Portal layers</div><h2>From search to property memory.</h2></div><div class="sectioncopy">The durable moat grows above fragmented markets: universal discovery, investor income context, comparison, saved assets and historical observations.</div></div><div class="quicklinks"><a class="quicklink" href="/realty/discover/"><div class="num">01</div><h3>Universal Discovery</h3><p>Search the indexed Physical and Digital worlds from one surface while preserving each market's own economic semantics.</p></a><a class="quicklink" href="/realty/income/"><div class="num">02</div><h3>Income Layer</h3><p>See minimum entry, cash-flow state, exact return terminology and distribution cadence without turning every percentage into “APR”.</p></a><a class="quicklink" href="/realty/history/"><div class="num">03</div><h3>Property Memory</h3><p>Compare independent source observations through time without turning two data points into a synthetic trend.</p></a><a class="quicklink" href="/realty/compare/"><div class="num">04</div><h3>Reality Lens</h3><p>Compare the meaning of price, yield, liquidity and ownership across physical and digital property without false equivalence.</p></a></div></section>
-<section class="section"><div class="comparegrid"><div class="comparepanel"><div class="status-badge live">Physical World</div><h2>Search real property rails.</h2><p class="sub">Browse fractional rental property, tokenized developments and transaction rails while preserving jurisdiction, ownership and return semantics.</p><div class="portal-actions"><a class="pill" href="/realty/physical/">Enter Physical Market →</a><a class="pill" href="/realty/atlas/">Property Atlas →</a><a class="pill" href="/realty/income/">Income Layer →</a></div></div><div class="comparepanel"><div class="status-badge live">Digital World</div><h2>Search virtual land.</h2><p class="sub">Browse native digital land with exact parcel asks, floors, offers, sale history, coordinates and marketplace provenance where available.</p><div class="portal-actions"><a class="pill" href="/realty/digital/">Enter Digital Market →</a><a class="pill" href="/realty/worlds/">World Atlas →</a></div></div></div></section>
-</main><footer class="footer"><div class="wrap footerin"><div><div class="footerbrand">THE HOLDING</div><div>Realty · source-backed property intelligence across physical and digital markets.</div></div><div>Discovery only · source execution · no custody · no fabricated market data</div></div></footer><script src="/realty/assets/realty.js"></script><script src="/realty/assets/realty-v2.js"></script><script>
-fetch('/realty/data/market-snapshot.json').then(r=>r.json()).then(d=>{const metrics=document.getElementById('metrics');metrics.children[0].querySelector('b').textContent=d.marketDirectory.filter(x=>x.status==='Tracked').length;metrics.children[1].querySelector('b').textContent=d.realWorld.length+d.digitalWorld.length;metrics.children[2].querySelector('b').textContent=d.realWorld.filter(x=>x.avgYieldPct!=null||x.estimatedAnnualReturnPct!=null||(x.returnObservation&&x.returnObservation.valuePct!=null)).length;const g=document.getElementById('featured'),ids=['lofty-fallwood','blocksquare-sky-mansion-palm-jumeirah','sandbox-happyland','otherside-18123'],all=[...d.realWorld.map(x=>({...x,kind:'physical'})),...d.digitalWorld.map(x=>({...x,kind:'digital'}))],txt=(el,v)=>{el.textContent=v;return el},div=c=>{const e=document.createElement('div');e.className=c;return e};function datum(l,v){const z=div('datum');z.append(txt(document.createElement('span'),l),txt(document.createElement('b'),v));return z}function returnLabel(x){if(x.avgYieldPct!=null)return x.avgYieldPct+'% Avg. Rental Yield';if(x.estimatedAnnualReturnPct!=null)return x.estimatedAnnualReturnPct+'% Estimated Annual Return';if(x.returnObservation&&x.returnObservation.valuePct!=null)return x.returnObservation.valuePct+'% '+x.returnObservation.label;return'Not disclosed'}ids.map(id=>all.find(x=>x.id===id)).filter(Boolean).forEach(x=>{const a=document.createElement('a');a.className='card'+(x.kind==='digital'?' virtual':'');a.href=x.kind==='digital'?'/realty/parcel/?id='+encodeURIComponent(x.id):'/realty/property/?id='+encodeURIComponent(x.id);a.append(div('visual'));const body=div('cardbody'),head=div('cardhead'),h=document.createElement('h3');h.textContent=x.name;head.append(h,txt(div('mini-status'),x.marketSurface||x.platform||x.world));body.append(head,txt(div('meta'),x.kind==='physical'?(x.location+' · '+x.type):(x.world+' · '+x.type)));const dg=div('datagrid');if(x.kind==='physical'){const price=x.sharePriceUsd!=null?'$'+x.sharePriceUsd+'/share':x.projectValueEur!=null?'€'+x.projectValueEur.toLocaleString():'Not disclosed';dg.append(datum('Minimum / value',price),datum('Return signal',returnLabel(x)),datum('State',x.incomeState||x.state),datum('Valuation',x.valuationState||'Not disclosed'))}else{dg.append(datum('Ask / offer',x.askNative||x.topOfferNative||(x.bestOfferUsd!=null?'$'+x.bestOfferUsd:'Not disclosed')),datum('Floor',x.collectionFloorUsd!=null?'$'+x.collectionFloorUsd:(x.collectionFloorNative||'Not disclosed')),datum('Location',x.coordinates||x.rarity||'Not disclosed'),datum('Income','No intrinsic income tracked'))}body.append(dg);const src=div('source');src.append(txt(document.createElement('span'),x.sourceLabel+' · '+x.sourceChecked),txt(document.createElement('span'),'Open record →'));body.append(src);a.append(body);g.append(a)})}).catch(()=>document.getElementById('featured').textContent='Market snapshot temporarily unavailable.');
-</script></body></html>
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<meta name="theme-color" content="#05070a">
+<title>The Holding Realty — Physical & Digital Property Intelligence</title>
+<meta name="description" content="A source-backed property discovery and intelligence terminal for tokenized real estate and metaverse land.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/realty/assets/realty-v2.css">
+<link rel="stylesheet" href="/realty/assets/realty-shell-v15.css">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('theholding-realty-theme')||'dark'}catch(e){document.documentElement.dataset.theme='dark'}</script>
+</head>
+<body class="landing-v15">
+<nav class="nav" aria-label="Realty navigation">
+  <div class="navin">
+    <a class="brand" href="/">THE HOLDING <span style="color:var(--gold);font-size:.54em;letter-spacing:.1em">REALTY</span></a>
+    <div class="navlinks">
+      <a href="/realty/" class="active">Overview</a>
+      <a href="/realty/discover/">Discover</a>
+      <a href="/realty/markets/">Markets</a>
+      <a href="/realty/atlas/">Atlas</a>
+      <a href="/realty/physical/">Physical</a>
+      <a href="/realty/income/">Income</a>
+      <a href="/realty/digital/">Digital</a>
+      <a href="/realty/compare/">Compare</a>
+      <a href="/realty/watchlist/">Watchlist</a>
+    </div>
+    <div class="tools">
+      <a class="pill v15-desktop-discover" href="/realty/discover/">Discover</a>
+      <button class="theme" data-theme-toggle aria-label="Toggle theme">◐</button>
+      <button class="v15-menu-btn" data-v15-menu aria-label="Open Realty menu"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</nav>
+<div class="v15-mobile-menu" data-v15-mobile-menu aria-hidden="true">
+  <a href="/realty/">Overview</a><a href="/realty/discover/">Discover</a><a href="/realty/markets/">Markets</a><a href="/realty/atlas/">Physical Atlas</a><a href="/realty/worlds/">World Atlas</a><a href="/realty/physical/">Physical</a><a href="/realty/income/">Income</a><a href="/realty/digital/">Digital</a><a href="/realty/history/">History</a><a href="/realty/compare/">Compare</a><a href="/realty/watchlist/">Watchlist</a><a href="/realty/sources/">Sources</a><a href="/">The Holding</a>
+</div>
+
+<div class="v15-shell">
+  <aside class="v15-rail" aria-label="Realty terminal sections">
+    <a class="active" href="/realty/"><i>⌂</i><span>Overview</span></a>
+    <a href="/realty/discover/"><i>⌕</i><span>Discover</span></a>
+    <a href="/realty/physical/"><i>◉</i><span>Real World</span></a>
+    <a href="/realty/digital/"><i>◇</i><span>Metaverse</span></a>
+    <a href="/realty/watchlist/"><i>☆</i><span>Watchlist</span></a>
+    <a href="/realty/compare/"><i>⇄</i><span>Compare</span></a>
+    <a href="/realty/atlas/"><i>⌖</i><span>Atlas</span></a>
+    <a href="/realty/data-health/"><i>◌</i><span>Data Health</span></a>
+    <a href="/realty/history/"><i>↗</i><span>History</span></a>
+    <a href="/realty/sources/"><i>◎</i><span>Sources</span></a>
+  </aside>
+
+  <main class="v15-main" id="main-content">
+    <section class="v15-hero">
+      <div class="v15-hero-copy">
+        <div class="v15-kicker">Property intelligence · physical + digital</div>
+        <h1>The Holding<br>Realty</h1>
+        <div class="v15-tagline">Two worlds. One property intelligence layer.</div>
+        <p class="v15-sub">Tokenized real-world property and native digital land in one source-backed discovery terminal — preserving ownership, return, price, liquidity and provenance semantics instead of flattening unlike markets.</p>
+        <div class="v15-hero-actions">
+          <a href="/realty/discover/">Search all property →</a>
+          <a href="/realty/markets/">Explore markets</a>
+          <a href="/realty/data-health/">Data Health</a>
+          <a href="/realty/history/">History</a>
+        </div>
+      </div>
+      <div class="v15-orb" aria-hidden="true"><div class="v15-orb-grid"></div></div>
+      <div class="v15-skyline" aria-hidden="true"></div>
+      <div class="v15-hero-glow" aria-hidden="true"></div>
+    </section>
+
+    <section class="v15-statbar" aria-label="Realty coverage metrics">
+      <div class="v15-stat"><span>Tracked markets</span><b data-kpi="markets">—</b><small>admitted market coverage</small></div>
+      <div class="v15-stat"><span>Source-backed observations</span><b data-kpi="observations">—</b><small>physical + digital records</small></div>
+      <div class="v15-stat"><span>Income / return records</span><b data-kpi="returns">—</b><small>source-labelled signals</small></div>
+      <div class="v15-stat"><span>Latest source check</span><b data-kpi="checked" style="font-size:18px">—</b><small>freshness ≠ accuracy</small></div>
+    </section>
+
+    <section class="v15-worlds" aria-label="Property worlds">
+      <a class="v15-world physical" href="/realty/physical/">
+        <div class="scene" aria-hidden="true"></div>
+        <div class="v15-world-copy">
+          <small>Physical World · <span data-market-count="physical">—</span></small>
+          <h2>Tokenized Real Estate</h2>
+          <p>Fractional rental property, tokenized developments and whole-property rails with source-specific ownership and return semantics.</p>
+          <div class="v15-world-tags"><span>Lofty</span><span>Reental</span><span>Blocksquare</span><span>RealT</span><span>Propy</span></div>
+        </div>
+      </a>
+      <a class="v15-world digital" href="/realty/digital/">
+        <div class="scene" aria-hidden="true"></div>
+        <div class="v15-world-copy">
+          <small>Digital World · <span data-market-count="digital">—</span></small>
+          <h2>Metaverse Real Estate</h2>
+          <p>LAND, estates and native spatial assets across virtual worlds, preserving asks, offers, floors, last sales and world-native coordinates.</p>
+          <div class="v15-world-tags"><span>Decentraland</span><span>The Sandbox</span><span>Otherside</span><span>Somnium</span><span>Voxels</span></div>
+        </div>
+      </a>
+    </section>
+
+    <section class="v15-section v15-panel">
+      <div class="v15-panel-head">
+        <div><div class="v15-kicker">Aggregated markets</div><h2>Choose your market.</h2></div>
+        <p>Realty sits above fragmented property rails. A market listed here is not a claim of complete listing coverage — source status stays explicit.</p>
+      </div>
+      <div class="v15-market-strip">
+        <a href="/realty/market/?id=lofty"><span class="v15-dot"></span>Lofty</a>
+        <a href="/realty/market/?id=reental"><span class="v15-dot"></span>Reental</a>
+        <a href="/realty/market/?id=blocksquare"><span class="v15-dot"></span>Blocksquare</a>
+        <a href="/realty/market/?id=realt"><span class="v15-dot"></span>RealT</a>
+        <a href="/realty/market/?id=propy"><span class="v15-dot"></span>Propy</a>
+        <a href="/realty/digital/"><span class="v15-dot digital"></span>Decentraland</a>
+        <a href="/realty/digital/"><span class="v15-dot digital"></span>The Sandbox</a>
+        <a href="/realty/digital/"><span class="v15-dot digital"></span>Otherside</a>
+        <a href="/realty/digital/"><span class="v15-dot digital"></span>Somnium Space</a>
+      </div>
+      <div class="v15-featured" id="v15Featured" aria-live="polite">
+        <div style="grid-column:1/-1;padding:20px;color:var(--muted);font-size:9px">Loading source-backed observations…</div>
+      </div>
+    </section>
+
+    <section class="v15-capabilities" aria-label="Realty intelligence capabilities">
+      <a class="v15-capability" href="/realty/discover/"><i>⌕</i><h3>Aggregated Discovery</h3><p>Search both property worlds without creating a fake universal ranking.</p></a>
+      <a class="v15-capability" href="/realty/sources/"><i>◎</i><h3>Transparent Data</h3><p>Source lineage, access policy, media rights and observation freshness.</p></a>
+      <a class="v15-capability" href="/realty/compare/"><i>⇄</i><h3>Smart Comparison</h3><p>Compare entry, returns and states while preserving provider semantics.</p></a>
+      <a class="v15-capability" href="/realty/history/"><i>↗</i><h3>Property Memory</h3><p>Independent observations through time without synthetic trend claims.</p></a>
+      <a class="v15-capability" href="/realty/atlas/"><i>⌖</i><h3>Spatial Discovery</h3><p>Physical city anchors and separate world-native digital coordinates.</p></a>
+      <a class="v15-capability" href="/realty/data-health/"><i>◌</i><h3>Data Health</h3><p>Current, aging and stale observations are visibly distinguished.</p></a>
+    </section>
+
+    <footer class="v15-footer">
+      <div><strong>THE HOLDING</strong><br>Realty · property intelligence across physical and digital markets.</div>
+      <div>Discovery only · source execution · no custody · no fabricated market data</div>
+    </footer>
+  </main>
+</div>
+<script src="/realty/assets/realty-shell-v15.js" defer></script>
+</body>
+</html>
