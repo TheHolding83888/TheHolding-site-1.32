@@ -1,10 +1,18 @@
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
+  "methodology": "Append-only Realty observation history. Historical snapshot files are immutable evidence; the current snapshot remains separate and is joined at read time. A chart/trend must not be inferred from insufficient independent observations.",
+  "currentSnapshotPath": "/realty/data/market-snapshot.json",
+  "archiveRule": "Before a future current market snapshot is materially replaced, preserve the outgoing observation as an append-only history artifact when it represents an independent source observation worth retaining.",
+  "chartPolicy": {
+    "minimumIndependentObservations": 3,
+    "twoPointBehavior": "Show exact previous-to-current change cards; do not render a trend line."
+  },
   "snapshots": [
     {
       "generatedAt": "2026-08-30T05:45:00Z",
       "path": "/realty/data/history/2026-08-30T054500Z.json",
-      "kind": "source-snapshot"
+      "kind": "source-snapshot",
+      "immutable": true
     }
   ]
 }
