@@ -21,6 +21,7 @@ The strategic analogy is a property-native combination of a discovery portal, ma
 - `/realty/physical/` — tokenized physical real-estate explorer
 - `/realty/income/` — investor Income Layer
 - `/realty/digital/` — metaverse/digital-property explorer
+- `/realty/worlds/` — world-native spatial discovery for digital property
 - `/realty/compare/` — Reality Lens and up-to-four-property shortlist
 - `/realty/watchlist/` — browser-local saved assets
 - `/realty/sources/` — source/access/media/commercialization governance
@@ -34,7 +35,8 @@ The strategic analogy is a property-native combination of a discovery portal, ma
 - `/realty/data/platform-economics.json` — platform-level investor access/income semantics used by Income Layer
 - `/realty/data/source-governance.json` — conservative source access/media/commercialization policy
 - `/realty/data/property-media.json` — exact third-party property-media provenance and display policy
-- `/realty/data/atlas.json` — geographic anchors and precision contract
+- `/realty/data/atlas.json` — physical geographic anchors and precision contract
+- `/realty/data/world-spatial.json` — digital-world coordinate adapters; reads coordinates from canonical market records instead of duplicating mutable market truth
 - `/realty/data/history/` — append-only observation-history foundation
 
 Changing prices, yields, asks, floors, offers and listing states belong in machine observations, not prose documentation.
@@ -69,10 +71,12 @@ Hard rules:
 6. `minimum entry != total property/project value`.
 7. `market profile != complete listing coverage`.
 8. `city/market coordinate != exact property boundary`.
-9. Aggregation is not homogenization: legal rights, eligibility, liquidity and income mechanics differ across issuers/worlds.
-10. Each changing observation keeps source URL/source label/source-check date.
-11. Exact third-party media is a separate display-rights layer.
-12. A public webpage is not blanket permission for scaled automated extraction or commercial reuse.
+9. Sandbox coordinates, Decentraland coordinates and other virtual-world systems are separate native coordinate spaces; there is no invented universal metaverse map.
+10. An indexed-observation viewport is not a claim of a complete official world map.
+11. Aggregation is not homogenization: legal rights, eligibility, liquidity and income mechanics differ across issuers/worlds.
+12. Each changing observation keeps source URL/source label/source-check date.
+13. Exact third-party media is a separate display-rights layer.
+14. A public webpage is not blanket permission for scaled automated extraction or commercial reuse.
 
 A beautiful explicit absence is preferred to invented completeness.
 
@@ -131,8 +135,8 @@ Added only when justified by live gaps:
 
 - broader source-backed inventory and provider coverage
 - richer provider/market pages and fees/jurisdiction/ownership details
-- digital world-native spatial maps
 - deeper source freshness/status intelligence
+- richer world-specific spatial adapters as admissible coordinates become available
 - accumulated price/yield/listing history and charts once enough independent observations exist
 - saved search and alerts when real monitoring infrastructure is justified
 - Ask Realty / property intelligence on top of canonical history
