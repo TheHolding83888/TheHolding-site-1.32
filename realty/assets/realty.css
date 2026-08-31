@@ -65,3 +65,43 @@
   .footer-consult::before{width:22px;height:22px}
   .footer-note{max-width:320px;margin:14px auto 0;padding-top:12px}
 }
+/* realty-mobile-footer-fix-v2 */
+.footer-main{grid-template-columns:minmax(260px,1fr) auto}
+.footer-connect{align-self:end;transform:translateY(7px);gap:20px;color:#f4f2ed}
+.footer-connect::before{display:none!important;content:none!important}
+.footer-connect a{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;min-height:0;padding:0! important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;color:inherit;opacity:.9;transition:opacity .2s ease,transform .2s ease}
+.footer-connect a:hover{background:transparent!important;border:0!important;box-shadow:none!important;opacity:1;transform:translateY(-1px)}
+.footer-x svg{width:18px;height:18px;display:block;fill:currentColor}
+.footer-home-mark svg{width:24px;height:24px;display:block;fill:currentColor}
+.footer-envelope svg{width:22px;height:22px;display:block;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+[data-theme='light'] .footer-connect,[data-theme='light'] .footer-connect a{color:#171717;background:transparent!important;border:0!important;box-shadow:none!important}
+@media(max-width:760px){
+  .world-card{min-height:202px}
+  .world-art{right:57%}
+  .world-copym{margin-left:43%;width:57%;padding:12px 11px 49px 13px;justify-content:flex-start}
+  .world-label{margin-bottom:0}
+  .round-icon{width:32px;height:32px}
+  .round-icon .icon-svg{width:17px;height:17px}
+  .world-card h2,.world-card.digital h2{font-size:25px;line-height:.9;margin:5px 0 6px;min-height:0}
+  .world-card p{font-size:10.5px;line-height:1.3;height:28px;min-height:28px;max-height:28px;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .mobile-tags{position:absolute;left:13px;bottom:13px;margin:0;gap:4px;flex-wrap:none}
+  .mobile-tags span{font-size:7.5px;line-height:1;padding:5px 5px;white-space:nowrap}
+  .world-card .cta{right:11px;bottom:13px;gap:4px}
+  .world-card .cta::before{font-size:8.3px;letter-spacing:.15em}
+  .world-card .cta::after{font-size:22px}
+  .footer-main{display:flex;flex-direction:column;align-items:center;gap:15px}
+  .footer-connect{align-self:auto;transform:none;justify-content:center;gap:22px;color:#171717}
+  .footer-connect a{width:29px;height:29px;background:transparent!important;border:0!important;box-shadow:none!important}
+  .footer-x svg{width:19px;height:19px}
+  .footer-home-mark svg{width:24px;height:24px}
+  .footer-envelope svg{width:22px;height:22px}
+}
+@media(max-width:360px){
+  .world-card{min-height:206px}
+  .world-art{right:59%}
+  .world-copy{margin-left:41%;width:59%;padding-left:12px;padding-right:9px}
+  .world-card h2,.world-card.digital h2{font-size:23px}
+  .mobile-tags{left:12px;gap:3px}
+  .mobile-tags span{font-size:7px;padding:5px 4px}
+  .world-card .cta{right:9px;gap:3px}
+}
