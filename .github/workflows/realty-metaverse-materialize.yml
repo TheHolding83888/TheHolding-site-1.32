@@ -1,0 +1,77 @@
+name: Realty Metaverse owner media materializer
+
+on:
+  push:
+    branches:
+      - feat/realty-metaverse-owner-media-20260831
+    paths:
+      - '.asset-metaverse/**'
+      - '.github/workflows/realty-metaverse-materialize.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Rebuild and verify owner Metaverse media
+        shell: bash
+        run: |
+          set -euo pipefail
+          target='realty/assets/owner/metaverse.3821d3ef.avif'
+          mkdir -p "$(dirname "$target")"
+          cat .asset-metaverse/part-*.b64 > /tmp/metaverse.b64
+          test "$(wc -c < /tmp/metaverse.b64 | tr -d ' ')" = '29428'
+          base64 --decode /tmp/metaverse.b64 > "$target"
+          test "$(wc -c < "$target" | tr -d ' ')" = '22071'
+          test "$(sha256sum "$target" | awk '{print $1}')" = '3821d3ef7d7d33b4331fd00f9a42a2d9aea1a0dbac3f8b42e40a7a044d81e4d2'
+          magic="$(dd if="$target" bs=1 skip=4 count=8 status=none)"
+          test "$magic" = 'ftypavif'
+          python - <<'PY'
+          from pathlib import Path
+          import struct
+          p=Path('realty/assets/owner/metaverse.3821d3ef.avif')
+          b=p.read_bytes()
+          i=b.find(b'ispe')
+          if i < 0:
+              raise SystemExit('missing ispe')
+          w,h=struct.unpack('>II', b[i+8:i+16])
+          if (w,h)!=(1000,467):
+              raise SystemExit(f'bad dimensions {(w,h)}')
+          print('verified', len(b), (w,h))
+          PY
+
+      - name: Update desktop Metaverse consumer only
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('realty/index.html')
+          s=p.read_text()
+          old='src="/realty/assets/demo/v35/desktop-digital.avif?v=20260831" alt="" loading="eager" decoding="async"'
+          new='src="/realty/assets/owner/metaverse.3821d3ef.avif" alt="" loading="eager" decoding="async"'
+          if s.count(old)!=1:
+              raise SystemExit(f'Metaverse desktop anchor count {s.count(old)}')
+          s=s.replace(old,new)
+          p.write_text(s)
+          PY
+          git diff --check
+          changed="$( { git diff --name-only; git ls-files --others --exclude-standard; } | sort -u | tr '\n' ' ' )"
+          test "$changed" = 'realty/assets/owner/metaverse.3821d3ef.avif realty/index.html '
+
+      - name: Commit verified Metaverse media
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add realty/assets/owner/metaverse.3821d3ef.avif realty/index.html
+          git commit -m 'Realty: add owner Metaverse media'
+          git push origin HEAD:feat/realty-metaverse-owner-media-20260831
