@@ -1,5 +1,5 @@
-# TheHolding.ai - Netlify Headers Configuration
-# Updated: June 2, 2026
+# TheHolding.ai - Cloudflare Workers Static Assets headers
+# Updated: August 31, 2026
 
 # These headers apply to all pages
 /*
@@ -30,15 +30,17 @@
 /api/*
   Cache-Control: no-cache, no-store, must-revalidate
 
-# Static assets - long cache
+# Fingerprinted assets may use long immutable caching.
+# Stable CSS/JS filenames are intentionally revalidated because their contents
+# are updated in place across production releases.
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 
 /*.js
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: public, max-age=0, must-revalidate
 
 /*.css
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: public, max-age=0, must-revalidate
 
 /*.woff2
   Cache-Control: public, max-age=31536000, immutable
