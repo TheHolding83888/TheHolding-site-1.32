@@ -12,7 +12,7 @@ jobs:
   materialize:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout task branch
+      - name: Checkout task branch without external actions
         env:
           GH_TOKEN: ${{ github.token }}
           BRANCH: fix/realty-mobile-footer-icons-20260831
@@ -20,11 +20,15 @@ jobs:
           set -euo pipefail
           git clone --no-tags --depth 1 --branch "$BRANCH" "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" repo
 
-      - name: Apply bounded Realty corrections
+      - name: Apply bounded Realty mobile and footer fix
         working-directory: repo
+        env:
+          FOOTER_B64: PGZvb3RlciBjbGFzcz0iZm9vdGVyIiBhcmlhLWxhYmVsPSJUaGUgSG9sZGluZyBSZWFsdHkgZm9vdGVyIj48ZGl2IGNsYXNzPSJmb290ZXItbWFpbiI+PGRpdiBjbGFzcz0iZm9vdGVyLWJyYW5kIj48c3Ryb25nPlRIRSBIT0xESU5HPC9zdHJvbmc+PHNwYW4gY2xhc3M9ImZvb3Rlci1kb3QiPsK3PC9zcGFuPjxzcGFuIGNsYXNzPSJmb290ZXItcmVhbHR5Ij5SZWFsdHk8L3NwYW4+PC9kaXY+PGRpdiBjbGFzcz0iZm9vdGVyLWNvbm5lY3QiPjxhIGNsYXNzPSJmb290ZXIteCIgaHJlZj0iaHR0cHM6Ly94LmNvbS90aGVob2xkaW5nXyIgdGFyZ2V0PSJfYmxhbmsiIHJlbD0ibm9vcGVuZXIiIGFyaWEtbGFiZWw9IlRoZSBIb2xkaW5nIG9uIFgiPjxzdmcgdmlld0JveD0iMCAwIDI0IDI0IiBhcmlhLWhpZGRlbj0idHJ1ZSI+PHBhdGggZD0iTTE4LjI0NCAySDIxbC02LjU2IDcuNDk3TDIyIDIyaC01LjgyOGwtNC41NjUtNS45NjlMNi4zOCAyMkgzLjYyMmw2LjY4OS03LjY0NUwzIDJoNS45NzZsNC4xMjYgNS40NTVMMTguMjQ0IDJaTS0uOTY4IDE3LjhoMS41MjdMOC4xNDcgNC4wODVINi41MDlMMTcuMjc2IDE5LjhaIi8+PC9zdmc+PC9hPjxhIGNsYXNzPSJmb290ZXItaG9tZS1tYXJrIiBocmVmPSIvIiBhcmlhLWxhYmVsPSJUaGUgSG9sZGluZyBob21lIj48c3ZnIHZpZXdCb3g9IjEwMCAxMzAgNDQwIDQwMCIgYXJpYS1oaWRkZW49InRydWUiPjxwYXRoIGQ9Ik0xMjUgMTYxTDEyNSAxNjdMMTMwIDE2OUwyNDggMTcxTDUwNCAxNjlMNTA5IDE2OEw1MTEgMTY0TDUwOSAxNjBMMzc1IDE1MkwyMjkgMTUzWiIvPjxwYXRoIGQ9Ik0xMjUgMTk5TDEyNSAyMTZMMTMxIDIxOUwyMDMgMjIyTDM5MyAyMjNINDk1IDIyMEw1MDkgMjE3TDUxMSAyMDlMNTEwIDE5OUw0OTcgMTk1TDM3NyAxODhMMjIyIDE4OUwxMzggMTk1WiIvPjxwYXRoIGQ9Ik0xMjUgMjU4TDEyNSAyODVMMTMyIDI5MEwyODQgMjk3TDM5MyAyOTZxNDk4IDI5MUw1MDggMjg4TDUxMSAyODBQNTEwIDI1OEw1MDUgMjU0TDQxMiAyNDNMMzMyIDI0MEwyMzMgMjQyTDEzNCAyNTNaIi8+PHBhdGggZD0iTTEyNSAzMzhMMTI1IDM3NUwxMzEgMzgxTDEzOCAzODNMMjUxIDM5MEwzNTEgMzkxTDQ5OCAzODNWNTA2IDM4MEw1MTAgMzc1TDUxMSAzNDFMNTA2IDMzM0w0NzkgMzI2TDQwNiAzMTdMMzU5IDMxNEwyNDggMzE1TDE1NSAzMjZMMTM0IDMzMVoiLz48cGF0aCBkPSJNMTI1IDQzOEwxMjUgNDg1TDEzMCA0OTJMMTM3IDQ5NUwxOTAgNTAwTDQ0NCA1MDBMNDk4IDQ5NUw1MDggNDg5TDUxMSA0ODFMNTExIDQ0M0w1MDYgNDMyTDQ3NyA0MjNMNDE1IDQxM0wzNTEgNDA4TDI3NiA0MDhMMjMyIDQxMUwxNDkgNDI1TDEzMSA0MzFaIi8+PC9zdmc+PC9hPjxhIGNsYXNzPSJmb290ZXItZW52ZWxvcGUiIGhyZWY9Imh0dHBzOi8veC5jb20vZGVmaXRlYV8iIHRhcmdldD0iX2JsYW5rIiByZWw9Im5vb3BlbmVyIiBhcmlhLWxhYmVsPSJDb250YWN0IERlRml0ZWEgb24gWCI+PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIGFyaWEtaGlkZGVuPSJ0cnVlIj48cGF0aCBkPSJNNi41IDYuNWgxN3YxMWgtMTd6Ii8+PHBhdGggZD0iTTQgN2w4IDYgOC02Ii8+PC9zdmc+PC9hPjwvZGl2PjwvZGl2PjxkaXYgY2xhc3M9ImZvb3Rlci1ub3RlIj5EaXNjb3Zlcnkgb25seSDCtSBleHRlcm5hbCBtYXJrZXRwbGFjZXMgwrcgbm8gY3VzdG9keSDCtSBubyBmYWJyaWNhdGVkIGxpc3RpbmdzPC9kaXY+PC9mb290ZXI+
+          CSS_OVERRIDE_B64: LyogcmVhbHR5LW1vYmlsZS1mb290ZXItZml4LXYyICovCi5mb290ZXItbWFpbntncmlkLXRlbXBsYXRlLWNvbHVtbnM6bWlubWF4KDI2MHB4LDFmcikgYXV0b30KLmZvb3Rlci1jb25uZWN0e2FsaWduLXNlbGY6ZW5kO3RyYW5zZm9ybTp0cmFuc2xhdGVZKDdweCk7Z2FwOjIwcHg7Y29sb3I6I2Y0ZjJlZH0KLmZvb3Rlci1jb25uZWN0OjpiZWZvcmV7ZGlzcGxheTpub25lIWltcG9ydGFudDtjb250ZW50Om5vbmUhaW1wb3J0YW50fQouZm9vdGVyLWNvbm5lY3QgYXtkaXNwbGF5OmlubGluZS1mbGV4O2FsaWduLWl0ZW1zOmNlbnRlcjtqdXN0aWZ5LWNvbnRlbnQ6Y2VudGVyO3dpZHRoOjI4cHg7aGVpZ2h0OjI4cHg7bWluLWhlaWdodDowO3BhZGRpbmc6MCEgaW1wb3J0YW50O2JvcmRlcjowIWltcG9ydGFudDtib3JkZXItcmFkaXVzOjAhaW1wb3J0YW50O2JhY2tncm91bmQ6dHJhbnNwYXJlbnQhaW1wb3J0YW50O2JveC1zaGFkb3c6bm9uZSFpbXBvcnRhbnQ7Y29sb3I6aW5oZXJpdDtvcGFjaXR5Oi45O3RyYW5zaXRpb246b3BhY2l0eSAuMnMgZWFzZSx0cmFuc2Zvcm0gLjJzIGVhc2V9Ci5mb290ZXItY29ubmVjdCBhOmhvdmVye2JhY2tncm91bmQ6dHJhbnNwYXJlbnQhaW1wb3J0YW50O2JvcmRlcjowIWltcG9ydGFudDtib3gtc2hhZG93Om5vbmUhaW1wb3J0YW50O29wYWNpdHk6MTt0cmFuc2Zvcm06dHJhbnNsYXRlWSgtMXB4KX0KLmZvb3Rlci14IHN2Z3t3aWR0aDoxOHB4O2hlaWdodDoxOHB4O2Rpc3BsYXk6YmxvY2s7ZmlsbDpjdXJyZW50Q29sb3J9Ci5mb290ZXItaG9tZS1tYXJrIHN2Z3t3aWR0aDoyNHB4O2hlaWdodDoyNHB4O2Rpc3BsYXk6YmxvY2s7ZmlsbDpjdXJyZW50Q29sb3J9Ci5mb290ZXItZW52ZWxvcGUgc3Zne3dpZHRoOjIycHg7aGVpZ2h0OjIycHg7ZGlzcGxheTpibG9jaztmaWxsOm5vbmU7c3Ryb2tlOmN1cnJlbnRDb2xvcjtzdHJva2Utd2lkdGg6MS43O3N0cm9rZS1saW5lY2FwOnJvdW5kO3N0cm9rZS1saW5lam9pbjpyb3VuZH0KW2RhdGEtdGhlbWU9J2xpZ2h0J10gLmZvb3Rlci1jb25uZWN0LFtkYXRhLXRoZW1lPSdsaWdodCddIC5mb290ZXItY29ubmVjdCBhe2NvbG9yOiMxNzE3MTc7YmFja2dyb3VuZDp0cmFuc3BhcmVudCFpbXBvcnRhbnQ7Ym9yZGVyOjAhaW1wb3J0YW50O2JveC1zaGFkb3c6bm9uZSFpbXBvcnRhbnR9CkBtZWRpYShtYXgtd2lkdGg6NzYwcHgpewogIC53b3JsZC1jYXJke21pbi1oZWlnaHQ6MjAycHh9CiAgLndvcmxkLWFydHtyaWdodDo1NyV9CiAgLndvcmxkLWNvcHlte21hcmdpbi1sZWZ0OjQzJTt3aWR0aDo1NyU7cGFkZGluZzoxMnB4IDExcHggNDlweCAxM3B4O2p1c3RpZnktY29udGVudDpmbGV4LXN0YXJ0fQogIC53b3JsZC1sYWJlbHttYXJnaW4tYm90dG9tOjB9CiAgLnJvdW5kLWljb257d2lkdGg6MzJweDtoZWlnaHQ6MzJweH0KICAucm91bmQtaWNvbiAuaWNvbi1zdmd7d2lkdGg6MTdweDtoZWlnaHQ6MTdweH0KICAud29ybGQtY2FyZCBoMiwud29ybGQtY2FyZC5kaWdpdGFsIGgye2ZvbnQtc2l6ZToyNXB4O2xpbmUtaGVpZ2h0Oi45O21hcmdpbjo1cHggMCA2cHg7bWluLWhlaWdodDowfQogIC53b3JsZC1jYXJkIHB7Zm9udC1zaXplOjEwLjVweDtsaW5lLWhlaWdodDoxLjM7aGVpZ2h0OjI4cHg7bWluLWhlaWdodDoyOHB4O21heC1oZWlnaHQ6MjhweDttYXJnaW46MDtkaXNwbGF5Oi13ZWJraXQtYm94Oy13ZWJraXQtbGluZS1jbGFtcDoyOy13ZWJraXQtYm94LW9yaWVudDp2ZXJ0aWNhbDtvdmVyZmxvdzpoaWRkZW59CiAgLm1vYmlsZS10YWdze3Bvc2l0aW9uOmFic29sdXRlO2xlZnQ6MTNweDtib3R0b206MTNweDttYXJnaW46MDtnYXA6NHB4O2ZsZXgtd3JhcDpub25lfQogIC5tb2JpbGUtdGFncyBzcGFue2ZvbnQtc2l6ZTo3LjVweDtsaW5lLWhlaWdodDoxO3BhZGRpbmc6NXB4IDVweDt3aGl0ZS1zcGFjZTpub3dyYXB9CiAgLndvcmxkLWNhcmQgLmN0YXtyaWdodDoxMXB4O2JvdHRvbToxM3B4O2dhcDo0cHh9CiAgLndvcmxkLWNhcmQgLmN0YTo6YmVmb3Jle2ZvbnQtc2l6ZTo4LjNweDtsZXR0ZXItc3BhY2luZzouMTVlbX0KICAud29ybGQtY2FyZCAuY3RhOjphZnRlcntmb250LXNpemU6MjJweH0KICAuZm9vdGVyLW1haW57ZGlzcGxheTpmbGV4O2ZsZXgtZGlyZWN0aW9uOmNvbHVtbjthbGlnbi1pdGVtczpjZW50ZXI7Z2FwOjE1cHh9CiAgLmZvb3Rlci1jb25uZWN0e2FsaWduLXNlbGY6YXV0bzt0cmFuc2Zvcm06bm9uZTtqdXN0aWZ5LWNvbnRlbnQ6Y2VudGVyO2dhcDoyMnB4O2NvbG9yOiMxNzE3MTd9CiAgLmZvb3Rlci1jb25uZWN0IGF7d2lkdGg6MjlweDtoZWlnaHQ6MjlweDtiYWNrZ3JvdW5kOnRyYW5zcGFyZW50IWltcG9ydGFudDtib3JkZXI6MCFpbXBvcnRhbnQ7Ym94LXNoYWRvdzpub25lIWltcG9ydGFudH0KICAuZm9vdGVyLXggc3Zne3dpZHRoOjE5cHg7aGVpZ2h0OjE5cHh9CiAgLmZvb3Rlci1ob21lLW1hcmsgc3Zne3dpZHRoOjI0cHg7aGVpZ2h0OjI0cHh9CiAgLmZvb3Rlci1lbnZlbG9wZSBzdmd7d2lkdGg6MjJweDtoZWlnaHQ6MjJweH0KfQpAbWVkaWEobWF4LXdpZHRoOjM2MHB4KXsKICAud29ybGQtY2FyZHttaW4taGVpZ2h0OjIwNnB4fQogIC53b3JsZC1hcnR7cmlnaHQ6NTklfQogIC53b3JsZC1jb3B5e21hcmdpbi1sZWZ0OjQxJTt3aWR0aDo1OSU7cGFkZGluZy1sZWZ0OjEycHg7cGFkZGluZy1yaWdodDo5cHh9CiAgLndvcmxkLWNhcmQgaDIsLndvcmxkLWNhcmQuZGlnaXRhbCBoMntmb250LXNpemU6MjNweH0KICAubW9iaWxlLXRhZ3N7bGVmdDoxMnB4O2dhcDozcHh9CiAgLm1vYmlsZS10YWdzIHNwYW57Zm9udC1zaXplOjdweDtwYWRkaW5nOjVweCA0cHh9CiAgLndvcmxkLWNhcmQgLmN0YXtyaWdodDo5cHg7Z2FwOjNweH0KfQ==
         run: |
           set -euo pipefail
           python3 - <<'PY'
+          import base64, os
           from pathlib import Path
 
           html_path = Path('realty/index.html')
@@ -35,79 +39,37 @@ jobs:
 
           marker = '/* realty-mobile-footer-fix-v2 */'
           if marker in css:
-              raise SystemExit('marker already exists')
-
+              raise SystemExit('marker already present')
           old_rev = '/realty/assets/realty.css?v=20260831m8'
           new_rev = '/realty/assets/realty.css?v=20260831m9'
           if html.count(old_rev) != 1:
-              raise SystemExit(f'expected one m8 CSS reference, got {html.count(old_rev)}')
+              raise SystemExit(f'expected one CSS revision anchor, got {html.count(old_rev)}')
 
           start = html.find('<footer class="footer"')
           end = html.find('</footer>', start)
           if start < 0 or end < 0:
               raise SystemExit('footer not found')
           end += len('</footer>')
-
-          footer = '''<footer class="footer" aria-label="The Holding Realty footer"><div class="footer-main"><div class="footer-brand"><strong>THE HOLDING</strong><span class="footer-dot">·</span><span class="footer-realty">Realty</span></div><div class="footer-connect"><a class="footer-x" href="https://x.com/theholding_" target="_blank" rel="noopener" aria-label="The Holding on X"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2H21l-6.56 7.497L22 22h-5.828l-4.565-5.969L6.38 22H3.622l6.689-7.645L3 2h5.976l4.126 5.455L18.244 2Zm-.968 17.8h1.527L8.147 4.085H6.509L17.276 19.8Z"/></svg></a><a class="footer-home-mark" href="/" aria-label="The Holding home"><svg viewBox="100 130 440 400" aria-hidden="true"><path d="M125 161L125 167L130 169L248 171L504 169L509 168L511 164L509 160L375 152L229 153Z"/><path d="M125 199L125 216L131 219L203 222L393 223L495 220L509 217L511 209L510 199L497 195L377 188L222 189L138 195Z"/><path d="M125 258L125 285L132 290L284 297L393 296L498 291L508 288L511 280L510 258L505 254L412 243L332 240L233 242L134 253Z"/><path d="M125 338L125 375L131 381L138 383L251 390L351 391L498 383L506 380L510 375L511 341L506 333L479 326L406 317L359 314L248 315L155 326L134 331Z"/><path d="M125 438L125 485L130 492L137 495L190 500L444 500L498 495L508 489L511 481L511 443L506 432L477 423L415 413L351 408L276 408L232 411L149 425L131 431Z"/></svg></a><a class="footer-envelope" href="https://x.com/defitea_" target="_blank" rel="noopener" aria-label="Contact DeFitea on X"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 6.5h17v11h-17z"/><path d="M4 7l8 6 8-6"/></svg></a></div></div><div class="footer-note">Discovery only · external marketplaces · no custody · no fabricated listings</div></footer>'''
+          footer = base64.b64decode(os.environ['FOOTER_B64']).decode()
+          override = base64.b64decode(os.environ['CSS_OVERRIDE_B64']).decode()
           html = html[:start] + footer + html[end:]
           html = html.replace(old_rev, new_rev)
+          css = css.rstrip() + '\n' + override.rstrip() + '\n'
 
-          override = r'''
-/* realty-mobile-footer-fix-v2 */
-.footer-main{grid-template-columns:minmax(260px,1fr) auto}
-.footer-connect{align-self:end;transform:translateY(7px);gap:20px;color:#f4f2ed}
-.footer-connect::before{display:none!important;content:none!important}
-.footer-connect a{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;min-height:0;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;color:inherit;opacity:.9;transition:opacity .2s ease,transform .2s ease}
-.footer-connect a:hover{background:transparent!important;border:0!important;box-shadow:none!important;opacity:1;transform:translateY(-1px)}
-.footer-x svg{width:18px;height:18px;display:block;fill:currentColor}
-.footer-home-mark svg{width:24px;height:24px;display:block;fill:currentColor}
-.footer-envelope svg{width:22px;height:22px;display:block;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-[data-theme='light'] .footer-connect,[data-theme='light'] .footer-connect a{color:#171717;background:transparent!important;border:0!important;box-shadow:none!important}
-@media(max-width:760px){
-  .world-card{min-height:202px}
-  .world-art{right:57%}
-  .world-copy{margin-left:43%;width:57%;padding:12px 11px 49px 13px;justify-content:flex-start}
-  .world-label{margin-bottom:0}
-  .round-icon{width:32px;height:32px}
-  .round-icon .icon-svg{width:17px;height:17px}
-  .world-card h2,.world-card.digital h2{font-size:25px;line-height:.9;margin:5px 0 6px;min-height:0}
-  .world-card p{font-size:10.5px;line-height:1.3;height:28px;min-height:28px;max-height:28px;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-  .mobile-tags{position:absolute;left:13px;bottom:13px;margin:0;gap:4px;flex-wrap:nowrap}
-  .mobile-tags span{font-size:7.5px;line-height:1;padding:5px 5px;white-space:nowrap}
-  .world-card .cta{right:11px;bottom:13px;gap:4px}
-  .world-card .cta:before{font-size:8.3px;letter-spacing:.15em}
-  .world-card .cta:after{font-size:22px}
-  .footer-main{display:flex;flex-direction:column;align-items:center;gap:15px}
-  .footer-connect{align-self:auto;transform:none;justify-content:center;gap:22px;color:#171717}
-  .footer-connect a{width:29px;height:29px;background:transparent!important;border:0!important;box-shadow:none!important}
-  .footer-x svg{width:19px;height:19px}
-  .footer-home-mark svg{width:24px;height:24px}
-  .footer-envelope svg{width:22px;height:22px}
-}
-@media(max-width:360px){
-  .world-card{min-height:206px}
-  .world-art{right:59%}
-  .world-copy{margin-left:41%;width:59%;padding-left:12px;padding-right:9px}
-  .world-card h2,.world-card.digital h2{font-size:23px}
-  .mobile-tags{left:12px;gap:3px}
-  .mobile-tags span{font-size:7px;padding:5px 4px}
-  .world-card .cta{right:9px;gap:3px}
-}
-'''
-          css = css.rstrip() + '\n' + override.strip() + '\n'
-
-          checks = {
-              'css revision': html.count(new_rev) == 1 and old_rev not in html,
-              'home mark link': 'class="footer-home-mark" href="/"' in html,
-              'X link': 'class="footer-x" href="https://x.com/theholding_"' in html,
-              'envelope link': 'class="footer-envelope" href="https://x.com/defitea_"' in html,
-              'old consultation removed': 'footer-consult' not in html and '>Consultation' not in html,
-              'old footer links removed': 'footer-links' not in html,
-              'marker': marker in css,
-          }
-          failed = [k for k,v in checks.items() if not v]
-          if failed:
-              raise SystemExit('validation failed: ' + ', '.join(failed))
+          required_html = [
+              'class="footer-x" href="https://x.com/theholding_"',
+              'class="footer-home-mark" href="/"',
+              'class="footer-envelope" href="https://x.com/defitea_"',
+          ]
+          for token in required_html:
+              if token not in html:
+                  raise SystemExit('missing HTML token: ' + token)
+          if 'footer-consult' in html or 'footer-links' in html:
+              raise SystemExit('legacy footer controls remain')
+          if marker not in css:
+              raise SystemExit('CSS marker missing')
+          if html.count(new_rev) != 1 or old_rev in html:
+              raise SystemExit('CSS revision replacement failed')
 
           html_path.write_text(html)
           css_path.write_text(css)
@@ -117,12 +79,13 @@ jobs:
           git diff --check
           git add -A
           mapfile -t files < <(git diff --cached --name-only | sort)
-          printf 'Final files:\n%s\n' "${files[*]}"
-          test "${#files[@]}" -eq 2
-          test "${files[0]}" = "realty/assets/realty.css"
-          test "${files[1]}" = "realty/index.html"
+          printf 'Final staged files:\n%s\n' "${files[*]}"
+          test "${#files[@]}" -eq 3
+          test "${files[0]}" = ".github/workflows/realty-mobile-footer-fix.yml"
+          test "${files[1]}" = "realty/assets/realty.css"
+          test "${files[2]}" = "realty/index.html"
 
-      - name: Commit clean two-file package
+      - name: Commit clean package and self-remove workflow
         working-directory: repo
         env:
           GH_TOKEN: ${{ github.token }}
