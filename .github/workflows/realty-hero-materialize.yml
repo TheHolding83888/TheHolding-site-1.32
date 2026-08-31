@@ -67,7 +67,8 @@ jobs:
           p.write_text(s)
           PY
           git diff --check
-          test "$(git diff --name-only | sort | tr '\n' ' ')" = 'realty/assets/owner/hero-split.0b9f34e9.avif realty/index.html '
+          changed="$( { git diff --name-only; git ls-files --others --exclude-standard; } | sort -u | tr '\n' ' ' )"
+          test "$changed" = 'realty/assets/owner/hero-split.0b9f34e9.avif realty/index.html '
 
       - name: Commit verified hero
         shell: bash
