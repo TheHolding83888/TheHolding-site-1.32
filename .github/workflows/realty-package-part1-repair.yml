@@ -1,0 +1,77 @@
+name: Realty package part 1 corrected materializer
+
+on:
+  push:
+    branches:
+      - feat/realty-nav-desktop-media-20260831
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply canonical Realty package part 1
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          hp=Path('realty/index.html'); cp=Path('realty/assets/realty.css')
+          html=hp.read_text(encoding='utf-8'); css=cp.read_text(encoding='utf-8')
+          def once(text,old,new,label):
+              n=text.count(old)
+              if n!=1: raise SystemExit(f'{label}: expected 1 match, got {n}')
+              return text.replace(old,new,1)
+          html=once(html,'/realty/assets/realty.css?v=20260831m6','/realty/assets/realty.css?v=20260831m7','css revision')
+          html=once(html,'<nav class="mobile-menu" data-mobile-menu aria-label="Realty mobile menu"><a href="/realty/">Overview</a><a href="#real-world">Real World</a><a href="#metaverse">Metaverse</a><a href="/realty/sources/">Sources</a></nav>','<nav class="mobile-menu" data-mobile-menu aria-label="Realty mobile menu"><a href="/realty/">Overview</a><a href="#physical-markets" data-market-scroll>Real World</a><a href="#digital-markets" data-market-scroll>Metaverse</a><a href="/realty/sources/">Sources</a></nav>','mobile menu')
+          html=once(html,'<a class="world-card physical" id="real-world" href="#physical-markets">','<a class="world-card physical" id="real-world" href="#physical-markets" data-market-scroll>','physical card')
+          html=once(html,'<a class="world-card digital" id="metaverse" href="#digital-markets">','<a class="world-card digital" id="metaverse" href="#digital-markets" data-market-scroll>','digital card')
+          old_preview='<section class="mobile-preview" aria-labelledby="mobile-preview-title"><div class="mobile-preview-head"><h2 id="mobile-preview-title">Explore the Two Markets</h2><p>Two property worlds, one clean discovery surface.</p></div><div class="mobile-preview-grid"><article class="mobile-preview-card physical"><div class="preview-art"><img src="/realty/assets/mobile-preview/real-world.dd91ff74.avif" alt="" loading="lazy" decoding="async"></div><div class="mobile-preview-copy"><small>Real World</small><h3>Property Rails</h3><p>Tokenized property platforms and official marketplaces.</p></div></article><article class="mobile-preview-card digital"><div class="preview-art"><img src="/realty/assets/mobile-preview/metaverse.688ec687.avif" alt="" loading="lazy" decoding="async"></div><div class="mobile-preview-copy"><small>Metaverse</small><h3>Virtual Worlds</h3><p>Digital land and property across leading ecosystems.</p></div></article></div></section>'
+          new_preview='<section class="mobile-preview" aria-labelledby="mobile-preview-title"><div class="mobile-preview-head"><h2 id="mobile-preview-title">Explore the Two Markets</h2><p>Two property worlds, one clean discovery surface.</p></div><div class="mobile-preview-grid"><a class="mobile-preview-card physical" href="#physical-markets" data-market-scroll aria-label="Explore tokenized real estate platforms"><div class="preview-art"><img src="/realty/assets/mobile-preview/real-world.dd91ff74.avif" alt="" loading="lazy" decoding="async"></div><div class="mobile-preview-copy"><small>Real World</small><h3>Property Rails</h3><p>Tokenized property platforms and official marketplaces.</p></div></a><a class="mobile-preview-card digital" href="#digital-markets" data-market-scroll aria-label="Explore metaverse real estate worlds"><div class="preview-art"><img src="/realty/assets/mobile-preview/metaverse.688ec687.avif" alt="" loading="lazy" decoding="async"></div><div class="mobile-preview-copy"><small>Metaverse</small><h3>Virtual Worlds</h3><p>Digital land and property across leading ecosystems.</p></div></a></div></section>'
+          html=once(html,old_preview,new_preview,'mobile previews')
+          old_footer='<footer class="footer"><div class="footer-brand"><strong>THE HOLDING</strong><span class="footer-dot">·</span><span class="footer-realty">Realty</span></div><div class="footer-note">Discovery only · external marketplaces · no custody · no fabricated listings</div></footer>'
+          new_footer='<footer class="footer" aria-label="The Holding Realty footer"><div class="footer-main"><div class="footer-brand"><strong>THE HOLDING</strong><span class="footer-dot">·</span><span class="footer-realty">Realty</span></div><nav class="footer-links" aria-label="The Holding ecosystem"><a href="/">Funds</a><a href="/companies/">Onchain Companies</a></nav><div class="footer-connect"><a class="footer-x" href="https://x.com/theholding_" target="_blank" rel="noopener" aria-label="The Holding on X"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2H21l-6.56 7.497L22 22h-5.828l-4.565-5.969L6.38 22H3.622l6.689-7.645L3 2h5.976l4.126 5.455L18.244 2Zm-.968 17.8h1.527L8.147 4.085H6.509L17.276 19.8Z"/></svg><span>The Holding</span></a><a class="footer-consult" href="https://x.com/defitea_" target="_blank" rel="noopener">Consultation <span aria-hidden="true">↗</span></a></div></div><div class="footer-note">Discovery only · external marketplaces · no custody · no fabricated listings</div></footer>'
+          html=once(html,old_footer,new_footer,'footer')
+          runtime_re=re.compile(r'<script>\(\(\)=>\{const root=document\.documentElement,theme=document\.querySelector\(\'\[data-theme-toggle\]\'\).*?</script>\s*</body>',re.S)
+          new_runtime='''<script>(()=>{const root=document.documentElement,theme=document.querySelector('[data-theme-toggle]'),btn=document.querySelector('[data-menu-toggle]'),menu=document.querySelector('[data-mobile-menu]');theme?.addEventListener('click',()=>{const next=root.dataset.theme==='dark'?'light':'dark';root.dataset.theme=next;try{localStorage.setItem('theholding-realty-theme',next)}catch(e){}});const closeMenu=()=>{menu?.classList.remove('open');btn?.setAttribute('aria-expanded','false')};btn?.addEventListener('click',()=>{const open=menu.classList.toggle('open');btn.setAttribute('aria-expanded',String(open))});menu?.querySelectorAll('a').forEach(a=>a.addEventListener('click',closeMenu));const mobile=matchMedia('(max-width:760px)').matches;if(mobile){const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches,scrollMarketTarget=target=>{const rect=target.getBoundingClientRect(),top=rect.top+scrollY-Math.max(20,(innerHeight-rect.height)/2);scrollTo({top:Math.max(0,top),behavior:reduceMotion?'auto':'smooth'})};document.querySelectorAll('[data-market-scroll]').forEach(link=>link.addEventListener('click',event=>{const target=document.querySelector(link.getAttribute('href'));if(!target)return;event.preventDefault();closeMenu();history.replaceState(null,'',location.pathname+location.search);requestAnimationFrame(()=>scrollMarketTarget(target));link.blur()}));const scrollKey='theholding-realty-scroll:'+location.pathname+location.search,saveScroll=()=>{try{sessionStorage.setItem(scrollKey,String(Math.max(0,Math.round(scrollY))))}catch(e){}};addEventListener('pagehide',saveScroll);addEventListener('beforeunload',saveScroll);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveScroll()});const y=Number(window.__realtyRestoreY);if(Number.isFinite(y)&&y>0){const place=()=>scrollTo(0,Math.min(y,Math.max(0,document.documentElement.scrollHeight-innerHeight))),reveal=()=>{place();requestAnimationFrame(()=>requestAnimationFrame(()=>{place();document.documentElement.style.visibility=''}))},finish=()=>{place();if('scrollRestoration'in history)history.scrollRestoration='auto'};if(document.readyState==='loading')addEventListener('DOMContentLoaded',reveal,{once:true});else reveal();if(document.readyState==='complete')finish();else addEventListener('load',finish,{once:true})}else document.documentElement.style.visibility=''}addEventListener('resize',()=>{if(innerWidth>760)closeMenu()},{passive:true})})();</script>\n</body>'''
+          html,n=runtime_re.subn(new_runtime,html,count=1)
+          if n!=1: raise SystemExit(f'runtime: expected 1 match, got {n}')
+          css=once(css,'.world-copy{position:relative;z-index:2;padding:20px 22px;width:58%;min-width:330px}','.world-copy{position:relative;z-index:2;padding:20px 22px;width:58%;min-width:330px;min-height:188px;display:flex;flex-direction:column;align-items:flex-start}','world copy')
+          css=once(css,'.world-card h2{font-family:var(--serif);font-weight:500;line-height:1;margin:9px 0 7px;font-size:29px;color:var(--gold2)}','.world-card h2{font-family:var(--serif);font-weight:500;line-height:1;margin:9px 0 7px;font-size:29px;color:var(--gold2);min-height:58px}','world h2')
+          css=once(css,'.world-card p{margin:0;color:#c2c4c8;line-height:1.42;font-size:12px;max-width:390px}','.world-card p{margin:0;color:#c2c4c8;line-height:1.42;font-size:12px;max-width:390px;min-height:34px}','world p')
+          css=once(css,'.world-card .cta{display:inline-flex;margin-top:13px;border:1px solid #5a626e;border-radius:8px;padding:8px 11px;font-size:11px;background:rgba(8,10,13,.56)}','.world-card .cta{display:inline-flex;margin-top:auto;border:1px solid #5a626e;border-radius:8px;padding:8px 11px;font-size:11px;background:rgba(8,10,13,.56)}','world cta')
+          css=once(css,'.mobile-preview-card{border:1px solid #d9d2c7;border-radius:16px;background:#fff;overflow:hidden;box-shadow:0 10px 26px rgba(44,36,20,.045)}','.mobile-preview-card{display:block;border:1px solid #d9d2c7;border-radius:16px;background:#fff;overflow:hidden;box-shadow:0 10px 26px rgba(44,36,20,.045);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}.mobile-preview-card:active{transform:scale(.99);border-color:#cbbd9f;box-shadow:0 7px 18px rgba(44,36,20,.04)}','mobile preview css')
+          css=once(css,'.footer{display:flex;justify-content:space-between;gap:20px;color:#80858d;font-size:10px;padding:20px 4px 8px;border-top:1px solid #1d2228}.footer strong{font-family:var(--serif);font-size:17px;letter-spacing:.12em;color:#c8c9cb}','.footer{margin-top:8px;padding:24px 4px 8px;border-top:1px solid #1d2228;color:#8c9199;font-size:10px}.footer-main{display:grid;grid-template-columns:minmax(220px,1fr) auto auto;align-items:center;gap:26px}.footer-brand{display:flex;align-items:center;gap:8px;min-width:0}.footer strong{font-family:var(--serif);font-size:18px;letter-spacing:.14em;color:#d1d2d4;font-weight:500}.footer-dot{color:var(--gold)}.footer-realty{font-family:var(--serif);font-size:17px;color:#aeb1b6}.footer-links,.footer-connect{display:flex;align-items:center;gap:8px}.footer-links a,.footer-connect a{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:36px;padding:0 12px;border:1px solid #2a3038;border-radius:999px;background:rgba(255,255,255,.018);color:#b8bbc0;transition:border-color .2s ease,background .2s ease,color .2s ease,transform .2s ease}.footer-links a:hover,.footer-connect a:hover{border-color:#525b67;background:rgba(255,255,255,.045);color:#f0eee8;transform:translateY(-1px)}.footer-x svg{width:12px;height:12px;fill:currentColor}.footer-consult span{color:var(--gold2)}.footer-note{margin-top:15px;padding-top:13px;border-top:1px solid rgba(255,255,255,.055);color:#6f747c;letter-spacing:.035em}','footer desktop')
+          css=once(css,"[data-theme='light'] .footer{border-color:#dfdcd5;color:#777}[data-theme='light'] .footer strong{color:#333}","[data-theme='light'] .footer{border-color:#dfdcd5;color:#777}[data-theme='light'] .footer strong{color:#333}[data-theme='light'] .footer-realty{color:#666}[data-theme='light'] .footer-links a,[data-theme='light'] .footer-connect a{background:#fff;border-color:#ded8ce;color:#454545}[data-theme='light'] .footer-links a:hover,[data-theme='light'] .footer-connect a:hover{background:#fff;border-color:#beb5a6;color:#171717}[data-theme='light'] .footer-note{border-color:#e5e0d8;color:#7a7771}",'footer light')
+          old_mobile='.footer{margin-top:12px;padding:22px 8px 11px;display:block;text-align:center;border-color:#dcd5ca;color:#777;font-size:9.5px;line-height:1.5}.footer-brand{display:flex;align-items:baseline;justify-content:center;gap:8px;margin-bottom:7px;white-space:nowrap}.footer strong{font-size:21px;line-height:1;letter-spacing:.17em;color:#222}.footer-dot{font-family:var(--serif);font-size:19px;line-height:1;color:#b99a5d}.footer-realty{font-family:var(--serif);font-size:18px;line-height:1;color:#4b4740;letter-spacing:.03em}.footer-note{max-width:320px;margin:0 auto;color:#8b867f}'
+          new_mobile='.footer{margin-top:12px;padding:22px 8px 11px;text-align:center;border-color:#dcd5ca;color:#777;font-size:9.5px;line-height:1.5}.footer-main{display:flex;flex-direction:column;align-items:center;gap:12px}.footer-brand{display:flex;align-items:baseline;justify-content:center;gap:8px;white-space:nowrap}.footer strong{font-size:21px;line-height:1;letter-spacing:.17em;color:#222}.footer-dot{font-family:var(--serif);font-size:19px;line-height:1;color:#b99a5d}.footer-realty{font-family:var(--serif);font-size:18px;line-height:1;color:#4b4740;letter-spacing:.03em}.footer-links,.footer-connect{justify-content:center;flex-wrap:wrap;gap:7px}.footer-links a,.footer-connect a{min-height:34px;padding:0 11px;font-size:9.5px;background:#fff;border-color:#ded8ce;color:#47433d}.footer-note{max-width:320px;margin:14px auto 0;padding-top:12px;border-top:1px solid #e6e0d7;color:#8b867f}'
+          css=once(css,old_mobile,new_mobile,'footer mobile')
+          hp.write_text(html,encoding='utf-8'); cp.write_text(css,encoding='utf-8')
+          PY
+      - name: Validate exact final diff
+        shell: bash
+        run: |
+          git diff --check
+          test "$(git diff --name-only | sort | tr '\n' ' ')" = "realty/assets/realty.css realty/index.html "
+          grep -q 'realty.css?v=20260831m7' realty/index.html
+          grep -q 'href="#physical-markets" data-market-scroll>Real World' realty/index.html
+          grep -q 'href="#digital-markets" data-market-scroll>Metaverse' realty/index.html
+          grep -q 'https://x.com/theholding_' realty/index.html
+          grep -q 'https://x.com/defitea_' realty/index.html
+          grep -q 'Onchain Companies' realty/index.html
+          test "$(grep -o 'theholding-realty-scroll' realty/index.html | wc -l)" -eq 2
+      - name: Commit clean portion 1
+        shell: bash
+        run: |
+          git rm .github/workflows/realty-package-part1-repair.yml
+          git config user.name 'The Holding Realty'
+          git config user.email 'realty@theholding.ai'
+          git add realty/index.html realty/assets/realty.css
+          git commit -m 'Realty: premium navigation alignment and footer'
+          git push origin HEAD:${GITHUB_REF_NAME}
