@@ -4,7 +4,7 @@
 >
 > Start from this live `main` file. Then load only the minimum recovery packet below. Full owner/build/history canons remain machine-verified durable contracts and are loaded only when the compact router says they are relevant. Changing facts still come from live generated artifacts and exact workflow evidence, not prose memory.
 
-Canonical source state represented here: **2026-08-31T14:28:01.896Z**
+Canonical source state represented here: **2026-08-31T15:13:56.688Z**
 
 ## Minimum recovery packet
 
@@ -46,17 +46,16 @@ Current authority boundary: **execution authority = none**. No wallet signing, t
 
 ## Current cognitive stack
 
-- Cognitive Stack: **WATCH**; readyForManualInterpretation: true; chainHash: a457887e84acdae48e503c85eeab2a3df306865ad8e1e7b0f76468b8c0c0dd89.
-- Security Sentinel (latest standalone state): **WATCH**; Critical 0 / High 2 / Medium 50; generatedAt 2026-08-31T14:28:01.896Z.
-- Cognitive Stack Security snapshot is older (2026-08-30T13:50:05.820Z); it remains the exact Security binding for that coherent Cognitive Stack packet, not the current standalone Security count.
+- Cognitive Stack: **WATCH**; readyForManualInterpretation: true; chainHash: 2fcfd3a957d06ee13df2a6b354179fbbd48dcb0d507d379b3513a2051c1198fd.
+- Security Sentinel (latest standalone state): **WATCH**; Critical 0 / High 2 / Medium 50; generatedAt 2026-08-31T15:12:26.139Z.
 - Grounded Brain: **WATCH**.
-- ChatGPT Bridge: **WATCH**; cases 21; evidence 36; noExecution true.
+- ChatGPT Bridge: **WATCH**; cases 20; evidence 35; noExecution true.
 
 ## Learning / Proposal / Builder / Guardian
 
-- Learning: **READY**; active cases 21; remembered cases 210; Brain observations 71; owner decisions 2; settled outcomes 0; lessons 0.
+- Learning: **READY**; active cases 20; remembered cases 221; Brain observations 72; owner decisions 2; settled outcomes 0; lessons 0.
 - Continuous learning priority: **autonomous observational/world evidence is the primary always-on lane**; Owner Decision → Outcome remains a sparse complementary lane. Neither lane gains causal, policy, capital, repository or execution authority by accumulation alone.
-- Proposal: **WATCH**; active 3; APPROVED 1; PROPOSED 2; SUPERSEDED 28; production execution disabled.
+- Proposal: **WATCH**; active 3; APPROVED 1; PROPOSED 2; SUPERSEDED 29; production execution disabled.
 - Builder: **WATCH**; candidates 1; CANDIDATE 1; productionMutationAuthorizedCount 0.
 - Guardian: **WATCH**; research-only 1; blocked 0; sandbox-build authorized 0; production mutation authorized 0.
 
