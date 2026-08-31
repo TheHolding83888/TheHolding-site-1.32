@@ -58,9 +58,10 @@ jobs:
           git add -A
           mapfile -t files < <(git diff --cached --name-only | sort)
           printf 'Final staged files:\n%s\n' "${files[*]}"
-          test "${#files[@]}" -eq 2
-          test "${files[0]}" = "realty/assets/realty.css"
-          test "${files[1]}" = "realty/index.html"
+          test "${#files[@]}" -eq 3
+          test "${files[0]}" = ".github/workflows/realty-footer-polish-materialize.yml"
+          test "${files[1]}" = "realty/assets/realty.css"
+          test "${files[2]}" = "realty/index.html"
 
       - name: Commit clean two-file package
         working-directory: repo
