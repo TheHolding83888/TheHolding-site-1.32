@@ -1,10 +1,10 @@
 # The Holding Proposal Work Queue
 
-Generated: 2026-08-30T13:02:30.307Z
+Generated: 2026-08-31T15:13:30.045Z
 
 Status: **WATCH**
 
-3 active proposal(s) from 3 active Learning case(s); 5 owner decision binding(s) reflected; 4 historical semantic/resolved variant(s) preserved as SUPERSEDED memory; execution remains disabled.
+3 active proposal(s) from 3 active Learning case(s); 6 owner decision binding(s) reflected; 5 historical semantic/resolved variant(s) preserved as SUPERSEDED memory; execution remains disabled.
 
 ## Priority queue
 
@@ -14,8 +14,9 @@ Status: **WATCH**
 - **P0 · security · verification/ask-experience/runner-v0.1.mjs** – Perform bounded human-reviewed work for verification/ask-experience/runner-v0.1.mjs under recommendation class evidence-review. [SUPERSEDED]
 - **P0 · security · verification/ask-experience/runner-v0.1.mjs** – Perform bounded human-reviewed work for verification/ask-experience/runner-v0.1.mjs under recommendation class evidence-review. [SUPERSEDED]
 - **P0 · security · verification/ask-experience/runner-v0.1.mjs** – Perform bounded human-reviewed work for verification/ask-experience/runner-v0.1.mjs under recommendation class evidence-review. [SUPERSEDED]
-- **P0 · security · 53 current findings** – Review actual data provenance for 53 current findings; classify sinks as trusted, sanitized, or unsafe before any code change. [APPROVED] · owner accept · DEC-9e7fdbf2f8431a42194b
+- **P0 · security · 53 current findings** – Review actual data provenance for 53 current findings; classify sinks as trusted, sanitized, or unsafe before any code change. [SUPERSEDED] · owner accept · DEC-9e7fdbf2f8431a42194b
 - **P0 · security · 20 current findings** – Review actual data provenance for 20 current findings; classify sinks as trusted, sanitized, or unsafe before any code change. [SUPERSEDED] · owner accept · DEC-9e7fdbf2f8431a42194b
+- **P0 · security · 50 current findings** – Review actual data provenance for 50 current findings; classify sinks as trusted, sanitized, or unsafe before any code change. [APPROVED] · owner accept · DEC-9e7fdbf2f8431a42194b
 - **P0 · security · 38 current findings** – Review actual data provenance for 38 current findings; classify sinks as trusted, sanitized, or unsafe before any code change. [SUPERSEDED] · owner accept · DEC-9e7fdbf2f8431a42194b
 - **P0 · security · 7 current findings** – Review third-party script trust and integrity posture for 7 current findings; propose bounded hardening only where compatibility is proven. [SUPERSEDED] · owner accept · DEC-062ad9c0ce2e0ebbc95e
 - **P0 · security · 31 current findings** – Review actual data provenance for 31 current findings; classify sinks as trusted, sanitized, or unsafe before any code change. [SUPERSEDED] · owner accept · DEC-9e7fdbf2f8431a42194b
@@ -42,7 +43,7 @@ Status: **WATCH**
 
 ## Decision boundary
 
-Currently owner-approved active proposals: 1. Rejected: 0. Deferred active cases: 0. Historical decision-bound variants: 4.
+Currently owner-approved active proposals: 1. Rejected: 0. Deferred active cases: 0. Historical decision-bound variants: 5.
 
 APPROVED means owner-approved for the current semantic Proposal variant only. A historical variant of the same stable Learning case stays SUPERSEDED and cannot reactivate. SUPERSEDED does not mean rejected, released, executed, or forgotten.
 
