@@ -1,0 +1,74 @@
+name: Realty footer SVG integrity fix
+
+on:
+  push:
+    branches:
+      - fix/realty-mobile-footer-icons-20260831
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout task branch without external actions
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: fix/realty-mobile-footer-icons-20260831
+        run: |
+          set -euo pipefail
+          git clone --no-tags --depth 1 --branch "$BRANCH" "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" repo
+
+      - name: Replace footer with exact verified SVG payload
+        working-directory: repo
+        env:
+          FOOTER_B64: PGZvb3RlciBjbGFzcz0iZm9vdGVyIiBhcmlhLWxhYmVsPSJUaGUgSG9sZGluZyBSZWFsdHkgZm9vdGVyIj48ZGl2IGNsYXNzPSJmb290ZXItbWFpbiI+PGRpdiBjbGFzcz0iZm9vdGVyLWJyYW5kIj48c3Ryb25nPlRIRSBIT0xESU5HPC9zdHJvbmc+PHNwYW4gY2xhc3M9ImZvb3Rlci1kb3QiPsK3PC9zcGFuPjxzcGFuIGNsYXNzPSJmb290ZXItcmVhbHR5Ij5SZWFsdHk8L3NwYW4+PC9kaXY+PGRpdiBjbGFzcz0iZm9vdGVyLWNvbm5lY3QiPjxhIGNsYXNzPSJmb290ZXIteCIgaHJlZj0iaHR0cHM6Ly94LmNvbS90aGVob2xkaW5nXyIgdGFyZ2V0PSJfYmxhbmsiIHJlbD0ibm9vcGVuZXIiIGFyaWEtbGFiZWw9IlRoZSBIb2xkaW5nIG9uIFgiPjxzdmcgdmlld0JveD0iMCAwIDI0IDI0IiBhcmlhLWhpZGRlbj0idHJ1ZSI+PHBhdGggZD0iTTE4LjI0NCAySDIxbC02LjU2IDcuNDk3TDIyIDIyaC01LjgyOGwtNC41NjUtNS45NjlMNi4zOCAyMkgzLjYyMmw2LjY4OS03LjY0NUwzIDJoNS45NzZsNC4xMjYgNS40NTVMMTguMjQ0IDJabS0uOTY4IDE3LjhoMS41MjdMOC4xNDcgNC4wODVINi41MDlMMTcuMjc2IDE5LjhaIi8+PC9zdmc+PC9hPjxhIGNsYXNzPSJmb290ZXItaG9tZS1tYXJrIiBocmVmPSIvIiBhcmlhLWxhYmVsPSJUaGUgSG9sZGluZyBob21lIj48c3ZnIHZpZXdCb3g9IjEwMCAxMzAgNDQwIDQwMCIgYXJpYS1oaWRkZW49InRydWUiPjxwYXRoIGQ9Ik0xMjUgMTYxTDEyNSAxNjdMMTMwIDE2OUwyNDggMTcxTDUwNCAxNjlMNTA5IDE2OEw1MTEgMTY0TDUwOSAxNjBMMzc1IDE1MkwyMjkgMTUzWiIvPjxwYXRoIGQ9Ik0xMjUgMTk5TDEyNSAyMTZMMTMxIDIxOUwyMDMgMjIyTDM5MyAyMjNMNDk1IDIyMEw1MDkgMjE3TDUxMSAyMDlMNTEwIDE5OUw0OTcgMTk1TDM3NyAxODhMMjIyIDE4OUwxMzggMTk1WiIvPjxwYXRoIGQ9Ik0xMjUgMjU4TDEyNSAyODVMMTMyIDI5MEwyODQgMjk3TDM5MyAyOTZMNDk4IDI5MUw1MDggMjg4TDUxMSAyODBMNTEwIDI1OEw1MDUgMjU0TDQxMiAyNDNMMzMyIDI0MEwyMzMgMjQyTDEzNCAyNTNaIi8+PHBhdGggZD0iTTEyNSAzMzhMMTI1IDM3NUwxMzEgMzgxTDEzOCAzODNMMjUxIDM5MEwzNTEgMzkxTDQ5OCAzODNMNTA2IDM4MEw1MTAgMzc1TDUxMSAzNDFMNTA2IDMzM0w0NzkgMzI2TDQwNiAzMTdMMzU5IDMxNEwyNDggMzE1TDE1NSAzMjZMMTM0IDMzMVoiLz48cGF0aCBkPSJNMTI1IDQzOEwxMjUgNDg1TDEzMCA0OTJMMTM3IDQ5NUwxOTAgNTAwTDQ0NCA1MDBMNDk4IDQ5NUw1MDggNDg5TDUxMSA0ODFMNTExIDQ0M0w1MDYgNDMyTDQ3NyA0MjNMNDE1IDQxM0wzNTEgNDA4TDI3NiA0MDhMMjMyIDQxMUwxNDkgNDI1TDEzMSA0MzFaIi8+PC9zdmc+PC9hPjxhIGNsYXNzPSJmb290ZXItZW52ZWxvcGUiIGhyZWY9Imh0dHBzOi8veC5jb20vZGVmaXRlYV8iIHRhcmdldD0iX2JsYW5rIiByZWw9Im5vb3BlbmVyIiBhcmlhLWxhYmVsPSJDb250YWN0IERlRml0ZWEgb24gWCI+PHN2ZyB2aWV3Qm94PSIwIDAgMjQgMjQiIGFyaWEtaGlkZGVuPSJ0cnVlIj48cGF0aCBkPSJNMy41IDYuNWgxN3YxMWgtMTd6Ii8+PHBhdGggZD0iTTQgN2w4IDYgOC02Ii8+PC9zdmc+PC9hPjwvZGl2PjwvZGl2PjxkaXYgY2xhc3M9ImZvb3Rlci1ub3RlIj5EaXNjb3Zlcnkgb25seSDCtyBleHRlcm5hbCBtYXJrZXRwbGFjZXMgwrcgbm8gY3VzdG9keSDCtyBubyBmYWJyaWNhdGVkIGxpc3RpbmdzPC9kaXY+PC9mb290ZXI+
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64, os
+          from pathlib import Path
+          p = Path('realty/index.html')
+          workflow = Path('.github/workflows/realty-footer-integrity-fix.yml')
+          html = p.read_text()
+          start = html.find('<footer class="footer"')
+          end = html.find('</footer>', start)
+          if start < 0 or end < 0:
+              raise SystemExit('footer not found')
+          end += len('</footer>')
+          footer = base64.b64decode(os.environ['FOOTER_B64']).decode()
+          html = html[:start] + footer + html[end:]
+          exact = [
+              'M18.244 2H21l-6.56 7.497L22 22h-5.828l-4.565-5.969L6.38 22H3.622l6.689-7.645L3 2h5.976l4.126 5.455L18.244 2Zm-.968 17.8h1.527L8.147 4.085H6.509L17.276 19.8Z',
+              'M125 258L125 285L132 290L284 297L393 296L498 291L508 288L511 280L510 258L505 254L412 243L332 240L233 242L134 253Z',
+              'M3.5 6.5h17v11h-17z',
+              'Discovery only · external marketplaces · no custody · no fabricated listings',
+          ]
+          for token in exact:
+              if token not in html:
+                  raise SystemExit('integrity token missing: ' + token[:48])
+          if 'µ' in html or 'q498' in html or 'P510' in html:
+              raise SystemExit('corrupted payload residue detected')
+          p.write_text(html)
+          workflow.unlink()
+          PY
+          git diff --check
+          git add -A
+          mapfile -t files < <(git diff --cached --name-only | sort)
+          printf 'Final staged files:\n%s\n' "${files[*]}"
+          test "${#files[@]}" -eq 2
+          test "${files[0]}" = ".github/workflows/realty-footer-integrity-fix.yml"
+          test "${files[1]}" = "realty/index.html"
+
+      - name: Commit exact footer payload and self-remove workflow
+        working-directory: repo
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: fix/realty-mobile-footer-icons-20260831
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Realty Materializer"
+          git config user.email "realty-materializer@theholding.ai"
+          git commit -m "Realty: verify footer SVG integrity"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:"$BRANCH"
