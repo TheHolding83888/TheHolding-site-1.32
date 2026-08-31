@@ -1,0 +1,74 @@
+name: Realty mobile nav and market expansion patch
+
+on:
+  push:
+    branches:
+      - feat/realty-mobile-nav-markets-20260831
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Patch Realty landing
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p = Path('realty/index.html')
+          s = p.read_text(encoding='utf-8')
+
+          replacements = [
+            ("if(!mobile)return;const nav=performance.getEntriesByType?.('navigation')?.[0],reload=nav?.type==='reload'||performance.navigation?.type===1;if(!reload)return;try{", "if(!mobile)return;const nav=performance.getEntriesByType?.('navigation')?.[0],reload=nav?.type==='reload'||performance.navigation?.type===1,localHash=/^#(?:real-world|metaverse|physical-markets|digital-markets)$/.test(location.hash);if(reload&&localHash)history.replaceState(null,'',location.pathname+location.search);if(!reload)return;try{"),
+            ("<span>Markets<br>Tracked</span><strong>10</strong>", "<span>Markets<br>Tracked</span><strong>16</strong>"),
+            ("<span>Real-World<br>Platforms</span><strong>5</strong>", "<span>Real-World<br>Platforms</span><strong>8</strong>"),
+            ("<span>Metaverse<br>Worlds</span><strong>5</strong>", "<span>Metaverse<br>Worlds</span><strong>8</strong>"),
+            ("<span>Direct<br>Links</span><strong>10</strong>", "<span>Direct<br>Links</span><strong>16</strong>"),
+            ('<a class="brand-link" href="https://www.reental.co/en/properties" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?sz=64&domain_url=https://www.reental.co" alt="" width="24" height="24" loading="lazy" decoding="async" referrerpolicy="no-referrer"><span class="brand-name">Reental<small>Properties</small></span></a>', '<a class="brand-link" href="https://www.reental.co/en/properties" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?sz=64&domain_url=https://www.reental.co" alt="" width="24" height="24" loading="lazy" decoding="async" referrerpolicy="no-referrer"><span class="brand-name">Reental<small>Properties</small></span></a><a class="brand-link" href="https://www.brickken.com/real-estate-tokenization" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?sz=64&domain_url=https://www.brickken.com" alt="" width="24" height="24" loading="lazy" decoding="async" referrerpolicy="no-referrer"><span class="brand-name">Brickken<small>Tokenization</small></span></a><a class="brand-link" href="https://digishares.io/real-estate-tokenization/" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?sz=64&domain_url=https://digishares.io" alt="" width="24" height="24" loading="lazy" decoding="async" referrerpolicy="no-referrer"><span class="brand-name">DigiShares<small>Tokenization</small></span></a><a class="brand-link" href="https://platform.estatex.eu/" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?sz=64&domain_url=https://estatex.eu" alt="" width="24" height="24" loading="lazy" decoding="async" referrerpolicy="no-referrer"><span class="brand-name">EstateX<small>Platform</small></span></a>'),
+            ('<a class="brand-link" href="https://www.voxels.com/" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?sz=64&domain_url=https://www.voxels.com" alt="" width="24" height="24" loading="lazy" decoding="async" referrerpolicy="no-referrer"><span class="brand-name">Voxels<small>World</small></span></a>', '<a class="brand-link" href="https://www.voxels.com/" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?sz=64&domain_url=https://www.voxels.com" alt="" width="24" height="24" loading="lazy" decoding="async" referrerpolicy="no-referrer"><span class="brand-name">Voxels<small>World</small></span></a><a class="brand-link" href="https://www.upland.me/" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?sz=64&domain_url=https://www.upland.me" alt="" width="24" height="24" loading="lazy" decoding="async" referrerpolicy="no-referrer"><span class="brand-name">Upland<small>Properties</small></span></a><a class="brand-link" href="https://app.earth2.io/" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?sz=64&domain_url=https://earth2.io" alt="" width="24" height="24" loading="lazy" decoding="async" referrerpolicy="no-referrer"><span class="brand-name">Earth 2<small>Land</small></span></a><a class="brand-link" href="https://www.victoriavr.com/map" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?sz=64&domain_url=https://www.victoriavr.com" alt="" width="24" height="24" loading="lazy" decoding="async" referrerpolicy="no-referrer"><span class="brand-name">Victoria VR<small>VR Lands</small></span></a>'),
+            ("if(mobile){const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches,scrollKey=", "if(mobile){const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;menu?.querySelectorAll('a[href^=\"#\"]').forEach(link=>link.addEventListener('click',event=>{const target=document.querySelector(link.getAttribute('href'));if(!target)return;event.preventDefault();closeMenu();target.scrollIntoView({behavior:reduceMotion?'auto':'smooth',block:'start'});history.replaceState(null,'',location.pathname+location.search);link.blur()}));const scrollKey=")
+          ]
+          for old, new in replacements:
+            count = s.count(old)
+            if count != 1:
+              raise SystemExit(f'Expected exactly one HTML match, got {count}: {old[:100]}')
+            s = s.replace(old, new)
+          p.write_text(s, encoding='utf-8')
+
+          c = Path('realty/assets/realty.css')
+          css = c.read_text(encoding='utf-8')
+          css_replacements = [
+            ('.brand-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}', '.brand-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}'),
+            ('.brand-grid{grid-template-columns:repeat(3,1fr)}.future', '.brand-grid{grid-template-columns:repeat(4,1fr)}.future'),
+            ('.brand-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:13px}', '.brand-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:13px}'),
+            ('.brand-link{height:78px;min-width:0;border-radius:12px;', '.brand-link{height:72px;min-width:0;border-radius:12px;'),
+            ('.brand-link img{width:28px;height:28px;border-radius:7px}.brand-name{font-size:10.6px;', '.brand-link img{width:25px;height:25px;border-radius:7px}.brand-name{font-size:9.6px;'),
+            ('@media(max-width:390px){.hero h1{font-size:38px}.world-card{min-height:180px}.world-card h2,.world-card.digital h2{font-size:26px}.brand-link{height:75px}.brand-name{font-size:10px}', '@media(max-width:390px){.hero h1{font-size:38px}.world-card{min-height:180px}.world-card h2,.world-card.digital h2{font-size:26px}.brand-link{height:70px}.brand-name{font-size:9.2px}')
+          ]
+          for old, new in css_replacements:
+            count = css.count(old)
+            if count != 1:
+              raise SystemExit(f'Expected exactly one CSS match, got {count}: {old[:100]}')
+            css = css.replace(old, new)
+          c.write_text(css, encoding='utf-8')
+          PY
+          git diff --check
+      - name: Commit landing update
+        shell: bash
+        run: |
+          if git diff --quiet -- realty/index.html realty/assets/realty.css; then
+            echo 'Already patched.'
+            exit 0
+          fi
+          git config user.name 'The Holding Realty Patch'
+          git config user.email 'realty-patch@theholding.ai'
+          git add realty/index.html realty/assets/realty.css
+          git commit -m 'Realty: stabilize mobile navigation and expand markets'
+          git push origin HEAD:${GITHUB_REF_NAME}
