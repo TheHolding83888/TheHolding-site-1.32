@@ -240,6 +240,32 @@ A future version requires a new durable change in:
 
 ---
 
-# 14. RESUME SENTENCE
+# 14. INHERITED DURABLE CHECKPOINT INVARIANTS
+
+This continuity preserves the verifier-required durable anchors from prior master continuity rather than silently deleting unrelated project truth:
+
+- **PROJECT X + HYPERLEND CLOSED** remains closed.
+- `resolver completeness != promotion completeness`.
+- `HyperLend base lending interest = Compounded / Embedded`.
+- `rewardAssetCount = 0` remains a historical checkpoint phrase; live changing state still outranks prose.
+- `generic implementation permission != merge permission`.
+- `GREEN workflow != physically materialized production artifact`.
+- prior `26/26` completeness checkpoint remains historical continuity.
+- `per-asset-authority` boundaries remain mandatory.
+- `CoinGecko` remains part of prior Market Data/provider routing context; no new Realty image dependency is introduced.
+- candidate/main `divergence` must be inspected rather than blindly rebased.
+- `PR #227` and `PR #233` remain historical production anchors.
+- `Market Data / onchain tracking: fat check` remains an inherited currentness/completeness anchor.
+- `Autonomous Observational / World Learning` remains the primary always-on learning lane.
+- `Owner Decision → Outcome Experience` remains a sparse complementary lane without authority growth.
+- **Minimum recovery packet** remains CURRENT → latest continuity → Router.
+- prior `Pendle / sPENDLE` state remains inherited and task-relevant truth must be refreshed from live evidence.
+- global authority remains `executionAuthority: **none**`.
+
+For detailed history behind these anchors, route to prior continuities rather than expanding this image incident into a duplicate archive.
+
+---
+
+# 15. RESUME SENTENCE
 
 > **As of the 2026-09-01 v1.4 boundary, the Realty desktop/laptop hero and both second-row banners have production-proven visual updates; exact owner attachment identity, binary transport, consumer mapping and visual presentation are now separate mandatory planes; Visual Asset Delivery Canon v1.4 supersedes v1.3 for new execution and absorbs the former companion prompt; a missing local-binary action must never be misreported as missing GitHub access; manual/model-mediated Base64 chunk loops remain forbidden; correct bytes with wrong visual must trigger presentation/CSS investigation before transport restart; one product branch and bounded diff remain the normal path; and GREEN requires live visual acceptance, not only repository or CI success.**
