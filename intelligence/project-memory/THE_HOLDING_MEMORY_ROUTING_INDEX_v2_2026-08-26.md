@@ -163,39 +163,42 @@ If the owner supplies the newer `THE_HOLDING_REALTY_PRODUCT_CANON_AND_CHAT_HANDO
 
 Use this route for any Realty task involving image replacement/upload, hero/banner/card media, AVIF/WebP/JPEG/PNG preparation, responsive image behavior, crop/focal positioning, image brightness/filter/overlay tied to an asset objective, binary repository transport, or direct asset/deployment proof.
 
-In addition to the hot core, **MUST load before any write**:
+In addition to the hot core, **MUST load before any product write**:
 
-- `THE_HOLDING_REALTY_VISUAL_ASSET_DELIVERY_CANON_v1.3_2026-09-01.md`;
-- exact live target HTML/DOM consumer;
-- exact relevant CSS/runtime behavior;
-- owner-approved source asset/evidence;
-- current GitHub/tool schema required to resolve direct binary transport.
+- `THE_HOLDING_REALTY_VISUAL_ASSET_DELIVERY_CANON_v1.4_2026-09-01.md`;
+- exact live target HTML/CSS/runtime consumer;
+- exact owner-approved source attachment/evidence;
+- current GitHub/tool schemas and repository permissions needed for the exact-safe transport route.
 
-**v1.3 supersedes v1.2 for new execution.** v1.1/v1.2 remain historical evidence.
+**v1.4 supersedes v1.3 for new execution.** v1.3/v1.2/v1.1 remain historical evidence.
+
+For an ordinary bounded Realty image task, v1.4 is the **single-file execution attachment**; the old separate v1.3 companion prompt is no longer required.
 
 Hard image-delivery laws:
 
-- visibly emit the v1.3 **Execution Contract** before the first repository write, then explicitly state `ROUTE LOCKED`;
-- exact consumer → source lock → production-asset lock → transport gate → route lock;
-- production asset/format must not change merely to make transport easier;
-- if a current tool exposes `create_blob(..., encoding=base64)` or equivalent binary-safe direct blob primitive, an **actual complete Lane A attempt is required before Lane B** unless the tool contract documents a hard limit below the payload size;
-- speculation that a payload is too large or inconvenient is not Lane A failure;
-- Lane B is allowed only after concrete Lane A failure/unavailability for the locked asset;
-- there is **no Lane C**;
-- manual/model-mediated large Base64 chunk transcription is forbidden;
-- if Lane B is used, freeze a per-chunk manifest and verify each staged chunk by exact length + expected SHA-256 before materialization;
-- Lane B budget = one transport branch + one materializer workflow path maximum;
-- after route lock, `LOCKED → DISCOVERY` is forbidden without a specific execution failure;
-- `file exists != correct bytes`: prove size + SHA-256 + format/magic + decode + dimensions;
-- Git blob SHA and content SHA-256 are different identities;
-- source SHA and production SHA may differ after transformation/re-encoding;
-- first RED Action/check after Route Lock moves state to **FAILURE_GATE** and freezes all new writes until the exact failed run/job/step/log evidence is read and classified;
-- one mechanical repair is allowed only when the exact cause is known and the route/asset/lane do not change;
-- a **second RED in the same transport/materialization stage = BLOCKED**: no third attempt, no new workflow, branch, lane, format or hidden continuation;
-- normal product branch budget = one clean product branch, plus one temporary transport branch only if Lane B is legally required;
+- separate four planes: **SOURCE / TRANSPORT / CONSUMER / PRESENTATION**;
+- if the owner says “use this attached image”, that exact attachment is SOURCE LOCK; do not substitute a generated/lookalike image unless explicitly asked to generate/transform;
+- a site-deployment request must not be answered by merely returning a generated image into chat;
+- latest explicit owner instruction wins over earlier optional transforms;
+- resolve the exact consumer and target breakpoint once before bytes;
+- preserve owner composition; prefer `object-position`/focal positioning over destructive crop when possible;
+- freeze one production asset and immutable path before transport;
+- check actual GitHub capabilities before claiming no access;
+- **missing local-binary upload primitive != missing GitHub access**; distinguish repo read/write, PR/merge, Git-object and local-file capabilities;
+- preferred exact-safe transport routes are native local-file upload, deterministic one-payload Git blob creation, or verified existing Git-object reuse;
+- manual/model-mediated large Base64 chunk transcription remains forbidden;
+- if no exact-safe binary route exists, report `BLOCKED` rather than create transport architecture;
+- visibly emit the v1.4 **Execution Contract** before the first product write, then explicitly state `ROUTE LOCKED`;
+- after route lock, `LOCKED → DISCOVERY` is forbidden without a concrete execution failure;
+- `file exists != correct bytes`: keep source SHA, production SHA, Git blob SHA and deployed bytes distinct;
+- correct bytes + correct consumer + wrong visual → inspect presentation (`object-position`, filter, overlay, opacity, theme, hover/runtime) **before restarting transport**;
+- correct Git/deploy + stale visual → inspect CSS/asset cache identity **before retransmitting binary**;
+- CSS changes must be consumer-specific, bounded and preserve out-of-scope breakpoints/surfaces;
+- normal branch budget = one clean product branch and one PR; no branch/workflow multiplication;
+- first required RED after Route Lock moves state to **FAILURE_GATE** and freezes writes until exact evidence is classified;
+- one mechanical repair maximum for a known cause; second RED same stage = **BLOCKED**;
 - final product PR contains no `.tmp`, Base64 chunks, transport workflow/materializer or unrelated changes;
-- CI/exact-head GREEN is necessary but not sufficient; direct immutable asset proof + target-breakpoint visual production proof are required before `production-proven`;
-- ordinary incidents after v1.3 should be recorded as continuity/addenda; do not create endless canon versions unless a durable transport/repository/proof invariant changes.
+- CI/exact-head GREEN is necessary but not sufficient; deploy + target-breakpoint visual production proof + owner acceptance close the task.
 
 If blocked, report the exact blocker and stop. Do not invent another route inside the same task.
 
