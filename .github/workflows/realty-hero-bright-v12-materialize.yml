@@ -28,15 +28,15 @@ jobs:
           test "$(find "$dir" -maxdepth 1 -name 'chunk-*.b64' -type f | wc -l)" -eq 12
           for n in 00 01 02 03 04 05 06 07 08 09 10; do test "$(wc -c < "$dir/chunk-$n.b64")" -eq 15000; done
           test "$(wc -c < "$dir/chunk-11.b64")" -eq 13252
+          for n in 00 01 02 03 04 05 06 07 08 09 10 11; do printf 'chunk-%s ' "$n"; git hash-object "$dir/chunk-$n.b64"; done
           cat "$dir"/chunk-{00..11}.b64 > /tmp/hero.b64
           test "$(wc -c < /tmp/hero.b64)" -eq 178252
           base64 -d /tmp/hero.b64 > "$out"
           test "$(wc -c < "$out")" -eq 133689
+          sha256sum "$out"
           echo '1ac3d6fedc41982fbb194f1f7ba3d9f67a82da2d2795fb7f95bfd9455643fcce  '"$out" | sha256sum -c -
           test "$(dd if="$out" bs=1 skip=4 count=8 2>/dev/null)" = 'ftypavif'
           echo "materialized_size=$(wc -c < "$out")"
-          sha256sum "$out"
-          git hash-object "$dir"/chunk-*.b64
 
       - name: Commit verified binary only
         shell: bash
