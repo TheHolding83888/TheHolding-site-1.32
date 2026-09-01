@@ -148,7 +148,7 @@ Keep canonical cadence/authority semantics from the full canon. Do not infer cur
 Use for The Holding Realty, tokenized physical real estate, metaverse/digital property, property discovery, Income Layer, Realty source governance, property history, comparison/watchlists and Atlas/geography.
 
 Load:
-- `THE_HOLDING_REALTY_PRODUCT_CANON_AND_CHAT_HANDOFF_2026-08-30.md`;
+- `THE_HOLDING_REALTY_PRODUCT_CANON_AND_CHAT_HANDOFF_2026-08-30.md` for broad live-repository Realty product context;
 - live `/realty/README.md`;
 - live `/realty/data/market-snapshot.json`;
 - `realty/data/source-governance.json` when touching sources, media, automation, permissions or commercialization;
@@ -157,7 +157,49 @@ Load:
 - relevant live Realty page/assets for the current UX objective;
 - exact PR/run evidence only when diagnosing implementation or deployment.
 
-Hard laws:
+If the owner supplies the newer `THE_HOLDING_REALTY_PRODUCT_CANON_AND_CHAT_HANDOFF_v1.1_2026-08-31.md`, use it as the preferred durable broad Realty attachment, while live `main` remains mutable truth.
+
+### 9A. REALTY VISUAL / IMAGE / BINARY DELIVERY — MANDATORY SPECIAL ROUTE
+
+Use this route for any Realty task involving:
+
+- image replacement/upload;
+- hero/banner/card media;
+- AVIF/WebP/JPEG/PNG preparation;
+- responsive `<picture>/<source>` behavior;
+- image crop/focal positioning;
+- image brightness/filter/overlay when tied to an asset objective;
+- binary repository transport;
+- direct asset/deployment proof.
+
+In addition to the hot core, **MUST load before any write**:
+
+- `THE_HOLDING_REALTY_VISUAL_ASSET_DELIVERY_CANON_v1.2_2026-09-01.md`;
+- exact live target HTML/DOM consumer;
+- exact relevant CSS/runtime behavior;
+- owner-approved source asset/evidence;
+- current available GitHub/tool transport contract only as needed to resolve Lane A readiness.
+
+Hard image-delivery laws:
+
+- freeze one **Execution Contract** before the first product/transport write;
+- exact consumer → source lock → production-asset lock → transport gate → route lock;
+- production asset/format must not change merely to make transport easier;
+- Lane A is valid only when binary/base64 transport is **end-to-end ready for the complete locked payload**, not merely because a tool with a binary-looking name exists;
+- Lane B is allowed only on concrete Lane A unavailability for the locked asset;
+- there is **no Lane C**;
+- after route lock, `LOCKED → DISCOVERY` is forbidden without a specific execution failure;
+- “one last check”, historical blob archaeology, alternate format, new branch/lane/assembler after lock = **PROCESS DRIFT** unless a concrete blocker has legally unlocked the route;
+- `file exists != correct bytes`: prove size + SHA-256 + format/magic + decode + dimensions;
+- Git blob SHA and content SHA-256 are different identities;
+- source SHA and production SHA may differ after transformation/re-encoding;
+- normal branch budget = one clean product branch, plus one temporary transport branch only if Lane B is required;
+- final product PR contains no `.tmp`, Base64 chunks, transport workflow/materializer or unrelated changes;
+- CI/exact-head GREEN is necessary but not sufficient; direct immutable asset proof + target-breakpoint visual production proof are required before `production-proven`.
+
+If blocked after route lock, stop with the exact failed operation/evidence. Do not invent another route inside the same task.
+
+General Realty hard laws:
 - source-first / free-first; reuse existing Holding Market Data/oracle lanes before creating duplicate pricing infrastructure;
 - missing/UNKNOWN != zero;
 - estimated/projected return != realised yield/cash flow;
