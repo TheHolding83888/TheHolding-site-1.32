@@ -1,0 +1,35 @@
+name: Temporary Realty hero materializer
+
+on:
+  push:
+    branches:
+      - transport/realty-hero-q60-20260901
+    paths:
+      - '.tmp/realty-hero-q60/READY'
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Materialize verified Realty hero asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          git clone --branch "$REF_NAME" --single-branch "https://github.com/$REPO.git" repo
+          cd repo
+          cat .tmp/realty-hero-q60/part-* > /tmp/hero.b64
+          base64 -d /tmp/hero.b64 > realty/assets/owner/hero-owner-bright.d3981d62.avif
+          test "$(wc -c < realty/assets/owner/hero-owner-bright.d3981d62.avif | tr -d ' ')" = "115763"
+          test "$(sha256sum realty/assets/owner/hero-owner-bright.d3981d62.avif | awk '{print $1}')" = "d3981d62f086aba08fec234df05b447d4f0ef4278218e93d8378da8ba864d103"
+          git config user.name "The Holding Realty Asset Materializer"
+          git config user.email "realty-asset-materializer@theholding.ai"
+          git add realty/assets/owner/hero-owner-bright.d3981d62.avif
+          git commit -m "Realty: materialize verified bright desktop hero"
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
+          git push origin HEAD:"$REF_NAME"
