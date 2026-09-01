@@ -161,43 +161,43 @@ If the owner supplies the newer `THE_HOLDING_REALTY_PRODUCT_CANON_AND_CHAT_HANDO
 
 ### 9A. REALTY VISUAL / IMAGE / BINARY DELIVERY — MANDATORY SPECIAL ROUTE
 
-Use this route for any Realty task involving:
-
-- image replacement/upload;
-- hero/banner/card media;
-- AVIF/WebP/JPEG/PNG preparation;
-- responsive `<picture>/<source>` behavior;
-- image crop/focal positioning;
-- image brightness/filter/overlay when tied to an asset objective;
-- binary repository transport;
-- direct asset/deployment proof.
+Use this route for any Realty task involving image replacement/upload, hero/banner/card media, AVIF/WebP/JPEG/PNG preparation, responsive image behavior, crop/focal positioning, image brightness/filter/overlay tied to an asset objective, binary repository transport, or direct asset/deployment proof.
 
 In addition to the hot core, **MUST load before any write**:
 
-- `THE_HOLDING_REALTY_VISUAL_ASSET_DELIVERY_CANON_v1.2_2026-09-01.md`;
+- `THE_HOLDING_REALTY_VISUAL_ASSET_DELIVERY_CANON_v1.3_2026-09-01.md`;
 - exact live target HTML/DOM consumer;
 - exact relevant CSS/runtime behavior;
 - owner-approved source asset/evidence;
-- current available GitHub/tool transport contract only as needed to resolve Lane A readiness.
+- current GitHub/tool schema required to resolve direct binary transport.
+
+**v1.3 supersedes v1.2 for new execution.** v1.1/v1.2 remain historical evidence.
 
 Hard image-delivery laws:
 
-- freeze one **Execution Contract** before the first product/transport write;
+- visibly emit the v1.3 **Execution Contract** before the first repository write, then explicitly state `ROUTE LOCKED`;
 - exact consumer → source lock → production-asset lock → transport gate → route lock;
 - production asset/format must not change merely to make transport easier;
-- Lane A is valid only when binary/base64 transport is **end-to-end ready for the complete locked payload**, not merely because a tool with a binary-looking name exists;
-- Lane B is allowed only on concrete Lane A unavailability for the locked asset;
+- if a current tool exposes `create_blob(..., encoding=base64)` or equivalent binary-safe direct blob primitive, an **actual complete Lane A attempt is required before Lane B** unless the tool contract documents a hard limit below the payload size;
+- speculation that a payload is too large or inconvenient is not Lane A failure;
+- Lane B is allowed only after concrete Lane A failure/unavailability for the locked asset;
 - there is **no Lane C**;
+- manual/model-mediated large Base64 chunk transcription is forbidden;
+- if Lane B is used, freeze a per-chunk manifest and verify each staged chunk by exact length + expected SHA-256 before materialization;
+- Lane B budget = one transport branch + one materializer workflow path maximum;
 - after route lock, `LOCKED → DISCOVERY` is forbidden without a specific execution failure;
-- “one last check”, historical blob archaeology, alternate format, new branch/lane/assembler after lock = **PROCESS DRIFT** unless a concrete blocker has legally unlocked the route;
 - `file exists != correct bytes`: prove size + SHA-256 + format/magic + decode + dimensions;
 - Git blob SHA and content SHA-256 are different identities;
 - source SHA and production SHA may differ after transformation/re-encoding;
-- normal branch budget = one clean product branch, plus one temporary transport branch only if Lane B is required;
+- first RED Action/check after Route Lock moves state to **FAILURE_GATE** and freezes all new writes until the exact failed run/job/step/log evidence is read and classified;
+- one mechanical repair is allowed only when the exact cause is known and the route/asset/lane do not change;
+- a **second RED in the same transport/materialization stage = BLOCKED**: no third attempt, no new workflow, branch, lane, format or hidden continuation;
+- normal product branch budget = one clean product branch, plus one temporary transport branch only if Lane B is legally required;
 - final product PR contains no `.tmp`, Base64 chunks, transport workflow/materializer or unrelated changes;
-- CI/exact-head GREEN is necessary but not sufficient; direct immutable asset proof + target-breakpoint visual production proof are required before `production-proven`.
+- CI/exact-head GREEN is necessary but not sufficient; direct immutable asset proof + target-breakpoint visual production proof are required before `production-proven`;
+- ordinary incidents after v1.3 should be recorded as continuity/addenda; do not create endless canon versions unless a durable transport/repository/proof invariant changes.
 
-If blocked after route lock, stop with the exact failed operation/evidence. Do not invent another route inside the same task.
+If blocked, report the exact blocker and stop. Do not invent another route inside the same task.
 
 General Realty hard laws:
 - source-first / free-first; reuse existing Holding Market Data/oracle lanes before creating duplicate pricing infrastructure;
