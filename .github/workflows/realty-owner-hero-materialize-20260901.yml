@@ -1,0 +1,95 @@
+name: Realty owner hero materializer 20260901
+
+on:
+  push:
+    branches:
+      - feat/realty-desktop-hero-clean-20260901
+    paths:
+      - '.github/workflows/realty-owner-hero-materialize-20260901.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact feature branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+
+      - name: Materialize and verify owner hero bytes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          target='realty/assets/owner/hero-split.88800ddf.avif'
+          mkdir -p "$(dirname "$target")"
+          gh api "/repos/${GITHUB_REPOSITORY}/git/blobs/b35d9a9262c3c8528d82a268764d8ccbc31e936a" --jq '.content' | tr -d '\n' | base64 --decode > "$target"
+          test "$(wc -c < "$target" | tr -d ' ')" = '153681'
+          test "$(sha256sum "$target" | awk '{print $1}')" = '88800ddf154b9bd523e1e884761fd5a30c253bc297306c317a7d81f54a817c6b'
+          test "$(dd if="$target" bs=1 skip=4 count=8 status=none)" = 'ftypavif'
+          python - <<'PY'
+          from pathlib import Path
+          import struct
+          p=Path('realty/assets/owner/hero-split.88800ddf.avif')
+          b=p.read_bytes()
+          i=b.find(b'ispe')
+          if i < 0:
+              raise SystemExit('missing ispe')
+          w,h=struct.unpack('>II',b[i+8:i+16])
+          if (w,h)!=(2048,682):
+              raise SystemExit(f'bad dimensions {(w,h)}')
+          print('verified hero',len(b),(w,h))
+          PY
+
+      - name: Update exact desktop consumer and art direction
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          index=Path('realty/index.html')
+          s=index.read_text()
+          old='/realty/assets/owner/hero-split.0b9f34e9.avif'
+          new='/realty/assets/owner/hero-split.88800ddf.avif'
+          if s.count(old)!=2:
+              raise SystemExit(f'hero consumer anchor count={s.count(old)}')
+          s=s.replace(old,new)
+          old_css='/realty/assets/realty-desktop-institutional.css?v=20260901d'
+          new_css='/realty/assets/realty-desktop-institutional.css?v=20260901hero1'
+          if s.count(old_css)!=1:
+              raise SystemExit(f'desktop css rev anchor count={s.count(old_css)}')
+          s=s.replace(old_css,new_css)
+          index.write_text(s)
+
+          css=Path('realty/assets/realty-desktop-institutional.css')
+          c=css.read_text()
+          replacements={
+            'filter:saturate(.94) contrast(1.075) brightness(.92);':'filter:saturate(1.02) contrast(1.04) brightness(1.06);',
+            'transform:scale(1.018) translate3d(var(--hero-shift-x),var(--hero-shift-y),0);':'transform:scale(1.004) translate3d(var(--hero-shift-x),var(--hero-shift-y),0);',
+            '.hero:hover .hero-art img{filter:saturate(.97) contrast(1.085) brightness(.94)}':'.hero:hover .hero-art img{filter:saturate(1.035) contrast(1.045) brightness(1.075)}'
+          }
+          for old_text,new_text in replacements.items():
+              if c.count(old_text)!=1:
+                  raise SystemExit(f'css anchor count {old_text!r}={c.count(old_text)}')
+              c=c.replace(old_text,new_text)
+          css.write_text(c)
+          PY
+          git diff --check
+          changed="$( { git diff --name-only; git ls-files --others --exclude-standard; } | sort -u | tr '\n' ' ' )"
+          expected='.github/workflows/realty-owner-hero-materialize-20260901.yml realty/assets/owner/hero-split.88800ddf.avif realty/assets/realty-desktop-institutional.css realty/index.html '
+          test "$changed" = "$expected"
+
+      - name: Commit verified hero delivery
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add realty/assets/owner/hero-split.88800ddf.avif realty/index.html realty/assets/realty-desktop-institutional.css
+          git commit -m 'Realty: add bright owner desktop hero'
+          git push origin HEAD:feat/realty-desktop-hero-clean-20260901
