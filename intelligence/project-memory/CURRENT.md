@@ -8,7 +8,7 @@ Canonical source state represented here: **2026-09-01T18:20:23.830Z**
 
 ## Minimum recovery packet
 
-1. [THE_HOLDING_MASTER_CONTINUITY_2026-09-01_REALTY_VISUAL_ASSET_HARDENING.md](./THE_HOLDING_MASTER_CONTINUITY_2026-09-01_REALTY_VISUAL_ASSET_HARDENING.md)
+1. [THE_HOLDING_MASTER_CONTINUITY_2026-09-01_REALTY_VISUAL_ASSET_V1_4.md](./THE_HOLDING_MASTER_CONTINUITY_2026-09-01_REALTY_VISUAL_ASSET_V1_4.md)
 2. [Memory Routing Index v2](./THE_HOLDING_MEMORY_ROUTING_INDEX_v2_2026-08-26.md)
 3. Follow the router: load only the task-specific durable canon/context and live machine-readable evidence needed for the current objective.
 
@@ -17,6 +17,7 @@ Full Owner Collaboration, Build Discipline, legacy routing and README are **cold
 ## Task-aware retrieval
 
 - Canonical retrieval path: `CURRENT → latest continuity → routing index → task-specific canon/context → live artifact → exact evidence`.
+- For Realty image/banner/hero/card/binary tasks, the Router selects `THE_HOLDING_REALTY_VISUAL_ASSET_DELIVERY_CANON_v1.4_2026-09-01.md`; v1.4 is the single-file image execution attachment and supersedes v1.3 for new execution.
 - Do not load every historical checkpoint by default. Use the smallest relevant memory set, then verify changing facts from live state.
 - After material work, write changing numeric state to machine artifacts, durable lessons to canons, major resume state to continuity, and routing improvements to the Routing Index.
 
