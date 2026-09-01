@@ -27,10 +27,16 @@ jobs:
           mkdir -p "$(dirname "$target")"
           git fetch --no-tags origin feat/realty-owner-hero-bright-20260901
           mapfile -t parts < <(git ls-tree -r --name-only FETCH_HEAD -- tmp/realty-hero-owner-20260901 | sort)
+          echo "parts=${#parts[@]}"
+          printf '%s\n' "${parts[@]}"
           test "${#parts[@]}" -ge 1
           : > /tmp/hero.b64
           for f in "${parts[@]}"; do git show "FETCH_HEAD:$f" >> /tmp/hero.b64; done
-          tr -d '\r\n' < /tmp/hero.b64 | base64 --decode > "$target"
+          tr -d '\r\n' < /tmp/hero.b64 > /tmp/hero.clean.b64
+          echo "base64_chars=$(wc -c < /tmp/hero.clean.b64 | tr -d ' ')"
+          base64 --decode /tmp/hero.clean.b64 > "$target"
+          echo "decoded_bytes=$(wc -c < "$target" | tr -d ' ')"
+          echo "decoded_sha256=$(sha256sum "$target" | awk '{print $1}')"
           test "$(wc -c < "$target" | tr -d ' ')" = '153681'
           test "$(sha256sum "$target" | awk '{print $1}')" = '88800ddf154b9bd523e1e884761fd5a30c253bc297306c317a7d81f54a817c6b'
           test "$(dd if="$target" bs=1 skip=4 count=8 status=none)" = 'ftypavif'
@@ -67,7 +73,6 @@ jobs:
               raise SystemExit(f'desktop css rev anchor count={s.count(old_css)}')
           s=s.replace(old_css,new_css)
           index.write_text(s)
-
           css=Path('realty/assets/realty-desktop-institutional.css')
           c=css.read_text()
           replacements={
