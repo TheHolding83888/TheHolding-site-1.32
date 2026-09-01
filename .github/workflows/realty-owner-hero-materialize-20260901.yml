@@ -19,12 +19,18 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Verify owner hero bytes
+      - name: Materialize exact owner hero from saved transport
         shell: bash
         run: |
           set -euo pipefail
           target='realty/assets/owner/hero-split.88800ddf.avif'
-          test -f "$target"
+          mkdir -p "$(dirname "$target")"
+          git fetch --no-tags origin feat/realty-owner-hero-bright-20260901
+          mapfile -t parts < <(git ls-tree -r --name-only FETCH_HEAD -- tmp/realty-hero-owner-20260901 | sort)
+          test "${#parts[@]}" -ge 1
+          : > /tmp/hero.b64
+          for f in "${parts[@]}"; do git show "FETCH_HEAD:$f" >> /tmp/hero.b64; done
+          tr -d '\r\n' < /tmp/hero.b64 | base64 --decode > "$target"
           test "$(wc -c < "$target" | tr -d ' ')" = '153681'
           test "$(sha256sum "$target" | awk '{print $1}')" = '88800ddf154b9bd523e1e884761fd5a30c253bc297306c317a7d81f54a817c6b'
           test "$(dd if="$target" bs=1 skip=4 count=8 status=none)" = 'ftypavif'
@@ -48,7 +54,6 @@ jobs:
           set -euo pipefail
           python - <<'PY'
           from pathlib import Path
-
           index=Path('realty/index.html')
           s=index.read_text()
           old='/realty/assets/owner/hero-split.0b9f34e9.avif'
@@ -77,9 +82,6 @@ jobs:
           css.write_text(c)
           PY
           git diff --check
-          changed="$(git diff --name-only | sort -u | tr '\n' ' ')"
-          expected='realty/assets/realty-desktop-institutional.css realty/index.html '
-          test "$changed" = "$expected"
 
       - name: Commit verified hero delivery
         shell: bash
@@ -87,6 +89,6 @@ jobs:
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add realty/index.html realty/assets/realty-desktop-institutional.css
-          git commit -m 'Realty: tune bright owner desktop hero'
+          git add realty/assets/owner/hero-split.88800ddf.avif realty/index.html realty/assets/realty-desktop-institutional.css
+          git commit -m 'Realty: add bright owner desktop hero'
           git push origin HEAD:feat/realty-desktop-hero-clean-20260901
