@@ -1,15 +1,15 @@
 # THE HOLDING — MASTER CONTINUITY
-## 2026-09-01 · Realty visual-asset delivery hardening · image execution PAUSED
+## 2026-09-01 · Realty visual-asset delivery hardening · v1.3 stable protocol · image execution PAUSED
 
 > **ROLE**
 >
 > This is the latest major resume checkpoint after `THE_HOLDING_MASTER_CONTINUITY_2026-09-01_REALTY_PACKAGE_GREEN.md`.
 >
-> The prior Realty package remains a valid production-GREEN closure. This continuity does **not** reopen or rewrite that milestone. It records a later image-delivery incident, the memory-routing defect discovered during the incident, and the hardened recovery contract that must be used before any new Realty visual/binary write.
+> The earlier Realty package remains independently PRODUCTION GREEN. The later desktop/laptop hero replacement remains intentionally PAUSED / NOT GREEN. This continuity records the v1.2 clean-room test, exact transport failure evidence, and the stable v1.3 recovery contract.
 >
 > Recovery order:
 >
-> `CURRENT.md → this continuity → Memory Routing Index v2 → Realty Visual Asset Delivery Canon v1.2 → exact live /realty consumer/assets/evidence`
+> `CURRENT.md → this continuity → Memory Routing Index v2 → Realty Visual Asset Delivery Canon v1.3 → exact live /realty consumer/assets/evidence`
 
 ---
 
@@ -19,221 +19,227 @@ The Holding global authority remains:
 
 `executionAuthority: **none**`
 
-The owner explicitly paused the current upper desktop/laptop Realty hero image operation before production closure so the process could be hardened first.
-
 Current hero operation state:
 
 **PAUSED — NOT GREEN — NOT PRODUCTION-PROVEN.**
 
-No branch, staged binary, workflow, hash calculation or partial materialization from the paused attempts may be treated as production success.
+The owner stopped the parallel v1.2 live test after repeated RED transport Actions. No temporary branch, chunk, workflow or reconstructed binary from that test is valid production state.
 
-The previous 2026-09-01 Realty package described in `THE_HOLDING_MASTER_CONTINUITY_2026-09-01_REALTY_PACKAGE_GREEN.md` remains independently **PRODUCTION GREEN**.
+The earlier 2026-09-01 Realty package described in `THE_HOLDING_MASTER_CONTINUITY_2026-09-01_REALTY_PACKAGE_GREEN.md` remains **PRODUCTION GREEN** and is not reopened by this incident.
 
 ---
 
-# 2. WHAT FAILED
+# 2. ROOT CAUSES — NOW SEPARATED
 
-The incident was not primarily a visual-design failure. Two systemic defects were exposed.
+Three distinct defects were observed across the wider incident.
 
 ## A. Memory-routing defect
 
-The production-proven Realty image/binary methodology had been captured in owner-held / File Library `THE_HOLDING_REALTY_PRODUCT_CANON_AND_CHAT_HANDOFF_v1.1_2026-08-31.md`, but live GitHub recovery still routed Realty sessions through the older v1.0 product canon.
-
-Therefore a fresh chat following the correct live recovery path could still miss the newer image-delivery discipline.
+The production-proven image methodology had existed outside the live GitHub hot route while the Router still pointed new Realty work toward older context.
 
 Durable law:
 
-> **A correct canon that is not on the live CURRENT → continuity → Router recovery path is not operationally reliable memory.**
+> **A correct canon that is not on CURRENT → continuity → Router is not operationally reliable memory.**
 
-## B. Execution / state-machine defect
+## B. Route-discipline defect
 
-Even after the correct route was verbally described, executors repeatedly reopened discovery after route lock.
+Earlier executors repeatedly returned to discovery after verbal route lock: old branch searches, alternate assets/formats, staging ideas and repeated verification.
 
-Observed drift patterns included:
+v1.2 improved this by introducing an explicit Execution Contract and Route Lock.
 
-- repeating already-proven source/hash/format checks;
-- searching historical branches/blobs after the canonical asset was already selected;
-- reconsidering WebP vs AVIF for transport convenience;
-- reopening staging/Base64/materializer alternatives after a lane had been selected;
-- treating “one last bounded check” as permission to return to discovery;
-- creating partial/incomplete materializations that could be mistaken for valid image files;
-- verbally declaring route lock without making it an irreversible execution constraint.
+## C. Failure-gate / payload-integrity defect
 
-Durable law:
+The v1.2 clean-room test showed two remaining gaps:
 
-> **Correct instructions are insufficient unless the execution state machine forbids `LOCKED → DISCOVERY` without a concrete execution failure.**
+1. Lane B payload chunks were accepted largely by length/order without independent expected per-chunk content hashes before materialization.
+2. RED Actions did not force an immediate write freeze, so workflow/diagnostic writes continued after the first materialization failure.
+
+v1.3 closes these gaps.
 
 ---
 
-# 3. HARDENED CANON
+# 3. EXACT LIVE-TEST EVIDENCE
 
-New live task canon:
+The clean test used transport branch:
 
-`THE_HOLDING_REALTY_VISUAL_ASSET_DELIVERY_CANON_v1.2_2026-09-01.md`
+`transport/realty-hero-bright-v12-20260901-1ac3d6fe`
 
-It preserves the production-proven v1.1 chain:
+At audit it had accumulated temporary Base64 chunks and multiple materializer/diagnostic workflow changes. It is forensic only.
 
-`exact consumer → exact bytes → immutable URL → binary-safe transport → bounded diff → exact-head checks → deployment → direct asset proof → visual production proof`
+GitHub recorded **six failed Actions runs** on this transport branch during the test window.
 
-and adds the missing deterministic execution layer:
+Representative failed materializer run:
 
-`RESTORE → CONSUMER LOCK → SOURCE LOCK → PRODUCTION-ASSET LOCK → TRANSPORT GATE → ROUTE LOCK → EXECUTE → REPO PROOF → BOUNDED DIFF → EXACT-HEAD CHECKS → MERGE/DEPLOY → DIRECT ASSET PROOF → VISUAL PRODUCTION PROOF → GREEN`
+- run: `33515578366`;
+- job: `materialize`;
+- failed step: `Verify staged payload and materialize exact AVIF`;
+- commit-binary step: skipped.
 
-After route lock:
+Diagnostic run:
 
-- `LOCKED → EXECUTE` is allowed;
-- `EXECUTE → VERIFY → NEXT` is allowed;
-- `EXECUTE/VERIFY → BLOCKED` is allowed;
-- `LOCKED → DISCOVERY` is forbidden unless a specific execution operation failed and the failure evidence is recorded.
+- run: `33515684009`;
+- failed step: the same materialization/integrity gate.
 
----
+The decisive byte evidence from logs:
 
-# 4. PROVEN VS NEW RULES
+- expected production size: `133689` bytes;
+- reconstructed file reached that exact size;
+- expected SHA-256: `1ac3d6fedc41982fbb194f1f7ba3d9f67a82da2d2795fb7f95bfd9455643fcce`;
+- reconstructed SHA-256: `0b54d627d44dfeb61509b1082d21043b59090ca533c29cfe83cdb48b22118b10`;
+- checksum verification failed.
 
-Evidence status must remain explicit.
+Therefore:
 
-## Production-proven base
+> **Length/order checks passed while content identity failed. The transport payload was wrong even though its total size looked correct.**
 
-The 2026-08-31 Realty recovery already proved the durable v1.1 image/binary laws, including:
-
-- exact consumer first;
-- semantic role from the live DOM, not filename guesswork;
-- format/magic/decode proof;
-- byte size + content hash proof;
-- immutable/content-addressed browser-visible identity for changed image bytes;
-- binary-safe transport;
-- bounded final PR;
-- temporary transport machinery absent from final PR;
-- exact-head checks;
-- deployment + direct asset + visual production proof.
-
-## v1.2 hardening delta
-
-The following rules are incident-derived, owner-adopted and mandatory now, but should be labelled **production-reference proven only after the next successful image deployment executed under them**:
-
-- irreversible Route Lock;
-- required pre-write Execution Contract;
-- Lane A end-to-end readiness test rather than tool-presence assumption;
-- Lane B only on concrete Lane A unavailability;
-- no Lane C;
-- branch/search/attempt budgets;
-- no historical branch archaeology after asset lock;
-- self-observer anti-loop check before each post-lock nontrivial action;
-- explicit Blocker Contract instead of open-ended exploration.
+This is a payload-integrity failure, not a visual/CSS problem.
 
 ---
 
-# 5. SOURCE / PRODUCTION / GIT / DEPLOYED IDENTITY
+# 4. AUTHORITATIVE CANON
 
-A source image and its encoded production asset are different evidence objects.
+For all new Realty image/binary delivery work, authoritative task canon is now:
 
-If image transformation occurs:
+`THE_HOLDING_REALTY_VISUAL_ASSET_DELIVERY_CANON_v1.3_2026-09-01.md`
 
-`source SHA-256 != production asset SHA-256`
+v1.1 remains the production-proven evidence-chain foundation.
 
-Expected proof chain:
+v1.2 remains useful historical evidence showing that route lock alone was insufficient.
 
-`owner/source file manifest`
-→ `deterministic production asset manifest`
-→ `repository bytes match production manifest`
-→ `deployed immutable URL bytes match production manifest`
-→ `exact consumer renders that asset at target breakpoint`
-
-Also:
-
-`Git blob SHA != content SHA-256`
-
-Do not conflate Git object identity with content hash identity.
+v1.3 is the stable operating contract and supersedes v1.2 for new execution.
 
 ---
 
-# 6. TRANSPORT GATE
+# 5. v1.3 DURABLE DELTA
 
-Only two transport lanes are canonical.
+The stable protocol adds these mandatory laws:
 
-## Lane A
-
-Lane A is READY only if the active environment can deliver the **complete locked payload end-to-end** through the available binary/base64-safe API and verify the repository bytes afterward.
-
-The existence of a `create_blob(base64)`-style tool alone does not prove Lane A readiness if the current runtime cannot safely transfer the full payload through that tool contract.
-
-One bounded capability check is allowed **before route lock** if readiness is genuinely unknown.
-
-If Lane A is READY, Lane B is forbidden.
-
-## Lane B
-
-Lane B is a branch-scoped temporary assembler only when Lane A is concretely unavailable for the locked production asset.
-
-Before the first Lane B write, freeze:
-
-- exact production hash/size;
-- encoded total length;
-- exact chunk count/order if chunks are needed;
-- one assembler/materializer;
-- one transport branch;
-- expected final product diff.
-
-No additional transport architecture may be invented after lock.
+- if current tool schema exposes `create_blob(..., encoding=base64)`, an actual complete Lane A attempt is required before Lane B unless a documented hard limit already proves impossibility;
+- speculation that the payload is “too large” is not Lane A failure;
+- manual/model-mediated large Base64 chunk transcription is forbidden;
+- Lane B requires a frozen per-chunk manifest with exact text length + SHA-256 for every chunk;
+- each staged chunk must be read back/verified before the materializer exists/runs;
+- Lane B has one transport branch and one materializer workflow path maximum;
+- first RED Action after Route Lock moves state to `FAILURE_GATE` and freezes all new writes;
+- logs must identify the failed run/job/step and failure class before any repair;
+- only one mechanical repair is allowed when the exact cause is known;
+- a second RED in the same transport/materialization stage automatically becomes `BLOCKED` and stops the task;
+- ordinary incidents after v1.3 should become continuity/addenda, not endless canon version bumps.
 
 ---
 
-# 7. REQUIRED EXECUTION CONTRACT BEFORE FUTURE IMAGE WRITES
+# 6. REQUIRED PRE-WRITE HANDSHAKE
 
-Before the first product/transport write, record:
+Before first repository write, the assistant must visibly emit:
 
 ```text
-OBJECTIVE: <one visual objective>
-CONSUMER: <exact route + DOM slot + breakpoint>
-SOURCE: <dimensions + size + SHA-256>
-PRODUCTION ASSET: <format + dimensions + size + SHA-256 + immutable path>
-TRANSPORT: <Lane A/B + exact reason>
-EXPECTED FINAL DIFF: <exact allowed product files/categories>
-CSS: <NONE or one declared scoped change + proven reason>
+STATE: READY_TO_EXECUTE
+OBJECTIVE
+CONSUMER
+SOURCE manifest
+PRODUCTION ASSET manifest
+TRANSPORT lane
+LANE EVIDENCE
+EXPECTED FINAL PRODUCT DIFF
+CSS scope
+BRANCH BUDGET
+ACTION BUDGET
 ```
 
-After this contract is frozen, every tool action must directly advance the next locked state.
+Then:
 
-Warning phrases such as “one last check”, “one more bounded inventory”, “another opportunity”, “maybe old blob”, or “different format may be easier” are **PROCESS DRIFT** after route lock unless a concrete blocker has legally unlocked the route.
+`ROUTE LOCKED`
 
----
-
-# 8. PAUSED HERO INCIDENT — FORENSIC STATE
-
-The paused operation targeted the upper desktop/laptop Realty hero using an owner-approved brighter image.
-
-During the second executor attempt, at least these branches were created:
-
-- `fix/realty-desktop-hero-bright-canonical-20260901` — intended clean product branch;
-- `transport/realty-hero-q60-20260901` — temporary transport branch.
-
-The temporary transport branch contains staging/materializer artifacts including `.tmp/realty-hero-q60/*` and a temporary materializer workflow.
-
-These are **forensic/temporary artifacts only**.
-
-Hard resume law:
-
-> **Do not blindly continue either paused branch.**
-
-When the owner resumes the image task, start from fresh live `main`, re-resolve the exact current consumer and the owner-approved source file, produce a new Execution Contract, choose the lane once, then execute/verify forward only.
-
-The forensic branches should be cleaned up only after the incident evidence is no longer needed and the owner explicitly wants repository branch hygiene addressed.
+No write before this visible handshake.
 
 ---
 
-# 9. FINAL IMAGE PR CONTRACT
+# 7. FAILURE GATE CONTRACT
+
+Any RED after route lock immediately means:
+
+`STATE = FAILURE_GATE`
+
+Writes freeze until exact logs are read.
+
+Required report:
+
+```text
+FAILED RUN
+FAILED STEP
+ERROR/EVIDENCE
+FAILURE CLASS
+LOCKED FACTS STILL VALID
+ONE PROPOSED MECHANICAL REPAIR
+NEW ROUTE: false
+```
+
+A second RED in the same stage means:
+
+`STATE = BLOCKED`
+
+No third attempt, new workflow, new branch, new lane, format change or hidden continuation.
+
+---
+
+# 8. TRANSPORT LAW
+
+Only two lanes exist.
+
+## Lane A — default direct path
+
+If `create_blob(base64)` or equivalent binary-safe primitive exists, actually attempt the full locked payload once before Lane B unless a documented payload limit makes the attempt impossible.
+
+## Lane B — exception
+
+Allowed only after concrete Lane A failure/unavailability.
+
+Lane B requires:
+
+- deterministic source-to-chunk generation;
+- per-chunk content hashes;
+- read-back verification of every chunk;
+- one materializer path;
+- exact final size/hash/magic/decode proof;
+- zero transport files in final product PR.
+
+Manual Base64 transcription is prohibited.
+
+---
+
+# 9. PAUSED HERO INCIDENT — FORENSIC STATE
+
+Do not continue any failed/experimental hero transport branch blindly.
+
+Known forensic branches from the wider incident include prior clean/product and transport attempts, including the v1.2 test branch above. Their existence does not imply reusable valid bytes.
+
+When the owner resumes the hero operation:
+
+1. start from fresh live `main`;
+2. load v1.3;
+3. resolve exact current consumer;
+4. use the owner-approved source;
+5. freeze one production asset;
+6. inspect current GitHub tool schema;
+7. attempt Lane A directly if supported;
+8. show Execution Contract;
+9. Route Lock;
+10. execute/verify forward only.
+
+---
+
+# 10. FINAL PRODUCT PR CONTRACT
 
 Preferred final product diff:
 
 - new immutable image asset(s);
 - exact consumer reference(s);
 - scoped CSS only if independently proven necessary;
-- **0 transport workflows**;
-- **0 `.tmp` / Base64 / chunk files**;
-- **0 staging/materializer scripts**;
-- **0 unrelated JS/data/routes/memory changes**.
-
-Memory hardening and product image delivery are separate changes.
+- 0 `.tmp` files;
+- 0 Base64 chunks;
+- 0 transport workflows;
+- 0 staging/materializer scripts;
+- 0 unrelated JS/data/routes/memory changes.
 
 `file exists != correct bytes`
 
@@ -241,7 +247,7 @@ Binary acceptance requires exact size + SHA-256 + format/magic + decode + dimens
 
 ---
 
-# 10. PRODUCTION GREEN CONTRACT
+# 11. PRODUCTION GREEN CONTRACT
 
 For Realty image work, do not call GREEN until all are true:
 
@@ -251,7 +257,7 @@ For Realty image work, do not call GREEN until all are true:
 4. exact-head / fresh-main checks pass;
 5. merge exists;
 6. deployment succeeds;
-7. direct immutable asset URL serves the intended binary;
+7. direct immutable asset URL serves intended binary;
 8. target production breakpoint renders intended asset;
 9. crop/brightness/composition match objective;
 10. out-of-scope breakpoints did not regress;
@@ -259,39 +265,47 @@ For Realty image work, do not call GREEN until all are true:
 
 `GREEN workflow != physically materialized production artifact`
 
-CI is one evidence layer, not final browser truth.
-
 ---
 
-# 11. MEMORY ROUTING CHANGE
+# 12. MEMORY ROUTING CHANGE
 
-For any Realty visual/image/binary/media replacement/crop/responsive-image task, the Router must load:
+For any Realty visual/image/binary/media replacement/crop/responsive-image task, the recovery path must be:
 
 1. live `CURRENT.md`;
-2. latest continuity;
+2. this latest continuity;
 3. Memory Routing Index v2;
-4. `THE_HOLDING_REALTY_VISUAL_ASSET_DELIVERY_CANON_v1.2_2026-09-01.md`;
-5. broad Realty product canon/context as needed;
+4. `THE_HOLDING_REALTY_VISUAL_ASSET_DELIVERY_CANON_v1.3_2026-09-01.md`;
+5. broad Realty product context only as needed;
 6. exact live `/realty/` consumer/assets/CSS/runtime;
-7. exact deployment evidence when relevant.
+7. exact GitHub/deployment evidence when relevant.
 
 The owner should not need to remember that a newer hidden file exists.
 
 ---
 
-# 12. GLOBAL DOC BOUNDARY
+# 13. STABLE-VERSION BOUNDARY
 
-The Unified New Chat Bootstrap / Living Context Companion already carry generic bounded-work / one-primary-objective / no-phantom-continuation discipline.
+v1.3 is intended to stop methodology churn.
 
-The missing defect was image-specific retrieval plus irreversible route discipline. Therefore this incident does **not** justify rewriting broad global context documents merely to duplicate the new visual state machine.
+Do not create v1.4 for normal provider errors, one-image peculiarities, known failure classes, or ordinary mechanical fixes.
 
-If the same route-lock defect later proves cross-domain, promote the generic invariant in a separate deliberate global-canon change.
+Record such lessons in continuity/addenda.
+
+A new canon version requires a material change in transport architecture, repository/release model, proof ladder, or authority boundary.
 
 ---
 
-# 13. INHERITED DURABLE CHECKPOINT INVARIANTS
+# 14. GLOBAL DOC BOUNDARY
 
-This latest continuity intentionally preserves the verifier-required durable anchors from prior master continuity rather than silently dropping unrelated project truth:
+The Unified New Chat Bootstrap / Living Context Companion already carry generic bounded-work, one-primary-objective and no-phantom-continuation discipline.
+
+This incident is primarily a Realty binary-delivery specialization. Do not duplicate the entire v1.3 state machine into broad global docs unless the same failure pattern is later proven cross-domain.
+
+---
+
+# 15. INHERITED DURABLE CHECKPOINT INVARIANTS
+
+This continuity preserves the verifier-required durable anchors from prior master continuity rather than silently deleting unrelated project truth:
 
 - **PROJECT X + HYPERLEND CLOSED** remains closed.
 - `resolver completeness != promotion completeness`.
@@ -311,10 +325,10 @@ This latest continuity intentionally preserves the verifier-required durable anc
 - prior `Pendle / sPENDLE` state remains inherited and task-relevant truth must be refreshed from live evidence.
 - global authority remains `executionAuthority: **none**`.
 
-For detailed history behind these anchors, route to the prior continuities rather than expanding this image incident into a duplicate archive.
+For detailed history behind these anchors, route to prior continuities rather than expanding this image incident into a duplicate archive.
 
 ---
 
-# 14. RESUME SENTENCE
+# 16. RESUME SENTENCE
 
-> **As of the 2026-09-01 visual-asset hardening boundary, the earlier Realty package remains production GREEN, the later desktop/laptop hero replacement is intentionally PAUSED and NOT GREEN, the root causes are a live memory-routing gap plus post-lock process drift, Visual Asset Delivery Canon v1.2 is the mandatory image-task state machine, `LOCKED → DISCOVERY` is forbidden without concrete execution failure, and the next image attempt must start from fresh main with a frozen Execution Contract rather than continue the forensic transport branches blindly.**
+> **As of the 2026-09-01 v1.3 hardening boundary, the earlier Realty package remains production GREEN, the later desktop/laptop hero replacement is PAUSED and NOT GREEN, the v1.2 clean test proved repeated RED transport/materialization with correct total length but wrong SHA-256 content, Visual Asset Delivery Canon v1.3 is authoritative for new image execution, direct `create_blob(base64)` must be actually attempted before Lane B when available, Lane B forbids manual Base64 transcription and requires per-chunk hashes, first RED freezes writes, second RED in the same stage is BLOCKED, and the next hero attempt must start from fresh main rather than continue forensic branches.**
