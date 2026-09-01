@@ -33,7 +33,39 @@
   .world-copy{min-height:218px;padding-top:21px;padding-bottom:20px}
   .worlds{gap:14px}
 
-  .market-group .brand-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.market-group .brand-link{min-width:0}
+  /* Desktop brand directory: larger identity treatment with fixed geometry.
+   * Every logo occupies the same 34px cell and every brand name starts on the same axis.
+   * Secondary descriptors are intentionally removed on desktop/laptop.
+   */
+  .market-group .brand-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+  .market-group .brand-link{
+    min-width:0;
+    height:76px;
+    display:grid;
+    grid-template-columns:34px minmax(0,1fr);
+    align-items:center;
+    justify-content:stretch;
+    gap:12px;
+    padding:0 15px;
+    text-align:left;
+  }
+  .market-group .brand-link img{
+    width:34px;
+    height:34px;
+    padding:4px;
+    border-radius:9px;
+    justify-self:center;
+    object-fit:contain;
+  }
+  .market-group .brand-name{
+    min-width:0;
+    font-size:13.5px;
+    line-height:1.12;
+    font-weight:500;
+    letter-spacing:.005em;
+  }
+  .market-group .brand-link small{display:none}
+
   html[data-theme='light'] .hero-pulse{border-top-color:rgba(82,120,130,.18)}
   html[data-theme='light'] .hero-pulse-metric>span{color:#68737a}
   html[data-theme='light'] .hero-pulse-metric>strong{color:#252b2d;text-shadow:none}
@@ -50,6 +82,9 @@
   .hero-pulse{left:34px;bottom:18px;width:min(455px,calc(100% - 68px));grid-template-columns:minmax(88px,.66fr) minmax(138px,1fr) minmax(158px,1.18fr);padding-top:10px}
   .hero-pulse-metric{padding:0 14px}.hero-pulse-metric>span{font-size:7.2px;letter-spacing:.13em}.hero-pulse-metric>strong{font-size:27px}.hero-pulse-metric:nth-child(2)>strong{font-size:26px}.hero-pulse-metric:nth-child(3)>strong{font-size:25px}
   .world-card{min-height:208px}.world-copy{min-height:208px;padding-top:18px;padding-bottom:18px}
+  .market-group .brand-link{height:72px;grid-template-columns:31px minmax(0,1fr);gap:10px;padding:0 12px}
+  .market-group .brand-link img{width:31px;height:31px;padding:4px}
+  .market-group .brand-name{font-size:12.5px}
 }
 
 @media(max-width:760px){
