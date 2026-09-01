@@ -1,7 +1,7 @@
 {
   "version": "0.1-operating-event-intelligence",
   "engineVersion": "0.1-source-backed-event-synthesizer",
-  "generatedAt": "2026-09-01T11:53:22.586Z",
+  "generatedAt": "2026-09-01T11:59:22.516Z",
   "status": "ok",
   "purpose": "Source-backed operating event telemetry for The Holding console and future Curators.",
   "authority": {
@@ -123,23 +123,265 @@
   "sourceHealth": {
     "status": "fresh",
     "reporting": {
-      "generatedAt": "2026-09-01T10:26:46.327Z",
-      "ageHours": 1.44,
+      "generatedAt": "2026-09-01T11:57:53.557Z",
+      "ageHours": 0.02,
       "maxAgeHours": 36,
-      "sha256": "31a4fe534566be1af4e5ec97d17ecdc7d33fb6d06376fd28ce502f87f7ad36d1"
+      "sha256": "c2e34b8f4f55207278684dc27304faed1abf1d5926501fb8c3ba8d4ab9e3d407"
     },
     "changeHistory": {
       "generatedAt": "2026-09-01T11:52:50.736Z",
-      "ageHours": 0.01,
+      "ageHours": 0.11,
       "maxAgeHours": 36,
       "sha256": "bed74da9a0e574f9c8206d722bbe59fd008c9662de3231b7c1fe6d903af69d8c"
     }
   },
   "feed": {
     "itemCount": 80,
-    "totalDerivedFromAvailableHistory": 449,
+    "totalDerivedFromAvailableHistory": 457,
     "maxItems": 80,
     "items": [
+      {
+        "id": "EV-070a25b3c2cc043b7541",
+        "type": "company-reference-apr-change",
+        "mode": "derived",
+        "occurredAt": "2026-09-01T11:57:53.557Z",
+        "entity": "Defitea",
+        "headline": "Defitea reference APR moved 11.55% → 11.07%",
+        "detail": "Company-level reference APR changed -0.48 pp. Event Intelligence does not infer the cause without protocol-specific volume/fee evidence.",
+        "severity": "watch",
+        "source": {
+          "kind": "reporting",
+          "fund": "defitea.eth",
+          "previousDate": "2026-08-31",
+          "currentDate": "2026-09-01"
+        },
+        "metrics": {
+          "previousAprPct": 11.5538,
+          "currentAprPct": 11.0713,
+          "changePp": -0.4825,
+          "relativeChangePct": -4.1761
+        },
+        "attribution": {
+          "status": "unattributed",
+          "note": "Volume/fee/revenue causality is a coverage gap until bound to a verified mechanism-specific source."
+        }
+      },
+      {
+        "id": "EV-e81a97f38bd83e011dd6",
+        "type": "protocol-reference-apr-change",
+        "mode": "derived",
+        "occurredAt": "2026-09-01T11:57:53.557Z",
+        "entity": "Defitea · convex-finance",
+        "headline": "convex-finance reference APR moved 9.86% → 10.50%",
+        "detail": "The tracked productive route changed +0.64 pp between daily snapshots. Cause remains unassigned until protocol economics are measured directly.",
+        "severity": "watch",
+        "source": {
+          "kind": "reporting",
+          "fund": "defitea.eth",
+          "engineId": "convex_vlcvx",
+          "previousDate": "2026-08-31",
+          "currentDate": "2026-09-01"
+        },
+        "metrics": {
+          "previousAprPct": 9.86,
+          "currentAprPct": 10.5017,
+          "changePp": 0.6417,
+          "relativeChangePct": 6.5081
+        },
+        "attribution": {
+          "status": "unattributed",
+          "note": "Do not equate APR movement with trading-volume movement without source-backed protocol economics."
+        }
+      },
+      {
+        "id": "EV-70b9dfe26ccc80fa69a1",
+        "type": "protocol-reference-apr-change",
+        "mode": "derived",
+        "occurredAt": "2026-09-01T11:57:53.557Z",
+        "entity": "Defitea · curve-dao-token",
+        "headline": "curve-dao-token reference APR moved 1.84% → 1.72%",
+        "detail": "The tracked productive route changed -0.13 pp between daily snapshots. Cause remains unassigned until protocol economics are measured directly.",
+        "severity": "watch",
+        "source": {
+          "kind": "reporting",
+          "fund": "defitea.eth",
+          "engineId": "curve_vecrv",
+          "previousDate": "2026-08-31",
+          "currentDate": "2026-09-01"
+        },
+        "metrics": {
+          "previousAprPct": 1.8433,
+          "currentAprPct": 1.7169,
+          "changePp": -0.1264,
+          "relativeChangePct": -6.8573
+        },
+        "attribution": {
+          "status": "unattributed",
+          "note": "Do not equate APR movement with trading-volume movement without source-backed protocol economics."
+        }
+      },
+      {
+        "id": "EV-c6828ca7a0bb520ddcce",
+        "type": "protocol-reference-apr-change",
+        "mode": "derived",
+        "occurredAt": "2026-09-01T11:57:53.557Z",
+        "entity": "Defitea · fxn-token",
+        "headline": "fxn-token reference APR moved 24.74% → 20.79%",
+        "detail": "The tracked productive route changed -3.95 pp between daily snapshots. Cause remains unassigned until protocol economics are measured directly.",
+        "severity": "watch",
+        "source": {
+          "kind": "reporting",
+          "fund": "defitea.eth",
+          "engineId": "fx_vefxn",
+          "previousDate": "2026-08-31",
+          "currentDate": "2026-09-01"
+        },
+        "metrics": {
+          "previousAprPct": 24.74,
+          "currentAprPct": 20.79,
+          "changePp": -3.95,
+          "relativeChangePct": -15.966
+        },
+        "attribution": {
+          "status": "unattributed",
+          "note": "Do not equate APR movement with trading-volume movement without source-backed protocol economics."
+        }
+      },
+      {
+        "id": "EV-0f0e32e4f5cdceda9769",
+        "type": "protocol-reference-apr-change",
+        "mode": "derived",
+        "occurredAt": "2026-09-01T11:57:53.557Z",
+        "entity": "Defitea · yield-basis",
+        "headline": "yield-basis reference APR moved 5.71% → 5.17%",
+        "detail": "The tracked productive route changed -0.54 pp between daily snapshots. Cause remains unassigned until protocol economics are measured directly.",
+        "severity": "watch",
+        "source": {
+          "kind": "reporting",
+          "fund": "defitea.eth",
+          "engineId": "yieldbasis_veyb",
+          "previousDate": "2026-08-31",
+          "currentDate": "2026-09-01"
+        },
+        "metrics": {
+          "previousAprPct": 5.71,
+          "currentAprPct": 5.17,
+          "changePp": -0.54,
+          "relativeChangePct": -9.4571
+        },
+        "attribution": {
+          "status": "unattributed",
+          "note": "Do not equate APR movement with trading-volume movement without source-backed protocol economics."
+        }
+      },
+      {
+        "id": "EV-a5ab01a958829172608c",
+        "type": "protocol-reference-apr-change",
+        "mode": "derived",
+        "occurredAt": "2026-09-01T11:57:53.557Z",
+        "entity": "Defitea · frax-share",
+        "headline": "frax-share reference APR moved 5.39% → 5.40%",
+        "detail": "The tracked productive route changed +0.00 pp between daily snapshots. Cause remains unassigned until protocol economics are measured directly.",
+        "severity": "watch",
+        "source": {
+          "kind": "reporting",
+          "fund": "defitea.eth",
+          "engineId": "frax_vefrax",
+          "previousDate": "2026-08-31",
+          "currentDate": "2026-09-01"
+        },
+        "metrics": {
+          "previousAprPct": 5.3934,
+          "currentAprPct": 5.3977,
+          "changePp": 0.0043,
+          "relativeChangePct": 0.0797
+        },
+        "attribution": {
+          "status": "unattributed",
+          "note": "Do not equate APR movement with trading-volume movement without source-backed protocol economics."
+        }
+      },
+      {
+        "id": "EV-57da4b804448fa034250",
+        "type": "protocol-reference-apr-change",
+        "mode": "derived",
+        "occurredAt": "2026-09-01T11:57:53.557Z",
+        "entity": "Defitea · venice-token",
+        "headline": "venice-token reference APR moved 8.76% → 8.73%",
+        "detail": "The tracked productive route changed -0.02 pp between daily snapshots. Cause remains unassigned until protocol economics are measured directly.",
+        "severity": "watch",
+        "source": {
+          "kind": "reporting",
+          "fund": "defitea.eth",
+          "engineId": "venice_svvv",
+          "previousDate": "2026-08-31",
+          "currentDate": "2026-09-01"
+        },
+        "metrics": {
+          "previousAprPct": 8.7552,
+          "currentAprPct": 8.7324,
+          "changePp": -0.0228,
+          "relativeChangePct": -0.2604
+        },
+        "attribution": {
+          "status": "unattributed",
+          "note": "Do not equate APR movement with trading-volume movement without source-backed protocol economics."
+        }
+      },
+      {
+        "id": "EV-5a98c2a776f0c9b53d6f",
+        "type": "protocol-reference-apr-change",
+        "mode": "derived",
+        "occurredAt": "2026-09-01T11:57:53.557Z",
+        "entity": "Defitea · liquity",
+        "headline": "liquity reference APR moved 0.11% → 0.25%",
+        "detail": "The tracked productive route changed +0.14 pp between daily snapshots. Cause remains unassigned until protocol economics are measured directly.",
+        "severity": "watch",
+        "source": {
+          "kind": "reporting",
+          "fund": "defitea.eth",
+          "engineId": "liquity_lqty",
+          "previousDate": "2026-08-31",
+          "currentDate": "2026-09-01"
+        },
+        "metrics": {
+          "previousAprPct": 0.1123,
+          "currentAprPct": 0.2523,
+          "changePp": 0.14,
+          "relativeChangePct": 124.6661
+        },
+        "attribution": {
+          "status": "unattributed",
+          "note": "Do not equate APR movement with trading-volume movement without source-backed protocol economics."
+        }
+      },
+      {
+        "id": "EV-c2954b4221fa8e227c3c",
+        "type": "protocol-reference-apr-change",
+        "mode": "derived",
+        "occurredAt": "2026-09-01T11:57:53.557Z",
+        "entity": "Defitea · resupply",
+        "headline": "resupply reference APR moved 18.73% → 18.89%",
+        "detail": "The tracked productive route changed +0.16 pp between daily snapshots. Cause remains unassigned until protocol economics are measured directly.",
+        "severity": "watch",
+        "source": {
+          "kind": "reporting",
+          "fund": "defitea.eth",
+          "engineId": "resupply_rsup",
+          "previousDate": "2026-08-31",
+          "currentDate": "2026-09-01"
+        },
+        "metrics": {
+          "previousAprPct": 18.73,
+          "currentAprPct": 18.89,
+          "changePp": 0.16,
+          "relativeChangePct": 0.8542
+        },
+        "attribution": {
+          "status": "unattributed",
+          "note": "Do not equate APR movement with trading-volume movement without source-backed protocol economics."
+        }
+      },
       {
         "id": "EV-3dcc72e1d145d5d09b8f",
         "type": "observer-material-change",
@@ -539,32 +781,6 @@
           "currentDate": "2026-09-01"
         },
         "attribution": null
-      },
-      {
-        "id": "EV-3a02515bc62f50a5eccc",
-        "type": "company-reference-apr-change",
-        "mode": "derived",
-        "occurredAt": "2026-09-01T10:26:46.327Z",
-        "entity": "Defitea",
-        "headline": "Defitea reference APR moved 11.55% → 11.42%",
-        "detail": "Company-level reference APR changed -0.13 pp. Event Intelligence does not infer the cause without protocol-specific volume/fee evidence.",
-        "severity": "watch",
-        "source": {
-          "kind": "reporting",
-          "fund": "defitea.eth",
-          "previousDate": "2026-08-31",
-          "currentDate": "2026-09-01"
-        },
-        "metrics": {
-          "previousAprPct": 11.5538,
-          "currentAprPct": 11.4242,
-          "changePp": -0.1296,
-          "relativeChangePct": -1.1217
-        },
-        "attribution": {
-          "status": "unattributed",
-          "note": "Volume/fee/revenue causality is a coverage gap until bound to a verified mechanism-specific source."
-        }
       },
       {
         "id": "EV-615b1b0ec6829148d95d",
@@ -1864,214 +2080,6 @@
           "status": "not-separated",
           "note": "Current lane cannot yet separate newly accrued reward units from reward-token price effect for this crossing."
         }
-      },
-      {
-        "id": "EV-f0f72cbd4cf1cf8d49e8",
-        "type": "reward-usd-milestone",
-        "mode": "derived",
-        "occurredAt": "2026-08-27T17:46:21.337Z",
-        "entity": "0x5860...83CA8.eth",
-        "headline": "0x5860...83CA8.eth rewards crossed $130",
-        "detail": "Accrued reward value moved $118.87 → $138.34 and crossed the $130 milestone.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "17eef3bb4bad49449c33",
-          "sourceKeys": [
-            "rewards"
-          ]
-        },
-        "metrics": {
-          "previousUsd": 118.865208,
-          "currentUsd": 138.340837,
-          "milestoneUsd": 130
-        },
-        "attribution": {
-          "status": "not-separated",
-          "note": "Current lane cannot yet separate newly accrued reward units from reward-token price effect for this crossing."
-        }
-      },
-      {
-        "id": "EV-0317b73a7dad3b8b6088",
-        "type": "reward-usd-milestone",
-        "mode": "derived",
-        "occurredAt": "2026-08-27T17:46:21.337Z",
-        "entity": "1milliondollar.eth",
-        "headline": "1milliondollar.eth rewards crossed $30",
-        "detail": "Accrued reward value moved $28.15 → $33.34 and crossed the $30 milestone.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "944ed2ab4745a074e5fc",
-          "sourceKeys": [
-            "rewards"
-          ]
-        },
-        "metrics": {
-          "previousUsd": 28.148689,
-          "currentUsd": 33.342119,
-          "milestoneUsd": 30
-        },
-        "attribution": {
-          "status": "not-separated",
-          "note": "Current lane cannot yet separate newly accrued reward units from reward-token price effect for this crossing."
-        }
-      },
-      {
-        "id": "EV-afe660b192c88415c670",
-        "type": "reward-usd-milestone",
-        "mode": "derived",
-        "occurredAt": "2026-08-27T17:46:21.337Z",
-        "entity": "aerocvxyb.eth",
-        "headline": "aerocvxyb.eth rewards crossed $170",
-        "detail": "Accrued reward value moved $165.91 → $190.40 and crossed the $170 milestone.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "466ea7716a1a81be51bb",
-          "sourceKeys": [
-            "rewards"
-          ]
-        },
-        "metrics": {
-          "previousUsd": 165.906325,
-          "currentUsd": 190.39659,
-          "milestoneUsd": 170
-        },
-        "attribution": {
-          "status": "not-separated",
-          "note": "Current lane cannot yet separate newly accrued reward units from reward-token price effect for this crossing."
-        }
-      },
-      {
-        "id": "EV-9659e04d7725930fed98",
-        "type": "reward-usd-milestone",
-        "mode": "derived",
-        "occurredAt": "2026-08-27T17:46:21.337Z",
-        "entity": "aerocvxyb.eth",
-        "headline": "aerocvxyb.eth rewards crossed $180",
-        "detail": "Accrued reward value moved $165.91 → $190.40 and crossed the $180 milestone.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "466ea7716a1a81be51bb",
-          "sourceKeys": [
-            "rewards"
-          ]
-        },
-        "metrics": {
-          "previousUsd": 165.906325,
-          "currentUsd": 190.39659,
-          "milestoneUsd": 180
-        },
-        "attribution": {
-          "status": "not-separated",
-          "note": "Current lane cannot yet separate newly accrued reward units from reward-token price effect for this crossing."
-        }
-      },
-      {
-        "id": "EV-59806cf52fdb608aa87f",
-        "type": "reward-usd-milestone",
-        "mode": "derived",
-        "occurredAt": "2026-08-27T17:46:21.337Z",
-        "entity": "aerocvxyb.eth",
-        "headline": "aerocvxyb.eth rewards crossed $190",
-        "detail": "Accrued reward value moved $165.91 → $190.40 and crossed the $190 milestone.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "466ea7716a1a81be51bb",
-          "sourceKeys": [
-            "rewards"
-          ]
-        },
-        "metrics": {
-          "previousUsd": 165.906325,
-          "currentUsd": 190.39659,
-          "milestoneUsd": 190
-        },
-        "attribution": {
-          "status": "not-separated",
-          "note": "Current lane cannot yet separate newly accrued reward units from reward-token price effect for this crossing."
-        }
-      },
-      {
-        "id": "EV-bfe7f29ce5c758bd6500",
-        "type": "reward-usd-milestone",
-        "mode": "derived",
-        "occurredAt": "2026-08-27T17:46:21.337Z",
-        "entity": "defitea.eth",
-        "headline": "defitea.eth rewards crossed $140",
-        "detail": "Accrued reward value moved $133.46 → $158.64 and crossed the $140 milestone.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "b553f01337a65256e50f",
-          "sourceKeys": [
-            "rewards"
-          ]
-        },
-        "metrics": {
-          "previousUsd": 133.458109,
-          "currentUsd": 158.644169,
-          "milestoneUsd": 140
-        },
-        "attribution": {
-          "status": "not-separated",
-          "note": "Current lane cannot yet separate newly accrued reward units from reward-token price effect for this crossing."
-        }
-      },
-      {
-        "id": "EV-3615460e0d962e83ce1e",
-        "type": "reward-usd-milestone",
-        "mode": "derived",
-        "occurredAt": "2026-08-27T17:46:21.337Z",
-        "entity": "defitea.eth",
-        "headline": "defitea.eth rewards crossed $150",
-        "detail": "Accrued reward value moved $133.46 → $158.64 and crossed the $150 milestone.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "b553f01337a65256e50f",
-          "sourceKeys": [
-            "rewards"
-          ]
-        },
-        "metrics": {
-          "previousUsd": 133.458109,
-          "currentUsd": 158.644169,
-          "milestoneUsd": 150
-        },
-        "attribution": {
-          "status": "not-separated",
-          "note": "Current lane cannot yet separate newly accrued reward units from reward-token price effect for this crossing."
-        }
-      },
-      {
-        "id": "EV-02eb8acc90aee61b070c",
-        "type": "reward-usd-milestone",
-        "mode": "derived",
-        "occurredAt": "2026-08-27T17:46:21.337Z",
-        "entity": "Rook's portfolio",
-        "headline": "Rook's portfolio rewards crossed $180",
-        "detail": "Accrued reward value moved $177.61 → $213.53 and crossed the $180 milestone.",
-        "severity": "info",
-        "source": {
-          "kind": "change-history",
-          "eventId": "4d22763306dcb0bff12a",
-          "sourceKeys": [
-            "rewards"
-          ]
-        },
-        "metrics": {
-          "previousUsd": 177.609568,
-          "currentUsd": 213.532551,
-          "milestoneUsd": 180
-        },
-        "attribution": {
-          "status": "not-separated",
-          "note": "Current lane cannot yet separate newly accrued reward units from reward-token price effect for this crossing."
-        }
       }
     ]
   },
@@ -2083,7 +2091,7 @@
   },
   "integrity": {
     "policySha256": "7a4d4e39e20c96d0621f29e7a55f4ad94710eca256bc6f4f0b2d7eb841551701",
-    "reportingSha256": "31a4fe534566be1af4e5ec97d17ecdc7d33fb6d06376fd28ce502f87f7ad36d1",
+    "reportingSha256": "c2e34b8f4f55207278684dc27304faed1abf1d5926501fb8c3ba8d4ab9e3d407",
     "changeHistorySha256": "bed74da9a0e574f9c8206d722bbe59fd008c9662de3231b7c1fe6d903af69d8c"
   }
 }
