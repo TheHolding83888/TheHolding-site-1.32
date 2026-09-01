@@ -43,3 +43,194 @@ html[data-theme='dark'] .world-card.digital:hover .world-art img{
 .world-card.physical:hover .world-art img{
   filter:saturate(1.03) contrast(1.03) brightness(1.09);
 }
+
+/* Realty desktop/laptop institutional refinement — platinum physical system.
+ * Replaces the old warm-gold language with a desaturated mineral/platinum blue,
+ * preserves violet as the Metaverse semantic accent, and removes ornamental framing
+ * from navigation surfaces without flattening hierarchy.
+ */
+:root{
+  --inst-physical:#92b9c3;
+  --inst-physical-soft:#c0d4d9;
+  --inst-physical-deep:#7097a2;
+}
+
+html[data-theme='dark'] body{
+  background:
+    radial-gradient(circle at 78% -12%,rgba(116,91,169,.105),transparent 32%),
+    radial-gradient(circle at 5% 30%,rgba(111,151,162,.055),transparent 24%),
+    var(--inst-bg);
+}
+
+/* Header: quieter structure, stronger typography, no outlined controls. */
+.topbar{
+  border-bottom:0;
+  box-shadow:0 16px 52px rgba(0,0,0,.12),inset 0 -1px 0 rgba(146,185,195,.035);
+}
+.brand{
+  color:#f2f4f2;
+  text-shadow:0 0 32px rgba(146,185,195,.08);
+}
+.desktop-nav{gap:27px}
+.desktop-nav a{
+  color:#929ba3;
+  font-size:9.5px;
+  font-weight:600;
+  letter-spacing:.125em;
+}
+.desktop-nav a:after{
+  height:1px;
+  background:linear-gradient(90deg,var(--inst-physical),var(--inst-violet));
+  box-shadow:0 0 12px rgba(146,185,195,.12);
+}
+.desktop-nav a:hover{color:#edf3f4}
+.ask-holding{
+  border:0;
+  background:linear-gradient(90deg,rgba(146,185,195,.055),rgba(185,160,239,.045));
+  color:#c7d7db;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025),0 10px 30px rgba(0,0,0,.08);
+}
+.ask-holding small{
+  border-left-color:rgba(185,160,239,.20);
+  color:#9f8bc8;
+}
+.theme-btn{
+  border:0;
+  color:#aebbc0;
+  background:rgba(146,185,195,.045);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025);
+}
+.theme-btn:hover{
+  border-color:transparent;
+  color:#e6f0f2;
+  background:rgba(146,185,195,.09);
+}
+
+/* Sidebar: open institutional rail instead of a framed card. */
+.sidebar{
+  padding:12px 5px 18px 0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+}
+.sidebar:before{
+  padding-left:13px;
+  border-bottom:0;
+  color:#5f6971;
+}
+.sidebar a{
+  position:relative;
+  border:0;
+  color:#8c959d;
+  background:transparent;
+}
+.sidebar a:hover{
+  color:#e5edef;
+  background:linear-gradient(90deg,rgba(146,185,195,.055),rgba(146,185,195,.012) 62%,transparent);
+}
+.sidebar a.active{
+  color:#eef3f4;
+  border:0;
+  background:linear-gradient(90deg,rgba(146,185,195,.105),rgba(146,185,195,.025) 62%,transparent);
+  box-shadow:inset 2px 0 0 rgba(146,185,195,.72);
+}
+.sidebar .ico{
+  border:0;
+  color:#8e9ba2;
+  background:rgba(146,185,195,.035);
+}
+.sidebar a[data-section-link='physical'] .ico{
+  color:#9fc6cf;
+  background:rgba(146,185,195,.065);
+}
+.sidebar a[data-section-link='physical']:hover,
+.sidebar a[data-section-link='physical'].active{color:#cfe1e5}
+.sidebar a[data-section-link='physical'].active{
+  background:linear-gradient(90deg,rgba(146,185,195,.13),rgba(146,185,195,.025) 62%,transparent);
+  box-shadow:inset 2px 0 0 rgba(146,185,195,.78);
+}
+.sidebar a[data-section-link='digital'] .ico{
+  color:#b69ee6;
+  background:rgba(185,160,239,.06);
+}
+.sidebar a[data-section-link='digital']:hover,
+.sidebar a[data-section-link='digital'].active{color:#d8caf2}
+.sidebar a[data-section-link='digital'].active{
+  background:linear-gradient(90deg,rgba(185,160,239,.13),rgba(185,160,239,.025) 62%,transparent);
+  box-shadow:inset 2px 0 0 rgba(185,160,239,.78);
+}
+
+/* Replace remaining warm-gold physical accents with platinum/mineral blue. */
+.early{
+  border-color:rgba(146,185,195,.24);
+  color:#abcbd2;
+  background:rgba(6,10,13,.32);
+}
+.early:before{background:#8fb7c2}
+.hero h1 em{color:#d5e1e4}
+.world-label{color:#9fc4cd}
+.round-icon{
+  border-color:rgba(146,185,195,.27);
+  background:rgba(146,185,195,.025);
+}
+.world-card h2{color:#c2d7dc}
+.world-card .cta{color:#a9cbd2}
+.world-card:hover .cta{color:#d8edf1}
+.digital .world-label{color:#ac94d8}
+.digital .round-icon{border-color:rgba(185,160,239,.28);background:rgba(185,160,239,.02)}
+.world-card.digital h2{color:#c6b2ea}
+.digital .cta{color:#baa2e6}
+.digital:hover .cta{color:#dccdf6}
+
+/* Market directory: remove the large ornamental frame, keep functional tiles. */
+.section[aria-labelledby='choose-market-title']{
+  border-color:transparent;
+  background:linear-gradient(180deg,rgba(255,255,255,.018),rgba(255,255,255,.007));
+  box-shadow:0 28px 88px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.016);
+}
+.market-group{border-top-color:rgba(146,185,195,.085)}
+.market-title .bigico{
+  border-color:rgba(146,185,195,.17);
+  background:linear-gradient(180deg,rgba(146,185,195,.06),rgba(146,185,195,.012));
+  color:#9abfc8;
+}
+#physical-markets .market-title h3{color:#d5e1e4}
+.brand-link{
+  border-color:rgba(146,185,195,.10);
+}
+.brand-link:hover{
+  border-color:rgba(146,185,195,.24);
+  background:rgba(146,185,195,.032);
+}
+
+/* Light desktop parity: same semantics, deeper ink values. */
+html[data-theme='light'] .topbar{border-bottom:0}
+html[data-theme='light'] .desktop-nav a{color:#66717a}
+html[data-theme='light'] .desktop-nav a:hover{color:#1d2529}
+html[data-theme='light'] .desktop-nav a:after{background:linear-gradient(90deg,#5f8792,#765f99)}
+html[data-theme='light'] .ask-holding{border:0;background:linear-gradient(90deg,rgba(95,135,146,.07),rgba(118,95,153,.055));color:#456570}
+html[data-theme='light'] .ask-holding small{border-left-color:rgba(118,95,153,.15);color:#765f93}
+html[data-theme='light'] .theme-btn{border:0;color:#50656d;background:rgba(95,135,146,.06)}
+html[data-theme='light'] .sidebar{border:0;background:transparent;box-shadow:none}
+html[data-theme='light'] .sidebar:before{border-bottom:0;color:#8b9498}
+html[data-theme='light'] .sidebar a{color:#6f777b}
+html[data-theme='light'] .sidebar a:hover{color:#20282b;background:linear-gradient(90deg,rgba(95,135,146,.07),transparent 72%)}
+html[data-theme='light'] .sidebar a.active{color:#203238;border:0;background:linear-gradient(90deg,rgba(95,135,146,.12),transparent 72%);box-shadow:inset 2px 0 0 #6e97a2}
+html[data-theme='light'] .sidebar a[data-section-link='digital'].active{color:#59456f;background:linear-gradient(90deg,rgba(118,95,153,.11),transparent 72%);box-shadow:inset 2px 0 0 #8066a3}
+html[data-theme='light'] .early{color:#4f727c;border-color:rgba(95,135,146,.23);background:rgba(255,255,255,.52)}
+html[data-theme='light'] .early:before{background:#658c97}
+html[data-theme='light'] .hero h1 em{color:#536f77}
+html[data-theme='light'] .world-label{color:#527984}
+html[data-theme='light'] .round-icon{border-color:rgba(95,135,146,.22)}
+html[data-theme='light'] .world-card h2{color:#31494f}
+html[data-theme='light'] .world-card .cta{color:#4e747f}
+html[data-theme='light'] .digital .world-label{color:#6f5c8d}
+html[data-theme='light'] .world-card.digital h2{color:#4b3d60}
+html[data-theme='light'] .digital .cta{color:#67527f}
+html[data-theme='light'] .section[aria-labelledby='choose-market-title']{border-color:transparent}
+html[data-theme='light'] .market-group{border-top-color:rgba(95,135,146,.11)}
+html[data-theme='light'] .market-title .bigico{border-color:rgba(95,135,146,.18);background:rgba(95,135,146,.045);color:#537985}
+html[data-theme='light'] #physical-markets .market-title h3{color:#2d454c}
+html[data-theme='light'] .brand-link{border-color:rgba(95,135,146,.11)}
+html[data-theme='light'] .brand-link:hover{border-color:rgba(95,135,146,.22);background:#fff}
