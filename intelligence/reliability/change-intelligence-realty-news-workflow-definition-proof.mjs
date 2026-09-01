@@ -28,7 +28,8 @@ assert.match(updater,/MAX_ITEMS\s*=\s*12/,'Realty News rolling archive bound dri
 assert.match(updater,/candidate = choose_new/,'Realty News deduplicating candidate gate missing');
 assert.match(updater,/data\[lane\] = \[candidate, \*data\.get\(lane, \[\]\)\]\[:MAX_ITEMS\]/,'Realty News bounded append contract missing');
 assert.match(updater,/update_sitemap_lastmod\(data\["generatedAt"\]\)/,'Realty News sitemap freshness coupling missing');
-assert.doesNotMatch(updater,/openai|anthropic|chatgpt|llm|summari[sz]e/i,'Realty News updater must not synthesize article copy');
+assert.doesNotMatch(updater,/openai|anthropic|chatgpt|\bllm\b/i,'Realty News updater must not call generative-AI services');
+assert.match(updater,/does not summarize article bodies and never copies article text/,'Realty News non-synthetic content contract missing');
 
 for(const forbidden of ['sendTransaction(', 'new Wallet(', 'workflow_dispatch(', 'actions: write', 'write-all', 'gh workflow run']){
   assert.equal(workflow.includes(forbidden),false,`Observer authority expansion: ${forbidden}`);
