@@ -204,7 +204,7 @@ Do not repeatedly synchronize merely because autonomous generated-data writers a
 
 # 9. MEMORY ROUTING FOR FUTURE CHATS
 
-Minimum general recovery packet:
+Minimum recovery packet:
 
 1. `CURRENT.md`
 2. this continuity
@@ -259,6 +259,31 @@ The final workflow-definition rejection reinforces the existing principle:
 
 ---
 
-# 12. RESUME SENTENCE
+# 12. INHERITED DURABLE CHECKPOINT INVARIANTS
+
+The latest continuity must inherit durable/current checkpoint constraints from earlier master continuity files until the verifier contract is deliberately evolved. The following anchors are therefore carried forward unchanged in meaning:
+
+- **PROJECT X + HYPERLEND CLOSED** — the earlier Project X / HyperLend closure remains closed and is not reopened by this Realty milestone.
+- `resolver completeness != promotion completeness` — resolving a source/mechanism does not automatically authorize promotion into another layer.
+- `HyperLend base lending interest = Compounded / Embedded` — preserve the established income classification.
+- `rewardAssetCount = 0` — historical resolved state remains an inherited checkpoint phrase; future changing truth still comes from live artifacts.
+- `generic implementation permission != merge permission` — permission to implement is not permission to merge at a protected boundary.
+- `GREEN workflow != physically materialized production artifact` — workflow success is not by itself proof that the intended artifact or live surface exists.
+- `26/26` — preserve the prior completeness checkpoint as historical continuity, not as a substitute for fresh live counts.
+- `per-asset-authority` — asset-specific authority boundaries remain mandatory; authority is never inferred globally from one successful path.
+- `CoinGecko` — preserve prior market-data/provider routing context; no new Realty dependency on paid CoinGecko was introduced here.
+- `divergence` — fresh main/candidate divergence must be inspected rather than ignored or repeatedly rebased without reason.
+- `PR #227` and `PR #233` remain historical production anchors from earlier continuity.
+- `Market Data / onchain tracking: fat check` — preserve the prior currentness/completeness checkpoint language as inherited continuity.
+- `Autonomous Observational / World Learning` remains the primary always-on learning lane.
+- `Owner Decision → Outcome Experience` remains a sparse complementary learning lane and does not gain authority by accumulation.
+- `Pendle / sPENDLE` prior state remains inherited continuity and must be re-read from live evidence when task-relevant.
+- global authority remains `executionAuthority: **none**`.
+
+For the full meaning/history behind these inherited phrases, use the prior master continuities through the Routing Index rather than expanding this Realty closure into a duplicate archive.
+
+---
+
+# 13. RESUME SENTENCE
 
 > **As of the 2026-09-01 continuity boundary, the Realty About / Market Pulse / mobile-polish / routing package is production GREEN at merge anchor `20fc98f…`; #561 is a closed superseded checkpoint, #562 is the successful exact-head merge carrier, the attempted Change Intelligence workflow expansion was removed after Control Plane rejection, Market Pulse scheduling is not claimed, and the next task should be taken from fresh live main rather than reopening this closed package.**
