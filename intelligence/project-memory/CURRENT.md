@@ -4,7 +4,7 @@
 >
 > Start from this live `main` file. Then load only the minimum recovery packet below. Full owner/build/history canons remain machine-verified durable contracts and are loaded only when the compact router says they are relevant. Changing facts still come from live generated artifacts and exact workflow evidence, not prose memory.
 
-Canonical source state represented here: **2026-09-01T18:20:23.830Z**
+Canonical source state represented here: **2026-09-01T18:29:54.783Z**
 
 ## Minimum recovery packet
 
@@ -17,7 +17,6 @@ Full Owner Collaboration, Build Discipline, legacy routing and README are **cold
 ## Task-aware retrieval
 
 - Canonical retrieval path: `CURRENT → latest continuity → routing index → task-specific canon/context → live artifact → exact evidence`.
-- For Realty image/banner/hero/card/binary tasks, the Router selects `THE_HOLDING_REALTY_VISUAL_ASSET_DELIVERY_CANON_v1.4_2026-09-01.md`; v1.4 is the single-file image execution attachment and supersedes v1.3 for new execution.
 - Do not load every historical checkpoint by default. Use the smallest relevant memory set, then verify changing facts from live state.
 - After material work, write changing numeric state to machine artifacts, durable lessons to canons, major resume state to continuity, and routing improvements to the Routing Index.
 
@@ -48,7 +47,7 @@ Current authority boundary: **execution authority = none**. No wallet signing, t
 ## Current cognitive stack
 
 - Cognitive Stack: **WATCH**; readyForManualInterpretation: true; chainHash: a4b3bc3f0c1ff8ee2a2ccc5a983e1a17df52a99787abd16abbe978896662f048.
-- Security Sentinel (latest standalone state): **WATCH**; Critical 0 / High 2 / Medium 50; generatedAt 2026-09-01T18:20:23.830Z.
+- Security Sentinel (latest standalone state): **WATCH**; Critical 0 / High 2 / Medium 50; generatedAt 2026-09-01T18:29:54.783Z.
 - Cognitive Stack Security snapshot is older (2026-09-01T13:31:48.355Z); it remains the exact Security binding for that coherent Cognitive Stack packet, not the current standalone Security count.
 - Grounded Brain: **WATCH**.
 - ChatGPT Bridge: **WATCH**; cases 25; evidence 40; noExecution true.
