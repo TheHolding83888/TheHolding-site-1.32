@@ -1,124 +1,92 @@
-/* The Holding Realty — Market Pulse
- * Purpose-built data ribbon. Desktop presentation only; mobile keeps the existing compact metrics.
+/* The Holding Realty — Hero Market Metrics
+ * Desktop/laptop only. Three quiet institutional metrics live inside the hero;
+ * mobile keeps the established compact coverage row from realty.css.
  */
-.market-pulse{display:none}
+.hero-pulse{display:none}
+
 @media(min-width:761px){
-  .market-pulse{
+  .hero-pulse{
+    position:absolute;
+    z-index:3;
+    left:52px;
+    bottom:27px;
     display:grid;
-    grid-template-columns:140px minmax(0,1fr);
-    column-gap:26px;
-    row-gap:13px;
-    align-items:stretch;
-    padding:18px 4px 16px;
-    border-top:1px solid rgba(205,185,139,.15);
-    border-bottom:1px solid rgba(205,185,139,.12);
-    background:linear-gradient(90deg,transparent,rgba(205,185,139,.018) 34%,rgba(126,94,184,.022) 73%,transparent);
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    width:min(600px,calc(100% - 104px));
+    padding-top:14px;
+    border-top:1px solid rgba(215,197,154,.18);
   }
-  .market-pulse-label{
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    gap:5px;
-    padding-left:2px;
-  }
-  .market-pulse-label span{
-    color:#d7c59d;
-    font-family:var(--serif);
-    font-size:21px;
-    line-height:1;
-    letter-spacing:.025em;
-  }
-  .market-pulse-label small{
-    max-width:118px;
-    color:#70747a;
-    font-size:8px;
-    line-height:1.45;
-    letter-spacing:.13em;
-    text-transform:uppercase;
-  }
-  .market-pulse-metrics{
-    display:grid;
-    grid-template-columns:repeat(4,minmax(0,1fr));
-    align-items:center;
-  }
-  .pulse-metric{
+  .hero-pulse-metric{
     position:relative;
     min-width:0;
-    padding:3px 24px 3px 22px;
+    padding:0 27px;
   }
-  .pulse-metric:first-child{padding-left:0}
-  .pulse-metric:not(:last-child):after{
+  .hero-pulse-metric:first-child{padding-left:0}
+  .hero-pulse-metric:last-child{padding-right:0}
+  .hero-pulse-metric:not(:last-child):after{
     content:'';
     position:absolute;
     right:0;
-    top:6px;
-    bottom:6px;
+    top:2px;
+    bottom:1px;
     width:1px;
-    background:linear-gradient(180deg,transparent,rgba(205,185,139,.20),transparent);
+    background:linear-gradient(180deg,rgba(215,197,154,.08),rgba(215,197,154,.28),rgba(215,197,154,.06));
   }
-  .pulse-metric>span{
+  .hero-pulse-metric>span{
     display:block;
-    margin-bottom:7px;
-    color:#777b82;
-    font-size:8px;
+    margin-bottom:5px;
+    color:#85898f;
+    font-family:var(--sans);
+    font-size:7.5px;
     line-height:1;
-    letter-spacing:.17em;
+    font-weight:500;
+    letter-spacing:.18em;
     text-transform:uppercase;
     white-space:nowrap;
   }
-  .pulse-metric>strong{
+  .hero-pulse-metric>strong{
     display:block;
-    color:#f1eee6;
-    font-family:var(--sans);
-    font-size:26px;
-    line-height:1;
-    font-weight:400;
-    letter-spacing:-.035em;
-    font-variant-numeric:tabular-nums;
-  }
-  .pulse-metric>small{
-    display:block;
-    margin-top:7px;
-    color:#6f737a;
-    font-size:8px;
-    line-height:1.2;
-    letter-spacing:.07em;
-  }
-  .pulse-metric>small b{
-    color:#8fbd91;
+    color:#f0e9da;
+    font-family:var(--serif);
+    font-size:29px;
+    line-height:.92;
     font-weight:500;
+    letter-spacing:.012em;
+    font-variant-numeric:lining-nums tabular-nums;
+    text-shadow:0 8px 28px rgba(0,0,0,.18);
   }
-  .market-pulse-source{
-    grid-column:2;
-    color:#5f636a;
-    font-size:7.5px;
-    line-height:1;
-    letter-spacing:.1em;
-    text-transform:uppercase;
-  }
-  .market-pulse-source a{color:#777b82;text-decoration:none}
-  .market-pulse-source a:hover{color:#cdb98b}
+  .hero-pulse-metric:nth-child(2)>strong{color:#dccba7}
+  .hero-pulse-metric:nth-child(3)>strong{color:#d3c2ed}
+
+  /* The expanded 12 + 12 directory stays balanced as three rows of four. */
   .market-group .brand-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
   .market-group .brand-link{min-width:0}
-  html[data-theme='light'] .market-pulse{
-    border-top-color:rgba(115,91,50,.17);
-    border-bottom-color:rgba(115,91,50,.13);
-    background:linear-gradient(90deg,transparent,rgba(139,108,58,.025) 34%,rgba(102,77,137,.025) 73%,transparent);
+
+  html[data-theme='light'] .hero-pulse{
+    border-top-color:rgba(112,87,47,.20);
   }
-  html[data-theme='light'] .market-pulse-label span{color:#765f36}
-  html[data-theme='light'] .market-pulse-label small,
-  html[data-theme='light'] .pulse-metric>span,
-  html[data-theme='light'] .pulse-metric>small,
-  html[data-theme='light'] .market-pulse-source{color:#837e75}
-  html[data-theme='light'] .pulse-metric>strong{color:#211f1b}
-  html[data-theme='light'] .pulse-metric:not(:last-child):after{background:linear-gradient(180deg,transparent,rgba(118,94,54,.20),transparent)}
-  html[data-theme='light'] .market-pulse-source a{color:#716a60}
-  html[data-theme='light'] .market-pulse-source a:hover{color:#765f36}
+  html[data-theme='light'] .hero-pulse-metric>span{color:#777168}
+  html[data-theme='light'] .hero-pulse-metric>strong{
+    color:#2c2923;
+    text-shadow:none;
+  }
+  html[data-theme='light'] .hero-pulse-metric:nth-child(2)>strong{color:#745d35}
+  html[data-theme='light'] .hero-pulse-metric:nth-child(3)>strong{color:#5d4a79}
+  html[data-theme='light'] .hero-pulse-metric:not(:last-child):after{
+    background:linear-gradient(180deg,rgba(112,87,47,.06),rgba(112,87,47,.24),rgba(112,87,47,.05));
+  }
 }
+
 @media(min-width:761px) and (max-width:1100px){
-  .market-pulse{grid-template-columns:112px minmax(0,1fr);column-gap:17px}
-  .pulse-metric{padding-left:15px;padding-right:15px}
-  .pulse-metric>strong{font-size:22px}
-  .market-pulse-label span{font-size:18px}
+  .hero-pulse{
+    left:38px;
+    bottom:24px;
+    width:min(520px,calc(100% - 76px));
+    padding-top:12px;
+  }
+  .hero-pulse-metric{padding:0 18px}
+  .hero-pulse-metric>span{font-size:7px;letter-spacing:.14em}
+  .hero-pulse-metric>strong{font-size:25px}
 }
-@media(max-width:760px){.market-pulse{display:none!important}}
+
+@media(max-width:760px){.hero-pulse{display:none!important}}
