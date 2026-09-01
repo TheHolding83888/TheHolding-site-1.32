@@ -23,6 +23,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DATA_PATH = ROOT / "realty" / "news" / "data.json"
 PAGE_PATH = ROOT / "realty" / "news" / "index.html"
+SITEMAP_PATH = ROOT / "sitemap.xml"
 MAX_ITEMS = 12
 CADENCE_HOURS = 72
 DENY = ("price prediction", "presale", "airdrop", "casino", "betting", "giveaway")
@@ -147,6 +148,19 @@ def materialize(data: dict) -> None:
     PAGE_PATH.write_text(page, encoding="utf-8")
 
 
+def update_sitemap_lastmod(generated_at: str) -> None:
+    sitemap = SITEMAP_PATH.read_text(encoding="utf-8")
+    date = parse_dt(generated_at).strftime("%Y-%m-%d")
+    pattern = (
+        r'(<loc>https://theholding\.ai/realty/news/</loc>\s*'
+        r'<lastmod>)[^<]+(</lastmod>)'
+    )
+    updated, count = re.subn(pattern, rf"\g<1>{date}\g<2>", sitemap, count=1)
+    if count != 1:
+        raise RuntimeError("Realty News sitemap entry missing or duplicated")
+    SITEMAP_PATH.write_text(updated, encoding="utf-8")
+
+
 def validate(data: dict) -> None:
     for lane in ("rwa", "metaverse"):
         items = data.get(lane)
@@ -162,6 +176,9 @@ def validate(data: dict) -> None:
     for start, end in MARKERS.values():
         if page.count(start) != 1 or page.count(end) != 1:
             raise RuntimeError("News page markers must be unique")
+    sitemap = SITEMAP_PATH.read_text(encoding="utf-8")
+    if sitemap.count("<loc>https://theholding.ai/realty/news/</loc>") != 1:
+        raise RuntimeError("Realty News sitemap entry must exist exactly once")
 
 
 def main() -> int:
@@ -201,6 +218,7 @@ def main() -> int:
         data["generatedAt"] = utcnow().replace(microsecond=0).isoformat().replace("+00:00", "Z")
         DATA_PATH.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         materialize(data)
+        update_sitemap_lastmod(data["generatedAt"])
         validate(data)
     return 0
 

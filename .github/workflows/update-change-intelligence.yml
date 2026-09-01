@@ -1,4 +1,5 @@
 name: Update The Holding Change Intelligence
+# holding-workflow-definition-proof: intelligence/reliability/change-intelligence-realty-news-workflow-definition-proof.mjs
 
 on:
   workflow_dispatch:
@@ -35,6 +36,8 @@ jobs:
         run: |
           set -euo pipefail
           node --check intelligence/change-intelligence-engine.mjs
+          python3 -m py_compile scripts/update-realty-news.py
+          python3 scripts/update-realty-news.py --validate
           test -s intelligence/memory-vault/corrections.json
           test -s companies/productivity-data.json
           test -s companies/rewards-data.json
@@ -42,6 +45,15 @@ jobs:
           test -s companies/stable-index-data.json
           test -s companies/embedded-yield-ledger.json
           test -s reporting/reporting-data.json
+          test -s realty/news/data.json
+          test -s realty/news/index.html
+          test -s sitemap.xml
+
+      - name: Refresh bounded Realty News
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/update-realty-news.py
 
       - name: Observe, compare and extend permanent memory
         run: node intelligence/change-intelligence-engine.mjs
@@ -160,6 +172,9 @@ jobs:
             "intelligence/change-intelligence.json"
             "intelligence/daily-brief.md"
             "intelligence/memory-vault/manifest.json"
+            "realty/news/data.json"
+            "realty/news/index.html"
+            "sitemap.xml"
           )
 
           for f in "${FILES[@]}"; do test -s "$f"; done
@@ -171,11 +186,11 @@ jobs:
           git add intelligence/memory-vault
 
           if git diff --cached --quiet; then
-            echo "No intelligence changes to publish."
+            echo "No intelligence or Realty News changes to publish."
             exit 0
           fi
 
-          git commit -m "intelligence: extend permanent Memory Vault"
+          git commit -m "intelligence: extend memory and refresh bounded Realty News"
 
           for attempt in 1 2 3; do
             git fetch origin main
