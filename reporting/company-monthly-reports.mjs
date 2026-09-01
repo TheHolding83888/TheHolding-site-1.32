@@ -359,15 +359,16 @@ for (const name of STANDARD_REFERENCE_COMPANIES) {
   const rows = observations.get(name) || [];
   const months = aggregateReferenceMonths(name, rows);
   if (!Object.keys(months).length) throw new Error(`No observed monthly source for ${name}`);
-  const latestMonth = months[Object.keys(months).sort().at(-1)];
-  const partialCoverage = finite(latestMonth?.averageCoverage) && Number(latestMonth.averageCoverage) < 0.999999;
+  const hasPartialCoverageHistory = Object.values(months).some(month =>
+    finite(month?.averageCoverage) && Number(month.averageCoverage) < 0.999999
+  );
   companies[name] = companyRecord(
     name,
     REGISTRY[name],
     'observed-productivity-reference-model',
-    partialCoverage ? 'covered-productive-capital' : 'productive-capital',
+    hasPartialCoverageHistory ? 'covered-productive-capital' : 'productive-capital',
     months,
-    { averageCapitalLabel: partialCoverage ? 'Average Covered Capital' : 'Average Productive Capital' }
+    { averageCapitalLabel: hasPartialCoverageHistory ? 'Average Covered Capital' : 'Average Productive Capital' }
   );
 }
 
