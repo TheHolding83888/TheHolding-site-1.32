@@ -1,7 +1,10 @@
 # TheHolding.ai - Cloudflare Workers Static Assets headers
-# Updated: August 31, 2026
+# Updated: September 1, 2026
 
-# These headers apply to all pages
+# Security headers apply to all public static responses.
+# Do not set a global Cache-Control here: Cloudflare Workers Static Assets
+# already defaults to max-age=0 + must-revalidate + ETag, which keeps HTML
+# fresh without forcing full asset re-downloads.
 /*
   # Security Headers
   X-Frame-Options: SAMEORIGIN
@@ -14,27 +17,15 @@
   # Added cloud.umami.is for analytics (script-src + connect-src)
   Content-Security-Policy: default-src 'self' https:; script-src 'self' 'unsafe-inline' https://api.coingecko.com https://cloud.umami.is https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.coingecko.com https://cloud.umami.is;
 
-  # Performance & Caching
-  Cache-Control: public, max-age=3600, must-revalidate
-
   # CORS
   Access-Control-Allow-Origin: https://theholding.ai
   Access-Control-Allow-Methods: GET, OPTIONS
   Access-Control-Allow-Headers: Content-Type
 
-# HTML files - shorter cache (so updates deploy fast)
+# HTML and in-place CSS/JS must revalidate on every navigation/request.
+# ETag keeps repeat visits efficient while preventing stale releases.
 /*.html
-  Cache-Control: public, max-age=3600, must-revalidate
-
-# API responses - no cache
-/api/*
-  Cache-Control: no-cache, no-store, must-revalidate
-
-# Fingerprinted assets may use long immutable caching.
-# Stable CSS/JS filenames are intentionally revalidated because their contents
-# are updated in place across production releases.
-/assets/*
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: public, max-age=0, must-revalidate
 
 /*.js
   Cache-Control: public, max-age=0, must-revalidate
@@ -42,10 +33,18 @@
 /*.css
   Cache-Control: public, max-age=0, must-revalidate
 
+# API responses must never be served from browser cache.
+/api/*
+  Cache-Control: no-cache, no-store, must-revalidate
+
+# Fingerprinted root assets may use long immutable browser caching.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
 /*.woff2
   Cache-Control: public, max-age=31536000, immutable
 
-# Sitemap and robots - short cache so updates are picked up fast
+# Sitemap and robots may be cached briefly; they are not interactive UI.
 /sitemap.xml
   Cache-Control: public, max-age=86400, must-revalidate
 
