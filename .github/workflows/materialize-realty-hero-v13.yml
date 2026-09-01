@@ -1,0 +1,97 @@
+name: Realty Hero v1.3 Materializer
+
+on:
+  push:
+    branches:
+      - transport/realty-hero-v13-cd17f8f7-20260901
+    paths:
+      - .github/workflows/materialize-realty-hero-v13.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: realty-hero-v13-cd17f8f7
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      BRANCH: transport/realty-hero-v13-cd17f8f7-20260901
+      EXPECTED_B64_LEN: '109932'
+      EXPECTED_B64_SHA256: 52831973281de3409086497b7c0fb322d6d586f43aa751b4b1e0d547dc38f5f4
+      EXPECTED_SIZE: '82448'
+      EXPECTED_SHA256: cd17f8f7452163953bc57001777be2c1de2ff5444a7306396f8ee6e7d0395473
+      EXPECTED_GIT_BLOB: 5a930ea99e42d328afef3f565c1232b058c15cf2
+      ASSET_PATH: realty/assets/owner/hero-split.cd17f8f7.avif
+    steps:
+      - name: Verify exact chunk blobs and materialize AVIF
+        shell: bash
+        run: |
+          set -euo pipefail
+          : > /tmp/hero.b64
+          while read -r name blob expected_len expected_sha; do
+            gh api -H 'Accept: application/vnd.github+json' "/repos/$REPO/git/blobs/$blob" --jq '.content' \
+              | tr -d '\n' | base64 -d > "/tmp/$name"
+            actual_len="$(wc -c < "/tmp/$name" | tr -d ' ')"
+            [[ "$actual_len" == "$expected_len" ]] || { echo "$name length mismatch: $actual_len != $expected_len" >&2; exit 1; }
+            echo "$expected_sha  /tmp/$name" | sha256sum -c -
+            cat "/tmp/$name" >> /tmp/hero.b64
+          done <<'MANIFEST'
+          chunk-00.b64 1e79adfe33375a2d45834ddbebd1774b6606328a 8000 62a4c9a4f06ffa4158c477528447a6dbd4e4130224ce5a5b973617eae5651933
+          chunk-01.b64 7a578fba5bee431894e6ed7def5eb726265dfe3b 8000 d3d959042273e5978e39a997ad38e6626f52a8261398f3dec2e5ba7f7e8ee28f
+          chunk-02.b64 6d4eb8b5abd72074ec21d381e896903318270b76 8000 9e068b3e336c0fcecc95aeba5fbe51a0e4d9211a87ee1ec5278b8ec4c3ed3aa3
+          chunk-03.b64 7dad8c51741eccd9e66cddb09e88e14ea649a033 8000 9d136e4fea4339daf290266a58d8f501bc56a99f7aff0c7837a0e32b5dc0a5de
+          chunk-04.b64 26f9b7d271b02205fa8bc05cc532c2ad9b0211f4 8000 c4e1f70eeb627d4b13350e42481adb6f1be815bd2883c690eec46ba88f7ea7f6
+          chunk-05.b64 c79ed8674e1b62b6755ffe2d6beb0d2c9d39cfcc 8000 b8b98c471af14302f381e6a8630ce7d38141cc4129fcb28ead1c8dce2bfa1d26
+          chunk-06.b64 efd09efc211636d45cd99fe2fa874f90a09553eb 8000 39ac9b9f3076f8612cf71c9b1dd5af9aa7da059b9c4f918186555ced2d5ee95d
+          chunk-07.b64 baf9928d001f397e5f150a4b2040ab81d8f29b74 8000 7515445384106fcdaec3d47f5a23f68bdc2ee0a767a09c9289959ad31f9f70f7
+          chunk-08.b64 591f849bbde3524a6140eed0c2452aeb258c7159 8000 f4730c7e6f1d4bfd5373840a4298c78281ecc95d82f20145e69ae9b8b9f8b65f
+          chunk-09.b64 cf0b0512f056c2b72be1c59c76da869f9bdc2439 8000 0cc2afbfb3a134e4228ea3394d855354c55eecab1c3f1ff81bc26959c0efaea1
+          chunk-10.b64 97ca23f1864d5a056803268f40ab800a63f12f61 8000 bb2505781cde9fa3267c98d4867ade59688586ae9ccb5416a086fd1af1f36993
+          chunk-11.b64 2d5e187f3f3ccb20f46ab613c484660ae6a0924f 8000 5abb8e9458d4268cc3188a20628c456ac2cadf04f8943ffcb460e5aac2d431d4
+          chunk-12.b64 beee9a9770874dbdb2a9e2c6aabf2bfb091ccb6f 8000 3ac97213fdffc7ed16889a74cf3a715fc5215e93985e186111e92d2967440e87
+          chunk-13.b64 cbea1cd07926bb83f29e9c139688bc15c6b99c53 5932 1816ffe0796b65f609ab1ccfbd0b27c3abc5ce0bc77ba3cf57e55d6083a612ea
+          MANIFEST
+
+          actual_b64_len="$(wc -c < /tmp/hero.b64 | tr -d ' ')"
+          [[ "$actual_b64_len" == "$EXPECTED_B64_LEN" ]] || { echo "Base64 length mismatch: $actual_b64_len != $EXPECTED_B64_LEN" >&2; exit 1; }
+          echo "$EXPECTED_B64_SHA256  /tmp/hero.b64" | sha256sum -c -
+          base64 -d /tmp/hero.b64 > /tmp/hero.avif
+          actual_size="$(wc -c < /tmp/hero.avif | tr -d ' ')"
+          [[ "$actual_size" == "$EXPECTED_SIZE" ]] || { echo "AVIF size mismatch: $actual_size != $EXPECTED_SIZE" >&2; exit 1; }
+          echo "$EXPECTED_SHA256  /tmp/hero.avif" | sha256sum -c -
+          [[ "$(dd if=/tmp/hero.avif bs=1 skip=4 count=8 status=none)" == 'ftypavif' ]] || { echo 'AVIF magic mismatch' >&2; exit 1; }
+
+      - name: Create exact binary Git blob
+        shell: bash
+        run: |
+          set -euo pipefail
+          payload="$(base64 -w0 /tmp/hero.avif)"
+          blob_sha="$(jq -n --arg content "$payload" '{content:$content,encoding:"base64"}' \
+            | gh api --method POST -H 'Accept: application/vnd.github+json' "/repos/$REPO/git/blobs" --input - --jq '.sha')"
+          echo "Created blob: $blob_sha"
+          [[ "$blob_sha" == "$EXPECTED_GIT_BLOB" ]] || { echo "Git blob mismatch: $blob_sha != $EXPECTED_GIT_BLOB" >&2; exit 1; }
+          echo "BLOB_SHA=$blob_sha" >> "$GITHUB_ENV"
+
+      - name: Attach verified AVIF to transport branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          head_sha="$GITHUB_SHA"
+          current_head="$(gh api -H 'Accept: application/vnd.github+json' "/repos/$REPO/git/ref/heads/$BRANCH" --jq '.object.sha')"
+          [[ "$current_head" == "$head_sha" ]] || { echo "Transport head moved: $current_head != $head_sha" >&2; exit 1; }
+          base_tree="$(gh api -H 'Accept: application/vnd.github+json' "/repos/$REPO/git/commits/$head_sha" --jq '.tree.sha')"
+          tree_sha="$(jq -n --arg base "$base_tree" --arg path "$ASSET_PATH" --arg blob "$BLOB_SHA" \
+            '{base_tree:$base,tree:[{path:$path,mode:"100644",type:"blob",sha:$blob}]}' \
+            | gh api --method POST -H 'Accept: application/vnd.github+json' "/repos/$REPO/git/trees" --input - --jq '.sha')"
+          commit_sha="$(jq -n --arg message 'Realty: materialize verified owner hero AVIF' --arg tree "$tree_sha" --arg parent "$head_sha" \
+            '{message:$message,tree:$tree,parents:[$parent]}' \
+            | gh api --method POST -H 'Accept: application/vnd.github+json' "/repos/$REPO/git/commits" --input - --jq '.sha')"
+          jq -n --arg sha "$commit_sha" '{sha:$sha,force:false}' \
+            | gh api --method PATCH -H 'Accept: application/vnd.github+json' "/repos/$REPO/git/refs/heads/$BRANCH" --input - >/dev/null
+          echo "Verified AVIF attached at $ASSET_PATH in commit $commit_sha"
