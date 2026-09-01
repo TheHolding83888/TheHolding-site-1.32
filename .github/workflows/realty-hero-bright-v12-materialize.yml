@@ -1,0 +1,50 @@
+name: "Realty hero bright v1.2 materialize"
+
+on:
+  push:
+    branches:
+      - transport/realty-hero-bright-v12-20260901-1ac3d6fe
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout locked transport branch
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: transport/realty-hero-bright-v12-20260901-1ac3d6fe
+
+      - name: Verify staged payload and materialize exact AVIF
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir=.tmp/realty-hero-bright-v12
+          out=realty/assets/owner/hero-split.1ac3d6fe.avif
+          test "$(find "$dir" -maxdepth 1 -name 'chunk-*.b64' -type f | wc -l)" -eq 12
+          for n in 00 01 02 03 04 05 06 07 08 09 10; do test "$(wc -c < "$dir/chunk-$n.b64")" -eq 15000; done
+          test "$(wc -c < "$dir/chunk-11.b64")" -eq 13252
+          cat "$dir"/chunk-{00..11}.b64 > /tmp/hero.b64
+          test "$(wc -c < /tmp/hero.b64)" -eq 178252
+          base64 -d /tmp/hero.b64 > "$out"
+          test "$(wc -c < "$out")" -eq 133689
+          echo '1ac3d6fedc41982fbb194f1f7ba3d9f67a82da2d2795fb7f95bfd9455643fcce  '"$out" | sha256sum -c -
+          test "$(dd if="$out" bs=1 skip=4 count=8 2>/dev/null)" = 'ftypavif'
+          echo "materialized_size=$(wc -c < "$out")"
+          sha256sum "$out"
+          git hash-object "$dir"/chunk-*.b64
+
+      - name: Commit verified binary only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Realty Transport"
+          git config user.email "realty-transport@theholding.ai"
+          git add realty/assets/owner/hero-split.1ac3d6fe.avif
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "transport: materialize verified Realty hero binary"
+          git push origin HEAD:transport/realty-hero-bright-v12-20260901-1ac3d6fe
