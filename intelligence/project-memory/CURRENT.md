@@ -4,13 +4,17 @@
 >
 > Start from this live `main` file. Then load only the minimum recovery packet below. Full owner/build/history canons remain machine-verified durable contracts and are loaded only when the compact router says they are relevant. Changing facts still come from live generated artifacts and exact workflow evidence, not prose memory.
 
-Canonical source state represented here: **2026-09-01T05:37:20.857Z**
+Canonical source state represented here: **2026-09-01T05:40:35Z**
 
 ## Minimum recovery packet
 
-1. [THE_HOLDING_MASTER_CONTINUITY_2026-08-28_ORCHESTRATION_CURRENTNESS_FREEZE.md](./THE_HOLDING_MASTER_CONTINUITY_2026-08-28_ORCHESTRATION_CURRENTNESS_FREEZE.md)
+1. [THE_HOLDING_MASTER_CONTINUITY_2026-09-01_REALTY_PACKAGE_GREEN.md](./THE_HOLDING_MASTER_CONTINUITY_2026-09-01_REALTY_PACKAGE_GREEN.md)
 2. [Memory Routing Index v2](./THE_HOLDING_MEMORY_ROUTING_INDEX_v2_2026-08-26.md)
 3. Follow the router: load only the task-specific durable canon/context and live machine-readable evidence needed for the current objective.
+
+Previous major continuity remains durable history:
+
+- [THE_HOLDING_MASTER_CONTINUITY_2026-08-28_ORCHESTRATION_CURRENTNESS_FREEZE.md](./THE_HOLDING_MASTER_CONTINUITY_2026-08-28_ORCHESTRATION_CURRENTNESS_FREEZE.md)
 
 Full Owner Collaboration, Build Discipline, legacy routing and README are **cold durable references**, not default chat payload. Their critical invariants are carried here and independently machine-verified.
 
@@ -18,7 +22,27 @@ Full Owner Collaboration, Build Discipline, legacy routing and README are **cold
 
 - Canonical retrieval path: `CURRENT → latest continuity → routing index → task-specific canon/context → live artifact → exact evidence`.
 - Do not load every historical checkpoint by default. Use the smallest relevant memory set, then verify changing facts from live state.
-- After material work, write changing numeric state to machine artifacts, durable lessons to canons, major resume state to continuity, and routing improvements to the Routing Index.
+- After material work, write changing numeric state to machine artifacts, durable lessons to canons/closure records, major resume state to continuity, and routing improvements to the Routing Index.
+
+## Latest material production milestone — Realty GREEN
+
+The 2026-09-01 Realty About / Market Pulse / mobile-polish / routing package is **technically CLOSED and production GREEN**.
+
+Canonical material anchors:
+
+- original durable checkpoint: PR `#561`, now closed unmerged as superseded history;
+- exact final candidate head: `7fccdde8d9603ec9f683104b26a69e12f3049cf3`;
+- successful non-draft merge carrier: PR `#562`;
+- squash merge anchor: `20fc98f06c1a8fd6a81eb2c8e3c4ceea0493e208`;
+- production proof: `The Holding Production Deployment Smoke` run `33474280027` — SUCCESS; Cloudflare production-build wait and live production verification both SUCCESS.
+
+Final production product diff contained exactly nine Realty/supporting files and **no workflow-definition change**. A temporary attempt to wire `scripts/update-realty-market-pulse.py` directly into `update-change-intelligence.yml` was correctly rejected by the Workflow Control Plane and removed before merge. Market Pulse provenance explicitly does **not** claim scheduling.
+
+Detailed closure / failure-recovery lessons:
+
+- [THE_HOLDING_REALTY_PRODUCTION_CLOSURE_2026-09-01.md](./THE_HOLDING_REALTY_PRODUCTION_CLOSURE_2026-09-01.md)
+
+For future Realty work, do not reopen #561 or replay this package. Start from fresh live `main`, then route through the Realty canon and this closure only when relevant.
 
 ## Owner collaboration bootstrap
 
@@ -42,12 +66,12 @@ Current authority boundary: **execution authority = none**. No wallet signing, t
 - **Permanent Memory Vault** — 55 Observer record(s), 296 material event(s), retention: indefinite; hard lifetime cap: none.
 - **Latest Vault record** — intelligence/memory-vault/2026/08/2026-08-31T14-14-34-170Z-8a20bfae09.json.
 - **Decision Memory** — 2 append-only owner decision(s); executionAuthority: none.
-- **Project continuity** — CURRENT + latest master continuity + compact task router + routed specialized canons + Git history.
+- **Project continuity** — CURRENT + latest master continuity + compact task router + routed specialized canons/closure records + Git history.
 
 ## Current cognitive stack
 
 - Cognitive Stack: **WATCH**; readyForManualInterpretation: true; chainHash: fd84146151c2e03f25c4256e7248ba3b7cc117ee013e9944fd040731c1baf67c.
-- Security Sentinel (latest standalone state): **WATCH**; Critical 0 / High 2 / Medium 50; generatedAt 2026-09-01T05:37:20.857Z.
+- Security Sentinel (latest standalone state at represented bootstrap evidence): **WATCH**; Critical 0 / High 2 / Medium 50; generatedAt 2026-09-01T05:37:20.857Z.
 - Cognitive Stack Security snapshot is older (2026-08-31T16:12:09.373Z); it remains the exact Security binding for that coherent Cognitive Stack packet, not the current standalone Security count.
 - Grounded Brain: **WATCH**.
 - ChatGPT Bridge: **WATCH**; cases 20; evidence 35; noExecution true.
