@@ -55,7 +55,7 @@ assert.match(workflow,/node reporting\/reporting-scheduled-runner\.mjs --validat
 assert.match(workflow,/run: node reporting\/reporting-scheduled-runner\.mjs/,'Reporting production writer must execute the contract-bound runner');
 assert.doesNotMatch(workflow,/gh workflow run|workflow_dispatch\s*\(/,'Reporting workflow gained dispatch behavior');
 
-assert.match(workflow,/workflow_run:\n\s+workflows:\n\s+- "Update Company Rewards"\n\s+- "Update Stable Capital"\n\s+types: \[completed\]/,'Reporting canonical workflow_run sources drift');
+assert.match(workflow,/workflow_run:\n\s+workflows:\n\s+- "Update Company Rewards"\n\s+- "Update Stable Capital"\n\s+- "The Holding Capital · Unified Refresh"\n\s+types: \[completed\]/,'Reporting canonical workflow_run sources drift');
 assert.match(workflow,/github\.event\.workflow_run\.conclusion == 'success'/,'Reporting workflow_run success gate missing');
 assert.match(workflow,/github\.event\.workflow_run\.head_branch == 'main'/,'Reporting workflow_run main-branch gate missing');
 assert.match(workflow,/ref: main/,'Reporting must consume canonical main');
@@ -90,7 +90,7 @@ console.log('Reporting workflow definition paired proof PASS',{
   workflow:WORKFLOW_PATH,
   cron:contract.cron,
   dailySnapshotUtc:contract.dailySnapshotUtc,
-  workflowRunSources:['Update Company Rewards','Update Stable Capital'],
+  workflowRunSources:['Update Company Rewards','Update Stable Capital','The Holding Capital · Unified Refresh'],
   canonicalDataWakeCount:6,
   rateContinuityPolicy:ratePolicy.version,
   canonicalIncomeLedgerPolicy:incomePolicy.version,
