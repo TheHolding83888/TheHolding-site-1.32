@@ -38,6 +38,8 @@ jobs:
           node --check intelligence/change-intelligence-engine.mjs
           python3 -m py_compile scripts/update-realty-news.py
           python3 scripts/update-realty-news.py --validate
+          python3 -m py_compile scripts/update-realty-market-pulse.py
+          python3 scripts/update-realty-market-pulse.py --validate
           test -s intelligence/memory-vault/corrections.json
           test -s companies/productivity-data.json
           test -s companies/rewards-data.json
@@ -47,6 +49,7 @@ jobs:
           test -s reporting/reporting-data.json
           test -s realty/news/data.json
           test -s realty/news/index.html
+          test -s realty/data/market-pulse.json
           test -s sitemap.xml
 
       - name: Refresh bounded Realty News
@@ -54,6 +57,12 @@ jobs:
         run: |
           set -euo pipefail
           python3 scripts/update-realty-news.py
+
+      - name: Refresh bounded Realty Market Pulse
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/update-realty-market-pulse.py
 
       - name: Observe, compare and extend permanent memory
         run: node intelligence/change-intelligence-engine.mjs
@@ -174,6 +183,7 @@ jobs:
             "intelligence/memory-vault/manifest.json"
             "realty/news/data.json"
             "realty/news/index.html"
+            "realty/data/market-pulse.json"
             "sitemap.xml"
           )
 
@@ -186,11 +196,11 @@ jobs:
           git add intelligence/memory-vault
 
           if git diff --cached --quiet; then
-            echo "No intelligence or Realty News changes to publish."
+            echo "No intelligence or Realty changes to publish."
             exit 0
           fi
 
-          git commit -m "intelligence: extend memory and refresh bounded Realty News"
+          git commit -m "intelligence: extend memory and refresh bounded Realty surfaces"
 
           for attempt in 1 2 3; do
             git fetch origin main
