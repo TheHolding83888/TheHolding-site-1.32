@@ -27,3 +27,19 @@ html[data-theme='dark'] .world-card.digital:after{
 html[data-theme='dark'] .world-card.digital:hover .world-art img{
   filter:saturate(1.08) contrast(1.03) brightness(1.23);
 }
+
+/* Realty desktop Physical / Real-World banner owner image.
+ * Uses the owner-provided waterfront villa photo without darkening it.
+ * Right-biased framing preserves the house and lets any cover crop fall mostly on the left.
+ */
+.world-card.physical .world-art img{
+  content:url("/realty/assets/owner/real-world.cab3548e.avif");
+  object-position:right center;
+  filter:saturate(1.02) contrast(1.02) brightness(1.06);
+}
+.world-card.physical:after{
+  background:linear-gradient(90deg,rgba(5,7,9,.72) 0%,rgba(5,7,9,.60) 31%,rgba(5,7,9,.38) 46%,rgba(5,7,9,.13) 62%,rgba(5,7,9,.02) 80%,transparent 100%);
+}
+.world-card.physical:hover .world-art img{
+  filter:saturate(1.03) contrast(1.03) brightness(1.09);
+}
