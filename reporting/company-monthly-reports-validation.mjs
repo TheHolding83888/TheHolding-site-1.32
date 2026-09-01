@@ -1,7 +1,14 @@
 import fs from 'node:fs';
 
 const FILE = process.env.COMPANY_MONTHLY_REPORTS_FILE || './reporting/company-monthly-reports.json';
+const PRODUCTIVITY_FILE = process.env.PRODUCTIVITY_DATA_FILE || './companies/productivity-data.json';
+const REPORTING_FILE = process.env.REPORTING_DATA_FILE || './reporting/reporting-data.json';
+const INCOME_LEDGER_FILE = process.env.INCOME_LEDGER_FILE || './reporting/income-ledger.json';
+
 const data = JSON.parse(fs.readFileSync(FILE, 'utf8'));
+const productivity = JSON.parse(fs.readFileSync(PRODUCTIVITY_FILE, 'utf8'));
+const reporting = JSON.parse(fs.readFileSync(REPORTING_FILE, 'utf8'));
+const incomeLedger = JSON.parse(fs.readFileSync(INCOME_LEDGER_FILE, 'utf8'));
 
 const EXPECTED = Object.freeze({
   '05081966.eth': '001',
@@ -15,9 +22,25 @@ const EXPECTED = Object.freeze({
   '1milliondollar.eth': '009',
   'Cypher': '010'
 });
+const STANDARD_REFERENCE_COMPANIES = Object.keys(EXPECTED).filter(name => !['defitea.eth', 'Monetra.eth'].includes(name));
 
 const finite = v => v !== null && v !== undefined && v !== '' && Number.isFinite(Number(v));
 const fail = msg => { throw new Error(msg); };
+const currentMonth = new Date().toISOString().slice(0, 7);
+
+function latestMonth(company) {
+  const keys = Object.keys(company?.months || {}).sort();
+  return keys.length ? company.months[keys.at(-1)] : null;
+}
+
+function currentProductivityEvidence(name) {
+  if (String(productivity?.generatedAt || '').slice(0, 7) !== currentMonth) return false;
+  const row = productivity?.companies?.[name];
+  if (!row) return false;
+  const apr = row.aprLatestPct ?? row.apr;
+  const covered = row.coveredProductiveValueUsd ?? row.coveredProductiveValue ?? row.totalProductiveValue ?? row.productiveValueUsd;
+  return finite(apr) && finite(covered) && Number(covered) > 0;
+}
 
 if (data.version !== '0.2-company-monthly-reporting-income-families') fail('version drift');
 if (data.methodologyVersion !== '0.2-reference-metrics-plus-canonical-evidence-families') fail('methodology drift');
@@ -31,6 +54,7 @@ if (data.trackingPolicy?.crossFamilySummationForbidden !== true) fail('cross-fam
 if (data.incomeLedger?.source !== 'reporting/income-ledger.json') fail('canonical income ledger provenance missing');
 if (data.incomeLedger?.version !== '0.1-canonical-income-ledger') fail('canonical income ledger version drift');
 if (data.incomeLedger?.crossFamilySummationForbidden !== true || data.incomeLedger?.unknownIsNotZero !== true) fail('canonical income ledger epistemic metadata missing');
+if (data.incomeLedger?.generatedAt !== incomeLedger?.generatedAt) fail('company monthly reports were not materialized from the current canonical income ledger');
 
 const companies = data.companies || {};
 const names = Object.keys(companies);
@@ -59,6 +83,7 @@ for (const [name, registry] of Object.entries(EXPECTED)) {
     if (a.combinedIncomeUsd !== null || a.crossFamilySumAllowed !== false) fail(`${name} cross-family collapse detected ${key}`);
     if (a.reconciliationStatus !== 'not-reconciled-for-cross-family-total') fail(`${name} reconciliation status drift ${key}`);
     if (a.source !== 'reporting/income-ledger.json' || !a.sourceGeneratedAt) fail(`${name} canonical ledger provenance missing ${key}`);
+    if (a.sourceGeneratedAt !== incomeLedger.generatedAt) fail(`${name} month is bound to a stale canonical income ledger ${key}`);
     if (a.unknownIsNotZero !== true || a.executionAuthority !== 'none') fail(`${name} income accounting epistemic/authority drift ${key}`);
 
     for (const familyName of ['accruedEntitlement', 'realisedCashFlow', 'embeddedIncome']) {
@@ -99,8 +124,7 @@ if (!finite(mAug.canonicalEvidence.embeddedIncome.usd)) fail('Monetra August can
 if (mAug.primaryMetric?.semantic !== 'reference-generated-income-not-realised-cash-flow') fail('Monetra primary reference metric semantic drift');
 if (mAug.primaryMetric?.additiveWithCanonicalEvidenceFamilies !== false || mAug.combinedIncomeUsd !== null) fail('Monetra reference and embedded income were incorrectly summed');
 
-for (const name of Object.keys(EXPECTED)) {
-  if (['defitea.eth', 'Monetra.eth'].includes(name)) continue;
+for (const name of STANDARD_REFERENCE_COMPANIES) {
   const c = companies[name];
   if (c.sourceFamily !== 'observed-productivity-reference-model') fail(`${name} source family drift`);
   const aug = c.months?.['2026-08'];
@@ -113,14 +137,33 @@ for (const name of Object.keys(EXPECTED)) {
   if (!(Number(aug.sampleDays) >= 1)) fail(`${name} sampleDays invalid`);
   if (aug.partialPeriod !== true) fail(`${name} August must remain explicitly partial while live`);
   if (aug.incomeAccounting.primaryMetric.earnedIncomeAuthority !== false) fail(`${name} reference model became earned-income authority`);
+
+  const latest = latestMonth(c);
+  const partialCoverage = finite(latest?.averageCoverage) && Number(latest.averageCoverage) < 0.999999;
+  const expectedMetric = partialCoverage ? 'covered-productive-capital' : 'productive-capital';
+  const expectedLabel = partialCoverage ? 'Average Covered Capital' : 'Average Productive Capital';
+  if (c.capitalMetric !== expectedMetric) fail(`${name} latest coverage/capital metric mismatch`);
+  if (c.averageCapitalLabel !== expectedLabel) fail(`${name} latest coverage/capital label mismatch`);
+
+  if (currentProductivityEvidence(name) && !c.months?.[currentMonth]) {
+    fail(`${name} current canonical Productivity evidence exists for ${currentMonth} but Company Monthly Reports omitted the month`);
+  }
 }
 
-if (companies.Cypher.capitalMetric !== 'covered-productive-capital') fail('Cypher partial coverage must use covered productive capital');
-if (companies.Cypher.months['2026-08'].averageCoverage >= 1) fail('Cypher coverage unexpectedly treated as complete');
+if (companies.Cypher.months['2026-08'].averageCoverage >= 1) fail('Cypher August historical partial coverage was lost');
+
+for (const name of ['defitea.eth', 'Monetra.eth']) {
+  if (reporting?.funds?.[name]?.months?.[currentMonth] && !companies[name]?.months?.[currentMonth]) {
+    fail(`${name} canonical Reporting contains ${currentMonth} but Company Monthly Reports omitted the month`);
+  }
+}
 
 console.log('Company Monthly Reports validation PASS', {
   companyCount: names.length,
+  currentMonth,
   incomeLedgerVersion: data.incomeLedger.version,
+  incomeLedgerGeneratedAt: data.incomeLedger.generatedAt,
+  currentMonthPresence: Object.fromEntries(Object.entries(companies).map(([name, c]) => [name, Boolean(c.months?.[currentMonth])])),
   defiteaAugust: {
     accruedEntitlementUsd: dAug.canonicalEvidence.accruedEntitlement.usd,
     realisedCashFlowUsd: dAug.canonicalEvidence.realisedCashFlow.usd,
