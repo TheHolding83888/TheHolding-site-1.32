@@ -19,15 +19,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Materialize and verify owner hero bytes
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Verify owner hero bytes
         shell: bash
         run: |
           set -euo pipefail
           target='realty/assets/owner/hero-split.88800ddf.avif'
-          mkdir -p "$(dirname "$target")"
-          gh api "/repos/${GITHUB_REPOSITORY}/git/blobs/b35d9a9262c3c8528d82a268764d8ccbc31e936a" --jq '.content' | tr -d '\n' | base64 --decode > "$target"
+          test -f "$target"
           test "$(wc -c < "$target" | tr -d ' ')" = '153681'
           test "$(sha256sum "$target" | awk '{print $1}')" = '88800ddf154b9bd523e1e884761fd5a30c253bc297306c317a7d81f54a817c6b'
           test "$(dd if="$target" bs=1 skip=4 count=8 status=none)" = 'ftypavif'
@@ -80,8 +77,8 @@ jobs:
           css.write_text(c)
           PY
           git diff --check
-          changed="$( { git diff --name-only; git ls-files --others --exclude-standard; } | sort -u | tr '\n' ' ' )"
-          expected='.github/workflows/realty-owner-hero-materialize-20260901.yml realty/assets/owner/hero-split.88800ddf.avif realty/assets/realty-desktop-institutional.css realty/index.html '
+          changed="$(git diff --name-only | sort -u | tr '\n' ' ')"
+          expected='realty/assets/realty-desktop-institutional.css realty/index.html '
           test "$changed" = "$expected"
 
       - name: Commit verified hero delivery
@@ -90,6 +87,6 @@ jobs:
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add realty/assets/owner/hero-split.88800ddf.avif realty/index.html realty/assets/realty-desktop-institutional.css
-          git commit -m 'Realty: add bright owner desktop hero'
+          git add realty/index.html realty/assets/realty-desktop-institutional.css
+          git commit -m 'Realty: tune bright owner desktop hero'
           git push origin HEAD:feat/realty-desktop-hero-clean-20260901
