@@ -1,0 +1,59 @@
+name: Materialize Realty Hero Bright v1.2
+
+on:
+  push:
+    branches:
+      - transport/realty-hero-bright-v12-20260901-1ac3d6fe
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    if: ${{ !contains(github.event.head_commit.message, 'transport: materialized Realty hero 1ac3d6fe') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact transport head
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: transport/realty-hero-bright-v12-20260901-1ac3d6fe
+          fetch-depth: 1
+
+      - name: Materialize and verify exact binary
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p realty/assets/owner
+          cat .tmp/realty-hero-bright-v12/chunk-*.b64 > /tmp/realty-hero-bright.b64
+
+          encoded_size="$(wc -c < /tmp/realty-hero-bright.b64 | tr -d ' ')"
+          test "$encoded_size" = "178252"
+
+          base64 --decode /tmp/realty-hero-bright.b64 > realty/assets/owner/hero-split.1ac3d6fe.avif
+
+          asset_size="$(wc -c < realty/assets/owner/hero-split.1ac3d6fe.avif | tr -d ' ')"
+          test "$asset_size" = "133689"
+
+          asset_sha="$(sha256sum realty/assets/owner/hero-split.1ac3d6fe.avif | awk '{print $1}')"
+          test "$asset_sha" = "1ac3d6fedc41982fbb194f1f7ba3d9f67a82da2d2795fb7f95bfd9455643fcce"
+
+          magic="$(head -c 12 realty/assets/owner/hero-split.1ac3d6fe.avif | xxd -p -c 256)"
+          test "$magic" = "000000206674797061766966"
+
+          cat > .tmp/realty-hero-bright-v12/proof.txt <<EOF
+          encoded_size=178252
+          asset_size=133689
+          sha256=1ac3d6fedc41982fbb194f1f7ba3d9f67a82da2d2795fb7f95bfd9455643fcce
+          first12hex=000000206674797061766966
+          path=realty/assets/owner/hero-split.1ac3d6fe.avif
+          EOF
+
+      - name: Commit verified materialization
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Realty Transport"
+          git config user.email "realty-transport@theholding.ai"
+          git add realty/assets/owner/hero-split.1ac3d6fe.avif .tmp/realty-hero-bright-v12/proof.txt
+          git commit -m "transport: materialized Realty hero 1ac3d6fe"
+          git push origin HEAD:transport/realty-hero-bright-v12-20260901-1ac3d6fe
