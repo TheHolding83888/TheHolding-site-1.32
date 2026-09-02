@@ -5,6 +5,7 @@ on:
     paths:
       - 'reporting/ve33-accounting-evidence.mjs'
       - 'reporting/ve33-accounting-evidence-validation.mjs'
+      - 'reporting/ve33-settlement-query-diagnostic.mjs'
       - 'reporting/ve33-income-candidates.mjs'
       - 'reporting/ve33-income-candidates-validation.mjs'
       - 'reporting/ve33-ledger-admission.mjs'
@@ -36,6 +37,7 @@ jobs:
           set -euo pipefail
           node --check reporting/ve33-accounting-evidence.mjs
           node --check reporting/ve33-accounting-evidence-validation.mjs
+          node --check reporting/ve33-settlement-query-diagnostic.mjs
           node --check reporting/ve33-income-candidates.mjs
           node --check reporting/ve33-income-candidates-validation.mjs
           node --check reporting/ve33-ledger-admission.mjs
@@ -60,12 +62,14 @@ jobs:
         env:
           REWARDS_DATA_FILE: ./companies/rewards-data.json
           VE33_EVIDENCE_FILE: /tmp/ve33-accounting-evidence.json
+          VE33_DIAGNOSTIC_EVIDENCE_FILE: ./reporting/ve33-accounting-evidence.json
           VE33_STATE_READ_CONCURRENCY: '2'
           VE33_SETTLEMENT_CONCURRENCY: '2'
           BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
           OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
         run: |
           set -euo pipefail
+          node reporting/ve33-settlement-query-diagnostic.mjs
           cp reporting/ve33-accounting-evidence.json "$VE33_EVIDENCE_FILE"
           node reporting/ve33-accounting-evidence.mjs
           node - <<'NODE'
