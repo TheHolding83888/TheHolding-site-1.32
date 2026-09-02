@@ -21,7 +21,7 @@ export function lockedManagedEvidenceCandidates(source,finalizeCandidate,generat
     if(!e.holder||!e.tokenId||!e.managedTokenId||!e.rewardContract||!e.token)throw new Error(`locked-managed event identity incomplete: ${e.eventKey}`);
     if(e.recognitionState!=='compounded-locked'||e.openingBalanceCreatesIncome!==false||e.earnedIndependentOfWithdrawal!==true||e.withdrawalIsSettlementNotSecondIncome!==true||e.grossVeNftPrincipalDeltaIsIncomeAuthority!==false||e.referenceAprUsed!==false||e.currentClaimableBalanceIsPeriodIncome!==false||e.claimIsSecondIncomeEvent!==false||e.laterClaimOrPriceMoveDoesNotRewriteIncome!==true||e.unknownIsNotZero!==true)throw new Error(`locked-managed recognition boundary invalid: ${e.eventKey}`);
     if(e.usdValue!==null&&e.usdValue!==undefined&&!(finite(e.usdValue)&&Number(e.usdValue)>0))throw new Error(`locked-managed USD value invalid: ${e.eventKey}`);
-    out.push(finalizeCandidate({...e,sourceFile:'reporting/ve33-locked-managed-accounting-evidence.json',sourceFamily:'ve(3,3) LockedManagedReward factual accrual'},generatedAt));
+    out.push(finalizeCandidate({...e,family:'embedded-income',sourceEvidenceFamily:e.family,sourceFile:'reporting/ve33-locked-managed-accounting-evidence.json',sourceFamily:'ve(3,3) LockedManagedReward factual accrual'},generatedAt));
   }
   return out;
 }
