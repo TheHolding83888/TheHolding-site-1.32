@@ -9,6 +9,8 @@ on:
       - 'rewards/vlcvx-route-rewards-finalize.mjs'
       - 'rewards/vlcvx-route-rewards-guard.mjs'
       - 'rewards/defitea-union-scrvusd-overlay.mjs'
+      - 'reporting/votium-union-accounting-evidence.mjs'
+      - 'reporting/votium-union-accounting-evidence-validation.mjs'
       - '.github/workflows/update-company-rewards.yml'
       - 'intelligence/project-memory/THE_HOLDING_VLCVX_ROUTE_GRAPH_CANON_2026-08-18.md'
   workflow_dispatch:
@@ -88,6 +90,18 @@ jobs:
           node --check rewards/vlcvx-route-rewards-guard.mjs
           node rewards/vlcvx-route-rewards-guard.mjs
 
+      - name: Prove reusable Votium Union accounting evidence boundary
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          REWARDS_OUTPUT: /tmp/vlcvx-rewards.json
+          VOTIUM_UNION_ACCOUNTING_EVIDENCE_OUTPUT: /tmp/votium-union-accounting-evidence.json
+        run: |
+          set -euo pipefail
+          node --check reporting/votium-union-accounting-evidence.mjs
+          node --check reporting/votium-union-accounting-evidence-validation.mjs
+          node reporting/votium-union-accounting-evidence.mjs
+          node reporting/votium-union-accounting-evidence-validation.mjs
+
       - name: Verify aggregate parity after route promotion
         env:
           REWARDS_OUTPUT: /tmp/vlcvx-rewards.json
@@ -114,7 +128,7 @@ jobs:
         run: |
           node - <<'NODE'
           const fs=require('fs');
-          for(const p of ['rewards/vlcvx-registry-route-audit.mjs','rewards/union-vlcvx-allocation-audit.mjs','rewards/vlcvx-route-rewards-overlay.mjs','rewards/vlcvx-route-rewards-finalize.mjs','rewards/vlcvx-route-rewards-guard.mjs']){
+          for(const p of ['rewards/vlcvx-registry-route-audit.mjs','rewards/union-vlcvx-allocation-audit.mjs','rewards/vlcvx-route-rewards-overlay.mjs','rewards/vlcvx-route-rewards-finalize.mjs','rewards/vlcvx-route-rewards-guard.mjs','reporting/votium-union-accounting-evidence.mjs']){
             const s=fs.readFileSync(p,'utf8');
             for(const bad of ['sendTransaction(','new Wallet(','setDelegate(','recordAllocation(','distributor.claim('])if(s.includes(bad))throw new Error('forbidden execution surface in '+p+': '+bad);
             if(!s.includes("executionAuthority:'none'"))throw new Error('execution authority guard missing in '+p);
