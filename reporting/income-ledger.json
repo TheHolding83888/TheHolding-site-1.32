@@ -2,7 +2,7 @@
   "version": "0.1-canonical-income-ledger",
   "methodologyVersion": "0.1-append-only-evidence-family-accounting",
   "policyVersion": "0.1-canonical-income-ledger-policy",
-  "generatedAt": "2026-09-02T04:31:04.451Z",
+  "generatedAt": "2026-09-02T04:58:18.817Z",
   "status": "partial",
   "semantics": {
     "noCollapseRule": "Do not sum accrued entitlement + realised cash flow + embedded income + reference productivity into one income number without explicit non-overlap reconciliation.",
@@ -17,17 +17,28 @@
     "reporting": {
       "file": "reporting/reporting-data.json",
       "version": "1.2.1-resilient-rate-coverage",
-      "generatedAt": "2026-09-02T04:31:04.230Z"
+      "generatedAt": "2026-09-02T04:58:18.604Z"
     },
     "defiteaIncomeLedger": {
       "file": "reporting/defitea-income-ledger.json",
       "version": "0.1-defitea-income-composition",
-      "updatedAt": "2026-09-02T04:31:04.230Z"
+      "updatedAt": "2026-09-02T04:58:18.604Z"
     },
     "embeddedYieldLedger": {
       "file": "companies/embedded-yield-ledger.json",
       "version": "0.4-flow-aware-recurring-checkpoints",
       "generatedAt": "2026-09-01T10:26:20.741Z"
+    },
+    "company009BeefyEmbeddedIncome": {
+      "file": "companies/company-009-beefy-cvxcrv-income.json",
+      "version": "0.1-company-009-beefy-cvxcrv-embedded-income",
+      "generatedAt": "2026-08-31T11:18:09.538Z",
+      "strategyId": "beefy-cvxcrv",
+      "checkpointCount": 22,
+      "candidateIntervalCount": 9,
+      "zeroIncomeIntervalCount": 12,
+      "referenceAprUsed": false,
+      "sourcePresent": true
     },
     "rewards": {
       "file": "companies/rewards-data.json",
@@ -39,16 +50,6 @@
       "version": "0.2.3-yield-basis-live-realised-cash-flow-resilient-logs",
       "generatedAt": "2026-09-01T10:12:04.952Z",
       "overallCoverageComplete": false
-    },
-    "company009BeefyEmbeddedIncome": {
-      "file": "companies/company-009-beefy-cvxcrv-income.json",
-      "version": "0.1-company-009-beefy-cvxcrv-embedded-income",
-      "generatedAt": "2026-08-31T11:18:09.538Z",
-      "strategyId": "beefy-cvxcrv",
-      "checkpointCount": 22,
-      "candidateIntervalCount": 9,
-      "zeroIncomeIntervalCount": 12,
-      "referenceAprUsed": false
     }
   },
   "events": [
@@ -47139,20 +47140,12 @@
     }
   },
   "run": {
-    "candidateEventCount": 178,
+    "candidateEventCount": 187,
     "newEventsAdmitted": 0,
     "retainedHistoricalEventCount": 187,
     "claimableSnapshotCount": 99,
     "company009BeefyCandidateEventCount": 9,
-    "company009BeefyNewEventsAdmitted": 0,
     "company009BeefyCheckpointCount": 22
-  },
-  "authority": {
-    "executionAuthority": "none",
-    "walletAuthority": "none",
-    "claimingAuthority": "none",
-    "capitalExecution": false,
-    "methodologyMutationAuthority": "none"
   },
   "accountingExtensions": {
     "company009BeefyEmbeddedIncome": {
@@ -47163,5 +47156,12 @@
       "crossMonthIntervalsAutoAllocated": false,
       "executionAuthority": "none"
     }
+  },
+  "authority": {
+    "executionAuthority": "none",
+    "walletAuthority": "none",
+    "claimingAuthority": "none",
+    "capitalExecution": false,
+    "methodologyMutationAuthority": "none"
   }
 }
