@@ -14,7 +14,8 @@ if(x.protocol?.delegationProtocol!=='Votium'||x.protocol?.settlementProtocol!=='
 if(!/^0x[0-9a-f]{40}$/i.test(x.protocol?.distributor||''))fail('Distributor missing');
 if(!/^0x[0-9a-f]{64}$/i.test(x.distribution?.merkleRoot||''))fail('Merkle root missing');
 if(!(Number(x.distribution?.week)>0)||!Number.isFinite(Date.parse(x.distribution?.rootEvent?.publishedAt)))fail('Exact distribution week/timestamp proof missing');
-if(x.distribution?.rootEvent?.proofClass!=='onchain-MerkleRootUpdated-root-week-exact-match')fail('Root event proof class drift');
+if(x.distribution?.rootEvent?.proofClass!=='blockscout-indexed-onchain-MerkleRootUpdated-root-week-exact-match')fail('Root event proof class drift');
+if(!/^0x[0-9a-f]{64}$/i.test(x.distribution?.rootEvent?.transactionHash||'')||!(Number(x.distribution?.rootEvent?.blockNumber)>0))fail('Root event transaction/block identity missing');
 if(!Array.isArray(x.members)||x.members.length!==2||x.members.map(m=>m.registry).sort().join(',')!=='002,004')fail('Reusable Union member coverage must include registries 002 and 004');
 for(const m of x.members){
   if(m.currentRoute?.routeId!=='votium-union'||m.settlementAsset!=='scrvUSD')fail(`Current route identity drift ${m.registry}`);
