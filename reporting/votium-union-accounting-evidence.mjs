@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
-import { AbiCoder, Contract, JsonRpcProvider, concat, getAddress, id, keccak256 } from 'ethers';
+import { Contract, JsonRpcProvider, concat, getAddress, id, keccak256, solidityPackedKeccak256 } from 'ethers';
 
 const VERSION='0.1-votium-union-accounting-evidence';
 const REWARDS=process.env.REWARDS_OUTPUT||'companies/rewards-data.json';
@@ -17,11 +17,10 @@ const ABI=[
   'function week() view returns (uint32)',
   'function isClaimed(uint256 index) view returns (bool)'
 ];
-const coder=AbiCoder.defaultAbiCoder();
 
 const pairHash=(a,b)=>keccak256(String(a).toLowerCase()<String(b).toLowerCase()?concat([a,b]):concat([b,a]));
 function verifyClaim(wallet,claim,root){
-  let h=keccak256(coder.encode(['uint256','address','uint256'],[BigInt(claim.index),getAddress(wallet),BigInt(claim.amount)]));
+  let h=solidityPackedKeccak256(['uint256','address','uint256'],[BigInt(claim.index),getAddress(wallet),BigInt(claim.amount)]);
   for(const p of claim.proof||[])h=pairHash(h,p);
   return h.toLowerCase()===String(root).toLowerCase();
 }
