@@ -13,6 +13,9 @@ on:
       - 'companies/productivity-data.json'
       - 'reporting/company-monthly-reports.mjs'
       - 'reporting/company-monthly-reports-validation.mjs'
+      - 'reporting/company-monthly-earned-income.mjs'
+      - 'reporting/company-monthly-earned-income-validation.mjs'
+      - 'reporting/income-ledger.json'
       - 'companies/company-monthly-report-adapter.js'
       - '.github/workflows/update-company-monthly-reports.yml'
       - '.github/workflows/verify-company-monthly-reports.yml'
@@ -56,6 +59,8 @@ jobs:
           set -euo pipefail
           node --check reporting/company-monthly-reports.mjs
           node --check reporting/company-monthly-reports-validation.mjs
+          node --check reporting/company-monthly-earned-income.mjs
+          node --check reporting/company-monthly-earned-income-validation.mjs
           node --check companies/company-monthly-report-adapter.js
           test -s companies/productivity-data.json
           test -s reporting/reporting-data.json
@@ -69,7 +74,7 @@ jobs:
           console.log('Company Monthly Reports canonical income dependency PASS');
           NODE
 
-      - name: Build company monthly reports
+      - name: Build reference monthly scaffold
         env:
           PRODUCTIVITY_DATA_FILE: ./companies/productivity-data.json
           REPORTING_DATA_FILE: ./reporting/reporting-data.json
@@ -78,10 +83,23 @@ jobs:
           COMPANY_MONTHLY_REPORTS_FILE: ./reporting/company-monthly-reports.json
         run: node reporting/company-monthly-reports.mjs
 
-      - name: Validate company monthly reports
+      - name: Validate reference scaffold
         env:
           COMPANY_MONTHLY_REPORTS_FILE: ./reporting/company-monthly-reports.json
         run: node reporting/company-monthly-reports-validation.mjs
+
+      - name: Promote canonical earned income to primary monthly accounting
+        env:
+          COMPANY_MONTHLY_REPORTS_FILE: ./reporting/company-monthly-reports.json
+          INCOME_LEDGER_FILE: ./reporting/income-ledger.json
+          REPORTING_DATA_FILE: ./reporting/reporting-data.json
+        run: node reporting/company-monthly-earned-income.mjs
+
+      - name: Validate earned-income accounting
+        env:
+          COMPANY_MONTHLY_REPORTS_FILE: ./reporting/company-monthly-reports.json
+          INCOME_LEDGER_FILE: ./reporting/income-ledger.json
+        run: node reporting/company-monthly-earned-income-validation.mjs
 
       - name: Commit monthly reporting snapshot
         shell: bash
@@ -94,6 +112,8 @@ jobs:
             sha256sum \
               reporting/company-monthly-reports.mjs \
               reporting/company-monthly-reports-validation.mjs \
+              reporting/company-monthly-earned-income.mjs \
+              reporting/company-monthly-earned-income-validation.mjs \
               .github/workflows/update-company-monthly-reports.yml
           }
           critical_before="$(critical_fingerprint)"
@@ -103,7 +123,7 @@ jobs:
             echo "No company monthly reporting changes."
             exit 0
           fi
-          git commit -m "data: update company monthly reports"
+          git commit -m "data: update company monthly earned-income reports"
 
           for attempt in 1 2 3; do
             git fetch origin main
@@ -127,6 +147,13 @@ jobs:
             node reporting/company-monthly-reports.mjs
             COMPANY_MONTHLY_REPORTS_FILE=./reporting/company-monthly-reports.json \
             node reporting/company-monthly-reports-validation.mjs
+            COMPANY_MONTHLY_REPORTS_FILE=./reporting/company-monthly-reports.json \
+            INCOME_LEDGER_FILE=./reporting/income-ledger.json \
+            REPORTING_DATA_FILE=./reporting/reporting-data.json \
+            node reporting/company-monthly-earned-income.mjs
+            COMPANY_MONTHLY_REPORTS_FILE=./reporting/company-monthly-reports.json \
+            INCOME_LEDGER_FILE=./reporting/income-ledger.json \
+            node reporting/company-monthly-earned-income-validation.mjs
 
             git add reporting/company-monthly-reports.json
             git commit --amend --no-edit
