@@ -92,10 +92,12 @@ async function main(){
         continue;
       }
       const claim=api.claim;
-      const proofValid=verifyClaim(wallet,claim,root);
+      const index=BigInt(claim.index);
+      const amountRaw=BigInt(claim.amount);
+      const proofValid=verifyClaim(wallet,{...claim,index,amount:amountRaw},root);
       if(!proofValid)throw new Error(`Union scrvUSD proof invalid for ${identity.company}`);
-      const claimed=Boolean(await distributor.isClaimed(BigInt(claim.index),{blockTag:head}));
-      members.push({...identity,wallet,currentRoute:route.currentRoute,settlementAsset:'scrvUSD',entitlementStatus:claimed?'published-claimed-state':'published-unclaimed-state',leaf:{index:String(claim.index),amountRaw:String(claim.amount),proofValid,claimed,merkleRoot:root,week},unknownIsNotZero:true,periodIncomeAuthority:false});
+      const claimed=Boolean(await distributor.isClaimed(index,{blockTag:head}));
+      members.push({...identity,wallet,currentRoute:route.currentRoute,settlementAsset:'scrvUSD',entitlementStatus:claimed?'published-claimed-state':'published-unclaimed-state',leaf:{index:index.toString(),amountRaw:amountRaw.toString(),proofValid,claimed,merkleRoot:root,week},unknownIsNotZero:true,periodIncomeAuthority:false});
     }
     const out={
       version:VERSION,
