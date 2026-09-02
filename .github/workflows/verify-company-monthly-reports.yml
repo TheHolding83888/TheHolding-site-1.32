@@ -5,6 +5,7 @@ on:
     paths:
       - 'reporting/company-monthly-reports.mjs'
       - 'reporting/company-monthly-reports-validation.mjs'
+      - 'reporting/canonical-earned-income-view.mjs'
       - 'reporting/company-monthly-earned-income.mjs'
       - 'reporting/company-monthly-earned-income-validation.mjs'
       - 'reporting/accounting-coverage.mjs'
@@ -40,6 +41,7 @@ jobs:
           set -euo pipefail
           node --check reporting/company-monthly-reports.mjs
           node --check reporting/company-monthly-reports-validation.mjs
+          node --check reporting/canonical-earned-income-view.mjs
           node --check reporting/company-monthly-earned-income.mjs
           node --check reporting/company-monthly-earned-income-validation.mjs
           node --check reporting/accounting-coverage.mjs
@@ -86,6 +88,7 @@ jobs:
               observedEarnedIncomeUsd:latest?.observedEarnedIncomeUsd,
               accountingStatus:latest?.accountingStatus,
               coverageComplete:latest?.accountingCoverageComplete,
+              unresolvedLifecycleEvents:latest?.incomeAccounting?.lifecycle?.unresolvedEventCount,
               referenceAnalyticsUsd:latest?.referenceAnalytics?.generatedIncomeUsd,
               averageCapitalUsd:latest?.averageCapitalUsd
             });
@@ -143,14 +146,21 @@ jobs:
           set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');
-          const files=['reporting/company-monthly-reports.mjs','reporting/company-monthly-earned-income.mjs','reporting/accounting-coverage.mjs','reporting/icp-nns-factual-intervals.mjs','companies/company-monthly-report-adapter.js'];
+          const files=['reporting/company-monthly-reports.mjs','reporting/canonical-earned-income-view.mjs','reporting/company-monthly-earned-income.mjs','reporting/accounting-coverage.mjs','reporting/icp-nns-factual-intervals.mjs','companies/company-monthly-report-adapter.js'];
           const text=files.map(f=>fs.readFileSync(f,'utf8')).join('\n');
           for(const bad of ['api.coingecko.com','COINGECKO_API_KEY','new Wallet(','sendTransaction(','executionAuthority: write','registryHasMonthClosingAuthority:true','monthClosingAuthority:true']){
             if(text.includes(bad)) throw new Error('unexpected monthly reporting authority/data discovery: '+bad);
           }
           const accounting=fs.readFileSync('reporting/company-monthly-earned-income.mjs','utf8');
-          for(const required of ['referenceIncomeIsPrimaryMetric: false','currentRewardBalanceIsPeriodIncome: false','incompleteCoverageMayMasqueradeAsCompleteIncome: false']){
+          for(const required of ['canonicalLedgerIsSoleMonthlyIncomeEventSource: true','monthlyLayerCreatesIncomeEvents: false','claimableSnapshotDeltaCreatesIncome: false','genericReceiptCreatesIncome: false','referenceIncomeIsPrimaryMetric: false','currentRewardBalanceIsPeriodIncome: false','incompleteCoverageMayMasqueradeAsCompleteIncome: false']){
             if(!accounting.includes(required)) throw new Error('accounting fail-closed invariant missing: '+required);
+          }
+          for(const forbidden of ['buildObservedRewardAccruals','observed-native-reward-delta','reward-accrual:']){
+            if(accounting.includes(forbidden)) throw new Error('monthly layer still contains independent income recognition path: '+forbidden);
+          }
+          const view=fs.readFileSync('reporting/canonical-earned-income-view.mjs','utf8');
+          for(const required of ['claimableSnapshotsCreateIncome: false','genericReceiptCreatesIncome: false','settlementDoesNotReRecognizeIncome: true']){
+            if(!view.includes(required)) throw new Error('canonical earned-income view invariant missing: '+required);
           }
           const coverage=JSON.parse(fs.readFileSync('/tmp/accounting-coverage.json','utf8'));
           if(coverage.status!=='diagnostic-no-completion-authority'||coverage.authority?.monthClosingAuthority!==false) throw new Error('Accounting coverage diagnostic gained completion authority');
