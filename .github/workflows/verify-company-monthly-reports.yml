@@ -5,8 +5,11 @@ on:
     paths:
       - 'reporting/company-monthly-reports.mjs'
       - 'reporting/company-monthly-reports-validation.mjs'
+      - 'reporting/company-monthly-earned-income.mjs'
+      - 'reporting/company-monthly-earned-income-validation.mjs'
       - 'companies/company-monthly-report-adapter.js'
       - '.github/workflows/update-company-monthly-reports.yml'
+      - '.github/workflows/verify-company-monthly-reports.yml'
   workflow_dispatch:
 
 permissions:
@@ -31,39 +34,68 @@ jobs:
           set -euo pipefail
           node --check reporting/company-monthly-reports.mjs
           node --check reporting/company-monthly-reports-validation.mjs
+          node --check reporting/company-monthly-earned-income.mjs
+          node --check reporting/company-monthly-earned-income-validation.mjs
           node --check companies/company-monthly-report-adapter.js
           git diff --check
 
-      - name: Exercise exact monthly reporting candidate
+      - name: Exercise exact monthly accounting candidate
         shell: bash
         run: |
           set -euo pipefail
           PRODUCTIVITY_DATA_FILE=./companies/productivity-data.json \
           REPORTING_DATA_FILE=./reporting/reporting-data.json \
+          INCOME_LEDGER_FILE=./reporting/income-ledger.json \
           MEMORY_VAULT_DIR=./intelligence/memory-vault \
           COMPANY_MONTHLY_REPORTS_FILE=/tmp/company-monthly-reports.json \
           node reporting/company-monthly-reports.mjs
+
+          PRODUCTIVITY_DATA_FILE=./companies/productivity-data.json \
+          REPORTING_DATA_FILE=./reporting/reporting-data.json \
+          INCOME_LEDGER_FILE=./reporting/income-ledger.json \
           COMPANY_MONTHLY_REPORTS_FILE=/tmp/company-monthly-reports.json \
           node reporting/company-monthly-reports-validation.mjs
+
+          COMPANY_MONTHLY_REPORTS_FILE=/tmp/company-monthly-reports.json \
+          INCOME_LEDGER_FILE=./reporting/income-ledger.json \
+          REPORTING_DATA_FILE=./reporting/reporting-data.json \
+          node reporting/company-monthly-earned-income.mjs
+
+          COMPANY_MONTHLY_REPORTS_FILE=/tmp/company-monthly-reports.json \
+          INCOME_LEDGER_FILE=./reporting/income-ledger.json \
+          node reporting/company-monthly-earned-income-validation.mjs
+
           node - <<'NODE'
           const fs=require('fs');
           const r=JSON.parse(fs.readFileSync('/tmp/company-monthly-reports.json','utf8'));
           for(const [name,c] of Object.entries(r.companies||{})){
             const latest=Object.values(c.months||{}).sort((a,b)=>String(a.month).localeCompare(String(b.month))).at(-1);
-            console.log(name,{month:latest?.month,generatedIncomeUsd:latest?.generatedIncomeUsd,monthlyYieldPct:latest?.monthlyYieldPct,averageCapitalUsd:latest?.averageCapitalUsd,periodStart:latest?.periodStart,periodEnd:latest?.periodEnd});
+            console.log(name,{
+              month:latest?.month,
+              earnedIncomeUsd:latest?.generatedIncomeUsd,
+              observedEarnedIncomeUsd:latest?.observedEarnedIncomeUsd,
+              accountingStatus:latest?.accountingStatus,
+              coverageComplete:latest?.accountingCoverageComplete,
+              referenceAnalyticsUsd:latest?.referenceAnalytics?.generatedIncomeUsd,
+              averageCapitalUsd:latest?.averageCapitalUsd
+            });
           }
           NODE
 
-      - name: Guard authority and independent data discovery
+      - name: Guard authority and accounting boundaries
         shell: bash
         run: |
           set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');
-          const files=['reporting/company-monthly-reports.mjs','companies/company-monthly-report-adapter.js'];
+          const files=['reporting/company-monthly-reports.mjs','reporting/company-monthly-earned-income.mjs','companies/company-monthly-report-adapter.js'];
           const text=files.map(f=>fs.readFileSync(f,'utf8')).join('\n');
           for(const bad of ['api.coingecko.com','COINGECKO_API_KEY','new Wallet(','sendTransaction(','executionAuthority: write']){
             if(text.includes(bad)) throw new Error('unexpected monthly reporting authority/data discovery: '+bad);
           }
-          console.log('Company Monthly Reports authority boundary PASS');
+          const accounting=fs.readFileSync('reporting/company-monthly-earned-income.mjs','utf8');
+          for(const required of ['referenceIncomeIsPrimaryMetric: false','currentRewardBalanceIsPeriodIncome: false','incompleteCoverageMayMasqueradeAsCompleteIncome: false']){
+            if(!accounting.includes(required)) throw new Error('accounting fail-closed invariant missing: '+required);
+          }
+          console.log('Company Monthly Reports authority/accounting boundary PASS');
           NODE
