@@ -14,6 +14,8 @@ assert.deepEqual(validateLockedManagedEvidence(source),{present:true});
 const finalize=(x,generatedAt)=>({...x,generatedAt,sourceIdentityHash:'test'});
 const rows=lockedManagedEvidenceCandidates(source,finalize,'2026-09-02T12:00:00.000Z');
 assert.equal(rows.length,1);
+assert.equal(rows[0].family,'embedded-income');
+assert.equal(rows[0].sourceEvidenceFamily,'embedded-compounded-income');
 assert.equal(rows[0].sourceFamily,'ve(3,3) LockedManagedReward factual accrual');
 assert.equal(rows[0].executionAuthority,'none');
 assert.throws(()=>lockedManagedEvidenceCandidates({...source,events:[{...source.events[0],claimIsSecondIncomeEvent:true}]},finalize,'2026-09-02T12:00:00.000Z'),/recognition boundary invalid/);
