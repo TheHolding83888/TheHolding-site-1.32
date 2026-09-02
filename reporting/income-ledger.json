@@ -39,6 +39,16 @@
       "version": "0.2.3-yield-basis-live-realised-cash-flow-resilient-logs",
       "generatedAt": "2026-09-01T10:12:04.952Z",
       "overallCoverageComplete": false
+    },
+    "company009BeefyEmbeddedIncome": {
+      "file": "companies/company-009-beefy-cvxcrv-income.json",
+      "version": "0.1-company-009-beefy-cvxcrv-embedded-income",
+      "generatedAt": "2026-08-31T11:18:09.538Z",
+      "strategyId": "beefy-cvxcrv",
+      "checkpointCount": 22,
+      "candidateIntervalCount": 9,
+      "zeroIncomeIntervalCount": 12,
+      "referenceAprUsed": false
     }
   },
   "events": [
@@ -42647,7 +42657,7 @@
         "overallComplete": false,
         "accruedEntitlement": "unknown",
         "realisedCashFlow": "unknown",
-        "embeddedIncome": "unknown",
+        "embeddedIncome": "partial-mechanism-specific-beefy-cvxcrv",
         "crossMonthEmbeddedIntervalsExcludedFromMonthlyAttribution": 0,
         "unknownIsNotZero": true
       }
@@ -47132,7 +47142,10 @@
     "candidateEventCount": 178,
     "newEventsAdmitted": 0,
     "retainedHistoricalEventCount": 187,
-    "claimableSnapshotCount": 99
+    "claimableSnapshotCount": 99,
+    "company009BeefyCandidateEventCount": 9,
+    "company009BeefyNewEventsAdmitted": 0,
+    "company009BeefyCheckpointCount": 22
   },
   "authority": {
     "executionAuthority": "none",
@@ -47140,5 +47153,15 @@
     "claimingAuthority": "none",
     "capitalExecution": false,
     "methodologyMutationAuthority": "none"
+  },
+  "accountingExtensions": {
+    "company009BeefyEmbeddedIncome": {
+      "version": "0.1-constant-share-positive-ppfs",
+      "source": "companies/company-009-beefy-cvxcrv-income.json",
+      "referenceAprUsed": false,
+      "laterPriceMovementRewritesIncome": false,
+      "crossMonthIntervalsAutoAllocated": false,
+      "executionAuthority": "none"
+    }
   }
 }
