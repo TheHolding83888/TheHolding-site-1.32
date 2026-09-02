@@ -87,14 +87,15 @@ jobs:
           const events=e.events||[];
           if(new Set(events.map(x=>x.eventKey)).size!==events.length) throw new Error('live ve33 duplicate event identity');
           if(events.some(x=>x.referenceAprUsed!==false||x.claimIsSecondIncomeEvent!==false||x.laterClaimOrPriceMoveDoesNotRewriteIncome!==true||x.executionAuthority!=='none')) throw new Error('live ve33 accounting semantic drift');
-          if(e.authority?.executionAuthority!=='none'||e.authority?.walletAuthority!=='none'||e.authority?.claimingAuthority!=='none'||e.authority?.capitalExecution!==false) throw new Error('ve33 authority expansion');
+          if(e.authority?.executionAuthority!=='none'||e.authority?.walletAuthority!=='none'||e.authority?.claimingAuthority!=='none'||e.authority?.capitalExecution!==false) throw new Error('live ve33 authority expansion');
+          const samplePayload=Object.fromEntries(Object.entries(e.diagnostics.protocols||{}).map(([k,v])=>[k,(v.stateFailureSamples||[]).slice(0,3)]));
+          console.log('ve33 state failure samples JSON',JSON.stringify(samplePayload,null,2));
           console.log('Read-only live ve33 canary PASS',{
             status:e.status,
             lanes:e.diagnostics.laneCount,
             currentCheckpoints:Object.fromEntries(Object.entries(e.diagnostics.protocols||{}).map(([k,v])=>[k,v.currentCheckpointCount||0])),
             currentStateFailures:Object.fromEntries(Object.entries(e.diagnostics.protocols||{}).map(([k,v])=>[k,v.currentStateFailureCount||0])),
             stateFailureCounts:Object.fromEntries(Object.entries(e.diagnostics.protocols||{}).map(([k,v])=>[k,v.stateFailureCounts||{}])),
-            stateFailureSamples:Object.fromEntries(Object.entries(e.diagnostics.protocols||{}).map(([k,v])=>[k,(v.stateFailureSamples||[]).slice(0,3)])),
             historicalBoundarySkippedLaneReads:Object.fromEntries(Object.entries(e.diagnostics.protocols||{}).map(([k,v])=>[k,v.historicalBoundarySkippedLaneReads||0])),
             runtimeMs,
             events:events.length,
