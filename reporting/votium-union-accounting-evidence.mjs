@@ -35,7 +35,7 @@ async function fetchClaim(wallet){
   if(claim?.index===undefined||claim?.amount===undefined||!Array.isArray(claim?.proof))throw new Error(`Union scrvUSD claim schema invalid for ${wallet}`);
   return{status:'published',claim,httpStatus:response.status};
 }
-function rpcCandidates(){return [...new Set([process.env.ETH_RPC_URL,'https://ethereum-rpc.publicnode.com','https://eth.llamarpc.com'].filter(Boolean))];}
+function rpcCandidates(){return [...new Set([process.env.ETH_RPC_URL,'https://eth.llamarpc.com','https://ethereum-rpc.publicnode.com'].filter(Boolean))];}
 function rpcLabel(url){if(url===process.env.ETH_RPC_URL)return'configured-secret';try{return new URL(url).hostname}catch{return'configured'}}
 async function providerWithFallback(){let last=null;for(const url of rpcCandidates()){const p=new JsonRpcProvider(url,1,{staticNetwork:true});try{await p.getBlockNumber();return{provider:p,endpointClass:rpcLabel(url)}}catch(e){last=e;try{p.destroy()}catch{}}}throw last||new Error('Ethereum RPC unavailable')}
 async function findRootEvent(distributor,root,week,head){
