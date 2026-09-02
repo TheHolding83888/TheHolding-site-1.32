@@ -2,7 +2,7 @@
   "version": "0.1-canonical-income-ledger",
   "methodologyVersion": "0.1-append-only-evidence-family-accounting",
   "policyVersion": "0.1-canonical-income-ledger-policy",
-  "generatedAt": "2026-09-01T20:13:17.562Z",
+  "generatedAt": "2026-09-02T04:31:04.451Z",
   "status": "partial",
   "semantics": {
     "noCollapseRule": "Do not sum accrued entitlement + realised cash flow + embedded income + reference productivity into one income number without explicit non-overlap reconciliation.",
@@ -17,12 +17,12 @@
     "reporting": {
       "file": "reporting/reporting-data.json",
       "version": "1.2.1-resilient-rate-coverage",
-      "generatedAt": "2026-09-01T20:13:17.353Z"
+      "generatedAt": "2026-09-02T04:31:04.230Z"
     },
     "defiteaIncomeLedger": {
       "file": "reporting/defitea-income-ledger.json",
       "version": "0.1-defitea-income-composition",
-      "updatedAt": "2026-09-01T20:13:17.353Z"
+      "updatedAt": "2026-09-02T04:31:04.230Z"
     },
     "embeddedYieldLedger": {
       "file": "companies/embedded-yield-ledger.json",
@@ -39,16 +39,6 @@
       "version": "0.2.3-yield-basis-live-realised-cash-flow-resilient-logs",
       "generatedAt": "2026-09-01T10:12:04.952Z",
       "overallCoverageComplete": false
-    },
-    "company009BeefyEmbeddedIncome": {
-      "file": "companies/company-009-beefy-cvxcrv-income.json",
-      "version": "0.1-company-009-beefy-cvxcrv-embedded-income",
-      "generatedAt": "2026-08-31T11:18:09.538Z",
-      "strategyId": "beefy-cvxcrv",
-      "checkpointCount": 22,
-      "candidateIntervalCount": 9,
-      "zeroIncomeIntervalCount": 12,
-      "referenceAprUsed": false
     }
   },
   "events": [
@@ -42657,7 +42647,7 @@
         "overallComplete": false,
         "accruedEntitlement": "unknown",
         "realisedCashFlow": "unknown",
-        "embeddedIncome": "partial-mechanism-specific-beefy-cvxcrv",
+        "embeddedIncome": "unknown",
         "crossMonthEmbeddedIntervalsExcludedFromMonthlyAttribution": 0,
         "unknownIsNotZero": true
       }
@@ -42951,9 +42941,9 @@
       },
       "referenceState": {
         "semantic": "reference-generated-income-not-realised-cash-flow",
-        "latestDate": "2026-09-01",
+        "latestDate": "2026-09-02",
         "currentMonth": "2026-09",
-        "currentMonthReferenceOrGeneratedIncomeUsd": 0.015,
+        "currentMonthReferenceOrGeneratedIncomeUsd": 0.03,
         "source": "reporting/reporting-data.json",
         "earnedIncomeAuthority": false
       },
@@ -44823,9 +44813,9 @@
       },
       "referenceState": {
         "semantic": "reference-cash-flow-model-with-source-isolation-not-claim-accounting",
-        "latestDate": "2026-09-01",
+        "latestDate": "2026-09-02",
         "currentMonth": "2026-09",
-        "currentMonthReferenceOrGeneratedIncomeUsd": 4.04,
+        "currentMonthReferenceOrGeneratedIncomeUsd": 8.08,
         "source": "reporting/reporting-data.json",
         "earnedIncomeAuthority": false
       },
@@ -47141,11 +47131,8 @@
   "run": {
     "candidateEventCount": 178,
     "newEventsAdmitted": 0,
-    "retainedHistoricalEventCount": 178,
-    "claimableSnapshotCount": 99,
-    "company009BeefyCandidateEventCount": 9,
-    "company009BeefyNewEventsAdmitted": 0,
-    "company009BeefyCheckpointCount": 22
+    "retainedHistoricalEventCount": 187,
+    "claimableSnapshotCount": 99
   },
   "authority": {
     "executionAuthority": "none",
@@ -47153,15 +47140,5 @@
     "claimingAuthority": "none",
     "capitalExecution": false,
     "methodologyMutationAuthority": "none"
-  },
-  "accountingExtensions": {
-    "company009BeefyEmbeddedIncome": {
-      "version": "0.1-constant-share-positive-ppfs",
-      "source": "companies/company-009-beefy-cvxcrv-income.json",
-      "referenceAprUsed": false,
-      "laterPriceMovementRewritesIncome": false,
-      "crossMonthIntervalsAutoAllocated": false,
-      "executionAuthority": "none"
-    }
   }
 }
