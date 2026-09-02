@@ -1,0 +1,99 @@
+name: Verify Company 009 Beefy Income Ledger
+
+on:
+  pull_request:
+    paths:
+      - 'reporting/income-ledger-company-009-beefy.mjs'
+      - 'reporting/income-ledger-company-009-beefy-validation.mjs'
+      - 'reporting/income-ledger-policy.json'
+      - '.github/workflows/update-income-ledger-company-009-beefy.yml'
+      - '.github/workflows/verify-income-ledger-company-009-beefy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: Static validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check reporting/income-ledger-company-009-beefy.mjs
+          node --check reporting/income-ledger-company-009-beefy-validation.mjs
+          git diff --check
+
+      - name: Exercise factual admission in isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp reporting/income-ledger.json /tmp/income-ledger.json
+          COMPANY_009_BEEFY_INCOME_FILE=./companies/company-009-beefy-cvxcrv-income.json \
+          INCOME_LEDGER_FILE=/tmp/income-ledger.json \
+          node reporting/income-ledger-company-009-beefy.mjs
+          COMPANY_009_BEEFY_INCOME_FILE=./companies/company-009-beefy-cvxcrv-income.json \
+          INCOME_LEDGER_FILE=/tmp/income-ledger.json \
+          node reporting/income-ledger-company-009-beefy-validation.mjs
+
+      - name: Exercise monthly accounting integration
+        shell: bash
+        run: |
+          set -euo pipefail
+          PRODUCTIVITY_DATA_FILE=./companies/productivity-data.json \
+          REPORTING_DATA_FILE=./reporting/reporting-data.json \
+          INCOME_LEDGER_FILE=/tmp/income-ledger.json \
+          MEMORY_VAULT_DIR=./intelligence/memory-vault \
+          COMPANY_MONTHLY_REPORTS_FILE=/tmp/company-monthly-reports.json \
+          node reporting/company-monthly-reports.mjs
+          COMPANY_MONTHLY_REPORTS_FILE=/tmp/company-monthly-reports.json \
+          node reporting/company-monthly-reports-validation.mjs
+          COMPANY_MONTHLY_REPORTS_FILE=/tmp/company-monthly-reports.json \
+          INCOME_LEDGER_FILE=/tmp/income-ledger.json \
+          REPORTING_DATA_FILE=./reporting/reporting-data.json \
+          node reporting/company-monthly-earned-income.mjs
+          COMPANY_MONTHLY_REPORTS_FILE=/tmp/company-monthly-reports.json \
+          INCOME_LEDGER_FILE=/tmp/income-ledger.json \
+          node reporting/company-monthly-earned-income-validation.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const r=JSON.parse(fs.readFileSync('/tmp/company-monthly-reports.json','utf8'));
+          const aug=r.companies?.['1milliondollar.eth']?.months?.['2026-08'];
+          if(!aug) throw new Error('Company #009 August monthly report missing');
+          if(aug.accountingCoverageComplete!==false||aug.generatedIncomeUsd!==null) throw new Error('Partial Beefy evidence falsely completed Company #009 August accounting');
+          if(!(Number(aug.observedEarnedIncomeUsd)>0)) throw new Error('Factual Beefy embedded income did not reach monthly observed evidence');
+          if(aug.referenceAnalytics?.earnedIncomeAuthority!==false) throw new Error('Reference analytics gained earned-income authority');
+          console.log('Company #009 monthly accounting integration PASS',{
+            observedEarnedIncomeUsd:aug.observedEarnedIncomeUsd,
+            complete:aug.accountingCoverageComplete,
+            primaryEarnedIncomeUsd:aug.generatedIncomeUsd,
+            referenceAnalyticsUsd:aug.referenceAnalytics?.generatedIncomeUsd
+          });
+          NODE
+
+      - name: Guard source and authority boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const policy=JSON.parse(fs.readFileSync('reporting/income-ledger-policy.json','utf8'));
+          if(!policy.sourceAuthority?.company009BeefyEmbeddedIncome) throw new Error('Beefy source authority absent');
+          if(policy.rules?.referenceAprCanNeverBackfillEarnedIncome!==true) throw new Error('Reference APR accounting boundary drift');
+          if(policy.authority?.executionAuthority!=='none'||policy.authority?.capitalExecution!==false) throw new Error('Accounting authority expansion');
+          const text=fs.readFileSync('reporting/income-ledger-company-009-beefy.mjs','utf8');
+          for(const bad of ['api.coingecko.com','COINGECKO_API_KEY','sendTransaction(','new Wallet(','write-all']){
+            if(text.includes(bad)) throw new Error('Unexpected discovery/execution authority: '+bad);
+          }
+          console.log('Company #009 Beefy source/authority boundary PASS');
+          NODE
