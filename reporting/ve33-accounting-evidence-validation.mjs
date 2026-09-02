@@ -42,12 +42,18 @@ const feeData=voterIface.encodeFunctionData('claimFees',[[reward],[[token]],99])
 assert.equal(decodeRewardClaimTokenId({to:voter,data:feeData,rewardContract:reward,rewardToken:token,voter}),'99');
 assert.equal(decodeRewardClaimTokenId({to:other,data:'0x',rewardContract:reward,rewardToken:token,voter}),null);
 
+const activePool='0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+const stalePool='0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+const activeReward='0x8888888888888888888888888888888888888888';
+const staleReward='0x9999999999999999999999999999999999999999';
 const synthetic={
   companies:{
     Alpha:{
       sources:[{
         route:'aerodrome-ve',
-        details:{walletResults:[{wallet:'0x5555555555555555555555555555555555555555',walletAlias:'Alpha',status:'ok',details:{positions:[{tokenId:'7',mode:'direct'}]}}]}
+        details:{walletResults:[{wallet:'0x5555555555555555555555555555555555555555',walletAlias:'Alpha',status:'ok',details:{positions:[{
+          tokenId:'7',mode:'direct',currentVotedPools:[activePool],recentVotedPools:[],matchedRewardPools:[activePool]
+        }]}}]}
       }],
       rewards:[]
     },
@@ -60,14 +66,19 @@ const synthetic={
     }
   },
   internalState:{directVeRewardIndex:{
-    'base:7':{contracts:[{rewardAddress:'0x8888888888888888888888888888888888888888'}]}
+    'base:7':{contracts:[
+      {pool:activePool,rewardAddress:activeReward},
+      {pool:stalePool,rewardAddress:staleReward}
+    ]}
   }}
 };
 const positions=trackedPositionDescriptors(synthetic);
 assert.equal(positions.length,2);
 const aero=positions.find(x=>x.company==='Alpha');
 assert.equal(aero.protocolKey,'aerodrome');
-assert.deepEqual(aero.rewardContracts,['0x8888888888888888888888888888888888888888']);
+assert.equal(aero.operationalPoolCount,1);
+assert.deepEqual(aero.rewardContracts,[activeReward]);
+assert.ok(!aero.rewardContracts.includes(staleReward),'stale non-operational reward contract leaked into accounting lanes');
 const velo=positions.find(x=>x.company==='Beta');
 assert.equal(velo.protocolKey,'velodrome');
 assert.equal(velo.freeManagedReward,'0x7777777777777777777777777777777777777777');
