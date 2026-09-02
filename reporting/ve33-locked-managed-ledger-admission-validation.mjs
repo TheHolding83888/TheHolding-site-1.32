@@ -14,6 +14,8 @@ const first=admitLockedManagedIntoLedgerState({ledger,evidence:{...baseEvidence,
 assert.equal(first.candidateEventCount,1);
 assert.equal(first.newEventsAdmitted,1);
 assert.equal(first.ledger.events.length,1);
+assert.equal(first.ledger.events[0].family,'embedded-income');
+assert.equal(first.ledger.events[0].sourceEvidenceFamily,'embedded-compounded-income');
 assert.equal(first.ledger.events[0].sourceFamily,'ve(3,3) LockedManagedReward factual accrual');
 assert.equal(first.ledger.events[0].executionAuthority,'none');
 const repeat=admitLockedManagedIntoLedgerState({ledger:first.ledger,evidence:{...baseEvidence,events:[event]},generatedAt:'2026-09-02T13:00:00.000Z'});
