@@ -11,7 +11,6 @@ const CONFIG={
 };
 const REWARD_ABI=['event ClaimRewards(address indexed from,address indexed reward,uint256 amount)'];
 const DISTRIBUTOR_ABI=['event Claimed(uint256 indexed tokenId,uint256 indexed epochStart,uint256 indexed epochEnd,uint256 amount)'];
-const lower=v=>String(v||'').toLowerCase();
 
 function compactError(error){
   return{
@@ -26,19 +25,6 @@ function compactError(error){
     infoCode:error?.info?.error?.code??null,
     payload:error?.info?.payload||null
   };
-}
-
-async function providerFor(cfg){
-  const urls=[process.env[cfg.rpcEnv],...cfg.fallbacks].filter(Boolean);
-  const failures=[];
-  for(const url of urls){
-    try{
-      const provider=new JsonRpcProvider(url,cfg.chainId);
-      const latest=await provider.getBlockNumber();
-      return{provider,url,latest,failures};
-    }catch(error){failures.push({url,error:compactError(error)});}
-  }
-  throw new Error(`No provider available: ${JSON.stringify(failures)}`);
 }
 
 function sampleInterval(protocol,kind){
@@ -56,11 +42,11 @@ function sampleInterval(protocol,kind){
   return null;
 }
 
-async function probe(protocol,kind){
-  const cfg=CONFIG[protocol],sample=sampleInterval(protocol,kind);
-  if(!sample)return{protocol,kind,status:'no-sample'};
-  const{provider,url,latest,failures}=await providerFor(cfg);
-  const{open,close}=sample,fromBlock=Number(open.blockNumber)+1,toBlock=Number(close.blockNumber);
+async function queryWithUrl({cfg,url,kind,open,fromBlock,toBlock}){
+  const provider=new JsonRpcProvider(url,cfg.chainId);
+  let latest=null;
+  try{latest=await provider.getBlockNumber();}
+  catch(error){return{url,status:'provider-unavailable',error:compactError(error)};}
   try{
     let contract,filter,address;
     if(kind==='rebase-distributor'){
@@ -73,17 +59,27 @@ async function probe(protocol,kind){
       filter=contract.filters.ClaimRewards(null,open.rewardToken);
     }
     const logs=await contract.queryFilter(filter,fromBlock,toBlock);
-    return{
-      protocol,kind,status:'query-ok',provider:url,providerFallbackFailures:failures,latestBlock:latest,
-      address,tokenId:String(open.tokenId),rewardToken:open.rewardToken||null,fromBlock,toBlock,logCount:logs.length
-    };
+    return{url,status:'query-ok',latestBlock:latest,address,logCount:logs.length};
   }catch(error){
     return{
-      protocol,kind,status:'query-failed',provider:url,providerFallbackFailures:failures,latestBlock:latest,
+      url,status:'query-failed',latestBlock:latest,
       address:kind==='rebase-distributor'?open.distributor:open.rewardContract,
-      tokenId:String(open.tokenId),rewardToken:open.rewardToken||null,fromBlock,toBlock,error:compactError(error)
+      error:compactError(error)
     };
   }
+}
+
+async function probe(protocol,kind){
+  const cfg=CONFIG[protocol],sample=sampleInterval(protocol,kind);
+  if(!sample)return{protocol,kind,status:'no-sample'};
+  const{open,close}=sample,fromBlock=Number(open.blockNumber)+1,toBlock=Number(close.blockNumber);
+  const urls=[process.env[cfg.rpcEnv],...cfg.fallbacks].filter(Boolean);
+  const providers=[];
+  for(const url of [...new Set(urls)])providers.push(await queryWithUrl({cfg,url,kind,open,fromBlock,toBlock}));
+  return{
+    protocol,kind,status:providers.some(x=>x.status==='query-ok')?'fallback-available':'all-query-paths-failed',
+    tokenId:String(open.tokenId),rewardToken:open.rewardToken||null,fromBlock,toBlock,providers
+  };
 }
 
 const results=[];
