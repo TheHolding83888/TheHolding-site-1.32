@@ -133,12 +133,25 @@ function monetaCoverage(embedded,positionId,month,monthlyRow){
 
 function legacyArchive(name,month,monthlyRow){return name==='defitea.eth'&&month<='2026-07'&&monthlyRow?.accountingStatus==='complete-legacy-verified-realised';}
 
+function validateMonthlyAccountingContract(monthly){
+  if(monthly?.version!=='0.4-company-monthly-earned-income-accounting')throw new Error('Monthly accounting version mismatch');
+  if(monthly?.methodologyVersion!=='0.4-canonical-ledger-sole-income-recognition-authority')throw new Error('Monthly accounting methodology mismatch');
+  if(monthly?.accountingPolicy?.canonicalLedgerIsSoleMonthlyIncomeEventSource!==true)throw new Error('Canonical Ledger lost sole monthly income authority');
+  if(monthly?.accountingPolicy?.monthlyLayerCreatesIncomeEvents!==false)throw new Error('Monthly accounting regained event creation authority');
+  if(monthly?.accountingPolicy?.claimableSnapshotDeltaCreatesIncome!==false)throw new Error('Monthly accounting regained reward-snapshot income authority');
+  if(monthly?.accountingPolicy?.genericReceiptCreatesIncome!==false)throw new Error('Monthly accounting regained generic receipt income authority');
+  if(monthly?.accountingPolicy?.settlementDoesNotReRecognizeEarnedIncome!==true)throw new Error('Monthly accounting settlement lifecycle invariant missing');
+  if(monthly?.accountingPolicy?.laterPriceMovementRewritesClosedIncome!==false)throw new Error('Monthly accounting may revalue frozen earned income');
+  if(monthly?.accountingEvidence?.claimableSnapshotDerivedIncomeEventCount!==0)throw new Error('Monthly accounting contains reward-snapshot-derived income');
+  if(monthly?.accountingEvidence?.monthlyIncomeEventDiscoveryAuthority!==false)throw new Error('Monthly accounting regained discovery authority');
+}
+
 async function build(){
   const [productivity,ledger,embedded,monthly]=await Promise.all([
     readJson(PRODUCTIVITY_FILE),readJson(INCOME_LEDGER_FILE),readJson(EMBEDDED_FILE),readJson(MONTHLY_FILE)
   ]);
   if(ledger?.version!=='0.1-canonical-income-ledger')throw new Error('Canonical Income Ledger version mismatch');
-  if(monthly?.version!=='0.3-company-monthly-earned-income-accounting')throw new Error('Monthly accounting version mismatch');
+  validateMonthlyAccountingContract(monthly);
   if(ledger?.semantics?.referenceAprCanBackfillEarnedIncome!==false||ledger?.semantics?.unknownIsNotZero!==true)throw new Error('Canonical accounting epistemic contract invalid');
   const events=ledger.events||[];
   const companies={};

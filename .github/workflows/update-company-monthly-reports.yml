@@ -13,6 +13,7 @@ on:
       - 'companies/productivity-data.json'
       - 'reporting/company-monthly-reports.mjs'
       - 'reporting/company-monthly-reports-validation.mjs'
+      - 'reporting/canonical-earned-income-view.mjs'
       - 'reporting/company-monthly-earned-income.mjs'
       - 'reporting/company-monthly-earned-income-validation.mjs'
       - 'reporting/income-ledger.json'
@@ -20,9 +21,9 @@ on:
       - '.github/workflows/update-company-monthly-reports.yml'
       - '.github/workflows/verify-company-monthly-reports.yml'
   schedule:
-    # Fallback heartbeat. Primary freshness comes from canonical Reporting completion
-    # and current Productivity materialization, so a delayed GitHub cron cannot
-    # silently leave company passports stale.
+    # Fallback heartbeat. Primary freshness comes from canonical Reporting completion.
+    # Mechanism evidence may arrive at protocol-specific cadence; this daily heartbeat
+    # only republishes the canonical monthly projection and never creates income.
     - cron: '37 7 * * *'
 
 permissions:
@@ -59,6 +60,7 @@ jobs:
           set -euo pipefail
           node --check reporting/company-monthly-reports.mjs
           node --check reporting/company-monthly-reports-validation.mjs
+          node --check reporting/canonical-earned-income-view.mjs
           node --check reporting/company-monthly-earned-income.mjs
           node --check reporting/company-monthly-earned-income-validation.mjs
           node --check companies/company-monthly-report-adapter.js
@@ -88,7 +90,7 @@ jobs:
           COMPANY_MONTHLY_REPORTS_FILE: ./reporting/company-monthly-reports.json
         run: node reporting/company-monthly-reports-validation.mjs
 
-      - name: Promote canonical earned income to primary monthly accounting
+      - name: Project canonical earned income into monthly accounting
         env:
           COMPANY_MONTHLY_REPORTS_FILE: ./reporting/company-monthly-reports.json
           INCOME_LEDGER_FILE: ./reporting/income-ledger.json
@@ -112,6 +114,7 @@ jobs:
             sha256sum \
               reporting/company-monthly-reports.mjs \
               reporting/company-monthly-reports-validation.mjs \
+              reporting/canonical-earned-income-view.mjs \
               reporting/company-monthly-earned-income.mjs \
               reporting/company-monthly-earned-income-validation.mjs \
               .github/workflows/update-company-monthly-reports.yml

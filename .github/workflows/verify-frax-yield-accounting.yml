@@ -1,0 +1,64 @@
+name: Verify Frax Factual Accounting
+
+on:
+  pull_request:
+    paths:
+      - 'reporting/frax-yield-accounting-evidence.mjs'
+      - 'reporting/frax-yield-accounting-evidence-validation.mjs'
+      - 'reporting/frax-yield-ledger-validation.mjs'
+      - 'reporting/frax-yield-accounting-evidence.json'
+      - 'reporting/income-ledger.mjs'
+      - 'intelligence/reliability/reporting-scheduler-workflow-definition-proof.mjs'
+      - '.github/workflows/update-reporting.yml'
+      - '.github/workflows/verify-frax-yield-accounting.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: Install validation dependency
+        run: npm install --no-save --no-package-lock ethers@6
+
+      - name: Static syntax checks
+        run: |
+          set -euo pipefail
+          node --check reporting/frax-yield-accounting-evidence.mjs
+          node --check reporting/frax-yield-accounting-evidence-validation.mjs
+          node --check reporting/frax-yield-ledger-validation.mjs
+          node --check reporting/income-ledger.mjs
+          node --check intelligence/reliability/reporting-scheduler-workflow-definition-proof.mjs
+
+      - name: Validate factual accrual semantics
+        run: node reporting/frax-yield-accounting-evidence-validation.mjs
+
+      - name: Validate Canonical Ledger admission
+        run: node reporting/frax-yield-ledger-validation.mjs
+
+      - name: Validate paired Reporting workflow proof
+        run: node intelligence/reliability/reporting-scheduler-workflow-definition-proof.mjs
+
+      - name: Guard read-only PR authority
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const y=fs.readFileSync('.github/workflows/verify-frax-yield-accounting.yml','utf8');
+          if(!/permissions:\n  contents: read/.test(y)) throw new Error('Frax PR verification must remain read-only');
+          if(/contents:\s*write|permissions:\s*write-all/.test(y)) throw new Error('Frax PR verification gained repository write permission');
+          const e=JSON.parse(fs.readFileSync('reporting/frax-yield-accounting-evidence.json','utf8'));
+          if(e.authority?.executionAuthority!=='none'||e.authority?.walletAuthority!=='none'||e.authority?.claimingAuthority!=='none'||e.authority?.capitalExecution!==false) throw new Error('Frax evidence authority expansion');
+          console.log('Frax PR authority guard PASS');
+          NODE

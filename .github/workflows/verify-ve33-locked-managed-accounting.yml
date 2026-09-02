@@ -1,0 +1,79 @@
+name: Verify ve33 Locked Managed Accounting
+
+on:
+  pull_request:
+    paths:
+      - 'reporting/ve33-locked-managed-accounting-evidence.mjs'
+      - 'reporting/ve33-locked-managed-accounting-evidence-validation.mjs'
+      - 'reporting/ve33-locked-managed-accounting-evidence.json'
+      - 'reporting/ve33-locked-managed-income-candidates.mjs'
+      - 'reporting/ve33-locked-managed-income-candidates-validation.mjs'
+      - 'reporting/ve33-locked-managed-ledger-admission-validation.mjs'
+      - 'reporting/ve33-ledger-admission.mjs'
+      - '.github/workflows/verify-ve33-locked-managed-accounting.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify-locked-managed-accounting:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+      - name: Install runtime dependency
+        run: npm install --no-save --no-package-lock ethers@6
+      - name: Deterministic LockedManagedReward validation
+        run: |
+          set -euo pipefail
+          node --check reporting/ve33-locked-managed-accounting-evidence.mjs
+          node --check reporting/ve33-locked-managed-accounting-evidence-validation.mjs
+          node --check reporting/ve33-locked-managed-income-candidates.mjs
+          node --check reporting/ve33-locked-managed-income-candidates-validation.mjs
+          node --check reporting/ve33-locked-managed-ledger-admission-validation.mjs
+          node --check reporting/ve33-ledger-admission.mjs
+          node reporting/ve33-locked-managed-accounting-evidence-validation.mjs
+          node reporting/ve33-locked-managed-income-candidates-validation.mjs
+          node reporting/ve33-locked-managed-ledger-admission-validation.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const e=JSON.parse(fs.readFileSync('reporting/ve33-locked-managed-accounting-evidence.json','utf8'));
+          if(e.version!=='0.1-ve33-locked-managed-factual-accrual') throw new Error('locked-managed evidence version drift');
+          if(e.semantics?.openingBalanceCreatesIncome!==false) throw new Error('opening balance recognition drift');
+          if(e.semantics?.earnedIndependentOfWithdrawal!==true) throw new Error('earned-before-withdrawal semantic drift');
+          if(e.semantics?.withdrawalIsSettlementNotSecondIncome!==true) throw new Error('withdrawal double-count guard missing');
+          if(e.semantics?.grossVeNftPrincipalDeltaIsIncomeAuthority!==false) throw new Error('gross veNFT principal leaked into income authority');
+          if(e.semantics?.referenceAprUsed!==false) throw new Error('Reference APR leaked into factual accounting');
+          if(e.authority?.executionAuthority!=='none'||e.authority?.walletAuthority!=='none'||e.authority?.claimingAuthority!=='none'||e.authority?.capitalExecution!==false) throw new Error('locked-managed authority expansion');
+          console.log('LockedManagedReward evidence policy validation OK');
+          NODE
+
+      - name: Read-only live managed-reward accounting canary
+        env:
+          REWARDS_DATA_FILE: ./companies/rewards-data.json
+          VE33_LOCKED_MANAGED_EVIDENCE_FILE: /tmp/ve33-locked-managed-accounting-evidence.json
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
+        run: |
+          set -euo pipefail
+          node reporting/ve33-locked-managed-accounting-evidence.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const e=JSON.parse(fs.readFileSync('/tmp/ve33-locked-managed-accounting-evidence.json','utf8'));
+          if(e.version!=='0.1-ve33-locked-managed-factual-accrual') throw new Error('live locked-managed version drift');
+          if(!(Number(e.diagnostics?.laneCount)>0)) throw new Error('live LockedManagedReward discovered no accounting lanes');
+          const aero=e.diagnostics?.protocols?.aerodrome;
+          if(!aero||!(Number(aero.latestBlockNumber)>0)||!(Number(aero.laneCount)>0)) throw new Error('live Aerodrome LockedManagedReward discovery missing');
+          if(!(e.checkpoints||[]).some(x=>x.protocolKey==='aerodrome'&&x.monthBoundary===false)) throw new Error('live Aerodrome current managed checkpoint missing');
+          const events=e.events||[];
+          if(new Set(events.map(x=>x.eventKey)).size!==events.length) throw new Error('live locked-managed duplicate event identity');
+          if(events.some(x=>x.mechanismKind!=='locked-managed-reward'||x.recognitionState!=='compounded-locked'||x.openingBalanceCreatesIncome!==false||x.withdrawalIsSettlementNotSecondIncome!==true||x.grossVeNftPrincipalDeltaIsIncomeAuthority!==false||x.referenceAprUsed!==false||x.claimIsSecondIncomeEvent!==false||x.laterClaimOrPriceMoveDoesNotRewriteIncome!==true||x.executionAuthority!=='none')) throw new Error('live locked-managed accounting semantic drift');
+          if(e.authority?.executionAuthority!=='none'||e.authority?.walletAuthority!=='none'||e.authority?.claimingAuthority!=='none'||e.authority?.capitalExecution!==false) throw new Error('live locked-managed authority expansion');
+          console.log('Read-only live LockedManagedReward canary PASS',{status:e.status,lanes:e.diagnostics.laneCount,checkpoints:e.checkpoints.length,events:events.length,accepted:e.diagnostics.acceptedPositiveIntervalCount,reconciliations:e.diagnostics.reconciliationCount,boundaryFailures:Object.values(e.diagnostics.protocols||{}).reduce((s,x)=>s+(x.boundaryFailures||[]).length,0)});
+          NODE
+          git diff --exit-code

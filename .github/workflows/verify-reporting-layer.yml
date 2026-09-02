@@ -146,9 +146,12 @@ jobs:
           if(new Set(events.map(e=>e.eventKey)).size!==events.length) throw new Error('Canonical Income Ledger duplicate event identity');
           if(events.some(e=>!e.immutableEconomicFieldsHash||e.retention!=='indefinite'||e.laterStateChangeDoesNotEraseIncome!==true)) throw new Error('Canonical Income Ledger retention/integrity drift');
 
-          const sourceVm=vm.filter(e=>e?.eventKey&&Number(e?.usdValue)>0).length;
+          const sourceVmRows=vm.filter(e=>e?.eventKey&&Number(e?.usdValue)>0);
+          const sourceVmKeys=new Set(sourceVmRows.map(e=>`defitea-entitlement:${e.eventKey}`));
+          const canonicalVm=events.filter(e=>e.company==='defitea.eth'&&e.family==='accrued-entitlement'&&e.sourceFamily==='voteMarketEvents');
+          const sourceVm=sourceVmRows.length;
           const sourceFa=fa.filter(e=>e?.eventKey&&Number(e?.usdValue)>0).length;
-          if(events.filter(e=>e.company==='defitea.eth'&&e.family==='accrued-entitlement').length!==sourceVm) throw new Error('VoteMarket canonical event import parity failed');
+          if(canonicalVm.length!==sourceVmKeys.size||canonicalVm.some(e=>!sourceVmKeys.has(e.eventKey))) throw new Error('VoteMarket canonical event import parity failed');
           if(events.filter(e=>e.company==='defitea.eth'&&e.family==='realised-cash-flow'&&e.sourceFamily==='fortyAcresReceivedEvents').length!==sourceFa) throw new Error('40 Acres canonical event import parity failed');
           let acceptedEmbedded=0;
           for(const p of Object.values(embedded.positions||{})) acceptedEmbedded+=(p.intervalHistory||[]).filter(e=>e?.status==='ok'&&e?.accepted===true).length;
