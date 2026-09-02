@@ -7,15 +7,24 @@ const ledger = JSON.parse(fs.readFileSync(LEDGER_FILE, 'utf8'));
 const finite = v => v !== null && v !== undefined && v !== '' && Number.isFinite(Number(v));
 const fail = msg => { throw new Error(msg); };
 
-if (data.version !== '0.3-company-monthly-earned-income-accounting') fail('earned-income version drift');
-if (data.methodologyVersion !== '0.3-canonical-earned-income-primary-reference-analytics-secondary') fail('earned-income methodology drift');
+if (data.version !== '0.4-company-monthly-earned-income-accounting') fail('earned-income version drift');
+if (data.methodologyVersion !== '0.4-canonical-ledger-sole-income-recognition-authority') fail('earned-income methodology drift');
+if (data.accountingPolicy?.canonicalLedgerIsSoleMonthlyIncomeEventSource !== true) fail('Canonical Ledger lost sole monthly income-event authority');
+if (data.accountingPolicy?.monthlyLayerCreatesIncomeEvents !== false) fail('monthly layer regained income-event creation authority');
+if (data.accountingPolicy?.claimableSnapshotDeltaCreatesIncome !== false) fail('claimable snapshot delta became income authority');
+if (data.accountingPolicy?.genericReceiptCreatesIncome !== false) fail('generic receipt became income authority');
 if (data.accountingPolicy?.referenceIncomeIsPrimaryMetric !== false) fail('reference income returned to primary metric');
 if (data.accountingPolicy?.referenceIncomeIsEarnedIncomeAuthority !== false) fail('reference income became earned-income authority');
 if (data.accountingPolicy?.currentRewardBalanceIsPeriodIncome !== false) fail('current reward balance became period income');
+if (data.accountingPolicy?.accruedIncomeMayBeEarnedBeforeClaim !== true) fail('earned accrual became dependent on claim');
+if (data.accountingPolicy?.embeddedCompoundingMayBeEarnedIncome !== true) fail('embedded compounding lost earned-income semantics');
+if (data.accountingPolicy?.settlementDoesNotReRecognizeEarnedIncome !== true) fail('settlement may re-recognize prior income');
 if (data.accountingPolicy?.laterPriceMovementRewritesClosedIncome !== false) fail('price movement may rewrite closed income');
 if (data.accountingPolicy?.incompleteCoverageMayMasqueradeAsCompleteIncome !== false) fail('incomplete coverage may masquerade as complete');
 if (data.accountingPolicy?.executionAuthority !== 'none') fail('authority expanded');
 if (data.accountingEvidence?.sourceGeneratedAt !== ledger.generatedAt) fail('stale canonical income ledger');
+if (data.accountingEvidence?.claimableSnapshotDerivedIncomeEventCount !== 0) fail('monthly report contains snapshot-derived income events');
+if (data.accountingEvidence?.monthlyIncomeEventDiscoveryAuthority !== false) fail('monthly report gained event-discovery authority');
 
 const companies = data.companies || {};
 if (Object.keys(companies).length !== 10) fail(`expected 10 companies, got ${Object.keys(companies).length}`);
@@ -25,8 +34,11 @@ for (const [name, company] of Object.entries(companies)) {
   for (const [month, row] of Object.entries(company.months || {})) {
     if (!row.referenceAnalytics) fail(`${name} ${month} missing retained reference analytics`);
     if (row.referenceAnalytics.earnedIncomeAuthority !== false) fail(`${name} ${month} reference analytics became accounting authority`);
-    if (!row.incomeAccounting || row.incomeAccounting.version !== '0.2-earned-income-primary') fail(`${name} ${month} missing earned-income accounting view`);
+    if (!row.incomeAccounting || row.incomeAccounting.version !== '0.3-ledger-sole-recognition-authority') fail(`${name} ${month} missing ledger-only earned-income view`);
     if (row.incomeAccounting.unknownIsNotZero !== true || row.incomeAccounting.executionAuthority !== 'none') fail(`${name} ${month} epistemic/authority drift`);
+    if (row.incomeAccounting.monthlyLayerCreatesIncomeEvents === true) fail(`${name} ${month} monthly layer creates income events`);
+    if (row.incomeAccounting.claimableSnapshotDeltaCreatesIncome === true) fail(`${name} ${month} claimable snapshots create income`);
+
     if (row.accountingCoverageComplete === true) {
       if (!finite(row.generatedIncomeUsd)) fail(`${name} ${month} complete accounting missing numeric income`);
       if (row.incomeAccounting.primaryMetric?.earnedIncomeAuthority !== true) fail(`${name} ${month} complete income lacks authority`);
@@ -46,23 +58,19 @@ for (const month of ['2026-01','2026-02','2026-03','2026-04','2026-05','2026-06'
   if (!row || row.accountingCoverageComplete !== true || !finite(row.generatedIncomeUsd)) fail(`Defitea verified archive lost ${month}`);
 }
 
-const yAug = companies['YieldRing.eth']?.months?.['2026-08'];
-if (!yAug) fail('YieldRing August missing');
-if (yAug.accountingCoverageComplete !== false) fail('YieldRing August incorrectly declared complete');
-if (yAug.generatedIncomeUsd !== null) fail('YieldRing August reference estimate still masquerades as earned income');
-if (!finite(yAug.referenceAnalytics?.generatedIncomeUsd)) fail('YieldRing August reference analytics not retained');
+for (const [name, month] of [['YieldRing.eth','2026-08'], ['defitea.eth','2026-08'], ['Monetra.eth','2026-08']]) {
+  const row = companies[name]?.months?.[month];
+  if (!row || row.accountingCoverageComplete !== false || row.generatedIncomeUsd !== null) fail(`${name} ${month} incomplete period masquerades as complete earned income`);
+  if (!finite(row.referenceAnalytics?.generatedIncomeUsd)) fail(`${name} ${month} reference analytics not retained`);
+}
 
-const dAug = companies['defitea.eth']?.months?.['2026-08'];
-if (!dAug || dAug.accountingCoverageComplete !== false || dAug.generatedIncomeUsd !== null) fail('Defitea August mixed reference report still masquerades as complete earned income');
-
-const mAug = companies['Monetra.eth']?.months?.['2026-08'];
-if (!mAug || mAug.accountingCoverageComplete !== false || mAug.generatedIncomeUsd !== null) fail('Monetra August reference report still masquerades as complete earned income');
-
-console.log('Company Monthly Reports earned-income validation PASS', {
+console.log('Company Monthly Reports ledger-only earned-income validation PASS', {
   companyCount: Object.keys(companies).length,
   completeMonths: Object.values(companies).flatMap(c => Object.values(c.months || {})).filter(m => m.accountingCoverageComplete === true).length,
   partialObservedMonths: Object.values(companies).flatMap(c => Object.values(c.months || {})).filter(m => m.accountingStatus === 'partial-observed').length,
   unknownMonths: Object.values(companies).flatMap(c => Object.values(c.months || {})).filter(m => m.accountingStatus === 'unknown-incomplete-coverage').length,
-  yieldRingAugustReferenceRetainedUsd: yAug.referenceAnalytics.generatedIncomeUsd,
-  yieldRingAugustObservedEarnedUsd: yAug.observedEarnedIncomeUsd
+  rawCanonicalEventCount: data.accountingEvidence.rawCanonicalEventCount,
+  recognizedCanonicalEventCount: data.accountingEvidence.recognizedCanonicalEventCount,
+  unresolvedCanonicalEventCount: data.accountingEvidence.unresolvedCanonicalEventCount,
+  claimableSnapshotDerivedIncomeEventCount: data.accountingEvidence.claimableSnapshotDerivedIncomeEventCount
 });
