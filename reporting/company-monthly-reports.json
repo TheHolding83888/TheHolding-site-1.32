@@ -1,7 +1,7 @@
 {
-  "version": "0.2-company-monthly-reporting-income-families",
-  "methodologyVersion": "0.2-reference-metrics-plus-canonical-evidence-families",
-  "generatedAt": "2026-09-01T20:13:43.038Z",
+  "version": "0.3-company-monthly-earned-income-accounting",
+  "methodologyVersion": "0.3-canonical-earned-income-primary-reference-analytics-secondary",
+  "generatedAt": "2026-09-02T04:22:48.134Z",
   "incomeLedger": {
     "source": "reporting/income-ledger.json",
     "version": "0.1-canonical-income-ledger",
@@ -29,7 +29,7 @@
     "05081966.eth": {
       "registry": "001",
       "name": "05081966.eth",
-      "sourceFamily": "observed-productivity-reference-model",
+      "sourceFamily": "canonical-earned-income-accounting",
       "capitalMetric": "productive-capital",
       "averageCapitalLabel": "Average Productive Capital",
       "fullReportHref": null,
@@ -39,8 +39,8 @@
           "month": "2026-08",
           "status": "reported",
           "mode": "observed-reference-model",
-          "generatedIncomeUsd": 2.145073,
-          "monthlyYieldPct": 0.615577,
+          "generatedIncomeUsd": null,
+          "monthlyYieldPct": null,
           "averageCapitalUsd": 348.4652,
           "averageCoverage": 1,
           "sampleDays": 23,
@@ -48,78 +48,75 @@
           "periodEnd": "2026-08-31",
           "partialPeriod": true,
           "firstObservedDate": "2026-08-09",
-          "semantic": "reference-generated-income-not-realised-cash-flow",
+          "semantic": "canonical-earned-income-incomplete-coverage",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
           "executionAuthority": "none",
           "incomeAccounting": {
-            "version": "0.1-monthly-evidence-family-view",
+            "version": "0.2-earned-income-primary",
             "primaryMetric": {
-              "usd": 2.145073,
+              "usd": null,
+              "observedUsd": 0.06431411,
+              "semantic": "canonical-earned-income-incomplete-coverage",
+              "earnedIncomeAuthority": false,
+              "valuationFrozen": true
+            },
+            "referenceAnalytics": {
+              "generatedIncomeUsd": 2.145073,
+              "monthlyYieldPct": 0.615577,
               "semantic": "reference-generated-income-not-realised-cash-flow",
               "sourceFamily": "observed-productivity-reference-model",
-              "earnedIncomeAuthority": false,
-              "additiveWithCanonicalEvidenceFamilies": false,
-              "overlapStatus": "separate-reference-or-reporting-metric"
+              "earnedIncomeAuthority": false
             },
-            "canonicalEvidence": {
+            "accountingStatus": "partial-observed",
+            "coverageComplete": false,
+            "evidenceCount": 4,
+            "evidenceFamilies": {
               "accruedEntitlement": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "realisedCashFlow": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "eventCount": 4,
+                "usd": 0.06431411
               },
               "embeddedIncome": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
                 "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "usd": 0
               },
-              "stablePriceEffectUsd": null
+              "directRealisedCashFlow": {
+                "eventCount": 0,
+                "usd": 0
+              }
             },
-            "combinedIncomeUsd": null,
-            "crossFamilySumAllowed": false,
-            "reconciliationStatus": "not-reconciled-for-cross-family-total",
-            "source": "reporting/income-ledger.json",
+            "rewardSnapshotCoverage": {
+              "comparableIntervals": 12,
+              "unresolvedIntervals": 0,
+              "crossMonthIntervals": 0,
+              "positiveAccrualEvents": 4,
+              "firstObservedAt": "2026-08-27T16:33:06.991Z",
+              "lastObservedAt": "2026-08-31T11:20:24.881Z"
+            },
+            "source": "reporting/income-ledger.json + deterministic reward-snapshot accrual evidence",
             "sourceGeneratedAt": "2026-09-01T20:13:17.562Z",
-            "companyCoverageOverallComplete": false,
             "unknownIsNotZero": true,
             "executionAuthority": "none"
-          }
+          },
+          "referenceAnalytics": {
+            "generatedIncomeUsd": 2.145073,
+            "monthlyYieldPct": 0.615577,
+            "semantic": "reference-generated-income-not-realised-cash-flow",
+            "sourceFamily": "observed-productivity-reference-model",
+            "earnedIncomeAuthority": false
+          },
+          "observedEarnedIncomeUsd": 0.06431411,
+          "accountingStatus": "partial-observed",
+          "accountingCoverageComplete": false,
+          "accountingEvidenceCount": 4,
+          "accountingUnknownReason": "Not all income mechanisms and period boundaries are proven; reference analytics is retained separately and is never substituted for earned income."
         },
         "2026-09": {
           "month": "2026-09",
           "status": "provisional",
           "mode": "observed-reference-model",
-          "generatedIncomeUsd": 0.098048,
-          "monthlyYieldPct": 0.025358,
+          "generatedIncomeUsd": null,
+          "monthlyYieldPct": null,
           "averageCapitalUsd": 386.65,
           "averageCoverage": 1,
           "sampleDays": 1,
@@ -127,78 +124,69 @@
           "periodEnd": "2026-09-01",
           "partialPeriod": true,
           "firstObservedDate": "2026-08-09",
-          "semantic": "reference-generated-income-not-realised-cash-flow",
+          "semantic": "canonical-earned-income-incomplete-coverage",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
           "executionAuthority": "none",
           "incomeAccounting": {
-            "version": "0.1-monthly-evidence-family-view",
+            "version": "0.2-earned-income-primary",
             "primaryMetric": {
-              "usd": 0.098048,
+              "usd": null,
+              "observedUsd": 0,
+              "semantic": "canonical-earned-income-incomplete-coverage",
+              "earnedIncomeAuthority": false,
+              "valuationFrozen": true
+            },
+            "referenceAnalytics": {
+              "generatedIncomeUsd": 0.098048,
+              "monthlyYieldPct": 0.025358,
               "semantic": "reference-generated-income-not-realised-cash-flow",
               "sourceFamily": "observed-productivity-reference-model",
-              "earnedIncomeAuthority": false,
-              "additiveWithCanonicalEvidenceFamilies": false,
-              "overlapStatus": "separate-reference-or-reporting-metric"
+              "earnedIncomeAuthority": false
             },
-            "canonicalEvidence": {
+            "accountingStatus": "unknown-incomplete-coverage",
+            "coverageComplete": false,
+            "evidenceCount": 0,
+            "evidenceFamilies": {
               "accruedEntitlement": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
                 "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "realisedCashFlow": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "usd": 0
               },
               "embeddedIncome": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
                 "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "usd": 0
               },
-              "stablePriceEffectUsd": null
+              "directRealisedCashFlow": {
+                "eventCount": 0,
+                "usd": 0
+              }
             },
-            "combinedIncomeUsd": null,
-            "crossFamilySumAllowed": false,
-            "reconciliationStatus": "not-reconciled-for-cross-family-total",
-            "source": "reporting/income-ledger.json",
+            "rewardSnapshotCoverage": null,
+            "source": "reporting/income-ledger.json + deterministic reward-snapshot accrual evidence",
             "sourceGeneratedAt": "2026-09-01T20:13:17.562Z",
-            "companyCoverageOverallComplete": false,
             "unknownIsNotZero": true,
             "executionAuthority": "none"
-          }
+          },
+          "referenceAnalytics": {
+            "generatedIncomeUsd": 0.098048,
+            "monthlyYieldPct": 0.025358,
+            "semantic": "reference-generated-income-not-realised-cash-flow",
+            "sourceFamily": "observed-productivity-reference-model",
+            "earnedIncomeAuthority": false
+          },
+          "observedEarnedIncomeUsd": 0,
+          "accountingStatus": "unknown-incomplete-coverage",
+          "accountingCoverageComplete": false,
+          "accountingEvidenceCount": 0,
+          "accountingUnknownReason": "Not all income mechanisms and period boundaries are proven; reference analytics is retained separately and is never substituted for earned income."
         }
-      }
+      },
+      "sourceFamilyPrevious": "observed-productivity-reference-model"
     },
     "YieldRing.eth": {
       "registry": "002",
       "name": "YieldRing.eth",
-      "sourceFamily": "observed-productivity-reference-model",
+      "sourceFamily": "canonical-earned-income-accounting",
       "capitalMetric": "productive-capital",
       "averageCapitalLabel": "Average Productive Capital",
       "fullReportHref": null,
@@ -208,8 +196,8 @@
           "month": "2026-08",
           "status": "reported",
           "mode": "observed-reference-model",
-          "generatedIncomeUsd": 8.979506,
-          "monthlyYieldPct": 0.926148,
+          "generatedIncomeUsd": null,
+          "monthlyYieldPct": null,
           "averageCapitalUsd": 969.5543,
           "averageCoverage": 1,
           "sampleDays": 23,
@@ -217,78 +205,75 @@
           "periodEnd": "2026-08-31",
           "partialPeriod": true,
           "firstObservedDate": "2026-08-09",
-          "semantic": "reference-generated-income-not-realised-cash-flow",
+          "semantic": "canonical-earned-income-incomplete-coverage",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
           "executionAuthority": "none",
           "incomeAccounting": {
-            "version": "0.1-monthly-evidence-family-view",
+            "version": "0.2-earned-income-primary",
             "primaryMetric": {
-              "usd": 8.979506,
+              "usd": null,
+              "observedUsd": 0.1314057,
+              "semantic": "canonical-earned-income-incomplete-coverage",
+              "earnedIncomeAuthority": false,
+              "valuationFrozen": true
+            },
+            "referenceAnalytics": {
+              "generatedIncomeUsd": 8.979506,
+              "monthlyYieldPct": 0.926148,
               "semantic": "reference-generated-income-not-realised-cash-flow",
               "sourceFamily": "observed-productivity-reference-model",
-              "earnedIncomeAuthority": false,
-              "additiveWithCanonicalEvidenceFamilies": false,
-              "overlapStatus": "separate-reference-or-reporting-metric"
+              "earnedIncomeAuthority": false
             },
-            "canonicalEvidence": {
+            "accountingStatus": "partial-observed",
+            "coverageComplete": false,
+            "evidenceCount": 4,
+            "evidenceFamilies": {
               "accruedEntitlement": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "realisedCashFlow": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "eventCount": 4,
+                "usd": 0.1314057
               },
               "embeddedIncome": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
                 "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "usd": 0
               },
-              "stablePriceEffectUsd": null
+              "directRealisedCashFlow": {
+                "eventCount": 0,
+                "usd": 0
+              }
             },
-            "combinedIncomeUsd": null,
-            "crossFamilySumAllowed": false,
-            "reconciliationStatus": "not-reconciled-for-cross-family-total",
-            "source": "reporting/income-ledger.json",
+            "rewardSnapshotCoverage": {
+              "comparableIntervals": 12,
+              "unresolvedIntervals": 0,
+              "crossMonthIntervals": 0,
+              "positiveAccrualEvents": 4,
+              "firstObservedAt": "2026-08-27T16:33:06.991Z",
+              "lastObservedAt": "2026-08-31T11:20:24.881Z"
+            },
+            "source": "reporting/income-ledger.json + deterministic reward-snapshot accrual evidence",
             "sourceGeneratedAt": "2026-09-01T20:13:17.562Z",
-            "companyCoverageOverallComplete": false,
             "unknownIsNotZero": true,
             "executionAuthority": "none"
-          }
+          },
+          "referenceAnalytics": {
+            "generatedIncomeUsd": 8.979506,
+            "monthlyYieldPct": 0.926148,
+            "semantic": "reference-generated-income-not-realised-cash-flow",
+            "sourceFamily": "observed-productivity-reference-model",
+            "earnedIncomeAuthority": false
+          },
+          "observedEarnedIncomeUsd": 0.1314057,
+          "accountingStatus": "partial-observed",
+          "accountingCoverageComplete": false,
+          "accountingEvidenceCount": 4,
+          "accountingUnknownReason": "Not all income mechanisms and period boundaries are proven; reference analytics is retained separately and is never substituted for earned income."
         },
         "2026-09": {
           "month": "2026-09",
           "status": "provisional",
           "mode": "observed-reference-model",
-          "generatedIncomeUsd": 0.441257,
-          "monthlyYieldPct": 0.038979,
+          "generatedIncomeUsd": null,
+          "monthlyYieldPct": null,
           "averageCapitalUsd": 1132.04,
           "averageCoverage": 1,
           "sampleDays": 1,
@@ -296,78 +281,69 @@
           "periodEnd": "2026-09-01",
           "partialPeriod": true,
           "firstObservedDate": "2026-08-09",
-          "semantic": "reference-generated-income-not-realised-cash-flow",
+          "semantic": "canonical-earned-income-incomplete-coverage",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
           "executionAuthority": "none",
           "incomeAccounting": {
-            "version": "0.1-monthly-evidence-family-view",
+            "version": "0.2-earned-income-primary",
             "primaryMetric": {
-              "usd": 0.441257,
+              "usd": null,
+              "observedUsd": 0,
+              "semantic": "canonical-earned-income-incomplete-coverage",
+              "earnedIncomeAuthority": false,
+              "valuationFrozen": true
+            },
+            "referenceAnalytics": {
+              "generatedIncomeUsd": 0.441257,
+              "monthlyYieldPct": 0.038979,
               "semantic": "reference-generated-income-not-realised-cash-flow",
               "sourceFamily": "observed-productivity-reference-model",
-              "earnedIncomeAuthority": false,
-              "additiveWithCanonicalEvidenceFamilies": false,
-              "overlapStatus": "separate-reference-or-reporting-metric"
+              "earnedIncomeAuthority": false
             },
-            "canonicalEvidence": {
+            "accountingStatus": "unknown-incomplete-coverage",
+            "coverageComplete": false,
+            "evidenceCount": 0,
+            "evidenceFamilies": {
               "accruedEntitlement": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
                 "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "realisedCashFlow": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "usd": 0
               },
               "embeddedIncome": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
                 "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "usd": 0
               },
-              "stablePriceEffectUsd": null
+              "directRealisedCashFlow": {
+                "eventCount": 0,
+                "usd": 0
+              }
             },
-            "combinedIncomeUsd": null,
-            "crossFamilySumAllowed": false,
-            "reconciliationStatus": "not-reconciled-for-cross-family-total",
-            "source": "reporting/income-ledger.json",
+            "rewardSnapshotCoverage": null,
+            "source": "reporting/income-ledger.json + deterministic reward-snapshot accrual evidence",
             "sourceGeneratedAt": "2026-09-01T20:13:17.562Z",
-            "companyCoverageOverallComplete": false,
             "unknownIsNotZero": true,
             "executionAuthority": "none"
-          }
+          },
+          "referenceAnalytics": {
+            "generatedIncomeUsd": 0.441257,
+            "monthlyYieldPct": 0.038979,
+            "semantic": "reference-generated-income-not-realised-cash-flow",
+            "sourceFamily": "observed-productivity-reference-model",
+            "earnedIncomeAuthority": false
+          },
+          "observedEarnedIncomeUsd": 0,
+          "accountingStatus": "unknown-incomplete-coverage",
+          "accountingCoverageComplete": false,
+          "accountingEvidenceCount": 0,
+          "accountingUnknownReason": "Not all income mechanisms and period boundaries are proven; reference analytics is retained separately and is never substituted for earned income."
         }
-      }
+      },
+      "sourceFamilyPrevious": "observed-productivity-reference-model"
     },
     "dinaz.eth": {
       "registry": "003",
       "name": "dinaz.eth",
-      "sourceFamily": "observed-productivity-reference-model",
+      "sourceFamily": "canonical-earned-income-accounting",
       "capitalMetric": "productive-capital",
       "averageCapitalLabel": "Average Productive Capital",
       "fullReportHref": null,
@@ -377,8 +353,8 @@
           "month": "2026-08",
           "status": "reported",
           "mode": "observed-reference-model",
-          "generatedIncomeUsd": 2.425624,
-          "monthlyYieldPct": 0.237514,
+          "generatedIncomeUsd": null,
+          "monthlyYieldPct": null,
           "averageCapitalUsd": 1021.2565,
           "averageCoverage": 1,
           "sampleDays": 23,
@@ -386,78 +362,75 @@
           "periodEnd": "2026-08-31",
           "partialPeriod": true,
           "firstObservedDate": "2026-08-09",
-          "semantic": "reference-generated-income-not-realised-cash-flow",
+          "semantic": "canonical-earned-income-incomplete-coverage",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
           "executionAuthority": "none",
           "incomeAccounting": {
-            "version": "0.1-monthly-evidence-family-view",
+            "version": "0.2-earned-income-primary",
             "primaryMetric": {
-              "usd": 2.425624,
+              "usd": null,
+              "observedUsd": 0,
+              "semantic": "canonical-earned-income-incomplete-coverage",
+              "earnedIncomeAuthority": false,
+              "valuationFrozen": true
+            },
+            "referenceAnalytics": {
+              "generatedIncomeUsd": 2.425624,
+              "monthlyYieldPct": 0.237514,
               "semantic": "reference-generated-income-not-realised-cash-flow",
               "sourceFamily": "observed-productivity-reference-model",
-              "earnedIncomeAuthority": false,
-              "additiveWithCanonicalEvidenceFamilies": false,
-              "overlapStatus": "separate-reference-or-reporting-metric"
+              "earnedIncomeAuthority": false
             },
-            "canonicalEvidence": {
+            "accountingStatus": "unknown-incomplete-coverage",
+            "coverageComplete": false,
+            "evidenceCount": 0,
+            "evidenceFamilies": {
               "accruedEntitlement": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
                 "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "realisedCashFlow": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "usd": 0
               },
               "embeddedIncome": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
                 "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "usd": 0
               },
-              "stablePriceEffectUsd": null
+              "directRealisedCashFlow": {
+                "eventCount": 0,
+                "usd": 0
+              }
             },
-            "combinedIncomeUsd": null,
-            "crossFamilySumAllowed": false,
-            "reconciliationStatus": "not-reconciled-for-cross-family-total",
-            "source": "reporting/income-ledger.json",
+            "rewardSnapshotCoverage": {
+              "comparableIntervals": 16,
+              "unresolvedIntervals": 0,
+              "crossMonthIntervals": 0,
+              "positiveAccrualEvents": 0,
+              "firstObservedAt": "2026-08-27T16:33:06.991Z",
+              "lastObservedAt": "2026-08-31T11:20:24.881Z"
+            },
+            "source": "reporting/income-ledger.json + deterministic reward-snapshot accrual evidence",
             "sourceGeneratedAt": "2026-09-01T20:13:17.562Z",
-            "companyCoverageOverallComplete": false,
             "unknownIsNotZero": true,
             "executionAuthority": "none"
-          }
+          },
+          "referenceAnalytics": {
+            "generatedIncomeUsd": 2.425624,
+            "monthlyYieldPct": 0.237514,
+            "semantic": "reference-generated-income-not-realised-cash-flow",
+            "sourceFamily": "observed-productivity-reference-model",
+            "earnedIncomeAuthority": false
+          },
+          "observedEarnedIncomeUsd": 0,
+          "accountingStatus": "unknown-incomplete-coverage",
+          "accountingCoverageComplete": false,
+          "accountingEvidenceCount": 0,
+          "accountingUnknownReason": "Not all income mechanisms and period boundaries are proven; reference analytics is retained separately and is never substituted for earned income."
         },
         "2026-09": {
           "month": "2026-09",
           "status": "provisional",
           "mode": "observed-reference-model",
-          "generatedIncomeUsd": 0.158329,
-          "monthlyYieldPct": 0.014164,
+          "generatedIncomeUsd": null,
+          "monthlyYieldPct": null,
           "averageCapitalUsd": 1117.8,
           "averageCoverage": 1,
           "sampleDays": 1,
@@ -465,78 +438,69 @@
           "periodEnd": "2026-09-01",
           "partialPeriod": true,
           "firstObservedDate": "2026-08-09",
-          "semantic": "reference-generated-income-not-realised-cash-flow",
+          "semantic": "canonical-earned-income-incomplete-coverage",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
           "executionAuthority": "none",
           "incomeAccounting": {
-            "version": "0.1-monthly-evidence-family-view",
+            "version": "0.2-earned-income-primary",
             "primaryMetric": {
-              "usd": 0.158329,
+              "usd": null,
+              "observedUsd": 0,
+              "semantic": "canonical-earned-income-incomplete-coverage",
+              "earnedIncomeAuthority": false,
+              "valuationFrozen": true
+            },
+            "referenceAnalytics": {
+              "generatedIncomeUsd": 0.158329,
+              "monthlyYieldPct": 0.014164,
               "semantic": "reference-generated-income-not-realised-cash-flow",
               "sourceFamily": "observed-productivity-reference-model",
-              "earnedIncomeAuthority": false,
-              "additiveWithCanonicalEvidenceFamilies": false,
-              "overlapStatus": "separate-reference-or-reporting-metric"
+              "earnedIncomeAuthority": false
             },
-            "canonicalEvidence": {
+            "accountingStatus": "unknown-incomplete-coverage",
+            "coverageComplete": false,
+            "evidenceCount": 0,
+            "evidenceFamilies": {
               "accruedEntitlement": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
                 "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "realisedCashFlow": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "usd": 0
               },
               "embeddedIncome": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
                 "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "usd": 0
               },
-              "stablePriceEffectUsd": null
+              "directRealisedCashFlow": {
+                "eventCount": 0,
+                "usd": 0
+              }
             },
-            "combinedIncomeUsd": null,
-            "crossFamilySumAllowed": false,
-            "reconciliationStatus": "not-reconciled-for-cross-family-total",
-            "source": "reporting/income-ledger.json",
+            "rewardSnapshotCoverage": null,
+            "source": "reporting/income-ledger.json + deterministic reward-snapshot accrual evidence",
             "sourceGeneratedAt": "2026-09-01T20:13:17.562Z",
-            "companyCoverageOverallComplete": false,
             "unknownIsNotZero": true,
             "executionAuthority": "none"
-          }
+          },
+          "referenceAnalytics": {
+            "generatedIncomeUsd": 0.158329,
+            "monthlyYieldPct": 0.014164,
+            "semantic": "reference-generated-income-not-realised-cash-flow",
+            "sourceFamily": "observed-productivity-reference-model",
+            "earnedIncomeAuthority": false
+          },
+          "observedEarnedIncomeUsd": 0,
+          "accountingStatus": "unknown-incomplete-coverage",
+          "accountingCoverageComplete": false,
+          "accountingEvidenceCount": 0,
+          "accountingUnknownReason": "Not all income mechanisms and period boundaries are proven; reference analytics is retained separately and is never substituted for earned income."
         }
-      }
+      },
+      "sourceFamilyPrevious": "observed-productivity-reference-model"
     },
     "defitea.eth": {
       "registry": "004",
       "name": "defitea.eth",
-      "sourceFamily": "canonical-fund-reporting",
+      "sourceFamily": "canonical-earned-income-accounting",
       "capitalMetric": "tvl",
       "averageCapitalLabel": "Average TVL",
       "fullReportHref": "/yield-reports/",
@@ -547,78 +511,50 @@
           "status": "final-reported",
           "mode": "reported-realised",
           "generatedIncomeUsd": 29.66,
-          "monthlyYieldPct": 1.34,
+          "monthlyYieldPct": 1.340002,
           "averageCapitalUsd": 2213.43,
           "sampleDays": null,
           "periodStart": null,
           "periodEnd": null,
           "partialPeriod": false,
           "firstObservedDate": "2026-08-09",
-          "semantic": "canonical-fund-reporting",
+          "semantic": "canonical-earned-income",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
           "executionAuthority": "none",
           "incomeAccounting": {
-            "version": "0.1-monthly-evidence-family-view",
+            "version": "0.2-earned-income-primary",
             "primaryMetric": {
               "usd": 29.66,
+              "semantic": "canonical-earned-income",
+              "earnedIncomeAuthority": true,
+              "valuationFrozen": true
+            },
+            "referenceAnalytics": {
+              "generatedIncomeUsd": 29.66,
+              "monthlyYieldPct": 1.34,
               "semantic": "canonical-fund-reporting",
               "sourceFamily": "canonical-fund-reporting",
-              "earnedIncomeAuthority": false,
-              "additiveWithCanonicalEvidenceFamilies": false,
-              "overlapStatus": "canonical-reporting-aggregate-may-overlap-accrued-and-realised-evidence"
+              "earnedIncomeAuthority": false
             },
-            "canonicalEvidence": {
-              "accruedEntitlement": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "partial-mechanism-specific",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "realisedCashFlow": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "partial-mechanism-specific",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "embeddedIncome": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "stablePriceEffectUsd": null
-            },
-            "combinedIncomeUsd": null,
-            "crossFamilySumAllowed": false,
-            "reconciliationStatus": "not-reconciled-for-cross-family-total",
-            "source": "reporting/income-ledger.json",
-            "sourceGeneratedAt": "2026-09-01T20:13:17.562Z",
-            "companyCoverageOverallComplete": false,
+            "accountingStatus": "complete-legacy-verified-realised",
+            "coverageComplete": true,
+            "evidenceCount": 1,
+            "source": "reporting/reporting-data.json legacy-verified-report",
             "unknownIsNotZero": true,
             "executionAuthority": "none"
-          }
+          },
+          "referenceAnalytics": {
+            "generatedIncomeUsd": 29.66,
+            "monthlyYieldPct": 1.34,
+            "semantic": "canonical-fund-reporting",
+            "sourceFamily": "canonical-fund-reporting",
+            "earnedIncomeAuthority": false
+          },
+          "accountingStatus": "complete-legacy-verified-realised",
+          "accountingCoverageComplete": true,
+          "accountingEvidenceCount": 1,
+          "accountingUnknownReason": null
         },
         "2026-02": {
           "month": "2026-02",
@@ -632,71 +568,43 @@
           "periodEnd": null,
           "partialPeriod": false,
           "firstObservedDate": "2026-08-09",
-          "semantic": "canonical-fund-reporting",
+          "semantic": "canonical-earned-income",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
           "executionAuthority": "none",
           "incomeAccounting": {
-            "version": "0.1-monthly-evidence-family-view",
+            "version": "0.2-earned-income-primary",
             "primaryMetric": {
               "usd": 45.97,
+              "semantic": "canonical-earned-income",
+              "earnedIncomeAuthority": true,
+              "valuationFrozen": true
+            },
+            "referenceAnalytics": {
+              "generatedIncomeUsd": 45.97,
+              "monthlyYieldPct": 1.84,
               "semantic": "canonical-fund-reporting",
               "sourceFamily": "canonical-fund-reporting",
-              "earnedIncomeAuthority": false,
-              "additiveWithCanonicalEvidenceFamilies": false,
-              "overlapStatus": "canonical-reporting-aggregate-may-overlap-accrued-and-realised-evidence"
+              "earnedIncomeAuthority": false
             },
-            "canonicalEvidence": {
-              "accruedEntitlement": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "partial-mechanism-specific",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "realisedCashFlow": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "partial-mechanism-specific",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "embeddedIncome": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "stablePriceEffectUsd": null
-            },
-            "combinedIncomeUsd": null,
-            "crossFamilySumAllowed": false,
-            "reconciliationStatus": "not-reconciled-for-cross-family-total",
-            "source": "reporting/income-ledger.json",
-            "sourceGeneratedAt": "2026-09-01T20:13:17.562Z",
-            "companyCoverageOverallComplete": false,
+            "accountingStatus": "complete-legacy-verified-realised",
+            "coverageComplete": true,
+            "evidenceCount": 1,
+            "source": "reporting/reporting-data.json legacy-verified-report",
             "unknownIsNotZero": true,
             "executionAuthority": "none"
-          }
+          },
+          "referenceAnalytics": {
+            "generatedIncomeUsd": 45.97,
+            "monthlyYieldPct": 1.84,
+            "semantic": "canonical-fund-reporting",
+            "sourceFamily": "canonical-fund-reporting",
+            "earnedIncomeAuthority": false
+          },
+          "accountingStatus": "complete-legacy-verified-realised",
+          "accountingCoverageComplete": true,
+          "accountingEvidenceCount": 1,
+          "accountingUnknownReason": null
         },
         "2026-03": {
           "month": "2026-03",
@@ -710,149 +618,93 @@
           "periodEnd": null,
           "partialPeriod": false,
           "firstObservedDate": "2026-08-09",
-          "semantic": "canonical-fund-reporting",
+          "semantic": "canonical-earned-income",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
           "executionAuthority": "none",
           "incomeAccounting": {
-            "version": "0.1-monthly-evidence-family-view",
+            "version": "0.2-earned-income-primary",
             "primaryMetric": {
               "usd": 27.51,
+              "semantic": "canonical-earned-income",
+              "earnedIncomeAuthority": true,
+              "valuationFrozen": true
+            },
+            "referenceAnalytics": {
+              "generatedIncomeUsd": 27.51,
+              "monthlyYieldPct": 1.02,
               "semantic": "canonical-fund-reporting",
               "sourceFamily": "canonical-fund-reporting",
-              "earnedIncomeAuthority": false,
-              "additiveWithCanonicalEvidenceFamilies": false,
-              "overlapStatus": "canonical-reporting-aggregate-may-overlap-accrued-and-realised-evidence"
+              "earnedIncomeAuthority": false
             },
-            "canonicalEvidence": {
-              "accruedEntitlement": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "partial-mechanism-specific",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "realisedCashFlow": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "partial-mechanism-specific",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "embeddedIncome": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "stablePriceEffectUsd": null
-            },
-            "combinedIncomeUsd": null,
-            "crossFamilySumAllowed": false,
-            "reconciliationStatus": "not-reconciled-for-cross-family-total",
-            "source": "reporting/income-ledger.json",
-            "sourceGeneratedAt": "2026-09-01T20:13:17.562Z",
-            "companyCoverageOverallComplete": false,
+            "accountingStatus": "complete-legacy-verified-realised",
+            "coverageComplete": true,
+            "evidenceCount": 1,
+            "source": "reporting/reporting-data.json legacy-verified-report",
             "unknownIsNotZero": true,
             "executionAuthority": "none"
-          }
+          },
+          "referenceAnalytics": {
+            "generatedIncomeUsd": 27.51,
+            "monthlyYieldPct": 1.02,
+            "semantic": "canonical-fund-reporting",
+            "sourceFamily": "canonical-fund-reporting",
+            "earnedIncomeAuthority": false
+          },
+          "accountingStatus": "complete-legacy-verified-realised",
+          "accountingCoverageComplete": true,
+          "accountingEvidenceCount": 1,
+          "accountingUnknownReason": null
         },
         "2026-04": {
           "month": "2026-04",
           "status": "final-reported",
           "mode": "reported-realised",
           "generatedIncomeUsd": 20.2,
-          "monthlyYieldPct": 0.78,
+          "monthlyYieldPct": 0.780001,
           "averageCapitalUsd": 2589.74,
           "sampleDays": null,
           "periodStart": null,
           "periodEnd": null,
           "partialPeriod": false,
           "firstObservedDate": "2026-08-09",
-          "semantic": "canonical-fund-reporting",
+          "semantic": "canonical-earned-income",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
           "executionAuthority": "none",
           "incomeAccounting": {
-            "version": "0.1-monthly-evidence-family-view",
+            "version": "0.2-earned-income-primary",
             "primaryMetric": {
               "usd": 20.2,
+              "semantic": "canonical-earned-income",
+              "earnedIncomeAuthority": true,
+              "valuationFrozen": true
+            },
+            "referenceAnalytics": {
+              "generatedIncomeUsd": 20.2,
+              "monthlyYieldPct": 0.78,
               "semantic": "canonical-fund-reporting",
               "sourceFamily": "canonical-fund-reporting",
-              "earnedIncomeAuthority": false,
-              "additiveWithCanonicalEvidenceFamilies": false,
-              "overlapStatus": "canonical-reporting-aggregate-may-overlap-accrued-and-realised-evidence"
+              "earnedIncomeAuthority": false
             },
-            "canonicalEvidence": {
-              "accruedEntitlement": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "partial-mechanism-specific",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "realisedCashFlow": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "partial-mechanism-specific",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "embeddedIncome": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "stablePriceEffectUsd": null
-            },
-            "combinedIncomeUsd": null,
-            "crossFamilySumAllowed": false,
-            "reconciliationStatus": "not-reconciled-for-cross-family-total",
-            "source": "reporting/income-ledger.json",
-            "sourceGeneratedAt": "2026-09-01T20:13:17.562Z",
-            "companyCoverageOverallComplete": false,
+            "accountingStatus": "complete-legacy-verified-realised",
+            "coverageComplete": true,
+            "evidenceCount": 1,
+            "source": "reporting/reporting-data.json legacy-verified-report",
             "unknownIsNotZero": true,
             "executionAuthority": "none"
-          }
+          },
+          "referenceAnalytics": {
+            "generatedIncomeUsd": 20.2,
+            "monthlyYieldPct": 0.78,
+            "semantic": "canonical-fund-reporting",
+            "sourceFamily": "canonical-fund-reporting",
+            "earnedIncomeAuthority": false
+          },
+          "accountingStatus": "complete-legacy-verified-realised",
+          "accountingCoverageComplete": true,
+          "accountingEvidenceCount": 1,
+          "accountingUnknownReason": null
         },
         "2026-05": {
           "month": "2026-05",
@@ -866,71 +718,43 @@
           "periodEnd": null,
           "partialPeriod": false,
           "firstObservedDate": "2026-08-09",
-          "semantic": "canonical-fund-reporting",
+          "semantic": "canonical-earned-income",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
           "executionAuthority": "none",
           "incomeAccounting": {
-            "version": "0.1-monthly-evidence-family-view",
+            "version": "0.2-earned-income-primary",
             "primaryMetric": {
               "usd": 30.4,
+              "semantic": "canonical-earned-income",
+              "earnedIncomeAuthority": true,
+              "valuationFrozen": true
+            },
+            "referenceAnalytics": {
+              "generatedIncomeUsd": 30.4,
+              "monthlyYieldPct": 1.01,
               "semantic": "canonical-fund-reporting",
               "sourceFamily": "canonical-fund-reporting",
-              "earnedIncomeAuthority": false,
-              "additiveWithCanonicalEvidenceFamilies": false,
-              "overlapStatus": "canonical-reporting-aggregate-may-overlap-accrued-and-realised-evidence"
+              "earnedIncomeAuthority": false
             },
-            "canonicalEvidence": {
-              "accruedEntitlement": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "partial-mechanism-specific",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "realisedCashFlow": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "partial-mechanism-specific",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "embeddedIncome": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "stablePriceEffectUsd": null
-            },
-            "combinedIncomeUsd": null,
-            "crossFamilySumAllowed": false,
-            "reconciliationStatus": "not-reconciled-for-cross-family-total",
-            "source": "reporting/income-ledger.json",
-            "sourceGeneratedAt": "2026-09-01T20:13:17.562Z",
-            "companyCoverageOverallComplete": false,
+            "accountingStatus": "complete-legacy-verified-realised",
+            "coverageComplete": true,
+            "evidenceCount": 1,
+            "source": "reporting/reporting-data.json legacy-verified-report",
             "unknownIsNotZero": true,
             "executionAuthority": "none"
-          }
+          },
+          "referenceAnalytics": {
+            "generatedIncomeUsd": 30.4,
+            "monthlyYieldPct": 1.01,
+            "semantic": "canonical-fund-reporting",
+            "sourceFamily": "canonical-fund-reporting",
+            "earnedIncomeAuthority": false
+          },
+          "accountingStatus": "complete-legacy-verified-realised",
+          "accountingCoverageComplete": true,
+          "accountingEvidenceCount": 1,
+          "accountingUnknownReason": null
         },
         "2026-06": {
           "month": "2026-06",
@@ -944,71 +768,43 @@
           "periodEnd": null,
           "partialPeriod": false,
           "firstObservedDate": "2026-08-09",
-          "semantic": "canonical-fund-reporting",
+          "semantic": "canonical-earned-income",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
           "executionAuthority": "none",
           "incomeAccounting": {
-            "version": "0.1-monthly-evidence-family-view",
+            "version": "0.2-earned-income-primary",
             "primaryMetric": {
               "usd": 74.76,
+              "semantic": "canonical-earned-income",
+              "earnedIncomeAuthority": true,
+              "valuationFrozen": true
+            },
+            "referenceAnalytics": {
+              "generatedIncomeUsd": 74.76,
+              "monthlyYieldPct": 1.31,
               "semantic": "canonical-fund-reporting",
               "sourceFamily": "canonical-fund-reporting",
-              "earnedIncomeAuthority": false,
-              "additiveWithCanonicalEvidenceFamilies": false,
-              "overlapStatus": "canonical-reporting-aggregate-may-overlap-accrued-and-realised-evidence"
+              "earnedIncomeAuthority": false
             },
-            "canonicalEvidence": {
-              "accruedEntitlement": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "partial-mechanism-specific",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "realisedCashFlow": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "partial-mechanism-specific",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "embeddedIncome": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "stablePriceEffectUsd": null
-            },
-            "combinedIncomeUsd": null,
-            "crossFamilySumAllowed": false,
-            "reconciliationStatus": "not-reconciled-for-cross-family-total",
-            "source": "reporting/income-ledger.json",
-            "sourceGeneratedAt": "2026-09-01T20:13:17.562Z",
-            "companyCoverageOverallComplete": false,
+            "accountingStatus": "complete-legacy-verified-realised",
+            "coverageComplete": true,
+            "evidenceCount": 1,
+            "source": "reporting/reporting-data.json legacy-verified-report",
             "unknownIsNotZero": true,
             "executionAuthority": "none"
-          }
+          },
+          "referenceAnalytics": {
+            "generatedIncomeUsd": 74.76,
+            "monthlyYieldPct": 1.31,
+            "semantic": "canonical-fund-reporting",
+            "sourceFamily": "canonical-fund-reporting",
+            "earnedIncomeAuthority": false
+          },
+          "accountingStatus": "complete-legacy-verified-realised",
+          "accountingCoverageComplete": true,
+          "accountingEvidenceCount": 1,
+          "accountingUnknownReason": null
         },
         "2026-07": {
           "month": "2026-07",
@@ -1022,234 +818,194 @@
           "periodEnd": null,
           "partialPeriod": false,
           "firstObservedDate": "2026-08-09",
-          "semantic": "canonical-fund-reporting",
+          "semantic": "canonical-earned-income",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
           "executionAuthority": "none",
           "incomeAccounting": {
-            "version": "0.1-monthly-evidence-family-view",
+            "version": "0.2-earned-income-primary",
             "primaryMetric": {
               "usd": 56.05,
+              "semantic": "canonical-earned-income",
+              "earnedIncomeAuthority": true,
+              "valuationFrozen": true
+            },
+            "referenceAnalytics": {
+              "generatedIncomeUsd": 56.05,
+              "monthlyYieldPct": 0.82,
               "semantic": "canonical-fund-reporting",
               "sourceFamily": "canonical-fund-reporting",
-              "earnedIncomeAuthority": false,
-              "additiveWithCanonicalEvidenceFamilies": false,
-              "overlapStatus": "canonical-reporting-aggregate-may-overlap-accrued-and-realised-evidence"
+              "earnedIncomeAuthority": false
             },
-            "canonicalEvidence": {
-              "accruedEntitlement": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "partial-mechanism-specific",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "realisedCashFlow": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "partial-mechanism-specific",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "embeddedIncome": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "stablePriceEffectUsd": null
-            },
-            "combinedIncomeUsd": null,
-            "crossFamilySumAllowed": false,
-            "reconciliationStatus": "not-reconciled-for-cross-family-total",
-            "source": "reporting/income-ledger.json",
-            "sourceGeneratedAt": "2026-09-01T20:13:17.562Z",
-            "companyCoverageOverallComplete": false,
+            "accountingStatus": "complete-legacy-verified-realised",
+            "coverageComplete": true,
+            "evidenceCount": 1,
+            "source": "reporting/reporting-data.json legacy-verified-report",
             "unknownIsNotZero": true,
             "executionAuthority": "none"
-          }
+          },
+          "referenceAnalytics": {
+            "generatedIncomeUsd": 56.05,
+            "monthlyYieldPct": 0.82,
+            "semantic": "canonical-fund-reporting",
+            "sourceFamily": "canonical-fund-reporting",
+            "earnedIncomeAuthority": false
+          },
+          "accountingStatus": "complete-legacy-verified-realised",
+          "accountingCoverageComplete": true,
+          "accountingEvidenceCount": 1,
+          "accountingUnknownReason": null
         },
         "2026-08": {
           "month": "2026-08",
           "status": "final-reference-partial",
           "mode": "reference-model",
-          "generatedIncomeUsd": 92.11,
-          "monthlyYieldPct": 0.884,
+          "generatedIncomeUsd": null,
+          "monthlyYieldPct": null,
           "averageCapitalUsd": 10418.59,
           "sampleDays": 21,
           "periodStart": "2026-08-09",
           "periodEnd": "2026-08-31",
           "partialPeriod": true,
           "firstObservedDate": "2026-08-09",
-          "semantic": "canonical-fund-reporting",
+          "semantic": "canonical-earned-income-incomplete-coverage",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
           "executionAuthority": "none",
           "incomeAccounting": {
-            "version": "0.1-monthly-evidence-family-view",
+            "version": "0.2-earned-income-primary",
             "primaryMetric": {
-              "usd": 92.11,
+              "usd": null,
+              "observedUsd": 15.39586906,
+              "semantic": "canonical-earned-income-incomplete-coverage",
+              "earnedIncomeAuthority": false,
+              "valuationFrozen": true
+            },
+            "referenceAnalytics": {
+              "generatedIncomeUsd": 92.11,
+              "monthlyYieldPct": 0.884,
               "semantic": "canonical-fund-reporting",
               "sourceFamily": "canonical-fund-reporting",
-              "earnedIncomeAuthority": false,
-              "additiveWithCanonicalEvidenceFamilies": false,
-              "overlapStatus": "canonical-reporting-aggregate-may-overlap-accrued-and-realised-evidence"
+              "earnedIncomeAuthority": false
             },
-            "canonicalEvidence": {
+            "accountingStatus": "partial-observed",
+            "coverageComplete": false,
+            "evidenceCount": 36,
+            "evidenceFamilies": {
               "accruedEntitlement": {
-                "status": "observed",
-                "coverage": "partial-mechanism-specific",
-                "eventCount": 14,
-                "valuedEventCount": 14,
-                "unvaluedEventCount": 0,
-                "usdComplete": true,
-                "usd": 10.759724,
-                "valuedUsdSubtotal": 10.759724,
-                "earnedIncomeEvidence": true,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "realisedCashFlow": {
-                "status": "observed",
-                "coverage": "partial-mechanism-specific",
-                "eventCount": 4,
-                "valuedEventCount": 4,
-                "unvaluedEventCount": 0,
-                "usdComplete": true,
-                "usd": 2.956305,
-                "valuedUsdSubtotal": 2.956305,
-                "earnedIncomeEvidence": true,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "eventCount": 32,
+                "usd": 12.43956406
               },
               "embeddedIncome": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
                 "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "usd": 0
               },
-              "stablePriceEffectUsd": null
+              "directRealisedCashFlow": {
+                "eventCount": 4,
+                "usd": 2.956305
+              }
             },
-            "combinedIncomeUsd": null,
-            "crossFamilySumAllowed": false,
-            "reconciliationStatus": "not-reconciled-for-cross-family-total",
-            "source": "reporting/income-ledger.json",
+            "rewardSnapshotCoverage": {
+              "comparableIntervals": 200,
+              "unresolvedIntervals": 0,
+              "crossMonthIntervals": 0,
+              "positiveAccrualEvents": 18,
+              "firstObservedAt": "2026-08-27T16:33:06.991Z",
+              "lastObservedAt": "2026-08-31T11:20:24.881Z"
+            },
+            "source": "reporting/income-ledger.json + deterministic reward-snapshot accrual evidence",
             "sourceGeneratedAt": "2026-09-01T20:13:17.562Z",
-            "companyCoverageOverallComplete": false,
             "unknownIsNotZero": true,
             "executionAuthority": "none"
-          }
+          },
+          "referenceAnalytics": {
+            "generatedIncomeUsd": 92.11,
+            "monthlyYieldPct": 0.884,
+            "semantic": "canonical-fund-reporting",
+            "sourceFamily": "canonical-fund-reporting",
+            "earnedIncomeAuthority": false
+          },
+          "observedEarnedIncomeUsd": 15.39586906,
+          "accountingStatus": "partial-observed",
+          "accountingCoverageComplete": false,
+          "accountingEvidenceCount": 36,
+          "accountingUnknownReason": "Not all income mechanisms and period boundaries are proven; reference analytics is retained separately and is never substituted for earned income."
         },
         "2026-09": {
           "month": "2026-09",
           "status": "provisional",
           "mode": "reference-model",
-          "generatedIncomeUsd": 4.04,
-          "monthlyYieldPct": 0.0332,
+          "generatedIncomeUsd": null,
+          "monthlyYieldPct": null,
           "averageCapitalUsd": 12174.88,
           "sampleDays": 1,
           "periodStart": "2026-09-01",
           "periodEnd": "2026-09-01",
           "partialPeriod": false,
           "firstObservedDate": "2026-08-09",
-          "semantic": "canonical-fund-reporting",
+          "semantic": "canonical-earned-income-incomplete-coverage",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
           "executionAuthority": "none",
           "incomeAccounting": {
-            "version": "0.1-monthly-evidence-family-view",
+            "version": "0.2-earned-income-primary",
             "primaryMetric": {
-              "usd": 4.04,
+              "usd": null,
+              "observedUsd": 0,
+              "semantic": "canonical-earned-income-incomplete-coverage",
+              "earnedIncomeAuthority": false,
+              "valuationFrozen": true
+            },
+            "referenceAnalytics": {
+              "generatedIncomeUsd": 4.04,
+              "monthlyYieldPct": 0.0332,
               "semantic": "canonical-fund-reporting",
               "sourceFamily": "canonical-fund-reporting",
-              "earnedIncomeAuthority": false,
-              "additiveWithCanonicalEvidenceFamilies": false,
-              "overlapStatus": "canonical-reporting-aggregate-may-overlap-accrued-and-realised-evidence"
+              "earnedIncomeAuthority": false
             },
-            "canonicalEvidence": {
+            "accountingStatus": "unknown-incomplete-coverage",
+            "coverageComplete": false,
+            "evidenceCount": 0,
+            "evidenceFamilies": {
               "accruedEntitlement": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "partial-mechanism-specific",
                 "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "realisedCashFlow": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "partial-mechanism-specific",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "usd": 0
               },
               "embeddedIncome": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
                 "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "usd": 0
               },
-              "stablePriceEffectUsd": null
+              "directRealisedCashFlow": {
+                "eventCount": 0,
+                "usd": 0
+              }
             },
-            "combinedIncomeUsd": null,
-            "crossFamilySumAllowed": false,
-            "reconciliationStatus": "not-reconciled-for-cross-family-total",
-            "source": "reporting/income-ledger.json",
+            "rewardSnapshotCoverage": null,
+            "source": "reporting/income-ledger.json + deterministic reward-snapshot accrual evidence",
             "sourceGeneratedAt": "2026-09-01T20:13:17.562Z",
-            "companyCoverageOverallComplete": false,
             "unknownIsNotZero": true,
             "executionAuthority": "none"
-          }
+          },
+          "referenceAnalytics": {
+            "generatedIncomeUsd": 4.04,
+            "monthlyYieldPct": 0.0332,
+            "semantic": "canonical-fund-reporting",
+            "sourceFamily": "canonical-fund-reporting",
+            "earnedIncomeAuthority": false
+          },
+          "observedEarnedIncomeUsd": 0,
+          "accountingStatus": "unknown-incomplete-coverage",
+          "accountingCoverageComplete": false,
+          "accountingEvidenceCount": 0,
+          "accountingUnknownReason": "Not all income mechanisms and period boundaries are proven; reference analytics is retained separately and is never substituted for earned income."
         }
-      }
+      },
+      "sourceFamilyPrevious": "canonical-fund-reporting"
     },
     "0x5860...83CA8.eth": {
       "registry": "005",
       "name": "0x5860...83CA8.eth",
-      "sourceFamily": "observed-productivity-reference-model",
+      "sourceFamily": "canonical-earned-income-accounting",
       "capitalMetric": "productive-capital",
       "averageCapitalLabel": "Average Productive Capital",
       "fullReportHref": null,
@@ -1259,8 +1015,8 @@
           "month": "2026-08",
           "status": "reported",
           "mode": "observed-reference-model",
-          "generatedIncomeUsd": 50.972811,
-          "monthlyYieldPct": 0.838121,
+          "generatedIncomeUsd": null,
+          "monthlyYieldPct": null,
           "averageCapitalUsd": 6081.7968,
           "averageCoverage": 1,
           "sampleDays": 19,
@@ -1268,78 +1024,75 @@
           "periodEnd": "2026-08-31",
           "partialPeriod": true,
           "firstObservedDate": "2026-08-13",
-          "semantic": "reference-generated-income-not-realised-cash-flow",
+          "semantic": "canonical-earned-income-incomplete-coverage",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
           "executionAuthority": "none",
           "incomeAccounting": {
-            "version": "0.1-monthly-evidence-family-view",
+            "version": "0.2-earned-income-primary",
             "primaryMetric": {
-              "usd": 50.972811,
+              "usd": null,
+              "observedUsd": 0.00545717,
+              "semantic": "canonical-earned-income-incomplete-coverage",
+              "earnedIncomeAuthority": false,
+              "valuationFrozen": true
+            },
+            "referenceAnalytics": {
+              "generatedIncomeUsd": 50.972811,
+              "monthlyYieldPct": 0.838121,
               "semantic": "reference-generated-income-not-realised-cash-flow",
               "sourceFamily": "observed-productivity-reference-model",
-              "earnedIncomeAuthority": false,
-              "additiveWithCanonicalEvidenceFamilies": false,
-              "overlapStatus": "separate-reference-or-reporting-metric"
+              "earnedIncomeAuthority": false
             },
-            "canonicalEvidence": {
+            "accountingStatus": "partial-observed",
+            "coverageComplete": false,
+            "evidenceCount": 1,
+            "evidenceFamilies": {
               "accruedEntitlement": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "realisedCashFlow": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "eventCount": 1,
+                "usd": 0.00545717
               },
               "embeddedIncome": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
                 "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "usd": 0
               },
-              "stablePriceEffectUsd": null
+              "directRealisedCashFlow": {
+                "eventCount": 0,
+                "usd": 0
+              }
             },
-            "combinedIncomeUsd": null,
-            "crossFamilySumAllowed": false,
-            "reconciliationStatus": "not-reconciled-for-cross-family-total",
-            "source": "reporting/income-ledger.json",
+            "rewardSnapshotCoverage": {
+              "comparableIntervals": 72,
+              "unresolvedIntervals": 8,
+              "crossMonthIntervals": 0,
+              "positiveAccrualEvents": 1,
+              "firstObservedAt": "2026-08-27T16:33:06.991Z",
+              "lastObservedAt": "2026-08-31T11:38:06.060Z"
+            },
+            "source": "reporting/income-ledger.json + deterministic reward-snapshot accrual evidence",
             "sourceGeneratedAt": "2026-09-01T20:13:17.562Z",
-            "companyCoverageOverallComplete": false,
             "unknownIsNotZero": true,
             "executionAuthority": "none"
-          }
+          },
+          "referenceAnalytics": {
+            "generatedIncomeUsd": 50.972811,
+            "monthlyYieldPct": 0.838121,
+            "semantic": "reference-generated-income-not-realised-cash-flow",
+            "sourceFamily": "observed-productivity-reference-model",
+            "earnedIncomeAuthority": false
+          },
+          "observedEarnedIncomeUsd": 0.00545717,
+          "accountingStatus": "partial-observed",
+          "accountingCoverageComplete": false,
+          "accountingEvidenceCount": 1,
+          "accountingUnknownReason": "Not all income mechanisms and period boundaries are proven; reference analytics is retained separately and is never substituted for earned income."
         },
         "2026-09": {
           "month": "2026-09",
           "status": "provisional",
           "mode": "observed-reference-model",
-          "generatedIncomeUsd": 2.827624,
-          "monthlyYieldPct": 0.044607,
+          "generatedIncomeUsd": null,
+          "monthlyYieldPct": null,
           "averageCapitalUsd": 6339.03,
           "averageCoverage": 1,
           "sampleDays": 1,
@@ -1347,78 +1100,76 @@
           "periodEnd": "2026-09-01",
           "partialPeriod": true,
           "firstObservedDate": "2026-08-13",
-          "semantic": "reference-generated-income-not-realised-cash-flow",
+          "semantic": "canonical-earned-income-incomplete-coverage",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
           "executionAuthority": "none",
           "incomeAccounting": {
-            "version": "0.1-monthly-evidence-family-view",
+            "version": "0.2-earned-income-primary",
             "primaryMetric": {
-              "usd": 2.827624,
+              "usd": null,
+              "observedUsd": 0,
+              "semantic": "canonical-earned-income-incomplete-coverage",
+              "earnedIncomeAuthority": false,
+              "valuationFrozen": true
+            },
+            "referenceAnalytics": {
+              "generatedIncomeUsd": 2.827624,
+              "monthlyYieldPct": 0.044607,
               "semantic": "reference-generated-income-not-realised-cash-flow",
               "sourceFamily": "observed-productivity-reference-model",
-              "earnedIncomeAuthority": false,
-              "additiveWithCanonicalEvidenceFamilies": false,
-              "overlapStatus": "separate-reference-or-reporting-metric"
+              "earnedIncomeAuthority": false
             },
-            "canonicalEvidence": {
+            "accountingStatus": "unknown-incomplete-coverage",
+            "coverageComplete": false,
+            "evidenceCount": 0,
+            "evidenceFamilies": {
               "accruedEntitlement": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
                 "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "realisedCashFlow": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "usd": 0
               },
               "embeddedIncome": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
                 "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "usd": 0
               },
-              "stablePriceEffectUsd": null
+              "directRealisedCashFlow": {
+                "eventCount": 0,
+                "usd": 0
+              }
             },
-            "combinedIncomeUsd": null,
-            "crossFamilySumAllowed": false,
-            "reconciliationStatus": "not-reconciled-for-cross-family-total",
-            "source": "reporting/income-ledger.json",
+            "rewardSnapshotCoverage": {
+              "comparableIntervals": 0,
+              "unresolvedIntervals": 0,
+              "crossMonthIntervals": 1,
+              "positiveAccrualEvents": 0,
+              "firstObservedAt": "2026-08-31T11:38:06.060Z",
+              "lastObservedAt": "2026-09-01T10:10:45.643Z"
+            },
+            "source": "reporting/income-ledger.json + deterministic reward-snapshot accrual evidence",
             "sourceGeneratedAt": "2026-09-01T20:13:17.562Z",
-            "companyCoverageOverallComplete": false,
             "unknownIsNotZero": true,
             "executionAuthority": "none"
-          }
+          },
+          "referenceAnalytics": {
+            "generatedIncomeUsd": 2.827624,
+            "monthlyYieldPct": 0.044607,
+            "semantic": "reference-generated-income-not-realised-cash-flow",
+            "sourceFamily": "observed-productivity-reference-model",
+            "earnedIncomeAuthority": false
+          },
+          "observedEarnedIncomeUsd": 0,
+          "accountingStatus": "unknown-incomplete-coverage",
+          "accountingCoverageComplete": false,
+          "accountingEvidenceCount": 0,
+          "accountingUnknownReason": "Not all income mechanisms and period boundaries are proven; reference analytics is retained separately and is never substituted for earned income."
         }
-      }
+      },
+      "sourceFamilyPrevious": "observed-productivity-reference-model"
     },
     "aerocvxyb.eth": {
       "registry": "006",
       "name": "aerocvxyb.eth",
-      "sourceFamily": "observed-productivity-reference-model",
+      "sourceFamily": "canonical-earned-income-accounting",
       "capitalMetric": "productive-capital",
       "averageCapitalLabel": "Average Productive Capital",
       "fullReportHref": null,
@@ -1428,8 +1179,8 @@
           "month": "2026-08",
           "status": "reported",
           "mode": "observed-reference-model",
-          "generatedIncomeUsd": 74.868592,
-          "monthlyYieldPct": 0.874242,
+          "generatedIncomeUsd": null,
+          "monthlyYieldPct": null,
           "averageCapitalUsd": 8563.8332,
           "averageCoverage": 1,
           "sampleDays": 19,
@@ -1437,78 +1188,75 @@
           "periodEnd": "2026-08-31",
           "partialPeriod": true,
           "firstObservedDate": "2026-08-13",
-          "semantic": "reference-generated-income-not-realised-cash-flow",
+          "semantic": "canonical-earned-income-incomplete-coverage",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
           "executionAuthority": "none",
           "incomeAccounting": {
-            "version": "0.1-monthly-evidence-family-view",
+            "version": "0.2-earned-income-primary",
             "primaryMetric": {
-              "usd": 74.868592,
+              "usd": null,
+              "observedUsd": 0.00545717,
+              "semantic": "canonical-earned-income-incomplete-coverage",
+              "earnedIncomeAuthority": false,
+              "valuationFrozen": true
+            },
+            "referenceAnalytics": {
+              "generatedIncomeUsd": 74.868592,
+              "monthlyYieldPct": 0.874242,
               "semantic": "reference-generated-income-not-realised-cash-flow",
               "sourceFamily": "observed-productivity-reference-model",
-              "earnedIncomeAuthority": false,
-              "additiveWithCanonicalEvidenceFamilies": false,
-              "overlapStatus": "separate-reference-or-reporting-metric"
+              "earnedIncomeAuthority": false
             },
-            "canonicalEvidence": {
+            "accountingStatus": "partial-observed",
+            "coverageComplete": false,
+            "evidenceCount": 1,
+            "evidenceFamilies": {
               "accruedEntitlement": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "realisedCashFlow": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "eventCount": 1,
+                "usd": 0.00545717
               },
               "embeddedIncome": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
                 "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "usd": 0
               },
-              "stablePriceEffectUsd": null
+              "directRealisedCashFlow": {
+                "eventCount": 0,
+                "usd": 0
+              }
             },
-            "combinedIncomeUsd": null,
-            "crossFamilySumAllowed": false,
-            "reconciliationStatus": "not-reconciled-for-cross-family-total",
-            "source": "reporting/income-ledger.json",
+            "rewardSnapshotCoverage": {
+              "comparableIntervals": 216,
+              "unresolvedIntervals": 8,
+              "crossMonthIntervals": 0,
+              "positiveAccrualEvents": 1,
+              "firstObservedAt": "2026-08-27T16:33:06.991Z",
+              "lastObservedAt": "2026-08-31T11:38:06.060Z"
+            },
+            "source": "reporting/income-ledger.json + deterministic reward-snapshot accrual evidence",
             "sourceGeneratedAt": "2026-09-01T20:13:17.562Z",
-            "companyCoverageOverallComplete": false,
             "unknownIsNotZero": true,
             "executionAuthority": "none"
-          }
+          },
+          "referenceAnalytics": {
+            "generatedIncomeUsd": 74.868592,
+            "monthlyYieldPct": 0.874242,
+            "semantic": "reference-generated-income-not-realised-cash-flow",
+            "sourceFamily": "observed-productivity-reference-model",
+            "earnedIncomeAuthority": false
+          },
+          "observedEarnedIncomeUsd": 0.00545717,
+          "accountingStatus": "partial-observed",
+          "accountingCoverageComplete": false,
+          "accountingEvidenceCount": 1,
+          "accountingUnknownReason": "Not all income mechanisms and period boundaries are proven; reference analytics is retained separately and is never substituted for earned income."
         },
         "2026-09": {
           "month": "2026-09",
           "status": "provisional",
           "mode": "observed-reference-model",
-          "generatedIncomeUsd": 4.151731,
-          "monthlyYieldPct": 0.046612,
+          "generatedIncomeUsd": null,
+          "monthlyYieldPct": null,
           "averageCapitalUsd": 8906.99,
           "averageCoverage": 1,
           "sampleDays": 1,
@@ -1516,78 +1264,76 @@
           "periodEnd": "2026-09-01",
           "partialPeriod": true,
           "firstObservedDate": "2026-08-13",
-          "semantic": "reference-generated-income-not-realised-cash-flow",
+          "semantic": "canonical-earned-income-incomplete-coverage",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
           "executionAuthority": "none",
           "incomeAccounting": {
-            "version": "0.1-monthly-evidence-family-view",
+            "version": "0.2-earned-income-primary",
             "primaryMetric": {
-              "usd": 4.151731,
+              "usd": null,
+              "observedUsd": 0,
+              "semantic": "canonical-earned-income-incomplete-coverage",
+              "earnedIncomeAuthority": false,
+              "valuationFrozen": true
+            },
+            "referenceAnalytics": {
+              "generatedIncomeUsd": 4.151731,
+              "monthlyYieldPct": 0.046612,
               "semantic": "reference-generated-income-not-realised-cash-flow",
               "sourceFamily": "observed-productivity-reference-model",
-              "earnedIncomeAuthority": false,
-              "additiveWithCanonicalEvidenceFamilies": false,
-              "overlapStatus": "separate-reference-or-reporting-metric"
+              "earnedIncomeAuthority": false
             },
-            "canonicalEvidence": {
+            "accountingStatus": "unknown-incomplete-coverage",
+            "coverageComplete": false,
+            "evidenceCount": 0,
+            "evidenceFamilies": {
               "accruedEntitlement": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
                 "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "realisedCashFlow": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "usd": 0
               },
               "embeddedIncome": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
                 "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "usd": 0
               },
-              "stablePriceEffectUsd": null
+              "directRealisedCashFlow": {
+                "eventCount": 0,
+                "usd": 0
+              }
             },
-            "combinedIncomeUsd": null,
-            "crossFamilySumAllowed": false,
-            "reconciliationStatus": "not-reconciled-for-cross-family-total",
-            "source": "reporting/income-ledger.json",
+            "rewardSnapshotCoverage": {
+              "comparableIntervals": 0,
+              "unresolvedIntervals": 0,
+              "crossMonthIntervals": 1,
+              "positiveAccrualEvents": 0,
+              "firstObservedAt": "2026-08-31T11:38:06.060Z",
+              "lastObservedAt": "2026-09-01T10:10:45.643Z"
+            },
+            "source": "reporting/income-ledger.json + deterministic reward-snapshot accrual evidence",
             "sourceGeneratedAt": "2026-09-01T20:13:17.562Z",
-            "companyCoverageOverallComplete": false,
             "unknownIsNotZero": true,
             "executionAuthority": "none"
-          }
+          },
+          "referenceAnalytics": {
+            "generatedIncomeUsd": 4.151731,
+            "monthlyYieldPct": 0.046612,
+            "semantic": "reference-generated-income-not-realised-cash-flow",
+            "sourceFamily": "observed-productivity-reference-model",
+            "earnedIncomeAuthority": false
+          },
+          "observedEarnedIncomeUsd": 0,
+          "accountingStatus": "unknown-incomplete-coverage",
+          "accountingCoverageComplete": false,
+          "accountingEvidenceCount": 0,
+          "accountingUnknownReason": "Not all income mechanisms and period boundaries are proven; reference analytics is retained separately and is never substituted for earned income."
         }
-      }
+      },
+      "sourceFamilyPrevious": "observed-productivity-reference-model"
     },
     "Rook's portfolio": {
       "registry": "007",
       "name": "Rook's portfolio",
-      "sourceFamily": "observed-productivity-reference-model",
+      "sourceFamily": "canonical-earned-income-accounting",
       "capitalMetric": "productive-capital",
       "averageCapitalLabel": "Average Productive Capital",
       "fullReportHref": null,
@@ -1597,8 +1343,8 @@
           "month": "2026-08",
           "status": "reported",
           "mode": "observed-reference-model",
-          "generatedIncomeUsd": 32.256148,
-          "monthlyYieldPct": 0.810124,
+          "generatedIncomeUsd": null,
+          "monthlyYieldPct": null,
           "averageCapitalUsd": 3981.6311,
           "averageCoverage": 1,
           "sampleDays": 19,
@@ -1606,78 +1352,75 @@
           "periodEnd": "2026-08-31",
           "partialPeriod": true,
           "firstObservedDate": "2026-08-13",
-          "semantic": "reference-generated-income-not-realised-cash-flow",
+          "semantic": "canonical-earned-income-incomplete-coverage",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
           "executionAuthority": "none",
           "incomeAccounting": {
-            "version": "0.1-monthly-evidence-family-view",
+            "version": "0.2-earned-income-primary",
             "primaryMetric": {
-              "usd": 32.256148,
+              "usd": null,
+              "observedUsd": 0,
+              "semantic": "canonical-earned-income-incomplete-coverage",
+              "earnedIncomeAuthority": false,
+              "valuationFrozen": true
+            },
+            "referenceAnalytics": {
+              "generatedIncomeUsd": 32.256148,
+              "monthlyYieldPct": 0.810124,
               "semantic": "reference-generated-income-not-realised-cash-flow",
               "sourceFamily": "observed-productivity-reference-model",
-              "earnedIncomeAuthority": false,
-              "additiveWithCanonicalEvidenceFamilies": false,
-              "overlapStatus": "separate-reference-or-reporting-metric"
+              "earnedIncomeAuthority": false
             },
-            "canonicalEvidence": {
+            "accountingStatus": "unknown-incomplete-coverage",
+            "coverageComplete": false,
+            "evidenceCount": 0,
+            "evidenceFamilies": {
               "accruedEntitlement": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
                 "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "realisedCashFlow": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "usd": 0
               },
               "embeddedIncome": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
                 "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "usd": 0
               },
-              "stablePriceEffectUsd": null
+              "directRealisedCashFlow": {
+                "eventCount": 0,
+                "usd": 0
+              }
             },
-            "combinedIncomeUsd": null,
-            "crossFamilySumAllowed": false,
-            "reconciliationStatus": "not-reconciled-for-cross-family-total",
-            "source": "reporting/income-ledger.json",
+            "rewardSnapshotCoverage": {
+              "comparableIntervals": 56,
+              "unresolvedIntervals": 0,
+              "crossMonthIntervals": 0,
+              "positiveAccrualEvents": 0,
+              "firstObservedAt": "2026-08-27T16:33:06.991Z",
+              "lastObservedAt": "2026-08-31T11:20:24.881Z"
+            },
+            "source": "reporting/income-ledger.json + deterministic reward-snapshot accrual evidence",
             "sourceGeneratedAt": "2026-09-01T20:13:17.562Z",
-            "companyCoverageOverallComplete": false,
             "unknownIsNotZero": true,
             "executionAuthority": "none"
-          }
+          },
+          "referenceAnalytics": {
+            "generatedIncomeUsd": 32.256148,
+            "monthlyYieldPct": 0.810124,
+            "semantic": "reference-generated-income-not-realised-cash-flow",
+            "sourceFamily": "observed-productivity-reference-model",
+            "earnedIncomeAuthority": false
+          },
+          "observedEarnedIncomeUsd": 0,
+          "accountingStatus": "unknown-incomplete-coverage",
+          "accountingCoverageComplete": false,
+          "accountingEvidenceCount": 0,
+          "accountingUnknownReason": "Not all income mechanisms and period boundaries are proven; reference analytics is retained separately and is never substituted for earned income."
         },
         "2026-09": {
           "month": "2026-09",
           "status": "provisional",
           "mode": "observed-reference-model",
-          "generatedIncomeUsd": 1.76819,
-          "monthlyYieldPct": 0.040574,
+          "generatedIncomeUsd": null,
+          "monthlyYieldPct": null,
           "averageCapitalUsd": 4357.97,
           "averageCoverage": 1,
           "sampleDays": 1,
@@ -1685,78 +1428,69 @@
           "periodEnd": "2026-09-01",
           "partialPeriod": true,
           "firstObservedDate": "2026-08-13",
-          "semantic": "reference-generated-income-not-realised-cash-flow",
+          "semantic": "canonical-earned-income-incomplete-coverage",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
           "executionAuthority": "none",
           "incomeAccounting": {
-            "version": "0.1-monthly-evidence-family-view",
+            "version": "0.2-earned-income-primary",
             "primaryMetric": {
-              "usd": 1.76819,
+              "usd": null,
+              "observedUsd": 0,
+              "semantic": "canonical-earned-income-incomplete-coverage",
+              "earnedIncomeAuthority": false,
+              "valuationFrozen": true
+            },
+            "referenceAnalytics": {
+              "generatedIncomeUsd": 1.76819,
+              "monthlyYieldPct": 0.040574,
               "semantic": "reference-generated-income-not-realised-cash-flow",
               "sourceFamily": "observed-productivity-reference-model",
-              "earnedIncomeAuthority": false,
-              "additiveWithCanonicalEvidenceFamilies": false,
-              "overlapStatus": "separate-reference-or-reporting-metric"
+              "earnedIncomeAuthority": false
             },
-            "canonicalEvidence": {
+            "accountingStatus": "unknown-incomplete-coverage",
+            "coverageComplete": false,
+            "evidenceCount": 0,
+            "evidenceFamilies": {
               "accruedEntitlement": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
                 "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "realisedCashFlow": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "usd": 0
               },
               "embeddedIncome": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
                 "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "usd": 0
               },
-              "stablePriceEffectUsd": null
+              "directRealisedCashFlow": {
+                "eventCount": 0,
+                "usd": 0
+              }
             },
-            "combinedIncomeUsd": null,
-            "crossFamilySumAllowed": false,
-            "reconciliationStatus": "not-reconciled-for-cross-family-total",
-            "source": "reporting/income-ledger.json",
+            "rewardSnapshotCoverage": null,
+            "source": "reporting/income-ledger.json + deterministic reward-snapshot accrual evidence",
             "sourceGeneratedAt": "2026-09-01T20:13:17.562Z",
-            "companyCoverageOverallComplete": false,
             "unknownIsNotZero": true,
             "executionAuthority": "none"
-          }
+          },
+          "referenceAnalytics": {
+            "generatedIncomeUsd": 1.76819,
+            "monthlyYieldPct": 0.040574,
+            "semantic": "reference-generated-income-not-realised-cash-flow",
+            "sourceFamily": "observed-productivity-reference-model",
+            "earnedIncomeAuthority": false
+          },
+          "observedEarnedIncomeUsd": 0,
+          "accountingStatus": "unknown-incomplete-coverage",
+          "accountingCoverageComplete": false,
+          "accountingEvidenceCount": 0,
+          "accountingUnknownReason": "Not all income mechanisms and period boundaries are proven; reference analytics is retained separately and is never substituted for earned income."
         }
-      }
+      },
+      "sourceFamilyPrevious": "observed-productivity-reference-model"
     },
     "Monetra.eth": {
       "registry": "008",
       "name": "Monetra.eth",
-      "sourceFamily": "canonical-stable-reporting",
+      "sourceFamily": "canonical-earned-income-accounting",
       "capitalMetric": "stable-capital",
       "averageCapitalLabel": "Average Stable Capital",
       "fullReportHref": "/yield-reports/",
@@ -1766,164 +1500,145 @@
           "month": "2026-08",
           "status": "final-reference-partial",
           "mode": "stable-reference-income",
-          "generatedIncomeUsd": 0.2099,
-          "monthlyYieldPct": 0.2095,
+          "generatedIncomeUsd": null,
+          "monthlyYieldPct": null,
           "averageCapitalUsd": 100.2292,
           "sampleDays": 17,
           "periodStart": "2026-08-13",
           "periodEnd": "2026-08-31",
           "partialPeriod": true,
           "firstObservedDate": "2026-08-13",
-          "semantic": "reference-generated-income-not-realised-cash-flow",
+          "semantic": "canonical-earned-income-incomplete-coverage",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
           "executionAuthority": "none",
           "incomeAccounting": {
-            "version": "0.1-monthly-evidence-family-view",
+            "version": "0.2-earned-income-primary",
             "primaryMetric": {
-              "usd": 0.2099,
+              "usd": null,
+              "observedUsd": 0.17847795,
+              "semantic": "canonical-earned-income-incomplete-coverage",
+              "earnedIncomeAuthority": false,
+              "valuationFrozen": true
+            },
+            "referenceAnalytics": {
+              "generatedIncomeUsd": 0.2099,
+              "monthlyYieldPct": 0.2095,
               "semantic": "reference-generated-income-not-realised-cash-flow",
               "sourceFamily": "canonical-stable-reporting",
-              "earnedIncomeAuthority": false,
-              "additiveWithCanonicalEvidenceFamilies": false,
-              "overlapStatus": "separate-reference-or-reporting-metric"
+              "earnedIncomeAuthority": false
             },
-            "canonicalEvidence": {
+            "accountingStatus": "partial-observed",
+            "coverageComplete": false,
+            "evidenceCount": 152,
+            "evidenceFamilies": {
               "accruedEntitlement": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
                 "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "realisedCashFlow": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "usd": 0
               },
               "embeddedIncome": {
-                "status": "observed",
-                "coverage": "canonical-accepted-intervals-only",
                 "eventCount": 152,
-                "valuedEventCount": 152,
-                "unvaluedEventCount": 0,
-                "usdComplete": true,
-                "usd": 0.17847795,
-                "valuedUsdSubtotal": 0.17847795,
-                "earnedIncomeEvidence": true,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "usd": 0.17847795
               },
-              "stablePriceEffectUsd": 0.00785383
+              "directRealisedCashFlow": {
+                "eventCount": 0,
+                "usd": 0
+              }
             },
-            "combinedIncomeUsd": null,
-            "crossFamilySumAllowed": false,
-            "reconciliationStatus": "not-reconciled-for-cross-family-total",
-            "source": "reporting/income-ledger.json",
+            "rewardSnapshotCoverage": null,
+            "source": "reporting/income-ledger.json + deterministic reward-snapshot accrual evidence",
             "sourceGeneratedAt": "2026-09-01T20:13:17.562Z",
-            "companyCoverageOverallComplete": false,
             "unknownIsNotZero": true,
             "executionAuthority": "none"
-          }
+          },
+          "referenceAnalytics": {
+            "generatedIncomeUsd": 0.2099,
+            "monthlyYieldPct": 0.2095,
+            "semantic": "reference-generated-income-not-realised-cash-flow",
+            "sourceFamily": "canonical-stable-reporting",
+            "earnedIncomeAuthority": false
+          },
+          "observedEarnedIncomeUsd": 0.17847795,
+          "accountingStatus": "partial-observed",
+          "accountingCoverageComplete": false,
+          "accountingEvidenceCount": 152,
+          "accountingUnknownReason": "Not all income mechanisms and period boundaries are proven; reference analytics is retained separately and is never substituted for earned income."
         },
         "2026-09": {
           "month": "2026-09",
           "status": "provisional",
           "mode": "stable-reference-income",
-          "generatedIncomeUsd": 0.015,
-          "monthlyYieldPct": 0.0149,
+          "generatedIncomeUsd": null,
+          "monthlyYieldPct": null,
           "averageCapitalUsd": 100.375,
           "sampleDays": 1,
           "periodStart": "2026-09-01",
           "periodEnd": "2026-09-01",
           "partialPeriod": false,
           "firstObservedDate": "2026-08-13",
-          "semantic": "reference-generated-income-not-realised-cash-flow",
+          "semantic": "canonical-earned-income-incomplete-coverage",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
           "executionAuthority": "none",
           "incomeAccounting": {
-            "version": "0.1-monthly-evidence-family-view",
+            "version": "0.2-earned-income-primary",
             "primaryMetric": {
-              "usd": 0.015,
+              "usd": null,
+              "observedUsd": 0.0138669,
+              "semantic": "canonical-earned-income-incomplete-coverage",
+              "earnedIncomeAuthority": false,
+              "valuationFrozen": true
+            },
+            "referenceAnalytics": {
+              "generatedIncomeUsd": 0.015,
+              "monthlyYieldPct": 0.0149,
               "semantic": "reference-generated-income-not-realised-cash-flow",
               "sourceFamily": "canonical-stable-reporting",
-              "earnedIncomeAuthority": false,
-              "additiveWithCanonicalEvidenceFamilies": false,
-              "overlapStatus": "separate-reference-or-reporting-metric"
+              "earnedIncomeAuthority": false
             },
-            "canonicalEvidence": {
+            "accountingStatus": "partial-observed",
+            "coverageComplete": false,
+            "evidenceCount": 8,
+            "evidenceFamilies": {
               "accruedEntitlement": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
                 "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "realisedCashFlow": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "usd": 0
               },
               "embeddedIncome": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "canonical-accepted-intervals-only",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "eventCount": 8,
+                "usd": 0.0138669
               },
-              "stablePriceEffectUsd": null
+              "directRealisedCashFlow": {
+                "eventCount": 0,
+                "usd": 0
+              }
             },
-            "combinedIncomeUsd": null,
-            "crossFamilySumAllowed": false,
-            "reconciliationStatus": "not-reconciled-for-cross-family-total",
-            "source": "reporting/income-ledger.json",
+            "rewardSnapshotCoverage": null,
+            "source": "reporting/income-ledger.json + deterministic reward-snapshot accrual evidence",
             "sourceGeneratedAt": "2026-09-01T20:13:17.562Z",
-            "companyCoverageOverallComplete": false,
             "unknownIsNotZero": true,
             "executionAuthority": "none"
-          }
+          },
+          "referenceAnalytics": {
+            "generatedIncomeUsd": 0.015,
+            "monthlyYieldPct": 0.0149,
+            "semantic": "reference-generated-income-not-realised-cash-flow",
+            "sourceFamily": "canonical-stable-reporting",
+            "earnedIncomeAuthority": false
+          },
+          "observedEarnedIncomeUsd": 0.0138669,
+          "accountingStatus": "partial-observed",
+          "accountingCoverageComplete": false,
+          "accountingEvidenceCount": 8,
+          "accountingUnknownReason": "Not all income mechanisms and period boundaries are proven; reference analytics is retained separately and is never substituted for earned income."
         }
-      }
+      },
+      "sourceFamilyPrevious": "canonical-stable-reporting"
     },
     "1milliondollar.eth": {
       "registry": "009",
       "name": "1milliondollar.eth",
-      "sourceFamily": "observed-productivity-reference-model",
+      "sourceFamily": "canonical-earned-income-accounting",
       "capitalMetric": "productive-capital",
       "averageCapitalLabel": "Average Productive Capital",
       "fullReportHref": null,
@@ -1933,8 +1648,8 @@
           "month": "2026-08",
           "status": "reported",
           "mode": "observed-reference-model",
-          "generatedIncomeUsd": 2.467383,
-          "monthlyYieldPct": 0.508015,
+          "generatedIncomeUsd": null,
+          "monthlyYieldPct": null,
           "averageCapitalUsd": 485.6911,
           "averageCoverage": 1,
           "sampleDays": 19,
@@ -1942,78 +1657,75 @@
           "periodEnd": "2026-08-31",
           "partialPeriod": true,
           "firstObservedDate": "2026-08-13",
-          "semantic": "reference-generated-income-not-realised-cash-flow",
+          "semantic": "canonical-earned-income-incomplete-coverage",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
           "executionAuthority": "none",
           "incomeAccounting": {
-            "version": "0.1-monthly-evidence-family-view",
+            "version": "0.2-earned-income-primary",
             "primaryMetric": {
-              "usd": 2.467383,
+              "usd": null,
+              "observedUsd": 0,
+              "semantic": "canonical-earned-income-incomplete-coverage",
+              "earnedIncomeAuthority": false,
+              "valuationFrozen": true
+            },
+            "referenceAnalytics": {
+              "generatedIncomeUsd": 2.467383,
+              "monthlyYieldPct": 0.508015,
               "semantic": "reference-generated-income-not-realised-cash-flow",
               "sourceFamily": "observed-productivity-reference-model",
-              "earnedIncomeAuthority": false,
-              "additiveWithCanonicalEvidenceFamilies": false,
-              "overlapStatus": "separate-reference-or-reporting-metric"
+              "earnedIncomeAuthority": false
             },
-            "canonicalEvidence": {
+            "accountingStatus": "unknown-incomplete-coverage",
+            "coverageComplete": false,
+            "evidenceCount": 0,
+            "evidenceFamilies": {
               "accruedEntitlement": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
                 "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "realisedCashFlow": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "usd": 0
               },
               "embeddedIncome": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
                 "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "usd": 0
               },
-              "stablePriceEffectUsd": null
+              "directRealisedCashFlow": {
+                "eventCount": 0,
+                "usd": 0
+              }
             },
-            "combinedIncomeUsd": null,
-            "crossFamilySumAllowed": false,
-            "reconciliationStatus": "not-reconciled-for-cross-family-total",
-            "source": "reporting/income-ledger.json",
+            "rewardSnapshotCoverage": {
+              "comparableIntervals": 20,
+              "unresolvedIntervals": 0,
+              "crossMonthIntervals": 0,
+              "positiveAccrualEvents": 0,
+              "firstObservedAt": "2026-08-27T16:33:06.991Z",
+              "lastObservedAt": "2026-08-31T11:20:24.881Z"
+            },
+            "source": "reporting/income-ledger.json + deterministic reward-snapshot accrual evidence",
             "sourceGeneratedAt": "2026-09-01T20:13:17.562Z",
-            "companyCoverageOverallComplete": false,
             "unknownIsNotZero": true,
             "executionAuthority": "none"
-          }
+          },
+          "referenceAnalytics": {
+            "generatedIncomeUsd": 2.467383,
+            "monthlyYieldPct": 0.508015,
+            "semantic": "reference-generated-income-not-realised-cash-flow",
+            "sourceFamily": "observed-productivity-reference-model",
+            "earnedIncomeAuthority": false
+          },
+          "observedEarnedIncomeUsd": 0,
+          "accountingStatus": "unknown-incomplete-coverage",
+          "accountingCoverageComplete": false,
+          "accountingEvidenceCount": 0,
+          "accountingUnknownReason": "Not all income mechanisms and period boundaries are proven; reference analytics is retained separately and is never substituted for earned income."
         },
         "2026-09": {
           "month": "2026-09",
           "status": "provisional",
           "mode": "observed-reference-model",
-          "generatedIncomeUsd": 0.149197,
-          "monthlyYieldPct": 0.028622,
+          "generatedIncomeUsd": null,
+          "monthlyYieldPct": null,
           "averageCapitalUsd": 521.27,
           "averageCoverage": 1,
           "sampleDays": 1,
@@ -2021,78 +1733,69 @@
           "periodEnd": "2026-09-01",
           "partialPeriod": true,
           "firstObservedDate": "2026-08-13",
-          "semantic": "reference-generated-income-not-realised-cash-flow",
+          "semantic": "canonical-earned-income-incomplete-coverage",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
           "executionAuthority": "none",
           "incomeAccounting": {
-            "version": "0.1-monthly-evidence-family-view",
+            "version": "0.2-earned-income-primary",
             "primaryMetric": {
-              "usd": 0.149197,
+              "usd": null,
+              "observedUsd": 0,
+              "semantic": "canonical-earned-income-incomplete-coverage",
+              "earnedIncomeAuthority": false,
+              "valuationFrozen": true
+            },
+            "referenceAnalytics": {
+              "generatedIncomeUsd": 0.149197,
+              "monthlyYieldPct": 0.028622,
               "semantic": "reference-generated-income-not-realised-cash-flow",
               "sourceFamily": "observed-productivity-reference-model",
-              "earnedIncomeAuthority": false,
-              "additiveWithCanonicalEvidenceFamilies": false,
-              "overlapStatus": "separate-reference-or-reporting-metric"
+              "earnedIncomeAuthority": false
             },
-            "canonicalEvidence": {
+            "accountingStatus": "unknown-incomplete-coverage",
+            "coverageComplete": false,
+            "evidenceCount": 0,
+            "evidenceFamilies": {
               "accruedEntitlement": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
                 "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "realisedCashFlow": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "usd": 0
               },
               "embeddedIncome": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
                 "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "usd": 0
               },
-              "stablePriceEffectUsd": null
+              "directRealisedCashFlow": {
+                "eventCount": 0,
+                "usd": 0
+              }
             },
-            "combinedIncomeUsd": null,
-            "crossFamilySumAllowed": false,
-            "reconciliationStatus": "not-reconciled-for-cross-family-total",
-            "source": "reporting/income-ledger.json",
+            "rewardSnapshotCoverage": null,
+            "source": "reporting/income-ledger.json + deterministic reward-snapshot accrual evidence",
             "sourceGeneratedAt": "2026-09-01T20:13:17.562Z",
-            "companyCoverageOverallComplete": false,
             "unknownIsNotZero": true,
             "executionAuthority": "none"
-          }
+          },
+          "referenceAnalytics": {
+            "generatedIncomeUsd": 0.149197,
+            "monthlyYieldPct": 0.028622,
+            "semantic": "reference-generated-income-not-realised-cash-flow",
+            "sourceFamily": "observed-productivity-reference-model",
+            "earnedIncomeAuthority": false
+          },
+          "observedEarnedIncomeUsd": 0,
+          "accountingStatus": "unknown-incomplete-coverage",
+          "accountingCoverageComplete": false,
+          "accountingEvidenceCount": 0,
+          "accountingUnknownReason": "Not all income mechanisms and period boundaries are proven; reference analytics is retained separately and is never substituted for earned income."
         }
-      }
+      },
+      "sourceFamilyPrevious": "observed-productivity-reference-model"
     },
     "Cypher": {
       "registry": "010",
       "name": "Cypher",
-      "sourceFamily": "observed-productivity-reference-model",
+      "sourceFamily": "canonical-earned-income-accounting",
       "capitalMetric": "productive-capital",
       "averageCapitalLabel": "Average Productive Capital",
       "fullReportHref": null,
@@ -2102,8 +1805,8 @@
           "month": "2026-08",
           "status": "reported",
           "mode": "observed-reference-model",
-          "generatedIncomeUsd": 22.028361,
-          "monthlyYieldPct": 0.865194,
+          "generatedIncomeUsd": null,
+          "monthlyYieldPct": null,
           "averageCapitalUsd": 2546.0593,
           "averageCoverage": 0.949257,
           "sampleDays": 14,
@@ -2111,78 +1814,75 @@
           "periodEnd": "2026-08-31",
           "partialPeriod": true,
           "firstObservedDate": "2026-08-18",
-          "semantic": "reference-generated-income-not-realised-cash-flow",
+          "semantic": "canonical-earned-income-incomplete-coverage",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
           "executionAuthority": "none",
           "incomeAccounting": {
-            "version": "0.1-monthly-evidence-family-view",
+            "version": "0.2-earned-income-primary",
             "primaryMetric": {
-              "usd": 22.028361,
+              "usd": null,
+              "observedUsd": 1.75101293,
+              "semantic": "canonical-earned-income-incomplete-coverage",
+              "earnedIncomeAuthority": false,
+              "valuationFrozen": true
+            },
+            "referenceAnalytics": {
+              "generatedIncomeUsd": 22.028361,
+              "monthlyYieldPct": 0.865194,
               "semantic": "reference-generated-income-not-realised-cash-flow",
               "sourceFamily": "observed-productivity-reference-model",
-              "earnedIncomeAuthority": false,
-              "additiveWithCanonicalEvidenceFamilies": false,
-              "overlapStatus": "separate-reference-or-reporting-metric"
+              "earnedIncomeAuthority": false
             },
-            "canonicalEvidence": {
+            "accountingStatus": "partial-observed",
+            "coverageComplete": false,
+            "evidenceCount": 14,
+            "evidenceFamilies": {
               "accruedEntitlement": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "realisedCashFlow": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "eventCount": 14,
+                "usd": 1.75101293
               },
               "embeddedIncome": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
                 "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "usd": 0
               },
-              "stablePriceEffectUsd": null
+              "directRealisedCashFlow": {
+                "eventCount": 0,
+                "usd": 0
+              }
             },
-            "combinedIncomeUsd": null,
-            "crossFamilySumAllowed": false,
-            "reconciliationStatus": "not-reconciled-for-cross-family-total",
-            "source": "reporting/income-ledger.json",
+            "rewardSnapshotCoverage": {
+              "comparableIntervals": 24,
+              "unresolvedIntervals": 0,
+              "crossMonthIntervals": 0,
+              "positiveAccrualEvents": 14,
+              "firstObservedAt": "2026-08-27T16:33:06.991Z",
+              "lastObservedAt": "2026-08-31T11:20:24.881Z"
+            },
+            "source": "reporting/income-ledger.json + deterministic reward-snapshot accrual evidence",
             "sourceGeneratedAt": "2026-09-01T20:13:17.562Z",
-            "companyCoverageOverallComplete": false,
             "unknownIsNotZero": true,
             "executionAuthority": "none"
-          }
+          },
+          "referenceAnalytics": {
+            "generatedIncomeUsd": 22.028361,
+            "monthlyYieldPct": 0.865194,
+            "semantic": "reference-generated-income-not-realised-cash-flow",
+            "sourceFamily": "observed-productivity-reference-model",
+            "earnedIncomeAuthority": false
+          },
+          "observedEarnedIncomeUsd": 1.75101293,
+          "accountingStatus": "partial-observed",
+          "accountingCoverageComplete": false,
+          "accountingEvidenceCount": 14,
+          "accountingUnknownReason": "Not all income mechanisms and period boundaries are proven; reference analytics is retained separately and is never substituted for earned income."
         },
         "2026-09": {
           "month": "2026-09",
           "status": "provisional",
           "mode": "observed-reference-model",
-          "generatedIncomeUsd": 1.57037,
-          "monthlyYieldPct": 0.057519,
+          "generatedIncomeUsd": null,
+          "monthlyYieldPct": null,
           "averageCapitalUsd": 2730.18,
           "averageCoverage": 1,
           "sampleDays": 1,
@@ -2190,73 +1890,85 @@
           "periodEnd": "2026-09-01",
           "partialPeriod": true,
           "firstObservedDate": "2026-08-18",
-          "semantic": "reference-generated-income-not-realised-cash-flow",
+          "semantic": "canonical-earned-income-incomplete-coverage",
           "unknownIsNotZero": true,
           "preTrackingDaysBackfilled": false,
           "executionAuthority": "none",
           "incomeAccounting": {
-            "version": "0.1-monthly-evidence-family-view",
+            "version": "0.2-earned-income-primary",
             "primaryMetric": {
-              "usd": 1.57037,
+              "usd": null,
+              "observedUsd": 0,
+              "semantic": "canonical-earned-income-incomplete-coverage",
+              "earnedIncomeAuthority": false,
+              "valuationFrozen": true
+            },
+            "referenceAnalytics": {
+              "generatedIncomeUsd": 1.57037,
+              "monthlyYieldPct": 0.057519,
               "semantic": "reference-generated-income-not-realised-cash-flow",
               "sourceFamily": "observed-productivity-reference-model",
-              "earnedIncomeAuthority": false,
-              "additiveWithCanonicalEvidenceFamilies": false,
-              "overlapStatus": "separate-reference-or-reporting-metric"
+              "earnedIncomeAuthority": false
             },
-            "canonicalEvidence": {
+            "accountingStatus": "unknown-incomplete-coverage",
+            "coverageComplete": false,
+            "evidenceCount": 0,
+            "evidenceFamilies": {
               "accruedEntitlement": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
                 "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
-              },
-              "realisedCashFlow": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
-                "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "usd": 0
               },
               "embeddedIncome": {
-                "status": "unknown-no-complete-coverage",
-                "coverage": "unknown",
                 "eventCount": 0,
-                "valuedEventCount": 0,
-                "unvaluedEventCount": 0,
-                "usdComplete": false,
-                "usd": null,
-                "valuedUsdSubtotal": null,
-                "earnedIncomeEvidence": false,
-                "unknownIsNotZero": true,
-                "executionAuthority": "none"
+                "usd": 0
               },
-              "stablePriceEffectUsd": null
+              "directRealisedCashFlow": {
+                "eventCount": 0,
+                "usd": 0
+              }
             },
-            "combinedIncomeUsd": null,
-            "crossFamilySumAllowed": false,
-            "reconciliationStatus": "not-reconciled-for-cross-family-total",
-            "source": "reporting/income-ledger.json",
+            "rewardSnapshotCoverage": null,
+            "source": "reporting/income-ledger.json + deterministic reward-snapshot accrual evidence",
             "sourceGeneratedAt": "2026-09-01T20:13:17.562Z",
-            "companyCoverageOverallComplete": false,
             "unknownIsNotZero": true,
             "executionAuthority": "none"
-          }
+          },
+          "referenceAnalytics": {
+            "generatedIncomeUsd": 1.57037,
+            "monthlyYieldPct": 0.057519,
+            "semantic": "reference-generated-income-not-realised-cash-flow",
+            "sourceFamily": "observed-productivity-reference-model",
+            "earnedIncomeAuthority": false
+          },
+          "observedEarnedIncomeUsd": 0,
+          "accountingStatus": "unknown-incomplete-coverage",
+          "accountingCoverageComplete": false,
+          "accountingEvidenceCount": 0,
+          "accountingUnknownReason": "Not all income mechanisms and period boundaries are proven; reference analytics is retained separately and is never substituted for earned income."
         }
-      }
+      },
+      "sourceFamilyPrevious": "observed-productivity-reference-model"
     }
+  },
+  "accountingPolicy": {
+    "recognitionBasis": "earned-when-canonically-observed-or-mechanism-identified-accrual-is-proven",
+    "referenceIncomeIsPrimaryMetric": false,
+    "referenceIncomeIsEarnedIncomeAuthority": false,
+    "currentRewardBalanceIsPeriodIncome": false,
+    "laterPriceMovementRewritesClosedIncome": false,
+    "laterClaimOrTransferRewritesEarnedIncome": false,
+    "crossMonthRewardDeltaAllocation": "forbidden-until-boundary-is-proven",
+    "incompleteCoverageMayMasqueradeAsZero": false,
+    "incompleteCoverageMayMasqueradeAsCompleteIncome": false,
+    "executionAuthority": "none"
+  },
+  "accountingEvidence": {
+    "source": "reporting/income-ledger.json",
+    "sourceVersion": "0.1-canonical-income-ledger",
+    "sourceGeneratedAt": "2026-09-01T20:13:17.562Z",
+    "explicitCanonicalEventCount": 178,
+    "observedRewardAccrualEventCount": 42,
+    "observedRewardAccrualMethod": "positive native-unit deltas between consecutive mechanism-identified reward snapshots, valued and frozen at later observation time",
+    "executionAuthority": "none"
   }
 }
