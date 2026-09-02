@@ -29,6 +29,13 @@ on:
       - 'reporting/frax-yield-accounting-evidence.mjs'
       - 'reporting/frax-yield-accounting-evidence-validation.mjs'
       - 'reporting/frax-yield-accounting-evidence.json'
+      - 'reporting/ve33-accounting-evidence.mjs'
+      - 'reporting/ve33-accounting-evidence-validation.mjs'
+      - 'reporting/ve33-income-candidates.mjs'
+      - 'reporting/ve33-income-candidates-validation.mjs'
+      - 'reporting/ve33-ledger-admission.mjs'
+      - 'reporting/ve33-ledger-admission-validation.mjs'
+      - 'reporting/ve33-accounting-evidence.json'
       - 'reporting/defitea-forty-acres-settlement.mjs'
       - 'reporting/defitea-forty-acres-settlement-validation.mjs'
       - 'reporting/defitea-income-composition.mjs'
@@ -82,6 +89,12 @@ jobs:
           node --check reporting/income-ledger-validation.mjs
           node --check reporting/frax-yield-accounting-evidence.mjs
           node --check reporting/frax-yield-accounting-evidence-validation.mjs
+          node --check reporting/ve33-accounting-evidence.mjs
+          node --check reporting/ve33-accounting-evidence-validation.mjs
+          node --check reporting/ve33-income-candidates.mjs
+          node --check reporting/ve33-income-candidates-validation.mjs
+          node --check reporting/ve33-ledger-admission.mjs
+          node --check reporting/ve33-ledger-admission-validation.mjs
           node --check reporting/defitea-income-composition.mjs
           node --check reporting/defitea-income-composition-validation.mjs
           node --check reporting/defitea-forty-acres-settlement.mjs
@@ -90,6 +103,7 @@ jobs:
           test -s reporting/rate-continuity-policy.json
           test -s reporting/income-ledger-policy.json
           test -s reporting/frax-yield-accounting-evidence.json
+          test -s reporting/ve33-accounting-evidence.json
           test -s companies/defitea-canonical-state.json
           test -s companies/productivity-data.json
           test -s companies/rewards-data.json
@@ -101,6 +115,9 @@ jobs:
           node reporting/reporting-engine-validation.mjs
           node reporting/income-ledger-validation.mjs
           node reporting/frax-yield-accounting-evidence-validation.mjs
+          node reporting/ve33-accounting-evidence-validation.mjs
+          node reporting/ve33-income-candidates-validation.mjs
+          node reporting/ve33-ledger-admission-validation.mjs
           node reporting/defitea-income-composition-validation.mjs
           node reporting/defitea-forty-acres-settlement-validation.mjs
           node - <<'NODE'
@@ -157,6 +174,20 @@ jobs:
       - name: Validate Frax veFRAX factual accrual evidence
         run: node reporting/frax-yield-accounting-evidence-validation.mjs
 
+      - name: Build Aerodrome + Velodrome factual accrual evidence
+        env:
+          REWARDS_DATA_FILE: ./companies/rewards-data.json
+          VE33_EVIDENCE_FILE: ./reporting/ve33-accounting-evidence.json
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
+        run: node reporting/ve33-accounting-evidence.mjs
+
+      - name: Validate Aerodrome + Velodrome factual accrual evidence
+        run: |
+          node reporting/ve33-accounting-evidence-validation.mjs
+          node reporting/ve33-income-candidates-validation.mjs
+          node reporting/ve33-ledger-admission-validation.mjs
+
       - name: Build Canonical Income Ledger
         env:
           INCOME_LEDGER_POLICY_FILE: ./reporting/income-ledger-policy.json
@@ -168,6 +199,19 @@ jobs:
           FRAX_YIELD_EVIDENCE_FILE: ./reporting/frax-yield-accounting-evidence.json
           INCOME_LEDGER_FILE: ./reporting/income-ledger.json
         run: node reporting/income-ledger.mjs
+
+      - name: Admit ve33 evidence through Canonical Income Ledger
+        env:
+          INCOME_LEDGER_POLICY_FILE: ./reporting/income-ledger-policy.json
+          REPORTING_DATA_FILE: ./reporting/reporting-data.json
+          DEFITEA_INCOME_LEDGER_FILE: ./reporting/defitea-income-ledger.json
+          EMBEDDED_YIELD_LEDGER_FILE: ./companies/embedded-yield-ledger.json
+          REWARDS_DATA_FILE: ./companies/rewards-data.json
+          REALISED_CASH_FLOW_FILE: ./intelligence/realised-cash-flow/realised-cash-flow.json
+          FRAX_YIELD_EVIDENCE_FILE: ./reporting/frax-yield-accounting-evidence.json
+          VE33_EVIDENCE_FILE: ./reporting/ve33-accounting-evidence.json
+          INCOME_LEDGER_FILE: ./reporting/income-ledger.json
+        run: node reporting/ve33-ledger-admission.mjs
 
       - name: Validate generated reporting data
         shell: bash
@@ -260,27 +304,33 @@ jobs:
           const x=JSON.parse(fs.readFileSync('reporting/income-ledger.json','utf8'));
           const p=JSON.parse(fs.readFileSync('reporting/income-ledger-policy.json','utf8'));
           const frax=JSON.parse(fs.readFileSync('reporting/frax-yield-accounting-evidence.json','utf8'));
+          const ve33=JSON.parse(fs.readFileSync('reporting/ve33-accounting-evidence.json','utf8'));
           if(x.version!=='0.1-canonical-income-ledger'||x.policyVersion!==p.version||x.status!=='partial') throw new Error('Canonical Income Ledger identity drift');
           if(x.semantics?.unknownIsNotZero!==true||x.semantics?.referenceAprCanBackfillEarnedIncome!==false||x.semantics?.stablePriceEffectSeparate!==true) throw new Error('Canonical Income Ledger semantic drift');
           if(x.authority?.executionAuthority!=='none'||x.authority?.capitalExecution!==false||x.authority?.claimingAuthority!=='none') throw new Error('Canonical Income Ledger authority expansion');
           if(x.accountingExtensions?.fraxYieldAccrual?.version!==frax.version||x.accountingExtensions?.fraxYieldAccrual?.openingBalanceCreatesIncome!==false||x.accountingExtensions?.fraxYieldAccrual?.claimIsSettlementNotSecondIncome!==true||x.accountingExtensions?.fraxYieldAccrual?.laterPriceMovementRewritesClosedIncome!==false) throw new Error('Frax accounting extension contract missing');
+          if(x.accountingExtensions?.ve33Accrual?.version!==ve33.version||x.accountingExtensions?.ve33Accrual?.openingBalanceCreatesIncome!==false||x.accountingExtensions?.ve33Accrual?.claimIsSettlementNotSecondIncome!==true||x.accountingExtensions?.ve33Accrual?.rebaseDepositIntoVeNftIsSecondIncome!==false||x.accountingExtensions?.ve33Accrual?.laterPriceMovementRewritesClosedIncome!==false) throw new Error('ve33 accounting extension contract missing');
           const events=x.events||[];
           if(new Set(events.map(e=>e.eventKey)).size!==events.length) throw new Error('Canonical Income Ledger duplicate event identity');
           if(events.some(e=>!e.immutableEconomicFieldsHash||e.retention!=='indefinite'||e.laterStateChangeDoesNotEraseIncome!==true||e.executionAuthority!=='none')) throw new Error('Canonical Income Ledger event retention/integrity drift');
           const fraxEvents=events.filter(e=>e.route==='frax-yield');
           if(fraxEvents.some(e=>e.family!=='accrued-entitlement'||e.referenceAprUsed!==false||e.currentClaimableBalanceIsPeriodIncome!==false||e.claimIsSecondIncomeEvent!==false||e.laterClaimOrPriceMoveDoesNotRewriteIncome!==true)) throw new Error('Frax income event semantic drift');
+          const ve33Events=events.filter(e=>e.sourceFile==='reporting/ve33-accounting-evidence.json');
+          if(ve33Events.some(e=>e.family!=='accrued-entitlement'||e.referenceAprUsed!==false||e.currentClaimableBalanceIsPeriodIncome!==false||e.claimIsSecondIncomeEvent!==false||e.laterClaimOrPriceMoveDoesNotRewriteIncome!==true)) throw new Error('ve33 income event semantic drift');
           if((x.claimableSnapshots||[]).some(s=>s.stateOnly!==true||s.periodIncomeAuthority!==false||s.realisedCashFlowAuthority!==false||s.unknownIsNotZero!==true)) throw new Error('Claimable state escaped accounting boundary');
           for(const c of Object.values(x.companies||{})){
             if(c.coverage?.overallComplete!==false||c.coverage?.unknownIsNotZero!==true) throw new Error('Company income coverage silently upgraded');
             for(const m of Object.values(c.monthly||{})) if(m.combinedIncomeUsd!==null||m.crossFamilySumAllowed!==false) throw new Error('Cross-family income collapse detected');
             if((c.claimableContinuity||[]).some(r=>r.periodIncomeAuthority!==false||r.realisedCashFlowAuthority!==false||r.unknownIsNotZero!==true)) throw new Error('Claimable continuity became income authority');
           }
-          console.log('Canonical Income Ledger output PASS',{events:events.length,fraxEvents:fraxEvents.length,claimableSnapshots:(x.claimableSnapshots||[]).length,companies:Object.keys(x.companies||{}).length,newEvents:x.run?.newEventsAdmitted});
+          console.log('Canonical Income Ledger output PASS',{events:events.length,fraxEvents:fraxEvents.length,ve33Events:ve33Events.length,claimableSnapshots:(x.claimableSnapshots||[]).length,companies:Object.keys(x.companies||{}).length,newEvents:x.run?.newEventsAdmitted});
           NODE
 
       - name: Commit reporting snapshot
         env:
           FRAXTAL_RPC_URL: ${{ secrets.FRAXTAL_RPC_URL }}
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
         shell: bash
         run: |
           set -euo pipefail
@@ -298,13 +348,19 @@ jobs:
               reporting/income-ledger-policy.json \
               reporting/frax-yield-accounting-evidence.mjs \
               reporting/frax-yield-accounting-evidence-validation.mjs \
+              reporting/ve33-accounting-evidence.mjs \
+              reporting/ve33-accounting-evidence-validation.mjs \
+              reporting/ve33-income-candidates.mjs \
+              reporting/ve33-income-candidates-validation.mjs \
+              reporting/ve33-ledger-admission.mjs \
+              reporting/ve33-ledger-admission-validation.mjs \
               reporting/defitea-income-composition.mjs \
               reporting/defitea-forty-acres-settlement.mjs \
               .github/workflows/update-reporting.yml
           }
           critical_before="$(critical_fingerprint)"
 
-          git add reporting/reporting-data.json reporting/defitea-income-ledger.json reporting/frax-yield-accounting-evidence.json reporting/income-ledger.json
+          git add reporting/reporting-data.json reporting/defitea-income-ledger.json reporting/frax-yield-accounting-evidence.json reporting/ve33-accounting-evidence.json reporting/income-ledger.json
           if git diff --cached --quiet; then
             echo "No reporting data changes."
             exit 0
@@ -332,19 +388,24 @@ jobs:
             node reporting/defitea-income-composition.mjs
             node reporting/defitea-forty-acres-settlement.mjs
             node reporting/frax-yield-accounting-evidence.mjs
+            node reporting/ve33-accounting-evidence.mjs
             node reporting/income-ledger.mjs
+            node reporting/ve33-ledger-admission.mjs
             node reporting/reporting-engine-validation.mjs
             node reporting/income-ledger-validation.mjs
             node reporting/frax-yield-accounting-evidence-validation.mjs
+            node reporting/ve33-accounting-evidence-validation.mjs
+            node reporting/ve33-income-candidates-validation.mjs
+            node reporting/ve33-ledger-admission-validation.mjs
             node reporting/defitea-income-composition-validation.mjs
             node reporting/defitea-forty-acres-settlement-validation.mjs
-            git add reporting/reporting-data.json reporting/defitea-income-ledger.json reporting/frax-yield-accounting-evidence.json reporting/income-ledger.json
+            git add reporting/reporting-data.json reporting/defitea-income-ledger.json reporting/frax-yield-accounting-evidence.json reporting/ve33-accounting-evidence.json reporting/income-ledger.json
             git commit --amend --no-edit
 
             mapfile -t ahead < <(git diff --name-only origin/main...HEAD)
             for f in "${ahead[@]}"; do
               case "$f" in
-                reporting/reporting-data.json|reporting/defitea-income-ledger.json|reporting/frax-yield-accounting-evidence.json|reporting/income-ledger.json) ;;
+                reporting/reporting-data.json|reporting/defitea-income-ledger.json|reporting/frax-yield-accounting-evidence.json|reporting/ve33-accounting-evidence.json|reporting/income-ledger.json) ;;
                 *) echo "Unexpected Reporting publish delta after rebase: $f"; exit 1 ;;
               esac
             done
