@@ -133,12 +133,21 @@ function monetaCoverage(embedded,positionId,month,monthlyRow){
 
 function legacyArchive(name,month,monthlyRow){return name==='defitea.eth'&&month<='2026-07'&&monthlyRow?.accountingStatus==='complete-legacy-verified-realised';}
 
+function validateMonthlyAccountingContract(monthly){
+  if(monthly?.version!=='0.4-company-monthly-canonical-ledger-projection')throw new Error('Monthly accounting version mismatch');
+  if(monthly?.methodologyVersion!=='0.4-canonical-ledger-only-earned-income-primary-reference-analytics-secondary')throw new Error('Monthly accounting methodology mismatch');
+  if(monthly?.accountingPolicy?.monthlyLayerMayDeriveIncomeFromClaimableSnapshots!==false)throw new Error('Monthly accounting regained reward-snapshot income authority');
+  if(monthly?.accountingPolicy?.genericRealisedReceiptMayRecognizeNewIncome!==false)throw new Error('Monthly accounting regained generic receipt income authority');
+  if(monthly?.accountingPolicy?.settlementDoesNotReRecognizeEarnedIncome!==true)throw new Error('Monthly accounting settlement lifecycle invariant missing');
+  if(monthly?.accountingEvidence?.claimableSnapshotDerivedIncomeEventCount!==0)throw new Error('Monthly accounting contains reward-snapshot-derived income');
+}
+
 async function build(){
   const [productivity,ledger,embedded,monthly]=await Promise.all([
     readJson(PRODUCTIVITY_FILE),readJson(INCOME_LEDGER_FILE),readJson(EMBEDDED_FILE),readJson(MONTHLY_FILE)
   ]);
   if(ledger?.version!=='0.1-canonical-income-ledger')throw new Error('Canonical Income Ledger version mismatch');
-  if(monthly?.version!=='0.3-company-monthly-earned-income-accounting')throw new Error('Monthly accounting version mismatch');
+  validateMonthlyAccountingContract(monthly);
   if(ledger?.semantics?.referenceAprCanBackfillEarnedIncome!==false||ledger?.semantics?.unknownIsNotZero!==true)throw new Error('Canonical accounting epistemic contract invalid');
   const events=ledger.events||[];
   const companies={};
