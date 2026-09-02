@@ -70,14 +70,31 @@ jobs:
           const e=JSON.parse(fs.readFileSync('/tmp/ve33-accounting-evidence.json','utf8'));
           if(e.version!=='0.1-ve33-factual-accrual-evidence') throw new Error('live ve33 version drift');
           if(!(Number(e.diagnostics?.laneCount)>0)) throw new Error('live ve33 discovered no accounting lanes');
+          const runtimeMs=Number(e.diagnostics?.runtimeMs);
+          if(!Number.isFinite(runtimeMs)||runtimeMs<=0) throw new Error('live ve33 runtime diagnostic missing');
+          if(runtimeMs>360000) throw new Error(`live ve33 runtime budget exceeded: ${runtimeMs}ms > 360000ms`);
           for(const p of ['aerodrome','velodrome']){
             const d=e.diagnostics?.protocols?.[p];
             if(!d||!(Number(d.latestBlockNumber)>0)||!(Number(d.laneCount)>0)) throw new Error('live ve33 protocol discovery missing: '+p);
+            if(!(Number(d.currentCheckpointCount)>0)) throw new Error('live ve33 factual current checkpoints missing: '+p);
+            if((d.boundaryFailures||[]).some(x=>x?.laneKey!==null&&x?.laneKey!==undefined)) throw new Error('historical boundary failure regressed to per-lane amplification: '+p);
           }
           const events=e.events||[];
           if(new Set(events.map(x=>x.eventKey)).size!==events.length) throw new Error('live ve33 duplicate event identity');
           if(events.some(x=>x.referenceAprUsed!==false||x.claimIsSecondIncomeEvent!==false||x.laterClaimOrPriceMoveDoesNotRewriteIncome!==true||x.executionAuthority!=='none')) throw new Error('live ve33 accounting semantic drift');
           if(e.authority?.executionAuthority!=='none'||e.authority?.walletAuthority!=='none'||e.authority?.claimingAuthority!=='none'||e.authority?.capitalExecution!==false) throw new Error('live ve33 authority expansion');
-          console.log('Read-only live ve33 canary PASS',{status:e.status,lanes:e.diagnostics.laneCount,events:events.length,accepted:e.diagnostics.acceptedPositiveIntervalCount,reconciliation:e.diagnostics.reconciliationCount,unresolvedSettlements:e.diagnostics.unresolvedSettlementCount,boundaryFailures:Object.values(e.diagnostics.protocols||{}).reduce((s,x)=>s+(x.boundaryFailures||[]).length,0)});
+          console.log('Read-only live ve33 canary PASS',{
+            status:e.status,
+            lanes:e.diagnostics.laneCount,
+            currentCheckpoints:Object.fromEntries(Object.entries(e.diagnostics.protocols||{}).map(([k,v])=>[k,v.currentCheckpointCount||0])),
+            stateFailureCounts:Object.fromEntries(Object.entries(e.diagnostics.protocols||{}).map(([k,v])=>[k,v.stateFailureCounts||{}])),
+            historicalBoundarySkippedLaneReads:Object.fromEntries(Object.entries(e.diagnostics.protocols||{}).map(([k,v])=>[k,v.historicalBoundarySkippedLaneReads||0])),
+            runtimeMs,
+            events:events.length,
+            accepted:e.diagnostics.acceptedPositiveIntervalCount,
+            reconciliation:e.diagnostics.reconciliationCount,
+            unresolvedSettlements:e.diagnostics.unresolvedSettlementCount,
+            boundaryFailures:Object.values(e.diagnostics.protocols||{}).reduce((s,x)=>s+(x.boundaryFailures||[]).length,0)
+          });
           NODE
           git diff --exit-code
