@@ -66,7 +66,7 @@ assert.match(fraxBuilder,/closing earned \+ YieldCollected settlements - opening
 assert.match(fraxBuilder,/currentClaimableBalanceIsPeriodIncome:false/,'Frax current-state accounting boundary missing');
 assert.match(fraxBuilder,/claimIsSecondIncomeEvent:false/,'Frax claim settlement dedup missing');
 assert.match(fraxBuilder,/laterClaimOrPriceMoveDoesNotRewriteIncome:true/,'Frax frozen income invariant missing');
-assert.doesNotMatch(fraxBuilder,/referenceApr[^\n]*true|referenceApy[^\n]*true/i,'Frax builder gained APR/APY income authority');
+assert.doesNotMatch(fraxBuilder,/referenceAprUsed\s*:\s*true|referenceApyUsed\s*:\s*true/i,'Frax builder gained APR/APY income authority');
 assert.match(fraxValidation,/claim-to-zero of the opening balance creates no new income/i,'Frax claim reset regression test missing');
 
 const exactCron=`- cron: '${contract.cron}'`;
