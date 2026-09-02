@@ -7,6 +7,8 @@ on:
       - 'reporting/ve33-accounting-evidence-validation.mjs'
       - 'reporting/ve33-income-candidates.mjs'
       - 'reporting/ve33-income-candidates-validation.mjs'
+      - 'reporting/ve33-ledger-admission.mjs'
+      - 'reporting/ve33-ledger-admission-validation.mjs'
       - 'reporting/ve33-accounting-evidence.json'
       - 'reporting/income-ledger.mjs'
       - 'reporting/income-ledger-validation.mjs'
@@ -36,8 +38,11 @@ jobs:
           node --check reporting/ve33-accounting-evidence-validation.mjs
           node --check reporting/ve33-income-candidates.mjs
           node --check reporting/ve33-income-candidates-validation.mjs
+          node --check reporting/ve33-ledger-admission.mjs
+          node --check reporting/ve33-ledger-admission-validation.mjs
           node reporting/ve33-accounting-evidence-validation.mjs
           node reporting/ve33-income-candidates-validation.mjs
+          node reporting/ve33-ledger-admission-validation.mjs
           node - <<'NODE'
           const fs=require('fs');
           const e=JSON.parse(fs.readFileSync('reporting/ve33-accounting-evidence.json','utf8'));
