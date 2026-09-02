@@ -2,7 +2,7 @@
   "version": "0.1-canonical-income-ledger",
   "methodologyVersion": "0.1-append-only-evidence-family-accounting",
   "policyVersion": "0.1-canonical-income-ledger-policy",
-  "generatedAt": "2026-09-02T04:58:18.817Z",
+  "generatedAt": "2026-09-02T08:54:26.792Z",
   "status": "partial",
   "semantics": {
     "noCollapseRule": "Do not sum accrued entitlement + realised cash flow + embedded income + reference productivity into one income number without explicit non-overlap reconciliation.",
@@ -17,12 +17,12 @@
     "reporting": {
       "file": "reporting/reporting-data.json",
       "version": "1.2.1-resilient-rate-coverage",
-      "generatedAt": "2026-09-02T04:58:18.604Z"
+      "generatedAt": "2026-09-02T08:54:26.568Z"
     },
     "defiteaIncomeLedger": {
       "file": "reporting/defitea-income-ledger.json",
       "version": "0.1-defitea-income-composition",
-      "updatedAt": "2026-09-02T04:58:18.604Z"
+      "updatedAt": "2026-09-02T08:54:26.568Z"
     },
     "embeddedYieldLedger": {
       "file": "companies/embedded-yield-ledger.json",
@@ -40,10 +40,19 @@
       "referenceAprUsed": false,
       "sourcePresent": true
     },
+    "votiumUnionAccrual": {
+      "bootstrapFile": "reporting/votium-union-accounting-bootstrap.json",
+      "adapterVersion": "0.1-votium-union-factual-accrual-adapter",
+      "status": "factual-boundary-tracking",
+      "latestDistributorWeek": 46,
+      "upstreamFreshness": "stale-or-mixed",
+      "candidateEventCount": 0,
+      "referenceAprUsed": false
+    },
     "rewards": {
       "file": "companies/rewards-data.json",
       "version": "0.3.10",
-      "generatedAt": "2026-09-01T10:10:45.643Z"
+      "generatedAt": "2026-09-02T06:49:40.775Z"
     },
     "realisedCashFlow": {
       "file": "intelligence/realised-cash-flow/realised-cash-flow.json",
@@ -41863,6 +41872,3401 @@
       "periodIncomeAuthority": false,
       "realisedCashFlowAuthority": false,
       "unknownIsNotZero": true
+    },
+    {
+      "snapshotKey": "rewards:2026-09-02T06:49:40.775Z:05081966.eth",
+      "capturedAt": "2026-09-02T06:49:40.775Z",
+      "company": "05081966.eth",
+      "canonicalClaimableTotalUsd": 2.935516,
+      "rows": [
+        {
+          "routeKey": "aerodrome-relay:aerodrome · veaero:base:0x940181a94a35a4569e4529a3cdfb74e38fd98631:0x7cdf49f589038242e77847573604441e383f5429",
+          "route": "aerodrome-relay",
+          "protocol": "Aerodrome · veAERO",
+          "chain": "Base",
+          "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
+          "symbol": "AERO",
+          "wallet": "0x7CdF49f589038242e77847573604441E383f5429",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "compounded-locked",
+          "classifications": [
+            "compounded-locked"
+          ],
+          "amount": 4.0180722029,
+          "amountComplete": true,
+          "usdValue": 1.929265,
+          "usdValueComplete": true,
+          "source": "onchain: LockedManagedReward.earned",
+          "sources": [
+            "onchain: LockedManagedReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "curve-fees:curve · vecrv:ethereum:0xf939e0a03fb07f59a73314e73794be0e57ac1b4e:0x7cdf49f589038242e77847573604441e383f5429",
+          "route": "curve-fees",
+          "protocol": "Curve · veCRV",
+          "chain": "Ethereum",
+          "token": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+          "symbol": "crvUSD",
+          "wallet": "0x7CdF49f589038242e77847573604441E383f5429",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.2628207756,
+          "amountComplete": true,
+          "usdValue": 0.262821,
+          "usdValueComplete": true,
+          "source": "onchain: FeeDistributor.claim staticCall",
+          "sources": [
+            "onchain: FeeDistributor.claim staticCall"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "frax-yield:frax · vefrax:fraxtal:0xfc00000000000000000000000000000000000002:0x7cdf49f589038242e77847573604441e383f5429",
+          "route": "frax-yield",
+          "protocol": "Frax · veFRAX",
+          "chain": "Fraxtal",
+          "token": "0xFc00000000000000000000000000000000000002",
+          "symbol": "WFRAX",
+          "wallet": "0x7CdF49f589038242e77847573604441E383f5429",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 2.5355204644,
+          "amountComplete": true,
+          "usdValue": 0.74343,
+          "usdValueComplete": true,
+          "source": "onchain: YieldDistributor.earned",
+          "sources": [
+            "onchain: YieldDistributor.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        }
+      ],
+      "stateOnly": true,
+      "periodIncomeAuthority": false,
+      "realisedCashFlowAuthority": false,
+      "unknownIsNotZero": true
+    },
+    {
+      "snapshotKey": "rewards:2026-09-02T06:49:40.775Z:0x5860...83CA8.eth",
+      "capturedAt": "2026-09-02T06:49:40.775Z",
+      "company": "0x5860...83CA8.eth",
+      "canonicalClaimableTotalUsd": 137.865316,
+      "rows": [
+        {
+          "routeKey": "aerodrome-ve:aerodrome · veaero:base:0x4200000000000000000000000000000000000006:0x58603461149fc2a800a56d421e77dcbba2d83ca8",
+          "route": "aerodrome-ve",
+          "protocol": "Aerodrome · veAERO",
+          "chain": "Base",
+          "token": "0x4200000000000000000000000000000000000006",
+          "symbol": "WETH",
+          "wallet": "0x58603461149Fc2A800a56d421e77DcbBA2D83CA8",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0000242,
+          "amountComplete": true,
+          "usdValue": 0.059389,
+          "usdValueComplete": true,
+          "source": "onchain: FeesVotingReward.earned",
+          "sources": [
+            "onchain: FeesVotingReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "aerodrome-ve:aerodrome · veaero:base:0x74ccbe53f77b08632ce0cb91d3a545bf6b8e0979:0x58603461149fc2a800a56d421e77dcbba2d83ca8",
+          "route": "aerodrome-ve",
+          "protocol": "Aerodrome · veAERO",
+          "chain": "Base",
+          "token": "0x74ccbe53F77b08632ce0CB91D3A545bF6B8E0979",
+          "symbol": "fBOMB",
+          "wallet": "0x58603461149Fc2A800a56d421e77DcbBA2D83CA8",
+          "shardCount": 3,
+          "aggregation": "same-mechanism-shards",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 689.9046671604,
+          "amountComplete": true,
+          "usdValue": 9.78559,
+          "usdValueComplete": true,
+          "source": null,
+          "sources": [
+            "onchain: FeesVotingReward.earned",
+            "onchain: IncentiveVotingReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "aerodrome-ve:aerodrome · veaero:base:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913:0x58603461149fc2a800a56d421e77dcbba2d83ca8",
+          "route": "aerodrome-ve",
+          "protocol": "Aerodrome · veAERO",
+          "chain": "Base",
+          "token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "symbol": "USDC",
+          "wallet": "0x58603461149Fc2A800a56d421e77DcbBA2D83CA8",
+          "shardCount": 3,
+          "aggregation": "same-mechanism-shards",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 6.655834,
+          "amountComplete": true,
+          "usdValue": 6.655169,
+          "usdValueComplete": true,
+          "source": null,
+          "sources": [
+            "onchain: FeesVotingReward.earned",
+            "onchain: IncentiveVotingReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "aerodrome-ve:aerodrome · veaero:base:0x93dc5cb35627a759848c7a7f0079ea7b49e435a5:0x58603461149fc2a800a56d421e77dcbba2d83ca8",
+          "route": "aerodrome-ve",
+          "protocol": "Aerodrome · veAERO",
+          "chain": "Base",
+          "token": "0x93dc5Cb35627A759848c7A7F0079EA7b49E435a5",
+          "symbol": "MET",
+          "wallet": "0x58603461149Fc2A800a56d421e77DcbBA2D83CA8",
+          "shardCount": 2,
+          "aggregation": "same-mechanism-shards",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 5.6335010706,
+          "amountComplete": true,
+          "usdValue": 2.793617,
+          "usdValueComplete": true,
+          "source": null,
+          "sources": [
+            "onchain: FeesVotingReward.earned",
+            "onchain: IncentiveVotingReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "aerodrome-ve:aerodrome · veaero:base:0x940181a94a35a4569e4529a3cdfb74e38fd98631:0x58603461149fc2a800a56d421e77dcbba2d83ca8",
+          "route": "aerodrome-ve",
+          "protocol": "Aerodrome · veAERO",
+          "chain": "Base",
+          "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
+          "symbol": "AERO",
+          "wallet": "0x58603461149Fc2A800a56d421e77DcbBA2D83CA8",
+          "shardCount": 2,
+          "aggregation": "same-mechanism-shards",
+          "classification": null,
+          "classifications": [
+            "compounded-locked",
+            "unclaimed"
+          ],
+          "amount": 113.6068434429,
+          "amountComplete": true,
+          "usdValue": 54.547985,
+          "usdValueComplete": true,
+          "source": null,
+          "sources": [
+            "onchain: IncentiveVotingReward.earned",
+            "onchain: RewardsDistributor.claimable"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "aerodrome-ve:aerodrome · veaero:base:0xdd468a1ddc392dcdbef6db6e34e89aa338f9f186:0x58603461149fc2a800a56d421e77dcbba2d83ca8",
+          "route": "aerodrome-ve",
+          "protocol": "Aerodrome · veAERO",
+          "chain": "Base",
+          "token": "0xdD468A1DDc392dcdbEf6db6e34E89AA338F9F186",
+          "symbol": "MUSD",
+          "wallet": "0x58603461149Fc2A800a56d421e77DcbBA2D83CA8",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.5480139946,
+          "amountComplete": true,
+          "usdValue": 0.542884,
+          "usdValueComplete": true,
+          "source": "onchain: FeesVotingReward.earned",
+          "sources": [
+            "onchain: FeesVotingReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "icp-nns-governance:internet computer · nns governance:internet computer:icp:wallet-unknown",
+          "route": "icp-nns-governance",
+          "protocol": "Internet Computer · NNS Governance",
+          "chain": "Internet Computer",
+          "token": null,
+          "symbol": "ICP",
+          "wallet": null,
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 23.1009455,
+          "amountComplete": true,
+          "usdValue": 58.71653,
+          "usdValueComplete": true,
+          "source": "model: owner-confirmed maturity baseline + canonical icp_nns Reference APR",
+          "sources": [
+            "model: owner-confirmed maturity baseline + canonical icp_nns Reference APR"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "velodrome-ve-direct:velodrome · vevelo:optimism:0x9560e827af36c94d2ac33a39bce1fe78631088db:0x58603461149fc2a800a56d421e77dcbba2d83ca8",
+          "route": "velodrome-ve-direct",
+          "protocol": "Velodrome · veVELO",
+          "chain": "Optimism",
+          "token": "0x9560e827aF36c94D2Ac33a39bCE1Fe78631088Db",
+          "symbol": "VELO",
+          "wallet": "0x58603461149Fc2A800a56d421e77DcbBA2D83CA8",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "compounded-locked",
+          "classifications": [
+            "compounded-locked"
+          ],
+          "amount": 213.8690795389,
+          "amountComplete": true,
+          "usdValue": 4.764152,
+          "usdValueComplete": true,
+          "source": "onchain: RewardsDistributor.claimable",
+          "sources": [
+            "onchain: RewardsDistributor.claimable"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        }
+      ],
+      "stateOnly": true,
+      "periodIncomeAuthority": false,
+      "realisedCashFlowAuthority": false,
+      "unknownIsNotZero": true
+    },
+    {
+      "snapshotKey": "rewards:2026-09-02T06:49:40.775Z:1milliondollar.eth",
+      "capturedAt": "2026-09-02T06:49:40.775Z",
+      "company": "1milliondollar.eth",
+      "canonicalClaimableTotalUsd": 30.865295,
+      "rows": [
+        {
+          "routeKey": "aerodrome-relay:aerodrome · veaero:base:0x940181a94a35a4569e4529a3cdfb74e38fd98631:0xe4b9c9ced406baffe406e63f83d39daaef150596",
+          "route": "aerodrome-relay",
+          "protocol": "Aerodrome · veAERO",
+          "chain": "Base",
+          "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
+          "symbol": "AERO",
+          "wallet": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "compounded-locked",
+          "classifications": [
+            "compounded-locked"
+          ],
+          "amount": 60.7628955928,
+          "amountComplete": true,
+          "usdValue": 29.175122,
+          "usdValueComplete": true,
+          "source": "onchain: LockedManagedReward.earned",
+          "sources": [
+            "onchain: LockedManagedReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "yield-basis-fees:yield basis:ethereum:0x651d4b8168488fa163d85304662e8278d4c55baa:0xe4b9c9ced406baffe406e63f83d39daaef150596",
+          "route": "yield-basis-fees",
+          "protocol": "Yield Basis",
+          "chain": "Ethereum",
+          "token": "0x651D4b8168488FA163D85304662E8278d4c55BAa",
+          "symbol": "yb-WBTC",
+          "wallet": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0000090765,
+          "amountComplete": true,
+          "usdValue": 0.690872,
+          "usdValueComplete": true,
+          "source": "onchain: FeeDistributor.preview_claim",
+          "sources": [
+            "onchain: FeeDistributor.preview_claim"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "yield-basis-fees:yield basis:ethereum:0x722fc3640ba007c3e9867ccdb0dca59f2e2f29f9:0xe4b9c9ced406baffe406e63f83d39daaef150596",
+          "route": "yield-basis-fees",
+          "protocol": "Yield Basis",
+          "chain": "Ethereum",
+          "token": "0x722FC3640BA007C3E9867CCdB0dCa59F2e2F29F9",
+          "symbol": "yb-cbBTC",
+          "wallet": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0000103517,
+          "amountComplete": true,
+          "usdValue": 0.809295,
+          "usdValueComplete": true,
+          "source": "onchain: FeeDistributor.preview_claim",
+          "sources": [
+            "onchain: FeeDistributor.preview_claim"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "yield-basis-fees:yield basis:ethereum:0x771f7290428d830ecd41e980745c327e507823ec:0xe4b9c9ced406baffe406e63f83d39daaef150596",
+          "route": "yield-basis-fees",
+          "protocol": "Yield Basis",
+          "chain": "Ethereum",
+          "token": "0x771F7290428d830ECd41E980745c327e507823Ec",
+          "symbol": "yb-tBTC",
+          "wallet": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0000024437,
+          "amountComplete": true,
+          "usdValue": 0.185931,
+          "usdValueComplete": true,
+          "source": "onchain: FeeDistributor.preview_claim",
+          "sources": [
+            "onchain: FeeDistributor.preview_claim"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "yield-basis-fees:yield basis:ethereum:0xac0a340c1644321d0bbc6404946d828c1ebfac92:0xe4b9c9ced406baffe406e63f83d39daaef150596",
+          "route": "yield-basis-fees",
+          "protocol": "Yield Basis",
+          "chain": "Ethereum",
+          "token": "0xaC0a340C1644321D0BBc6404946d828c1EBfAC92",
+          "symbol": "yb-tBTC",
+          "wallet": "0xe4b9C9CeD406baFfe406e63F83d39daaef150596",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 5.12e-8,
+          "amountComplete": true,
+          "usdValue": 0.004075,
+          "usdValueComplete": true,
+          "source": "onchain: FeeDistributor.preview_claim",
+          "sources": [
+            "onchain: FeeDistributor.preview_claim"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        }
+      ],
+      "stateOnly": true,
+      "periodIncomeAuthority": false,
+      "realisedCashFlowAuthority": false,
+      "unknownIsNotZero": true
+    },
+    {
+      "snapshotKey": "rewards:2026-09-02T06:49:40.775Z:aerocvxyb.eth",
+      "capturedAt": "2026-09-02T06:49:40.775Z",
+      "company": "aerocvxyb.eth",
+      "canonicalClaimableTotalUsd": 191.74335,
+      "rows": [
+        {
+          "routeKey": "aerodrome-ve:aerodrome · veaero:base:0x00000000a22c618fd6b4d7e9a335c4b96b189a38:0xa641752824d512fa8683758c6b2d8a04ea46dcd0",
+          "route": "aerodrome-ve",
+          "protocol": "Aerodrome · veAERO",
+          "chain": "Base",
+          "token": "0x00000000A22C618fd6b4D7E9A335C4B96B189a38",
+          "symbol": "TOWNS",
+          "wallet": "0xA641752824d512FA8683758c6b2D8A04ea46dcD0",
+          "shardCount": 2,
+          "aggregation": "same-mechanism-shards",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 2273.315352891,
+          "amountComplete": true,
+          "usdValue": 5.780259,
+          "usdValueComplete": true,
+          "source": "onchain: FeesVotingReward.earned",
+          "sources": [
+            "onchain: FeesVotingReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "aerodrome-ve:aerodrome · veaero:base:0x0c1c1c109fe34733fca54b82d7b46b75cfb71f6e:0xa641752824d512fa8683758c6b2d8a04ea46dcd0",
+          "route": "aerodrome-ve",
+          "protocol": "Aerodrome · veAERO",
+          "chain": "Base",
+          "token": "0x0C1c1C109FE34733fca54b82d7B46B75CFb71F6e",
+          "symbol": "CHIP",
+          "wallet": "0xA641752824d512FA8683758c6b2D8A04ea46dcD0",
+          "shardCount": 2,
+          "aggregation": "same-mechanism-shards",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 255.813821396,
+          "amountComplete": true,
+          "usdValue": 10.591427,
+          "usdValueComplete": true,
+          "source": "onchain: FeesVotingReward.earned",
+          "sources": [
+            "onchain: FeesVotingReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "aerodrome-ve:aerodrome · veaero:base:0x4154550f4db74dc38d1fe98e1f3f28ed6dad627d:0xa641752824d512fa8683758c6b2d8a04ea46dcd0",
+          "route": "aerodrome-ve",
+          "protocol": "Aerodrome · veAERO",
+          "chain": "Base",
+          "token": "0x4154550f4Db74Dc38d1FE98e1F3F28ed6daD627d",
+          "symbol": "jEUR",
+          "wallet": "0xA641752824d512FA8683758c6b2D8A04ea46dcD0",
+          "shardCount": 4,
+          "aggregation": "same-mechanism-shards",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 5.2878090014,
+          "amountComplete": true,
+          "usdValue": 6.058607,
+          "usdValueComplete": true,
+          "source": null,
+          "sources": [
+            "onchain: FeesVotingReward.earned",
+            "onchain: IncentiveVotingReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "aerodrome-ve:aerodrome · veaero:base:0x4200000000000000000000000000000000000006:0xa641752824d512fa8683758c6b2d8a04ea46dcd0",
+          "route": "aerodrome-ve",
+          "protocol": "Aerodrome · veAERO",
+          "chain": "Base",
+          "token": "0x4200000000000000000000000000000000000006",
+          "symbol": "WETH",
+          "wallet": "0xA641752824d512FA8683758c6b2D8A04ea46dcD0",
+          "shardCount": 2,
+          "aggregation": "same-mechanism-shards",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0026590014,
+          "amountComplete": true,
+          "usdValue": 6.525455,
+          "usdValueComplete": true,
+          "source": "onchain: FeesVotingReward.earned",
+          "sources": [
+            "onchain: FeesVotingReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "aerodrome-ve:aerodrome · veaero:base:0x526728dbc96689597f85ae4cd716d4f7fccbae9d:0xa641752824d512fa8683758c6b2d8a04ea46dcd0",
+          "route": "aerodrome-ve",
+          "protocol": "Aerodrome · veAERO",
+          "chain": "Base",
+          "token": "0x526728DBc96689597F85ae4cd716d4f7fCcBAE9d",
+          "symbol": "msUSD",
+          "wallet": "0xA641752824d512FA8683758c6b2D8A04ea46dcD0",
+          "shardCount": 2,
+          "aggregation": "same-mechanism-shards",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 3.6521065739,
+          "amountComplete": true,
+          "usdValue": 2.268424,
+          "usdValueComplete": true,
+          "source": "onchain: FeesVotingReward.earned",
+          "sources": [
+            "onchain: FeesVotingReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "aerodrome-ve:aerodrome · veaero:base:0x55380fe7a1910dff29a47b622057ab4139da42c5:0xa641752824d512fa8683758c6b2d8a04ea46dcd0",
+          "route": "aerodrome-ve",
+          "protocol": "Aerodrome · veAERO",
+          "chain": "Base",
+          "token": "0x55380fe7A1910dFf29A47B622057ab4139DA42C5",
+          "symbol": "FXUSD",
+          "wallet": "0xA641752824d512FA8683758c6b2D8A04ea46dcD0",
+          "shardCount": 4,
+          "aggregation": "same-mechanism-shards",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 15.7168614983,
+          "amountComplete": true,
+          "usdValue": 15.711525,
+          "usdValueComplete": true,
+          "source": null,
+          "sources": [
+            "onchain: FeesVotingReward.earned",
+            "onchain: IncentiveVotingReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "aerodrome-ve:aerodrome · veaero:base:0x74ccbe53f77b08632ce0cb91d3a545bf6b8e0979:0xa641752824d512fa8683758c6b2d8a04ea46dcd0",
+          "route": "aerodrome-ve",
+          "protocol": "Aerodrome · veAERO",
+          "chain": "Base",
+          "token": "0x74ccbe53F77b08632ce0CB91D3A545bF6B8E0979",
+          "symbol": "fBOMB",
+          "wallet": "0xA641752824d512FA8683758c6b2D8A04ea46dcD0",
+          "shardCount": 4,
+          "aggregation": "same-mechanism-shards",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 2113.2511068538,
+          "amountComplete": true,
+          "usdValue": 29.974299,
+          "usdValueComplete": true,
+          "source": null,
+          "sources": [
+            "onchain: FeesVotingReward.earned",
+            "onchain: IncentiveVotingReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "aerodrome-ve:aerodrome · veaero:base:0x7ba6f01772924a82d9626c126347a28299e98c98:0xa641752824d512fa8683758c6b2d8a04ea46dcd0",
+          "route": "aerodrome-ve",
+          "protocol": "Aerodrome · veAERO",
+          "chain": "Base",
+          "token": "0x7Ba6F01772924a82D9626c126347A28299E98c98",
+          "symbol": "msETH",
+          "wallet": "0xA641752824d512FA8683758c6b2D8A04ea46dcD0",
+          "shardCount": 2,
+          "aggregation": "same-mechanism-shards",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.002477537,
+          "amountComplete": true,
+          "usdValue": 3.817781,
+          "usdValueComplete": true,
+          "source": "onchain: FeesVotingReward.earned",
+          "sources": [
+            "onchain: FeesVotingReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "aerodrome-ve:aerodrome · veaero:base:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913:0xa641752824d512fa8683758c6b2d8a04ea46dcd0",
+          "route": "aerodrome-ve",
+          "protocol": "Aerodrome · veAERO",
+          "chain": "Base",
+          "token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          "symbol": "USDC",
+          "wallet": "0xA641752824d512FA8683758c6b2D8A04ea46dcD0",
+          "shardCount": 8,
+          "aggregation": "same-mechanism-shards",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 13.908826,
+          "amountComplete": true,
+          "usdValue": 13.907435,
+          "usdValueComplete": true,
+          "source": null,
+          "sources": [
+            "onchain: FeesVotingReward.earned",
+            "onchain: IncentiveVotingReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "aerodrome-ve:aerodrome · veaero:base:0x940181a94a35a4569e4529a3cdfb74e38fd98631:0xa641752824d512fa8683758c6b2d8a04ea46dcd0",
+          "route": "aerodrome-ve",
+          "protocol": "Aerodrome · veAERO",
+          "chain": "Base",
+          "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
+          "symbol": "AERO",
+          "wallet": "0xA641752824d512FA8683758c6b2D8A04ea46dcD0",
+          "shardCount": 6,
+          "aggregation": "same-mechanism-shards",
+          "classification": null,
+          "classifications": [
+            "compounded-locked",
+            "unclaimed"
+          ],
+          "amount": 17.2353824519,
+          "amountComplete": true,
+          "usdValue": 8.275518,
+          "usdValueComplete": true,
+          "source": null,
+          "sources": [
+            "onchain: FeesVotingReward.earned",
+            "onchain: RewardsDistributor.claimable"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "aerodrome-ve:aerodrome · veaero:base:0xd9aaec86b65d86f6a7b5b1b0c42ffa531710b6ca:0xa641752824d512fa8683758c6b2d8a04ea46dcd0",
+          "route": "aerodrome-ve",
+          "protocol": "Aerodrome · veAERO",
+          "chain": "Base",
+          "token": "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
+          "symbol": "USDbC",
+          "wallet": "0xA641752824d512FA8683758c6b2D8A04ea46dcD0",
+          "shardCount": 2,
+          "aggregation": "same-mechanism-shards",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 3.969284,
+          "amountComplete": true,
+          "usdValue": 3.968588,
+          "usdValueComplete": true,
+          "source": "onchain: FeesVotingReward.earned",
+          "sources": [
+            "onchain: FeesVotingReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "aerodrome-ve:aerodrome · veaero:base:0xdd468a1ddc392dcdbef6db6e34e89aa338f9f186:0xa641752824d512fa8683758c6b2d8a04ea46dcd0",
+          "route": "aerodrome-ve",
+          "protocol": "Aerodrome · veAERO",
+          "chain": "Base",
+          "token": "0xdD468A1DDc392dcdbEf6db6e34E89AA338F9F186",
+          "symbol": "MUSD",
+          "wallet": "0xA641752824d512FA8683758c6b2D8A04ea46dcD0",
+          "shardCount": 2,
+          "aggregation": "same-mechanism-shards",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.7261483869,
+          "amountComplete": true,
+          "usdValue": 0.719351,
+          "usdValueComplete": true,
+          "source": "onchain: FeesVotingReward.earned",
+          "sources": [
+            "onchain: FeesVotingReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "icp-nns-governance:internet computer · nns governance:internet computer:icp:wallet-unknown",
+          "route": "icp-nns-governance",
+          "protocol": "Internet Computer · NNS Governance",
+          "chain": "Internet Computer",
+          "token": null,
+          "symbol": "ICP",
+          "wallet": null,
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 23.1009455,
+          "amountComplete": true,
+          "usdValue": 58.71653,
+          "usdValueComplete": true,
+          "source": "model: owner-confirmed maturity baseline + canonical icp_nns Reference APR",
+          "sources": [
+            "model: owner-confirmed maturity baseline + canonical icp_nns Reference APR"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "velodrome-ve-direct:velodrome · vevelo:optimism:0x0b2c639c533813f4aa9d7837caf62653d097ff85:0xa641752824d512fa8683758c6b2d8a04ea46dcd0",
+          "route": "velodrome-ve-direct",
+          "protocol": "Velodrome · veVELO",
+          "chain": "Optimism",
+          "token": "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85",
+          "symbol": "USDC",
+          "wallet": "0xA641752824d512FA8683758c6b2D8A04ea46dcD0",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.10122,
+          "amountComplete": true,
+          "usdValue": 0.10121,
+          "usdValueComplete": true,
+          "source": "onchain: FeesVotingReward.earned",
+          "sources": [
+            "onchain: FeesVotingReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "velodrome-ve-direct:velodrome · vevelo:optimism:0x1f32b1c2345538c0c6f582fcb022739c4a194ebb:0xa641752824d512fa8683758c6b2d8a04ea46dcd0",
+          "route": "velodrome-ve-direct",
+          "protocol": "Velodrome · veVELO",
+          "chain": "Optimism",
+          "token": "0x1F32b1c2345538c0c6f582fCB022739c4A194Ebb",
+          "symbol": "wstETH",
+          "wallet": "0xA641752824d512FA8683758c6b2D8A04ea46dcD0",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0000393068,
+          "amountComplete": true,
+          "usdValue": 0.119818,
+          "usdValueComplete": true,
+          "source": "onchain: FeesVotingReward.earned",
+          "sources": [
+            "onchain: FeesVotingReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "velodrome-ve-direct:velodrome · vevelo:optimism:0x7f5c764cbc14f9669b88837ca1490cca17c31607:0xa641752824d512fa8683758c6b2d8a04ea46dcd0",
+          "route": "velodrome-ve-direct",
+          "protocol": "Velodrome · veVELO",
+          "chain": "Optimism",
+          "token": "0x7F5c764cBc14f9669B88837ca1490cCa17c31607",
+          "symbol": "USDC",
+          "wallet": "0xA641752824d512FA8683758c6b2D8A04ea46dcD0",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.109764,
+          "amountComplete": true,
+          "usdValue": 0.109753,
+          "usdValueComplete": true,
+          "source": "onchain: FeesVotingReward.earned",
+          "sources": [
+            "onchain: FeesVotingReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "velodrome-ve-direct:velodrome · vevelo:optimism:0x9560e827af36c94d2ac33a39bce1fe78631088db:0xa641752824d512fa8683758c6b2d8a04ea46dcd0",
+          "route": "velodrome-ve-direct",
+          "protocol": "Velodrome · veVELO",
+          "chain": "Optimism",
+          "token": "0x9560e827aF36c94D2Ac33a39bCE1Fe78631088Db",
+          "symbol": "VELO",
+          "wallet": "0xA641752824d512FA8683758c6b2D8A04ea46dcD0",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "compounded-locked",
+          "classifications": [
+            "compounded-locked"
+          ],
+          "amount": 90.0683374599,
+          "amountComplete": true,
+          "usdValue": 2.006364,
+          "usdValueComplete": true,
+          "source": "onchain: RewardsDistributor.claimable",
+          "sources": [
+            "onchain: RewardsDistributor.claimable"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "velodrome-ve-direct:velodrome · vevelo:optimism:0x9dabae7274d28a45f0b65bf8ed201a5731492ca0:0xa641752824d512fa8683758c6b2d8a04ea46dcd0",
+          "route": "velodrome-ve-direct",
+          "protocol": "Velodrome · veVELO",
+          "chain": "Optimism",
+          "token": "0x9dAbAE7274D28A45F0B65Bf8ED201A5731492ca0",
+          "symbol": "msUSD",
+          "wallet": "0xA641752824d512FA8683758c6b2D8A04ea46dcD0",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.1352860517,
+          "amountComplete": true,
+          "usdValue": 0.08403,
+          "usdValueComplete": true,
+          "source": "onchain: FeesVotingReward.earned",
+          "sources": [
+            "onchain: FeesVotingReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "yield-basis-fees:yield basis:ethereum:0x2b9c9f3bdceb5d8e36a4704f08a78fca53343cea:0x6c6543eba07946706fd10a1064fa773326b5f5a9",
+          "route": "yield-basis-fees",
+          "protocol": "Yield Basis",
+          "chain": "Ethereum",
+          "token": "0x2B9c9f3BdcEb5d8E36a4704F08a78Fca53343cEa",
+          "symbol": "yb-WETH",
+          "wallet": "0x6c6543eBA07946706Fd10a1064FA773326B5f5a9",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0003768536,
+          "amountComplete": true,
+          "usdValue": 0.93196,
+          "usdValueComplete": true,
+          "source": "onchain: FeeDistributor.preview_claim",
+          "sources": [
+            "onchain: FeeDistributor.preview_claim"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "yield-basis-fees:yield basis:ethereum:0x651d4b8168488fa163d85304662e8278d4c55baa:0x6c6543eba07946706fd10a1064fa773326b5f5a9",
+          "route": "yield-basis-fees",
+          "protocol": "Yield Basis",
+          "chain": "Ethereum",
+          "token": "0x651D4b8168488FA163D85304662E8278d4c55BAa",
+          "symbol": "yb-WBTC",
+          "wallet": "0x6c6543eBA07946706Fd10a1064FA773326B5f5a9",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0000985485,
+          "amountComplete": true,
+          "usdValue": 7.500668,
+          "usdValueComplete": true,
+          "source": "onchain: FeeDistributor.preview_claim",
+          "sources": [
+            "onchain: FeeDistributor.preview_claim"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "yield-basis-fees:yield basis:ethereum:0x722fc3640ba007c3e9867ccdb0dca59f2e2f29f9:0x6c6543eba07946706fd10a1064fa773326b5f5a9",
+          "route": "yield-basis-fees",
+          "protocol": "Yield Basis",
+          "chain": "Ethereum",
+          "token": "0x722FC3640BA007C3E9867CCdB0dCa59F2e2F29F9",
+          "symbol": "yb-cbBTC",
+          "wallet": "0x6c6543eBA07946706Fd10a1064FA773326B5f5a9",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0001194829,
+          "amountComplete": true,
+          "usdValue": 9.346965,
+          "usdValueComplete": true,
+          "source": "onchain: FeeDistributor.preview_claim",
+          "sources": [
+            "onchain: FeeDistributor.preview_claim"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "yield-basis-fees:yield basis:ethereum:0x771f7290428d830ecd41e980745c327e507823ec:0x6c6543eba07946706fd10a1064fa773326b5f5a9",
+          "route": "yield-basis-fees",
+          "protocol": "Yield Basis",
+          "chain": "Ethereum",
+          "token": "0x771F7290428d830ECd41E980745c327e507823Ec",
+          "symbol": "yb-tBTC",
+          "wallet": "0x6c6543eBA07946706Fd10a1064FA773326B5f5a9",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0000419323,
+          "amountComplete": true,
+          "usdValue": 3.190516,
+          "usdValueComplete": true,
+          "source": "onchain: FeeDistributor.preview_claim",
+          "sources": [
+            "onchain: FeeDistributor.preview_claim"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "yield-basis-fees:yield basis:ethereum:0x931d40dd07b25b91932b481b63631ea86d236e09:0x6c6543eba07946706fd10a1064fa773326b5f5a9",
+          "route": "yield-basis-fees",
+          "protocol": "Yield Basis",
+          "chain": "Ethereum",
+          "token": "0x931d40dD07b25B91932b481B63631Ea86d236e09",
+          "symbol": "yb-WETH",
+          "wallet": "0x6c6543eBA07946706Fd10a1064FA773326B5f5a9",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0008072815,
+          "amountComplete": true,
+          "usdValue": 2.023507,
+          "usdValueComplete": true,
+          "source": "onchain: FeeDistributor.preview_claim",
+          "sources": [
+            "onchain: FeeDistributor.preview_claim"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "yield-basis-fees:yield basis:ethereum:0xac0a340c1644321d0bbc6404946d828c1ebfac92:0x6c6543eba07946706fd10a1064fa773326b5f5a9",
+          "route": "yield-basis-fees",
+          "protocol": "Yield Basis",
+          "chain": "Ethereum",
+          "token": "0xaC0a340C1644321D0BBc6404946d828c1EBfAC92",
+          "symbol": "yb-tBTC",
+          "wallet": "0x6c6543eBA07946706Fd10a1064FA773326B5f5a9",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 1.679e-7,
+          "amountComplete": true,
+          "usdValue": 0.01336,
+          "usdValueComplete": true,
+          "source": "onchain: FeeDistributor.preview_claim",
+          "sources": [
+            "onchain: FeeDistributor.preview_claim"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        }
+      ],
+      "stateOnly": true,
+      "periodIncomeAuthority": false,
+      "realisedCashFlowAuthority": false,
+      "unknownIsNotZero": true
+    },
+    {
+      "snapshotKey": "rewards:2026-09-02T06:49:40.775Z:Cypher",
+      "capturedAt": "2026-09-02T06:49:40.775Z",
+      "company": "Cypher",
+      "canonicalClaimableTotalUsd": 15.318442,
+      "rows": [
+        {
+          "routeKey": "aerodrome-ve:aerodrome · veaero:base:0x940181a94a35a4569e4529a3cdfb74e38fd98631:0x64688f4adc3f72cdb44d07e4879c724cd7025696",
+          "route": "aerodrome-ve",
+          "protocol": "Aerodrome · veAERO",
+          "chain": "Base",
+          "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
+          "symbol": "AERO",
+          "wallet": "0x64688F4Adc3f72CdB44d07e4879C724CD7025696",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.349448154599,
+          "amountComplete": true,
+          "usdValue": 0.167805,
+          "usdValueComplete": true,
+          "source": "existing The Holding ve mechanism · VotingEscrow managed state + Locked/FreeManagedReward.earned + RewardsDistributor.claimable",
+          "sources": [
+            "existing The Holding ve mechanism · VotingEscrow managed state + Locked/FreeManagedReward.earned + RewardsDistributor.claimable"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "convex-staked-cvxcrv:convex · staked cvxcrv:ethereum:0xf939e0a03fb07f59a73314e73794be0e57ac1b4e:0x64688f4adc3f72cdb44d07e4879c724cd7025696",
+          "route": "convex-staked-cvxcrv",
+          "protocol": "Convex · staked cvxCRV",
+          "chain": "Ethereum",
+          "token": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+          "symbol": "crvUSD",
+          "wallet": "0x64688F4Adc3f72CdB44d07e4879C724CD7025696",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 1.99146578782,
+          "amountComplete": true,
+          "usdValue": 1.990159,
+          "usdValueComplete": true,
+          "source": "Convex CvxCrvStakingWrapper earned(account) simulated read-only via eth_call",
+          "sources": [
+            "Convex CvxCrvStakingWrapper earned(account) simulated read-only via eth_call"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "projectx-whype-usdc:project x:hyperevm:0x5555555555555555555555555555555555555555:wallet-unknown",
+          "route": "projectx-whype-usdc",
+          "protocol": "Project X",
+          "chain": "HyperEVM",
+          "token": "0x5555555555555555555555555555555555555555",
+          "symbol": "WHYPE",
+          "wallet": null,
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.019852105524,
+          "amountComplete": true,
+          "usdValue": 1.625093,
+          "usdValueComplete": true,
+          "source": "collect.staticCall across the current economically active NFT set",
+          "sources": [
+            "collect.staticCall across the current economically active NFT set"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "projectx-whype-usdc:project x:hyperevm:0xb88339cb7199b77e23db6e890353e22632ba630f:wallet-unknown",
+          "route": "projectx-whype-usdc",
+          "protocol": "Project X",
+          "chain": "HyperEVM",
+          "token": "0xb88339CB7199b77E23DB6E890353E22632Ba630f",
+          "symbol": "USDC",
+          "wallet": null,
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 1.618906,
+          "amountComplete": true,
+          "usdValue": 1.618778,
+          "usdValueComplete": true,
+          "source": "collect.staticCall across the current economically active NFT set",
+          "sources": [
+            "collect.staticCall across the current economically active NFT set"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "stake-dao-vlcvx:stake dao · vlcvx:ethereum:0x0655977feb2f289a4ab78af67bab0d17aab84367:0x64688f4adc3f72cdb44d07e4879c724cd7025696",
+          "route": "stake-dao-vlcvx",
+          "protocol": "Stake DAO · vlCVX",
+          "chain": "Ethereum",
+          "token": "0x0655977FEb2f289A4aB78af67BAB0d17aAb84367",
+          "symbol": "scrvUSD",
+          "wallet": "0x64688F4Adc3f72CdB44d07e4879C724CD7025696",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 5.1337824261,
+          "amountComplete": true,
+          "usdValue": 5.678017,
+          "usdValueComplete": true,
+          "source": "Stake DAO official latest vlCVX delegator Merkle + active root + claimed(account,reward)",
+          "sources": [
+            "Stake DAO official latest vlCVX delegator Merkle + active root + claimed(account,reward)"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "stakedao-base-curve-4pool:stake dao · 4pool stables:base:0x8ee73c484a26e0a5df2ee2a4960b789967dd0415:wallet-unknown",
+          "route": "stakedao-base-curve-4pool",
+          "protocol": "Stake DAO · 4pool stables",
+          "chain": "Base",
+          "token": "0x8ee73c484a26e0a5df2ee2a4960b789967dd0415",
+          "symbol": "CRV",
+          "wallet": null,
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 13.7196061129,
+          "amountComplete": true,
+          "usdValue": 4.23859,
+          "usdValueComplete": true,
+          "source": "Stake DAO verified Accountant integral state on Base",
+          "sources": [
+            "Stake DAO verified Accountant integral state on Base"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        }
+      ],
+      "stateOnly": true,
+      "periodIncomeAuthority": false,
+      "realisedCashFlowAuthority": false,
+      "unknownIsNotZero": true
+    },
+    {
+      "snapshotKey": "rewards:2026-09-02T06:49:40.775Z:defitea.eth",
+      "capturedAt": "2026-09-02T06:49:40.775Z",
+      "company": "defitea.eth",
+      "canonicalClaimableTotalUsd": 155.532043,
+      "rows": [
+        {
+          "routeKey": "aerodrome-ve:aerodrome · veaero:base:0x940181a94a35a4569e4529a3cdfb74e38fd98631:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "aerodrome-ve",
+          "protocol": "Aerodrome · veAERO",
+          "chain": "Base",
+          "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
+          "symbol": "AERO",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "compounded-locked",
+          "classifications": [
+            "compounded-locked"
+          ],
+          "amount": 118.2506708876,
+          "amountComplete": true,
+          "usdValue": 56.777705,
+          "usdValueComplete": true,
+          "source": "onchain: LockedManagedReward.earned",
+          "sources": [
+            "onchain: LockedManagedReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "curve-fees:curve · vecrv:ethereum:0xf939e0a03fb07f59a73314e73794be0e57ac1b4e:0x6640c1af0bf7e77fa223d4af2f779e55dcfb8d2d",
+          "route": "curve-fees",
+          "protocol": "Curve · veCRV",
+          "chain": "Ethereum",
+          "token": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+          "symbol": "crvUSD",
+          "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 2.4822998601,
+          "amountComplete": true,
+          "usdValue": 2.4823,
+          "usdValueComplete": true,
+          "source": "onchain: FeeDistributor.claim staticCall",
+          "sources": [
+            "onchain: FeeDistributor.claim staticCall"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "curve-fees:curve · vecrv:ethereum:0xf939e0a03fb07f59a73314e73794be0e57ac1b4e:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "curve-fees",
+          "protocol": "Curve · veCRV",
+          "chain": "Ethereum",
+          "token": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+          "symbol": "crvUSD",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 3.3344485696,
+          "amountComplete": true,
+          "usdValue": 3.334449,
+          "usdValueComplete": true,
+          "source": "onchain: FeeDistributor.claim staticCall",
+          "sources": [
+            "onchain: FeeDistributor.claim staticCall"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "frax-yield:frax · vefrax:fraxtal:0xfc00000000000000000000000000000000000002:0x6640c1af0bf7e77fa223d4af2f779e55dcfb8d2d",
+          "route": "frax-yield",
+          "protocol": "Frax · veFRAX",
+          "chain": "Fraxtal",
+          "token": "0xFc00000000000000000000000000000000000002",
+          "symbol": "WFRAX",
+          "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 4.2881086201,
+          "amountComplete": true,
+          "usdValue": 1.257299,
+          "usdValueComplete": true,
+          "source": "onchain: YieldDistributor.earned",
+          "sources": [
+            "onchain: YieldDistributor.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "frax-yield:frax · vefrax:fraxtal:0xfc00000000000000000000000000000000000002:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "frax-yield",
+          "protocol": "Frax · veFRAX",
+          "chain": "Fraxtal",
+          "token": "0xFc00000000000000000000000000000000000002",
+          "symbol": "WFRAX",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 15.7392725224,
+          "amountComplete": true,
+          "usdValue": 4.614849,
+          "usdValueComplete": true,
+          "source": "onchain: YieldDistributor.earned",
+          "sources": [
+            "onchain: YieldDistributor.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "fx-fees:f(x) protocol · vefxn:ethereum:0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0:0x6640c1af0bf7e77fa223d4af2f779e55dcfb8d2d",
+          "route": "fx-fees",
+          "protocol": "f(x) Protocol · veFXN",
+          "chain": "Ethereum",
+          "token": "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0",
+          "symbol": "wstETH",
+          "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0022811025,
+          "amountComplete": true,
+          "usdValue": 6.953416,
+          "usdValueComplete": true,
+          "source": "onchain: f(x) FeeDistributor.claim staticCall",
+          "sources": [
+            "onchain: f(x) FeeDistributor.claim staticCall"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "fx-fees:f(x) protocol · vefxn:ethereum:0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "fx-fees",
+          "protocol": "f(x) Protocol · veFXN",
+          "chain": "Ethereum",
+          "token": "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0",
+          "symbol": "wstETH",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0034980606,
+          "amountComplete": true,
+          "usdValue": 10.663033,
+          "usdValueComplete": true,
+          "source": "onchain: f(x) FeeDistributor.claim staticCall",
+          "sources": [
+            "onchain: f(x) FeeDistributor.claim staticCall"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "liquity-staking:liquity · staked lqty:ethereum:0x5f98805a4e8be255a32880fdec7f6728c6568ba0:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "liquity-staking",
+          "protocol": "Liquity · staked LQTY",
+          "chain": "Ethereum",
+          "token": "0x5f98805A4E8be255a32880FDeC7F6728C6568bA0",
+          "symbol": "LUSD",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0679683289,
+          "amountComplete": true,
+          "usdValue": 0.068679,
+          "usdValueComplete": true,
+          "source": "onchain: Liquity V1 LQTYStaking pending gain across wallet + V2 UserProxy",
+          "sources": [
+            "onchain: Liquity V1 LQTYStaking pending gain across wallet + V2 UserProxy"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "liquity-staking:liquity · staked lqty:ethereum:native:eth:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "liquity-staking",
+          "protocol": "Liquity · staked LQTY",
+          "chain": "Ethereum",
+          "token": "native:ETH",
+          "symbol": "ETH",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0001982532,
+          "amountComplete": true,
+          "usdValue": 0.486584,
+          "usdValueComplete": true,
+          "source": "onchain: Liquity V1 LQTYStaking pending gain across wallet + V2 UserProxy",
+          "sources": [
+            "onchain: Liquity V1 LQTYStaking pending gain across wallet + V2 UserProxy"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "resupply-staking:resupply · staked rsup:ethereum:0x57ab1e0003f623289cd798b1824be09a793e4bec:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "resupply-staking",
+          "protocol": "Resupply · staked RSUP",
+          "chain": "Ethereum",
+          "token": "0x57aB1E0003F623289CD798B1824Be09a793e4Bec",
+          "symbol": "reUSD",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 6.345844711,
+          "amountComplete": true,
+          "usdValue": 6.345845,
+          "usdValueComplete": true,
+          "source": "onchain: GovStaker.earned(account,rewardToken)",
+          "sources": [
+            "onchain: GovStaker.earned(account,rewardToken)"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "velodrome-ve:velodrome · vevelo:optimism:0x0b2c639c533813f4aa9d7837caf62653d097ff85:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "velodrome-ve",
+          "protocol": "Velodrome · veVELO",
+          "chain": "Optimism",
+          "token": "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85",
+          "symbol": "USDC",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 5,
+          "aggregation": "same-mechanism-shards",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.057987,
+          "amountComplete": true,
+          "usdValue": 0.057982,
+          "usdValueComplete": true,
+          "source": "onchain: FeesVotingReward.earned",
+          "sources": [
+            "onchain: FeesVotingReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "velodrome-ve:velodrome · vevelo:optimism:0x1610e3c85dd44af31ed7f33a63642012dca0c5a5:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "velodrome-ve",
+          "protocol": "Velodrome · veVELO",
+          "chain": "Optimism",
+          "token": "0x1610e3c85dd44Af31eD7f33a63642012Dca0C5A5",
+          "symbol": "msETH",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 2,
+          "aggregation": "same-mechanism-shards",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0000187234,
+          "amountComplete": true,
+          "usdValue": 0.028852,
+          "usdValueComplete": true,
+          "source": "onchain: FeesVotingReward.earned",
+          "sources": [
+            "onchain: FeesVotingReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "velodrome-ve:velodrome · vevelo:optimism:0x1f32b1c2345538c0c6f582fcb022739c4a194ebb:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "velodrome-ve",
+          "protocol": "Velodrome · veVELO",
+          "chain": "Optimism",
+          "token": "0x1F32b1c2345538c0c6f582fCB022739c4A194Ebb",
+          "symbol": "wstETH",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.000007768,
+          "amountComplete": true,
+          "usdValue": 0.023679,
+          "usdValueComplete": true,
+          "source": "onchain: FeesVotingReward.earned",
+          "sources": [
+            "onchain: FeesVotingReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "velodrome-ve:velodrome · vevelo:optimism:0x1f514a61bcde34f94bc39731235690ab9da737f7:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "velodrome-ve",
+          "protocol": "Velodrome · veVELO",
+          "chain": "Optimism",
+          "token": "0x1F514A61bcde34F94Bc39731235690ab9da737F7",
+          "symbol": "TAROT",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 2,
+          "aggregation": "same-mechanism-shards",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0719578353,
+          "amountComplete": true,
+          "usdValue": 0.002098,
+          "usdValueComplete": true,
+          "source": "onchain: FeesVotingReward.earned",
+          "sources": [
+            "onchain: FeesVotingReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "velodrome-ve:velodrome · vevelo:optimism:0x259c1c2ed264402b5ed2f02bc7dc25a15c680c18:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "velodrome-ve",
+          "protocol": "Velodrome · veVELO",
+          "chain": "Optimism",
+          "token": "0x259c1C2ED264402b5ed2f02bc7dC25A15C680c18",
+          "symbol": "RING",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 2.1776626168,
+          "amountComplete": true,
+          "usdValue": 0.004871,
+          "usdValueComplete": true,
+          "source": "onchain: FeesVotingReward.earned",
+          "sources": [
+            "onchain: FeesVotingReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "velodrome-ve:velodrome · vevelo:optimism:0x4200000000000000000000000000000000000006:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "velodrome-ve",
+          "protocol": "Velodrome · veVELO",
+          "chain": "Optimism",
+          "token": "0x4200000000000000000000000000000000000006",
+          "symbol": "WETH",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 6,
+          "aggregation": "same-mechanism-shards",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0000372184,
+          "amountComplete": true,
+          "usdValue": 0.091339,
+          "usdValueComplete": true,
+          "source": "onchain: FeesVotingReward.earned",
+          "sources": [
+            "onchain: FeesVotingReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "velodrome-ve:velodrome · vevelo:optimism:0x4200000000000000000000000000000000000042:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "velodrome-ve",
+          "protocol": "Velodrome · veVELO",
+          "chain": "Optimism",
+          "token": "0x4200000000000000000000000000000000000042",
+          "symbol": "OP",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 2,
+          "aggregation": "same-mechanism-shards",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.2706074894,
+          "amountComplete": true,
+          "usdValue": 0.023545,
+          "usdValueComplete": true,
+          "source": "onchain: FeesVotingReward.earned",
+          "sources": [
+            "onchain: FeesVotingReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "velodrome-ve:velodrome · vevelo:optimism:0x68f180fcce6836688e9084f035309e29bf0a2095:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "velodrome-ve",
+          "protocol": "Velodrome · veVELO",
+          "chain": "Optimism",
+          "token": "0x68f180fcCe6836688e9084f035309E29Bf0A2095",
+          "symbol": "WBTC",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 3e-7,
+          "amountComplete": true,
+          "usdValue": 0.023549,
+          "usdValueComplete": true,
+          "source": "onchain: FeesVotingReward.earned",
+          "sources": [
+            "onchain: FeesVotingReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "velodrome-ve:velodrome · vevelo:optimism:0x7f5c764cbc14f9669b88837ca1490cca17c31607:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "velodrome-ve",
+          "protocol": "Velodrome · veVELO",
+          "chain": "Optimism",
+          "token": "0x7F5c764cBc14f9669B88837ca1490cCa17c31607",
+          "symbol": "USDC",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.009726,
+          "amountComplete": true,
+          "usdValue": 0.009725,
+          "usdValueComplete": true,
+          "source": "onchain: FeesVotingReward.earned",
+          "sources": [
+            "onchain: FeesVotingReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "velodrome-ve:velodrome · vevelo:optimism:0x94b008aa00579c1307b0ef2c499ad98a8ce58e58:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "velodrome-ve",
+          "protocol": "Velodrome · veVELO",
+          "chain": "Optimism",
+          "token": "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58",
+          "symbol": "USDT",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.021948,
+          "amountComplete": true,
+          "usdValue": 0.021942,
+          "usdValueComplete": true,
+          "source": "onchain: FeesVotingReward.earned",
+          "sources": [
+            "onchain: FeesVotingReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "velodrome-ve:velodrome · vevelo:optimism:0x9560e827af36c94d2ac33a39bce1fe78631088db:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "velodrome-ve",
+          "protocol": "Velodrome · veVELO",
+          "chain": "Optimism",
+          "token": "0x9560e827aF36c94D2Ac33a39bCE1Fe78631088Db",
+          "symbol": "VELO",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.8166189444,
+          "amountComplete": true,
+          "usdValue": 0.018191,
+          "usdValueComplete": true,
+          "source": "onchain: FeesVotingReward.earned",
+          "sources": [
+            "onchain: FeesVotingReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "velodrome-ve:velodrome · vevelo:optimism:0x9dabae7274d28a45f0b65bf8ed201a5731492ca0:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "velodrome-ve",
+          "protocol": "Velodrome · veVELO",
+          "chain": "Optimism",
+          "token": "0x9dAbAE7274D28A45F0B65Bf8ED201A5731492ca0",
+          "symbol": "msUSD",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 3,
+          "aggregation": "same-mechanism-shards",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0669868678,
+          "amountComplete": true,
+          "usdValue": 0.041608,
+          "usdValueComplete": true,
+          "source": "onchain: FeesVotingReward.earned",
+          "sources": [
+            "onchain: FeesVotingReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "velodrome-ve:velodrome · vevelo:optimism:0xcb8fa9a76b8e203d8c3797bf438d8fb81ea3326a:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "velodrome-ve",
+          "protocol": "Velodrome · veVELO",
+          "chain": "Optimism",
+          "token": "0xCB8FA9a76b8e203D8C3797bF438d8FB81Ea3326A",
+          "symbol": "alUSD",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0046948652,
+          "amountComplete": true,
+          "usdValue": 0.004463,
+          "usdValueComplete": true,
+          "source": "onchain: FeesVotingReward.earned",
+          "sources": [
+            "onchain: FeesVotingReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "venice-staking:venice · svvv:base:0xacfe6019ed1a7dc6f7b508c02d1b04ec88cc21bf:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "venice-staking",
+          "protocol": "Venice · sVVV",
+          "chain": "Base",
+          "token": "0xacfE6019Ed1A7Dc6f7B508C02d1b04ec88cC21bf",
+          "symbol": "VVV",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.3124915685,
+          "amountComplete": true,
+          "usdValue": 5.421729,
+          "usdValueComplete": true,
+          "source": "onchain: Venice StakingV2.pendingRewards",
+          "sources": [
+            "onchain: Venice StakingV2.pendingRewards"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "votemarket-vecrv:votemarket · vecrv:arbitrum:0x2a68ae24fff0b64305eeb867935fa1af6344c2a9:0x6640c1af0bf7e77fa223d4af2f779e55dcfb8d2d",
+          "route": "votemarket-vecrv",
+          "protocol": "VoteMarket · veCRV",
+          "chain": "Arbitrum",
+          "token": "0x2A68aE24FFf0B64305EEB867935FA1aF6344c2a9",
+          "symbol": "pRSUP",
+          "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+          "shardCount": 4,
+          "aggregation": "same-mechanism-shards",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 19.0881956787,
+          "amountComplete": true,
+          "usdValue": 2.204606,
+          "usdValueComplete": true,
+          "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
+          "sources": [
+            "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "votemarket-vecrv:votemarket · vecrv:arbitrum:0x5660bdd5ad5f4ccd27ecc33f6ef140079e7e9cb8:0x6640c1af0bf7e77fa223d4af2f779e55dcfb8d2d",
+          "route": "votemarket-vecrv",
+          "protocol": "VoteMarket · veCRV",
+          "chain": "Arbitrum",
+          "token": "0x5660bdD5AD5F4ccD27ECc33f6Ef140079e7E9cb8",
+          "symbol": "pWFRAX",
+          "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+          "shardCount": 2,
+          "aggregation": "same-mechanism-shards",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 1.1389560168,
+          "amountComplete": true,
+          "usdValue": 0.333566,
+          "usdValueComplete": true,
+          "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
+          "sources": [
+            "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "votemarket-vecrv:votemarket · vecrv:arbitrum:0x5660bdd5ad5f4ccd27ecc33f6ef140079e7e9cb8:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "votemarket-vecrv",
+          "protocol": "VoteMarket · veCRV",
+          "chain": "Arbitrum",
+          "token": "0x5660bdD5AD5F4ccD27ECc33f6Ef140079e7E9cb8",
+          "symbol": "pWFRAX",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 6,
+          "aggregation": "same-mechanism-shards",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 14.8730980795,
+          "amountComplete": true,
+          "usdValue": 4.35589,
+          "usdValueComplete": true,
+          "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
+          "sources": [
+            "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "votemarket-vecrv:votemarket · vecrv:arbitrum:0x8d037f300c70a2194ad7db16d54c3a14fdc7b0a2:0x6640c1af0bf7e77fa223d4af2f779e55dcfb8d2d",
+          "route": "votemarket-vecrv",
+          "protocol": "VoteMarket · veCRV",
+          "chain": "Arbitrum",
+          "token": "0x8D037f300C70A2194aD7dB16d54c3A14FdC7B0A2",
+          "symbol": "pOUSD",
+          "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+          "shardCount": 3,
+          "aggregation": "same-mechanism-shards",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 1.3163297302,
+          "amountComplete": true,
+          "usdValue": 1.316371,
+          "usdValueComplete": true,
+          "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
+          "sources": [
+            "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "votemarket-vecrv:votemarket · vecrv:arbitrum:0xc8a096b7d583fc1cc4692563d61d41642ced8441:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "votemarket-vecrv",
+          "protocol": "VoteMarket · veCRV",
+          "chain": "Arbitrum",
+          "token": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
+          "symbol": "pUSDC",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 7,
+          "aggregation": "same-mechanism-shards",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 4.898761,
+          "amountComplete": true,
+          "usdValue": 4.898206,
+          "usdValueComplete": true,
+          "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
+          "sources": [
+            "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "votemarket-vefxn:votemarket · vefxn:arbitrum:0xc8a096b7d583fc1cc4692563d61d41642ced8441:0x6640c1af0bf7e77fa223d4af2f779e55dcfb8d2d",
+          "route": "votemarket-vefxn",
+          "protocol": "VoteMarket · veFXN",
+          "chain": "Arbitrum",
+          "token": "0xc8a096b7D583FC1CC4692563D61d41642cED8441",
+          "symbol": "pUSDC",
+          "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+          "shardCount": 17,
+          "aggregation": "same-mechanism-shards",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 1.742295,
+          "amountComplete": true,
+          "usdValue": 1.742098,
+          "usdValueComplete": true,
+          "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
+          "sources": [
+            "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "votemarket-vefxn:votemarket · vefxn:arbitrum:0xf69903bb3082519979f72f5459ee92001a89adf3:0x6640c1af0bf7e77fa223d4af2f779e55dcfb8d2d",
+          "route": "votemarket-vefxn",
+          "protocol": "VoteMarket · veFXN",
+          "chain": "Arbitrum",
+          "token": "0xF69903bb3082519979F72F5459EE92001a89aDf3",
+          "symbol": "pFXN",
+          "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+          "shardCount": 9,
+          "aggregation": "same-mechanism-shards",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.2787603008,
+          "amountComplete": true,
+          "usdValue": 6.288098,
+          "usdValueComplete": true,
+          "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
+          "sources": [
+            "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "votemarket-vefxn:votemarket · vefxn:arbitrum:0xf69903bb3082519979f72f5459ee92001a89adf3:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "votemarket-vefxn",
+          "protocol": "VoteMarket · veFXN",
+          "chain": "Arbitrum",
+          "token": "0xF69903bb3082519979F72F5459EE92001a89aDf3",
+          "symbol": "pFXN",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 7,
+          "aggregation": "same-mechanism-shards",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.3463423586,
+          "amountComplete": true,
+          "usdValue": 7.812572,
+          "usdValueComplete": true,
+          "source": "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction",
+          "sources": [
+            "official Stake DAO proof feed + VoteMarket claimed-state + published vote reconstruction"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "votium-union-scrvusd:votium + union · vlcvx:ethereum:0x0655977feb2f289a4ab78af67bab0d17aab84367:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "votium-union-scrvusd",
+          "protocol": "Votium + Union · vlCVX",
+          "chain": "Ethereum",
+          "token": "0x0655977FEb2f289A4aB78af67BAB0d17aAb84367",
+          "symbol": "scrvUSD",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 4.8456656095,
+          "amountComplete": true,
+          "usdValue": 5.359357,
+          "usdValueComplete": true,
+          "source": "Llama Airforce official member airdrop + live distributor Merkle proof/isClaimed",
+          "sources": [
+            "Llama Airforce official member airdrop + live distributor Merkle proof/isClaimed"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "votium-union:votium · vlcvx:ethereum:0x365accfca291e7d3914637abf1f7635db165bb09:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "votium-union",
+          "protocol": "Votium · vlCVX",
+          "chain": "Ethereum",
+          "token": "0x365AccFCa291e7D3914637ABf1F7635dB165Bb09",
+          "symbol": "FXN",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0015807692,
+          "amountComplete": true,
+          "usdValue": 0.035868,
+          "usdValueComplete": true,
+          "source": "Votium current Merkle root + onchain claimed-state",
+          "sources": [
+            "Votium current Merkle root + onchain claimed-state"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "votium-union:votium · vlcvx:ethereum:0x6440f144b7e50d6a8439336510312d2f54beb01d:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "votium-union",
+          "protocol": "Votium · vlCVX",
+          "chain": "Ethereum",
+          "token": "0x6440f144b7e50D6a8439336510312d2F54beB01D",
+          "symbol": "BOLD",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.030971406,
+          "amountComplete": true,
+          "usdValue": 0.030971,
+          "usdValueComplete": true,
+          "source": "Votium current Merkle root + onchain claimed-state",
+          "sources": [
+            "Votium current Merkle root + onchain claimed-state"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "votium-union:votium · vlcvx:ethereum:0x865377367054516e17014ccded1e7d814edc9ce4:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "votium-union",
+          "protocol": "Votium · vlCVX",
+          "chain": "Ethereum",
+          "token": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+          "symbol": "DOLA",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.026488481,
+          "amountComplete": true,
+          "usdValue": 0.02643,
+          "usdValueComplete": true,
+          "source": "Votium current Merkle root + onchain claimed-state",
+          "sources": [
+            "Votium current Merkle root + onchain claimed-state"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "votium-union:votium · vlcvx:ethereum:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "votium-union",
+          "protocol": "Votium · vlCVX",
+          "chain": "Ethereum",
+          "token": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "symbol": "USDC",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.09061,
+          "amountComplete": true,
+          "usdValue": 0.090601,
+          "usdValueComplete": true,
+          "source": "Votium current Merkle root + onchain claimed-state",
+          "sources": [
+            "Votium current Merkle root + onchain claimed-state"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "votium-union:votium · vlcvx:ethereum:0xcacd6fd266af91b8aed52accc382b4e165586e29:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "votium-union",
+          "protocol": "Votium · vlCVX",
+          "chain": "Ethereum",
+          "token": "0xCAcd6fd266aF91b8AeD52aCCc382b4e165586E29",
+          "symbol": "frxUSD",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.1157205508,
+          "amountComplete": true,
+          "usdValue": 0.115681,
+          "usdValueComplete": true,
+          "source": "Votium current Merkle root + onchain claimed-state",
+          "sources": [
+            "Votium current Merkle root + onchain claimed-state"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "yield-basis-fees:yield basis:ethereum:0x2b9c9f3bdceb5d8e36a4704f08a78fca53343cea:0x6640c1af0bf7e77fa223d4af2f779e55dcfb8d2d",
+          "route": "yield-basis-fees",
+          "protocol": "Yield Basis",
+          "chain": "Ethereum",
+          "token": "0x2B9c9f3BdcEb5d8E36a4704F08a78Fca53343cEa",
+          "symbol": "yb-WETH",
+          "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0001459869,
+          "amountComplete": true,
+          "usdValue": 0.361026,
+          "usdValueComplete": true,
+          "source": "onchain: FeeDistributor.preview_claim",
+          "sources": [
+            "onchain: FeeDistributor.preview_claim"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "yield-basis-fees:yield basis:ethereum:0x2b9c9f3bdceb5d8e36a4704f08a78fca53343cea:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "yield-basis-fees",
+          "protocol": "Yield Basis",
+          "chain": "Ethereum",
+          "token": "0x2B9c9f3BdcEb5d8E36a4704F08a78Fca53343cEa",
+          "symbol": "yb-WETH",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0002754134,
+          "amountComplete": true,
+          "usdValue": 0.681098,
+          "usdValueComplete": true,
+          "source": "onchain: FeeDistributor.preview_claim",
+          "sources": [
+            "onchain: FeeDistributor.preview_claim"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "yield-basis-fees:yield basis:ethereum:0x651d4b8168488fa163d85304662e8278d4c55baa:0x6640c1af0bf7e77fa223d4af2f779e55dcfb8d2d",
+          "route": "yield-basis-fees",
+          "protocol": "Yield Basis",
+          "chain": "Ethereum",
+          "token": "0x651D4b8168488FA163D85304662E8278d4c55BAa",
+          "symbol": "yb-WBTC",
+          "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0000230452,
+          "amountComplete": true,
+          "usdValue": 1.753872,
+          "usdValueComplete": true,
+          "source": "onchain: FeeDistributor.preview_claim",
+          "sources": [
+            "onchain: FeeDistributor.preview_claim"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "yield-basis-fees:yield basis:ethereum:0x651d4b8168488fa163d85304662e8278d4c55baa:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "yield-basis-fees",
+          "protocol": "Yield Basis",
+          "chain": "Ethereum",
+          "token": "0x651D4b8168488FA163D85304662E8278d4c55BAa",
+          "symbol": "yb-WBTC",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0000595426,
+          "amountComplete": true,
+          "usdValue": 4.532275,
+          "usdValueComplete": true,
+          "source": "onchain: FeeDistributor.preview_claim",
+          "sources": [
+            "onchain: FeeDistributor.preview_claim"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "yield-basis-fees:yield basis:ethereum:0x722fc3640ba007c3e9867ccdb0dca59f2e2f29f9:0x6640c1af0bf7e77fa223d4af2f779e55dcfb8d2d",
+          "route": "yield-basis-fees",
+          "protocol": "Yield Basis",
+          "chain": "Ethereum",
+          "token": "0x722FC3640BA007C3E9867CCdB0dCa59F2e2F29F9",
+          "symbol": "yb-cbBTC",
+          "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0000314022,
+          "amountComplete": true,
+          "usdValue": 2.456171,
+          "usdValueComplete": true,
+          "source": "onchain: FeeDistributor.preview_claim",
+          "sources": [
+            "onchain: FeeDistributor.preview_claim"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "yield-basis-fees:yield basis:ethereum:0x722fc3640ba007c3e9867ccdb0dca59f2e2f29f9:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "yield-basis-fees",
+          "protocol": "Yield Basis",
+          "chain": "Ethereum",
+          "token": "0x722FC3640BA007C3E9867CCdB0dCa59F2e2F29F9",
+          "symbol": "yb-cbBTC",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0000744773,
+          "amountComplete": true,
+          "usdValue": 5.826139,
+          "usdValueComplete": true,
+          "source": "onchain: FeeDistributor.preview_claim",
+          "sources": [
+            "onchain: FeeDistributor.preview_claim"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "yield-basis-fees:yield basis:ethereum:0x771f7290428d830ecd41e980745c327e507823ec:0x6640c1af0bf7e77fa223d4af2f779e55dcfb8d2d",
+          "route": "yield-basis-fees",
+          "protocol": "Yield Basis",
+          "chain": "Ethereum",
+          "token": "0x771F7290428d830ECd41E980745c327e507823Ec",
+          "symbol": "yb-tBTC",
+          "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0000108629,
+          "amountComplete": true,
+          "usdValue": 0.826529,
+          "usdValueComplete": true,
+          "source": "onchain: FeeDistributor.preview_claim",
+          "sources": [
+            "onchain: FeeDistributor.preview_claim"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "yield-basis-fees:yield basis:ethereum:0x771f7290428d830ecd41e980745c327e507823ec:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "yield-basis-fees",
+          "protocol": "Yield Basis",
+          "chain": "Ethereum",
+          "token": "0x771F7290428d830ECd41E980745c327e507823Ec",
+          "symbol": "yb-tBTC",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0000261994,
+          "amountComplete": true,
+          "usdValue": 1.993444,
+          "usdValueComplete": true,
+          "source": "onchain: FeeDistributor.preview_claim",
+          "sources": [
+            "onchain: FeeDistributor.preview_claim"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "yield-basis-fees:yield basis:ethereum:0x931d40dd07b25b91932b481b63631ea86d236e09:0x6640c1af0bf7e77fa223d4af2f779e55dcfb8d2d",
+          "route": "yield-basis-fees",
+          "protocol": "Yield Basis",
+          "chain": "Ethereum",
+          "token": "0x931d40dD07b25B91932b481B63631Ea86d236e09",
+          "symbol": "yb-WETH",
+          "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0006126452,
+          "amountComplete": true,
+          "usdValue": 1.535638,
+          "usdValueComplete": true,
+          "source": "onchain: FeeDistributor.preview_claim",
+          "sources": [
+            "onchain: FeeDistributor.preview_claim"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "yield-basis-fees:yield basis:ethereum:0x931d40dd07b25b91932b481b63631ea86d236e09:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "yield-basis-fees",
+          "protocol": "Yield Basis",
+          "chain": "Ethereum",
+          "token": "0x931d40dD07b25B91932b481B63631Ea86d236e09",
+          "symbol": "yb-WETH",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0008723183,
+          "amountComplete": true,
+          "usdValue": 2.186527,
+          "usdValueComplete": true,
+          "source": "onchain: FeeDistributor.preview_claim",
+          "sources": [
+            "onchain: FeeDistributor.preview_claim"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "yield-basis-fees:yield basis:ethereum:0xac0a340c1644321d0bbc6404946d828c1ebfac92:0x6640c1af0bf7e77fa223d4af2f779e55dcfb8d2d",
+          "route": "yield-basis-fees",
+          "protocol": "Yield Basis",
+          "chain": "Ethereum",
+          "token": "0xaC0a340C1644321D0BBc6404946d828c1EBfAC92",
+          "symbol": "yb-tBTC",
+          "wallet": "0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 3.5e-8,
+          "amountComplete": true,
+          "usdValue": 0.002783,
+          "usdValueComplete": true,
+          "source": "onchain: FeeDistributor.preview_claim",
+          "sources": [
+            "onchain: FeeDistributor.preview_claim"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "yield-basis-fees:yield basis:ethereum:0xac0a340c1644321d0bbc6404946d828c1ebfac92:0x78bf5af472d5f6014b641ed70de01862c05da8c3",
+          "route": "yield-basis-fees",
+          "protocol": "Yield Basis",
+          "chain": "Ethereum",
+          "token": "0xaC0a340C1644321D0BBc6404946d828c1EBfAC92",
+          "symbol": "yb-tBTC",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 1.068e-7,
+          "amountComplete": true,
+          "usdValue": 0.008494,
+          "usdValueComplete": true,
+          "source": "onchain: FeeDistributor.preview_claim",
+          "sources": [
+            "onchain: FeeDistributor.preview_claim"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        }
+      ],
+      "stateOnly": true,
+      "periodIncomeAuthority": false,
+      "realisedCashFlowAuthority": false,
+      "unknownIsNotZero": true
+    },
+    {
+      "snapshotKey": "rewards:2026-09-02T06:49:40.775Z:dinaz.eth",
+      "capturedAt": "2026-09-02T06:49:40.775Z",
+      "company": "dinaz.eth",
+      "canonicalClaimableTotalUsd": 7.021686,
+      "rows": [
+        {
+          "routeKey": "yield-basis-fees:yield basis:ethereum:0x651d4b8168488fa163d85304662e8278d4c55baa:0xca2ea0ef8ef6937e01eb9c72aecac24dd1ea7cec",
+          "route": "yield-basis-fees",
+          "protocol": "Yield Basis",
+          "chain": "Ethereum",
+          "token": "0x651D4b8168488FA163D85304662E8278d4c55BAa",
+          "symbol": "yb-WBTC",
+          "wallet": "0xcA2Ea0ef8eF6937e01EB9c72AEcaC24Dd1Ea7cEc",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0000392475,
+          "amountComplete": true,
+          "usdValue": 2.987235,
+          "usdValueComplete": true,
+          "source": "onchain: FeeDistributor.preview_claim",
+          "sources": [
+            "onchain: FeeDistributor.preview_claim"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "yield-basis-fees:yield basis:ethereum:0x722fc3640ba007c3e9867ccdb0dca59f2e2f29f9:0xca2ea0ef8ef6937e01eb9c72aecac24dd1ea7cec",
+          "route": "yield-basis-fees",
+          "protocol": "Yield Basis",
+          "chain": "Ethereum",
+          "token": "0x722FC3640BA007C3E9867CCdB0dCa59F2e2F29F9",
+          "symbol": "yb-cbBTC",
+          "wallet": "0xcA2Ea0ef8eF6937e01EB9c72AEcaC24Dd1Ea7cEc",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0000387039,
+          "amountComplete": true,
+          "usdValue": 3.027392,
+          "usdValueComplete": true,
+          "source": "onchain: FeeDistributor.preview_claim",
+          "sources": [
+            "onchain: FeeDistributor.preview_claim"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "yield-basis-fees:yield basis:ethereum:0x771f7290428d830ecd41e980745c327e507823ec:0xca2ea0ef8ef6937e01eb9c72aecac24dd1ea7cec",
+          "route": "yield-basis-fees",
+          "protocol": "Yield Basis",
+          "chain": "Ethereum",
+          "token": "0x771F7290428d830ECd41E980745c327e507823Ec",
+          "symbol": "yb-tBTC",
+          "wallet": "0xcA2Ea0ef8eF6937e01EB9c72AEcaC24Dd1Ea7cEc",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0000130632,
+          "amountComplete": true,
+          "usdValue": 0.993944,
+          "usdValueComplete": true,
+          "source": "onchain: FeeDistributor.preview_claim",
+          "sources": [
+            "onchain: FeeDistributor.preview_claim"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "yield-basis-fees:yield basis:ethereum:0xac0a340c1644321d0bbc6404946d828c1ebfac92:0xca2ea0ef8ef6937e01eb9c72aecac24dd1ea7cec",
+          "route": "yield-basis-fees",
+          "protocol": "Yield Basis",
+          "chain": "Ethereum",
+          "token": "0xaC0a340C1644321D0BBc6404946d828c1EBfAC92",
+          "symbol": "yb-tBTC",
+          "wallet": "0xcA2Ea0ef8eF6937e01EB9c72AEcaC24Dd1Ea7cEc",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 1.648e-7,
+          "amountComplete": true,
+          "usdValue": 0.013115,
+          "usdValueComplete": true,
+          "source": "onchain: FeeDistributor.preview_claim",
+          "sources": [
+            "onchain: FeeDistributor.preview_claim"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        }
+      ],
+      "stateOnly": true,
+      "periodIncomeAuthority": false,
+      "realisedCashFlowAuthority": false,
+      "unknownIsNotZero": true
+    },
+    {
+      "snapshotKey": "rewards:2026-09-02T06:49:40.775Z:Rook's portfolio",
+      "capturedAt": "2026-09-02T06:49:40.775Z",
+      "company": "Rook's portfolio",
+      "canonicalClaimableTotalUsd": 197.152502,
+      "rows": [
+        {
+          "routeKey": "aerodrome-relay:aerodrome · veaero:base:0x940181a94a35a4569e4529a3cdfb74e38fd98631:0x9c548960bd053c8465f298a711b6343ae0360309",
+          "route": "aerodrome-relay",
+          "protocol": "Aerodrome · veAERO",
+          "chain": "Base",
+          "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
+          "symbol": "AERO",
+          "wallet": "0x9c548960bd053C8465F298a711b6343Ae0360309",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "compounded-locked",
+          "classifications": [
+            "compounded-locked"
+          ],
+          "amount": 385.8927101974,
+          "amountComplete": true,
+          "usdValue": 185.285227,
+          "usdValueComplete": true,
+          "source": "onchain: LockedManagedReward.earned",
+          "sources": [
+            "onchain: LockedManagedReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "curve-fees:curve · vecrv:ethereum:0xf939e0a03fb07f59a73314e73794be0e57ac1b4e:0x7ec6331188468269dc7c1cf6a84c972632178b1e",
+          "route": "curve-fees",
+          "protocol": "Curve · veCRV",
+          "chain": "Ethereum",
+          "token": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+          "symbol": "crvUSD",
+          "wallet": "0x7eC6331188468269DC7C1Cf6a84C972632178B1E",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.7595904735,
+          "amountComplete": true,
+          "usdValue": 0.75959,
+          "usdValueComplete": true,
+          "source": "onchain: FeeDistributor.claim staticCall",
+          "sources": [
+            "onchain: FeeDistributor.claim staticCall"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "votium-union:votium · vlcvx:ethereum:0x01791f726b4103694969820be083196cc7c045ff:0x7ec6331188468269dc7c1cf6a84c972632178b1e",
+          "route": "votium-union",
+          "protocol": "Votium · vlCVX",
+          "chain": "Ethereum",
+          "token": "0x01791F726B4103694969820be083196cC7c045fF",
+          "symbol": "YB",
+          "wallet": "0x7eC6331188468269DC7C1Cf6a84C972632178B1E",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 5.4264556019,
+          "amountComplete": true,
+          "usdValue": 0.517309,
+          "usdValueComplete": true,
+          "source": "Votium current Merkle root + onchain claimed-state",
+          "sources": [
+            "Votium current Merkle root + onchain claimed-state"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "votium-union:votium · vlcvx:ethereum:0x04acaf8d2865c0714f79da09645c13fd2888977f:0x7ec6331188468269dc7c1cf6a84c972632178b1e",
+          "route": "votium-union",
+          "protocol": "Votium · vlCVX",
+          "chain": "Ethereum",
+          "token": "0x04ACaF8D2865c0714F79da09645C13FD2888977f",
+          "symbol": "WFRAX",
+          "wallet": "0x7eC6331188468269DC7C1Cf6a84C972632178B1E",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 1.0271710552,
+          "amountComplete": true,
+          "usdValue": 0.301173,
+          "usdValueComplete": true,
+          "source": "Votium current Merkle root + onchain claimed-state",
+          "sources": [
+            "Votium current Merkle root + onchain claimed-state"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "votium-union:votium · vlcvx:ethereum:0x18084fba666a33d37592fa2633fd49a74dd93a88:0x7ec6331188468269dc7c1cf6a84c972632178b1e",
+          "route": "votium-union",
+          "protocol": "Votium · vlCVX",
+          "chain": "Ethereum",
+          "token": "0x18084fbA666a33d37592fA2633fD49a74DD93a88",
+          "symbol": "tBTC",
+          "wallet": "0x7eC6331188468269DC7C1Cf6a84C972632178B1E",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 2.723e-7,
+          "amountComplete": true,
+          "usdValue": 0.021387,
+          "usdValueComplete": true,
+          "source": "Votium current Merkle root + onchain claimed-state",
+          "sources": [
+            "Votium current Merkle root + onchain claimed-state"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "votium-union:votium · vlcvx:ethereum:0x365accfca291e7d3914637abf1f7635db165bb09:0x7ec6331188468269dc7c1cf6a84c972632178b1e",
+          "route": "votium-union",
+          "protocol": "Votium · vlCVX",
+          "chain": "Ethereum",
+          "token": "0x365AccFCa291e7D3914637ABf1F7635dB165Bb09",
+          "symbol": "FXN",
+          "wallet": "0x7eC6331188468269DC7C1Cf6a84C972632178B1E",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0016679334,
+          "amountComplete": true,
+          "usdValue": 0.037845,
+          "usdValueComplete": true,
+          "source": "Votium current Merkle root + onchain claimed-state",
+          "sources": [
+            "Votium current Merkle root + onchain claimed-state"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "votium-union:votium · vlcvx:ethereum:0x419905009e4656fdc02418c7df35b1e61ed5f726:0x7ec6331188468269dc7c1cf6a84c972632178b1e",
+          "route": "votium-union",
+          "protocol": "Votium · vlCVX",
+          "chain": "Ethereum",
+          "token": "0x419905009e4656fdC02418C7Df35B1E61Ed5F726",
+          "symbol": "RSUP",
+          "wallet": "0x7eC6331188468269DC7C1Cf6a84C972632178B1E",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 4.0783894541,
+          "amountComplete": true,
+          "usdValue": 0.471503,
+          "usdValueComplete": true,
+          "source": "Votium current Merkle root + onchain claimed-state",
+          "sources": [
+            "Votium current Merkle root + onchain claimed-state"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "votium-union:votium · vlcvx:ethereum:0x4e3fbd56cd56c3e72c1403e103b45db9da5b9d2b:0x7ec6331188468269dc7c1cf6a84c972632178b1e",
+          "route": "votium-union",
+          "protocol": "Votium · vlCVX",
+          "chain": "Ethereum",
+          "token": "0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B",
+          "symbol": "CVX",
+          "wallet": "0x7eC6331188468269DC7C1Cf6a84C972632178B1E",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 3.8570533597,
+          "amountComplete": true,
+          "usdValue": 8.6398,
+          "usdValueComplete": true,
+          "source": "Votium current Merkle root + onchain claimed-state",
+          "sources": [
+            "Votium current Merkle root + onchain claimed-state"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "votium-union:votium · vlcvx:ethereum:0x57ab1e0003f623289cd798b1824be09a793e4bec:0x7ec6331188468269dc7c1cf6a84c972632178b1e",
+          "route": "votium-union",
+          "protocol": "Votium · vlCVX",
+          "chain": "Ethereum",
+          "token": "0x57aB1E0003F623289CD798B1824Be09a793e4Bec",
+          "symbol": "reUSD",
+          "wallet": "0x7eC6331188468269DC7C1Cf6a84C972632178B1E",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.0099115473,
+          "amountComplete": true,
+          "usdValue": 0.009912,
+          "usdValueComplete": true,
+          "source": "Votium current Merkle root + onchain claimed-state",
+          "sources": [
+            "Votium current Merkle root + onchain claimed-state"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "votium-union:votium · vlcvx:ethereum:0x865377367054516e17014ccded1e7d814edc9ce4:0x7ec6331188468269dc7c1cf6a84c972632178b1e",
+          "route": "votium-union",
+          "protocol": "Votium · vlCVX",
+          "chain": "Ethereum",
+          "token": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+          "symbol": "DOLA",
+          "wallet": "0x7eC6331188468269DC7C1Cf6a84C972632178B1E",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.1185206347,
+          "amountComplete": true,
+          "usdValue": 0.118261,
+          "usdValueComplete": true,
+          "source": "Votium current Merkle root + onchain claimed-state",
+          "sources": [
+            "Votium current Merkle root + onchain claimed-state"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "votium-union:votium · vlcvx:ethereum:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48:0x7ec6331188468269dc7c1cf6a84c972632178b1e",
+          "route": "votium-union",
+          "protocol": "Votium · vlCVX",
+          "chain": "Ethereum",
+          "token": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "symbol": "USDC",
+          "wallet": "0x7eC6331188468269DC7C1Cf6a84C972632178B1E",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.019653,
+          "amountComplete": true,
+          "usdValue": 0.019651,
+          "usdValueComplete": true,
+          "source": "Votium current Merkle root + onchain claimed-state",
+          "sources": [
+            "Votium current Merkle root + onchain claimed-state"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "votium-union:votium · vlcvx:ethereum:0xc0c17dd08263c16f6b64e772fb9b723bf1344ddf:0x7ec6331188468269dc7c1cf6a84c972632178b1e",
+          "route": "votium-union",
+          "protocol": "Votium · vlCVX",
+          "chain": "Ethereum",
+          "token": "0xC0c17dD08263C16f6b64E772fB9B723Bf1344DdF",
+          "symbol": "pmUSD",
+          "wallet": "0x7eC6331188468269DC7C1Cf6a84C972632178B1E",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 1.1255587929,
+          "amountComplete": true,
+          "usdValue": 0.591622,
+          "usdValueComplete": true,
+          "source": "Votium current Merkle root + onchain claimed-state",
+          "sources": [
+            "Votium current Merkle root + onchain claimed-state"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "votium-union:votium · vlcvx:ethereum:0xd533a949740bb3306d119cc777fa900ba034cd52:0x7ec6331188468269dc7c1cf6a84c972632178b1e",
+          "route": "votium-union",
+          "protocol": "Votium · vlCVX",
+          "chain": "Ethereum",
+          "token": "0xD533a949740bb3306d119CC777fa900bA034cd52",
+          "symbol": "CRV",
+          "wallet": "0x7eC6331188468269DC7C1Cf6a84C972632178B1E",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.1573691841,
+          "amountComplete": true,
+          "usdValue": 0.048568,
+          "usdValueComplete": true,
+          "source": "Votium current Merkle root + onchain claimed-state",
+          "sources": [
+            "Votium current Merkle root + onchain claimed-state"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "votium-union:votium · vlcvx:ethereum:0xdbdb4d16eda451d0503b854cf79d55697f90c8df:0x7ec6331188468269dc7c1cf6a84c972632178b1e",
+          "route": "votium-union",
+          "protocol": "Votium · vlCVX",
+          "chain": "Ethereum",
+          "token": "0xdBdb4d16EdA451D0503b854CF79D55697F90c8DF",
+          "symbol": "ALCX",
+          "wallet": "0x7eC6331188468269DC7C1Cf6a84C972632178B1E",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 0.1509837257,
+          "amountComplete": true,
+          "usdValue": 0.330654,
+          "usdValueComplete": true,
+          "source": "Votium current Merkle root + onchain claimed-state",
+          "sources": [
+            "Votium current Merkle root + onchain claimed-state"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        }
+      ],
+      "stateOnly": true,
+      "periodIncomeAuthority": false,
+      "realisedCashFlowAuthority": false,
+      "unknownIsNotZero": true
+    },
+    {
+      "snapshotKey": "rewards:2026-09-02T06:49:40.775Z:YieldRing.eth",
+      "capturedAt": "2026-09-02T06:49:40.775Z",
+      "company": "YieldRing.eth",
+      "canonicalClaimableTotalUsd": 6.591317,
+      "rows": [
+        {
+          "routeKey": "aerodrome-relay:aerodrome · veaero:base:0x940181a94a35a4569e4529a3cdfb74e38fd98631:0x90815314fb9e7f015ab5845572fe5bcc0ba14669",
+          "route": "aerodrome-relay",
+          "protocol": "Aerodrome · veAERO",
+          "chain": "Base",
+          "token": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
+          "symbol": "AERO",
+          "wallet": "0x90815314fB9e7F015AB5845572FE5BcC0Ba14669",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "compounded-locked",
+          "classifications": [
+            "compounded-locked"
+          ],
+          "amount": 7.5858990098,
+          "amountComplete": true,
+          "usdValue": 3.642347,
+          "usdValueComplete": true,
+          "source": "onchain: LockedManagedReward.earned",
+          "sources": [
+            "onchain: LockedManagedReward.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "frax-yield:frax · vefrax:fraxtal:0xfc00000000000000000000000000000000000002:0x90815314fb9e7f015ab5845572fe5bcc0ba14669",
+          "route": "frax-yield",
+          "protocol": "Frax · veFRAX",
+          "chain": "Fraxtal",
+          "token": "0xFc00000000000000000000000000000000000002",
+          "symbol": "WFRAX",
+          "wallet": "0x90815314fB9e7F015AB5845572FE5BcC0Ba14669",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 3.7831681596,
+          "amountComplete": true,
+          "usdValue": 1.109248,
+          "usdValueComplete": true,
+          "source": "onchain: YieldDistributor.earned",
+          "sources": [
+            "onchain: YieldDistributor.earned"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        },
+        {
+          "routeKey": "votium-union-scrvusd:votium + union · vlcvx:ethereum:0x0655977feb2f289a4ab78af67bab0d17aab84367:0x90815314fb9e7f015ab5845572fe5bcc0ba14669",
+          "route": "votium-union-scrvusd",
+          "protocol": "Votium + Union · vlCVX",
+          "chain": "Ethereum",
+          "token": "0x0655977FEb2f289A4aB78af67BAB0d17aAb84367",
+          "symbol": "scrvUSD",
+          "wallet": "0x90815314fB9e7F015AB5845572FE5BcC0Ba14669",
+          "shardCount": 1,
+          "aggregation": "single-mechanism-shard",
+          "classification": "unclaimed",
+          "classifications": [
+            "unclaimed"
+          ],
+          "amount": 1.6633858548,
+          "amountComplete": true,
+          "usdValue": 1.839722,
+          "usdValueComplete": true,
+          "source": "Llama Airforce official member airdrop + live distributor claimed-state",
+          "sources": [
+            "Llama Airforce official member airdrop + live distributor claimed-state"
+          ],
+          "includedInClaimableTotal": true,
+          "stateOnly": true,
+          "periodIncomeAuthority": false,
+          "realisedCashFlowAuthority": false,
+          "unknownIsNotZero": true
+        }
+      ],
+      "stateOnly": true,
+      "periodIncomeAuthority": false,
+      "realisedCashFlowAuthority": false,
+      "unknownIsNotZero": true
     }
   ],
   "companies": {
@@ -41876,8 +45280,8 @@
       },
       "referenceState": null,
       "currentClaimableState": {
-        "snapshotKey": "rewards:2026-09-01T10:10:45.643Z:05081966.eth",
-        "capturedAt": "2026-09-01T10:10:45.643Z",
+        "snapshotKey": "rewards:2026-09-02T06:49:40.775Z:05081966.eth",
+        "capturedAt": "2026-09-02T06:49:40.775Z",
         "company": "05081966.eth",
         "canonicalClaimableTotalUsd": 2.935516,
         "rows": [
@@ -42032,10 +45436,10 @@
       },
       "referenceState": null,
       "currentClaimableState": {
-        "snapshotKey": "rewards:2026-09-01T10:10:45.643Z:0x5860...83CA8.eth",
-        "capturedAt": "2026-09-01T10:10:45.643Z",
+        "snapshotKey": "rewards:2026-09-02T06:49:40.775Z:0x5860...83CA8.eth",
+        "capturedAt": "2026-09-02T06:49:40.775Z",
         "company": "0x5860...83CA8.eth",
-        "canonicalClaimableTotalUsd": 134.138331,
+        "canonicalClaimableTotalUsd": 137.865316,
         "rows": [
           {
             "routeKey": "aerodrome-ve:aerodrome · veaero:base:0x4200000000000000000000000000000000000006:0x58603461149fc2a800a56d421e77dcbba2d83ca8",
@@ -42224,9 +45628,9 @@
             "classifications": [
               "unclaimed"
             ],
-            "amount": 22.9245342,
+            "amount": 23.1009455,
             "amountComplete": true,
-            "usdValue": 54.989545,
+            "usdValue": 58.71653,
             "usdValueComplete": true,
             "source": "model: owner-confirmed maturity baseline + canonical icp_nns Reference APR",
             "sources": [
@@ -42354,12 +45758,12 @@
         {
           "routeKey": "icp-nns-governance:internet computer · nns governance:internet computer:icp:wallet-unknown",
           "state": "state-increase-observed-not-income-authority",
-          "previousAmount": 22.73192718,
-          "currentAmount": 22.9245342,
-          "deltaAmount": 0.19260702,
-          "previousUsdValue": 54.556625,
-          "currentUsdValue": 54.989545,
-          "deltaUsd": 0.43292,
+          "previousAmount": 22.9245342,
+          "currentAmount": 23.1009455,
+          "deltaAmount": 0.1764113,
+          "previousUsdValue": 54.989545,
+          "currentUsdValue": 58.71653,
+          "deltaUsd": 3.726985,
           "periodIncomeAuthority": false,
           "realisedCashFlowAuthority": false,
           "unknownIsNotZero": true
@@ -42398,8 +45802,8 @@
       },
       "referenceState": null,
       "currentClaimableState": {
-        "snapshotKey": "rewards:2026-09-01T10:10:45.643Z:1milliondollar.eth",
-        "capturedAt": "2026-09-01T10:10:45.643Z",
+        "snapshotKey": "rewards:2026-09-02T06:49:40.775Z:1milliondollar.eth",
+        "capturedAt": "2026-09-02T06:49:40.775Z",
         "company": "1milliondollar.eth",
         "canonicalClaimableTotalUsd": 30.865295,
         "rows": [
@@ -42673,8 +46077,8 @@
       },
       "referenceState": null,
       "currentClaimableState": {
-        "snapshotKey": "rewards:2026-09-01T10:10:45.643Z:Cypher",
-        "capturedAt": "2026-09-01T10:10:45.643Z",
+        "snapshotKey": "rewards:2026-09-02T06:49:40.775Z:Cypher",
+        "capturedAt": "2026-09-02T06:49:40.775Z",
         "company": "Cypher",
         "canonicalClaimableTotalUsd": 15.318442,
         "rows": [
@@ -43017,8 +46421,8 @@
       },
       "referenceState": null,
       "currentClaimableState": {
-        "snapshotKey": "rewards:2026-09-01T10:10:45.643Z:Rook's portfolio",
-        "capturedAt": "2026-09-01T10:10:45.643Z",
+        "snapshotKey": "rewards:2026-09-02T06:49:40.775Z:Rook's portfolio",
+        "capturedAt": "2026-09-02T06:49:40.775Z",
         "company": "Rook's portfolio",
         "canonicalClaimableTotalUsd": 197.152502,
         "rows": [
@@ -43624,8 +47028,8 @@
       },
       "referenceState": null,
       "currentClaimableState": {
-        "snapshotKey": "rewards:2026-09-01T10:10:45.643Z:YieldRing.eth",
-        "capturedAt": "2026-09-01T10:10:45.643Z",
+        "snapshotKey": "rewards:2026-09-02T06:49:40.775Z:YieldRing.eth",
+        "capturedAt": "2026-09-02T06:49:40.775Z",
         "company": "YieldRing.eth",
         "canonicalClaimableTotalUsd": 6.591317,
         "rows": [
@@ -43801,10 +47205,10 @@
       },
       "referenceState": null,
       "currentClaimableState": {
-        "snapshotKey": "rewards:2026-09-01T10:10:45.643Z:aerocvxyb.eth",
-        "capturedAt": "2026-09-01T10:10:45.643Z",
+        "snapshotKey": "rewards:2026-09-02T06:49:40.775Z:aerocvxyb.eth",
+        "capturedAt": "2026-09-02T06:49:40.775Z",
         "company": "aerocvxyb.eth",
-        "canonicalClaimableTotalUsd": 188.016365,
+        "canonicalClaimableTotalUsd": 191.74335,
         "rows": [
           {
             "routeKey": "aerodrome-ve:aerodrome · veaero:base:0x00000000a22c618fd6b4d7e9a335c4b96b189a38:0xa641752824d512fa8683758c6b2d8a04ea46dcd0",
@@ -44162,9 +47566,9 @@
             "classifications": [
               "unclaimed"
             ],
-            "amount": 22.9245342,
+            "amount": 23.1009455,
             "amountComplete": true,
-            "usdValue": 54.989545,
+            "usdValue": 58.71653,
             "usdValueComplete": true,
             "source": "model: owner-confirmed maturity baseline + canonical icp_nns Reference APR",
             "sources": [
@@ -44650,12 +48054,12 @@
         {
           "routeKey": "icp-nns-governance:internet computer · nns governance:internet computer:icp:wallet-unknown",
           "state": "state-increase-observed-not-income-authority",
-          "previousAmount": 22.73192718,
-          "currentAmount": 22.9245342,
-          "deltaAmount": 0.19260702,
-          "previousUsdValue": 54.556625,
-          "currentUsdValue": 54.989545,
-          "deltaUsd": 0.43292,
+          "previousAmount": 22.9245342,
+          "currentAmount": 23.1009455,
+          "deltaAmount": 0.1764113,
+          "previousUsdValue": 54.989545,
+          "currentUsdValue": 58.71653,
+          "deltaUsd": 3.726985,
           "periodIncomeAuthority": false,
           "realisedCashFlowAuthority": false,
           "unknownIsNotZero": true
@@ -44826,13 +48230,13 @@
         "semantic": "reference-cash-flow-model-with-source-isolation-not-claim-accounting",
         "latestDate": "2026-09-02",
         "currentMonth": "2026-09",
-        "currentMonthReferenceOrGeneratedIncomeUsd": 8.08,
+        "currentMonthReferenceOrGeneratedIncomeUsd": 8.09,
         "source": "reporting/reporting-data.json",
         "earnedIncomeAuthority": false
       },
       "currentClaimableState": {
-        "snapshotKey": "rewards:2026-09-01T10:10:45.643Z:defitea.eth",
-        "capturedAt": "2026-09-01T10:10:45.643Z",
+        "snapshotKey": "rewards:2026-09-02T06:49:40.775Z:defitea.eth",
+        "capturedAt": "2026-09-02T06:49:40.775Z",
         "company": "defitea.eth",
         "canonicalClaimableTotalUsd": 155.532043,
         "rows": [
@@ -46951,8 +50355,8 @@
       },
       "referenceState": null,
       "currentClaimableState": {
-        "snapshotKey": "rewards:2026-09-01T10:10:45.643Z:dinaz.eth",
-        "capturedAt": "2026-09-01T10:10:45.643Z",
+        "snapshotKey": "rewards:2026-09-02T06:49:40.775Z:dinaz.eth",
+        "capturedAt": "2026-09-02T06:49:40.775Z",
         "company": "dinaz.eth",
         "canonicalClaimableTotalUsd": 7.021686,
         "rows": [
@@ -47143,9 +50547,11 @@
     "candidateEventCount": 187,
     "newEventsAdmitted": 0,
     "retainedHistoricalEventCount": 187,
-    "claimableSnapshotCount": 99,
+    "claimableSnapshotCount": 108,
     "company009BeefyCandidateEventCount": 9,
-    "company009BeefyCheckpointCount": 22
+    "company009BeefyCheckpointCount": 22,
+    "votiumUnionCandidateEventCount": 0,
+    "votiumUnionBoundaryCount": 2
   },
   "accountingExtensions": {
     "company009BeefyEmbeddedIncome": {
@@ -47155,6 +50561,125 @@
       "laterPriceMovementRewritesIncome": false,
       "crossMonthIntervalsAutoAllocated": false,
       "executionAuthority": "none"
+    },
+    "votiumUnionAccrual": {
+      "version": "0.1-votium-union-factual-accrual-adapter",
+      "status": "factual-boundary-tracking",
+      "mechanism": "votium-union-scrvusd",
+      "generatedAt": "2026-09-02T08:54:26.792Z",
+      "authority": {
+        "executionAuthority": "none",
+        "walletAuthority": "none",
+        "claimingAuthority": "none",
+        "capitalExecution": false,
+        "monthClosingAuthority": false,
+        "methodologyMutationAuthority": "none"
+      },
+      "boundaries": [
+        {
+          "boundaryKey": "defitea.eth|0x78bf5af472d5f6014b641ed70de01862c05da8c3|votium-union-scrvusd|0x0655977feb2f289a4ab78af67bab0d17aab84367|45|0xae39f55580d1b15aa85b09751e9e9c74efbc22ad0beabfd1e5fd0a28efe87d7c",
+          "stateKey": "defitea.eth|0x78bf5af472d5f6014b641ed70de01862c05da8c3|votium-union-scrvusd|0x0655977feb2f289a4ab78af67bab0d17aab84367",
+          "registry": "004",
+          "company": "defitea.eth",
+          "wallet": "0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3",
+          "route": "votium-union-scrvusd",
+          "protocol": "Votium + Union · vlCVX",
+          "asset": "scrvUSD",
+          "token": "0x0655977feb2f289a4ab78af67bab0d17aab84367",
+          "distributor": "0x17ac69dd3fb8f22b4f52dbdb8a3a0eb059367efc",
+          "week": 45,
+          "merkleRoot": "0xae39f55580d1b15aa85b09751e9e9c74efbc22ad0beabfd1e5fd0a28efe87d7c",
+          "index": "86",
+          "amountRaw": "4845665609526061056",
+          "amount": 4.845665609526,
+          "usdValue": null,
+          "unitUsd": null,
+          "proofValid": true,
+          "claimed": false,
+          "observedAt": "2026-08-31T11:20:24.881Z",
+          "rootEvent": {
+            "blockNumber": 25782374,
+            "transactionHash": "0x16bedc194ac02f9409841e59e72dd1a1b764831fe9f575b69f582d6f317441f8",
+            "logIndex": 363,
+            "publishedAt": "2026-08-18T13:48:35.000Z",
+            "proofClass": "blockscout-decoded-onchain-MerkleRootUpdated-root-week-exact-match"
+          },
+          "source": {
+            "type": "historical-canonical-rewards-bootstrap",
+            "repository": null,
+            "path": "companies/rewards-data.json",
+            "commit": "183cfbe6abdd8d4ab78777896eec5190fc1fe797",
+            "blobSha": "c972428d1990d91879c7474578f661707351c42c",
+            "generatedAt": "2026-08-31T11:20:24.881Z"
+          },
+          "periodIncomeAuthority": false,
+          "bootstrap": true,
+          "unknownIsNotZero": true
+        },
+        {
+          "boundaryKey": "YieldRing.eth|0x90815314fb9e7f015ab5845572fe5bcc0ba14669|votium-union-scrvusd|0x0655977feb2f289a4ab78af67bab0d17aab84367|45|0xae39f55580d1b15aa85b09751e9e9c74efbc22ad0beabfd1e5fd0a28efe87d7c",
+          "stateKey": "YieldRing.eth|0x90815314fb9e7f015ab5845572fe5bcc0ba14669|votium-union-scrvusd|0x0655977feb2f289a4ab78af67bab0d17aab84367",
+          "registry": "002",
+          "company": "YieldRing.eth",
+          "wallet": "0x90815314fB9e7F015AB5845572FE5BcC0Ba14669",
+          "route": "votium-union-scrvusd",
+          "protocol": "Votium + Union · vlCVX",
+          "asset": "scrvUSD",
+          "token": "0x0655977feb2f289a4ab78af67bab0d17aab84367",
+          "distributor": "0x17ac69dd3fb8f22b4f52dbdb8a3a0eb059367efc",
+          "week": 45,
+          "merkleRoot": "0xae39f55580d1b15aa85b09751e9e9c74efbc22ad0beabfd1e5fd0a28efe87d7c",
+          "index": "102",
+          "amountRaw": "1663385854832316160",
+          "amount": 1.663385854832,
+          "usdValue": null,
+          "unitUsd": null,
+          "proofValid": true,
+          "claimed": false,
+          "observedAt": "2026-08-31T11:20:24.881Z",
+          "rootEvent": {
+            "blockNumber": 25782374,
+            "transactionHash": "0x16bedc194ac02f9409841e59e72dd1a1b764831fe9f575b69f582d6f317441f8",
+            "logIndex": 363,
+            "publishedAt": "2026-08-18T13:48:35.000Z",
+            "proofClass": "blockscout-decoded-onchain-MerkleRootUpdated-root-week-exact-match"
+          },
+          "source": {
+            "type": "historical-canonical-rewards-bootstrap",
+            "repository": null,
+            "path": "companies/rewards-data.json",
+            "commit": "183cfbe6abdd8d4ab78777896eec5190fc1fe797",
+            "blobSha": "c972428d1990d91879c7474578f661707351c42c",
+            "generatedAt": "2026-08-31T11:20:24.881Z"
+          },
+          "periodIncomeAuthority": false,
+          "bootstrap": true,
+          "unknownIsNotZero": true
+        }
+      ],
+      "diagnostics": {
+        "bootstrapBoundaryCount": 2,
+        "currentStateCount": 1,
+        "verifiedCurrentBoundaryCount": 0,
+        "latestDistributorWeek": 46,
+        "upstreamFreshness": "stale-or-mixed",
+        "candidateEventCount": 0,
+        "zeroDeltaCount": 0,
+        "reconciliationCount": 0,
+        "externalEvidenceStatus": "ok",
+        "referenceAprUsed": false,
+        "unknownIsNotZero": true
+      },
+      "semantics": {
+        "rolloverAware": true,
+        "currentLeafIsPeriodIncome": false,
+        "positiveDeltaRequiresDistinctProvenBoundaries": true,
+        "noInterveningClaimRequired": true,
+        "decreaseIsNotNegativeIncome": true,
+        "referenceAprUsed": false,
+        "laterClaimOrPriceMoveRewritesIncome": false,
+        "unknownIsNotZero": true
+      }
     }
   },
   "authority": {
