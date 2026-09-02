@@ -1,0 +1,25 @@
+# holding-workflow-definition-proof: intelligence/reliability/company-009-beefy-writer-retirement-proof.mjs
+name: Retired · Company 009 Beefy Income Ledger Writer
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  retired-boundary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Checkout exact repository state
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Prove writer is retired
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s reporting/income-ledger.mjs
+          test -s companies/company-009-beefy-cvxcrv-income.json
+          echo "Company #009 Beefy evidence is admitted by canonical Reporting / income-ledger.mjs."
+          echo "This retired workflow has no repository mutation authority."
