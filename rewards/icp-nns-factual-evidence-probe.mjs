@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · ICP NNS factual accounting evidence probe v0.1
+ * The Holding · ICP NNS factual accounting evidence probe v0.2
  *
  * Read-only diagnostic. It never creates accounting income and never writes
  * repository files. Its only job is to test whether the public Dashboard API
@@ -17,7 +17,7 @@ async function fetchJson(url){
   const c=new AbortController();
   const timer=setTimeout(()=>c.abort(),TIMEOUT_MS);
   try{
-    const r=await fetch(url,{signal:c.signal,headers:{accept:'application/json','user-agent':'The-Holding-ICP-NNS-Factual-Probe/0.1'}});
+    const r=await fetch(url,{signal:c.signal,headers:{accept:'application/json','user-agent':'The-Holding-ICP-NNS-Factual-Probe/0.2'}});
     if(!r.ok) throw new Error(`HTTP ${r.status} ${url}`);
     return await r.json();
   }finally{clearTimeout(timer);}
@@ -79,6 +79,11 @@ function safeValue(v){
   return Array.isArray(v)?`array(${v.length})`:`object(${Object.keys(v).slice(0,12).join(',')})`;
 }
 
+function rowShape(row){
+  if(!row||typeof row!=='object'||Array.isArray(row))return [];
+  return Object.keys(row).sort();
+}
+
 const config=JSON.parse(await fs.readFile(CONFIG_FILE,'utf8'));
 if(!Array.isArray(config.neuronIds)||config.neuronIds.length!==41)throw new Error('Expected canonical 41-neuron pool');
 
@@ -86,19 +91,27 @@ if(!Array.isArray(config.neuronIds)||config.neuronIds.length!==41)throw new Erro
 // without hammering the API during a PR diagnostic.
 const probeIds=[config.neuronIds[0],config.neuronIds[Math.floor(config.neuronIds.length/2)],config.neuronIds.at(-1)];
 const neuronDiagnostics=[];
-let firstProposalId=null;
+let firstParticipatingProposalId=null;
+let fallbackProposalId=null;
 for(const id of probeIds){
-  const [detail,ballots,recent]=await Promise.all([
+  const participatingUrl=`${API}/neurons/${id}/ballots?limit=200&offset=0&include_vote=1&include_vote=2`;
+  const [detail,ballots,participatingBallots,recent]=await Promise.all([
     fetchJson(`${API}/neurons/${id}`),
     fetchJson(`${API}/neurons/${id}/ballots?limit=200&offset=0`),
+    fetchJson(participatingUrl),
     fetchJson(`${API}/neurons/${id}/recent-ballots`)
   ]);
   const ballotRows=objectsWith(ballots,['proposal_id','vote']);
+  const participatingRows=objectsWith(participatingBallots,['proposal_id','vote']);
   const recentRows=objectsWith(recent,['proposal_id','vote']);
-  const participating=ballotRows.filter(x=>Number(x.vote)===1||Number(x.vote)===2);
-  if(!firstProposalId){
-    const candidate=participating[0]?.proposal_id??ballotRows[0]?.proposal_id;
-    if(candidate!==undefined&&candidate!==null)firstProposalId=Number(candidate);
+  const eligible=participatingRows.filter(x=>Number(x.vote)===1||Number(x.vote)===2);
+  if(!firstParticipatingProposalId){
+    const candidate=eligible[0]?.proposal_id;
+    if(candidate!==undefined&&candidate!==null)firstParticipatingProposalId=Number(candidate);
+  }
+  if(!fallbackProposalId){
+    const candidate=ballotRows[0]?.proposal_id;
+    if(candidate!==undefined&&candidate!==null)fallbackProposalId=Number(candidate);
   }
   const m=firstField(detail,'maturity_e8s_equivalent');
   const sm=firstField(detail,'staked_maturity_e8s_equivalent');
@@ -112,9 +125,14 @@ for(const id of probeIds){
     autoStakeMaturityFieldExposed:auto.found,
     autoStakeMaturity:safeValue(auto.value),
     fullBallotRowCount:ballotRows.length,
-    participatingBallotRowCount:participating.length,
+    filteredParticipatingBallotRowCount:participatingRows.length,
+    filteredEligibleVoteRowCount:eligible.length,
     recentBallotRowCount:recentRows.length,
-    ballotPrimitiveShape:primitivePaths(ballots,30).map(([p,v])=>[p,safeValue(v)])
+    firstFullBallotKeys:rowShape(ballotRows[0]),
+    firstParticipatingBallotKeys:rowShape(participatingRows[0]),
+    firstParticipatingBallot:participatingRows[0]?Object.fromEntries(Object.entries(participatingRows[0]).map(([k,v])=>[k,safeValue(v)])):null,
+    ballotPrimitiveShape:primitivePaths(ballots,20).map(([p,v])=>[p,safeValue(v)]),
+    participatingPrimitiveShape:primitivePaths(participatingBallots,30).map(([p,v])=>[p,safeValue(v)])
   });
 }
 
@@ -123,13 +141,22 @@ const [lastRewardEvent,totalAvailable]=await Promise.all([
   fetchJson(`${API}/metrics/latest-reward-event-total-available?format=json`)
 ]);
 
+const sampledProposalId=Number.isFinite(firstParticipatingProposalId)?firstParticipatingProposalId:fallbackProposalId;
 let proposal=null;
-if(Number.isFinite(firstProposalId)&&firstProposalId>0){
-  proposal=await fetchJson(`${API}/proposals/${firstProposalId}`);
+if(Number.isFinite(sampledProposalId)&&sampledProposalId>0){
+  proposal=await fetchJson(`${API}/proposals/${sampledProposalId}`);
 }
 
+const proposalFields={
+  rewardStatus:firstField(proposal,'reward_status'),
+  topic:firstField(proposal,'topic'),
+  totalPotentialVotingPower:firstField(proposal,'total_potential_voting_power'),
+  rewardEventRound:firstField(proposal,'reward_event_round'),
+  rewardEventEndTimestampSeconds:firstField(proposal,'reward_event_end_timestamp_seconds')
+};
+
 const result={
-  version:'0.1-icp-nns-factual-evidence-probe',
+  version:'0.2-icp-nns-factual-evidence-probe',
   observedAt:new Date().toISOString(),
   readOnly:true,
   executionAuthority:'none',
@@ -137,15 +164,29 @@ const result={
   testedNeuronCount:probeIds.length,
   neuronDiagnostics,
   fullBallotsAvailable:neuronDiagnostics.some(x=>x.fullBallotRowCount>0),
-  participatingBallotsAvailable:neuronDiagnostics.some(x=>x.participatingBallotRowCount>0),
+  participatingBallotFilterAvailable:neuronDiagnostics.some(x=>x.filteredParticipatingBallotRowCount>0),
+  eligibleVotesObserved:neuronDiagnostics.some(x=>x.filteredEligibleVoteRowCount>0),
+  ballotVotingPowerFieldObserved:neuronDiagnostics.some(x=>x.firstParticipatingBallotKeys.includes('voting_power')),
   exactOrdinaryMaturityPubliclyObserved:neuronDiagnostics.some(x=>x.ordinaryMaturityFieldExposed),
   exactStakedMaturityPubliclyObserved:neuronDiagnostics.some(x=>x.stakedMaturityFieldExposed),
   lastRewardEventShape:primitivePaths(lastRewardEvent,50).map(([p,v])=>[p,safeValue(v)]),
   totalAvailableShape:primitivePaths(totalAvailable,50).map(([p,v])=>[p,safeValue(v)]),
-  sampledProposalId:Number.isFinite(firstProposalId)?firstProposalId:null,
+  sampledProposalId:Number.isFinite(sampledProposalId)?sampledProposalId:null,
+  sampledProposalFields:Object.fromEntries(Object.entries(proposalFields).map(([k,hit])=>[k,hit?.found?safeValue(hit.value):null])),
   sampledProposalShape:proposal?primitivePaths(proposal,100).map(([p,v])=>[p,safeValue(v)]):[],
+  exactRewardReconstructionReady:false,
   accountingAuthority:false
 };
+
+// Exact reconstruction is not promoted merely because vote history exists.
+// Historical ballot voting power and a deterministic reward-round binding must
+// both be demonstrated before this probe may ever graduate to accounting input.
+result.exactRewardReconstructionReady = Boolean(
+  result.eligibleVotesObserved &&
+  result.ballotVotingPowerFieldObserved &&
+  result.sampledProposalFields.totalPotentialVotingPower &&
+  result.sampledProposalFields.rewardEventRound
+);
 
 await fs.writeFile('/tmp/icp-nns-factual-evidence-probe.json',JSON.stringify(result,null,2)+'\n');
 console.log('ICP NNS FACTUAL EVIDENCE PROBE',JSON.stringify(result,null,2));
