@@ -134,10 +134,24 @@ function sourcePositions(source){
   });
 }
 
-function currentRewardContracts(rewards,company,route,tokenId,providerKey){
+function operationalPools(position){
+  return new Set([
+    ...(position?.currentVotedPools||[]),
+    ...(position?.recentVotedPools||[]),
+    ...(position?.matchedRewardPools||[])
+  ].filter(isAddress).map(lower));
+}
+
+function currentRewardContracts(rewards,company,route,tokenId,providerKey,position=null){
   const out=[];
+  const activePools=operationalPools(position);
   const idx=rewards?.internalState?.directVeRewardIndex?.[`${providerKey}:${tokenId}`];
-  for(const x of idx?.contracts||[])if(isAddress(x?.rewardAddress))out.push(getAddress(x.rewardAddress));
+  for(const x of idx?.contracts||[]){
+    if(!isAddress(x?.rewardAddress))continue;
+    const pool=isAddress(x?.pool)?lower(x.pool):null;
+    if(activePools.size&&(!pool||!activePools.has(pool)))continue;
+    out.push(getAddress(x.rewardAddress));
+  }
   for(const r of rewards?.companies?.[company]?.rewards||[]){
     if(r?.route!==route||String(r?.details?.tokenId||'')!==String(tokenId))continue;
     if(isAddress(r?.details?.rewardContract))out.push(getAddress(r.details.rewardContract));
@@ -157,7 +171,8 @@ export function trackedPositionDescriptors(rewards){
             walletAlias:p.walletAlias||null,tokenId:String(p.tokenId),mode:p.mode||null,
             custodyContext:p.custodyContext||'direct-wallet',managedTokenId:p.managedTokenId?String(p.managedTokenId):null,
             freeManagedReward:isAddress(p.freeManagedReward)?getAddress(p.freeManagedReward):null,
-            rewardContracts:currentRewardContracts(rewards,company,source.route,p.tokenId,cfg.providerKey)
+            operationalPoolCount:operationalPools(p).size,
+            rewardContracts:currentRewardContracts(rewards,company,source.route,p.tokenId,cfg.providerKey,p)
           });
         }
       }
