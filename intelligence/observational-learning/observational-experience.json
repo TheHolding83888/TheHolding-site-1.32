@@ -1,7 +1,7 @@
 {
   "version": "0.1-autonomous-observational-experience",
   "engineVersion": "0.1.1-prospective-pattern-evaluation",
-  "generatedAt": "2026-09-01T11:52:50.736Z",
+  "generatedAt": "2026-09-02T11:34:03.535Z",
   "status": "ready",
   "purpose": "Deterministic source-bound observational memory, descriptive retrospective pattern candidates, and prospective evaluation of an immutable frozen candidate cohort.",
   "authority": {
@@ -16,10 +16,10 @@
   "source": {
     "file": "intelligence/change-history.json",
     "version": "0.2.1-change-history",
-    "lastUpdatedAt": "2026-09-01T11:52:50.736Z",
-    "sha256": "bed74da9a0e574f9c8206d722bbe59fd008c9662de3231b7c1fe6d903af69d8c",
-    "runCount": 56,
-    "eventCount": 306
+    "lastUpdatedAt": "2026-09-02T11:34:03.535Z",
+    "sha256": "3dc2c7e98c9b1e32ee0e41496e613816742507e8bb2d58b62d02733f0aeda4db",
+    "runCount": 57,
+    "eventCount": 324
   },
   "semantics": {
     "capabilityName": "Observational Memory + Prospective Pattern Evaluation",
@@ -36,19 +36,19 @@
     "realYieldBoundary": "A Reference APR increase alone never proves why yield rose; owner real-yield interpretation requires source/mechanism attribution before strong economic explanation."
   },
   "totals": {
-    "episodeCount": 125,
+    "episodeCount": 131,
     "seriesCount": 14,
     "entityCount": 10,
     "patternCandidateCount": 6,
     "frozenProspectivePatternCount": 7,
     "patternsWithPostFreezeScoredEvidence": 7,
-    "prospectiveSupportCount": 14,
+    "prospectiveSupportCount": 16,
     "prospectiveCounterevidenceCount": 10,
     "possibleCounterResetOrCorrectionCount": 3,
     "multiRunMembershipEpisodeCount": 0,
     "episodeClassCounts": {
-      "reported-income-progression": 51,
-      "productive-rate-change": 66,
+      "reported-income-progression": 54,
+      "productive-rate-change": 69,
       "measurement-coverage-change": 8
     }
   },
@@ -6705,32 +6705,353 @@
       "changedAfterEpisodeId": "obs-8b317082231424f0b551",
       "increment": null,
       "incrementVelocityDirection": null
+    },
+    {
+      "episodeId": "obs-062ff71dede9657930a9",
+      "sourceEventId": "062ff71dede9657930a9",
+      "episodeClass": "reported-income-progression",
+      "semanticDomain": "cash-flow-semantics",
+      "seriesKey": "reporting|Monetra.eth|currentMonthCashFlowUsd",
+      "observedAt": "2026-09-02T11:34:03.535Z",
+      "category": "reporting",
+      "entity": "Monetra.eth",
+      "metric": "currentMonthCashFlowUsd",
+      "unit": "USD",
+      "previousValue": 0.015,
+      "currentValue": 0.0307,
+      "delta": 0.0157,
+      "direction": "increase",
+      "counterSemantics": "period-cumulative-counter",
+      "patternSignalType": "increment-velocity",
+      "possiblePeriodResetOrCorrection": false,
+      "resetInterpretation": null,
+      "economicLossInferred": false,
+      "sourceKeys": [
+        "reporting"
+      ],
+      "sourceRunMembershipCount": 1,
+      "sourceRun": {
+        "generatedAt": "2026-09-02T11:34:03.535Z",
+        "snapshotHash": "288dc992c4cd3ca587268f13bb3fb6e5bcc4176afa776b4b0c0359a4392ba1c1",
+        "sourceCompositeHash": "86652710ee5e9c459870bafcd9e9ddd62e962e1623885c28bbcac996e4b3fce3",
+        "vaultRecordPath": "intelligence/memory-vault/2026/09/2026-09-02T11-34-03-535Z-288dc992c4.json",
+        "vaultRecordHash": "36284cf3a6537bff2e34b00b45219491fef812f0a8802f78bca6171700ec701c"
+      },
+      "sourceRuns": [
+        {
+          "generatedAt": "2026-09-02T11:34:03.535Z",
+          "snapshotHash": "288dc992c4cd3ca587268f13bb3fb6e5bcc4176afa776b4b0c0359a4392ba1c1",
+          "sourceCompositeHash": "86652710ee5e9c459870bafcd9e9ddd62e962e1623885c28bbcac996e4b3fce3",
+          "vaultRecordPath": "intelligence/memory-vault/2026/09/2026-09-02T11-34-03-535Z-288dc992c4.json",
+          "vaultRecordHash": "36284cf3a6537bff2e34b00b45219491fef812f0a8802f78bca6171700ec701c"
+        }
+      ],
+      "sourceSummary": "Monetra.eth current-month cash-flow/reference-income counter moved $0.01 → $0.03.",
+      "sourceWhyItMatters": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
+      "epistemic": {
+        "observation": "exact-observation",
+        "change": "deterministic-derived-change",
+        "causalClaim": false
+      },
+      "windowStart": "2026-09-01T11:52:50.736Z",
+      "windowEnd": "2026-09-02T11:34:03.535Z",
+      "changedAfterEpisodeId": "obs-2392e618e788c0b5fd5c",
+      "increment": 0.0157,
+      "incrementVelocityDirection": null
+    },
+    {
+      "episodeId": "obs-62785e606b5f2a4bb232",
+      "sourceEventId": "62785e606b5f2a4bb232",
+      "episodeClass": "productive-rate-change",
+      "semanticDomain": "protocol-economics",
+      "seriesKey": "productivity|0x5860...83CA8.eth|aprLatestPct",
+      "observedAt": "2026-09-02T11:34:03.535Z",
+      "category": "productivity",
+      "entity": "0x5860...83CA8.eth",
+      "metric": "aprLatestPct",
+      "unit": "percentage-points",
+      "previousValue": 16.2814,
+      "currentValue": 15.849,
+      "delta": -0.4324,
+      "direction": "decrease",
+      "counterSemantics": "point-in-time-rate",
+      "patternSignalType": "direction",
+      "possiblePeriodResetOrCorrection": false,
+      "resetInterpretation": null,
+      "economicLossInferred": false,
+      "sourceKeys": [
+        "productivity"
+      ],
+      "sourceRunMembershipCount": 1,
+      "sourceRun": {
+        "generatedAt": "2026-09-02T11:34:03.535Z",
+        "snapshotHash": "288dc992c4cd3ca587268f13bb3fb6e5bcc4176afa776b4b0c0359a4392ba1c1",
+        "sourceCompositeHash": "86652710ee5e9c459870bafcd9e9ddd62e962e1623885c28bbcac996e4b3fce3",
+        "vaultRecordPath": "intelligence/memory-vault/2026/09/2026-09-02T11-34-03-535Z-288dc992c4.json",
+        "vaultRecordHash": "36284cf3a6537bff2e34b00b45219491fef812f0a8802f78bca6171700ec701c"
+      },
+      "sourceRuns": [
+        {
+          "generatedAt": "2026-09-02T11:34:03.535Z",
+          "snapshotHash": "288dc992c4cd3ca587268f13bb3fb6e5bcc4176afa776b4b0c0359a4392ba1c1",
+          "sourceCompositeHash": "86652710ee5e9c459870bafcd9e9ddd62e962e1623885c28bbcac996e4b3fce3",
+          "vaultRecordPath": "intelligence/memory-vault/2026/09/2026-09-02T11-34-03-535Z-288dc992c4.json",
+          "vaultRecordHash": "36284cf3a6537bff2e34b00b45219491fef812f0a8802f78bca6171700ec701c"
+        }
+      ],
+      "sourceSummary": "0x5860...83CA8.eth Reference APR moved 16.28% → 15.85% (-0.43 pp).",
+      "sourceWhyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
+      "epistemic": {
+        "observation": "exact-observation",
+        "change": "deterministic-derived-change",
+        "causalClaim": false
+      },
+      "windowStart": "2026-08-25T07:23:52.883Z",
+      "windowEnd": "2026-09-02T11:34:03.535Z",
+      "changedAfterEpisodeId": "obs-9b623f69d059d110f6e3",
+      "increment": null,
+      "incrementVelocityDirection": null
+    },
+    {
+      "episodeId": "obs-901ebf28f927ab010fac",
+      "sourceEventId": "901ebf28f927ab010fac",
+      "episodeClass": "productive-rate-change",
+      "semanticDomain": "protocol-economics",
+      "seriesKey": "productivity|05081966.eth|aprLatestPct",
+      "observedAt": "2026-09-02T11:34:03.535Z",
+      "category": "productivity",
+      "entity": "05081966.eth",
+      "metric": "aprLatestPct",
+      "unit": "percentage-points",
+      "previousValue": 9.2558,
+      "currentValue": 8.9541,
+      "delta": -0.3017,
+      "direction": "decrease",
+      "counterSemantics": "point-in-time-rate",
+      "patternSignalType": "direction",
+      "possiblePeriodResetOrCorrection": false,
+      "resetInterpretation": null,
+      "economicLossInferred": false,
+      "sourceKeys": [
+        "productivity"
+      ],
+      "sourceRunMembershipCount": 1,
+      "sourceRun": {
+        "generatedAt": "2026-09-02T11:34:03.535Z",
+        "snapshotHash": "288dc992c4cd3ca587268f13bb3fb6e5bcc4176afa776b4b0c0359a4392ba1c1",
+        "sourceCompositeHash": "86652710ee5e9c459870bafcd9e9ddd62e962e1623885c28bbcac996e4b3fce3",
+        "vaultRecordPath": "intelligence/memory-vault/2026/09/2026-09-02T11-34-03-535Z-288dc992c4.json",
+        "vaultRecordHash": "36284cf3a6537bff2e34b00b45219491fef812f0a8802f78bca6171700ec701c"
+      },
+      "sourceRuns": [
+        {
+          "generatedAt": "2026-09-02T11:34:03.535Z",
+          "snapshotHash": "288dc992c4cd3ca587268f13bb3fb6e5bcc4176afa776b4b0c0359a4392ba1c1",
+          "sourceCompositeHash": "86652710ee5e9c459870bafcd9e9ddd62e962e1623885c28bbcac996e4b3fce3",
+          "vaultRecordPath": "intelligence/memory-vault/2026/09/2026-09-02T11-34-03-535Z-288dc992c4.json",
+          "vaultRecordHash": "36284cf3a6537bff2e34b00b45219491fef812f0a8802f78bca6171700ec701c"
+        }
+      ],
+      "sourceSummary": "05081966.eth Reference APR moved 9.26% → 8.95% (-0.30 pp).",
+      "sourceWhyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
+      "epistemic": {
+        "observation": "exact-observation",
+        "change": "deterministic-derived-change",
+        "causalClaim": false
+      },
+      "windowStart": "2026-09-01T11:52:50.736Z",
+      "windowEnd": "2026-09-02T11:34:03.535Z",
+      "changedAfterEpisodeId": "obs-616a098b835e4a9eca11",
+      "increment": null,
+      "incrementVelocityDirection": null
+    },
+    {
+      "episodeId": "obs-a0743f198c4d0f6bb7f7",
+      "sourceEventId": "a0743f198c4d0f6bb7f7",
+      "episodeClass": "productive-rate-change",
+      "semanticDomain": "protocol-economics",
+      "seriesKey": "productivity|aerocvxyb.eth|aprLatestPct",
+      "observedAt": "2026-09-02T11:34:03.535Z",
+      "category": "productivity",
+      "entity": "aerocvxyb.eth",
+      "metric": "aprLatestPct",
+      "unit": "percentage-points",
+      "previousValue": 17.0134,
+      "currentValue": 16.7043,
+      "delta": -0.3091,
+      "direction": "decrease",
+      "counterSemantics": "point-in-time-rate",
+      "patternSignalType": "direction",
+      "possiblePeriodResetOrCorrection": false,
+      "resetInterpretation": null,
+      "economicLossInferred": false,
+      "sourceKeys": [
+        "productivity"
+      ],
+      "sourceRunMembershipCount": 1,
+      "sourceRun": {
+        "generatedAt": "2026-09-02T11:34:03.535Z",
+        "snapshotHash": "288dc992c4cd3ca587268f13bb3fb6e5bcc4176afa776b4b0c0359a4392ba1c1",
+        "sourceCompositeHash": "86652710ee5e9c459870bafcd9e9ddd62e962e1623885c28bbcac996e4b3fce3",
+        "vaultRecordPath": "intelligence/memory-vault/2026/09/2026-09-02T11-34-03-535Z-288dc992c4.json",
+        "vaultRecordHash": "36284cf3a6537bff2e34b00b45219491fef812f0a8802f78bca6171700ec701c"
+      },
+      "sourceRuns": [
+        {
+          "generatedAt": "2026-09-02T11:34:03.535Z",
+          "snapshotHash": "288dc992c4cd3ca587268f13bb3fb6e5bcc4176afa776b4b0c0359a4392ba1c1",
+          "sourceCompositeHash": "86652710ee5e9c459870bafcd9e9ddd62e962e1623885c28bbcac996e4b3fce3",
+          "vaultRecordPath": "intelligence/memory-vault/2026/09/2026-09-02T11-34-03-535Z-288dc992c4.json",
+          "vaultRecordHash": "36284cf3a6537bff2e34b00b45219491fef812f0a8802f78bca6171700ec701c"
+        }
+      ],
+      "sourceSummary": "aerocvxyb.eth Reference APR moved 17.01% → 16.70% (-0.31 pp).",
+      "sourceWhyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
+      "epistemic": {
+        "observation": "exact-observation",
+        "change": "deterministic-derived-change",
+        "causalClaim": false
+      },
+      "windowStart": "2026-09-01T11:52:50.736Z",
+      "windowEnd": "2026-09-02T11:34:03.535Z",
+      "changedAfterEpisodeId": "obs-8a0c97ce1acb7a53a7da",
+      "increment": null,
+      "incrementVelocityDirection": null
+    },
+    {
+      "episodeId": "obs-e616dcf429f98a9157d6",
+      "sourceEventId": "e616dcf429f98a9157d6",
+      "episodeClass": "reported-income-progression",
+      "semanticDomain": "cash-flow-semantics",
+      "seriesKey": "reporting|Monetra.eth|currentMonthGeneratedIncomeUsd",
+      "observedAt": "2026-09-02T11:34:03.535Z",
+      "category": "reporting",
+      "entity": "Monetra.eth",
+      "metric": "currentMonthGeneratedIncomeUsd",
+      "unit": "USD",
+      "previousValue": 0.015,
+      "currentValue": 0.0307,
+      "delta": 0.0157,
+      "direction": "increase",
+      "counterSemantics": "period-cumulative-counter",
+      "patternSignalType": "increment-velocity",
+      "possiblePeriodResetOrCorrection": false,
+      "resetInterpretation": null,
+      "economicLossInferred": false,
+      "sourceKeys": [
+        "reporting"
+      ],
+      "sourceRunMembershipCount": 1,
+      "sourceRun": {
+        "generatedAt": "2026-09-02T11:34:03.535Z",
+        "snapshotHash": "288dc992c4cd3ca587268f13bb3fb6e5bcc4176afa776b4b0c0359a4392ba1c1",
+        "sourceCompositeHash": "86652710ee5e9c459870bafcd9e9ddd62e962e1623885c28bbcac996e4b3fce3",
+        "vaultRecordPath": "intelligence/memory-vault/2026/09/2026-09-02T11-34-03-535Z-288dc992c4.json",
+        "vaultRecordHash": "36284cf3a6537bff2e34b00b45219491fef812f0a8802f78bca6171700ec701c"
+      },
+      "sourceRuns": [
+        {
+          "generatedAt": "2026-09-02T11:34:03.535Z",
+          "snapshotHash": "288dc992c4cd3ca587268f13bb3fb6e5bcc4176afa776b4b0c0359a4392ba1c1",
+          "sourceCompositeHash": "86652710ee5e9c459870bafcd9e9ddd62e962e1623885c28bbcac996e4b3fce3",
+          "vaultRecordPath": "intelligence/memory-vault/2026/09/2026-09-02T11-34-03-535Z-288dc992c4.json",
+          "vaultRecordHash": "36284cf3a6537bff2e34b00b45219491fef812f0a8802f78bca6171700ec701c"
+        }
+      ],
+      "sourceSummary": "Monetra.eth current-month generated income moved $0.0150 → $0.0307.",
+      "sourceWhyItMatters": "Generated income is a distinct history stream for capital that may compound inside positions rather than arrive as realised cash.",
+      "epistemic": {
+        "observation": "exact-observation",
+        "change": "deterministic-derived-change",
+        "causalClaim": false
+      },
+      "windowStart": "2026-09-01T11:52:50.736Z",
+      "windowEnd": "2026-09-02T11:34:03.535Z",
+      "changedAfterEpisodeId": "obs-bfc4411c3fe8eb2f1d30",
+      "increment": 0.0157,
+      "incrementVelocityDirection": null
+    },
+    {
+      "episodeId": "obs-fb1f92c1df9b784f9fdf",
+      "sourceEventId": "fb1f92c1df9b784f9fdf",
+      "episodeClass": "reported-income-progression",
+      "semanticDomain": "cash-flow-semantics",
+      "seriesKey": "reporting|defitea.eth|currentMonthCashFlowUsd",
+      "observedAt": "2026-09-02T11:34:03.535Z",
+      "category": "reporting",
+      "entity": "defitea.eth",
+      "metric": "currentMonthCashFlowUsd",
+      "unit": "USD",
+      "previousValue": 4.24,
+      "currentValue": 8.07,
+      "delta": 3.83,
+      "direction": "increase",
+      "counterSemantics": "period-cumulative-counter",
+      "patternSignalType": "increment-velocity",
+      "possiblePeriodResetOrCorrection": false,
+      "resetInterpretation": null,
+      "economicLossInferred": false,
+      "sourceKeys": [
+        "reporting"
+      ],
+      "sourceRunMembershipCount": 1,
+      "sourceRun": {
+        "generatedAt": "2026-09-02T11:34:03.535Z",
+        "snapshotHash": "288dc992c4cd3ca587268f13bb3fb6e5bcc4176afa776b4b0c0359a4392ba1c1",
+        "sourceCompositeHash": "86652710ee5e9c459870bafcd9e9ddd62e962e1623885c28bbcac996e4b3fce3",
+        "vaultRecordPath": "intelligence/memory-vault/2026/09/2026-09-02T11-34-03-535Z-288dc992c4.json",
+        "vaultRecordHash": "36284cf3a6537bff2e34b00b45219491fef812f0a8802f78bca6171700ec701c"
+      },
+      "sourceRuns": [
+        {
+          "generatedAt": "2026-09-02T11:34:03.535Z",
+          "snapshotHash": "288dc992c4cd3ca587268f13bb3fb6e5bcc4176afa776b4b0c0359a4392ba1c1",
+          "sourceCompositeHash": "86652710ee5e9c459870bafcd9e9ddd62e962e1623885c28bbcac996e4b3fce3",
+          "vaultRecordPath": "intelligence/memory-vault/2026/09/2026-09-02T11-34-03-535Z-288dc992c4.json",
+          "vaultRecordHash": "36284cf3a6537bff2e34b00b45219491fef812f0a8802f78bca6171700ec701c"
+        }
+      ],
+      "sourceSummary": "defitea.eth current-month cash-flow/reference-income counter moved $4.24 → $8.07.",
+      "sourceWhyItMatters": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
+      "epistemic": {
+        "observation": "exact-observation",
+        "change": "deterministic-derived-change",
+        "causalClaim": false
+      },
+      "windowStart": "2026-09-01T11:52:50.736Z",
+      "windowEnd": "2026-09-02T11:34:03.535Z",
+      "changedAfterEpisodeId": "obs-e8aacb98c5364b4e6615",
+      "increment": 3.83,
+      "incrementVelocityDirection": null
     }
   ],
   "patternCandidates": [
     {
-      "patternId": "pattern-fd985ad7054b6fa899f0",
+      "patternId": "pattern-c93df6e591fa8d0834c1",
       "status": "candidate",
       "epistemicStatus": "candidate-association",
       "causalClaim": false,
-      "seriesKey": "productivity|0x5860...83CA8.eth|aprLatestPct",
+      "seriesKey": "productivity|aerocvxyb.eth|aprLatestPct",
       "episodeClass": "productive-rate-change",
       "semanticDomain": "protocol-economics",
-      "entity": "0x5860...83CA8.eth",
+      "entity": "aerocvxyb.eth",
       "metric": "aprLatestPct",
       "signalType": "direction",
-      "dominantSignal": "increase",
-      "supportCount": 3,
-      "observedSignalCount": 4,
-      "directionalConsistencyPct": 75,
+      "dominantSignal": "decrease",
+      "supportCount": 6,
+      "observedSignalCount": 9,
+      "directionalConsistencyPct": 66.67,
       "firstObservedAt": "2026-08-16T07:08:14.100Z",
-      "lastObservedAt": "2026-08-25T07:23:52.883Z",
+      "lastObservedAt": "2026-09-02T11:34:03.535Z",
       "supportEpisodeIds": [
-        "obs-75107a3c8592b565df66",
-        "obs-1463732a52934da93c1b",
-        "obs-9b623f69d059d110f6e3"
+        "obs-22b308692dccd8d117a0",
+        "obs-87900cb9d334b78acaaf",
+        "obs-1133f52e017dbc12c175",
+        "obs-815a18ffdb833269adfd",
+        "obs-8a0c97ce1acb7a53a7da",
+        "obs-a0743f198c4d0f6bb7f7"
       ],
-      "statement": "0x5860...83CA8.eth aprLatestPct repeatedly moved increase; this is a candidate temporal pattern, not a causal explanation; it is also not a learned rule, policy or prediction."
+      "statement": "aerocvxyb.eth aprLatestPct repeatedly moved decrease; this is a candidate temporal pattern, not a causal explanation; it is also not a learned rule, policy or prediction."
     },
     {
       "patternId": "pattern-a1a62f8746dffb07b6a8",
@@ -6884,9 +7205,9 @@
       "frozenPatternCount": 7,
       "reconstructedFrozenPatternCount": 7,
       "patternsWithPostFreezeScoredEvidence": 7,
-      "postFreezeEpisodeCount": 24,
-      "postFreezeScoredSignalCount": 24,
-      "prospectiveSupportCount": 14,
+      "postFreezeEpisodeCount": 26,
+      "postFreezeScoredSignalCount": 26,
+      "prospectiveSupportCount": 16,
       "prospectiveCounterevidenceCount": 10,
       "prospectiveNoSignalCount": 0
     },
@@ -6904,13 +7225,14 @@
         "frozenSupportCount": 2,
         "frozenObservedSignalCount": 3,
         "frozenDirectionalConsistencyPct": 66.67,
-        "postFreezeEpisodeCount": 3,
-        "postFreezeScoredSignalCount": 3,
-        "prospectiveSupportCount": 1,
+        "postFreezeEpisodeCount": 4,
+        "postFreezeScoredSignalCount": 4,
+        "prospectiveSupportCount": 2,
         "prospectiveCounterevidenceCount": 2,
         "prospectiveNoSignalCount": 0,
         "prospectiveSupportEpisodeIds": [
-          "obs-616a098b835e4a9eca11"
+          "obs-616a098b835e4a9eca11",
+          "obs-901ebf28f927ab010fac"
         ],
         "prospectiveCounterevidenceEpisodeIds": [
           "obs-39c4bbbe0a7de2859137",
@@ -6938,14 +7260,15 @@
         "frozenSupportCount": 3,
         "frozenObservedSignalCount": 4,
         "frozenDirectionalConsistencyPct": 75,
-        "postFreezeEpisodeCount": 4,
-        "postFreezeScoredSignalCount": 4,
-        "prospectiveSupportCount": 2,
+        "postFreezeEpisodeCount": 5,
+        "postFreezeScoredSignalCount": 5,
+        "prospectiveSupportCount": 3,
         "prospectiveCounterevidenceCount": 2,
         "prospectiveNoSignalCount": 0,
         "prospectiveSupportEpisodeIds": [
           "obs-815a18ffdb833269adfd",
-          "obs-8a0c97ce1acb7a53a7da"
+          "obs-8a0c97ce1acb7a53a7da",
+          "obs-a0743f198c4d0f6bb7f7"
         ],
         "prospectiveCounterevidenceEpisodeIds": [
           "obs-d71be4f48e1215bbde69",
@@ -7135,16 +7458,16 @@
     ],
     "integrity": {
       "baselinePatternIdsHash": "334cb8cb49882980f13b47c9adb1fb02fb7d5522bcc8ec9b683a3ec852f97f87",
-      "evaluationCompositeHash": "eef900ba7ec448d7b73fb448bbb7695aa5efce39869ec75309d1c61c8d6e74cd"
+      "evaluationCompositeHash": "1b5e01b875be4f23ec4b0404ee66d37960f3cfefc355d9fe8634ea444a5ba3ca"
     }
   },
   "integrity": {
     "policySha256": "7a70f541be0ddf6a7ffb3636351fa0edcea625b076532623657714dcdfbb15eb",
-    "sourceSha256": "bed74da9a0e574f9c8206d722bbe59fd008c9662de3231b7c1fe6d903af69d8c",
+    "sourceSha256": "3dc2c7e98c9b1e32ee0e41496e613816742507e8bb2d58b62d02733f0aeda4db",
     "prospectiveBaselineSha256": "19535e4c089b643fd263c86461e24d00cf25c58856216a3f99409ef585dbf484",
-    "episodeCompositeHash": "3351c18eb16ae3a0e461be8a2ac6c787df263eda1d27d516b1c2912acc82a725",
-    "patternCompositeHash": "18a06ca0b8de05b6ad54080356d97f635efbd30f9fa7c4d204255789399d9da7",
-    "prospectiveEvaluationCompositeHash": "eef900ba7ec448d7b73fb448bbb7695aa5efce39869ec75309d1c61c8d6e74cd",
-    "stateHash": "b7dbb81acfbf25048c344791e7daec082bd98b7396148d339f8728dd64229dac"
+    "episodeCompositeHash": "849858ebb34a7bb19fbd006d9f66e3865d9cd52be5c13ae56b55fc66e486be20",
+    "patternCompositeHash": "f71463279be1cba54d651329ce5ef514668092fdfea89d064acf4a9bd6ca8a6b",
+    "prospectiveEvaluationCompositeHash": "1b5e01b875be4f23ec4b0404ee66d37960f3cfefc355d9fe8634ea444a5ba3ca",
+    "stateHash": "133e2e7899429986cd32738b0d2a7c6b18f0da484470dcfeca7fb35f9ec7126a"
   }
 }
