@@ -7,6 +7,8 @@ on:
       - 'reporting/company-monthly-reports-validation.mjs'
       - 'reporting/company-monthly-earned-income.mjs'
       - 'reporting/company-monthly-earned-income-validation.mjs'
+      - 'reporting/accounting-coverage.mjs'
+      - 'reporting/accounting-coverage-validation.mjs'
       - 'companies/company-monthly-report-adapter.js'
       - '.github/workflows/update-company-monthly-reports.yml'
       - '.github/workflows/verify-company-monthly-reports.yml'
@@ -36,6 +38,8 @@ jobs:
           node --check reporting/company-monthly-reports-validation.mjs
           node --check reporting/company-monthly-earned-income.mjs
           node --check reporting/company-monthly-earned-income-validation.mjs
+          node --check reporting/accounting-coverage.mjs
+          node --check reporting/accounting-coverage-validation.mjs
           node --check companies/company-monthly-report-adapter.js
           git diff --check
 
@@ -82,13 +86,44 @@ jobs:
           }
           NODE
 
+      - name: Exercise diagnostic mechanism coverage registry
+        shell: bash
+        run: |
+          set -euo pipefail
+          PRODUCTIVITY_DATA_FILE=./companies/productivity-data.json \
+          INCOME_LEDGER_FILE=./reporting/income-ledger.json \
+          EMBEDDED_YIELD_LEDGER_FILE=./companies/embedded-yield-ledger.json \
+          COMPANY_MONTHLY_REPORTS_FILE=/tmp/company-monthly-reports.json \
+          ACCOUNTING_COVERAGE_FILE=/tmp/accounting-coverage.json \
+          node reporting/accounting-coverage.mjs
+
+          ACCOUNTING_COVERAGE_FILE=/tmp/accounting-coverage.json \
+          node reporting/accounting-coverage-validation.mjs
+
+          node - <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('/tmp/accounting-coverage.json','utf8'));
+          for(const [name,c] of Object.entries(x.companies||{})){
+            const latest=Object.keys(c.months||{}).sort().at(-1);
+            const row=c.months?.[latest];
+            console.log(name,{
+              registry:c.registry,
+              mechanismCount:c.mechanismCount,
+              latestMonth:latest,
+              factualMechanisms:row?.mechanismsWithFactualPeriodEvidence,
+              missingMechanisms:row?.mechanismsWithoutFactualPeriodEvidence,
+              readyToClose:row?.registryReadyToCloseMonth
+            });
+          }
+          NODE
+
       - name: Guard authority and accounting boundaries
         shell: bash
         run: |
           set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');
-          const files=['reporting/company-monthly-reports.mjs','reporting/company-monthly-earned-income.mjs','companies/company-monthly-report-adapter.js'];
+          const files=['reporting/company-monthly-reports.mjs','reporting/company-monthly-earned-income.mjs','reporting/accounting-coverage.mjs','companies/company-monthly-report-adapter.js'];
           const text=files.map(f=>fs.readFileSync(f,'utf8')).join('\n');
           for(const bad of ['api.coingecko.com','COINGECKO_API_KEY','new Wallet(','sendTransaction(','executionAuthority: write']){
             if(text.includes(bad)) throw new Error('unexpected monthly reporting authority/data discovery: '+bad);
@@ -97,5 +132,7 @@ jobs:
           for(const required of ['referenceIncomeIsPrimaryMetric: false','currentRewardBalanceIsPeriodIncome: false','incompleteCoverageMayMasqueradeAsCompleteIncome: false']){
             if(!accounting.includes(required)) throw new Error('accounting fail-closed invariant missing: '+required);
           }
-          console.log('Company Monthly Reports authority/accounting boundary PASS');
+          const coverage=JSON.parse(fs.readFileSync('/tmp/accounting-coverage.json','utf8'));
+          if(coverage.status!=='diagnostic-no-completion-authority'||coverage.authority?.monthClosingAuthority!==false) throw new Error('Accounting coverage registry gained completion authority');
+          console.log('Company Monthly Reports + Accounting Coverage authority boundary PASS');
           NODE
