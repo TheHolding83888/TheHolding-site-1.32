@@ -1,7 +1,7 @@
 {
   "version": "0.1-runtime-capability-graph-overlay",
   "engineVersion": "0.1-runtime-evidence-to-graph-binding",
-  "generatedAt": "2026-09-02T09:42:39.451Z",
+  "generatedAt": "2026-09-02T10:13:10.079Z",
   "status": "ok",
   "purpose": "Bind runtime-proven owner capabilities to live canonical observations and graph entities without mutating the base graph or inferring causality.",
   "authority": {
@@ -32,7 +32,7 @@
         "data": {
           "runtimeCoverage": "partial",
           "evidenceStatus": "proven-current",
-          "sourceGeneratedAt": "2026-09-01T10:47:46.384Z",
+          "sourceGeneratedAt": "2026-09-02T10:12:38.698Z",
           "unresolvedDimensions": [
             "market-regime inference",
             "cross-market lending coverage beyond supported Aave v3 Base targets",
@@ -47,7 +47,7 @@
           "source": "intelligence/owner-context/runtime-owner-activation.json",
           "evidenceSource": "intelligence/risk/health-factor-intelligence.json"
         },
-        "fingerprint": "ebe01ef827de487517156f586b3c0f100a39202a1ee2516cd2804cecc5efd913"
+        "fingerprint": "9008624378519b0f5da22b4d1868f5623f0e2f587e47fe992ec26897fe9fb416"
       },
       "protocol-runtime:base:aave-v3": {
         "id": "protocol-runtime:base:aave-v3",
@@ -64,17 +64,17 @@
         },
         "fingerprint": "5919e17f59e001af9fdd46bc5d25f15a96a384b34e1d6bee67e5c68a5e490d2d"
       },
-      "risk-observation:008:base:aave-v3:50735159": {
-        "id": "risk-observation:008:base:aave-v3:50735159",
+      "risk-observation:008:base:aave-v3:50777305": {
+        "id": "risk-observation:008:base:aave-v3:50777305",
         "type": "risk-observation",
         "label": "Monetra.eth · Health Factor",
         "status": "established",
         "data": {
           "companyRegistry": "008",
           "wallet": "0x888D39aeE2AEC979c81f125EA94BB3cEB60F6bBB",
-          "observedAt": "2026-09-01T10:47:46.384Z",
-          "blockNumber": 50735159,
-          "totalCollateralBaseRaw": "1002768418",
+          "observedAt": "2026-09-02T10:12:38.698Z",
+          "blockNumber": 50777305,
+          "totalCollateralBaseRaw": "1002786741",
           "totalDebtBaseRaw": "0",
           "healthFactor": null,
           "healthFactorApplicable": false,
@@ -86,7 +86,7 @@
           "method": "IPool.getUserAccountData(address)",
           "rpc": "https://mainnet.base.org"
         },
-        "fingerprint": "862b3b252b41b8d11cddbcf36c10a2eb5579ea57d5b7a6cdc80ff40e184785f8"
+        "fingerprint": "2da3050ece0afa6d1f3b4a37abe187f7edd15f1344bf95a7d1301148b8c08822"
       }
     },
     "connections": {
@@ -104,50 +104,50 @@
         },
         "fingerprint": "79533f52656c38015160ec02cfcac980104e450e1fc5382af7acd7112f90f3c7"
       },
-      "capability-observes-risk:capability:health-factor-monitoring->risk-observation:008:base:aave-v3:50735159": {
-        "id": "capability-observes-risk:capability:health-factor-monitoring->risk-observation:008:base:aave-v3:50735159",
+      "capability-observes-risk:capability:health-factor-monitoring->risk-observation:008:base:aave-v3:50777305": {
+        "id": "capability-observes-risk:capability:health-factor-monitoring->risk-observation:008:base:aave-v3:50777305",
         "kind": "capability-observes-risk",
         "from": "capability:health-factor-monitoring",
-        "to": "risk-observation:008:base:aave-v3:50735159",
+        "to": "risk-observation:008:base:aave-v3:50777305",
         "status": "established",
         "epistemicClass": "direct",
         "data": {
           "semantic": "live-risk-observation"
         },
-        "fingerprint": "0efc451659d10c0f03ded5fc2a7f316ccd2ea83b140367d53fb9949244480633"
+        "fingerprint": "9c02c8079ef7127dd39d27e97359b35bf96541f8456f5663483a2b05d425ce35"
       },
-      "risk-observation-company:risk-observation:008:base:aave-v3:50735159->company:monetra.eth": {
-        "id": "risk-observation-company:risk-observation:008:base:aave-v3:50735159->company:monetra.eth",
+      "risk-observation-company:risk-observation:008:base:aave-v3:50777305->company:monetra.eth": {
+        "id": "risk-observation-company:risk-observation:008:base:aave-v3:50777305->company:monetra.eth",
         "kind": "risk-observation-company",
-        "from": "risk-observation:008:base:aave-v3:50735159",
+        "from": "risk-observation:008:base:aave-v3:50777305",
         "to": "company:monetra.eth",
         "status": "established",
         "epistemicClass": "direct",
         "data": {
           "companyRegistry": "008"
         },
-        "fingerprint": "ea805a5151af9977ceaab2cf648717c9821db8ca6395578dc654507b8b50b932"
+        "fingerprint": "01bfab0a8b58fbd49b50c489bda73d9e824e284752761c47a2d5388421fc9ce9"
       },
-      "risk-observation-protocol:risk-observation:008:base:aave-v3:50735159->protocol-runtime:base:aave-v3": {
-        "id": "risk-observation-protocol:risk-observation:008:base:aave-v3:50735159->protocol-runtime:base:aave-v3",
+      "risk-observation-protocol:risk-observation:008:base:aave-v3:50777305->protocol-runtime:base:aave-v3": {
+        "id": "risk-observation-protocol:risk-observation:008:base:aave-v3:50777305->protocol-runtime:base:aave-v3",
         "kind": "risk-observation-protocol",
-        "from": "risk-observation:008:base:aave-v3:50735159",
+        "from": "risk-observation:008:base:aave-v3:50777305",
         "to": "protocol-runtime:base:aave-v3",
         "status": "established",
         "epistemicClass": "direct",
         "data": {
           "market": "Aave v3 Base"
         },
-        "fingerprint": "9984859d26769b2361c44ef4617c8d9659530097121d4007529d9b6d04a5032b"
+        "fingerprint": "ea074b26fdd6725197aedb1c2734a5579c4b0bd198c19ae4333d4a2573b2f8b0"
       }
     }
   },
   "integrity": {
     "graphQualityHash": "6e1fbc097a04895532f1881d45a1b7d4eae3751f1716a837d54f57c7da9362ed",
-    "runtimeActivationHash": "0263708af79b0a05282996962af048db013cd755e5ade7b76211225d5304088e",
-    "riskStateHash": "eac841d7e358c3e42f26f4740091eab21a299d629729e56dd0e8eb61cef5af5e",
-    "nodeCompositeHash": "af508f6daadc2568ed238cc17c926a86049a3e4d2dfcd0c19326ff967d530b12",
-    "connectionCompositeHash": "fb426e99194d3256b9dc3463513e717d7d2e99b2bee423dee12c80ce93f67d7a",
-    "overlayHash": "bbb4a994e96c71790cb11a668d81e9e3e5994fa34ae22ff058cc4a4f5b236611"
+    "runtimeActivationHash": "89af5d27ab205dcbd188d997ef3fd095c49ed03610a8f5567be39bb6dc782fe9",
+    "riskStateHash": "17cd550eabe0c466a92c5a712c843cd0ad4764894f4d0fec6e6faac1152255cf",
+    "nodeCompositeHash": "b3006bcc7615b76112b15f12b5a8aa184ff78ee2dc8521f42a4c818059530953",
+    "connectionCompositeHash": "0f1e1f863e96a0d7210f32fabfab977b096ac69e5fa861302672b230b34c60b5",
+    "overlayHash": "957ed9e2dca7b727afd910e4008c276d981f513107a7db8b8b29c60369eeebd9"
   }
 }
