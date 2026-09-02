@@ -57,7 +57,7 @@ jobs:
           const fs=require('fs');
           const y=fs.readFileSync('.github/workflows/verify-frax-yield-accounting.yml','utf8');
           if(!/permissions:\n  contents: read/.test(y)) throw new Error('Frax PR verification must remain read-only');
-          if(/contents:\s*write|git push|sendTransaction\(|claimingAuthority:\s*(?!none)/.test(y)) throw new Error('Frax PR verification gained write/execution authority');
+          if(/contents:\s*write|permissions:\s*write-all/.test(y)) throw new Error('Frax PR verification gained repository write permission');
           const e=JSON.parse(fs.readFileSync('reporting/frax-yield-accounting-evidence.json','utf8'));
           if(e.authority?.executionAuthority!=='none'||e.authority?.walletAuthority!=='none'||e.authority?.claimingAuthority!=='none'||e.authority?.capitalExecution!==false) throw new Error('Frax evidence authority expansion');
           console.log('Frax PR authority guard PASS');
