@@ -2,13 +2,15 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { validateSource, beefyCandidates } from './income-ledger-company-009-beefy.mjs';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-const read=p=>JSON.parse(fs.readFileSync(path.join(ROOT,p),'utf8'));
-const source=read('companies/company-009-beefy-cvxcrv-income.json');
-const ledger=read('reporting/income-ledger.json');
+const resolveFile=(envKey,fallback)=>process.env[envKey]||path.join(ROOT,fallback);
+const readFile=file=>JSON.parse(fs.readFileSync(file,'utf8'));
+const source=readFile(resolveFile('COMPANY_009_BEEFY_INCOME_FILE','companies/company-009-beefy-cvxcrv-income.json'));
+const ledger=readFile(resolveFile('INCOME_LEDGER_FILE','reporting/income-ledger.json'));
 const checkpoints=validateSource(source);
 const built=beefyCandidates(source,'2026-09-02T00:00:00.000Z');
 
