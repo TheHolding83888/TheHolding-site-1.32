@@ -21,7 +21,7 @@ permissions:
 jobs:
   verify-ve33-accounting:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -55,3 +55,29 @@ jobs:
           if(e.authority?.executionAuthority!=='none'||e.authority?.walletAuthority!=='none'||e.authority?.claimingAuthority!=='none'||e.authority?.capitalExecution!==false) throw new Error('ve33 authority expansion');
           console.log('ve33 evidence policy validation OK');
           NODE
+
+      - name: Read-only live Base + Optimism accounting canary
+        env:
+          REWARDS_DATA_FILE: ./companies/rewards-data.json
+          VE33_EVIDENCE_FILE: /tmp/ve33-accounting-evidence.json
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
+        run: |
+          set -euo pipefail
+          node reporting/ve33-accounting-evidence.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const e=JSON.parse(fs.readFileSync('/tmp/ve33-accounting-evidence.json','utf8'));
+          if(e.version!=='0.1-ve33-factual-accrual-evidence') throw new Error('live ve33 version drift');
+          if(!(Number(e.diagnostics?.laneCount)>0)) throw new Error('live ve33 discovered no accounting lanes');
+          for(const p of ['aerodrome','velodrome']){
+            const d=e.diagnostics?.protocols?.[p];
+            if(!d||!(Number(d.latestBlockNumber)>0)||!(Number(d.laneCount)>0)) throw new Error('live ve33 protocol discovery missing: '+p);
+          }
+          const events=e.events||[];
+          if(new Set(events.map(x=>x.eventKey)).size!==events.length) throw new Error('live ve33 duplicate event identity');
+          if(events.some(x=>x.referenceAprUsed!==false||x.claimIsSecondIncomeEvent!==false||x.laterClaimOrPriceMoveDoesNotRewriteIncome!==true||x.executionAuthority!=='none')) throw new Error('live ve33 accounting semantic drift');
+          if(e.authority?.executionAuthority!=='none'||e.authority?.walletAuthority!=='none'||e.authority?.claimingAuthority!=='none'||e.authority?.capitalExecution!==false) throw new Error('live ve33 authority expansion');
+          console.log('Read-only live ve33 canary PASS',{status:e.status,lanes:e.diagnostics.laneCount,events:events.length,accepted:e.diagnostics.acceptedPositiveIntervalCount,reconciliation:e.diagnostics.reconciliationCount,unresolvedSettlements:e.diagnostics.unresolvedSettlementCount,boundaryFailures:Object.values(e.diagnostics.protocols||{}).reduce((s,x)=>s+(x.boundaryFailures||[]).length,0)});
+          NODE
+          git diff --exit-code
