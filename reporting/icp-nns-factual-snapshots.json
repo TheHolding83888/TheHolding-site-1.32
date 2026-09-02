@@ -1,0 +1,85 @@
+{
+  "version": "0.1-icp-nns-factual-snapshot-evidence",
+  "status": "baseline-only-no-period-income",
+  "asset": "ICP",
+  "network": "Internet Computer",
+  "mechanism": "NNS Governance Neurons",
+  "positionScope": {
+    "canonicalConfigFile": "intelligence/icp-nns/company-005-006-neuron-pool.json",
+    "neuronUniverseCount": 41,
+    "neuronUniverseSha256": "2e42a298466afccc46a365173ca078bd50d0c45493d7674bb900c35bb5268711",
+    "allocationPolicy": "owner-declared-equal-economic-allocation",
+    "companies": {
+      "0x5860...83CA8.eth": 0.5,
+      "aerocvxyb.eth": 0.5
+    }
+  },
+  "semantics": {
+    "snapshotIsStateNotPeriodIncome": true,
+    "singleSnapshotCanCreateIncome": false,
+    "referenceAprCanCreateIncome": false,
+    "publicGlobalRewardPoolCanCreateCompanyIncome": false,
+    "ballotCountCanCreateIncome": false,
+    "principalUnlockIsIncome": false,
+    "unknownIsNotZero": true,
+    "laterClaimOrTransferRewritesEarnedIncome": false
+  },
+  "comparabilityPolicy": {
+    "adjacentSnapshotsOnly": true,
+    "sameNeuronUniverseRequired": true,
+    "sameMeasurementBasisRequired": true,
+    "strictChronologyRequired": true,
+    "rewardStateLifecycleMustBeReconciled": true,
+    "positiveComparableDeltaRequired": true,
+    "canonicalUsdValuationRequiredForLedgerAdmission": true,
+    "crossMonthIntervalRequiresExplicitAllocation": true,
+    "referenceAprFallbackForbidden": true
+  },
+  "snapshots": [
+    {
+      "snapshotId": "owner-nns-maturity-2026-07-04",
+      "observationDate": "2026-07-04",
+      "timestampPrecision": "date-only",
+      "sourceType": "owner-manual-nns-dapp-snapshot",
+      "evidenceStatus": "owner-attested-state-baseline",
+      "measurementBasis": "aggregate-rewards-maturity-owner-reported",
+      "neuronUniverseCount": 41,
+      "neuronUniverseSha256": "2e42a298466afccc46a365173ca078bd50d0c45493d7674bb900c35bb5268711",
+      "maturity": {
+        "aggregateIcp": 21.48,
+        "ordinaryMaturityIcp": null,
+        "stakedMaturityIcp": null,
+        "compositionKnown": false
+      },
+      "valuation": {
+        "unitUsd": null,
+        "source": null,
+        "observedAt": null,
+        "requiredForBaseline": false
+      },
+      "periodIncomeAuthority": false,
+      "notes": "Owner-supplied NNS rewards/maturity state snapshot. This is a state baseline only and is not earned income for July or any other period."
+    }
+  ],
+  "lifecycleEvents": [
+    {
+      "eventId": "nns-principal-unlock-7305384784698965212-2026-08-03",
+      "occurredAt": "2026-08-03T03:10:54Z",
+      "eventType": "principal-unlock",
+      "neuronId": "7305384784698965212",
+      "amountIcp": 61.3877551,
+      "recognizedIncome": false,
+      "affectsRewardStateComparability": false,
+      "reconciliationStatus": "not-required-for-maturity-state",
+      "notes": "Principal unlock changes productive principal timing but is not itself reward income and must never be added to earned income."
+    }
+  ],
+  "authority": {
+    "executionAuthority": "none",
+    "walletAuthority": "none",
+    "claimAuthority": "none",
+    "capitalExecution": false,
+    "periodIncomeAuthority": false,
+    "methodologyMutationAuthority": "none"
+  }
+}
