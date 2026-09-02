@@ -1,0 +1,130 @@
+name: Update Accounting Coverage Registry
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - "Update Company Monthly Reports"
+    types: [completed]
+  push:
+    branches: [main]
+    paths:
+      - 'companies/productivity-data.json'
+      - 'companies/embedded-yield-ledger.json'
+      - 'reporting/income-ledger.json'
+      - 'reporting/company-monthly-reports.json'
+      - 'reporting/accounting-coverage.mjs'
+      - 'reporting/accounting-coverage-validation.mjs'
+      - '.github/workflows/update-accounting-coverage.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: accounting-coverage-registry
+  cancel-in-progress: false
+
+jobs:
+  update:
+    if: >-
+      ${{
+        github.event_name != 'workflow_run' ||
+        (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+      }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout canonical main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: Preflight diagnostic registry
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check reporting/accounting-coverage.mjs
+          node --check reporting/accounting-coverage-validation.mjs
+          test -s companies/productivity-data.json
+          test -s companies/embedded-yield-ledger.json
+          test -s reporting/income-ledger.json
+          test -s reporting/company-monthly-reports.json
+
+      - name: Build accounting coverage registry
+        env:
+          PRODUCTIVITY_DATA_FILE: ./companies/productivity-data.json
+          INCOME_LEDGER_FILE: ./reporting/income-ledger.json
+          EMBEDDED_YIELD_LEDGER_FILE: ./companies/embedded-yield-ledger.json
+          COMPANY_MONTHLY_REPORTS_FILE: ./reporting/company-monthly-reports.json
+          ACCOUNTING_COVERAGE_FILE: ./reporting/accounting-coverage.json
+        run: node reporting/accounting-coverage.mjs
+
+      - name: Validate diagnostic registry
+        env:
+          ACCOUNTING_COVERAGE_FILE: ./reporting/accounting-coverage.json
+        run: node reporting/accounting-coverage-validation.mjs
+
+      - name: Commit registry only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Accounting Engine"
+          git config user.email "accounting-engine@theholding.ai"
+
+          critical_fingerprint() {
+            sha256sum \
+              reporting/accounting-coverage.mjs \
+              reporting/accounting-coverage-validation.mjs \
+              .github/workflows/update-accounting-coverage.yml
+          }
+          critical_before="$(critical_fingerprint)"
+
+          git add reporting/accounting-coverage.json
+          if git diff --cached --quiet; then
+            echo "No accounting coverage changes."
+            exit 0
+          fi
+          git commit -m "data: update accounting mechanism coverage"
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "Safe writer guard: rebase conflict; refusing to guess."
+              exit 1
+            fi
+            critical_after="$(critical_fingerprint)"
+            if [ "$critical_after" != "$critical_before" ]; then
+              echo "Critical accounting coverage code changed during publish rebase; fail closed."
+              exit 1
+            fi
+
+            PRODUCTIVITY_DATA_FILE=./companies/productivity-data.json \
+            INCOME_LEDGER_FILE=./reporting/income-ledger.json \
+            EMBEDDED_YIELD_LEDGER_FILE=./companies/embedded-yield-ledger.json \
+            COMPANY_MONTHLY_REPORTS_FILE=./reporting/company-monthly-reports.json \
+            ACCOUNTING_COVERAGE_FILE=./reporting/accounting-coverage.json \
+            node reporting/accounting-coverage.mjs
+            ACCOUNTING_COVERAGE_FILE=./reporting/accounting-coverage.json \
+            node reporting/accounting-coverage-validation.mjs
+
+            git add reporting/accounting-coverage.json
+            git commit --amend --no-edit
+
+            mapfile -t ahead < <(git diff --name-only origin/main...HEAD)
+            if [ "${#ahead[@]}" -ne 1 ] || [ "${ahead[0]}" != "reporting/accounting-coverage.json" ]; then
+              echo "Unexpected accounting coverage publish delta: ${ahead[*]}"
+              exit 1
+            fi
+            if git push origin HEAD:main; then exit 0; fi
+            echo "Safe writer guard: main moved during push; retrying ($attempt/3)..."
+            sleep $((attempt * 2))
+          done
+          echo "Safe writer guard: push failed after 3 attempts."
+          exit 1
