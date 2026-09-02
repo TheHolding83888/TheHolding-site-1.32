@@ -65,8 +65,8 @@ jobs:
           VE33_DIAGNOSTIC_EVIDENCE_FILE: ./reporting/ve33-accounting-evidence.json
           VE33_STATE_READ_CONCURRENCY: '2'
           VE33_SETTLEMENT_CONCURRENCY: '2'
-          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
-          OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
+          BASE_RPC_URL: https://mainnet.base.org
+          OPTIMISM_RPC_URL: https://mainnet.optimism.io
         run: |
           set -euo pipefail
           node reporting/ve33-settlement-query-diagnostic.mjs
