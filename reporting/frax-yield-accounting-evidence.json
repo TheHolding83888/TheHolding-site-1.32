@@ -1,0 +1,41 @@
+{
+  "version": "0.1-frax-yield-factual-accrual-evidence",
+  "mechanism": "frax-yield",
+  "generatedAt": null,
+  "status": "bootstrap-no-income",
+  "fullAccountingStart": "2026-09-01T00:00:00.000Z",
+  "partialBootstrapStart": "2026-08-27T00:00:00.000Z",
+  "semantics": {
+    "openingBalanceCreatesIncome": false,
+    "earnedIndependentOfClaim": true,
+    "claimIsSettlementNotSecondIncome": true,
+    "formula": "closing earned + YieldCollected settlements - opening earned",
+    "positiveDeltaRequired": true,
+    "referenceAprUsed": false,
+    "laterPriceMovementRewritesClosedIncome": false,
+    "unknownIsNotZero": true
+  },
+  "source": {
+    "chain": "Fraxtal",
+    "chainId": 252,
+    "yieldDistributor": "0x21359d1697e610e25C8229B2C57907378eD09A2E",
+    "earnedMetric": "YieldDistributor.earned(account)",
+    "settlementEvent": "YieldCollected(staker,recipient,yield,tokenAddress)",
+    "rewardsSource": "companies/rewards-data.json",
+    "historicalBootstrap": "reporting/income-ledger.json claimableSnapshots"
+  },
+  "authority": {
+    "executionAuthority": "none",
+    "walletAuthority": "none",
+    "claimingAuthority": "none",
+    "capitalExecution": false,
+    "methodologyMutationAuthority": "none"
+  },
+  "checkpoints": [],
+  "events": [],
+  "diagnostics": {
+    "bootstrapOnly": true,
+    "referenceAprUsed": false,
+    "unknownIsNotZero": true
+  }
+}
