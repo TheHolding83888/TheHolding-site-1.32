@@ -11,6 +11,9 @@ on:
       - 'rewards/defitea-union-scrvusd-overlay.mjs'
       - 'reporting/votium-union-accounting-evidence.mjs'
       - 'reporting/votium-union-accounting-evidence-validation.mjs'
+      - 'reporting/votium-union-accounting-adapter.mjs'
+      - 'reporting/votium-union-accounting-adapter-validation.mjs'
+      - 'reporting/votium-union-accounting-bootstrap.json'
       - '.github/workflows/update-company-rewards.yml'
       - 'intelligence/project-memory/THE_HOLDING_VLCVX_ROUTE_GRAPH_CANON_2026-08-18.md'
   workflow_dispatch:
@@ -102,6 +105,30 @@ jobs:
           node reporting/votium-union-accounting-evidence.mjs
           node reporting/votium-union-accounting-evidence-validation.mjs
 
+      - name: Validate reusable Union accrual semantics
+        run: |
+          set -euo pipefail
+          node --check reporting/votium-union-accounting-adapter.mjs
+          node --check reporting/votium-union-accounting-adapter-validation.mjs
+          node reporting/votium-union-accounting-adapter-validation.mjs
+
+      - name: Probe live factual Union accrual candidates
+        env:
+          REWARDS_DATA_FILE: /tmp/vlcvx-rewards.json
+          VOTIUM_UNION_BOOTSTRAP_FILE: ./reporting/votium-union-accounting-bootstrap.json
+          VOTIUM_UNION_ADAPTER_OUTPUT: /tmp/votium-union-accounting-adapter.json
+        run: |
+          set -euo pipefail
+          node reporting/votium-union-accounting-adapter.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('/tmp/votium-union-accounting-adapter.json','utf8'));
+          if(x.extension?.authority?.executionAuthority!=='none'||x.extension?.semantics?.referenceAprUsed!==false||x.extension?.semantics?.currentLeafIsPeriodIncome!==false)throw new Error('Union accrual authority drift');
+          if(x.extension?.diagnostics?.upstreamFreshness!=='current')throw new Error('live simulated Union state is not current');
+          if(Number(x.extension?.diagnostics?.verifiedCurrentBoundaryCount)!==2)throw new Error('both Union company boundaries were not verified');
+          console.log('LIVE UNION FACTUAL ACCRUAL PROBE',{status:x.extension.status,latestWeek:x.extension.diagnostics.latestDistributorWeek,candidates:x.events.map(e=>({company:e.company,amount:e.amount,usdValue:e.usdValue,week:e.distributionWeek,claimContinuity:e.claimContinuityStatus})),reconciliation:x.extension.diagnostics.reconciliationCount});
+          NODE
+
       - name: Verify aggregate parity after route promotion
         env:
           REWARDS_OUTPUT: /tmp/vlcvx-rewards.json
@@ -128,7 +155,7 @@ jobs:
         run: |
           node - <<'NODE'
           const fs=require('fs');
-          for(const p of ['rewards/vlcvx-registry-route-audit.mjs','rewards/union-vlcvx-allocation-audit.mjs','rewards/vlcvx-route-rewards-overlay.mjs','rewards/vlcvx-route-rewards-finalize.mjs','rewards/vlcvx-route-rewards-guard.mjs','reporting/votium-union-accounting-evidence.mjs']){
+          for(const p of ['rewards/vlcvx-registry-route-audit.mjs','rewards/union-vlcvx-allocation-audit.mjs','rewards/vlcvx-route-rewards-overlay.mjs','rewards/vlcvx-route-rewards-finalize.mjs','rewards/vlcvx-route-rewards-guard.mjs','reporting/votium-union-accounting-evidence.mjs','reporting/votium-union-accounting-adapter.mjs']){
             const s=fs.readFileSync(p,'utf8');
             for(const bad of ['sendTransaction(','new Wallet(','setDelegate(','recordAllocation(','distributor.claim('])if(s.includes(bad))throw new Error('forbidden execution surface in '+p+': '+bad);
             if(!s.includes("executionAuthority:'none'"))throw new Error('execution authority guard missing in '+p);

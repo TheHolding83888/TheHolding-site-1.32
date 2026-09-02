@@ -11,6 +11,7 @@ import path from 'node:path';
 import process from 'node:process';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
+import { buildVotiumUnionAccrual } from './votium-union-accounting-adapter.mjs';
 
 const __filename=fileURLToPath(import.meta.url);
 const __dirname=path.dirname(__filename);
@@ -23,6 +24,7 @@ const EMBEDDED_LEDGER_FILE=process.env.EMBEDDED_YIELD_LEDGER_FILE||path.join(ROO
 const REWARDS_FILE=process.env.REWARDS_DATA_FILE||path.join(ROOT,'companies','rewards-data.json');
 const REALISED_FILE=process.env.REALISED_CASH_FLOW_FILE||path.join(ROOT,'intelligence','realised-cash-flow','realised-cash-flow.json');
 const COMPANY_009_BEEFY_FILE=process.env.COMPANY_009_BEEFY_INCOME_FILE||path.join(ROOT,'companies','company-009-beefy-cvxcrv-income.json');
+const VOTIUM_UNION_BOOTSTRAP_FILE=process.env.VOTIUM_UNION_BOOTSTRAP_FILE||path.join(ROOT,'reporting','votium-union-accounting-bootstrap.json');
 const OUTPUT_FILE=process.env.INCOME_LEDGER_FILE||path.join(ROOT,'reporting','income-ledger.json');
 
 const VERSION='0.1-canonical-income-ledger';
@@ -140,9 +142,7 @@ function company009BeefyCandidates(source,generatedAt){
     const incomeUnderlying=shares*deltaPpfs,incomeUsd=incomeUnderlying*price;
     if(!(incomeUnderlying>0)||!(incomeUsd>0))throw new Error(`Company #009 Beefy positive PPFS interval produced invalid income: ${a.observationId} -> ${b.observationId}`);
     const startMonth=monthKey(a.generatedAt),endMonth=monthKey(b.generatedAt),sourceIdentity=`${a.observationId}:${b.observationId}`;
-    out.push(finalizeCandidate({
-      eventKey:`company-009-beefy-embedded:${sourceIdentity}`,company:COMPANY_009,family:'embedded-income',economicDate:dayKey(b.generatedAt),periodStart:a.generatedAt,periodEnd:b.generatedAt,route:COMPANY_009_BEEFY_ROUTE,protocol:'Beefy',asset:'cvxCRV',amount:round(incomeUnderlying,12),usdValue:round(incomeUsd,8),valuationStatus:'frozen-at-interval-end-cvxcrv-price',valuationAsset:'cvxCRV',valuationUnitUsd:round(price,12),shareBalanceRaw:b.sharesRaw,startPpfs:round(startPpfs,18),endPpfs:round(endPpfs,18),periodAttributionStatus:startMonth&&startMonth===endMonth?'single-month':'cross-month-boundary-unallocated',sourceFile:'companies/company-009-beefy-cvxcrv-income.json',sourceFamily:'adjacent factual Beefy vault checkpoints',sourceIdentity,evidenceStatus:'canonical-constant-share-positive-ppfs-interval',referenceAprUsed:false
-    },generatedAt));
+    out.push(finalizeCandidate({eventKey:`company-009-beefy-embedded:${sourceIdentity}`,company:COMPANY_009,family:'embedded-income',economicDate:dayKey(b.generatedAt),periodStart:a.generatedAt,periodEnd:b.generatedAt,route:COMPANY_009_BEEFY_ROUTE,protocol:'Beefy',asset:'cvxCRV',amount:round(incomeUnderlying,12),usdValue:round(incomeUsd,8),valuationStatus:'frozen-at-interval-end-cvxcrv-price',valuationAsset:'cvxCRV',valuationUnitUsd:round(price,12),shareBalanceRaw:b.sharesRaw,startPpfs:round(startPpfs,18),endPpfs:round(endPpfs,18),periodAttributionStatus:startMonth&&startMonth===endMonth?'single-month':'cross-month-boundary-unallocated',sourceFile:'companies/company-009-beefy-cvxcrv-income.json',sourceFamily:'adjacent factual Beefy vault checkpoints',sourceIdentity,evidenceStatus:'canonical-constant-share-positive-ppfs-interval',referenceAprUsed:false},generatedAt));
   }
   return{events:out,checkpointCount:checkpoints.length,zeroIncomeIntervalCount,sourcePresent:true};
 }
@@ -161,119 +161,54 @@ function rewardStateRows(company){
   const groups=new Map();
   for(const r of company?.rewards||[]){
     if(r?.includedInClaimableTotal===false)continue;
-    const route=String(r?.route||'').trim();
-    const protocol=String(r?.protocol||'').trim();
-    const chain=String(r?.chain||r?.details?.chain||'').trim();
-    const token=String(r?.token||r?.symbol||'').trim();
-    const wallet=String(r?.wallet||r?.details?.wallet||'').trim();
+    const route=String(r?.route||'').trim(),protocol=String(r?.protocol||'').trim(),chain=String(r?.chain||r?.details?.chain||'').trim(),token=String(r?.token||r?.symbol||'').trim(),wallet=String(r?.wallet||r?.details?.wallet||'').trim();
     const routeKey=[route||protocol||'route-unknown',protocol||'protocol-unknown',chain||'chain-unknown',token||'token-unknown',wallet||'wallet-unknown'].map(x=>x.toLowerCase()).join(':');
     let g=groups.get(routeKey);
-    if(!g){
-      g={routeKey,route:route||null,protocol:protocol||null,chain:chain||null,token:r?.token||null,symbol:r?.symbol||null,wallet:wallet||null,shardCount:0,amountTotal:0,usdTotal:0,amountComplete:true,usdComplete:true,classifications:new Set(),sources:new Map()};
-      groups.set(routeKey,g);
-    }
-    g.shardCount++;
-    const amount=finite(r?.amount),usd=finite(r?.usdValue);
-    if(Number.isFinite(amount))g.amountTotal+=amount;else g.amountComplete=false;
-    if(Number.isFinite(usd))g.usdTotal+=usd;else g.usdComplete=false;
-    if(r?.classification)g.classifications.add(String(r.classification));
-    if(r?.source!==null&&r?.source!==undefined){const k=stableStringify(r.source);g.sources.set(k,r.source);}
+    if(!g){g={routeKey,route:route||null,protocol:protocol||null,chain:chain||null,token:r?.token||null,symbol:r?.symbol||null,wallet:wallet||null,shardCount:0,amountTotal:0,usdTotal:0,amountComplete:true,usdComplete:true,classifications:new Set(),sources:new Map()};groups.set(routeKey,g);}
+    g.shardCount++;const amount=finite(r?.amount),usd=finite(r?.usdValue);if(Number.isFinite(amount))g.amountTotal+=amount;else g.amountComplete=false;if(Number.isFinite(usd))g.usdTotal+=usd;else g.usdComplete=false;if(r?.classification)g.classifications.add(String(r.classification));if(r?.source!==null&&r?.source!==undefined){const k=stableStringify(r.source);g.sources.set(k,r.source);}
   }
-  return[...groups.values()].map(g=>{
-    const classifications=[...g.classifications].sort();
-    const sources=[...g.sources.entries()].sort(([a],[b])=>a.localeCompare(b)).map(([,v])=>v);
-    return{
-      routeKey:g.routeKey,route:g.route,protocol:g.protocol,chain:g.chain,token:g.token,symbol:g.symbol,wallet:g.wallet,
-      shardCount:g.shardCount,aggregation:g.shardCount>1?'same-mechanism-shards':'single-mechanism-shard',
-      classification:classifications.length===1?classifications[0]:null,classifications,
-      amount:g.amountComplete?round(g.amountTotal,12):null,amountComplete:g.amountComplete,
-      usdValue:g.usdComplete?round(g.usdTotal,8):null,usdValueComplete:g.usdComplete,
-      source:sources.length===1?sources[0]:null,sources,
-      includedInClaimableTotal:true,stateOnly:true,periodIncomeAuthority:false,realisedCashFlowAuthority:false,unknownIsNotZero:true
-    };
-  }).sort((a,b)=>a.routeKey.localeCompare(b.routeKey));
+  return[...groups.values()].map(g=>{const classifications=[...g.classifications].sort(),sources=[...g.sources.entries()].sort(([a],[b])=>a.localeCompare(b)).map(([,v])=>v);return{routeKey:g.routeKey,route:g.route,protocol:g.protocol,chain:g.chain,token:g.token,symbol:g.symbol,wallet:g.wallet,shardCount:g.shardCount,aggregation:g.shardCount>1?'same-mechanism-shards':'single-mechanism-shard',classification:classifications.length===1?classifications[0]:null,classifications,amount:g.amountComplete?round(g.amountTotal,12):null,amountComplete:g.amountComplete,usdValue:g.usdComplete?round(g.usdTotal,8):null,usdValueComplete:g.usdComplete,source:sources.length===1?sources[0]:null,sources,includedInClaimableTotal:true,stateOnly:true,periodIncomeAuthority:false,realisedCashFlowAuthority:false,unknownIsNotZero:true};}).sort((a,b)=>a.routeKey.localeCompare(b.routeKey));
 }
 function continuityFor(previous,current,policy){
   const prev=new Map((previous?.rows||[]).map(x=>[x.routeKey,x])),cur=new Map((current?.rows||[]).map(x=>[x.routeKey,x]));
-  return[...new Set([...prev.keys(),...cur.keys()])].sort().map(routeKey=>{
-    const a=prev.get(routeKey),b=cur.get(routeKey);let state,deltaAmount=null,deltaUsd=null;
-    if(!a&&b)state=policy.claimableContinuity.new;
-    else if(a&&!b)state=policy.claimableContinuity.missing;
-    else{
-      const av=finite(a?.amount),bv=finite(b?.amount),au=finite(a?.usdValue),bu=finite(b?.usdValue);
-      if(Number.isFinite(av)&&Number.isFinite(bv)){deltaAmount=round(bv-av,12);state=bv>av?policy.claimableContinuity.increase:bv<av?policy.claimableContinuity.decrease:policy.claimableContinuity.unchanged;}
-      else if(Number.isFinite(au)&&Number.isFinite(bu)){deltaUsd=round(bu-au,8);state=bu>au?policy.claimableContinuity.increase:bu<au?policy.claimableContinuity.decrease:policy.claimableContinuity.unchanged;}
-      else state='comparison-unknown-not-zero';
-      if(deltaUsd===null&&Number.isFinite(au)&&Number.isFinite(bu))deltaUsd=round(bu-au,8);
-    }
-    return{routeKey,state,previousAmount:a?.amount??null,currentAmount:b?.amount??null,deltaAmount,previousUsdValue:a?.usdValue??null,currentUsdValue:b?.usdValue??null,deltaUsd,periodIncomeAuthority:false,realisedCashFlowAuthority:false,unknownIsNotZero:true};
-  });
+  return[...new Set([...prev.keys(),...cur.keys()])].sort().map(routeKey=>{const a=prev.get(routeKey),b=cur.get(routeKey);let state,deltaAmount=null,deltaUsd=null;if(!a&&b)state=policy.claimableContinuity.new;else if(a&&!b)state=policy.claimableContinuity.missing;else{const av=finite(a?.amount),bv=finite(b?.amount),au=finite(a?.usdValue),bu=finite(b?.usdValue);if(Number.isFinite(av)&&Number.isFinite(bv)){deltaAmount=round(bv-av,12);state=bv>av?policy.claimableContinuity.increase:bv<av?policy.claimableContinuity.decrease:policy.claimableContinuity.unchanged;}else if(Number.isFinite(au)&&Number.isFinite(bu)){deltaUsd=round(bu-au,8);state=bu>au?policy.claimableContinuity.increase:bu<au?policy.claimableContinuity.decrease:policy.claimableContinuity.unchanged;}else state='comparison-unknown-not-zero';if(deltaUsd===null&&Number.isFinite(au)&&Number.isFinite(bu))deltaUsd=round(bu-au,8);}return{routeKey,state,previousAmount:a?.amount??null,currentAmount:b?.amount??null,deltaAmount,previousUsdValue:a?.usdValue??null,currentUsdValue:b?.usdValue??null,deltaUsd,periodIncomeAuthority:false,realisedCashFlowAuthority:false,unknownIsNotZero:true};});
 }
-function retainSnapshotsPerCompany(values,max){
-  const groups=new Map();
-  for(const row of values){if(!row?.company)continue;if(!groups.has(row.company))groups.set(row.company,[]);groups.get(row.company).push(row);}
-  return[...groups.values()].flatMap(rows=>rows.sort((a,b)=>String(a.capturedAt).localeCompare(String(b.capturedAt))).slice(-max)).sort((a,b)=>String(a.capturedAt).localeCompare(String(b.capturedAt))||String(a.company).localeCompare(String(b.company)));
-}
+function retainSnapshotsPerCompany(values,max){const groups=new Map();for(const row of values){if(!row?.company)continue;if(!groups.has(row.company))groups.set(row.company,[]);groups.get(row.company).push(row);}return[...groups.values()].flatMap(rows=>rows.sort((a,b)=>String(a.capturedAt).localeCompare(String(b.capturedAt))).slice(-max)).sort((a,b)=>String(a.capturedAt).localeCompare(String(b.capturedAt))||String(a.company).localeCompare(String(b.company)));}
 function buildClaimableSnapshots(previous,rewards,policy){
-  const prior=Array.isArray(previous)?previous:[];
-  if(!rewards?.generatedAt||!rewards?.companies||typeof rewards.companies!=='object')return{snapshots:prior,currentByCompany:{},continuity:{}};
+  const prior=Array.isArray(previous)?previous:[];if(!rewards?.generatedAt||!rewards?.companies||typeof rewards.companies!=='object')return{snapshots:prior,currentByCompany:{},continuity:{}};
   const byKey=new Map(prior.filter(x=>x?.snapshotKey).map(x=>[x.snapshotKey,x])),currentByCompany={},continuity={};
-  for(const [company,c] of Object.entries(rewards.companies)){
-    const rows=rewardStateRows(c);
-    const snapshot={snapshotKey:`rewards:${rewards.generatedAt}:${company}`,capturedAt:rewards.generatedAt,company,canonicalClaimableTotalUsd:Number.isFinite(finite(c?.totalUsd))?round(c.totalUsd,8):null,rows,stateOnly:true,periodIncomeAuthority:false,realisedCashFlowAuthority:false,unknownIsNotZero:true};
-    const priorCompany=[...byKey.values()].filter(x=>x.company===company&&x.capturedAt<rewards.generatedAt).sort((a,b)=>a.capturedAt.localeCompare(b.capturedAt)).at(-1)||null;
-    continuity[company]=continuityFor(priorCompany,snapshot,policy);byKey.set(snapshot.snapshotKey,snapshot);currentByCompany[company]=snapshot;
-  }
-  const max=Number(policy?.retention?.claimableSnapshots)||730;
-  return{snapshots:retainSnapshotsPerCompany([...byKey.values()],max),currentByCompany,continuity};
+  for(const [company,c] of Object.entries(rewards.companies)){const rows=rewardStateRows(c),snapshot={snapshotKey:`rewards:${rewards.generatedAt}:${company}`,capturedAt:rewards.generatedAt,company,canonicalClaimableTotalUsd:Number.isFinite(finite(c?.totalUsd))?round(c.totalUsd,8):null,rows,stateOnly:true,periodIncomeAuthority:false,realisedCashFlowAuthority:false,unknownIsNotZero:true};const priorCompany=[...byKey.values()].filter(x=>x.company===company&&x.capturedAt<rewards.generatedAt).sort((a,b)=>a.capturedAt.localeCompare(b.capturedAt)).at(-1)||null;continuity[company]=continuityFor(priorCompany,snapshot,policy);byKey.set(snapshot.snapshotKey,snapshot);currentByCompany[company]=snapshot;}
+  const max=Number(policy?.retention?.claimableSnapshots)||730;return{snapshots:retainSnapshotsPerCompany([...byKey.values()],max),currentByCompany,continuity};
 }
 
 function eventMonth(e){if(e.family==='embedded-income'){const a=monthKey(e.periodStart),b=monthKey(e.periodEnd);return a&&a===b?b:null;}return monthKey(e.economicDate||e.periodEnd);}
 function familySummary(events){const valued=events.filter(e=>Number.isFinite(finite(e.usdValue))),unvalued=events.length-valued.length,subtotal=valued.reduce((s,e)=>s+finite(e.usdValue),0);return{eventCount:events.length,valuedEventCount:valued.length,unvaluedEventCount:unvalued,usdComplete:unvalued===0,usd:events.length&&unvalued===0?round(subtotal,8):(events.length===0?0:null),valuedUsdSubtotal:round(subtotal,8),unknownIsNotZero:true};}
-function buildMonthly(events,company){
-  const groups=new Map();
-  for(const e of events.filter(x=>x.company===company)){const m=eventMonth(e);if(!m)continue;if(!groups.has(m))groups.set(m,[]);groups.get(m).push(e);}
-  const out={};
-  for(const [month,rows] of [...groups.entries()].sort(([a],[b])=>a.localeCompare(b))){
-    const accrued=rows.filter(x=>x.family==='accrued-entitlement'),realised=rows.filter(x=>x.family==='realised-cash-flow'),embedded=rows.filter(x=>x.family==='embedded-income');
-    const stablePrice=embedded.filter(x=>Number.isFinite(finite(x.stablePriceEffectUsd))).reduce((s,x)=>s+finite(x.stablePriceEffectUsd),0);
-    out[month]={month,families:{accruedEntitlement:familySummary(accrued),realisedCashFlow:familySummary(realised),embeddedIncome:familySummary(embedded)},stablePriceEffectUsd:embedded.length?round(stablePrice,8):null,combinedIncomeUsd:null,crossFamilySumAllowed:false,note:'Economic families stay separate; accrued entitlement, realised cash flow and embedded income may overlap economically.'};
-  }
-  return out;
-}
+function buildMonthly(events,company){const groups=new Map();for(const e of events.filter(x=>x.company===company)){const m=eventMonth(e);if(!m)continue;if(!groups.has(m))groups.set(m,[]);groups.get(m).push(e);}const out={};for(const [month,rows] of [...groups.entries()].sort(([a],[b])=>a.localeCompare(b))){const accrued=rows.filter(x=>x.family==='accrued-entitlement'),realised=rows.filter(x=>x.family==='realised-cash-flow'),embedded=rows.filter(x=>x.family==='embedded-income'),stablePrice=embedded.filter(x=>Number.isFinite(finite(x.stablePriceEffectUsd))).reduce((s,x)=>s+finite(x.stablePriceEffectUsd),0);out[month]={month,families:{accruedEntitlement:familySummary(accrued),realisedCashFlow:familySummary(realised),embeddedIncome:familySummary(embedded)},stablePriceEffectUsd:embedded.length?round(stablePrice,8):null,combinedIncomeUsd:null,crossFamilySumAllowed:false,note:'Economic families stay separate; accrued entitlement, realised cash flow and embedded income may overlap economically.'};}return out;}
 function referenceState(reporting,company){const f=reporting?.funds?.[company];if(!f)return null;const latest=f.latestSnapshot||{},month=monthKey(latest.date||reporting.generatedAt),current=month?f.months?.[month]||null:null;return{semantic:f.semantic||null,latestDate:latest.date||null,currentMonth:month,currentMonthReferenceOrGeneratedIncomeUsd:Number.isFinite(finite(current?.cashFlowUsd??current?.generatedIncomeUsd))?round(current.cashFlowUsd??current.generatedIncomeUsd,8):null,source:'reporting/reporting-data.json',earnedIncomeAuthority:false};}
 function buildCompanies({events,currentByCompany,continuity,reporting,realised}){
   const names=new Set(events.map(e=>e.company));Object.keys(currentByCompany||{}).forEach(x=>names.add(x));Object.keys(realised?.companies||{}).forEach(x=>names.add(x));if(reporting?.funds?.[DEFITEA])names.add(DEFITEA);if(reporting?.funds?.[MONETRA])names.add(MONETRA);
   const out={};
-  for(const name of [...names].sort()){
-    const rows=events.filter(e=>e.company===name),crossMonthEmbedded=rows.filter(e=>e.family==='embedded-income'&&eventMonth(e)===null).length;
-    const embeddedCoverage=name===MONETRA?'canonical-accepted-intervals-only':(name===COMPANY_009&&rows.some(e=>e.family==='embedded-income'&&e.route===COMPANY_009_BEEFY_ROUTE)?'partial-mechanism-specific-beefy-cvxcrv':'unknown');
-    out[name]={status:'partial',eventCount:rows.length,eventCountsByFamily:{accruedEntitlement:rows.filter(e=>e.family==='accrued-entitlement').length,realisedCashFlow:rows.filter(e=>e.family==='realised-cash-flow').length,embeddedIncome:rows.filter(e=>e.family==='embedded-income').length},referenceState:referenceState(reporting,name),currentClaimableState:currentByCompany?.[name]||null,claimableContinuity:continuity?.[name]||[],monthly:buildMonthly(events,name),coverage:{overallComplete:false,accruedEntitlement:name===DEFITEA?'partial-mechanism-specific':'unknown',realisedCashFlow:realised?.companies?.[name]?.ledger?.coverage?.complete===true?'complete':(rows.some(e=>e.family==='realised-cash-flow')?'partial-mechanism-specific':'unknown'),embeddedIncome:embeddedCoverage,crossMonthEmbeddedIntervalsExcludedFromMonthlyAttribution:crossMonthEmbedded,unknownIsNotZero:true}};
-  }
+  for(const name of [...names].sort()){const rows=events.filter(e=>e.company===name),crossMonthEmbedded=rows.filter(e=>e.family==='embedded-income'&&eventMonth(e)===null).length,embeddedCoverage=name===MONETRA?'canonical-accepted-intervals-only':(name===COMPANY_009&&rows.some(e=>e.family==='embedded-income'&&e.route===COMPANY_009_BEEFY_ROUTE)?'partial-mechanism-specific-beefy-cvxcrv':'unknown'),accruedCoverage=rows.some(e=>e.family==='accrued-entitlement')?'partial-mechanism-specific':'unknown';out[name]={status:'partial',eventCount:rows.length,eventCountsByFamily:{accruedEntitlement:rows.filter(e=>e.family==='accrued-entitlement').length,realisedCashFlow:rows.filter(e=>e.family==='realised-cash-flow').length,embeddedIncome:rows.filter(e=>e.family==='embedded-income').length},referenceState:referenceState(reporting,name),currentClaimableState:currentByCompany?.[name]||null,claimableContinuity:continuity?.[name]||[],monthly:buildMonthly(events,name),coverage:{overallComplete:false,accruedEntitlement:accruedCoverage,realisedCashFlow:realised?.companies?.[name]?.ledger?.coverage?.complete===true?'complete':(rows.some(e=>e.family==='realised-cash-flow')?'partial-mechanism-specific':'unknown'),embeddedIncome:embeddedCoverage,crossMonthEmbeddedIntervalsExcludedFromMonthlyAttribution:crossMonthEmbedded,unknownIsNotZero:true}};}
   return out;
 }
 
 async function build(){
   const generatedAt=new Date().toISOString();
-  const [policyRaw,reporting,defiteaLedger,embedded,rewards,realised,company009Beefy,previous]=await Promise.all([readJson(POLICY_FILE),readJson(REPORTING_FILE),readJson(DEFITEA_LEDGER_FILE),readJson(EMBEDDED_LEDGER_FILE),readJson(REWARDS_FILE),readJson(REALISED_FILE),readJson(COMPANY_009_BEEFY_FILE),readJson(OUTPUT_FILE,{})]);
-  const policy=validatePolicy(policyRaw);
-  const beefy=company009BeefyCandidates(company009Beefy,generatedAt);
-  const candidates=[...defiteaCandidates(defiteaLedger,generatedAt),...embeddedCandidates(embedded,generatedAt),...beefy.events,...realisedCandidates(realised,generatedAt)];
-  const priorEventCount=Array.isArray(previous?.events)?previous.events.length:0;
-  const admitted=admitEvents(previous?.events,candidates);
-  const claimable=buildClaimableSnapshots(previous?.claimableSnapshots,rewards,policy);
-  const companies=buildCompanies({events:admitted.events,currentByCompany:claimable.currentByCompany,continuity:claimable.continuity,reporting,realised});
-  return{
-    version:VERSION,methodologyVersion:METHODOLOGY_VERSION,policyVersion:policy.version,generatedAt,status:'partial',
+  const [policyRaw,reporting,defiteaLedger,embedded,rewards,realised,company009Beefy,votiumUnionBootstrap,previous]=await Promise.all([readJson(POLICY_FILE),readJson(REPORTING_FILE),readJson(DEFITEA_LEDGER_FILE),readJson(EMBEDDED_LEDGER_FILE),readJson(REWARDS_FILE),readJson(REALISED_FILE),readJson(COMPANY_009_BEEFY_FILE),readJson(VOTIUM_UNION_BOOTSTRAP_FILE),readJson(OUTPUT_FILE,{})]);
+  const policy=validatePolicy(policyRaw),beefy=company009BeefyCandidates(company009Beefy,generatedAt);
+  const union=await buildVotiumUnionAccrual({rewards,bootstrap:votiumUnionBootstrap,previousExtension:previous?.accountingExtensions?.votiumUnionAccrual||null,generatedAt});
+  const unionEvents=(union.events||[]).map(e=>finalizeCandidate(e,generatedAt));
+  const candidates=[...defiteaCandidates(defiteaLedger,generatedAt),...embeddedCandidates(embedded,generatedAt),...beefy.events,...realisedCandidates(realised,generatedAt),...unionEvents];
+  const priorEventCount=Array.isArray(previous?.events)?previous.events.length:0,admitted=admitEvents(previous?.events,candidates),claimable=buildClaimableSnapshots(previous?.claimableSnapshots,rewards,policy),companies=buildCompanies({events:admitted.events,currentByCompany:claimable.currentByCompany,continuity:claimable.continuity,reporting,realised});
+  return{version:VERSION,methodologyVersion:METHODOLOGY_VERSION,policyVersion:policy.version,generatedAt,status:'partial',
     semantics:{noCollapseRule:'Do not sum accrued entitlement + realised cash flow + embedded income + reference productivity into one income number without explicit non-overlap reconciliation.',claimableStateRule:'Current claimable balances and their deltas are state observations, not period-income or realised-cash-flow authority.',claimableShardRule:'Same-mechanism claimable rows may be aggregated as state only; if any shard lacks a numeric amount or USD value, that aggregate field remains UNKNOWN rather than treating the shard as zero.',continuityRule:'Claims, reinvestment, transfers, source disappearance and protocol resets do not erase previously admitted income events. Ambiguous decreases become local reconciliation-needed states.',unknownIsNotZero:true,referenceAprCanBackfillEarnedIncome:false,stablePriceEffectSeparate:true},
-    sourceState:{reporting:{file:'reporting/reporting-data.json',version:reporting?.version||null,generatedAt:reporting?.generatedAt||null},defiteaIncomeLedger:{file:'reporting/defitea-income-ledger.json',version:defiteaLedger?.version||null,updatedAt:defiteaLedger?.updatedAt||null},embeddedYieldLedger:{file:'companies/embedded-yield-ledger.json',version:embedded?.version||null,generatedAt:embedded?.generatedAt||null},company009BeefyEmbeddedIncome:{file:'companies/company-009-beefy-cvxcrv-income.json',version:company009Beefy?.version||null,generatedAt:company009Beefy?.generatedAt||null,strategyId:company009Beefy?.strategy?.id||null,checkpointCount:beefy.checkpointCount,candidateIntervalCount:beefy.events.length,zeroIncomeIntervalCount:beefy.zeroIncomeIntervalCount,referenceAprUsed:false,sourcePresent:beefy.sourcePresent},rewards:{file:'companies/rewards-data.json',version:rewards?.version||null,generatedAt:rewards?.generatedAt||null},realisedCashFlow:{file:'intelligence/realised-cash-flow/realised-cash-flow.json',version:realised?.version||null,generatedAt:realised?.generatedAt||null,overallCoverageComplete:realised?.methodology?.overallCoverageComplete===true}},
+    sourceState:{reporting:{file:'reporting/reporting-data.json',version:reporting?.version||null,generatedAt:reporting?.generatedAt||null},defiteaIncomeLedger:{file:'reporting/defitea-income-ledger.json',version:defiteaLedger?.version||null,updatedAt:defiteaLedger?.updatedAt||null},embeddedYieldLedger:{file:'companies/embedded-yield-ledger.json',version:embedded?.version||null,generatedAt:embedded?.generatedAt||null},company009BeefyEmbeddedIncome:{file:'companies/company-009-beefy-cvxcrv-income.json',version:company009Beefy?.version||null,generatedAt:company009Beefy?.generatedAt||null,strategyId:company009Beefy?.strategy?.id||null,checkpointCount:beefy.checkpointCount,candidateIntervalCount:beefy.events.length,zeroIncomeIntervalCount:beefy.zeroIncomeIntervalCount,referenceAprUsed:false,sourcePresent:beefy.sourcePresent},votiumUnionAccrual:{bootstrapFile:'reporting/votium-union-accounting-bootstrap.json',adapterVersion:union.extension?.version||null,status:union.extension?.status||null,latestDistributorWeek:union.extension?.diagnostics?.latestDistributorWeek??null,upstreamFreshness:union.extension?.diagnostics?.upstreamFreshness||null,candidateEventCount:unionEvents.length,referenceAprUsed:false},rewards:{file:'companies/rewards-data.json',version:rewards?.version||null,generatedAt:rewards?.generatedAt||null},realisedCashFlow:{file:'intelligence/realised-cash-flow/realised-cash-flow.json',version:realised?.version||null,generatedAt:realised?.generatedAt||null,overallCoverageComplete:realised?.methodology?.overallCoverageComplete===true}},
     events:admitted.events,claimableSnapshots:claimable.snapshots,companies,
-    run:{candidateEventCount:candidates.length,newEventsAdmitted:admitted.admitted,retainedHistoricalEventCount:priorEventCount,claimableSnapshotCount:claimable.snapshots.length,company009BeefyCandidateEventCount:beefy.events.length,company009BeefyCheckpointCount:beefy.checkpointCount},
-    accountingExtensions:{company009BeefyEmbeddedIncome:{version:'0.1-constant-share-positive-ppfs',source:'companies/company-009-beefy-cvxcrv-income.json',referenceAprUsed:false,laterPriceMovementRewritesIncome:false,crossMonthIntervalsAutoAllocated:false,executionAuthority:'none'}},
-    authority:{executionAuthority:'none',walletAuthority:'none',claimingAuthority:'none',capitalExecution:false,methodologyMutationAuthority:'none'}
-  };
+    run:{candidateEventCount:candidates.length,newEventsAdmitted:admitted.admitted,retainedHistoricalEventCount:priorEventCount,claimableSnapshotCount:claimable.snapshots.length,company009BeefyCandidateEventCount:beefy.events.length,company009BeefyCheckpointCount:beefy.checkpointCount,votiumUnionCandidateEventCount:unionEvents.length,votiumUnionBoundaryCount:union.extension?.boundaries?.length||0},
+    accountingExtensions:{company009BeefyEmbeddedIncome:{version:'0.1-constant-share-positive-ppfs',source:'companies/company-009-beefy-cvxcrv-income.json',referenceAprUsed:false,laterPriceMovementRewritesIncome:false,crossMonthIntervalsAutoAllocated:false,executionAuthority:'none'},votiumUnionAccrual:union.extension},
+    authority:{executionAuthority:'none',walletAuthority:'none',claimingAuthority:'none',capitalExecution:false,methodologyMutationAuthority:'none'}};
 }
-async function main(){const output=await build();await writeJson(OUTPUT_FILE,output);console.log('Canonical Income Ledger built',{events:output.events.length,newEvents:output.run.newEventsAdmitted,claimableSnapshots:output.claimableSnapshots.length,companies:Object.keys(output.companies).length,company009BeefyEvents:output.run.company009BeefyCandidateEventCount,unknownIsNotZero:output.semantics.unknownIsNotZero,executionAuthority:output.authority.executionAuthority});}
+async function main(){const output=await build();await writeJson(OUTPUT_FILE,output);console.log('Canonical Income Ledger built',{events:output.events.length,newEvents:output.run.newEventsAdmitted,claimableSnapshots:output.claimableSnapshots.length,companies:Object.keys(output.companies).length,company009BeefyEvents:output.run.company009BeefyCandidateEventCount,votiumUnionEvents:output.run.votiumUnionCandidateEventCount,votiumUnionBoundaries:output.run.votiumUnionBoundaryCount,unknownIsNotZero:output.semantics.unknownIsNotZero,executionAuthority:output.authority.executionAuthority});}
 
 export{VERSION,METHODOLOGY_VERSION,validatePolicy,economicHashPayload,finalizeCandidate,admitEvents,defiteaCandidates,embeddedCandidates,company009BeefyCandidates,realisedCandidates,rewardStateRows,continuityFor,buildClaimableSnapshots,eventMonth,familySummary,buildMonthly,build};
 if(process.argv[1]&&path.resolve(process.argv[1])===__filename)main().catch(err=>{console.error(err);process.exitCode=1;});
