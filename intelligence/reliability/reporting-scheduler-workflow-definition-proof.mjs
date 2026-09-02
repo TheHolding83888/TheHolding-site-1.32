@@ -19,6 +19,14 @@ const VE33_VALIDATION_PATHS=[
   'reporting/ve33-income-candidates-validation.mjs',
   'reporting/ve33-ledger-admission-validation.mjs'
 ];
+const LOCKED_EVIDENCE_PATH='reporting/ve33-locked-managed-accounting-evidence.json';
+const LOCKED_BUILDER_PATH='reporting/ve33-locked-managed-accounting-evidence.mjs';
+const LOCKED_CANDIDATES_PATH='reporting/ve33-locked-managed-income-candidates.mjs';
+const LOCKED_VALIDATION_PATHS=[
+  'reporting/ve33-locked-managed-accounting-evidence-validation.mjs',
+  'reporting/ve33-locked-managed-income-candidates-validation.mjs',
+  'reporting/ve33-locked-managed-ledger-admission-validation.mjs'
+];
 
 const workflow=fs.readFileSync(WORKFLOW_PATH,'utf8');
 const contract=JSON.parse(fs.readFileSync(CONTRACT_PATH,'utf8'));
@@ -33,6 +41,10 @@ const ve33Builder=fs.readFileSync(VE33_BUILDER_PATH,'utf8');
 const ve33Candidates=fs.readFileSync(VE33_CANDIDATES_PATH,'utf8');
 const ve33Admission=fs.readFileSync(VE33_ADMISSION_PATH,'utf8');
 const ve33Validations=VE33_VALIDATION_PATHS.map(p=>fs.readFileSync(p,'utf8')).join('\n');
+const lockedEvidence=JSON.parse(fs.readFileSync(LOCKED_EVIDENCE_PATH,'utf8'));
+const lockedBuilder=fs.readFileSync(LOCKED_BUILDER_PATH,'utf8');
+const lockedCandidates=fs.readFileSync(LOCKED_CANDIDATES_PATH,'utf8');
+const lockedValidations=LOCKED_VALIDATION_PATHS.map(p=>fs.readFileSync(p,'utf8')).join('\n');
 
 assert.equal(contract.version,'0.1-reporting-scheduler-contract');
 assert.equal(contract.status,'production');
@@ -112,6 +124,37 @@ assert.match(ve33Admission,/executionAuthority:'none'/,'ve33 admission authority
 assert.match(ve33Validations,/mutation detected/,'ve33 immutable event mutation regression test missing');
 assert.match(ve33Validations,/claim settlement semantics drift|claimIsSecondIncomeEvent/,'ve33 claim settlement regression coverage missing');
 
+assert.equal(lockedEvidence.version,'0.1-ve33-locked-managed-factual-accrual');
+assert.equal(lockedEvidence.fullAccountingStart,'2026-09-01T00:00:00.000Z');
+assert.equal(lockedEvidence.semantics?.openingBalanceCreatesIncome,false);
+assert.equal(lockedEvidence.semantics?.earnedIndependentOfWithdrawal,true);
+assert.equal(lockedEvidence.semantics?.withdrawalIsSettlementNotSecondIncome,true);
+assert.equal(lockedEvidence.semantics?.grossVeNftPrincipalDeltaIsIncomeAuthority,false);
+assert.equal(lockedEvidence.semantics?.referenceAprUsed,false);
+assert.equal(lockedEvidence.semantics?.laterPriceMovementRewritesClosedIncome,false);
+assert.equal(lockedEvidence.semantics?.unknownIsNotZero,true);
+assert.equal(lockedEvidence.authority?.executionAuthority,'none');
+assert.equal(lockedEvidence.authority?.walletAuthority,'none');
+assert.equal(lockedEvidence.authority?.claimingAuthority,'none');
+assert.equal(lockedEvidence.authority?.capitalExecution,false);
+assert.equal(lockedEvidence.authority?.methodologyMutationAuthority,'none');
+assert.match(lockedBuilder,/idToManaged/,'LockedManagedReward managed identity proof missing');
+assert.match(lockedBuilder,/managedToLocked/,'LockedManagedReward exact reward-contract proof missing');
+assert.match(lockedBuilder,/reconcileEntitlement\(open\.entitlementRaw,close\.entitlementRaw,settlements\.amountRaw\)/,'LockedManagedReward entitlement reconciliation missing');
+assert.match(lockedBuilder,/withdrawManaged/,'LockedManagedReward withdrawal settlement attribution missing');
+assert.match(lockedBuilder,/withdrawalIsSettlementNotSecondIncome:true/,'LockedManagedReward withdrawal dedup invariant missing');
+assert.match(lockedBuilder,/grossVeNftPrincipalDeltaIsIncomeAuthority:false/,'LockedManagedReward gross principal exclusion missing');
+assert.match(lockedBuilder,/laterClaimOrPriceMoveDoesNotRewriteIncome:true/,'LockedManagedReward frozen income invariant missing');
+assert.doesNotMatch(lockedBuilder,/referenceAprUsed\s*:\s*true|referenceApyUsed\s*:\s*true/i,'LockedManagedReward builder gained APR/APY income authority');
+assert.match(lockedCandidates,/family:'embedded-income'/,'LockedManagedReward Canonical Ledger family mapping missing');
+assert.match(lockedCandidates,/sourceEvidenceFamily:e\.family/,'LockedManagedReward source evidence family preservation missing');
+assert.match(lockedCandidates,/sourceFile:'reporting\/ve33-locked-managed-accounting-evidence\.json'/,'LockedManagedReward source provenance missing');
+assert.match(ve33Admission,/buildLockedManagedEvidence/,'LockedManagedReward evidence build missing from canonical admission path');
+assert.match(ve33Admission,/admitLockedManagedIntoLedgerState/,'LockedManagedReward canonical admission primitive missing');
+assert.match(lockedValidations,/embedded-income/,'LockedManagedReward canonical family regression coverage missing');
+assert.match(lockedValidations,/sourceEvidenceFamily/,'LockedManagedReward source family preservation regression coverage missing');
+assert.match(lockedValidations,/mutation detected/,'LockedManagedReward immutable event mutation regression test missing');
+
 const exactCron=`- cron: '${contract.cron}'`;
 assert.equal(workflow.split(exactCron).length-1,1,'Reporting workflow must contain exactly one canonical scheduler cron');
 assert.match(workflow,/permissions:\n  contents: write/,'Reporting writer contents permission drift');
@@ -130,18 +173,27 @@ assert.match(workflow,/github\.event\.workflow_run\.conclusion == 'success'/,'Re
 assert.match(workflow,/github\.event\.workflow_run\.head_branch == 'main'/,'Reporting workflow_run main-branch gate missing');
 assert.match(workflow,/ref: main/,'Reporting must consume canonical main');
 for(const source of ['companies/rewards-data.json','companies/stable-index-data.json','companies/embedded-yield-ledger.json','companies/productivity-data.json','companies/defitea-canonical-state.json','intelligence/realised-cash-flow/realised-cash-flow.json']) assert.ok(workflow.includes(`- '${source}'`),`Reporting freshness source missing: ${source}`);
-for(const source of ['reporting/rate-continuity-policy.json','reporting/income-ledger-policy.json','reporting/reporting-engine.mjs','reporting/reporting-engine-validation.mjs','reporting/income-ledger.mjs','reporting/income-ledger-validation.mjs','reporting/frax-yield-accounting-evidence.mjs','reporting/frax-yield-accounting-evidence-validation.mjs','reporting/frax-yield-accounting-evidence.json','reporting/ve33-accounting-evidence.mjs','reporting/ve33-accounting-evidence-validation.mjs','reporting/ve33-income-candidates.mjs','reporting/ve33-income-candidates-validation.mjs','reporting/ve33-ledger-admission.mjs','reporting/ve33-ledger-admission-validation.mjs','reporting/ve33-accounting-evidence.json']) assert.ok(workflow.includes(`- '${source}'`),`Reporting deterministic code/policy wake missing: ${source}`);
+for(const source of [
+  'reporting/rate-continuity-policy.json','reporting/income-ledger-policy.json','reporting/reporting-engine.mjs','reporting/reporting-engine-validation.mjs','reporting/income-ledger.mjs','reporting/income-ledger-validation.mjs',
+  'reporting/frax-yield-accounting-evidence.mjs','reporting/frax-yield-accounting-evidence-validation.mjs','reporting/frax-yield-accounting-evidence.json',
+  'reporting/ve33-accounting-evidence.mjs','reporting/ve33-accounting-evidence-validation.mjs','reporting/ve33-income-candidates.mjs','reporting/ve33-income-candidates-validation.mjs','reporting/ve33-ledger-admission.mjs','reporting/ve33-ledger-admission-validation.mjs','reporting/ve33-accounting-evidence.json',
+  'reporting/ve33-locked-managed-accounting-evidence.mjs','reporting/ve33-locked-managed-accounting-evidence-validation.mjs','reporting/ve33-locked-managed-income-candidates.mjs','reporting/ve33-locked-managed-income-candidates-validation.mjs','reporting/ve33-locked-managed-ledger-admission-validation.mjs','reporting/ve33-locked-managed-accounting-evidence.json'
+]) assert.ok(workflow.includes(`- '${source}'`),`Reporting deterministic code/policy wake missing: ${source}`);
 
 assert.match(workflow,/test -s reporting\/rate-continuity-policy\.json/,'Reporting rate continuity policy preflight missing');
 assert.match(workflow,/test -s reporting\/income-ledger-policy\.json/,'Canonical Income Ledger policy preflight missing');
 assert.match(workflow,/test -s reporting\/frax-yield-accounting-evidence\.json/,'Frax evidence preflight missing');
 assert.match(workflow,/test -s reporting\/ve33-accounting-evidence\.json/,'ve33 evidence preflight missing');
+assert.match(workflow,/test -s reporting\/ve33-locked-managed-accounting-evidence\.json/,'LockedManagedReward evidence preflight missing');
 assert.match(workflow,/test -s intelligence\/realised-cash-flow\/realised-cash-flow\.json/,'Canonical Realised Cash Flow source preflight missing');
 assert.match(workflow,/node reporting\/income-ledger-validation\.mjs/,'Canonical Income Ledger validation missing');
 assert.match(workflow,/node reporting\/frax-yield-accounting-evidence-validation\.mjs/,'Frax evidence validation missing');
 assert.match(workflow,/node reporting\/ve33-accounting-evidence-validation\.mjs/,'ve33 evidence validation missing');
 assert.match(workflow,/node reporting\/ve33-income-candidates-validation\.mjs/,'ve33 candidate validation missing');
 assert.match(workflow,/node reporting\/ve33-ledger-admission-validation\.mjs/,'ve33 ledger admission validation missing');
+assert.match(workflow,/node reporting\/ve33-locked-managed-accounting-evidence-validation\.mjs/,'LockedManagedReward evidence validation missing');
+assert.match(workflow,/node reporting\/ve33-locked-managed-income-candidates-validation\.mjs/,'LockedManagedReward candidate validation missing');
+assert.match(workflow,/node reporting\/ve33-locked-managed-ledger-admission-validation\.mjs/,'LockedManagedReward ledger admission validation missing');
 assert.match(workflow,/name: Build Frax veFRAX factual accrual evidence/,'Frax factual accrual build step missing');
 assert.match(workflow,/run: node reporting\/frax-yield-accounting-evidence\.mjs/,'Frax factual accrual writer execution missing');
 assert.match(workflow,/FRAXTAL_RPC_URL:\s*\$\{\{ secrets\.FRAXTAL_RPC_URL \}\}/,'Frax RPC secret/fallback binding missing');
@@ -155,16 +207,22 @@ assert.match(workflow,/name: Admit ve33 evidence through Canonical Income Ledger
 assert.match(workflow,/run: node reporting\/ve33-ledger-admission\.mjs/,'ve33 Canonical Ledger admission execution missing');
 assert.match(workflow,/FRAX_YIELD_EVIDENCE_FILE:\s*\.\/reporting\/frax-yield-accounting-evidence\.json/,'Frax evidence runtime binding missing');
 assert.match(workflow,/VE33_EVIDENCE_FILE:\s*\.\/reporting\/ve33-accounting-evidence\.json/,'ve33 evidence runtime binding missing');
+assert.match(workflow,/VE33_LOCKED_MANAGED_EVIDENCE_FILE:\s*\.\/reporting\/ve33-locked-managed-accounting-evidence\.json/,'LockedManagedReward evidence runtime binding missing');
 assert.match(workflow,/INCOME_LEDGER_FILE:\s*\.\/reporting\/income-ledger\.json/,'Canonical Income Ledger runtime output binding missing');
-assert.match(workflow,/git add reporting\/reporting-data\.json reporting\/defitea-income-ledger\.json reporting\/frax-yield-accounting-evidence\.json reporting\/ve33-accounting-evidence\.json reporting\/income-ledger\.json/,'Canonical Income Ledger + mechanism evidence publication staging missing');
+assert.match(workflow,/git add reporting\/reporting-data\.json reporting\/defitea-income-ledger\.json reporting\/frax-yield-accounting-evidence\.json reporting\/ve33-accounting-evidence\.json reporting\/ve33-locked-managed-accounting-evidence\.json reporting\/income-ledger\.json/,'Canonical Income Ledger + mechanism evidence publication staging missing');
 assert.match(workflow,/critical_fingerprint\(\)/,'Reporting race critical fingerprint missing');
 assert.match(workflow,/reporting\/frax-yield-accounting-evidence\.mjs/,'Frax evidence builder missing from critical fingerprint');
 assert.match(workflow,/reporting\/ve33-accounting-evidence\.mjs/,'ve33 evidence builder missing from critical fingerprint');
 assert.match(workflow,/reporting\/ve33-ledger-admission\.mjs/,'ve33 admission missing from critical fingerprint');
+assert.match(workflow,/reporting\/ve33-locked-managed-accounting-evidence\.mjs/,'LockedManagedReward builder missing from critical fingerprint');
+assert.match(workflow,/reporting\/ve33-locked-managed-income-candidates\.mjs/,'LockedManagedReward candidates missing from critical fingerprint');
+assert.match(workflow,/reporting\/ve33-locked-managed-ledger-admission-validation\.mjs/,'LockedManagedReward admission guard missing from critical fingerprint');
 assert.match(workflow,/Critical Reporting code\/policy changed during publish rebase; fail closed/,'Reporting rebase code-drift fail-closed guard missing');
 assert.match(workflow,/node reporting\/frax-yield-accounting-evidence\.mjs\n\s+node reporting\/ve33-accounting-evidence\.mjs\n\s+node reporting\/income-ledger\.mjs\n\s+node reporting\/ve33-ledger-admission\.mjs\n\s+node reporting\/reporting-engine-validation\.mjs/,'Reporting rebase must rebuild mechanism evidence before Canonical Ledger validation');
 assert.match(workflow,/Unexpected Reporting publish delta after rebase/,'Reporting post-rebase publish scope guard missing');
-assert.match(workflow,/reporting\/frax-yield-accounting-evidence\.json\|reporting\/ve33-accounting-evidence\.json\|reporting\/income-ledger\.json/,'Mechanism evidence missing from safe publish scope');
+assert.match(workflow,/reporting\/frax-yield-accounting-evidence\.json\|reporting\/ve33-accounting-evidence\.json\|reporting\/ve33-locked-managed-accounting-evidence\.json\|reporting\/income-ledger\.json/,'Mechanism evidence missing from safe publish scope');
+assert.match(workflow,/accountingExtensions\?\.ve33LockedManaged/,'LockedManagedReward generated ledger extension validation missing');
+assert.match(workflow,/sourceEvidenceFamily!=='embedded-compounded-income'/,'LockedManagedReward source semantic preservation guard missing');
 assert.match(workflow,/RATE_CONTINUITY_POLICY_FILE:\s*\.\/reporting\/rate-continuity-policy\.json/,'Reporting rate continuity runtime binding missing');
 
 assert.match(runner,/reporting-scheduler-contract\.json/,'scheduled runner is not bound to scheduler contract');
@@ -193,6 +251,12 @@ console.log('Reporting workflow definition paired proof PASS',{
   ve33ClaimAware:true,
   ve33RebaseCompoundingDedup:true,
   ve33CanonicalLedgerRebuild:true,
+  lockedManagedFactualAccrualEvidence:lockedEvidence.version,
+  lockedManagedFullAccountingStart:lockedEvidence.fullAccountingStart,
+  lockedManagedWithdrawalAware:true,
+  lockedManagedCanonicalFamily:'embedded-income',
+  lockedManagedGrossPrincipalExcluded:true,
+  lockedManagedEvidencePersisted:true,
   openingBalancesExcluded:true,
   laterPriceRevaluationExcluded:true,
   singleSourceFailureIsolation:true,
