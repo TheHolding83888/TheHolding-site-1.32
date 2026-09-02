@@ -9,6 +9,10 @@ on:
       - 'reporting/company-monthly-earned-income-validation.mjs'
       - 'reporting/accounting-coverage.mjs'
       - 'reporting/accounting-coverage-validation.mjs'
+      - 'reporting/icp-nns-factual-snapshots.json'
+      - 'reporting/icp-nns-factual-intervals.mjs'
+      - 'reporting/icp-nns-factual-intervals-validation.mjs'
+      - 'intelligence/icp-nns/company-005-006-neuron-pool.json'
       - 'companies/company-monthly-report-adapter.js'
       - '.github/workflows/update-company-monthly-reports.yml'
       - '.github/workflows/verify-company-monthly-reports.yml'
@@ -40,6 +44,8 @@ jobs:
           node --check reporting/company-monthly-earned-income-validation.mjs
           node --check reporting/accounting-coverage.mjs
           node --check reporting/accounting-coverage-validation.mjs
+          node --check reporting/icp-nns-factual-intervals.mjs
+          node --check reporting/icp-nns-factual-intervals-validation.mjs
           node --check companies/company-monthly-report-adapter.js
           git diff --check
 
@@ -118,13 +124,26 @@ jobs:
           }
           NODE
 
+      - name: Exercise ICP NNS factual snapshot evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          ICP_NNS_FACTUAL_SNAPSHOTS_FILE=./reporting/icp-nns-factual-snapshots.json \
+          ICP_NNS_CONFIG_FILE=./intelligence/icp-nns/company-005-006-neuron-pool.json \
+          ICP_NNS_FACTUAL_INTERVALS_FILE=/tmp/icp-nns-factual-intervals.json \
+          node reporting/icp-nns-factual-intervals.mjs
+
+          ICP_NNS_FACTUAL_SNAPSHOTS_FILE=./reporting/icp-nns-factual-snapshots.json \
+          ICP_NNS_FACTUAL_INTERVALS_FILE=/tmp/icp-nns-factual-intervals.json \
+          node reporting/icp-nns-factual-intervals-validation.mjs
+
       - name: Guard authority and accounting boundaries
         shell: bash
         run: |
           set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');
-          const files=['reporting/company-monthly-reports.mjs','reporting/company-monthly-earned-income.mjs','reporting/accounting-coverage.mjs','companies/company-monthly-report-adapter.js'];
+          const files=['reporting/company-monthly-reports.mjs','reporting/company-monthly-earned-income.mjs','reporting/accounting-coverage.mjs','reporting/icp-nns-factual-intervals.mjs','companies/company-monthly-report-adapter.js'];
           const text=files.map(f=>fs.readFileSync(f,'utf8')).join('\n');
           for(const bad of ['api.coingecko.com','COINGECKO_API_KEY','new Wallet(','sendTransaction(','executionAuthority: write','registryHasMonthClosingAuthority:true','monthClosingAuthority:true']){
             if(text.includes(bad)) throw new Error('unexpected monthly reporting authority/data discovery: '+bad);
@@ -135,5 +154,7 @@ jobs:
           }
           const coverage=JSON.parse(fs.readFileSync('/tmp/accounting-coverage.json','utf8'));
           if(coverage.status!=='diagnostic-no-completion-authority'||coverage.authority?.monthClosingAuthority!==false) throw new Error('Accounting coverage diagnostic gained completion authority');
+          const icp=JSON.parse(fs.readFileSync('/tmp/icp-nns-factual-intervals.json','utf8'));
+          if(icp.referenceAprUsed!==false||icp.accountingAuthority!==false||icp.admissionCandidateCount!==0) throw new Error('ICP NNS baseline crossed factual accounting boundary');
           console.log('Company Monthly Reports authority/accounting boundary PASS');
           NODE
