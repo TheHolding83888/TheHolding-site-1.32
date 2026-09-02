@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
-import { AbiCoder, Contract, JsonRpcProvider, concat, getAddress, keccak256 } from 'ethers';
+import { AbiCoder, Contract, JsonRpcProvider, concat, getAddress, id, keccak256 } from 'ethers';
 
 const VERSION='0.1-votium-union-accounting-evidence';
 const REWARDS=process.env.REWARDS_OUTPUT||'companies/rewards-data.json';
 const OUTPUT=process.env.VOTIUM_UNION_ACCOUNTING_EVIDENCE_OUTPUT||'/tmp/votium-union-accounting-evidence.json';
 const UNION_API='https://api.llama.airforce';
+const BLOCKSCOUT='https://eth.blockscout.com/api/v2';
 const DISTRIBUTOR=getAddress('0x17ac69dd3fb8f22b4f52dbdb8a3a0eb059367efc');
 const MEMBERS=[
   {registry:'002',company:'YieldRing.eth'},
@@ -14,18 +15,20 @@ const MEMBERS=[
 const ABI=[
   'function merkleRoot() view returns (bytes32)',
   'function week() view returns (uint32)',
-  'function isClaimed(uint256 index) view returns (bool)',
-  'event MerkleRootUpdated(bytes32 indexed merkleRoot,uint32 indexed week)',
-  'event Claimed(uint256 index,uint256 indexed amount,address indexed account,uint256 week)'
+  'function isClaimed(uint256 index) view returns (bool)'
 ];
 const coder=AbiCoder.defaultAbiCoder();
 
-const same=(a,b)=>{try{return getAddress(a)===getAddress(b)}catch{return false}};
 const pairHash=(a,b)=>keccak256(String(a).toLowerCase()<String(b).toLowerCase()?concat([a,b]):concat([b,a]));
 function verifyClaim(wallet,claim,root){
   let h=keccak256(coder.encode(['uint256','address','uint256'],[BigInt(claim.index),getAddress(wallet),BigInt(claim.amount)]));
   for(const p of claim.proof||[])h=pairHash(h,p);
   return h.toLowerCase()===String(root).toLowerCase();
+}
+async function fetchJson(url,label){
+  const response=await fetch(url,{headers:{accept:'application/json'}});
+  if(!response.ok)throw new Error(`${label} HTTP ${response.status}`);
+  return response.json();
 }
 async function fetchClaim(wallet){
   const response=await fetch(`${UNION_API}/airdrop/scrvusd/${wallet}`,{headers:{accept:'application/json'}});
@@ -35,20 +38,30 @@ async function fetchClaim(wallet){
   if(claim?.index===undefined||claim?.amount===undefined||!Array.isArray(claim?.proof))throw new Error(`Union scrvUSD claim schema invalid for ${wallet}`);
   return{status:'published',claim,httpStatus:response.status};
 }
-function rpcCandidates(){return [...new Set([process.env.ETH_RPC_URL,'https://eth.llamarpc.com','https://ethereum-rpc.publicnode.com'].filter(Boolean))];}
+function rpcCandidates(){return [...new Set([process.env.ETH_RPC_URL,'https://ethereum-rpc.publicnode.com','https://eth.llamarpc.com'].filter(Boolean))];}
 function rpcLabel(url){if(url===process.env.ETH_RPC_URL)return'configured-secret';try{return new URL(url).hostname}catch{return'configured'}}
 async function providerWithFallback(){let last=null;for(const url of rpcCandidates()){const p=new JsonRpcProvider(url,1,{staticNetwork:true});try{await p.getBlockNumber();return{provider:p,endpointClass:rpcLabel(url)}}catch(e){last=e;try{p.destroy()}catch{}}}throw last||new Error('Ethereum RPC unavailable')}
-async function findRootEvent(distributor,root,week,head){
-  const filter=distributor.filters.MerkleRootUpdated(root,week);
-  let to=head;
-  for(let i=0;i<24&&to>=0;i++){
-    const from=Math.max(0,to-99_999);
-    const logs=await distributor.queryFilter(filter,from,to);
-    if(logs.length){
-      const log=logs.at(-1),block=await log.getBlock();
-      return{blockNumber:Number(log.blockNumber),blockHash:log.blockHash,transactionHash:log.transactionHash,logIndex:Number(log.index??0),publishedAt:new Date(Number(block.timestamp)*1000).toISOString(),proofClass:'onchain-MerkleRootUpdated-root-week-exact-match'};
+function weekTopic(week){return `0x${BigInt(week).toString(16).padStart(64,'0')}`;}
+async function findRootEvent(root,week){
+  const signature=id('MerkleRootUpdated(bytes32,uint32)').toLowerCase();
+  const expectedRoot=String(root).toLowerCase();
+  const expectedWeek=weekTopic(week).toLowerCase();
+  let next=null;
+  for(let page=0;page<12;page++){
+    const url=new URL(`${BLOCKSCOUT}/addresses/${DISTRIBUTOR}/logs`);
+    for(const [k,v] of Object.entries(next||{}))url.searchParams.set(k,String(v));
+    const payload=await fetchJson(url,'Blockscout Union logs');
+    for(const log of payload.items||[]){
+      const topics=(log.topics||[]).map(x=>String(x).toLowerCase());
+      if(topics[0]!==signature||topics[1]!==expectedRoot||topics[2]!==expectedWeek)continue;
+      const transactionHash=String(log.transaction_hash||'');
+      if(!/^0x[0-9a-f]{64}$/i.test(transactionHash))throw new Error('Union root event transaction hash missing');
+      const tx=await fetchJson(`${BLOCKSCOUT}/transactions/${transactionHash}`,'Blockscout Union root transaction');
+      if(!Number.isFinite(Date.parse(tx.timestamp)))throw new Error('Union root event timestamp missing');
+      return{blockNumber:Number(log.block_number),blockHash:log.block_hash,transactionHash,logIndex:Number(log.index??0),publishedAt:new Date(tx.timestamp).toISOString(),proofClass:'blockscout-indexed-onchain-MerkleRootUpdated-root-week-exact-match'};
     }
-    to=from-1;
+    next=payload.next_page_params;
+    if(!next)break;
   }
   throw new Error(`Current Union root event not found for week ${week}`);
 }
@@ -70,7 +83,7 @@ async function main(){
     const [root,weekRaw]=await Promise.all([distributor.merkleRoot({blockTag:head}),distributor.week({blockTag:head})]);
     const week=Number(weekRaw);
     if(!/^0x[0-9a-f]{64}$/i.test(root)||!Number.isSafeInteger(week)||week<1)throw new Error('Union current root/week unavailable');
-    const rootEvent=await findRootEvent(distributor,root,week,head);
+    const rootEvent=await findRootEvent(root,week);
     const members=[];
     for(const identity of MEMBERS){
       const {route,wallet}=routeWallet(rewards,identity.company);
@@ -91,7 +104,7 @@ async function main(){
       status:'factual-current-state-baseline-not-period-income',
       purpose:'Establish a reusable factual Votium -> The Union scrvUSD accounting evidence boundary for every company on the same settlement route. Current rollover entitlement state is preserved without pretending it is period income.',
       authority:{readOnly:true,executionAuthority:'none',walletAuthority:false,capitalExecution:false,claimTransactionAuthority:'none',periodIncomeAuthority:false,monthClosingAuthority:false,methodologyMutationAuthority:false},
-      protocol:{chain:'Ethereum',delegationProtocol:'Votium',settlementProtocol:'The Union',distributor:DISTRIBUTOR,observationBlock:head,rpcEndpointClass:endpointClass},
+      protocol:{chain:'Ethereum',delegationProtocol:'Votium',settlementProtocol:'The Union',distributor:DISTRIBUTOR,observationBlock:head,rpcEndpointClass:endpointClass,rootEventIndex:'Blockscout Ethereum v2 address logs + transaction timestamp'},
       distribution:{week,merkleRoot:root,rootEvent},
       members,
       accountingBoundary:{
