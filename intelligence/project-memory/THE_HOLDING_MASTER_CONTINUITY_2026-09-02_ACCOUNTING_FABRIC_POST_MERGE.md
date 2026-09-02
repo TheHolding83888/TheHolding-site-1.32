@@ -1,7 +1,7 @@
 # THE HOLDING — MASTER CONTINUITY · ACCOUNTING FABRIC POST-MERGE
 ## 2026-09-02 · Canonical factual earned-income foundation through Frax + ve(3,3)
 
-Status: **PRODUCTION CODE MERGED / FIRST NEW FACTUAL MATERIALIZATION PARTIALLY PENDING**  
+Status: **PRODUCTION MERGED + FIRST FACTUAL MATERIALIZATION VERIFIED / FORWARD INTERVAL ACCUMULATION NEXT**  
 Authority: **read-only accounting/reporting**  
 executionAuthority: **none**
 
@@ -21,7 +21,7 @@ The key architectural law remains: **do not build a second tracker**. Existing R
 
 ---
 
-## 1. EXACT LIVE PRODUCTION ANCHOR AT CHECKPOINT CREATION
+## 1. EXACT LIVE PRODUCTION ANCHORS
 
 The factual-accounting integration was merged through PR **#593**.
 
@@ -33,15 +33,15 @@ Merge title:
 
 `Accounting: integrate canonical factual income fabric through ve(3,3)`
 
-Immediately after merge, normal production automation advanced `main` further:
+Immediately after merge, normal production automation advanced `main`:
 
 - `512a0e9dfd0016a36344e218ed28400bcb55349d` — `security: extend autonomous security memory`
-- `fd52205b21b3ec6a13ce9eae7e2982384d338dcc` — `data: update company monthly earned-income reports`
+- `fd52205b21b3ec6a13ce9eae7e2982384d338dcc` — first post-merge `data: update company monthly earned-income reports`
 - `65996f61aad04cdd5e3752986fa15ec9c9166480` — `memory: refresh current project bootstrap`
+- `967e6d7d406aeeebbb39395bb8518d1ffec47208` — `data: update reporting and canonical income ledger`
+- `76647a80b4c98a2236dabed46df1d1b208d00088` — second `data: update company monthly earned-income reports`, now bound to the freshly materialized ledger
 
-The memory checkpoint branch was created from exact live `main`:
-
-`65996f61aad04cdd5e3752986fa15ec9c9166480`
+The memory checkpoint branch was initially created from `65996f61...`; while the checkpoint was being written, live `main` correctly advanced through `967e6d7...` and `76647a8...`. The continuity was then updated to reflect that newer materialized truth.
 
 Changing facts must still be re-read from live `main`; this checkpoint is a resume map, not a substitute for current evidence.
 
@@ -80,13 +80,13 @@ Origin: former PR #588.
 
 Production architecture now includes:
 
-- `reporting/canonical-earned-income-view.mjs`
-- hardened `reporting/income-ledger.mjs`
-- monthly reports projected from Canonical Income Ledger recognition rather than inventing reward-delta income locally
-- explicit recognized / settlement-only / unresolved lifecycle semantics
-- incomplete coverage stays `generatedIncomeUsd = null`
-- Reference model remains separate secondary analytics
-- verified Defitea historical realised archive remains retained
+- `reporting/canonical-earned-income-view.mjs`;
+- hardened `reporting/income-ledger.mjs`;
+- monthly reports projected from Canonical Income Ledger recognition rather than inventing reward-delta income locally;
+- explicit recognized / settlement-only / unresolved lifecycle semantics;
+- incomplete coverage stays `generatedIncomeUsd = null`;
+- Reference model remains separate secondary analytics;
+- verified Defitea historical realised archive remains retained.
 
 Monthly reporting is a **projection**, not a second accounting engine.
 
@@ -138,7 +138,7 @@ The critical ClaimRewards problem was solved fail-closed: the event itself does 
 
 Origin: former PR #591.
 
-The managed/Relay mechanism was proven as a distinct factual earned-income lane.
+The managed/Relay mechanism is a distinct factual earned-income lane.
 
 Recognition formula:
 
@@ -150,7 +150,7 @@ Durable semantics:
 - `withdrawManaged()` returns accumulated value into the veNFT and is settlement, not a second income event;
 - gross veNFT principal delta is never itself income authority;
 - external principal additions are not inferred as income;
-- specific internal evidence may retain a mechanism-specific family, while Canonical Ledger normalizes admitted compounded income to its existing `embedded-income` family without losing `mechanismKind` / source semantics.
+- internal evidence can preserve mechanism-specific semantics while Canonical Ledger normalizes admitted compounded income to the existing `embedded-income` family without losing `mechanismKind` / source evidence.
 
 ### 3.5 ve(3,3) bounded production runtime
 
@@ -167,8 +167,6 @@ The final production design does **not** repeatedly scan every historical cached
 - shared owner/token metadata caches;
 - bounded concurrency;
 - protocol-level historical-boundary capability probes.
-
-This changed the live accounting set from thousands of stale candidate reads to the operationally relevant lanes.
 
 Latest exact pre-merge live Base + Optimism canary on the integration head proved:
 
@@ -209,48 +207,81 @@ General law preserved: **GREEN workflow != physically materialized production ar
 
 ---
 
-## 5. POST-MERGE PRODUCTION MATERIALIZATION — EXACT STATE
+## 5. POST-MERGE PRODUCTION MATERIALIZATION — VERIFIED
 
-### 5.1 Company monthly reports
+### 5.1 Frax factual evidence is now persisted
 
-Post-merge automation already updated:
+`reporting/frax-yield-accounting-evidence.json` is no longer a bootstrap-empty seed.
 
-`reporting/company-monthly-reports.json`
+Observed production state:
 
-Current observed header at checkpoint creation:
+- version: `0.1-frax-yield-factual-accrual-evidence`;
+- generatedAt: `2026-09-02T19:31:14.874Z`;
+- status: `partial`;
+- `fullAccountingStart: 2026-09-01T00:00:00.000Z`;
+- factual/bootstrap checkpoints are persisted;
+- opening balances remain `periodIncomeAuthority: false`;
+- historical bootstrap snapshots remain explicitly non-authoritative for creating opening-period income.
 
-- version: `0.4-company-monthly-earned-income-accounting`
-- methodologyVersion: `0.4-canonical-ledger-sole-income-recognition-authority`
-- generatedAt: `2026-09-02T19:28:25.390Z`
-- Canonical Income Ledger version: `0.1-canonical-income-ledger`
-- Ledger status: `partial`
-- `crossFamilySummationForbidden: true`
-- `unknownIsNotZero: true`
-- `referenceIncomeIsEarnedIncomeAuthority: false`
+### 5.2 ve(3,3) direct/free/rebase evidence is now persisted
 
-The monthly layer no longer manufactures earned income from generic reward snapshot changes.
+`reporting/ve33-accounting-evidence.json` is physically materialized.
 
-### 5.2 Current factual evidence artifact caveat
+Observed production state:
 
-At this checkpoint, code is merged and the pre-merge live canaries are proven GREEN, **but the committed production evidence seed files have not yet recorded their first live post-merge checkpoint**:
+- version: `0.1-ve33-factual-accrual-evidence`;
+- generatedAt: `2026-09-02T19:31:21.256Z`;
+- status: `partial`;
+- factual current checkpoints are present;
+- exact block-tagged current state is persisted;
+- Aerodrome examples include direct rebase-distributor checkpoints with exact Base block identity;
+- the historical September boundary remains unavailable and therefore partial rather than estimated.
 
-- `reporting/frax-yield-accounting-evidence.json` — `generatedAt: null`, status `bootstrap-no-income`, checkpoints empty;
-- `reporting/ve33-accounting-evidence.json` — `generatedAt: null`, status `bootstrap-empty`, checkpoints empty;
-- `reporting/ve33-locked-managed-accounting-evidence.json` — `generatedAt: null`, status `bootstrap-empty`, checkpoints empty.
+### 5.3 LockedManaged / Relay evidence is now persisted
 
-This distinction is essential:
+`reporting/ve33-locked-managed-accounting-evidence.json` is physically materialized.
 
-**production code merged ≠ first production factual evidence materialized.**
+Observed production state:
 
-Do not infer that Frax/Aero/Velo income is zero from these bootstrap files. Their current correct interpretation is **not yet materialized / unknown**, not zero.
+- version: `0.1-ve33-locked-managed-factual-accrual`;
+- generatedAt: `2026-09-02T19:33:45.265Z`;
+- status: `partial`;
+- factual managed/Relay checkpoints are present;
+- Aerodrome managed position evidence includes exact `tokenId`, `managedTokenId`, `lockedManagedReward`, holder and reward token identity;
+- gross veNFT principal remains explicitly non-authoritative for income.
 
-The next chat must verify the first post-merge `Update The Holding Reporting Data` materialization before claiming these adapters are physically publishing persistent checkpoints.
+### 5.4 Canonical Ledger + monthly projection refreshed from materialized evidence
+
+Production writer commit:
+
+`967e6d7d406aeeebbb39395bb8518d1ffec47208` — `data: update reporting and canonical income ledger`
+
+Then monthly projection refreshed again:
+
+`76647a80b4c98a2236dabed46df1d1b208d00088` — `data: update company monthly earned-income reports`
+
+Current observed monthly report header:
+
+- version: `0.4-company-monthly-earned-income-accounting`;
+- methodologyVersion: `0.4-canonical-ledger-sole-income-recognition-authority`;
+- generatedAt: `2026-09-02T19:34:54.048Z`;
+- Canonical Income Ledger generatedAt: `2026-09-02T19:33:45.265Z`;
+- Ledger status: `partial`;
+- `crossFamilySummationForbidden: true`;
+- `unknownIsNotZero: true`;
+- `referenceIncomeIsEarnedIncomeAuthority: false`.
+
+This closes the distinction that was pending when the checkpoint write started:
+
+**production code merged AND first production factual evidence is now physically materialized.**
+
+The result remains `partial` because one initial checkpoint does not manufacture historical income and exact historical opening boundaries are not universally available.
 
 ---
 
 ## 6. WHAT IS CLOSED VS WHAT IS STILL OPEN
 
-### CLOSED / production code integrated
+### CLOSED / production integrated and materially proven
 
 - Canonical Income Ledger sole monthly recognition authority.
 - Monthly generic reward-delta income synthesis removed.
@@ -261,19 +292,22 @@ The next chat must verify the first post-merge `Update The Holding Reporting Dat
 - LockedManagedReward / Relay compounded accounting semantics.
 - ve(3,3) public-RPC runtime hardening.
 - operational reward-pool scoping that reuses the existing Rewards radar.
-- relevant fresh-main CI / memory / security gates.
+- fresh-main CI / memory / security gates.
 - post-merge monthly report schema/methodology migration to v0.4.
+- first persistent Frax factual evidence materialization.
+- first persistent ve33 direct/free/rebase materialization.
+- first persistent LockedManaged/Relay materialization.
+- Canonical Ledger rebuild and second monthly projection bound to the materialized accounting evidence.
 
 Historical stacked PRs #588, #589, #590, #591 and #592 were closed as superseded by merged #593. Stale diagnostic PR #581 was also closed because merged #583 already superseded it. Branches/history were not deleted or rewritten.
 
 ### STILL OPEN / must not be falsely closed
 
-1. **First production materialization of Frax + ve33 evidence files.**
+1. **Forward interval proof.** The first production checkpoint is now persisted; a later factual run is needed to prove normal opening→closing interval accrual in production without treating the opening checkpoint as income.
 2. Historical September 1 archive boundary remains unavailable through the tested public/configured RPC path; history stays partial rather than estimated.
 3. **40 Acres payout non-overlap** is not yet proven. The USDC portfolio payout is an aggregate settlement and must not be added on top of underlying veVELO accrual unless exact lifecycle non-overlap is proven.
 4. Yield Basis FeeDistributor factual accrual is not yet implemented in Canonical Income Ledger.
 5. Remaining productive mechanisms must be completed mechanism by mechanism and measured through coverage before any claim of 100% accounting completeness.
-6. A second factual checkpoint is required before cumulative-entitlement mechanisms can produce a normal forward interval event when no exact historical opening boundary is available.
 
 ---
 
@@ -297,31 +331,26 @@ Read:
 8. current `reporting/ve33-locked-managed-accounting-evidence.json`;
 9. current `reporting/income-ledger.json` and `reporting/company-monthly-reports.json`.
 
-### Step 2 — prove physical production materialization
+### Step 2 — verify the next forward factual interval
 
-Check whether the first post-merge Reporting writer has populated the three factual evidence artifacts.
+The first production factual checkpoints are already materialized. The next proof is a later Reporting run that creates a second checkpoint and therefore a normal factual interval.
 
-If not populated:
+Verify:
 
-- diagnose trigger/run/publish wiring first;
-- do not rewrite the already-GREEN accounting math;
-- do not create another writer;
-- use the existing `update-reporting.yml` cascade and its paired definition proof;
-- preserve fail-closed semantics.
+- opening checkpoint remains baseline only;
+- closing entitlement plus proven settlements reconciles new earned income;
+- zero earned interval remains zero without creating fake events;
+- positive factual interval is admitted once;
+- claim/reset/withdrawal does not double count;
+- valuation freezes at the closing accounting boundary;
+- Canonical Ledger retains prior events append-only;
+- company monthly report remains a projection and does not synthesize income.
 
-If populated:
+Do **not** reopen the already-solved broad RPC scan unless fresh evidence proves a regression.
 
-- verify factual checkpoint counts and generatedAt freshness;
-- verify Canonical Ledger sourceState points to the new evidence;
-- verify monthly report projection remains v0.4 and does not synthesize income itself.
+### Step 3 — Yield Basis FeeDistributor
 
-### Step 3 — establish forward interval accumulation
-
-Because exact 2026-09-01 archive state is unavailable on tested public RPC, the system is designed to accumulate factual current checkpoints forward. Verify that a subsequent Reporting run creates valid factual intervals without reopening the historical boundary or treating the opening checkpoint as income.
-
-### Step 4 — Yield Basis FeeDistributor
-
-Next preferred factual mechanism after production materialization proof:
+Next preferred factual mechanism:
 
 **Yield Basis FeeDistributor**.
 
@@ -343,7 +372,7 @@ Requirements before admission:
 - no APR income authority;
 - no second Yield Basis tracker.
 
-### Step 5 — remaining mechanisms + measured coverage
+### Step 4 — remaining mechanisms + measured coverage
 
 After YB, continue only through demonstrated mechanism gaps. Then make Accounting Coverage an explicit measured diagnostic across company × mechanism × month.
 
@@ -391,7 +420,7 @@ No force-push, history rewrite or destructive cleanup was used in this accountin
 
 ## 10. PROJECT / MEMORY INHERITANCE MARKERS — DO NOT DROP
 
-This new latest continuity must retain critical inherited project truths so the minimum-recovery verifier and future chats do not accidentally narrow The Holding to the accounting campaign alone.
+This latest continuity retains critical inherited project truths so the minimum-recovery verifier and future chats do not accidentally narrow The Holding to the accounting campaign alone.
 
 ### PROJECT X + HYPERLEND CLOSED
 
@@ -462,4 +491,4 @@ Accounting observes, reconciles, records and reports. It does not move capital.
 
 ## 13. ONE-SENTENCE RESUME
 
-**The canonical factual-income architecture through Frax + Aerodrome/Velodrome direct/free/rebase + LockedManaged/Relay is merged in production code via #593; monthly reporting has migrated to Canonical-Ledger-only recognition, but the first persistent Frax/ve33 evidence materialization must be verified next before moving on to Yield Basis FeeDistributor and the remaining measured mechanism coverage.**
+**The canonical factual-income architecture through Frax + Aerodrome/Velodrome direct/free/rebase + LockedManaged/Relay is merged in production via #593, its first factual production checkpoints and Canonical Ledger/monthly-report materialization are verified, and the next proof is the first normal forward interval before adding Yield Basis FeeDistributor and completing the remaining measured mechanism coverage.**
