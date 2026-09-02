@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
 import { Interface } from 'ethers';
-import { VERSION, PROTOCOLS, reconcileEntitlement, decodeRewardClaimTokenId, trackedPositionDescriptors } from './ve33-accounting-evidence.mjs';
+import { VERSION, PROTOCOLS, mapLimit, reconcileEntitlement, decodeRewardClaimTokenId, trackedPositionDescriptors } from './ve33-accounting-evidence.mjs';
 
 assert.equal(VERSION,'0.1-ve33-factual-accrual-evidence');
 assert.equal(PROTOCOLS.aerodrome.chainId,8453);
@@ -12,6 +12,17 @@ assert.deepEqual(reconcileEntitlement('100','125','0'),{accepted:true,status:'po
 assert.deepEqual(reconcileEntitlement('100','5','120'),{accepted:true,status:'positive-factual-accrual',earnedRaw:'25'});
 assert.equal(reconcileEntitlement('100','5','10').accepted,false);
 assert.equal(reconcileEntitlement('oops','5','10').accepted,false);
+
+let active=0,maxActive=0;
+const bounded=await mapLimit([1,2,3,4,5,6],2,async value=>{
+  active++;maxActive=Math.max(maxActive,active);
+  await new Promise(resolve=>setTimeout(resolve,5));
+  active--;
+  return value*2;
+});
+assert.deepEqual(bounded,[2,4,6,8,10,12]);
+assert.ok(maxActive<=2,'mapLimit exceeded bounded concurrency');
+assert.ok(maxActive>1,'mapLimit did not exercise concurrency');
 
 const reward='0x1111111111111111111111111111111111111111';
 const token='0x2222222222222222222222222222222222222222';
