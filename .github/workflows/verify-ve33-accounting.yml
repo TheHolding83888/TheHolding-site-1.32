@@ -1,0 +1,47 @@
+name: Verify ve33 Factual Accounting
+
+on:
+  pull_request:
+    paths:
+      - 'reporting/ve33-accounting-evidence.mjs'
+      - 'reporting/ve33-accounting-evidence-validation.mjs'
+      - 'reporting/ve33-accounting-evidence.json'
+      - 'reporting/income-ledger.mjs'
+      - 'reporting/income-ledger-validation.mjs'
+      - '.github/workflows/update-reporting.yml'
+      - '.github/workflows/verify-ve33-accounting.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify-ve33-accounting:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+      - name: Install runtime dependency
+        run: npm install --no-save --no-package-lock ethers@6
+      - name: Syntax and deterministic accounting validation
+        run: |
+          set -euo pipefail
+          node --check reporting/ve33-accounting-evidence.mjs
+          node --check reporting/ve33-accounting-evidence-validation.mjs
+          node reporting/ve33-accounting-evidence-validation.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const e=JSON.parse(fs.readFileSync('reporting/ve33-accounting-evidence.json','utf8'));
+          if(e.version!=='0.1-ve33-factual-accrual-evidence') throw new Error('ve33 evidence version drift');
+          if(e.semantics?.openingBalanceCreatesIncome!==false) throw new Error('opening balance recognition drift');
+          if(e.semantics?.claimIsSettlementNotSecondIncome!==true) throw new Error('claim settlement semantics drift');
+          if(e.semantics?.rebaseDepositIntoVeNftIsSecondIncome!==false) throw new Error('rebase double-count guard missing');
+          if(e.semantics?.referenceAprUsed!==false) throw new Error('Reference APR leaked into factual accounting');
+          if(e.semantics?.laterPriceMovementRewritesClosedIncome!==false) throw new Error('closed income repricing guard missing');
+          if(e.authority?.executionAuthority!=='none'||e.authority?.walletAuthority!=='none'||e.authority?.claimingAuthority!=='none'||e.authority?.capitalExecution!==false) throw new Error('ve33 authority expansion');
+          console.log('ve33 evidence policy validation OK');
+          NODE
