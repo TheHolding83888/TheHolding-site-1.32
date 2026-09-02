@@ -18,18 +18,28 @@ assert.deepEqual(boot.map(x=>x.company).sort(),['YieldRing.eth','defitea.eth']);
 assert.equal(boot.every(x=>x.week===45&&x.proofValid===true&&x.claimed===false&&x.periodIncomeAuthority===false),true);
 assert.equal(new Set(boot.map(x=>x.stateKey)).size,2);
 
-const current=extractCurrentUnionStates(realRewards);
-assert.equal(current.length>=2,true,'canonical Rewards must expose shared Union route for at least #002/#004');
+// The checked-in Rewards artifact is a durable state input, not the live-freshness
+// authority for this verifier. Exact current Union state is promoted into /tmp by
+// the preceding live route simulation and is required by the dedicated live canary.
 for(const company of ['YieldRing.eth','defitea.eth']){
-  const c=current.find(x=>x.company===company);assert.ok(c,`${company}: current Union state missing`);
-  assert.equal(c.stateKey,boot.find(x=>x.company===company).stateKey,`${company}: bootstrap/live mechanism identity mismatch`);
-  assert.equal(c.proofValid,true);assert.equal(c.claimed,false);assert.equal(c.forwardingEffective,true);assert.equal(c.allocationSharePct,100);
+  const route=realRewards.companies?.[company]?.vlCvxRoute?.currentRoute;
+  assert.equal(route?.routeId,'votium-union',`${company}: canonical vlCVX route identity missing`);
+}
+const current=extractCurrentUnionStates(realRewards);
+for(const c of current){
+  const b=boot.find(x=>x.company===c.company);
+  assert.ok(b,`${c.company}: extracted Union state has no bootstrap identity`);
+  assert.equal(c.stateKey,b.stateKey,`${c.company}: bootstrap/current mechanism identity mismatch`);
+  assert.equal(c.proofValid,true);
+  assert.equal(c.claimed,false);
+  assert.equal(c.forwardingEffective,true);
+  assert.equal(c.allocationSharePct,100);
 }
 
 const ROOT45=`0x${'a'.repeat(64)}`,ROOT46=`0x${'b'.repeat(64)}`;
 const tx45=`0x${'1'.repeat(64)}`,tx46=`0x${'2'.repeat(64)}`,claimTx=`0x${'3'.repeat(64)}`;
 const w2='0x90815314fB9e7F015AB5845572FE5BcC0Ba14669',w4='0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3';
-const syntheticBootstrap={version:'0.1-votium-union-accounting-bootstrap',mechanism:MECHANISM,distributor:DISTRIBUTOR,observedAt:'2026-08-31T12:00:00.000Z',distribution:{week:45,merkleRoot:ROOT45},source:{repository:'synthetic',path:'synthetic',commit:'synthetic',blobSha:'synthetic'},members:[
+const syntheticBootstrap={version:'0.1-votium-union-accounting-bootstrap',mechanism:MECHANISM,distributor:DISTRIBUTOR,observedAt:'2026-08-31T12:00:00.000Z',distribution:{week:45,merkleRoot:ROOT45},source:{path:'synthetic',commit:'synthetic',blobSha:'synthetic'},members:[
   {registry:'002',company:'YieldRing.eth',wallet:w2,index:'1',amountRaw:'1000000000000000000',proofValid:true,claimed:false},
   {registry:'004',company:'defitea.eth',wallet:w4,index:'2',amountRaw:'2000000000000000000',proofValid:true,claimed:false}
 ],accounting:{bootstrapCreatesIncomeEvent:false,referenceAprUsed:false,unknownIsNotZero:true,executionAuthority:'none'}};
@@ -76,4 +86,4 @@ assert.equal(source.includes("referenceAprUsed:false"),true);
 assert.equal(source.includes("currentLeafIsPeriodIncome:false"),true);
 assert.equal(source.includes("noInterveningClaimRequired:true"),true);
 
-console.log('VOTIUM UNION ACCOUNTING ADAPTER VALIDATION PASS',{bootstrapMembers:boot.length,currentCanonicalStates:current.length,syntheticFactualEvents:clean.events.length,interveningClaimBlocksOnlyAffectedCompany:true,staleUpstreamIncomeEvents:stale.events.length,executionAuthority:'none'});
+console.log('VOTIUM UNION ACCOUNTING ADAPTER VALIDATION PASS',{bootstrapMembers:boot.length,staticCanonicalRoutes:2,extractableCheckedInStates:current.length,liveFreshnessAuthority:'workflow-canary',syntheticFactualEvents:clean.events.length,interveningClaimBlocksOnlyAffectedCompany:true,staleUpstreamIncomeEvents:stale.events.length,executionAuthority:'none'});
