@@ -1,7 +1,7 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-02T08:01:56.236Z",
+  "generatedAt": "2026-09-02T08:54:20.032Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
@@ -12,8 +12,8 @@
     "info": 0
   },
   "source": {
-    "filesScanned": 883,
-    "bytesScanned": 22274693,
+    "filesScanned": 886,
+    "bytesScanned": 22303489,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Wed, 26 Aug 2026 13:28:52 GMT",
+        "lastModified": "Tue, 25 Aug 2026 21:43:14 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -56,6 +56,22 @@
   },
   "whatChanged": {
     "newFindings": [
+      {
+        "id": "b04bb835b9e6f6292952e05bf3a1c83d2f1a7e6969c32f188562dfd728ed4d0b",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/verify-vlcvx-full-registry-audit.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/verify-vlcvx-full-registry-audit.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "1818ecc652f559bee80cdb53cae7d01c6ef2d6ba1db08767deaec34480771b5f",
+          "currentSha256": "a3cfca50323f74ea71aee0525d43d9fdcadebb5b112f859caead3197175f26c2"
+        }
+      }
+    ],
+    "resolvedFindings": [
       {
         "id": "586c214aa91d9233a99d8c9b3775c4ac4a5109376d6a5e0ec0a7ce63ca630e04",
         "severity": "medium",
@@ -68,22 +84,6 @@
         "evidence": {
           "previousSha256": "70674afd3f70c7da16096da1284787058487201435f517287ca12f208c08771c",
           "currentSha256": "1818ecc652f559bee80cdb53cae7d01c6ef2d6ba1db08767deaec34480771b5f"
-        }
-      }
-    ],
-    "resolvedFindings": [
-      {
-        "id": "0fb39f26cefadb0fb8b8160e40adeec1ff3c2befbff7bda43052273f0bcfa1a3",
-        "severity": "medium",
-        "category": "critical-surface-change",
-        "file": ".github/workflows/verify-company-monthly-reports.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/verify-company-monthly-reports.yml.",
-        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-        "evidence": {
-          "previousSha256": "81786237af37901ab788977436e014c67d83e2f21cfe27ac4231916ae3a31525",
-          "currentSha256": "d65df5b16cffc6d5a938c66b5b566d410a7df19c790bf47514276510024fdea7"
         }
       }
     ]
@@ -112,7 +112,7 @@
       "evidence": null
     },
     {
-      "id": "586c214aa91d9233a99d8c9b3775c4ac4a5109376d6a5e0ec0a7ce63ca630e04",
+      "id": "b04bb835b9e6f6292952e05bf3a1c83d2f1a7e6969c32f188562dfd728ed4d0b",
       "severity": "medium",
       "category": "critical-surface-change",
       "file": ".github/workflows/verify-vlcvx-full-registry-audit.yml",
@@ -121,8 +121,8 @@
       "summary": "Security-sensitive surface changed: .github/workflows/verify-vlcvx-full-registry-audit.yml.",
       "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
       "evidence": {
-        "previousSha256": "70674afd3f70c7da16096da1284787058487201435f517287ca12f208c08771c",
-        "currentSha256": "1818ecc652f559bee80cdb53cae7d01c6ef2d6ba1db08767deaec34480771b5f"
+        "previousSha256": "1818ecc652f559bee80cdb53cae7d01c6ef2d6ba1db08767deaec34480771b5f",
+        "currentSha256": "a3cfca50323f74ea71aee0525d43d9fdcadebb5b112f859caead3197175f26c2"
       }
     },
     {
@@ -760,12 +760,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "3f6157bd9bbb22a678ed217f19f0c7957c065f604c7b68d8fbfc93954ad001d5",
+    "snapshotHash": "76b9be476cceb9408158a38c4afbdd9511144f3980ebb822f38bbee5d917753f",
     "securityVault": {
-      "runCount": 800,
+      "runCount": 801,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/09/2026-09-02T08-01-56-236Z-3f6157bd9b.json",
-      "latestRecordHash": "13f072f8dd1341e8f206a016e440b3c45e5e1ff5fd0c41c1968cc9d0fd698942",
+      "latestRecordPath": "security/security-vault/2026/09/2026-09-02T08-54-20-032Z-76b9be476c.json",
+      "latestRecordHash": "817b48693028c7346064427c6dec58c0e02995caacac039d6175a9945a24a924",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
