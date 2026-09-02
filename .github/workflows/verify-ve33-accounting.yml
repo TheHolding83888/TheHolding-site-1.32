@@ -5,7 +5,6 @@ on:
     paths:
       - 'reporting/ve33-accounting-evidence.mjs'
       - 'reporting/ve33-accounting-evidence-validation.mjs'
-      - 'reporting/ve33-settlement-query-diagnostic.mjs'
       - 'reporting/ve33-income-candidates.mjs'
       - 'reporting/ve33-income-candidates-validation.mjs'
       - 'reporting/ve33-ledger-admission.mjs'
@@ -37,7 +36,6 @@ jobs:
           set -euo pipefail
           node --check reporting/ve33-accounting-evidence.mjs
           node --check reporting/ve33-accounting-evidence-validation.mjs
-          node --check reporting/ve33-settlement-query-diagnostic.mjs
           node --check reporting/ve33-income-candidates.mjs
           node --check reporting/ve33-income-candidates-validation.mjs
           node --check reporting/ve33-ledger-admission.mjs
@@ -62,14 +60,12 @@ jobs:
         env:
           REWARDS_DATA_FILE: ./companies/rewards-data.json
           VE33_EVIDENCE_FILE: /tmp/ve33-accounting-evidence.json
-          VE33_DIAGNOSTIC_EVIDENCE_FILE: ./reporting/ve33-accounting-evidence.json
           VE33_STATE_READ_CONCURRENCY: '2'
           VE33_SETTLEMENT_CONCURRENCY: '2'
-          BASE_RPC_URL: https://mainnet.base.org
-          OPTIMISM_RPC_URL: https://mainnet.optimism.io
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
         run: |
           set -euo pipefail
-          node reporting/ve33-settlement-query-diagnostic.mjs
           cp reporting/ve33-accounting-evidence.json "$VE33_EVIDENCE_FILE"
           node reporting/ve33-accounting-evidence.mjs
           node - <<'NODE'
@@ -90,16 +86,16 @@ jobs:
             if(checkpoints===0&&e.status!=='partial') throw new Error('zero factual checkpoints must keep output partial: '+p);
             totalCurrentCheckpoints+=checkpoints;
             totalIntervals+=Number(d.intervalCount||0);
+            if(Number(d.intervalCount||0)>0&&!(Object.values(d.settlementRpc?.providerSuccessCounts||{}).reduce((a,b)=>a+Number(b||0),0)>0)) throw new Error('settlement RPC produced no successful log queries: '+p);
             if((d.boundaryFailures||[]).some(x=>x?.laneKey!==null&&x?.laneKey!==undefined)) throw new Error('historical boundary failure regressed to per-lane amplification: '+p);
           }
           if(!(totalCurrentCheckpoints>0)) throw new Error('live ve33 produced no factual current checkpoints on any configured protocol');
           if(!(totalIntervals>0)) throw new Error('seeded live ve33 canary produced no opening-to-closing intervals');
+          if(Number(e.diagnostics?.settlementQueryFailureCount||0)!==0) throw new Error(`live ve33 settlement log routing incomplete: ${e.diagnostics.settlementQueryFailureCount} interval query failures`);
           const events=e.events||[];
           if(new Set(events.map(x=>x.eventKey)).size!==events.length) throw new Error('live ve33 duplicate event identity');
           if(events.some(x=>x.referenceAprUsed!==false||x.claimIsSecondIncomeEvent!==false||x.laterClaimOrPriceMoveDoesNotRewriteIncome!==true||x.executionAuthority!=='none')) throw new Error('live ve33 accounting semantic drift');
           if(e.authority?.executionAuthority!=='none'||e.authority?.walletAuthority!=='none'||e.authority?.claimingAuthority!=='none'||e.authority?.capitalExecution!==false) throw new Error('ve33 authority expansion');
-          const samplePayload=Object.fromEntries(Object.entries(e.diagnostics.protocols||{}).map(([k,v])=>[k,(v.stateFailureSamples||[]).slice(0,3)]));
-          console.log('ve33 state failure samples JSON',JSON.stringify(samplePayload,null,2));
           console.log('Read-only seeded live ve33 canary PASS',{
             status:e.status,
             lanes:e.diagnostics.laneCount,
@@ -108,13 +104,14 @@ jobs:
             currentCheckpoints:Object.fromEntries(Object.entries(e.diagnostics.protocols||{}).map(([k,v])=>[k,v.currentCheckpointCount||0])),
             currentStateFailures:Object.fromEntries(Object.entries(e.diagnostics.protocols||{}).map(([k,v])=>[k,v.currentStateFailureCount||0])),
             intervals:Object.fromEntries(Object.entries(e.diagnostics.protocols||{}).map(([k,v])=>[k,v.intervalCount||0])),
-            stateFailureCounts:Object.fromEntries(Object.entries(e.diagnostics.protocols||{}).map(([k,v])=>[k,v.stateFailureCounts||{}])),
-            historicalBoundarySkippedLaneReads:Object.fromEntries(Object.entries(e.diagnostics.protocols||{}).map(([k,v])=>[k,v.historicalBoundarySkippedLaneReads||0])),
+            settlementProviders:Object.fromEntries(Object.entries(e.diagnostics.protocols||{}).map(([k,v])=>[k,v.settlementRpc?.preferredProvider||null])),
+            settlementProviderFailures:Object.fromEntries(Object.entries(e.diagnostics.protocols||{}).map(([k,v])=>[k,v.settlementRpc?.providerFailureCounts||{}])),
             runtimeMs,
             events:events.length,
             accepted:e.diagnostics.acceptedPositiveIntervalCount,
             zero:e.diagnostics.zeroIntervalCount,
             reconciliation:e.diagnostics.reconciliationCount,
+            settlementQueryFailures:e.diagnostics.settlementQueryFailureCount,
             unresolvedSettlements:e.diagnostics.unresolvedSettlementCount,
             boundaryFailures:Object.values(e.diagnostics.protocols||{}).reduce((s,x)=>s+(x.boundaryFailures||[]).length,0)
           });
