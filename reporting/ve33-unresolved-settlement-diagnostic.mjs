@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from 'node:fs/promises';
 import { Interface, JsonRpcProvider, getAddress } from 'ethers';
+import { decodeRewardClaimAttribution } from './ve33-accounting-evidence.mjs';
 
 const EVIDENCE_FILE=process.env.VE33_DIAGNOSTIC_EVIDENCE_FILE||'./reporting/ve33-accounting-evidence.json';
 const MAX_LOG_BLOCKS=9_500;
@@ -79,31 +80,6 @@ async function queryLogs(provider,addresses,fromBlock,toBlock){
   return logs;
 }
 
-function decodeKnownCall({protocol,to,data,rewardContract,rewardToken}){
-  if(!to||!data)return null;
-  try{
-    if(lower(to)===lower(rewardContract)){
-      const parsed=DIRECT_IFACE.parseTransaction({data});
-      if(parsed?.name==='getReward'&&[...parsed.args[1]].map(lower).includes(lower(rewardToken)))return{tokenId:String(parsed.args[0]),path:'direct-reward-getReward',to:getAddress(to)};
-    }
-    if(lower(to)===lower(CONFIG[protocol].voter)){
-      const parsed=VOTER_IFACE.parseTransaction({data});
-      if(!parsed||!['claimBribes','claimFees'].includes(parsed.name))return null;
-      const contracts=[...parsed.args[0]],tokens=[...parsed.args[1]],idx=contracts.findIndex(x=>lower(x)===lower(rewardContract));
-      if(idx>=0&&Array.from(tokens[idx]||[]).map(lower).includes(lower(rewardToken)))return{tokenId:String(parsed.args[2]),path:`voter-${parsed.name}`,to:getAddress(to)};
-    }
-  }catch{}
-  return null;
-}
-
-function decodeTokenId({protocol,tx,rewardContract,rewardToken}){
-  if(!tx)return{tokenId:null,path:'transaction-unavailable',to:null};
-  const to=tx.to?getAddress(tx.to):null;
-  const decoded=decodeKnownCall({protocol,to,data:tx.data,rewardContract,rewardToken});
-  if(decoded)return decoded;
-  return{tokenId:null,path:'unresolved-top-level-call',to};
-}
-
 function positions(data,needle){
   const body=lower(data).replace(/^0x/,'');
   const target=lower(needle).replace(/^0x/,'');
@@ -138,6 +114,7 @@ function calldataFingerprint(protocol,tx,rewardContract){
 }
 
 const unresolved=[];
+const resolvedNested=[];
 const stats={};
 for(const protocol of ['aerodrome','velodrome']){
   const {groups,index}=groupsForProtocol(protocol);
@@ -161,18 +138,30 @@ for(const protocol of ['aerodrome','velodrome']){
         if(lower(holder)!==lower(lane.holder)||lower(rewardToken)!==lower(lane.rewardToken)||amount===0n)continue;
         matchingClaimLogs++;
         const tx=await provider.getTransaction(log.transactionHash);
-        const decoded=decodeTokenId({protocol,tx,rewardContract:lane.rewardContract,rewardToken:lane.rewardToken});
-        if(decoded.tokenId!==lane.tokenId)unresolved.push({
+        const attribution=tx?decodeRewardClaimAttribution({
+          to:tx.to,data:tx.data,rewardContract:lane.rewardContract,rewardToken:lane.rewardToken,
+          voter:CONFIG[protocol].voter,holder:lane.holder
+        }):{tokenId:null,path:'transaction-unavailable'};
+        const proof={
           protocol,laneKey:lane.laneKey,tokenId:lane.tokenId,rewardContract:lane.rewardContract,rewardToken:lane.rewardToken,holder:lane.holder,
           fromBlock:lane.fromBlock,toBlock:lane.toBlock,blockNumber:Number(log.blockNumber),transactionHash:String(log.transactionHash),logIndex:Number(log.index??0),
-          amountRaw:amount.toString(),decodedTokenId:decoded.tokenId,decodePath:decoded.path,transactionFrom:tx?.from?getAddress(tx.from):null,transactionTo:decoded.to,
-          calldata:calldataFingerprint(protocol,tx,lane.rewardContract),error:decoded.error||null
-        });
+          amountRaw:amount.toString(),decodedTokenId:attribution.tokenId,decodePath:attribution.path,transactionFrom:tx?.from?getAddress(tx.from):null,
+          transactionTo:tx?.to?getAddress(tx.to):null,calldata:calldataFingerprint(protocol,tx,lane.rewardContract),error:attribution.error||null
+        };
+        if(attribution.tokenId!==lane.tokenId)unresolved.push(proof);
+        else if(String(attribution.path||'').startsWith('holder-multicall-'))resolvedNested.push(proof);
       }
     }
   }
   stats[protocol]={laneIntervals:intervals.length,addressGroups:groups.length,cacheEntries:cache.size,matchingClaimLogs};
 }
 
-const deduped=[...new Map(unresolved.map(x=>[`${x.laneKey}|${x.transactionHash}|${x.logIndex}`,x])).values()];
-console.log('ve33 unresolved settlement attribution diagnostic',JSON.stringify({stats,unresolvedCount:deduped.length,unresolved:deduped.slice(0,20)},null,2));
+const dedupe=rows=>[...new Map(rows.map(x=>[`${x.laneKey}|${x.transactionHash}|${x.logIndex}`,x])).values()];
+const dedupedUnresolved=dedupe(unresolved),dedupedNested=dedupe(resolvedNested);
+console.log('ve33 unresolved settlement attribution diagnostic',JSON.stringify({
+  stats,
+  unresolvedCount:dedupedUnresolved.length,
+  resolvedHolderMulticallCount:dedupedNested.length,
+  resolvedHolderMulticall:dedupedNested.slice(0,20),
+  unresolved:dedupedUnresolved.slice(0,20)
+},null,2));
