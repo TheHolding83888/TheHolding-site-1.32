@@ -12,6 +12,9 @@ const VOTER_IFACE=new Interface([
   'function claimFees(address[] fees,address[][] tokens,uint256 tokenId)'
 ]);
 const CLAIM_TOPIC=CLAIM_IFACE.getEvent('ClaimRewards').topicHash;
+const DIRECT_SELECTOR=DIRECT_IFACE.getFunction('getReward').selector;
+const CLAIM_BRIBES_SELECTOR=VOTER_IFACE.getFunction('claimBribes').selector;
+const CLAIM_FEES_SELECTOR=VOTER_IFACE.getFunction('claimFees').selector;
 const CONFIG={
   aerodrome:{chainId:8453,voter:'0x16613524e02ad97eDfeF371bC883F2F5d6C480A5',rpc:[process.env.BASE_RPC_URL,'https://mainnet.base.org','https://base-rpc.publicnode.com']},
   velodrome:{chainId:10,voter:'0x41C914ee0c7E1A5edCD0295623e6dC557B5aBf3C',rpc:[process.env.OPTIMISM_RPC_URL,'https://gateway.tenderly.co/public/optimism','https://mainnet.optimism.io','https://optimism-rpc.publicnode.com']}
@@ -67,7 +70,7 @@ async function providerFor(protocol){
   throw last||new Error(`No ${protocol} RPC available`);
 }
 
-async function queryLogs(protocol,provider,addresses,fromBlock,toBlock){
+async function queryLogs(provider,addresses,fromBlock,toBlock){
   const logs=[];
   for(let from=fromBlock;from<=toBlock;from+=MAX_LOG_BLOCKS){
     const to=Math.min(toBlock,from+MAX_LOG_BLOCKS-1);
@@ -101,45 +104,45 @@ function decodeTokenId({protocol,tx,rewardContract,rewardToken}){
   return{tokenId:null,path:'unresolved-top-level-call',to};
 }
 
-function flattenTraceCalls(root,out=[],depth=0){
-  if(!root||typeof root!=='object'||depth>32)return out;
-  if(root.to&&root.input)out.push({from:root.from||null,to:root.to,input:root.input,type:root.type||null,depth,error:root.error||null,revertReason:root.revertReason||null});
-  for(const child of root.calls||[])flattenTraceCalls(child,out,depth+1);
+function positions(data,needle){
+  const body=lower(data).replace(/^0x/,'');
+  const target=lower(needle).replace(/^0x/,'');
+  const out=[];
+  if(!target)return out;
+  let from=0;
+  while(true){
+    const at=body.indexOf(target,from);
+    if(at<0)break;
+    out.push(Math.floor(at/2));
+    from=at+2;
+    if(out.length>=20)break;
+  }
   return out;
 }
 
-async function traceNestedSettlement({provider,protocol,transactionHash,rewardContract,rewardToken}){
-  const attempts=[
-    ['debug_traceTransaction',[transactionHash,{tracer:'callTracer',timeout:'15s'}]],
-    ['debug_traceTransaction',[transactionHash,{tracer:'callTracer'}]]
-  ];
-  let lastError=null;
-  for(const [method,params] of attempts){
-    try{
-      const trace=await Promise.race([
-        provider.send(method,params),
-        new Promise((_,reject)=>setTimeout(()=>reject(new Error('trace timeout')),20_000))
-      ]);
-      const calls=flattenTraceCalls(trace);
-      const matches=[];
-      for(const call of calls){
-        const decoded=decodeKnownCall({protocol,to:call.to,data:call.input,rewardContract,rewardToken});
-        if(decoded)matches.push({...decoded,from:call.from,depth:call.depth,type:call.type,error:call.error||null,revertReason:call.revertReason||null,inputSelector:String(call.input||'').slice(0,10)});
-      }
-      return{status:matches.length?'trace-proof-found':'trace-readable-no-matching-call',callCount:calls.length,matches};
-    }catch(error){lastError=error;}
-  }
-  return{status:'trace-unavailable',callCount:0,matches:[],error:lastError?.shortMessage||lastError?.message||String(lastError||'unknown trace error')};
+function calldataFingerprint(protocol,tx,rewardContract){
+  const data=String(tx?.data||'0x');
+  return{
+    selector:data.slice(0,10),
+    bytes:Math.max(0,(data.length-2)/2),
+    directGetRewardSelector:DIRECT_SELECTOR,
+    claimBribesSelector:CLAIM_BRIBES_SELECTOR,
+    claimFeesSelector:CLAIM_FEES_SELECTOR,
+    embeddedDirectGetRewardAtBytes:positions(data,DIRECT_SELECTOR),
+    embeddedClaimBribesAtBytes:positions(data,CLAIM_BRIBES_SELECTOR),
+    embeddedClaimFeesAtBytes:positions(data,CLAIM_FEES_SELECTOR),
+    rewardContractAddressAtBytes:positions(data,rewardContract),
+    voterAddressAtBytes:positions(data,CONFIG[protocol].voter),
+    prefix:data.slice(0,Math.min(data.length,2050))
+  };
 }
 
 const unresolved=[];
 const stats={};
-const providersByProtocol={};
 for(const protocol of ['aerodrome','velodrome']){
   const {groups,index}=groupsForProtocol(protocol);
   const intervals=intervalsForProtocol(protocol,index);
   const provider=await providerFor(protocol);
-  providersByProtocol[protocol]=provider;
   const cache=new Map();
   let matchingClaimLogs=0;
   for(const lane of intervals){
@@ -148,7 +151,7 @@ for(const protocol of ['aerodrome','velodrome']){
     for(let from=lane.fromBlock;from<=lane.toBlock;from+=MAX_LOG_BLOCKS){
       const to=Math.min(lane.toBlock,from+MAX_LOG_BLOCKS-1);
       const cacheKey=`${groupNo}|${from}|${to}`;
-      if(!cache.has(cacheKey))cache.set(cacheKey,queryLogs(protocol,provider,addresses,from,to));
+      if(!cache.has(cacheKey))cache.set(cacheKey,queryLogs(provider,addresses,from,to));
       const logs=await cache.get(cacheKey);
       for(const log of logs){
         if(lower(log.address)!==lower(lane.rewardContract))continue;
@@ -163,7 +166,7 @@ for(const protocol of ['aerodrome','velodrome']){
           protocol,laneKey:lane.laneKey,tokenId:lane.tokenId,rewardContract:lane.rewardContract,rewardToken:lane.rewardToken,holder:lane.holder,
           fromBlock:lane.fromBlock,toBlock:lane.toBlock,blockNumber:Number(log.blockNumber),transactionHash:String(log.transactionHash),logIndex:Number(log.index??0),
           amountRaw:amount.toString(),decodedTokenId:decoded.tokenId,decodePath:decoded.path,transactionFrom:tx?.from?getAddress(tx.from):null,transactionTo:decoded.to,
-          transactionSelector:String(tx?.data||'').slice(0,10),transactionDataBytes:Math.max(0,(String(tx?.data||'').length-2)/2),error:decoded.error||null
+          calldata:calldataFingerprint(protocol,tx,lane.rewardContract),error:decoded.error||null
         });
       }
     }
@@ -172,10 +175,4 @@ for(const protocol of ['aerodrome','velodrome']){
 }
 
 const deduped=[...new Map(unresolved.map(x=>[`${x.laneKey}|${x.transactionHash}|${x.logIndex}`,x])).values()];
-const traceCache=new Map();
-for(const row of deduped){
-  const key=[row.protocol,row.transactionHash,lower(row.rewardContract),lower(row.rewardToken)].join('|');
-  if(!traceCache.has(key))traceCache.set(key,traceNestedSettlement({provider:providersByProtocol[row.protocol],protocol:row.protocol,transactionHash:row.transactionHash,rewardContract:row.rewardContract,rewardToken:row.rewardToken}));
-  row.nestedTrace=await traceCache.get(key);
-}
 console.log('ve33 unresolved settlement attribution diagnostic',JSON.stringify({stats,unresolvedCount:deduped.length,unresolved:deduped.slice(0,20)},null,2));
