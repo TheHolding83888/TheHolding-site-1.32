@@ -15,6 +15,13 @@ on:
       - 'reporting/defitea-income-composition-validation.mjs'
       - 'reporting/defitea-forty-acres-settlement.mjs'
       - 'reporting/defitea-forty-acres-settlement-validation.mjs'
+      - 'reporting/yield-basis-accounting-evidence.mjs'
+      - 'reporting/yield-basis-accounting-evidence-validation.mjs'
+      - 'reporting/yield-basis-accounting-evidence.json'
+      - 'reporting/yield-basis-income-candidates.mjs'
+      - 'reporting/yield-basis-income-candidates-validation.mjs'
+      - 'reporting/yield-basis-ledger-admission.mjs'
+      - 'reporting/yield-basis-ledger-admission-validation.mjs'
       - 'intelligence/realised-cash-flow/realised-cash-flow.json'
       - '.github/workflows/update-reporting.yml'
       - '.github/workflows/verify-reporting-layer.yml'
@@ -38,6 +45,9 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Install accounting runtime dependency
+        run: npm install --no-save --no-package-lock ethers@6
+
       - name: Static and semantic validation
         run: |
           set -euo pipefail
@@ -50,7 +60,13 @@ jobs:
             reporting/defitea-income-composition.mjs \
             reporting/defitea-income-composition-validation.mjs \
             reporting/defitea-forty-acres-settlement.mjs \
-            reporting/defitea-forty-acres-settlement-validation.mjs; do
+            reporting/defitea-forty-acres-settlement-validation.mjs \
+            reporting/yield-basis-accounting-evidence.mjs \
+            reporting/yield-basis-accounting-evidence-validation.mjs \
+            reporting/yield-basis-income-candidates.mjs \
+            reporting/yield-basis-income-candidates-validation.mjs \
+            reporting/yield-basis-ledger-admission.mjs \
+            reporting/yield-basis-ledger-admission-validation.mjs; do
             node --check "$f"
           done
           test -s reporting/reporting-scheduler-contract.json
@@ -62,7 +78,48 @@ jobs:
           node reporting/income-ledger-validation.mjs
           node reporting/defitea-income-composition-validation.mjs
           node reporting/defitea-forty-acres-settlement-validation.mjs
+          node reporting/yield-basis-accounting-evidence-validation.mjs
+          node reporting/yield-basis-income-candidates-validation.mjs
+          node reporting/yield-basis-ledger-admission-validation.mjs
           git diff --check
+
+      - name: Read-only live Yield Basis accounting canary
+        shell: bash
+        env:
+          REWARDS_DATA_FILE: ./companies/rewards-data.json
+          YIELD_BASIS_EVIDENCE_FILE: /tmp/yield-basis-accounting-evidence.json
+          ETH_RPC_URL: ''
+        run: |
+          set -euo pipefail
+          cp reporting/yield-basis-accounting-evidence.json "$YIELD_BASIS_EVIDENCE_FILE"
+          node reporting/yield-basis-accounting-evidence.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const e=JSON.parse(fs.readFileSync('/tmp/yield-basis-accounting-evidence.json','utf8'));
+          if(e.version!=='0.1-yield-basis-factual-accrual-evidence') throw new Error('live Yield Basis evidence version drift');
+          if(e.mechanism!=='yield-basis-fees') throw new Error('live Yield Basis mechanism drift');
+          if(!(Number(e.diagnostics?.trackedWalletCount)>0)) throw new Error('live Yield Basis discovered no tracked wallets from canonical Rewards');
+          if(!(Number(e.diagnostics?.checkpointCount)>0)) throw new Error('live Yield Basis produced no factual checkpoints');
+          const live=(e.checkpoints||[]).filter(x=>x?.monthBoundary!==true);
+          if(!live.length) throw new Error('live Yield Basis produced no current checkpoint');
+          if(live.some(x=>x?.exactBlockTaggedState!==true||x?.periodIncomeAuthority!==false||x?.currentClaimableBalanceIsPeriodIncome!==false||x?.unknownIsNotZero!==true)) throw new Error('live Yield Basis checkpoint semantic drift');
+          if(e.semantics?.openingBalanceCreatesIncome!==false||e.semantics?.claimIsSettlementNotSecondIncome!==true||e.semantics?.referenceAprUsed!==false||e.semantics?.laterPriceMovementRewritesClosedIncome!==false||e.semantics?.unknownIsNotZero!==true) throw new Error('live Yield Basis accounting semantic drift');
+          if(e.authority?.executionAuthority!=='none'||e.authority?.walletAuthority!=='none'||e.authority?.claimingAuthority!=='none'||e.authority?.capitalExecution!==false||e.authority?.methodologyMutationAuthority!=='none') throw new Error('Yield Basis authority expansion');
+          const events=e.events||[];
+          if(new Set(events.map(x=>x.eventKey)).size!==events.length) throw new Error('live Yield Basis duplicate event identity');
+          console.log('Read-only live Yield Basis canary PASS',{
+            status:e.status,
+            trackedWallets:e.diagnostics.trackedWalletCount,
+            checkpoints:e.diagnostics.checkpointCount,
+            monthBoundaries:e.diagnostics.monthBoundaryCount,
+            monthBoundaryFailures:(e.diagnostics.monthBoundaryFailures||[]).length,
+            intervals:e.diagnostics.intervalCount,
+            events:events.length,
+            reconciliation:e.diagnostics.reconciliationCount,
+            unvalued:e.diagnostics.unvaluedEventCount
+          });
+          NODE
+          git diff --exit-code
 
       - name: Exercise full writer and canonical income history
         shell: bash
