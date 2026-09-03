@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
-import { Contract, Interface, JsonRpcProvider, getAddress, formatUnits } from 'ethers';
+import { Contract, JsonRpcProvider, getAddress, formatUnits } from 'ethers';
 
 const __filename=fileURLToPath(import.meta.url);
 const __dirname=path.dirname(__filename);
@@ -18,22 +18,31 @@ const DEFAULT_OUTPUT=process.env.YIELD_BASIS_EVIDENCE_FILE||path.join(ROOT,'repo
 const RPC_URL=process.env.ETH_RPC_URL||'https://ethereum-rpc.publicnode.com';
 const ARCHIVE_RPC_URL=process.env.ETH_ARCHIVE_RPC_URL||'https://eth.drpc.org';
 const ARCHIVE_RPC_FALLBACK_URL=process.env.ETH_ARCHIVE_RPC_FALLBACK_URL||'https://ethereum.public.blockpi.network/v1/rpc/public';
-const MULTICALL3='0xcA11bde05977b3631167028862bE2a173976CA11';
+const WEEK=7*86400;
+const MAX_TOKENS=100;
+const MAX_TOKEN_SETS_PER_EPOCH=50;
 const ABI=[
   'function preview_claim(address receiver,uint256 epoch_count,bool use_vest) returns (address[] tokens,uint256[] amounts)',
+  'function INITIAL_EPOCH() view returns (uint256)',
+  'function VE() view returns (address)',
+  'function last_claimed_for(address) view returns (uint256)',
+  'function initial_set_for_epoch(uint256) view returns (uint256)',
+  'function max_set_for_epoch(uint256) view returns (uint256)',
+  'function token_sets(uint256,uint256) view returns (address)',
+  'function balances_for_epoch(uint256,address) view returns (uint256)',
+  'function claimed_epoch_for(address,address) view returns (uint256)',
   'event Claim(address indexed user,address indexed token,uint256 amount)'
 ];
-const PREVIEW_SIGNATURE='preview_claim(address,uint256,bool)';
-const FD_INTERFACE=new Interface(ABI);
-const MULTICALL_ABI=['function aggregate3(tuple(address target,bool allowFailure,bytes callData)[] calls) payable returns (tuple(bool success,bytes returnData)[] returnData)'];
+const VE_ABI=[
+  'function getPastVotes(address,uint256) view returns (uint256)',
+  'function getPastTotalSupply(uint256) view returns (uint256)'
+];
 const ERC20_ABI=['function decimals() view returns (uint8)','function symbol() view returns (string)'];
 const MAX_LOG_BLOCKS=9_500;
 const MAX_CHECKPOINTS_PER_WALLET=460;
 const BLOCK_LOOKUP_TIMEOUT_MS=8_000;
 const BLOCK_LOOKUP_RETRIES=3;
 const RECENT_BOUNDARY_INITIAL_STEP=4_096;
-const PREVIEW_PAGE_EPOCHS=10;
-const PREVIEW_PAGE_COUNT=5;
 
 const lower=v=>String(v||'').toLowerCase();
 const finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v));
@@ -116,27 +125,16 @@ export async function blockAtOrBefore(provider,timestamp,latestNumber,cache=new 
   const key=String(timestamp);if(cache.has(key))return cache.get(key);
   const target=Math.floor(Date.parse(timestamp)/1000);if(!Number.isFinite(target))throw new Error(`Invalid checkpoint timestamp ${timestamp}`);
   const latest=await getBlockReliable(provider,latestNumber);
-  if(Number(latest.timestamp)<=target){
-    const result={blockNumber:Number(latest.number),blockTimestamp:new Date(Number(latest.timestamp)*1000).toISOString()};
-    cache.set(key,result);return result;
-  }
-
+  if(Number(latest.timestamp)<=target){const result={blockNumber:Number(latest.number),blockTimestamp:new Date(Number(latest.timestamp)*1000).toISOString()};cache.set(key,result);return result;}
   let hiNumber=Number(latestNumber),loNumber=null,loBlock=null,step=RECENT_BOUNDARY_INITIAL_STEP;
   while(loNumber===null){
     const candidate=Math.max(0,Number(latestNumber)-step),block=await getBlockReliable(provider,candidate);
     if(Number(block.timestamp)<=target){loNumber=candidate;loBlock=block;break;}
-    hiNumber=candidate;
-    if(candidate===0)throw new Error(`Yield Basis boundary ${timestamp} predates available chain history`);
-    step*=2;
+    hiNumber=candidate;if(candidate===0)throw new Error(`Yield Basis boundary ${timestamp} predates available chain history`);step*=2;
   }
-
-  while(loNumber+1<hiNumber){
-    const mid=Math.floor((loNumber+hiNumber)/2),block=await getBlockReliable(provider,mid);
-    if(Number(block.timestamp)<=target){loNumber=mid;loBlock=block;}else hiNumber=mid;
-  }
+  while(loNumber+1<hiNumber){const mid=Math.floor((loNumber+hiNumber)/2),block=await getBlockReliable(provider,mid);if(Number(block.timestamp)<=target){loNumber=mid;loBlock=block;}else hiNumber=mid;}
   if(!loBlock)loBlock=await getBlockReliable(provider,loNumber);
-  const result={blockNumber:Number(loBlock.number),blockTimestamp:new Date(Number(loBlock.timestamp)*1000).toISOString()};
-  cache.set(key,result);return result;
+  const result={blockNumber:Number(loBlock.number),blockTimestamp:new Date(Number(loBlock.timestamp)*1000).toISOString()};cache.set(key,result);return result;
 }
 
 function monthBoundaries(startIso,endIso){
@@ -147,58 +145,78 @@ function monthBoundaries(startIso,endIso){
 
 async function tokenMeta(provider,token,cache,blockTag){
   const key=lower(token);if(cache.has(key))return cache.get(key);
-  const erc20=new Contract(token,ERC20_ABI,provider);
-  const [decimalsRaw,symbolRaw]=await Promise.all([erc20.decimals({blockTag}),erc20.symbol({blockTag})]);
+  const erc20=new Contract(token,ERC20_ABI,provider),[decimalsRaw,symbolRaw]=await Promise.all([erc20.decimals({blockTag}),erc20.symbol({blockTag})]);
   const meta={token:getAddress(token),decimals:Number(decimalsRaw),symbol:String(symbolRaw)};cache.set(key,meta);return meta;
 }
 
 async function rowsFromTokenAmounts({provider,walletRow,blockNumber,priceIndex,metaCache,tokenAmounts}){
   const rows=[];
   for(const [tokenKey,rawValue] of [...tokenAmounts.entries()].sort((a,b)=>a[0].localeCompare(b[0]))){
+    if(BigInt(rawValue)===0n)continue;
     const token=getAddress(tokenKey),meta=await tokenMeta(provider,token,metaCache,blockNumber),raw=BigInt(rawValue).toString(),price=priceIndex.get(walletRow.company,walletRow.wallet,meta.token);
     rows.push({token:meta.token,symbol:meta.symbol,decimals:meta.decimals,amountRaw:raw,amount:Number(formatUnits(raw,meta.decimals)),unitUsd:price?.unitUsd??null,valuationSource:price?.priceMethod||null,valuationObservedAt:price?.valuationObservedAt||null});
   }
   return rows;
 }
 
-async function previewRowsPaged({provider,walletRow,blockNumber,priceIndex,metaCache}){
-  const multicall=new Contract(MULTICALL3,MULTICALL_ABI,provider),callData=FD_INTERFACE.encodeFunctionData(PREVIEW_SIGNATURE,[walletRow.wallet,PREVIEW_PAGE_EPOCHS,false]);
-  const calls=Array.from({length:PREVIEW_PAGE_COUNT},()=>({target:DISTRIBUTOR,allowFailure:false,callData}));
-  const results=await multicall.aggregate3.staticCall(calls,{blockTag:blockNumber});
-  const tokenAmounts=new Map();
-  for(const result of results){
-    if(result?.success!==true)throw new Error(`Yield Basis paged preview_claim failed for ${walletRow.wallet}`);
-    const [tokens,amounts]=FD_INTERFACE.decodeFunctionResult(PREVIEW_SIGNATURE,result.returnData);
-    if(tokens.length!==amounts.length)throw new Error(`Yield Basis paged preview_claim tuple length mismatch for ${walletRow.wallet}`);
-    for(let i=0;i<tokens.length;i++){
-      if(!isAddress(tokens[i]))throw new Error(`Yield Basis paged preview_claim invalid token for ${walletRow.wallet}`);
-      const key=lower(tokens[i]);tokenAmounts.set(key,(tokenAmounts.get(key)||0n)+BigInt(amounts[i]));
-    }
-  }
-  return rowsFromTokenAmounts({provider,walletRow,blockNumber,priceIndex,metaCache,tokenAmounts});
+function rawRowsMap(rows){return new Map((rows||[]).map(x=>[lower(x.token),BigInt(x.amountRaw||'0').toString()]));}
+function assertRowsEqual(a,b,label){
+  const am=rawRowsMap(a),bm=rawRowsMap(b),keys=[...new Set([...am.keys(),...bm.keys()])].sort();
+  for(const key of keys)if((am.get(key)||'0')!==(bm.get(key)||'0'))throw new Error(`${label} mismatch ${key}: direct=${am.get(key)||'0'} storage=${bm.get(key)||'0'}`);
 }
 
-async function previewRows({contract,provider,walletRow,blockNumber,priceIndex,metaCache,proofMeta=null}){
-  try{
-    const [tokens,amounts]=await contract.preview_claim.staticCall(walletRow.wallet,50,false,{blockTag:blockNumber,from:walletRow.wallet});
-    if(tokens.length!==amounts.length)throw new Error(`Yield Basis preview_claim tuple length mismatch for ${walletRow.wallet}`);
-    const tokenAmounts=new Map();
-    for(let i=0;i<tokens.length;i++){
-      if(!isAddress(tokens[i]))throw new Error(`Yield Basis preview_claim invalid token for ${walletRow.wallet}`);
-      tokenAmounts.set(lower(tokens[i]),BigInt(amounts[i]));
-    }
-    if(proofMeta)proofMeta.queryMode='direct-50-epoch-preview';
-    return rowsFromTokenAmounts({provider,walletRow,blockNumber,priceIndex,metaCache,tokenAmounts});
-  }catch(directError){
-    try{
-      const rows=await previewRowsPaged({provider,walletRow,blockNumber,priceIndex,metaCache});
-      if(proofMeta){proofMeta.queryMode='multicall3-sequential-5x10-epoch-preview';proofMeta.directError=errorText(directError);}
-      return rows;
-    }catch(pagedError){
-      const failure=new Error(`Yield Basis preview_claim direct and paged simulation failed: direct=${errorText(directError)} | paged=${errorText(pagedError)}`);
-      failure.directError=errorText(directError);failure.pagedError=errorText(pagedError);throw failure;
+async function enumerateTokenSet(fd,setId,blockTag,cache){
+  const key=`${blockTag}:${setId}`;if(cache.has(key))return cache.get(key);
+  const tokens=[];
+  for(let i=0;i<MAX_TOKENS;i++){
+    try{const token=String(await fd.token_sets(setId,i,{blockTag}));if(!isAddress(token))throw new Error('invalid token');tokens.push(getAddress(token));}
+    catch(error){if(i===0)throw new Error(`Yield Basis token_set ${setId} unreadable: ${errorText(error)}`);break;}
+  }
+  cache.set(key,tokens);return tokens;
+}
+
+async function storageDerivedPreview({provider,walletRow,blockNumber,blockTimestamp,priceIndex,metaCache,setCache}){
+  const fd=new Contract(DISTRIBUTOR,ABI,provider),blockTs=Math.floor(Date.parse(blockTimestamp)/1000);
+  const [initialEpochRaw,veAddress,lastClaimedRaw]=await Promise.all([
+    fd.INITIAL_EPOCH({blockTag:blockNumber}),fd.VE({blockTag:blockNumber}),fd.last_claimed_for(walletRow.wallet,{blockTag:blockNumber})
+  ]);
+  if(!isAddress(veAddress))throw new Error('Yield Basis VE address unavailable');
+  const ve=new Contract(veAddress,VE_ABI,provider),initialEpoch=Number(initialEpochRaw),lastClaimed=Number(lastClaimedRaw);
+  let epoch=lastClaimed===0?initialEpoch:lastClaimed+WEEK;
+  const simulatedClaimed=new Map(),tokenAmounts=new Map();let epochsVisited=0;
+  for(let i=0;i<50&&epoch<=blockTs;i++,epoch+=WEEK){
+    epochsVisited++;
+    const [votesRaw,totalRaw,initialSetRaw,maxSetRaw]=await Promise.all([
+      ve.getPastVotes(walletRow.wallet,epoch,{blockTag:blockNumber}),ve.getPastTotalSupply(epoch,{blockTag:blockNumber}),
+      fd.initial_set_for_epoch(epoch,{blockTag:blockNumber}),fd.max_set_for_epoch(epoch,{blockTag:blockNumber})
+    ]);
+    const votes=BigInt(votesRaw),total=BigInt(totalRaw),initialSet=Number(initialSetRaw),maxSet=Number(maxSetRaw);
+    if(initialSet===0)continue;
+    if(maxSet<initialSet)throw new Error(`Yield Basis invalid token-set range ${initialSet}>${maxSet} at ${epoch}`);
+    const lastSet=Math.min(maxSet,initialSet+MAX_TOKEN_SETS_PER_EPOCH-1);
+    for(let setId=initialSet;setId<=lastSet;setId++){
+      const tokens=await enumerateTokenSet(fd,setId,blockNumber,setCache);
+      for(const token of tokens){
+        const tk=lower(token);let claimed=simulatedClaimed.get(tk);
+        if(claimed===undefined){claimed=Number(await fd.claimed_epoch_for(walletRow.wallet,token,{blockTag:blockNumber}));simulatedClaimed.set(tk,claimed);}
+        if(claimed>=epoch)continue;
+        if(total===0n)throw new Error(`Yield Basis zero total votes at claimable epoch ${epoch}`);
+        const balance=BigInt(await fd.balances_for_epoch(epoch,token,{blockTag:blockNumber})),amount=balance*votes/total;
+        if(amount>0n)tokenAmounts.set(tk,(tokenAmounts.get(tk)||0n)+amount);
+        simulatedClaimed.set(tk,epoch);
+      }
     }
   }
+  const rows=await rowsFromTokenAmounts({provider,walletRow,blockNumber,priceIndex,metaCache,tokenAmounts});
+  return{rows,epochsVisited,ve:getAddress(veAddress),initialEpoch,lastClaimed};
+}
+
+async function directPreviewRows({contract,provider,walletRow,blockNumber,priceIndex,metaCache}){
+  const [tokens,amounts]=await contract.preview_claim.staticCall(walletRow.wallet,50,false,{blockTag:blockNumber,from:walletRow.wallet});
+  if(tokens.length!==amounts.length)throw new Error(`Yield Basis preview_claim tuple length mismatch for ${walletRow.wallet}`);
+  const tokenAmounts=new Map();
+  for(let i=0;i<tokens.length;i++){if(!isAddress(tokens[i]))throw new Error(`Yield Basis preview_claim invalid token for ${walletRow.wallet}`);tokenAmounts.set(lower(tokens[i]),BigInt(amounts[i]));}
+  return rowsFromTokenAmounts({provider,walletRow,blockNumber,priceIndex,metaCache,tokenAmounts});
 }
 
 async function queryClaims(contract,wallet,fromBlock,toBlock){
@@ -206,11 +224,7 @@ async function queryClaims(contract,wallet,fromBlock,toBlock){
   const claims=[];let requestCount=0;
   for(let from=fromBlock;from<=toBlock;from+=MAX_LOG_BLOCKS){
     const to=Math.min(toBlock,from+MAX_LOG_BLOCKS-1),logs=await contract.queryFilter(contract.filters.Claim(wallet),from,to);requestCount++;
-    for(const log of logs){
-      const token=String(log?.args?.[1]||''),amount=log?.args?.[2];
-      if(!isAddress(token)||amount===undefined)throw new Error(`Yield Basis Claim decode failed at block ${log.blockNumber}`);
-      claims.push({blockNumber:Number(log.blockNumber),transactionHash:String(log.transactionHash||''),logIndex:Number(log.index??0),user:String(log.args?.[0]||wallet),token:getAddress(token),amountRaw:BigInt(amount).toString()});
-    }
+    for(const log of logs){const token=String(log?.args?.[1]||''),amount=log?.args?.[2];if(!isAddress(token)||amount===undefined)throw new Error(`Yield Basis Claim decode failed at block ${log.blockNumber}`);claims.push({blockNumber:Number(log.blockNumber),transactionHash:String(log.transactionHash||''),logIndex:Number(log.index??0),user:String(log.args?.[0]||wallet),token:getAddress(token),amountRaw:BigInt(amount).toString()});}
   }
   return{claims:claims.sort((a,b)=>a.blockNumber-b.blockNumber||a.logIndex-b.logIndex),requestCount};
 }
@@ -219,46 +233,43 @@ function retainCheckpoints(checkpoints){
   const groups=new Map();for(const c of checkpoints){if(!groups.has(c.stateKey))groups.set(c.stateKey,[]);groups.get(c.stateKey).push(c);}
   return[...groups.values()].flatMap(xs=>xs.sort((a,b)=>Number(a.blockNumber)-Number(b.blockNumber)||String(a.observedAt).localeCompare(String(b.observedAt))).slice(-MAX_CHECKPOINTS_PER_WALLET)).sort((a,b)=>a.stateKey.localeCompare(b.stateKey)||Number(a.blockNumber)-Number(b.blockNumber));
 }
-
 function eventEconomicDate(close){return close?.monthBoundary?previousDay(close.observedAt):String(close.observedAt).slice(0,10);}
-function intervalMonth(open,close){
-  const month=eventEconomicDate(close).slice(0,7),openMonth=String(open.observedAt).slice(0,7),closeMonth=close?.monthBoundary?month:String(close.observedAt).slice(0,7);
-  return openMonth&&closeMonth&&openMonth!==closeMonth&&!close?.monthBoundary?null:month;
+function intervalMonth(open,close){const month=eventEconomicDate(close).slice(0,7),openMonth=String(open.observedAt).slice(0,7),closeMonth=close?.monthBoundary?month:String(close.observedAt).slice(0,7);return openMonth&&closeMonth&&openMonth!==closeMonth&&!close?.monthBoundary?null:month;}
+
+async function buildCurrentCheckpoint({provider,contract,walletRow,observedAt,blockNumber,priceIndex,metaCache}){
+  const rows=await directPreviewRows({contract,provider,walletRow,blockNumber,priceIndex,metaCache});
+  return{checkpointKey:`live:${walletRow.stateKey}:${blockNumber}`,stateKey:walletRow.stateKey,company:walletRow.company,wallet:walletRow.wallet,walletAlias:walletRow.walletAlias,route:MECHANISM,observedAt,blockNumber,blockTimestamp:observedAt,rows,boundaryProof:'block-tagged-FeeDistributor.preview_claim(receiver,50,false)',previewQueryMode:'direct-50-epoch-preview',exactBlockTaggedState:true,monthBoundary:false,historicalStateProvider:null,periodIncomeAuthority:false,currentClaimableBalanceIsPeriodIncome:false,unknownIsNotZero:true};
 }
 
-async function buildCheckpoint({provider,contract,walletRow,observedAt,blockNumber,blockTimestamp,priceIndex,metaCache,kind,providerLabel=null}){
-  const proofMeta={},rows=await previewRows({contract,provider,walletRow,blockNumber,priceIndex,metaCache,proofMeta});
-  return{checkpointKey:`${kind}:${walletRow.stateKey}:${blockNumber}`,stateKey:walletRow.stateKey,company:walletRow.company,wallet:walletRow.wallet,walletAlias:walletRow.walletAlias,route:MECHANISM,observedAt,blockNumber,blockTimestamp,rows,boundaryProof:'block-tagged-FeeDistributor.preview_claim(receiver,50,false) or stateful-equivalent paged simulation',previewQueryMode:proofMeta.queryMode||null,directPreviewError:proofMeta.directError||null,exactBlockTaggedState:true,monthBoundary:kind==='month-boundary',historicalStateProvider:kind==='month-boundary'?providerLabel:null,periodIncomeAuthority:false,currentClaimableBalanceIsPeriodIncome:false,unknownIsNotZero:true};
-}
-
-async function buildHistoricalCheckpoint({candidates,walletRow,observedAt,blockNumber,blockTimestamp,priceIndex,metaCache,stats}){
+async function buildHistoricalCheckpoint({candidates,walletRow,observedAt,blockNumber,blockTimestamp,priceIndex,metaCache,setCache,stats,storageStats}){
   const errors=[];
   for(const candidate of candidates){
+    const contract=new Contract(DISTRIBUTOR,ABI,candidate.provider);
+    let directRows=null,directError=null;
+    try{directRows=await directPreviewRows({contract,provider:candidate.provider,walletRow,blockNumber,priceIndex,metaCache});}
+    catch(error){directError=errorText(error);}
     try{
-      const checkpoint=await buildCheckpoint({provider:candidate.provider,contract:new Contract(DISTRIBUTOR,ABI,candidate.provider),walletRow,observedAt,blockNumber,blockTimestamp,priceIndex,metaCache,kind:'month-boundary',providerLabel:candidate.label});
-      bump(stats.successCounts,candidate.label);return checkpoint;
+      const derived=await storageDerivedPreview({provider:candidate.provider,walletRow,blockNumber,blockTimestamp,priceIndex,metaCache,setCache});
+      if(directRows){assertRowsEqual(directRows,derived.rows,`Yield Basis storage cross-check ${walletRow.stateKey}`);storageStats.crossCheckCount++;}
+      else storageStats.fallbackCount++;
+      bump(stats.successCounts,candidate.label);
+      return{checkpointKey:`month-boundary:${walletRow.stateKey}:${blockNumber}`,stateKey:walletRow.stateKey,company:walletRow.company,wallet:walletRow.wallet,walletAlias:walletRow.walletAlias,route:MECHANISM,observedAt,blockNumber,blockTimestamp,rows:directRows||derived.rows,boundaryProof:directRows?'direct preview_claim cross-checked 1:1 against FeeDistributor/VE storage derivation':'FeeDistributor/VE storage-derived claim-equivalent; no token transfers executed',previewQueryMode:directRows?'direct-plus-storage-cross-check':'storage-derived-feedistributor-claim-equivalent',directPreviewError:directError,storageDerivation:{epochsVisited:derived.epochsVisited,ve:derived.ve,initialEpoch:derived.initialEpoch,lastClaimed:derived.lastClaimed},exactBlockTaggedState:true,monthBoundary:true,historicalStateProvider:candidate.label,periodIncomeAuthority:false,currentClaimableBalanceIsPeriodIncome:false,unknownIsNotZero:true};
     }catch(error){
-      bump(stats.failureCounts,candidate.label);errors.push({provider:candidate.label,error:errorText(error)});
-      if(stats.failureSamples.length<12)stats.failureSamples.push({stateKey:walletRow.stateKey,blockNumber,provider:candidate.label,error:errorText(error)});
+      bump(stats.failureCounts,candidate.label);const detail={provider:candidate.label,directError,error:errorText(error)};errors.push(detail);
+      if(stats.failureSamples.length<12)stats.failureSamples.push({stateKey:walletRow.stateKey,blockNumber,...detail});
+      if(directRows&&String(errorText(error)).includes('storage cross-check'))storageStats.mismatchCount++;
     }
   }
-  const failure=new Error(`Yield Basis historical preview_claim unavailable across providers: ${errors.map(x=>`${x.provider}: ${x.error}`).join(' | ')}`);
-  failure.providerErrors=errors;throw failure;
+  const failure=new Error(`Yield Basis historical boundary unavailable across providers: ${errors.map(x=>`${x.provider}: direct=${x.directError||'ok'} storage=${x.error}`).join(' | ')}`);failure.providerErrors=errors;throw failure;
 }
 
 async function queryClaimsWithFallback({candidates,wallet,fromBlock,toBlock,stats}){
   const errors=[];
   for(const candidate of candidates){
-    try{
-      const result=await queryClaims(new Contract(DISTRIBUTOR,ABI,candidate.provider),wallet,fromBlock,toBlock);
-      bump(stats.successCounts,candidate.label);return{...result,provider:candidate.label};
-    }catch(error){
-      bump(stats.failureCounts,candidate.label);errors.push({provider:candidate.label,error:errorText(error)});
-      if(stats.failureSamples.length<12)stats.failureSamples.push({wallet,fromBlock,toBlock,provider:candidate.label,error:errorText(error)});
-    }
+    try{const result=await queryClaims(new Contract(DISTRIBUTOR,ABI,candidate.provider),wallet,fromBlock,toBlock);bump(stats.successCounts,candidate.label);return{...result,provider:candidate.label};}
+    catch(error){bump(stats.failureCounts,candidate.label);errors.push({provider:candidate.label,error:errorText(error)});if(stats.failureSamples.length<12)stats.failureSamples.push({wallet,fromBlock,toBlock,provider:candidate.label,error:errorText(error)});}
   }
-  const failure=new Error(`Yield Basis Claim log query unavailable across providers: ${errors.map(x=>`${x.provider}: ${x.error}`).join(' | ')}`);
-  failure.providerErrors=errors;throw failure;
+  const failure=new Error(`Yield Basis Claim log query unavailable across providers: ${errors.map(x=>`${x.provider}: ${x.error}`).join(' | ')}`);failure.providerErrors=errors;throw failure;
 }
 
 export async function buildYieldBasisEvidence({rewards,previous={},generatedAt=new Date().toISOString(),provider=null}={}){
@@ -268,60 +279,53 @@ export async function buildYieldBasisEvidence({rewards,previous={},generatedAt=n
 
   const injected=provider!==null,rpc=provider||new JsonRpcProvider(RPC_URL,1),contract=new Contract(DISTRIBUTOR,ABI,rpc),latestNumber=await rpc.getBlockNumber(),latestBlock=await getBlockReliable(rpc,latestNumber);
   const historicalCandidates=injected?[{provider:rpc,label:'injected-provider'}]:unique([ARCHIVE_RPC_URL,ARCHIVE_RPC_FALLBACK_URL,RPC_URL]).map(url=>({provider:new JsonRpcProvider(url,1),label:rpcLabel(url)}));
-  const historicalStateRpc={candidateProviders:historicalCandidates.map(x=>x.label),successCounts:{},failureCounts:{},failureSamples:[]};
-  const claimLogRpc={candidateProviders:historicalCandidates.map(x=>x.label),successCounts:{},failureCounts:{},failureSamples:[]};
-  const currentObservedAt=new Date(Number(latestBlock.timestamp)*1000).toISOString(),blockCache=new Map(),metaCache=new Map();
+  const historicalStateRpc={candidateProviders:historicalCandidates.map(x=>x.label),successCounts:{},failureCounts:{},failureSamples:[]},claimLogRpc={candidateProviders:historicalCandidates.map(x=>x.label),successCounts:{},failureCounts:{},failureSamples:[]};
+  const storageStats={crossCheckCount:0,fallbackCount:0,mismatchCount:0},currentObservedAt=new Date(Number(latestBlock.timestamp)*1000).toISOString(),blockCache=new Map(),metaCache=new Map(),setCache=new Map();
   const byCheckpoint=new Map((previous?.checkpoints||[]).filter(x=>x?.checkpointKey).map(x=>[x.checkpointKey,x])),boundaryFailures=[];
 
   for(const w of wallets){
     for(const boundaryAt of monthBoundaries(FULL_ACCOUNTING_START,currentObservedAt)){
       let b;try{b=await blockAtOrBefore(rpc,boundaryAt,latestNumber,blockCache);}catch(error){boundaryFailures.push({stateKey:w.stateKey,boundaryAt,error:errorText(error)});continue;}
       const key=`month-boundary:${w.stateKey}:${b.blockNumber}`;if(byCheckpoint.has(key))continue;
-      try{byCheckpoint.set(key,await buildHistoricalCheckpoint({candidates:historicalCandidates,walletRow:w,observedAt:boundaryAt,blockNumber:b.blockNumber,blockTimestamp:b.blockTimestamp,priceIndex,metaCache,stats:historicalStateRpc}));}
+      try{byCheckpoint.set(key,await buildHistoricalCheckpoint({candidates:historicalCandidates,walletRow:w,observedAt:boundaryAt,blockNumber:b.blockNumber,blockTimestamp:b.blockTimestamp,priceIndex,metaCache,setCache,stats:historicalStateRpc,storageStats}));}
       catch(error){boundaryFailures.push({stateKey:w.stateKey,boundaryAt,blockNumber:b.blockNumber,error:errorText(error),providerErrors:error.providerErrors||[]});}
     }
-    const key=`live:${w.stateKey}:${latestNumber}`;
-    if(!byCheckpoint.has(key))byCheckpoint.set(key,await buildCheckpoint({provider:rpc,contract,walletRow:w,observedAt:currentObservedAt,blockNumber:latestNumber,blockTimestamp:currentObservedAt,priceIndex,metaCache,kind:'live',providerLabel:rpcLabel(RPC_URL)}));
+    const key=`live:${w.stateKey}:${latestNumber}`;if(!byCheckpoint.has(key))byCheckpoint.set(key,await buildCurrentCheckpoint({provider:rpc,contract,walletRow:w,observedAt:currentObservedAt,blockNumber:latestNumber,priceIndex,metaCache}));
   }
 
-  const checkpoints=retainCheckpoints([...byCheckpoint.values()].filter(x=>x?.checkpointKey&&Number(x.blockNumber)>=0));
-  const priorEvents=new Map((previous?.events||[]).filter(x=>x?.eventKey).map(x=>[x.eventKey,x]));
-  const diagnostics={trackedWalletCount:wallets.length,currentBlockNumber:latestNumber,currentObservedAt,checkpointCount:checkpoints.length,monthBoundaryCount:checkpoints.filter(x=>x.monthBoundary).length,monthBoundaryFailures:boundaryFailures,historicalStateRpc,claimLogRpc,intervalCount:0,acceptedPositiveTokenIntervalCount:0,zeroTokenIntervalCount:0,reconciliationCount:0,unvaluedEventCount:0,claimEventCount:0,claimLogRequestCount:0,claimQueryFailures:[],referenceAprUsed:false,unknownIsNotZero:true};
+  const checkpoints=retainCheckpoints([...byCheckpoint.values()].filter(x=>x?.checkpointKey&&Number(x.blockNumber)>=0)),priorEvents=new Map((previous?.events||[]).filter(x=>x?.eventKey).map(x=>[x.eventKey,x]));
+  const diagnostics={trackedWalletCount:wallets.length,currentBlockNumber:latestNumber,currentObservedAt,checkpointCount:checkpoints.length,monthBoundaryCount:checkpoints.filter(x=>x.monthBoundary).length,monthBoundaryFailures:boundaryFailures,historicalStateRpc,storageDerivation:storageStats,claimLogRpc,intervalCount:0,acceptedPositiveTokenIntervalCount:0,zeroTokenIntervalCount:0,reconciliationCount:0,unvaluedEventCount:0,claimEventCount:0,claimLogRequestCount:0,claimQueryFailures:[],referenceAprUsed:false,unknownIsNotZero:true};
 
   for(const w of wallets){
     const points=checkpoints.filter(x=>x.stateKey===w.stateKey).sort((a,b)=>Number(a.blockNumber)-Number(b.blockNumber)||String(a.observedAt).localeCompare(String(b.observedAt)));
     for(let i=1;i<points.length;i++){
       const open=points[i-1],close=points[i];if(Number(close.blockNumber)<=Number(open.blockNumber))continue;diagnostics.intervalCount++;
-      let settlement;
-      try{settlement=await queryClaimsWithFallback({candidates:historicalCandidates,wallet:w.wallet,fromBlock:Number(open.blockNumber)+1,toBlock:Number(close.blockNumber),stats:claimLogRpc});}
+      let settlement;try{settlement=await queryClaimsWithFallback({candidates:historicalCandidates,wallet:w.wallet,fromBlock:Number(open.blockNumber)+1,toBlock:Number(close.blockNumber),stats:claimLogRpc});}
       catch(error){diagnostics.reconciliationCount++;diagnostics.claimQueryFailures.push({stateKey:w.stateKey,fromBlock:Number(open.blockNumber)+1,toBlock:Number(close.blockNumber),error:errorText(error),providerErrors:error.providerErrors||[]});continue;}
       diagnostics.claimEventCount+=settlement.claims.length;diagnostics.claimLogRequestCount+=settlement.requestCount;
       const openRows=new Map((open.rows||[]).map(x=>[lower(x.token),x])),closeRows=new Map((close.rows||[]).map(x=>[lower(x.token),x])),claimByToken=new Map();
       for(const c of settlement.claims){const k=lower(c.token);claimByToken.set(k,(claimByToken.get(k)||0n)+BigInt(c.amountRaw));}
-      const tokens=[...new Set([...openRows.keys(),...closeRows.keys(),...claimByToken.keys()])].sort();
-      for(const tokenKey of tokens){
+      for(const tokenKey of [...new Set([...openRows.keys(),...closeRows.keys(),...claimByToken.keys()])].sort()){
         const a=openRows.get(tokenKey)||null,b=closeRows.get(tokenKey)||null,settled=(claimByToken.get(tokenKey)||0n).toString(),r=reconcileEntitlement(a?.amountRaw||'0',b?.amountRaw||'0',settled);
         if(!r.accepted){diagnostics.reconciliationCount++;continue;}if(r.earnedRaw==='0'){diagnostics.zeroTokenIntervalCount++;continue;}
         const month=intervalMonth(open,close);if(!month){diagnostics.reconciliationCount++;continue;}
-        const meta=b||a||await tokenMeta(rpc,getAddress(`0x${tokenKey.slice(2)}`),metaCache,close.blockNumber),decimals=Number(meta.decimals),amount=Number(formatUnits(r.earnedRaw,decimals));
-        const unitUsd=finite(b?.unitUsd)&&Number(b.unitUsd)>0?Number(b.unitUsd):null,usdValue=unitUsd?amount*unitUsd:null;
+        const meta=b||a||await tokenMeta(rpc,getAddress(tokenKey),metaCache,close.blockNumber),decimals=Number(meta.decimals),amount=Number(formatUnits(r.earnedRaw,decimals)),unitUsd=finite(b?.unitUsd)&&Number(b.unitUsd)>0?Number(b.unitUsd):null,usdValue=unitUsd?amount*unitUsd:null;
         if(!finite(usdValue))diagnostics.unvaluedEventCount++;
-        const proofs=settlement.claims.filter(x=>lower(x.token)===tokenKey),eventKey=`yield-basis-accrual:${lower(w.wallet)}:${tokenKey}:${open.blockNumber}:${close.blockNumber}`;
-        if(priorEvents.has(eventKey))continue;
-        priorEvents.set(eventKey,{eventKey,company:w.company,family:'accrued-entitlement',economicDate:eventEconomicDate(close),periodStart:open.observedAt,periodEnd:close.observedAt,route:MECHANISM,protocol:'Yield Basis · veYB',asset:meta.symbol||meta.token,token:meta.token,decimals,amount:round(amount,12),amountRaw:r.earnedRaw,usdValue:finite(usdValue)?round(usdValue,8):null,valuationUnitUsd:unitUsd?round(unitUsd,12):null,valuationAt:b?.valuationObservedAt||close.observedAt,valuationStatus:finite(usdValue)?'frozen-at-closing-accounting-boundary':'unvalued-fail-closed',sourceFile:'reporting/yield-basis-accounting-evidence.json',sourceFamily:'FeeDistributor cumulative token entitlement with Claim settlement reconciliation',sourceIdentity:`${open.checkpointKey}->${close.checkpointKey}:${tokenKey}`,evidenceStatus:'factual-opening-plus-settlement-to-closing-token-reconciliation',openingClaimableRaw:a?.amountRaw||'0',closingClaimableRaw:b?.amountRaw||'0',settlementRaw:settled,settlementEventCount:proofs.length,settlementProofs:proofs,settlementLogProvider:settlement.provider,openingBoundaryProof:open.boundaryProof,closingBoundaryProof:close.boundaryProof,periodAttributionMonth:month,referenceAprUsed:false,currentClaimableBalanceIsPeriodIncome:false,claimIsSecondIncomeEvent:false,laterClaimOrPriceMoveDoesNotRewriteIncome:true,unknownIsNotZero:true,executionAuthority:'none'});
-        diagnostics.acceptedPositiveTokenIntervalCount++;
+        const proofs=settlement.claims.filter(x=>lower(x.token)===tokenKey),eventKey=`yield-basis-accrual:${lower(w.wallet)}:${tokenKey}:${open.blockNumber}:${close.blockNumber}`;if(priorEvents.has(eventKey))continue;
+        priorEvents.set(eventKey,{eventKey,company:w.company,family:'accrued-entitlement',economicDate:eventEconomicDate(close),periodStart:open.observedAt,periodEnd:close.observedAt,route:MECHANISM,protocol:'Yield Basis · veYB',asset:meta.symbol||meta.token,token:meta.token,decimals,amount:round(amount,12),amountRaw:r.earnedRaw,usdValue:finite(usdValue)?round(usdValue,8):null,valuationUnitUsd:unitUsd?round(unitUsd,12):null,valuationAt:b?.valuationObservedAt||close.observedAt,valuationStatus:finite(usdValue)?'frozen-at-closing-accounting-boundary':'unvalued-fail-closed',sourceFile:'reporting/yield-basis-accounting-evidence.json',sourceFamily:'FeeDistributor cumulative token entitlement with Claim settlement reconciliation',sourceIdentity:`${open.checkpointKey}->${close.checkpointKey}:${tokenKey}`,evidenceStatus:'factual-opening-plus-settlement-to-closing-token-reconciliation',openingClaimableRaw:a?.amountRaw||'0',closingClaimableRaw:b?.amountRaw||'0',settlementRaw:settled,settlementEventCount:proofs.length,settlementProofs:proofs,settlementLogProvider:settlement.provider,openingBoundaryProof:open.boundaryProof,closingBoundaryProof:close.boundaryProof,periodAttributionMonth:month,referenceAprUsed:false,currentClaimableBalanceIsPeriodIncome:false,claimIsSecondIncomeEvent:false,laterClaimOrPriceMoveDoesNotRewriteIncome:true,unknownIsNotZero:true,executionAuthority:'none'});diagnostics.acceptedPositiveTokenIntervalCount++;
       }
     }
   }
 
   const events=[...priorEvents.values()].sort((a,b)=>String(a.periodEnd||'').localeCompare(String(b.periodEnd||''))||a.eventKey.localeCompare(b.eventKey));
-  return{version:VERSION,mechanism:MECHANISM,generatedAt,status:diagnostics.reconciliationCount||diagnostics.unvaluedEventCount||boundaryFailures.length?'partial':'factual-boundary-tracking',fullAccountingStart:FULL_ACCOUNTING_START,semantics:{openingBalanceCreatesIncome:false,earnedIndependentOfClaim:true,claimIsSettlementNotSecondIncome:true,formula:'closing preview_claim + Claim settlements - opening preview_claim, token by token',positiveDeltaRequired:true,referenceAprUsed:false,laterPriceMovementRewritesClosedIncome:false,unknownIsNotZero:true},source:{chain:'Ethereum',chainId:1,feeDistributor:DISTRIBUTOR,claimableMetric:'FeeDistributor.preview_claim(receiver,50,false)',settlementEvent:'Claim(user,token,amount)',rewardsSource:'companies/rewards-data.json',collectorReuse:'same FeeDistributor + wallet scope already used by rewards/company-rewards-engine.mjs',historicalRpcPolicy:'capability-aware archive fallback; current state remains on primary RPC',historicalPreviewFallback:'Multicall3 sequential 5x10 epoch simulation preserves one eth_call state while avoiding monolithic preview limits'},authority,checkpoints,events,diagnostics};
+  const storageProofOk=storageStats.fallbackCount===0||storageStats.crossCheckCount>0;
+  return{version:VERSION,mechanism:MECHANISM,generatedAt,status:diagnostics.reconciliationCount||diagnostics.unvaluedEventCount||boundaryFailures.length||storageStats.mismatchCount||!storageProofOk?'partial':'factual-boundary-tracking',fullAccountingStart:FULL_ACCOUNTING_START,semantics:{openingBalanceCreatesIncome:false,earnedIndependentOfClaim:true,claimIsSettlementNotSecondIncome:true,formula:'closing preview_claim + Claim settlements - opening preview_claim, token by token',positiveDeltaRequired:true,referenceAprUsed:false,laterPriceMovementRewritesClosedIncome:false,unknownIsNotZero:true},source:{chain:'Ethereum',chainId:1,feeDistributor:DISTRIBUTOR,claimableMetric:'FeeDistributor.preview_claim(receiver,50,false)',settlementEvent:'Claim(user,token,amount)',rewardsSource:'companies/rewards-data.json',collectorReuse:'same FeeDistributor + wallet scope already used by rewards/company-rewards-engine.mjs',historicalRpcPolicy:'capability-aware archive fallback; current state remains on primary RPC',historicalBoundaryFallback:'exact FeeDistributor/VE storage derivation of _claim economics without executing token transfers; cross-checked against direct preview_claim where callable'},authority,checkpoints,events,diagnostics};
 }
 
 async function main(){
   const [rewards,previous]=await Promise.all([readJson(DEFAULT_REWARDS),readJson(DEFAULT_OUTPUT,{})]);
   const output=await buildYieldBasisEvidence({rewards,previous});await writeJson(DEFAULT_OUTPUT,output);
-  console.log('Yield Basis factual accrual evidence built',{status:output.status,checkpoints:output.checkpoints?.length||0,events:output.events?.length||0,acceptedPositiveTokenIntervals:output.diagnostics?.acceptedPositiveTokenIntervalCount||0,reconciliations:output.diagnostics?.reconciliationCount||0,unvalued:output.diagnostics?.unvaluedEventCount||0,boundaryFailures:output.diagnostics?.monthBoundaryFailures?.length||0,claimQueryFailures:output.diagnostics?.claimQueryFailures?.length||0,historicalStateProviders:output.diagnostics?.historicalStateRpc?.successCounts||{},claimLogProviders:output.diagnostics?.claimLogRpc?.successCounts||{},executionAuthority:output.authority?.executionAuthority});
+  console.log('Yield Basis factual accrual evidence built',{status:output.status,checkpoints:output.checkpoints?.length||0,events:output.events?.length||0,acceptedPositiveTokenIntervals:output.diagnostics?.acceptedPositiveTokenIntervalCount||0,reconciliations:output.diagnostics?.reconciliationCount||0,unvalued:output.diagnostics?.unvaluedEventCount||0,boundaryFailures:output.diagnostics?.monthBoundaryFailures?.length||0,claimQueryFailures:output.diagnostics?.claimQueryFailures?.length||0,storageCrossChecks:output.diagnostics?.storageDerivation?.crossCheckCount||0,storageFallbacks:output.diagnostics?.storageDerivation?.fallbackCount||0,storageMismatches:output.diagnostics?.storageDerivation?.mismatchCount||0,historicalStateProviders:output.diagnostics?.historicalStateRpc?.successCounts||{},claimLogProviders:output.diagnostics?.claimLogRpc?.successCounts||{},executionAuthority:output.authority?.executionAuthority});
   if(output.diagnostics?.monthBoundaryFailures?.length)console.log('Yield Basis boundary failures JSON',JSON.stringify(output.diagnostics.monthBoundaryFailures,null,2));
   if(output.diagnostics?.claimQueryFailures?.length)console.log('Yield Basis claim query failures JSON',JSON.stringify(output.diagnostics.claimQueryFailures,null,2));
 }
