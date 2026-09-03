@@ -17,6 +17,7 @@ const DEFAULT_REWARDS=process.env.REWARDS_DATA_FILE||path.join(ROOT,'companies',
 const DEFAULT_OUTPUT=process.env.YIELD_BASIS_EVIDENCE_FILE||path.join(ROOT,'reporting','yield-basis-accounting-evidence.json');
 const RPC_URL=process.env.ETH_RPC_URL||'https://ethereum-rpc.publicnode.com';
 const ARCHIVE_RPC_URL=process.env.ETH_ARCHIVE_RPC_URL||'https://eth.drpc.org';
+const ARCHIVE_RPC_FALLBACK_URL=process.env.ETH_ARCHIVE_RPC_FALLBACK_URL||'https://ethereum.public.blockpi.network/v1/rpc/public';
 const ABI=[
   'function preview_claim(address receiver,uint256 epoch_count,bool use_vest) returns (address[] tokens,uint256[] amounts)',
   'event Claim(address indexed user,address indexed token,uint256 amount)'
@@ -223,7 +224,7 @@ export async function buildYieldBasisEvidence({rewards,previous={},generatedAt=n
   if(!wallets.length)return{version:VERSION,mechanism:MECHANISM,generatedAt,status:'no-tracked-wallets',fullAccountingStart:FULL_ACCOUNTING_START,semantics:{openingBalanceCreatesIncome:false,earnedIndependentOfClaim:true,claimIsSettlementNotSecondIncome:true,formula:'closing preview_claim + Claim settlements - opening preview_claim, token by token',positiveDeltaRequired:true,referenceAprUsed:false,laterPriceMovementRewritesClosedIncome:false,unknownIsNotZero:true},source:{chain:'Ethereum',chainId:1,feeDistributor:DISTRIBUTOR,claimableMetric:'FeeDistributor.preview_claim(receiver,50,false)',settlementEvent:'Claim(user,token,amount)',rewardsSource:'companies/rewards-data.json'},authority,checkpoints:previous?.checkpoints||[],events:previous?.events||[],diagnostics:{trackedWalletCount:0,referenceAprUsed:false,unknownIsNotZero:true}};
 
   const injected=provider!==null,rpc=provider||new JsonRpcProvider(RPC_URL,1),contract=new Contract(DISTRIBUTOR,ABI,rpc),latestNumber=await rpc.getBlockNumber(),latestBlock=await getBlockReliable(rpc,latestNumber);
-  const historicalCandidates=injected?[{provider:rpc,label:'injected-provider'}]:unique([ARCHIVE_RPC_URL,RPC_URL]).map(url=>({provider:new JsonRpcProvider(url,1),label:rpcLabel(url)}));
+  const historicalCandidates=injected?[{provider:rpc,label:'injected-provider'}]:unique([ARCHIVE_RPC_URL,ARCHIVE_RPC_FALLBACK_URL,RPC_URL]).map(url=>({provider:new JsonRpcProvider(url,1),label:rpcLabel(url)}));
   const historicalStateRpc={candidateProviders:historicalCandidates.map(x=>x.label),successCounts:{},failureCounts:{},failureSamples:[]};
   const claimLogRpc={candidateProviders:historicalCandidates.map(x=>x.label),successCounts:{},failureCounts:{},failureSamples:[]};
   const currentObservedAt=new Date(Number(latestBlock.timestamp)*1000).toISOString(),blockCache=new Map(),metaCache=new Map();
