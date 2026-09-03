@@ -147,7 +147,7 @@ async function tokenMeta(provider,token,cache,blockTag){
 }
 
 async function previewRows({contract,provider,walletRow,blockNumber,priceIndex,metaCache}){
-  const [tokens,amounts]=await contract.preview_claim.staticCall(walletRow.wallet,50,false,{blockTag:blockNumber});
+  const [tokens,amounts]=await contract.preview_claim.staticCall(walletRow.wallet,50,false,{blockTag:blockNumber,from:walletRow.wallet});
   if(tokens.length!==amounts.length)throw new Error(`Yield Basis preview_claim tuple length mismatch for ${walletRow.wallet}`);
   const rows=[];
   for(let i=0;i<tokens.length;i++){
