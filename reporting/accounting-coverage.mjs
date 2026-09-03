@@ -22,6 +22,19 @@ const OUTPUT_FILE=process.env.ACCOUNTING_COVERAGE_FILE||path.join(ROOT,'reportin
 
 export const VERSION='0.2-dynamic-accounting-mechanism-coverage-registry';
 
+// Stable identity is not the display string. Historical aliases are folded into
+// the current canonical company name before discovery/coverage so a rename can
+// never manufacture a phantom company. Add aliases only when the identity link
+// is proven by registry/wallet provenance; unknown names remain separate.
+export const COMPANY_ALIASES=Object.freeze({
+  'aerocrvyb.eth':'aerocvxyb.eth'
+});
+export function canonicalCompanyName(name){
+  const raw=String(name||'').trim();
+  if(!raw)return'';
+  return COMPANY_ALIASES[raw]||raw;
+}
+
 export const ENGINE_CLASS=Object.freeze({
   aerodrome_veaero:{family:'accrued-entitlement',mechanism:'governance-rewards',hints:['aerodrome','veaero','forty-acres','relay']},
   velodrome_vevelo:{family:'accrued-entitlement',mechanism:'governance-rewards',hints:['velodrome','vevelo','forty-acres']},
@@ -60,6 +73,18 @@ function stateText(r){return [r?.route,r?.protocol,r?.asset,r?.token,r?.symbol,r
 function textMatches(text,hints){return (hints||[]).some(h=>h&&text.includes(lower(h)));}
 function eventMatches(e,cls){return e?.family===cls.family&&textMatches(eventText(e),cls.hints);}
 function stateMatches(r,cls){return textMatches(stateText(r),cls.hints);}
+function companyMatches(raw,canonical){return canonicalCompanyName(raw)===canonical;}
+function matchingCompanyKeys(obj,canonical){return Object.keys(obj||{}).filter(name=>companyMatches(name,canonical));}
+function preferredCompanyKey(obj,canonical){
+  const keys=matchingCompanyKeys(obj,canonical);
+  if(keys.includes(canonical))return canonical;
+  return keys[0]||null;
+}
+function companySourceAliases({productivity={},ledger={},embedded={},name}){
+  const aliases=[...matchingCompanyKeys(productivity?.companies,name),...matchingCompanyKeys(ledger?.companies,name)];
+  if(embedded?.company?.name&&companyMatches(embedded.company.name,name))aliases.push(embedded.company.name);
+  return unique(aliases).sort();
+}
 
 export function validateCanonicalLedgerContract(ledger){
   if(!ledger||typeof ledger!=='object')throw new Error('Canonical Income Ledger missing');
@@ -72,16 +97,14 @@ export function validateCanonicalLedgerContract(ledger){
 }
 
 export function discoverCompanies({productivity={},ledger={},embedded={}}={}){
-  const set=new Set([
-    ...Object.keys(productivity?.companies||{}),
-    ...Object.keys(ledger?.companies||{})
-  ]);
-  if(embedded?.company?.name)set.add(embedded.company.name);
-  return [...set].filter(Boolean).sort((a,b)=>a.localeCompare(b));
+  const raw=[...Object.keys(productivity?.companies||{}),...Object.keys(ledger?.companies||{})];
+  if(embedded?.company?.name)raw.push(embedded.company.name);
+  return unique(raw.map(canonicalCompanyName)).filter(Boolean).sort((a,b)=>a.localeCompare(b));
 }
 
 function productiveRows(productivity,name){
-  const rows=productivity?.companies?.[name]?.breakdown;
+  const key=preferredCompanyKey(productivity?.companies,name);
+  const rows=key?productivity?.companies?.[key]?.breakdown:null;
   return Array.isArray(rows)?rows:[];
 }
 
@@ -97,7 +120,7 @@ function classForEngine(engineId,protocol=null){
 }
 
 function embeddedMechanisms(embedded,name){
-  if(embedded?.company?.name!==name)return[];
+  if(!companyMatches(embedded?.company?.name,name))return[];
   return Object.entries(embedded?.positions||{}).map(([positionId,p])=>{
     const checkpoints=Array.isArray(p?.checkpoints)?p.checkpoints:[];
     const last=[...checkpoints].sort((a,b)=>String(a?.timestamp||'').localeCompare(String(b?.timestamp||''))).at(-1);
@@ -134,23 +157,25 @@ export function mechanismInventory({productivity={},embedded={},company}={}){
 }
 
 function currentStateRows(ledger,name){
-  const rows=ledger?.companies?.[name]?.currentClaimableState?.rows;
+  const key=preferredCompanyKey(ledger?.companies,name);
+  const rows=key?ledger?.companies?.[key]?.currentClaimableState?.rows:null;
   return Array.isArray(rows)?rows:[];
 }
 
 function companyEventMonths(events,name){
   const out=[];
   for(const e of events){
-    if(e?.company!==name)continue;
+    if(!companyMatches(e?.company,name))continue;
     out.push(monthKey(e?.economicDate||e?.periodEnd),monthKey(e?.periodStart),monthKey(e?.periodEnd));
   }
   return unique(out).sort();
 }
 
 function companyMonths({productivity,ledger,embedded,name,asOfMonth}){
-  const out=[asOfMonth,monthKey(productivity?.companies?.[name]?.trackingStartedAt)];
+  const productivityKey=preferredCompanyKey(productivity?.companies,name);
+  const out=[asOfMonth,monthKey(productivityKey?productivity?.companies?.[productivityKey]?.trackingStartedAt:null)];
   out.push(...companyEventMonths(ledger?.events||[],name));
-  if(embedded?.company?.name===name){
+  if(companyMatches(embedded?.company?.name,name)){
     out.push(monthKey(embedded?.trackingStartedAt));
     for(const p of Object.values(embedded?.positions||{})){
       out.push(monthKey(p?.trackingStartedAt));
@@ -161,9 +186,9 @@ function companyMonths({productivity,ledger,embedded,name,asOfMonth}){
 }
 
 function mechanismCoverage({events,stateRows,company,cls,month}){
-  const factual=events.filter(e=>e?.company===company&&monthKey(e?.economicDate||e?.periodEnd)===month&&eventMatches(e,cls));
+  const factual=events.filter(e=>companyMatches(e?.company,company)&&monthKey(e?.economicDate||e?.periodEnd)===month&&eventMatches(e,cls));
   const state=stateRows.filter(r=>stateMatches(r,cls));
-  const allMechanismEvents=events.filter(e=>e?.company===company&&eventMatches(e,cls));
+  const allMechanismEvents=events.filter(e=>companyMatches(e?.company,company)&&eventMatches(e,cls));
   const crossMonth=allMechanismEvents.filter(e=>monthKey(e?.periodStart)&&monthKey(e?.periodEnd)&&monthKey(e.periodStart)!==monthKey(e.periodEnd)&&monthKey(e?.economicDate||e?.periodEnd)===month);
   const valued=factual.filter(e=>finite(e?.usdValue));
   const status=factual.length?'factual-period-evidence':state.length?'state-observed-not-period-income':'reference-only-no-period-evidence';
@@ -187,10 +212,11 @@ function mechanismCoverage({events,stateRows,company,cls,month}){
 }
 
 function registryIdentity({productivity,ledger,embedded,name}){
+  const pKey=preferredCompanyKey(productivity?.companies,name),lKey=preferredCompanyKey(ledger?.companies,name);
   const candidates=[
-    ledger?.companies?.[name]?.registry,
-    productivity?.companies?.[name]?.registry,
-    embedded?.company?.name===name?embedded?.company?.registry:null
+    lKey?ledger?.companies?.[lKey]?.registry:null,
+    pKey?productivity?.companies?.[pKey]?.registry:null,
+    companyMatches(embedded?.company?.name,name)?embedded?.company?.registry:null
   ].filter(v=>v!==null&&v!==undefined&&v!=='');
   return candidates.length?String(candidates[0]):null;
 }
@@ -227,7 +253,7 @@ function mechanismAggregate(engineId,rows,currentMonth){
 
 function unmatchedEvents(events,mechanismRows){
   const known=mechanismRows.map(x=>({company:x.company,cls:{family:x.mechanism.accountingFamily,hints:x.mechanism.accountingRouteHints}}));
-  return events.filter(e=>!known.some(k=>k.company===e?.company&&eventMatches(e,k.cls)));
+  return events.filter(e=>!known.some(k=>companyMatches(e?.company,k.company)&&eventMatches(e,k.cls)));
 }
 
 export function buildAccountingCoverage({productivity={},ledger={},embedded={},generatedAt=null}={}){
@@ -257,9 +283,11 @@ export function buildAccountingCoverage({productivity={},ledger={},embedded={},g
     }
     const rows=Object.values(mechanisms);
     const currentRows=rows.map(x=>x.months[currentMonth]).filter(Boolean);
+    const sourceAliases=companySourceAliases({productivity,ledger,embedded,name});
     companies[name]={
       name,registry:registryIdentity({productivity,ledger,embedded,name}),
-      discoveredDynamically:true,mechanismInventorySource:unique(rows.map(x=>x.inventorySource)).sort(),
+      discoveredDynamically:true,canonicalIdentityApplied:true,sourceAliases,
+      mechanismInventorySource:unique(rows.map(x=>x.inventorySource)).sort(),
       mechanismCount:rows.length,knownProductiveValueUsdTotal:sumKnown(rows.map(x=>x.productiveValueUsd)),
       currentMonth,
       currentMonthFactualMechanismCount:currentRows.filter(x=>x.factualEventCount>0).length,
@@ -279,6 +307,7 @@ export function buildAccountingCoverage({productivity={},ledger={},embedded={},g
     .filter(x=>x.reusableCoverageGap)
     .sort((a,b)=>b.activeCompanyCount-a.activeCompanyCount||(Number(b.knownProductiveValueUsdTotal||0)-Number(a.knownProductiveValueUsdTotal||0))||a.engineId.localeCompare(b.engineId))
     .map((x,index)=>({rank:index+1,engineId:x.engineId,activeCompanyCount:x.activeCompanyCount,knownProductiveValueUsdTotal:x.knownProductiveValueUsdTotal,factualCompanyCount:x.factualCompanyCount,stateOnlyCompanyCount:x.stateOnlyCompanyCount,referenceOnlyCompanyCount:x.referenceOnlyCompanyCount}));
+  const aliasObservations=Object.values(companies).filter(c=>(c.sourceAliases||[]).some(x=>x!==c.name)).map(c=>({canonicalName:c.name,sourceAliases:c.sourceAliases}));
 
   return{
     version:VERSION,generatedAt:at,status:'diagnostic-no-completion-authority',currentMonth,
@@ -288,17 +317,20 @@ export function buildAccountingCoverage({productivity={},ledger={},embedded={},g
       referenceMetricIsNotEarnedIncome:true,currentRewardStateIsNotPeriodIncome:true,
       factualEvidenceDoesNotImplyFullMechanismCoverage:true,partialEvidenceDoesNotCloseMonth:true,
       unknownIsNotZero:true,newCompanyDoesNotRequireNewAccountingEngineWhenMechanismAlreadySupported:true,
-      unclassifiedMechanismIsVisibleGapNotZero:true
+      unclassifiedMechanismIsVisibleGapNotZero:true,historicalCompanyAliasesCanonicalized:true,
+      stringAliasCannotCreateNewCompanyIdentity:true
     },
     completionPolicy:{registryHasMonthClosingAuthority:false,registryHasIncomeCreationAuthority:false,coverageGapRankingIsDiagnosticOnly:true},
     authority:{executionAuthority:'none',walletAuthority:'none',claimingAuthority:'none',capitalExecution:false,monthClosingAuthority:false,methodologyMutationAuthority:'none'},
     summary:{
       companyCount:companyNames.length,mechanismInstanceCount:flat.length,uniqueMechanismCount:mechanismIds.length,
       classifiedMechanismInstanceCount:flat.length-unclassified.length,unclassifiedMechanismInstanceCount:unclassified.length,
-      reusableCoverageGapCount:gaps.length,canonicalLedgerEventCount:events.length,unmatchedCanonicalEventCount:unmatched.length
+      reusableCoverageGapCount:gaps.length,canonicalLedgerEventCount:events.length,unmatchedCanonicalEventCount:unmatched.length,
+      canonicalizedAliasCompanyCount:aliasObservations.length
     },
+    companyIdentityAliases:aliasObservations,
     gapRanking:gaps,
-    unmatchedCanonicalEvents:unmatched.slice(0,50).map(e=>({eventKey:e?.eventKey||null,company:e?.company||null,family:e?.family||null,protocol:e?.protocol||null,route:e?.route||null,sourceFile:e?.sourceFile||null})),
+    unmatchedCanonicalEvents:unmatched.slice(0,50).map(e=>({eventKey:e?.eventKey||null,company:canonicalCompanyName(e?.company)||null,sourceCompany:e?.company||null,family:e?.family||null,protocol:e?.protocol||null,route:e?.route||null,sourceFile:e?.sourceFile||null})),
     mechanisms,companies
   };
 }
@@ -311,6 +343,7 @@ async function main(){
     companies:output.summary.companyCount,mechanismInstances:output.summary.mechanismInstanceCount,
     uniqueMechanisms:output.summary.uniqueMechanismCount,coverageGaps:output.summary.reusableCoverageGapCount,
     unclassified:output.summary.unclassifiedMechanismInstanceCount,unmatchedLedgerEvents:output.summary.unmatchedCanonicalEventCount,
+    canonicalizedAliasCompanies:output.summary.canonicalizedAliasCompanyCount,
     currentMonth:output.currentMonth,executionAuthority:output.authority.executionAuthority,
     topReusableGaps:output.gapRanking.slice(0,10)
   });
