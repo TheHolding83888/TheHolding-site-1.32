@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
+import { Contract, JsonRpcProvider } from 'ethers';
 import {
   VERSION,MECHANISM,DISTRIBUTOR,FULL_ACCOUNTING_START,
   reconcileEntitlement,trackedWalletsFromRewards,priceIndexFromRewards,blockAtOrBefore
@@ -88,3 +89,49 @@ console.log('Yield Basis factual accrual evidence validation OK',{
   referenceAprUsed:false,
   unknownIsNotZero:true
 });
+
+// TEMPORARY diagnostic: never fails validation. It pinpoints which historical
+// FeeDistributor/VE getter rejects the Sep-1 block so the production fallback
+// can be corrected without weakening factual accounting assertions.
+try{
+  const rpc=new JsonRpcProvider('https://eth.drpc.org',1);
+  const blockTag=25878704;
+  const wallet='0x6c6543eBa07946706Fd10A1064fA773326B5f5A9';
+  const fd=new Contract(DISTRIBUTOR,[
+    'function INITIAL_EPOCH() view returns (uint256)',
+    'function VE() view returns (address)',
+    'function last_claimed_for(address) view returns (uint256)',
+    'function initial_set_for_epoch(uint256) view returns (uint256)',
+    'function max_set_for_epoch(uint256) view returns (uint256)',
+    'function token_sets(uint256,uint256) view returns (address)',
+    'function balances_for_epoch(uint256,address) view returns (uint256)',
+    'function claimed_epoch_for(address,address) view returns (uint256)'
+  ],rpc);
+  const probe=async(name,fn)=>{try{const v=await fn();console.log('YB_STORAGE_DIAG PASS',name,String(v));return v;}catch(error){console.log('YB_STORAGE_DIAG FAIL',name,error?.shortMessage||error?.message||String(error));return null;}};
+  const initial=await probe('INITIAL_EPOCH',()=>fd.INITIAL_EPOCH({blockTag}));
+  const veAddress=await probe('VE',()=>fd.VE({blockTag}));
+  const last=await probe('last_claimed_for',()=>fd.last_claimed_for(wallet,{blockTag}));
+  if(initial!==null&&last!==null){
+    const epoch=Number(last)===0?Number(initial):Number(last)+7*86400;
+    const initialSet=await probe(`initial_set_for_epoch:${epoch}`,()=>fd.initial_set_for_epoch(epoch,{blockTag}));
+    const maxSet=await probe(`max_set_for_epoch:${epoch}`,()=>fd.max_set_for_epoch(epoch,{blockTag}));
+    if(initialSet!==null&&Number(initialSet)>0){
+      const token=await probe(`token_sets:${initialSet}:0`,()=>fd.token_sets(initialSet,0,{blockTag}));
+      if(token){
+        await probe(`claimed_epoch_for:${token}`,()=>fd.claimed_epoch_for(wallet,token,{blockTag}));
+        await probe(`balances_for_epoch:${epoch}:${token}`,()=>fd.balances_for_epoch(epoch,token,{blockTag}));
+      }
+    }
+    if(veAddress){
+      const ve=new Contract(veAddress,[
+        'function getPastVotes(address,uint256) view returns (uint256)',
+        'function getPastTotalSupply(uint256) view returns (uint256)'
+      ],rpc);
+      await probe(`VE.getPastVotes:${epoch}`,()=>ve.getPastVotes(wallet,epoch,{blockTag}));
+      await probe(`VE.getPastTotalSupply:${epoch}`,()=>ve.getPastTotalSupply(epoch,{blockTag}));
+    }
+    if(maxSet!==null)console.log('YB_STORAGE_DIAG RANGE',{epoch,initialSet:String(initialSet),maxSet:String(maxSet)});
+  }
+}catch(error){
+  console.log('YB_STORAGE_DIAG OUTER_FAIL',error?.shortMessage||error?.message||String(error));
+}
