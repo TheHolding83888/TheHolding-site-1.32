@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import process from 'node:process';
-import { buildAccountingCoverage, VERSION } from './accounting-coverage.mjs';
+import { buildAccountingCoverage, canonicalCompanyName, COMPANY_ALIASES, VERSION } from './accounting-coverage.mjs';
 
 const FILE=process.env.ACCOUNTING_COVERAGE_FILE||'./reporting/accounting-coverage.json';
 const PRODUCTIVITY_FILE=process.env.PRODUCTIVITY_DATA_FILE||'./companies/productivity-data.json';
@@ -22,6 +22,8 @@ assert.equal(data.semantics?.partialEvidenceDoesNotCloseMonth,true);
 assert.equal(data.semantics?.unknownIsNotZero,true);
 assert.equal(data.semantics?.newCompanyDoesNotRequireNewAccountingEngineWhenMechanismAlreadySupported,true);
 assert.equal(data.semantics?.unclassifiedMechanismIsVisibleGapNotZero,true);
+assert.equal(data.semantics?.historicalCompanyAliasesCanonicalized,true);
+assert.equal(data.semantics?.stringAliasCannotCreateNewCompanyIdentity,true);
 assert.equal(data.completionPolicy?.registryHasMonthClosingAuthority,false);
 assert.equal(data.completionPolicy?.registryHasIncomeCreationAuthority,false);
 assert.equal(data.completionPolicy?.coverageGapRankingIsDiagnosticOnly,true);
@@ -40,14 +42,24 @@ assert.ok(Number(data.summary?.mechanismInstanceCount)>0,'coverage registry has 
 assert.equal(data.summary?.uniqueMechanismCount,Object.keys(data.mechanisms||{}).length,'unique mechanism summary drift');
 assert.equal(data.summary?.mechanismInstanceCount,data.summary?.classifiedMechanismInstanceCount+data.summary?.unclassifiedMechanismInstanceCount,'classification accounting drift');
 assert.equal(data.summary?.canonicalLedgerEventCount>=data.summary?.unmatchedCanonicalEventCount,true,'unmatched event count exceeds ledger event count');
+assert.ok(Array.isArray(data.companyIdentityAliases),'company identity alias diagnostics missing');
 
-for(const name of Object.keys(productivity?.companies||{}))assert.ok(companies[name],`dynamic discovery missed productivity company ${name}`);
-if(embedded?.company?.name)assert.ok(companies[embedded.company.name],`dynamic discovery missed embedded company ${embedded.company.name}`);
+for(const name of Object.keys(productivity?.companies||{}))assert.ok(companies[canonicalCompanyName(name)],`dynamic discovery missed productivity company ${name}`);
+if(embedded?.company?.name)assert.ok(companies[canonicalCompanyName(embedded.company.name)],`dynamic discovery missed embedded company ${embedded.company.name}`);
+
+// Company #006 has a proven historical public rename. The old name may remain
+// in historical source artifacts but must never materialize as another company.
+assert.equal(COMPANY_ALIASES['aerocrvyb.eth'],'aerocvxyb.eth');
+assert.ok(companies['aerocvxyb.eth'],'Company #006 canonical identity missing');
+assert.equal(companies['aerocrvyb.eth'],undefined,'Company #006 historical alias became a phantom company');
+assert.ok((companies['aerocvxyb.eth'].sourceAliases||[]).includes('aerocvxyb.eth'),'Company #006 canonical source alias missing');
 
 let mechanismInstances=0;
 for(const [name,c] of Object.entries(companies)){
   assert.equal(c.name,name);
   assert.equal(c.discoveredDynamically,true,`${name} was not dynamically discovered`);
+  assert.equal(c.canonicalIdentityApplied,true,`${name} canonical identity layer was not applied`);
+  assert.ok(Array.isArray(c.sourceAliases)&&c.sourceAliases.length>0,`${name} source aliases missing`);
   assert.equal(c.executionAuthority,'none');
   assert.ok(Array.isArray(c.mechanismInventorySource));
   const mechanisms=Object.values(c.mechanisms||{});
@@ -125,6 +137,30 @@ assert.equal(synthetic.companies['FutureCo.eth'].mechanisms.future_unknown.class
 assert.ok(synthetic.companies['FutureCo.eth'].mechanisms.future_unknown.months['2026-09'].completionBlockers.includes('unclassified-income-mechanism'));
 assert.equal(synthetic.summary.unclassifiedMechanismInstanceCount,1);
 
+// Historical-alias regression: mixed canonical + old-name upstream inputs must
+// collapse into one stable Company #006 identity rather than an 11th company.
+const aliasLedger={
+  generatedAt:'2026-09-03T00:00:00.000Z',
+  semantics:{referenceAprCanBackfillEarnedIncome:false,unknownIsNotZero:true},
+  authority:{executionAuthority:'none',capitalExecution:false},
+  events:[{
+    eventKey:'alias:curve:1',company:'aerocrvyb.eth',family:'accrued-entitlement',economicDate:'2026-09-03',
+    periodStart:'2026-09-01T00:00:00.000Z',periodEnd:'2026-09-03T00:00:00.000Z',protocol:'Curve',route:'veCRV fees',asset:'crvUSD',usdValue:1
+  }],
+  companies:{'aerocrvyb.eth':{currentClaimableState:{rows:[]}}}
+};
+const aliasProductivity={
+  generatedAt:'2026-09-03T00:00:00.000Z',
+  engines:{curve_vecrv:{protocol:'Curve'}},
+  companies:{'aerocvxyb.eth':{trackingStartedAt:'2026-09-01T00:00:00.000Z',breakdown:[{engineId:'curve_vecrv',value:100,engineStatus:'ok'}]}}
+};
+const aliasSynthetic=buildAccountingCoverage({productivity:aliasProductivity,ledger:aliasLedger,embedded:{},generatedAt:'2026-09-03T00:00:00.000Z'});
+assert.equal(aliasSynthetic.summary.companyCount,1,'historical alias created duplicate company identity');
+assert.ok(aliasSynthetic.companies['aerocvxyb.eth'],'canonical Company #006 missing after alias fold');
+assert.equal(aliasSynthetic.companies['aerocrvyb.eth'],undefined,'old Company #006 alias survived as separate company');
+assert.deepEqual(new Set(aliasSynthetic.companies['aerocvxyb.eth'].sourceAliases),new Set(['aerocrvyb.eth','aerocvxyb.eth']));
+assert.equal(aliasSynthetic.companies['aerocvxyb.eth'].mechanisms.curve_vecrv.months['2026-09'].factualEventCount,1,'alias event lost during canonicalization');
+
 console.log('Accounting Coverage Registry v0.2 validation PASS',{
   companyCount:data.summary.companyCount,
   mechanismInstances:data.summary.mechanismInstanceCount,
@@ -132,7 +168,9 @@ console.log('Accounting Coverage Registry v0.2 validation PASS',{
   reusableCoverageGaps:data.summary.reusableCoverageGapCount,
   unclassified:data.summary.unclassifiedMechanismInstanceCount,
   unmatchedLedgerEvents:data.summary.unmatchedCanonicalEventCount,
+  canonicalizedAliasCompanies:data.summary.canonicalizedAliasCompanyCount,
   currentMonth:data.currentMonth,
   futureCompanyAutoDiscovery:true,
+  historicalAliasCannotCreatePhantomCompany:true,
   monthClosingAuthority:false
 });
