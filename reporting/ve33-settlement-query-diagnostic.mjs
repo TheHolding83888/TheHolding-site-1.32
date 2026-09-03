@@ -4,6 +4,7 @@ import { Contract, JsonRpcProvider } from 'ethers';
 
 const evidencePath=process.env.VE33_DIAGNOSTIC_EVIDENCE_FILE||'./reporting/ve33-accounting-evidence.json';
 const evidence=JSON.parse(await fs.readFile(evidencePath,'utf8'));
+const MAX_LOG_BLOCKS=9_500;
 
 const CONFIG={
   aerodrome:{chainId:8453,rpcEnv:'BASE_RPC_URL',fallbacks:['https://base-rpc.publicnode.com','https://mainnet.base.org']},
@@ -47,8 +48,8 @@ async function queryWithUrl({cfg,url,kind,open,fromBlock,toBlock}){
   let latest=null;
   try{latest=await provider.getBlockNumber();}
   catch(error){return{url,status:'provider-unavailable',error:compactError(error)};}
+  let contract,filter,address;
   try{
-    let contract,filter,address;
     if(kind==='rebase-distributor'){
       address=open.distributor;
       contract=new Contract(address,DISTRIBUTOR_ABI,provider);
@@ -58,8 +59,18 @@ async function queryWithUrl({cfg,url,kind,open,fromBlock,toBlock}){
       contract=new Contract(address,REWARD_ABI,provider);
       filter=contract.filters.ClaimRewards(null,open.rewardToken);
     }
-    const logs=await contract.queryFilter(filter,fromBlock,toBlock);
-    return{url,status:'query-ok',latestBlock:latest,address,logCount:logs.length};
+    let logCount=0,chunkCount=0;
+    for(let from=fromBlock;from<=toBlock;from+=MAX_LOG_BLOCKS){
+      const to=Math.min(toBlock,from+MAX_LOG_BLOCKS-1);
+      chunkCount++;
+      try{
+        const logs=await contract.queryFilter(filter,from,to);
+        logCount+=logs.length;
+      }catch(error){
+        return{url,status:'query-failed',latestBlock:latest,address,chunkCount,failedChunk:{fromBlock:from,toBlock:to},error:compactError(error)};
+      }
+    }
+    return{url,status:'query-ok',latestBlock:latest,address,chunkCount,logCount};
   }catch(error){
     return{
       url,status:'query-failed',latestBlock:latest,
@@ -78,7 +89,7 @@ async function probe(protocol,kind){
   for(const url of [...new Set(urls)])providers.push(await queryWithUrl({cfg,url,kind,open,fromBlock,toBlock}));
   return{
     protocol,kind,status:providers.some(x=>x.status==='query-ok')?'fallback-available':'all-query-paths-failed',
-    tokenId:String(open.tokenId),rewardToken:open.rewardToken||null,fromBlock,toBlock,providers
+    tokenId:String(open.tokenId),rewardToken:open.rewardToken||null,fromBlock,toBlock,maxLogBlocks:MAX_LOG_BLOCKS,providers
   };
 }
 
