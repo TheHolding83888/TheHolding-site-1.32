@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
- * The Holding · Accounting Coverage Registry v0.2
+ * The Holding · Accounting Coverage Registry v0.3
  *
  * Diagnostic machine map of productive mechanisms versus canonical factual
- * accounting coverage. This layer discovers companies dynamically and treats
- * the Canonical Income Ledger as the sole factual earned-income authority.
- * Productivity/reference metrics and current reward state are inventory/state,
- * never period-income evidence by themselves.
+ * accounting capability. Canonical Income Ledger is the sole authority for
+ * earned-income events. Mechanism-specific evidence checkpoints prove that a
+ * factual engine is actively tracking a company even when the current period
+ * has no positive income event. Tracking proof never creates period income.
  */
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -18,14 +18,14 @@ const ROOT=path.resolve(path.dirname(__filename),'..');
 const PRODUCTIVITY_FILE=process.env.PRODUCTIVITY_DATA_FILE||path.join(ROOT,'companies','productivity-data.json');
 const INCOME_LEDGER_FILE=process.env.INCOME_LEDGER_FILE||path.join(ROOT,'reporting','income-ledger.json');
 const EMBEDDED_FILE=process.env.EMBEDDED_YIELD_LEDGER_FILE||path.join(ROOT,'companies','embedded-yield-ledger.json');
+const VE33_EVIDENCE_FILE=process.env.VE33_EVIDENCE_FILE||path.join(ROOT,'reporting','ve33-accounting-evidence.json');
+const VE33_LOCKED_MANAGED_EVIDENCE_FILE=process.env.VE33_LOCKED_MANAGED_EVIDENCE_FILE||path.join(ROOT,'reporting','ve33-locked-managed-accounting-evidence.json');
+const YIELD_BASIS_EVIDENCE_FILE=process.env.YIELD_BASIS_EVIDENCE_FILE||path.join(ROOT,'reporting','yield-basis-accounting-evidence.json');
+const FRAX_EVIDENCE_FILE=process.env.FRAX_EVIDENCE_FILE||path.join(ROOT,'reporting','frax-yield-accounting-evidence.json');
 const OUTPUT_FILE=process.env.ACCOUNTING_COVERAGE_FILE||path.join(ROOT,'reporting','accounting-coverage.json');
 
-export const VERSION='0.2-dynamic-accounting-mechanism-coverage-registry';
+export const VERSION='0.3-factual-tracking-accounting-mechanism-coverage-registry';
 
-// Stable identity is not the display string. Historical aliases are folded into
-// the current canonical company name before discovery/coverage so a rename can
-// never manufacture a phantom company. Add aliases only when the identity link
-// is proven by registry/wallet provenance; unknown names remain separate.
 export const COMPANY_ALIASES=Object.freeze({
   'aerocrvyb.eth':'aerocvxyb.eth'
 });
@@ -66,6 +66,7 @@ const monthKey=v=>{const t=Date.parse(v||'');return Number.isFinite(t)?new Date(
 const unique=values=>[...new Set((values||[]).filter(Boolean))];
 const sumKnown=values=>{const rows=(values||[]).filter(finite).map(Number);return rows.length?Number(rows.reduce((a,b)=>a+b,0).toFixed(8)):null;};
 async function readJson(file){return JSON.parse(await fs.readFile(file,'utf8'));}
+async function readOptionalJson(file){try{return await readJson(file);}catch(error){if(error?.code==='ENOENT')return{};throw error;}}
 async function writeJson(file,data){await fs.mkdir(path.dirname(file),{recursive:true});await fs.writeFile(file,JSON.stringify(data,null,2)+'\n');}
 
 function eventText(e){return [e?.route,e?.protocol,e?.asset,e?.token,e?.sourceFamily,e?.sourceIdentity,e?.sourceFile,e?.mechanismKind].map(lower).join(' ');}
@@ -75,11 +76,7 @@ function eventMatches(e,cls){return e?.family===cls.family&&textMatches(eventTex
 function stateMatches(r,cls){return textMatches(stateText(r),cls.hints);}
 function companyMatches(raw,canonical){return canonicalCompanyName(raw)===canonical;}
 function matchingCompanyKeys(obj,canonical){return Object.keys(obj||{}).filter(name=>companyMatches(name,canonical));}
-function preferredCompanyKey(obj,canonical){
-  const keys=matchingCompanyKeys(obj,canonical);
-  if(keys.includes(canonical))return canonical;
-  return keys[0]||null;
-}
+function preferredCompanyKey(obj,canonical){const keys=matchingCompanyKeys(obj,canonical);return keys.includes(canonical)?canonical:(keys[0]||null);}
 function companySourceAliases({productivity={},ledger={},embedded={},name}){
   const aliases=[...matchingCompanyKeys(productivity?.companies,name),...matchingCompanyKeys(ledger?.companies,name)];
   if(embedded?.company?.name&&companyMatches(embedded.company.name,name))aliases.push(embedded.company.name);
@@ -107,32 +104,15 @@ function productiveRows(productivity,name){
   const rows=key?productivity?.companies?.[key]?.breakdown:null;
   return Array.isArray(rows)?rows:[];
 }
-
-function productiveValue(row){
-  for(const key of ['value','valueUsd','productiveValueUsd','productiveValue'])if(finite(row?.[key]))return Number(row[key]);
-  return null;
-}
-
-function classForEngine(engineId,protocol=null){
-  const known=ENGINE_CLASS[engineId];
-  if(known)return{...known,classified:true};
-  return{family:'unknown',mechanism:'unclassified',hints:unique([engineId,protocol]),classified:false};
-}
+function productiveValue(row){for(const key of ['value','valueUsd','productiveValueUsd','productiveValue'])if(finite(row?.[key]))return Number(row[key]);return null;}
+function classForEngine(engineId,protocol=null){const known=ENGINE_CLASS[engineId];return known?{...known,classified:true}:{family:'unknown',mechanism:'unclassified',hints:unique([engineId,protocol]),classified:false};}
 
 function embeddedMechanisms(embedded,name){
   if(!companyMatches(embedded?.company?.name,name))return[];
   return Object.entries(embedded?.positions||{}).map(([positionId,p])=>{
     const checkpoints=Array.isArray(p?.checkpoints)?p.checkpoints:[];
     const last=[...checkpoints].sort((a,b)=>String(a?.timestamp||'').localeCompare(String(b?.timestamp||''))).at(-1);
-    return{
-      engineId:`embedded:${positionId}`,
-      principalId:positionId,
-      protocol:p?.protocol||null,
-      engineStatus:p?.accounting?.embeddedYieldEligible===true?'ok':'unknown',
-      productiveValueUsd:finite(last?.economicValueUsd)?Number(last.economicValueUsd):null,
-      class:{family:'embedded-income',mechanism:p?.incomeMode||'embedded-yield',hints:unique([positionId,p?.protocol,p?.chain]),classified:true},
-      inventorySource:'companies/embedded-yield-ledger.json'
-    };
+    return{engineId:`embedded:${positionId}`,principalId:positionId,protocol:p?.protocol||null,engineStatus:p?.accounting?.embeddedYieldEligible===true?'ok':'unknown',productiveValueUsd:finite(last?.economicValueUsd)?Number(last.economicValueUsd):null,class:{family:'embedded-income',mechanism:p?.incomeMode||'embedded-yield',hints:unique([positionId,p?.protocol,p?.chain]),classified:true},inventorySource:'companies/embedded-yield-ledger.json'};
   });
 }
 
@@ -140,11 +120,7 @@ export function mechanismInventory({productivity={},embedded={},company}={}){
   const rows=productiveRows(productivity,company).map(row=>{
     const engineId=String(row?.engineId||'').trim();
     const protocol=productivity?.engines?.[engineId]?.protocol||row?.protocol||null;
-    return{
-      engineId,principalId:row?.principalId||null,protocol,engineStatus:row?.engineStatus||null,
-      productiveValueUsd:productiveValue(row),class:classForEngine(engineId,protocol),
-      inventorySource:'companies/productivity-data.json'
-    };
+    return{engineId,principalId:row?.principalId||null,protocol,engineStatus:row?.engineStatus||null,productiveValueUsd:productiveValue(row),class:classForEngine(engineId,protocol),inventorySource:'companies/productivity-data.json'};
   }).filter(x=>x.engineId);
   rows.push(...embeddedMechanisms(embedded,company));
   const map=new Map();
@@ -156,55 +132,68 @@ export function mechanismInventory({productivity={},embedded={},company}={}){
   return [...map.values()].sort((a,b)=>a.engineId.localeCompare(b.engineId));
 }
 
-function currentStateRows(ledger,name){
-  const key=preferredCompanyKey(ledger?.companies,name);
-  const rows=key?ledger?.companies?.[key]?.currentClaimableState?.rows:null;
-  return Array.isArray(rows)?rows:[];
-}
-
-function companyEventMonths(events,name){
-  const out=[];
-  for(const e of events){
-    if(!companyMatches(e?.company,name))continue;
-    out.push(monthKey(e?.economicDate||e?.periodEnd),monthKey(e?.periodStart),monthKey(e?.periodEnd));
-  }
-  return unique(out).sort();
-}
-
+function currentStateRows(ledger,name){const key=preferredCompanyKey(ledger?.companies,name);const rows=key?ledger?.companies?.[key]?.currentClaimableState?.rows:null;return Array.isArray(rows)?rows:[];}
+function companyEventMonths(events,name){const out=[];for(const e of events){if(!companyMatches(e?.company,name))continue;out.push(monthKey(e?.economicDate||e?.periodEnd),monthKey(e?.periodStart),monthKey(e?.periodEnd));}return unique(out).sort();}
 function companyMonths({productivity,ledger,embedded,name,asOfMonth}){
   const productivityKey=preferredCompanyKey(productivity?.companies,name);
   const out=[asOfMonth,monthKey(productivityKey?productivity?.companies?.[productivityKey]?.trackingStartedAt:null)];
   out.push(...companyEventMonths(ledger?.events||[],name));
   if(companyMatches(embedded?.company?.name,name)){
     out.push(monthKey(embedded?.trackingStartedAt));
-    for(const p of Object.values(embedded?.positions||{})){
-      out.push(monthKey(p?.trackingStartedAt));
-      for(const row of p?.intervalHistory||[])out.push(monthKey(row?.startAt),monthKey(row?.endAt));
-    }
+    for(const p of Object.values(embedded?.positions||{})){out.push(monthKey(p?.trackingStartedAt));for(const row of p?.intervalHistory||[])out.push(monthKey(row?.startAt),monthKey(row?.endAt));}
   }
   return unique(out).sort();
 }
 
-function mechanismCoverage({events,stateRows,company,cls,month}){
+function pushTrackingProof(out,{engineId,company,observedAt,sourceFile,proofKey}){
+  const canonical=canonicalCompanyName(company);
+  const month=monthKey(observedAt);
+  if(!engineId||!canonical||!month)return;
+  out.push({engineId,company:canonical,month,observedAt,sourceFile,proofKey:proofKey||null});
+}
+
+export function factualTrackingProofs({ve33={},ve33LockedManaged={},yieldBasis={},frax={}}={}){
+  const out=[];
+  const ve33Rows=[
+    ...((Array.isArray(ve33?.checkpoints)?ve33.checkpoints:[]).map(x=>({...x,__source:'reporting/ve33-accounting-evidence.json'}))),
+    ...((Array.isArray(ve33LockedManaged?.checkpoints)?ve33LockedManaged.checkpoints:[]).map(x=>({...x,__source:'reporting/ve33-locked-managed-accounting-evidence.json'})))
+  ];
+  for(const row of ve33Rows){
+    if(row?.ok===false)continue;
+    const engineId=row?.protocolKey==='aerodrome'?'aerodrome_veaero':row?.protocolKey==='velodrome'?'velodrome_vevelo':null;
+    pushTrackingProof(out,{engineId,company:row?.company,observedAt:row?.observedAt,sourceFile:row?.__source,proofKey:row?.checkpointKey});
+  }
+  for(const row of Array.isArray(yieldBasis?.checkpoints)?yieldBasis.checkpoints:[]){
+    pushTrackingProof(out,{engineId:'yieldbasis_veyb',company:row?.company,observedAt:row?.observedAt,sourceFile:'reporting/yield-basis-accounting-evidence.json',proofKey:row?.checkpointKey});
+  }
+  for(const row of Array.isArray(frax?.checkpoints)?frax.checkpoints:[]){
+    pushTrackingProof(out,{engineId:'frax_vefrax',company:row?.company,observedAt:row?.observedAt,sourceFile:'reporting/frax-yield-accounting-evidence.json',proofKey:row?.checkpointKey});
+  }
+  return [...new Map(out.map(x=>[[x.engineId,x.company,x.month,x.proofKey].join('|'),x])).values()];
+}
+
+function mechanismCoverage({events,stateRows,trackingProofs,company,engineId,cls,month}){
   const factual=events.filter(e=>companyMatches(e?.company,company)&&monthKey(e?.economicDate||e?.periodEnd)===month&&eventMatches(e,cls));
   const state=stateRows.filter(r=>stateMatches(r,cls));
+  const proofs=trackingProofs.filter(p=>p.engineId===engineId&&p.company===company&&p.month===month);
   const allMechanismEvents=events.filter(e=>companyMatches(e?.company,company)&&eventMatches(e,cls));
   const crossMonth=allMechanismEvents.filter(e=>monthKey(e?.periodStart)&&monthKey(e?.periodEnd)&&monthKey(e.periodStart)!==monthKey(e.periodEnd)&&monthKey(e?.economicDate||e?.periodEnd)===month);
   const valued=factual.filter(e=>finite(e?.usdValue));
-  const status=factual.length?'factual-period-evidence':state.length?'state-observed-not-period-income':'reference-only-no-period-evidence';
+  const factualTrackingActive=factual.length>0||proofs.length>0;
+  const status=factual.length?'factual-period-evidence':proofs.length?'factual-tracking-no-period-event':state.length?'state-observed-not-factual-tracking':'reference-only-no-factual-tracking';
   return{
-    status,
-    factualEventCount:factual.length,
-    factualValuedEventCount:valued.length,
+    status,factualTrackingActive,factualTrackingProofCount:proofs.length,
+    factualTrackingProofSources:unique(proofs.map(p=>p.sourceFile)).sort(),
+    factualEventCount:factual.length,factualValuedEventCount:valued.length,
     factualUsdSubtotal:factual.length&&valued.length===factual.length?Number(valued.reduce((s,e)=>s+Number(e.usdValue),0).toFixed(8)):null,
-    currentStateRouteCount:state.length,
-    crossMonthEvidenceCount:crossMonth.length,
+    currentStateRouteCount:state.length,crossMonthEvidenceCount:crossMonth.length,
     firstFactualEvidenceAt:factual.length?factual.map(e=>e?.periodStart||e?.economicDate||e?.periodEnd).filter(Boolean).sort()[0]||null:null,
     lastFactualEvidenceAt:factual.length?factual.map(e=>e?.periodEnd||e?.economicDate).filter(Boolean).sort().at(-1)||null:null,
     mechanismCompleteForMonth:false,
     completionBlockers:unique([
       ...(factual.length?[]:['no-canonical-period-income-evidence']),
-      ...(state.length&&!factual.length?['current-state-is-not-period-income']:[]),
+      ...(factualTrackingActive?[]:['no-factual-engine-tracking-proof']),
+      ...(state.length&&!factualTrackingActive?['current-state-is-not-period-income']:[]),
       ...(crossMonth.length?['cross-month-boundary-requires-explicit-allocation']:[]),
       ...(cls.classified?[]:['unclassified-income-mechanism'])
     ])
@@ -213,52 +202,38 @@ function mechanismCoverage({events,stateRows,company,cls,month}){
 
 function registryIdentity({productivity,ledger,embedded,name}){
   const pKey=preferredCompanyKey(productivity?.companies,name),lKey=preferredCompanyKey(ledger?.companies,name);
-  const candidates=[
-    lKey?ledger?.companies?.[lKey]?.registry:null,
-    pKey?productivity?.companies?.[pKey]?.registry:null,
-    companyMatches(embedded?.company?.name,name)?embedded?.company?.registry:null
-  ].filter(v=>v!==null&&v!==undefined&&v!=='');
+  const candidates=[lKey?ledger?.companies?.[lKey]?.registry:null,pKey?productivity?.companies?.[pKey]?.registry:null,companyMatches(embedded?.company?.name,name)?embedded?.company?.registry:null].filter(v=>v!==null&&v!==undefined&&v!=='');
   return candidates.length?String(candidates[0]):null;
 }
 
 function mechanismAggregate(engineId,rows,currentMonth){
   const companies=rows.map(x=>x.company).sort();
   const current=rows.map(x=>x.mechanism?.months?.[currentMonth]).filter(Boolean);
-  const factualCompanies=rows.filter(x=>(x.mechanism?.months?.[currentMonth]?.factualEventCount||0)>0).map(x=>x.company).sort();
-  const stateOnlyCompanies=rows.filter(x=>x.mechanism?.months?.[currentMonth]?.status==='state-observed-not-period-income').map(x=>x.company).sort();
-  const referenceOnlyCompanies=rows.filter(x=>x.mechanism?.months?.[currentMonth]?.status==='reference-only-no-period-evidence').map(x=>x.company).sort();
+  const trackingCompanies=rows.filter(x=>x.mechanism?.months?.[currentMonth]?.factualTrackingActive===true).map(x=>x.company).sort();
+  const eventCompanies=rows.filter(x=>(x.mechanism?.months?.[currentMonth]?.factualEventCount||0)>0).map(x=>x.company).sort();
+  const stateOnlyCompanies=rows.filter(x=>x.mechanism?.months?.[currentMonth]?.status==='state-observed-not-factual-tracking').map(x=>x.company).sort();
+  const referenceOnlyCompanies=rows.filter(x=>x.mechanism?.months?.[currentMonth]?.status==='reference-only-no-factual-tracking').map(x=>x.company).sort();
   const sample=rows[0]?.mechanism||{};
   return{
-    engineId,
-    accountingFamily:sample.accountingFamily||'unknown',
-    mechanismType:sample.mechanismType||'unclassified',
-    protocols:unique(rows.map(x=>x.mechanism?.protocol)).sort(),
-    activeCompanyCount:companies.length,
-    companies,
-    knownProductiveValueUsdTotal:sumKnown(rows.map(x=>x.mechanism?.productiveValueUsd)),
-    knownProductiveValueCompanyCount:rows.filter(x=>finite(x.mechanism?.productiveValueUsd)).length,
-    factualCompanyCount:factualCompanies.length,
-    factualCompanies,
-    stateOnlyCompanyCount:stateOnlyCompanies.length,
-    stateOnlyCompanies,
-    referenceOnlyCompanyCount:referenceOnlyCompanies.length,
-    referenceOnlyCompanies,
+    engineId,accountingFamily:sample.accountingFamily||'unknown',mechanismType:sample.mechanismType||'unclassified',protocols:unique(rows.map(x=>x.mechanism?.protocol)).sort(),
+    activeCompanyCount:companies.length,companies,knownProductiveValueUsdTotal:sumKnown(rows.map(x=>x.mechanism?.productiveValueUsd)),knownProductiveValueCompanyCount:rows.filter(x=>finite(x.mechanism?.productiveValueUsd)).length,
+    factualTrackingCompanyCount:trackingCompanies.length,factualTrackingCompanies:trackingCompanies,
+    factualEventCompanyCount:eventCompanies.length,factualEventCompanies:eventCompanies,
+    factualCompanyCount:trackingCompanies.length,factualCompanies:trackingCompanies,
+    stateOnlyCompanyCount:stateOnlyCompanies.length,stateOnlyCompanies,referenceOnlyCompanyCount:referenceOnlyCompanies.length,referenceOnlyCompanies,
     currentMonthFactualEventCount:current.reduce((s,x)=>s+Number(x?.factualEventCount||0),0),
     currentMonthFactualUsdSubtotal:current.length&&current.every(x=>x.factualEventCount===0||finite(x.factualUsdSubtotal))?Number(current.reduce((s,x)=>s+Number(x?.factualUsdSubtotal||0),0).toFixed(8)):null,
-    reusableCoverageGap:factualCompanies.length<companies.length,
-    referenceMetricIsAccountingAuthority:false,
-    completionAuthority:false
+    reusableCoverageGap:trackingCompanies.length<companies.length,
+    referenceMetricIsAccountingAuthority:false,completionAuthority:false
   };
 }
 
-function unmatchedEvents(events,mechanismRows){
-  const known=mechanismRows.map(x=>({company:x.company,cls:{family:x.mechanism.accountingFamily,hints:x.mechanism.accountingRouteHints}}));
-  return events.filter(e=>!known.some(k=>companyMatches(e?.company,k.company)&&eventMatches(e,k.cls)));
-}
+function unmatchedEvents(events,mechanismRows){const known=mechanismRows.map(x=>({company:x.company,cls:{family:x.mechanism.accountingFamily,hints:x.mechanism.accountingRouteHints}}));return events.filter(e=>!known.some(k=>companyMatches(e?.company,k.company)&&eventMatches(e,k.cls)));}
 
-export function buildAccountingCoverage({productivity={},ledger={},embedded={},generatedAt=null}={}){
+export function buildAccountingCoverage({productivity={},ledger={},embedded={},factualEvidence={},generatedAt=null}={}){
   validateCanonicalLedgerContract(ledger);
-  const sourceTimes=[generatedAt,ledger?.generatedAt,productivity?.generatedAt,embedded?.generatedAt].filter(Boolean).sort();
+  const tracking=factualTrackingProofs(factualEvidence);
+  const sourceTimes=[generatedAt,ledger?.generatedAt,productivity?.generatedAt,embedded?.generatedAt,factualEvidence?.ve33?.generatedAt,factualEvidence?.ve33LockedManaged?.generatedAt,factualEvidence?.yieldBasis?.generatedAt,factualEvidence?.frax?.generatedAt].filter(Boolean).sort();
   const at=sourceTimes.at(-1)||new Date().toISOString();
   const currentMonth=monthKey(at)||new Date().toISOString().slice(0,7);
   const events=ledger.events||[];
@@ -272,29 +247,19 @@ export function buildAccountingCoverage({productivity={},ledger={},embedded={},g
     const mechanisms={};
     for(const item of mechanismInventory({productivity,embedded,company:name})){
       const monthMap={};
-      for(const month of months)monthMap[month]=mechanismCoverage({events,stateRows,company:name,cls:item.class,month});
-      mechanisms[item.engineId]={
-        engineId:item.engineId,principalId:item.principalId,protocol:item.protocol,
-        accountingFamily:item.class.family,mechanismType:item.class.mechanism,classified:item.class.classified,
-        engineStatus:item.engineStatus,productiveValueUsd:item.productiveValueUsd,
-        inventorySource:item.inventorySource,referenceMetricIsAccountingAuthority:false,
-        accountingRouteHints:item.class.hints,months:monthMap
-      };
+      for(const month of months)monthMap[month]=mechanismCoverage({events,stateRows,trackingProofs:tracking,company:name,engineId:item.engineId,cls:item.class,month});
+      mechanisms[item.engineId]={engineId:item.engineId,principalId:item.principalId,protocol:item.protocol,accountingFamily:item.class.family,mechanismType:item.class.mechanism,classified:item.class.classified,engineStatus:item.engineStatus,productiveValueUsd:item.productiveValueUsd,inventorySource:item.inventorySource,referenceMetricIsAccountingAuthority:false,accountingRouteHints:item.class.hints,months:monthMap};
     }
     const rows=Object.values(mechanisms);
     const currentRows=rows.map(x=>x.months[currentMonth]).filter(Boolean);
     const sourceAliases=companySourceAliases({productivity,ledger,embedded,name});
-    companies[name]={
-      name,registry:registryIdentity({productivity,ledger,embedded,name}),
-      discoveredDynamically:true,canonicalIdentityApplied:true,sourceAliases,
-      mechanismInventorySource:unique(rows.map(x=>x.inventorySource)).sort(),
-      mechanismCount:rows.length,knownProductiveValueUsdTotal:sumKnown(rows.map(x=>x.productiveValueUsd)),
-      currentMonth,
-      currentMonthFactualMechanismCount:currentRows.filter(x=>x.factualEventCount>0).length,
-      currentMonthStateOnlyMechanismCount:currentRows.filter(x=>x.status==='state-observed-not-period-income').length,
-      currentMonthReferenceOnlyMechanismCount:currentRows.filter(x=>x.status==='reference-only-no-period-evidence').length,
-      executionAuthority:'none',mechanisms
-    };
+    companies[name]={name,registry:registryIdentity({productivity,ledger,embedded,name}),discoveredDynamically:true,canonicalIdentityApplied:true,sourceAliases,mechanismInventorySource:unique(rows.map(x=>x.inventorySource)).sort(),mechanismCount:rows.length,knownProductiveValueUsdTotal:sumKnown(rows.map(x=>x.productiveValueUsd)),currentMonth,
+      currentMonthFactualTrackingMechanismCount:currentRows.filter(x=>x.factualTrackingActive).length,
+      currentMonthFactualEventMechanismCount:currentRows.filter(x=>x.factualEventCount>0).length,
+      currentMonthFactualMechanismCount:currentRows.filter(x=>x.factualTrackingActive).length,
+      currentMonthStateOnlyMechanismCount:currentRows.filter(x=>x.status==='state-observed-not-factual-tracking').length,
+      currentMonthReferenceOnlyMechanismCount:currentRows.filter(x=>x.status==='reference-only-no-factual-tracking').length,
+      executionAuthority:'none',mechanisms};
     for(const mechanism of rows)flat.push({company:name,mechanism});
   }
 
@@ -303,49 +268,32 @@ export function buildAccountingCoverage({productivity={},ledger={},embedded={},g
   for(const engineId of mechanismIds)mechanisms[engineId]=mechanismAggregate(engineId,flat.filter(x=>x.mechanism.engineId===engineId),currentMonth);
   const unmatched=unmatchedEvents(events,flat);
   const unclassified=flat.filter(x=>x.mechanism.classified!==true);
-  const gaps=Object.values(mechanisms)
-    .filter(x=>x.reusableCoverageGap)
+  const gaps=Object.values(mechanisms).filter(x=>x.reusableCoverageGap)
     .sort((a,b)=>b.activeCompanyCount-a.activeCompanyCount||(Number(b.knownProductiveValueUsdTotal||0)-Number(a.knownProductiveValueUsdTotal||0))||a.engineId.localeCompare(b.engineId))
-    .map((x,index)=>({rank:index+1,engineId:x.engineId,activeCompanyCount:x.activeCompanyCount,knownProductiveValueUsdTotal:x.knownProductiveValueUsdTotal,factualCompanyCount:x.factualCompanyCount,stateOnlyCompanyCount:x.stateOnlyCompanyCount,referenceOnlyCompanyCount:x.referenceOnlyCompanyCount}));
+    .map((x,index)=>({rank:index+1,engineId:x.engineId,activeCompanyCount:x.activeCompanyCount,knownProductiveValueUsdTotal:x.knownProductiveValueUsdTotal,factualTrackingCompanyCount:x.factualTrackingCompanyCount,factualEventCompanyCount:x.factualEventCompanyCount,factualCompanyCount:x.factualCompanyCount,stateOnlyCompanyCount:x.stateOnlyCompanyCount,referenceOnlyCompanyCount:x.referenceOnlyCompanyCount}));
   const aliasObservations=Object.values(companies).filter(c=>(c.sourceAliases||[]).some(x=>x!==c.name)).map(c=>({canonicalName:c.name,sourceAliases:c.sourceAliases}));
 
   return{
     version:VERSION,generatedAt:at,status:'diagnostic-no-completion-authority',currentMonth,
-    sourceFreshness:{productivityGeneratedAt:productivity?.generatedAt||null,incomeLedgerGeneratedAt:ledger?.generatedAt||null,embeddedYieldGeneratedAt:embedded?.generatedAt||null},
-    semantics:{
-      canonicalLedgerIsSoleFactualIncomeAuthority:true,productivityCoverageIsNotAccountingCoverage:true,
-      referenceMetricIsNotEarnedIncome:true,currentRewardStateIsNotPeriodIncome:true,
-      factualEvidenceDoesNotImplyFullMechanismCoverage:true,partialEvidenceDoesNotCloseMonth:true,
-      unknownIsNotZero:true,newCompanyDoesNotRequireNewAccountingEngineWhenMechanismAlreadySupported:true,
-      unclassifiedMechanismIsVisibleGapNotZero:true,historicalCompanyAliasesCanonicalized:true,
-      stringAliasCannotCreateNewCompanyIdentity:true
-    },
+    sourceFreshness:{productivityGeneratedAt:productivity?.generatedAt||null,incomeLedgerGeneratedAt:ledger?.generatedAt||null,embeddedYieldGeneratedAt:embedded?.generatedAt||null,ve33EvidenceGeneratedAt:factualEvidence?.ve33?.generatedAt||null,ve33LockedManagedEvidenceGeneratedAt:factualEvidence?.ve33LockedManaged?.generatedAt||null,yieldBasisEvidenceGeneratedAt:factualEvidence?.yieldBasis?.generatedAt||null,fraxEvidenceGeneratedAt:factualEvidence?.frax?.generatedAt||null},
+    semantics:{canonicalLedgerIsSoleFactualIncomeAuthority:true,productivityCoverageIsNotAccountingCoverage:true,referenceMetricIsNotEarnedIncome:true,currentRewardStateIsNotPeriodIncome:true,factualTrackingProofIsNotPeriodIncome:true,zeroPeriodEventDoesNotImplyCoverageGap:true,coverageGapMeansMissingFactualTrackingCapability:true,factualEvidenceDoesNotImplyFullMechanismCoverage:true,partialEvidenceDoesNotCloseMonth:true,unknownIsNotZero:true,newCompanyDoesNotRequireNewAccountingEngineWhenMechanismAlreadySupported:true,unclassifiedMechanismIsVisibleGapNotZero:true,historicalCompanyAliasesCanonicalized:true,stringAliasCannotCreateNewCompanyIdentity:true},
     completionPolicy:{registryHasMonthClosingAuthority:false,registryHasIncomeCreationAuthority:false,coverageGapRankingIsDiagnosticOnly:true},
     authority:{executionAuthority:'none',walletAuthority:'none',claimingAuthority:'none',capitalExecution:false,monthClosingAuthority:false,methodologyMutationAuthority:'none'},
-    summary:{
-      companyCount:companyNames.length,mechanismInstanceCount:flat.length,uniqueMechanismCount:mechanismIds.length,
-      classifiedMechanismInstanceCount:flat.length-unclassified.length,unclassifiedMechanismInstanceCount:unclassified.length,
-      reusableCoverageGapCount:gaps.length,canonicalLedgerEventCount:events.length,unmatchedCanonicalEventCount:unmatched.length,
-      canonicalizedAliasCompanyCount:aliasObservations.length
-    },
-    companyIdentityAliases:aliasObservations,
-    gapRanking:gaps,
+    summary:{companyCount:companyNames.length,mechanismInstanceCount:flat.length,uniqueMechanismCount:mechanismIds.length,classifiedMechanismInstanceCount:flat.length-unclassified.length,unclassifiedMechanismInstanceCount:unclassified.length,reusableCoverageGapCount:gaps.length,canonicalLedgerEventCount:events.length,unmatchedCanonicalEventCount:unmatched.length,canonicalizedAliasCompanyCount:aliasObservations.length,factualTrackingProofCount:tracking.length},
+    companyIdentityAliases:aliasObservations,gapRanking:gaps,
     unmatchedCanonicalEvents:unmatched.slice(0,50).map(e=>({eventKey:e?.eventKey||null,company:canonicalCompanyName(e?.company)||null,sourceCompany:e?.company||null,family:e?.family||null,protocol:e?.protocol||null,route:e?.route||null,sourceFile:e?.sourceFile||null})),
     mechanisms,companies
   };
 }
 
 async function main(){
-  const[productivity,ledger,embedded]=await Promise.all([readJson(PRODUCTIVITY_FILE),readJson(INCOME_LEDGER_FILE),readJson(EMBEDDED_FILE)]);
-  const output=buildAccountingCoverage({productivity,ledger,embedded});
+  const[productivity,ledger,embedded,ve33,ve33LockedManaged,yieldBasis,frax]=await Promise.all([
+    readJson(PRODUCTIVITY_FILE),readJson(INCOME_LEDGER_FILE),readJson(EMBEDDED_FILE),readOptionalJson(VE33_EVIDENCE_FILE),readOptionalJson(VE33_LOCKED_MANAGED_EVIDENCE_FILE),readOptionalJson(YIELD_BASIS_EVIDENCE_FILE),readOptionalJson(FRAX_EVIDENCE_FILE)
+  ]);
+  const output=buildAccountingCoverage({productivity,ledger,embedded,factualEvidence:{ve33,ve33LockedManaged,yieldBasis,frax}});
   await writeJson(OUTPUT_FILE,output);
-  console.log('Accounting Coverage Registry v0.2 built',{
-    companies:output.summary.companyCount,mechanismInstances:output.summary.mechanismInstanceCount,
-    uniqueMechanisms:output.summary.uniqueMechanismCount,coverageGaps:output.summary.reusableCoverageGapCount,
-    unclassified:output.summary.unclassifiedMechanismInstanceCount,unmatchedLedgerEvents:output.summary.unmatchedCanonicalEventCount,
-    canonicalizedAliasCompanies:output.summary.canonicalizedAliasCompanyCount,
-    currentMonth:output.currentMonth,executionAuthority:output.authority.executionAuthority,
-    topReusableGaps:output.gapRanking.slice(0,10)
+  console.log('Accounting Coverage Registry v0.3 built',{
+    companies:output.summary.companyCount,mechanismInstances:output.summary.mechanismInstanceCount,uniqueMechanisms:output.summary.uniqueMechanismCount,coverageGaps:output.summary.reusableCoverageGapCount,unclassified:output.summary.unclassifiedMechanismInstanceCount,unmatchedLedgerEvents:output.summary.unmatchedCanonicalEventCount,canonicalizedAliasCompanies:output.summary.canonicalizedAliasCompanyCount,factualTrackingProofs:output.summary.factualTrackingProofCount,currentMonth:output.currentMonth,executionAuthority:output.authority.executionAuthority,topReusableGaps:output.gapRanking.slice(0,10)
   });
 }
 
