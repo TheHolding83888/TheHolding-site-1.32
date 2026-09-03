@@ -3,7 +3,6 @@ import fs from 'node:fs';
 import process from 'node:process';
 
 const COMPANY=String(process.env.ACCOUNTING_DIAGNOSTIC_COMPANY||'Cypher').trim();
-const lower=v=>String(v||'').trim().toLowerCase();
 const read=file=>{try{return JSON.parse(fs.readFileSync(file,'utf8'));}catch{return{};}};
 const canonical=name=>name==='aerocrvyb.eth'?'aerocvxyb.eth':String(name||'').trim();
 const same=(a,b)=>canonical(a)===canonical(b);
@@ -14,11 +13,17 @@ const conciseWallet=w=>({
   positionCount:Array.isArray(w?.details?.positions)?w.details.positions.length:null,
   positions:(w?.details?.positions||[]).map(p=>({tokenId:p?.tokenId||null,mode:p?.mode||null,managedTokenId:p?.managedTokenId||null,currentVotedPools:p?.currentVotedPools||[],recentVotedPools:p?.recentVotedPools||[],matchedRewardPools:p?.matchedRewardPools||[],freeManagedReward:p?.freeManagedReward||null}))
 });
+const pickDetails=d=>{
+  if(!d||typeof d!=='object')return{};
+  const keys=['wallet','walletAlias','mode','veNftCount','directCount','managedCount','issues','statusPublic','unknownIsNotZero','rewardState','stateVersion','delegate','forwarding','route','routeRole','settlement','publicState','nftCount','multiLegComplete','claimableApplicable','embeddedMeasurementStatus','externalIncentivesStatus','externalRewardAssetCount','market','hToken','incomeMode','referenceAprPct','referenceAprStatus'];
+  return Object.fromEntries(keys.filter(k=>d[k]!==undefined).map(k=>[k,d[k]]));
+};
 const conciseSource=s=>({
   route:s?.route||null,
   status:s?.status||null,
   protocol:s?.protocol||null,
   chain:s?.chain||null,
+  routeDetails:pickDetails(s?.details),
   walletResults:(s?.details?.walletResults||s?.walletResults||[]).map(conciseWallet),
   detailKeys:s?.details&&typeof s.details==='object'?Object.keys(s.details).sort():[]
 });
@@ -64,7 +69,7 @@ const output={
     eventCount:(ledger?.events||[]).filter(x=>same(x?.company,COMPANY)).length,
     events:(ledger?.events||[]).filter(x=>same(x?.company,COMPANY)).map(x=>({eventKey:x?.eventKey||null,family:x?.family||null,protocol:x?.protocol||null,route:x?.route||null,asset:x?.asset||null,economicDate:x?.economicDate||null,usdValue:x?.usdValue??null,sourceFile:x?.sourceFile||null})).slice(-50)
   },
-  embedded: same(embedded?.company?.name,COMPANY)?{company:embedded.company,positionIds:Object.keys(embedded?.positions||{}),positions:Object.entries(embedded?.positions||{}).map(([id,x])=>({id,protocol:x?.protocol||null,chain:x?.chain||null,incomeMode:x?.incomeMode||null,eligible:x?.accounting?.embeddedYieldEligible??null,checkpointCount:Array.isArray(x?.checkpoints)?x.checkpoints.length:0}))}:null,
+  embedded:same(embedded?.company?.name,COMPANY)?{company:embedded.company,positionIds:Object.keys(embedded?.positions||{}),positions:Object.entries(embedded?.positions||{}).map(([id,x])=>({id,protocol:x?.protocol||null,chain:x?.chain||null,incomeMode:x?.incomeMode||null,eligible:x?.accounting?.embeddedYieldEligible??null,checkpointCount:Array.isArray(x?.checkpoints)?x.checkpoints.length:0}))}:null,
   factualEvidence:[...evidenceRows(ve33,'ve33'),...evidenceRows(locked,'ve33-locked-managed'),...evidenceRows(yb,'yield-basis'),...evidenceRows(frax,'frax')],
   coverage:c?{
     sourceAliases:c.sourceAliases,
