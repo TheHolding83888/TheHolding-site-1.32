@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
 import { Interface } from 'ethers';
-import { VERSION, PROTOCOLS, mapLimit, reconcileEntitlement, decodeRewardClaimTokenId, trackedPositionDescriptors } from './ve33-accounting-evidence.mjs';
+import { VERSION, PROTOCOLS, mapLimit, reconcileEntitlement, decodeRewardClaimTokenId, trackedPositionDescriptors, compactHistoricalCheckpoints } from './ve33-accounting-evidence.mjs';
 
 assert.equal(VERSION,'0.1-ve33-factual-accrual-evidence');
 assert.equal(PROTOCOLS.aerodrome.chainId,8453);
@@ -12,6 +12,29 @@ assert.deepEqual(reconcileEntitlement('100','125','0'),{accepted:true,status:'po
 assert.deepEqual(reconcileEntitlement('100','5','120'),{accepted:true,status:'positive-factual-accrual',earnedRaw:'25'});
 assert.equal(reconcileEntitlement('100','5','10').accepted,false);
 assert.equal(reconcileEntitlement('oops','5','10').accepted,false);
+
+const history={
+  checkpoints:[
+    {checkpointKey:'a|1',laneKey:'a',blockNumber:1,monthBoundary:true},
+    {checkpointKey:'a|2',laneKey:'a',blockNumber:2,monthBoundary:false},
+    {checkpointKey:'a|3',laneKey:'a',blockNumber:3,monthBoundary:false},
+    {checkpointKey:'a|4',laneKey:'a',blockNumber:4,monthBoundary:false},
+    {checkpointKey:'a|5',laneKey:'a',blockNumber:5,monthBoundary:false},
+    {checkpointKey:'b|1',laneKey:'b',blockNumber:1,monthBoundary:true},
+    {checkpointKey:'b|2',laneKey:'b',blockNumber:2,monthBoundary:false},
+    {checkpointKey:'b|3',laneKey:'b',blockNumber:3,monthBoundary:false}
+  ],
+  events:[{sourceIdentity:'a|2->a|3'}]
+};
+const compacted=compactHistoricalCheckpoints(history);
+assert.deepEqual(compacted.checkpoints.map(x=>x.checkpointKey),['a|1','a|2','a|3','a|5','b|1','b|3']);
+assert.equal(compacted.stats.inputCheckpointCount,8);
+assert.equal(compacted.stats.retainedCheckpointCount,6);
+assert.equal(compacted.stats.droppedRedundantCheckpointCount,2);
+assert.equal(compacted.stats.retainedMonthBoundaryCount,2);
+assert.equal(compacted.stats.retainedEventProofCheckpointCount,2);
+assert.equal(compacted.stats.retainedLatestLaneCheckpointCount,2);
+assert.equal(compacted.stats.policy,'retain-month-boundaries-latest-per-lane-and-factual-event-proof-checkpoints');
 
 let active=0,maxActive=0;
 const bounded=await mapLimit([1,2,3,4,5,6],2,async value=>{
