@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import { Contract, JsonRpcProvider, ZeroAddress, formatUnits, getAddress } from 'ethers';
+import { promoteCypherThroughGenericRewards } from './company-010-generic-ve-promotion.mjs';
 
 const STATE=process.env.COMPANY_010_STATE||'companies/company-010-production-state.json';
 const OUTPUT=process.env.COMPANY_010_VE_REWARDS||'/tmp/company-010-ve-rewards.json';
@@ -9,6 +10,11 @@ if(state?.company?.registry!=='010'||state?.company?.name!=='Cypher')throw new E
 if(state?.authority?.executionAuthority!=='none')throw new Error('Company #010 authority drift');
 const wallet2=(state.company.wallets||[]).find(x=>x.alias==='Wallet 2');
 if(!wallet2?.address)throw new Error('Company #010 Wallet 2 required');
+
+// Promotion only extends discovery coverage. It executes the existing generic
+// Rewards ve collector against Cypher, preserves its persistent reward index,
+// and never changes accounting formulas or execution authority.
+promoteCypherThroughGenericRewards();
 
 const CONFIG={
   aerodrome:{protocol:'Aerodrome',route:'aerodrome-ve',chain:'Base',rpc:[process.env.BASE_RPC_URL,process.env.BASE_RPC_URL_2,'https://base-rpc.publicnode.com','https://mainnet.base.org'],token:'0x940181a94A35A4569E4529A3CDfB74e38FD98631',symbol:'AERO',ve:'0xeBf418Fe2512e7E6bd9b87a8F0f294aCDC67e6B4',distributor:'0x227f65131A261548b057215bB1D5Ab2997964C7d'},
