@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
 import { Interface } from 'ethers';
-import { VERSION, PROTOCOLS, mapLimit, reconcileEntitlement, decodeRewardClaimTokenId, trackedPositionDescriptors } from './ve33-accounting-evidence.mjs';
+import { VERSION, PROTOCOLS, mapLimit, reconcileEntitlement, decodeRewardClaimTokenId, decodeRewardClaimAttribution, trackedPositionDescriptors, compactHistoricalCheckpoints, buildSettlementAddressGroups } from './ve33-accounting-evidence.mjs';
 
 assert.equal(VERSION,'0.1-ve33-factual-accrual-evidence');
 assert.equal(PROTOCOLS.aerodrome.chainId,8453);
@@ -12,6 +12,45 @@ assert.deepEqual(reconcileEntitlement('100','125','0'),{accepted:true,status:'po
 assert.deepEqual(reconcileEntitlement('100','5','120'),{accepted:true,status:'positive-factual-accrual',earnedRaw:'25'});
 assert.equal(reconcileEntitlement('100','5','10').accepted,false);
 assert.equal(reconcileEntitlement('oops','5','10').accepted,false);
+
+const history={
+  checkpoints:[
+    {checkpointKey:'a|1',laneKey:'a',blockNumber:1,monthBoundary:true},
+    {checkpointKey:'a|2',laneKey:'a',blockNumber:2,monthBoundary:false},
+    {checkpointKey:'a|3',laneKey:'a',blockNumber:3,monthBoundary:false},
+    {checkpointKey:'a|4',laneKey:'a',blockNumber:4,monthBoundary:false},
+    {checkpointKey:'a|5',laneKey:'a',blockNumber:5,monthBoundary:false},
+    {checkpointKey:'b|1',laneKey:'b',blockNumber:1,monthBoundary:true},
+    {checkpointKey:'b|2',laneKey:'b',blockNumber:2,monthBoundary:false},
+    {checkpointKey:'b|3',laneKey:'b',blockNumber:3,monthBoundary:false}
+  ],
+  events:[{sourceIdentity:'a|2->a|3'}]
+};
+const compacted=compactHistoricalCheckpoints(history);
+assert.deepEqual(compacted.checkpoints.map(x=>x.checkpointKey),['a|1','a|2','a|3','a|5','b|1','b|3']);
+assert.equal(compacted.stats.inputCheckpointCount,8);
+assert.equal(compacted.stats.retainedCheckpointCount,6);
+assert.equal(compacted.stats.droppedRedundantCheckpointCount,2);
+assert.equal(compacted.stats.retainedMonthBoundaryCount,2);
+assert.equal(compacted.stats.retainedEventProofCheckpointCount,2);
+assert.equal(compacted.stats.retainedLatestLaneCheckpointCount,2);
+assert.equal(compacted.stats.policy,'retain-month-boundaries-latest-per-lane-and-factual-event-proof-checkpoints');
+
+const pooledGroups=buildSettlementAddressGroups([
+  {kind:'voting-reward',rewardContract:'0x1111111111111111111111111111111111111111'},
+  {kind:'free-managed-reward',rewardContract:'0x2222222222222222222222222222222222222222'},
+  {kind:'voting-reward',rewardContract:'0x1111111111111111111111111111111111111111'},
+  {kind:'rebase-distributor',rewardContract:null}
+],1);
+assert.deepEqual(pooledGroups,[
+  ['0x1111111111111111111111111111111111111111'],
+  ['0x2222222222222222222222222222222222222222']
+]);
+const pooledSingleGroup=buildSettlementAddressGroups([
+  {kind:'voting-reward',rewardContract:'0x2222222222222222222222222222222222222222'},
+  {kind:'voting-reward',rewardContract:'0x1111111111111111111111111111111111111111'}
+],48);
+assert.deepEqual(pooledSingleGroup,[['0x1111111111111111111111111111111111111111','0x2222222222222222222222222222222222222222']]);
 
 let active=0,maxActive=0;
 const bounded=await mapLimit([1,2,3,4,5,6],2,async value=>{
@@ -28,11 +67,13 @@ const reward='0x1111111111111111111111111111111111111111';
 const token='0x2222222222222222222222222222222222222222';
 const voter='0x3333333333333333333333333333333333333333';
 const other='0x4444444444444444444444444444444444444444';
+const holder='0x5555555555555555555555555555555555555555';
 const directIface=new Interface(['function getReward(uint256 tokenId,address[] tokens)']);
 const voterIface=new Interface([
   'function claimBribes(address[] bribes,address[][] tokens,uint256 tokenId)',
   'function claimFees(address[] fees,address[][] tokens,uint256 tokenId)'
 ]);
+const multicallIface=new Interface(['function multicall(bytes[] data) returns (bytes[] results)']);
 const directData=directIface.encodeFunctionData('getReward',[77,[token]]);
 assert.equal(decodeRewardClaimTokenId({to:reward,data:directData,rewardContract:reward,rewardToken:token,voter}),'77');
 assert.equal(decodeRewardClaimTokenId({to:reward,data:directData,rewardContract:reward,rewardToken:other,voter}),null);
@@ -41,6 +82,20 @@ assert.equal(decodeRewardClaimTokenId({to:voter,data:bribeData,rewardContract:re
 const feeData=voterIface.encodeFunctionData('claimFees',[[reward],[[token]],99]);
 assert.equal(decodeRewardClaimTokenId({to:voter,data:feeData,rewardContract:reward,rewardToken:token,voter}),'99');
 assert.equal(decodeRewardClaimTokenId({to:other,data:'0x',rewardContract:reward,rewardToken:token,voter}),null);
+
+const holderFeeData=voterIface.encodeFunctionData('claimFees',[[reward],[[token,other]],32671]);
+const holderMulticallData=multicallIface.encodeFunctionData('multicall',[[holderFeeData,'0x12345678']]);
+const holderAttribution=decodeRewardClaimAttribution({to:holder,data:holderMulticallData,rewardContract:reward,rewardToken:token,voter,holder});
+assert.equal(holderAttribution.tokenId,'32671');
+assert.equal(holderAttribution.path,'holder-multicall-claimFees');
+assert.equal(decodeRewardClaimTokenId({to:holder,data:holderMulticallData,rewardContract:reward,rewardToken:token,voter,holder}),'32671');
+assert.equal(decodeRewardClaimTokenId({to:holder,data:holderMulticallData,rewardContract:reward,rewardToken:'0x6666666666666666666666666666666666666666',voter,holder}),null);
+assert.equal(decodeRewardClaimTokenId({to:holder,data:holderMulticallData,rewardContract:reward,rewardToken:token,voter}),null,'holder multicall must require explicit holder binding');
+const conflictingFeeData=voterIface.encodeFunctionData('claimFees',[[reward],[[token]],32672]);
+const conflictingMulticallData=multicallIface.encodeFunctionData('multicall',[[holderFeeData,conflictingFeeData]]);
+const conflictingAttribution=decodeRewardClaimAttribution({to:holder,data:conflictingMulticallData,rewardContract:reward,rewardToken:token,voter,holder});
+assert.equal(conflictingAttribution.tokenId,null);
+assert.equal(conflictingAttribution.path,'holder-multicall-conflicting-token-ids');
 
 const activePool='0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 const stalePool='0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';

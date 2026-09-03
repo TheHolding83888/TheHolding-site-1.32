@@ -11,6 +11,7 @@ on:
       - 'reporting/ve33-ledger-admission-validation.mjs'
       - 'reporting/ve33-accounting-evidence.json'
       - 'reporting/ve33-settlement-query-diagnostic.mjs'
+      - 'reporting/ve33-unresolved-settlement-diagnostic.mjs'
       - 'reporting/income-ledger.mjs'
       - 'reporting/income-ledger-validation.mjs'
       - '.github/workflows/update-reporting.yml'
@@ -42,6 +43,7 @@ jobs:
           node --check reporting/ve33-ledger-admission.mjs
           node --check reporting/ve33-ledger-admission-validation.mjs
           node --check reporting/ve33-settlement-query-diagnostic.mjs
+          node --check reporting/ve33-unresolved-settlement-diagnostic.mjs
           node reporting/ve33-accounting-evidence-validation.mjs
           node reporting/ve33-income-candidates-validation.mjs
           node reporting/ve33-ledger-admission-validation.mjs
@@ -66,17 +68,20 @@ jobs:
           VE33_STATE_READ_CONCURRENCY: '2'
           VE33_SETTLEMENT_CONCURRENCY: '2'
           BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
-          OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
+          OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL || 'https://gateway.tenderly.co/public/optimism' }}
         run: |
           set -euo pipefail
           cp reporting/ve33-accounting-evidence.json "$VE33_EVIDENCE_FILE"
           node reporting/ve33-accounting-evidence.mjs
           node reporting/ve33-settlement-query-diagnostic.mjs
+          node reporting/ve33-unresolved-settlement-diagnostic.mjs
           node - <<'NODE'
           const fs=require('fs');
           const e=JSON.parse(fs.readFileSync('/tmp/ve33-accounting-evidence.json','utf8'));
           const settlementDiagnostics={
             settlementQueryFailureCount:Number(e.diagnostics?.settlementQueryFailureCount||0),
+            reconciliationCount:Number(e.diagnostics?.reconciliationCount||0),
+            unresolvedSettlementCount:Number(e.diagnostics?.unresolvedSettlementCount||0),
             protocols:Object.fromEntries(Object.entries(e.diagnostics?.protocols||{}).map(([k,v])=>[k,{
               intervalCount:Number(v.intervalCount||0),
               settlementEventCount:Number(v.settlementEventCount||0),
@@ -106,6 +111,8 @@ jobs:
           if(!(totalCurrentCheckpoints>0)) throw new Error('live ve33 produced no factual current checkpoints on any configured protocol');
           if(!(totalIntervals>0)) throw new Error('seeded live ve33 canary produced no opening-to-closing intervals');
           if(Number(e.diagnostics?.settlementQueryFailureCount||0)!==0) throw new Error(`live ve33 settlement log routing incomplete: ${e.diagnostics.settlementQueryFailureCount} interval query failures`);
+          if(Number(e.diagnostics?.unresolvedSettlementCount||0)!==0) throw new Error(`live ve33 unresolved settlement attribution: ${e.diagnostics.unresolvedSettlementCount}`);
+          if(Number(e.diagnostics?.reconciliationCount||0)!==0) throw new Error(`live ve33 reconciliation gap: ${e.diagnostics.reconciliationCount}`);
           const events=e.events||[];
           if(new Set(events.map(x=>x.eventKey)).size!==events.length) throw new Error('live ve33 duplicate event identity');
           if(events.some(x=>x.referenceAprUsed!==false||x.claimIsSecondIncomeEvent!==false||x.laterClaimOrPriceMoveDoesNotRewriteIncome!==true||x.executionAuthority!=='none')) throw new Error('live ve33 accounting semantic drift');

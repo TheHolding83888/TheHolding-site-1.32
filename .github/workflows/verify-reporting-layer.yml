@@ -15,6 +15,13 @@ on:
       - 'reporting/defitea-income-composition-validation.mjs'
       - 'reporting/defitea-forty-acres-settlement.mjs'
       - 'reporting/defitea-forty-acres-settlement-validation.mjs'
+      - 'reporting/yield-basis-accounting-evidence.mjs'
+      - 'reporting/yield-basis-accounting-evidence-validation.mjs'
+      - 'reporting/yield-basis-accounting-evidence.json'
+      - 'reporting/yield-basis-income-candidates.mjs'
+      - 'reporting/yield-basis-income-candidates-validation.mjs'
+      - 'reporting/yield-basis-ledger-admission.mjs'
+      - 'reporting/yield-basis-ledger-admission-validation.mjs'
       - 'intelligence/realised-cash-flow/realised-cash-flow.json'
       - '.github/workflows/update-reporting.yml'
       - '.github/workflows/verify-reporting-layer.yml'
@@ -38,6 +45,9 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Install accounting runtime dependency
+        run: npm install --no-save --no-package-lock ethers@6
+
       - name: Static and semantic validation
         run: |
           set -euo pipefail
@@ -50,7 +60,13 @@ jobs:
             reporting/defitea-income-composition.mjs \
             reporting/defitea-income-composition-validation.mjs \
             reporting/defitea-forty-acres-settlement.mjs \
-            reporting/defitea-forty-acres-settlement-validation.mjs; do
+            reporting/defitea-forty-acres-settlement-validation.mjs \
+            reporting/yield-basis-accounting-evidence.mjs \
+            reporting/yield-basis-accounting-evidence-validation.mjs \
+            reporting/yield-basis-income-candidates.mjs \
+            reporting/yield-basis-income-candidates-validation.mjs \
+            reporting/yield-basis-ledger-admission.mjs \
+            reporting/yield-basis-ledger-admission-validation.mjs; do
             node --check "$f"
           done
           test -s reporting/reporting-scheduler-contract.json
@@ -62,7 +78,58 @@ jobs:
           node reporting/income-ledger-validation.mjs
           node reporting/defitea-income-composition-validation.mjs
           node reporting/defitea-forty-acres-settlement-validation.mjs
+          node reporting/yield-basis-accounting-evidence-validation.mjs
+          node reporting/yield-basis-income-candidates-validation.mjs
+          node reporting/yield-basis-ledger-admission-validation.mjs
           git diff --check
+
+      - name: Read-only live Yield Basis accounting canary
+        shell: bash
+        env:
+          REWARDS_DATA_FILE: ./companies/rewards-data.json
+          YIELD_BASIS_EVIDENCE_FILE: /tmp/yield-basis-accounting-evidence.json
+          ETH_RPC_URL: ''
+        run: |
+          set -euo pipefail
+          cp reporting/yield-basis-accounting-evidence.json "$YIELD_BASIS_EVIDENCE_FILE"
+          node reporting/yield-basis-accounting-evidence.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const e=JSON.parse(fs.readFileSync('/tmp/yield-basis-accounting-evidence.json','utf8'));
+          if(e.version!=='0.1-yield-basis-factual-accrual-evidence') throw new Error('live Yield Basis evidence version drift');
+          if(e.mechanism!=='yield-basis-fees') throw new Error('live Yield Basis mechanism drift');
+          const tracked=Number(e.diagnostics?.trackedWalletCount||0);
+          if(!(tracked>0)) throw new Error('live Yield Basis discovered no tracked wallets from canonical Rewards');
+          if(e.status!=='factual-boundary-tracking') throw new Error('live Yield Basis is not complete factual boundary tracking: '+e.status);
+          if((e.diagnostics?.monthBoundaryFailures||[]).length!==0) throw new Error('live Yield Basis has month-boundary failures');
+          if((e.diagnostics?.claimQueryFailures||[]).length!==0) throw new Error('live Yield Basis has Claim-log query failures');
+          if(Number(e.diagnostics?.reconciliationCount||0)!==0) throw new Error('live Yield Basis has reconciliation gaps');
+          if(Number(e.diagnostics?.unvaluedEventCount||0)!==0) throw new Error('live Yield Basis has unvalued earned events');
+          const boundaries=(e.checkpoints||[]).filter(x=>x?.monthBoundary===true&&x?.observedAt==='2026-09-01T00:00:00.000Z');
+          const live=(e.checkpoints||[]).filter(x=>x?.monthBoundary!==true);
+          if(new Set(boundaries.map(x=>x.stateKey)).size!==tracked) throw new Error(`live Yield Basis Sep-1 boundary coverage incomplete: ${new Set(boundaries.map(x=>x.stateKey)).size}/${tracked}`);
+          if(new Set(live.map(x=>x.stateKey)).size!==tracked) throw new Error(`live Yield Basis current-state coverage incomplete: ${new Set(live.map(x=>x.stateKey)).size}/${tracked}`);
+          if(Number(e.diagnostics?.intervalCount||0)<tracked) throw new Error(`live Yield Basis opening-to-closing interval coverage incomplete: ${e.diagnostics?.intervalCount||0}/${tracked}`);
+          if(!Array.isArray(e.events)||e.events.length===0) throw new Error('live Yield Basis produced no factual earned events');
+          if(live.some(x=>x?.exactBlockTaggedState!==true||x?.periodIncomeAuthority!==false||x?.currentClaimableBalanceIsPeriodIncome!==false||x?.unknownIsNotZero!==true)) throw new Error('live Yield Basis checkpoint semantic drift');
+          if(e.semantics?.openingBalanceCreatesIncome!==false||e.semantics?.claimIsSettlementNotSecondIncome!==true||e.semantics?.referenceAprUsed!==false||e.semantics?.laterPriceMovementRewritesClosedIncome!==false||e.semantics?.unknownIsNotZero!==true) throw new Error('live Yield Basis accounting semantic drift');
+          if(e.authority?.executionAuthority!=='none'||e.authority?.walletAuthority!=='none'||e.authority?.claimingAuthority!=='none'||e.authority?.capitalExecution!==false||e.authority?.methodologyMutationAuthority!=='none') throw new Error('Yield Basis authority expansion');
+          const events=e.events||[];
+          if(new Set(events.map(x=>x.eventKey)).size!==events.length) throw new Error('live Yield Basis duplicate event identity');
+          console.log('Read-only live Yield Basis canary PASS',{
+            status:e.status,
+            trackedWallets:tracked,
+            checkpoints:e.diagnostics.checkpointCount,
+            monthBoundaries:e.diagnostics.monthBoundaryCount,
+            monthBoundaryFailures:(e.diagnostics.monthBoundaryFailures||[]).length,
+            intervals:e.diagnostics.intervalCount,
+            events:events.length,
+            reconciliation:e.diagnostics.reconciliationCount,
+            claimQueryFailures:(e.diagnostics.claimQueryFailures||[]).length,
+            unvalued:e.diagnostics.unvaluedEventCount
+          });
+          NODE
+          git diff --exit-code
 
       - name: Exercise full writer and canonical income history
         shell: bash
@@ -101,11 +168,22 @@ jobs:
           INCOME_LEDGER_FILE=/tmp/income-ledger.json \
           node reporting/income-ledger.mjs
 
+          INCOME_LEDGER_POLICY_FILE=./reporting/income-ledger-policy.json \
+          REPORTING_DATA_FILE=/tmp/reporting-data.json \
+          DEFITEA_INCOME_LEDGER_FILE=/tmp/defitea-income-ledger.json \
+          EMBEDDED_YIELD_LEDGER_FILE=./companies/embedded-yield-ledger.json \
+          REWARDS_DATA_FILE=./companies/rewards-data.json \
+          REALISED_CASH_FLOW_FILE=./intelligence/realised-cash-flow/realised-cash-flow.json \
+          YIELD_BASIS_EVIDENCE_FILE=/tmp/yield-basis-accounting-evidence.json \
+          INCOME_LEDGER_FILE=/tmp/income-ledger.json \
+          node reporting/yield-basis-ledger-admission.mjs
+
           node - <<'NODE'
           const fs=require('fs');
           const r=JSON.parse(fs.readFileSync('/tmp/reporting-data.json','utf8'));
           const l=JSON.parse(fs.readFileSync('/tmp/defitea-income-ledger.json','utf8'));
           const income=JSON.parse(fs.readFileSync('/tmp/income-ledger.json','utf8'));
+          const yb=JSON.parse(fs.readFileSync('/tmp/yield-basis-accounting-evidence.json','utf8'));
           const schedule=JSON.parse(fs.readFileSync('reporting/reporting-scheduler-contract.json','utf8'));
           const ratePolicy=JSON.parse(fs.readFileSync('reporting/rate-continuity-policy.json','utf8'));
           const incomePolicy=JSON.parse(fs.readFileSync('reporting/income-ledger-policy.json','utf8'));
@@ -115,6 +193,7 @@ jobs:
 
           if(r.version!=='1.2.1-resilient-rate-coverage') throw new Error('Reporting version drift');
           if(r.schedule?.dailySnapshot!==schedule.dailySnapshotUtc||r.schedule?.cron!==schedule.cron||r.schedule?.contractVersion!==schedule.version||r.schedule?.contractSource!=='reporting/reporting-scheduler-contract.json') throw new Error('scheduler contract runtime binding failed');
+          if(r.schedule?.rateContinuityPolicyReference!=='reporting/rate-continuity-policy.json') throw new Error('scheduler contract runtime binding failed');
           if(r.schedule?.rateContinuityPolicyReference!=='reporting/rate-continuity-policy.json') throw new Error('rate continuity provenance missing');
           const s=d?.latestSnapshot;
           if(!s||s.positionCount!==11||(s.positions||[]).length!==11) throw new Error('Defitea canonical 11-position runtime proof failed');
@@ -157,6 +236,14 @@ jobs:
           for(const p of Object.values(embedded.positions||{})) acceptedEmbedded+=(p.intervalHistory||[]).filter(e=>e?.status==='ok'&&e?.accepted===true).length;
           if(events.filter(e=>e.company==='Monetra.eth'&&e.family==='embedded-income').length!==acceptedEmbedded) throw new Error('Monetra accepted interval import parity failed');
 
+          const sourceYb=yb.events||[];
+          const canonicalYb=events.filter(e=>e.sourceFile==='reporting/yield-basis-accounting-evidence.json');
+          const sourceYbKeys=new Set(sourceYb.map(e=>e.eventKey));
+          if(!sourceYb.length) throw new Error('Yield Basis live evidence was not available for Canonical Ledger admission proof');
+          if(canonicalYb.length!==sourceYbKeys.size||canonicalYb.some(e=>!sourceYbKeys.has(e.eventKey))) throw new Error(`Yield Basis Canonical Ledger admission parity failed: ${canonicalYb.length}/${sourceYbKeys.size}`);
+          if(income.accountingExtensions?.yieldBasisAccrual?.status!=='factual-boundary-tracking') throw new Error('Yield Basis accounting extension did not preserve factual boundary status');
+          if(Number(income.run?.yieldBasisCandidateEventCount||0)!==sourceYbKeys.size) throw new Error('Yield Basis candidate count drift after Canonical Ledger admission');
+
           if((income.claimableSnapshots||[]).some(x=>x.stateOnly!==true||x.periodIncomeAuthority!==false||x.realisedCashFlowAuthority!==false||x.unknownIsNotZero!==true)) throw new Error('claimable state escaped accounting boundary');
           for(const c of Object.values(income.companies||{})){
             if(c.coverage?.overallComplete!==false||c.coverage?.unknownIsNotZero!==true) throw new Error('company coverage silently upgraded');
@@ -172,6 +259,7 @@ jobs:
             voteMarketEvents:sourceVm,
             fortyAcresEvents:sourceFa,
             monetraEmbeddedIntervals:acceptedEmbedded,
+            yieldBasisEvents:canonicalYb.length,
             claimableSnapshots:(income.claimableSnapshots||[]).length
           });
           NODE

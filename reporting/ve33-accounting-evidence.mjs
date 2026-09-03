@@ -20,6 +20,7 @@ const BLOCK_LOOKUP_RETRIES=3;
 const RECENT_BOUNDARY_INITIAL_STEP=4_096;
 const STATE_READ_CONCURRENCY=Math.max(1,Math.min(16,Number(process.env.VE33_STATE_READ_CONCURRENCY||2)));
 const SETTLEMENT_CONCURRENCY=Math.max(1,Math.min(12,Number(process.env.VE33_SETTLEMENT_CONCURRENCY||2)));
+const SETTLEMENT_ADDRESS_GROUP_SIZE=Math.max(1,Math.min(96,Number(process.env.VE33_SETTLEMENT_ADDRESS_GROUP_SIZE||48)));
 const FAILURE_SAMPLE_LIMIT=20;
 
 export const PROTOCOLS=Object.freeze({
@@ -55,11 +56,16 @@ const REWARDS_DISTRIBUTOR_ABI=[
 ];
 const VE_ABI=['function ownerOf(uint256 tokenId) view returns (address)'];
 const ERC20_ABI=['function decimals() view returns (uint8)','function symbol() view returns (string)'];
+const REWARD_EVENT_IFACE=new Interface(REWARD_ABI);
+const REBASE_EVENT_IFACE=new Interface(REWARDS_DISTRIBUTOR_ABI);
+const CLAIM_REWARDS_TOPIC=REWARD_EVENT_IFACE.getEvent('ClaimRewards').topicHash;
+const CLAIMED_TOPIC=REBASE_EVENT_IFACE.getEvent('Claimed').topicHash;
 const DIRECT_REWARD_IFACE=new Interface(['function getReward(uint256 tokenId,address[] tokens)']);
 const VOTER_CLAIM_IFACE=new Interface([
   'function claimBribes(address[] bribes,address[][] tokens,uint256 tokenId)',
   'function claimFees(address[] fees,address[][] tokens,uint256 tokenId)'
 ]);
+const HOLDER_MULTICALL_IFACE=new Interface(['function multicall(bytes[] data) returns (bytes[] results)']);
 
 const lower=v=>String(v||'').toLowerCase();
 const finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v));
@@ -103,6 +109,46 @@ function laneKey(x){
 }
 function checkpointKey(lane,blockNumber){return`${lane.laneKey}|${blockNumber}`;}
 function eventKey(lane,open,close){return`ve33:${lane.laneKey}:${open.blockNumber}:${close.blockNumber}`;}
+
+export function compactHistoricalCheckpoints(previous={}){
+  const rows=(previous?.checkpoints||[]).filter(x=>x?.checkpointKey&&x?.laneKey&&Number.isFinite(Number(x.blockNumber)));
+  const byKey=new Map(rows.map(x=>[x.checkpointKey,x]));
+  const latestByLane=new Map();
+  for(const row of rows){
+    const prior=latestByLane.get(row.laneKey);
+    if(!prior||Number(row.blockNumber)>Number(prior.blockNumber))latestByLane.set(row.laneKey,row);
+  }
+
+  const eventProofKeys=new Set();
+  for(const event of previous?.events||[]){
+    const source=String(event?.sourceIdentity||'');
+    const arrow=source.indexOf('->');
+    if(arrow<=0)continue;
+    const openingKey=source.slice(0,arrow),closingKey=source.slice(arrow+2);
+    if(byKey.has(openingKey))eventProofKeys.add(openingKey);
+    if(byKey.has(closingKey))eventProofKeys.add(closingKey);
+  }
+
+  const keep=new Set(eventProofKeys);
+  for(const row of rows)if(row.monthBoundary===true)keep.add(row.checkpointKey);
+  for(const row of latestByLane.values())keep.add(row.checkpointKey);
+
+  const checkpoints=rows
+    .filter(x=>keep.has(x.checkpointKey))
+    .sort((a,b)=>a.laneKey.localeCompare(b.laneKey)||Number(a.blockNumber)-Number(b.blockNumber));
+  return{
+    checkpoints,
+    stats:{
+      inputCheckpointCount:rows.length,
+      retainedCheckpointCount:checkpoints.length,
+      droppedRedundantCheckpointCount:rows.length-checkpoints.length,
+      retainedMonthBoundaryCount:checkpoints.filter(x=>x.monthBoundary===true).length,
+      retainedEventProofCheckpointCount:eventProofKeys.size,
+      retainedLatestLaneCheckpointCount:latestByLane.size,
+      policy:'retain-month-boundaries-latest-per-lane-and-factual-event-proof-checkpoints'
+    }
+  };
+}
 
 function priceMap(rewards){
   const map=new Map();
@@ -187,6 +233,18 @@ export function trackedPositionDescriptors(rewards){
   });
 }
 
+export function buildSettlementAddressGroups(lanes,maxSize=SETTLEMENT_ADDRESS_GROUP_SIZE){
+  const size=Math.max(1,Math.min(96,Number(maxSize)||SETTLEMENT_ADDRESS_GROUP_SIZE));
+  const addresses=unique((lanes||[])
+    .filter(x=>x?.kind!=='rebase-distributor'&&isAddress(x?.rewardContract))
+    .map(x=>lower(x.rewardContract)))
+    .sort()
+    .map(getAddress);
+  const groups=[];
+  for(let i=0;i<addresses.length;i+=size)groups.push(addresses.slice(i,i+size));
+  return groups;
+}
+
 async function providerFor(cfg){
   const urls=unique([process.env[cfg.rpcEnv],...cfg.rpcFallbacks]);
   let last=null;
@@ -208,20 +266,24 @@ function providerLabel(url){
   catch{return'configured-rpc';}
 }
 
-function settlementRouterFor(cfg){
+function settlementRouterFor(cfg,lanes=[]){
   const urls=unique([process.env[cfg.rpcEnv],...[...cfg.rpcFallbacks].reverse()]);
   const candidates=urls.map(url=>({url,label:providerLabel(url),provider:new JsonRpcProvider(url,cfg.chainId)}));
+  const rewardAddressGroups=buildSettlementAddressGroups(lanes);
+  const rewardGroupByAddress=new Map();
+  rewardAddressGroups.forEach((group,index)=>group.forEach(address=>rewardGroupByAddress.set(lower(address),{index,addresses:group})));
   const queryCache=new Map();
   let preferredIndex=0;
   let gateTail=Promise.resolve();
   let nextRequestAt=0;
   const REQUEST_SPACING_MS=220;
-  const stats={queryAttempts:0,cacheHits:0,adaptiveSplitCount:0,rateLimitRetryCount:0,failoverCount:0,providerSuccessCounts:{},providerFailureCounts:{},failureSamples:[]};
+  const stats={queryAttempts:0,cacheHits:0,adaptiveSplitCount:0,addressSplitCount:0,rateLimitRetryCount:0,failoverCount:0,providerSuccessCounts:{},providerFailureCounts:{},failureSamples:[]};
   const errorText=error=>[
     error?.error?.message,error?.info?.error?.message,error?.shortMessage,error?.message,String(error||'')
   ].filter(Boolean).join(' | ').toLowerCase();
   const isRateLimitError=error=>/rate limit|requests per second|too many requests|http 429|status 429|rps capacity|exceeded.*capacity/.test(errorText(error));
   const isRangeError=error=>/block range is too large|limited to a 10,000 range|range.*too large|exceed.*block.*range/.test(errorText(error));
+  const isAddressFilterError=error=>/too many addresses|address.*limit|filter.*address|invalid.*address.*array|address array/.test(errorText(error));
   const pace=async()=>{
     let release;
     const previous=gateTail;
@@ -232,39 +294,52 @@ function settlementRouterFor(cfg){
     nextRequestAt=Date.now()+REQUEST_SPACING_MS;
     release();
   };
-  const recordFailure=(candidate,error,kind,lane,fromBlock,toBlock)=>{
+  const recordFailure=(candidate,error,kind,lane,fromBlock,toBlock,addressCount)=>{
     stats.providerFailureCounts[candidate.label]=(stats.providerFailureCounts[candidate.label]||0)+1;
     if(stats.failureSamples.length<FAILURE_SAMPLE_LIMIT)stats.failureSamples.push({
-      provider:candidate.label,kind,laneKey:lane.laneKey,fromBlock,toBlock,
+      provider:candidate.label,kind,laneKey:lane.laneKey,fromBlock,toBlock,addressCount,
       error:error?.error?.message||error?.info?.error?.message||error?.shortMessage||error?.message||String(error)
     });
   };
-  const queryCandidate=async({candidate,index,isRebase,kind,lane,fromBlock,toBlock})=>{
+  const parseSettlementLogs=(rawLogs,isRebase)=>{
+    const iface=isRebase?REBASE_EVENT_IFACE:REWARD_EVENT_IFACE;
+    return(rawLogs||[]).map(log=>{
+      const parsed=iface.parseLog({topics:log.topics,data:log.data});
+      if(!parsed)throw new Error(`Could not parse ${isRebase?'Claimed':'ClaimRewards'} settlement log`);
+      return{...log,args:parsed.args};
+    });
+  };
+  const queryCandidate=async({candidate,index,isRebase,kind,lane,fromBlock,toBlock,addresses})=>{
     const attempts=index===preferredIndex?4:1;
     let last=null;
     for(let attempt=1;attempt<=attempts;attempt++){
       await pace();
       stats.queryAttempts++;
       try{
-        let contract,filter;
-        if(isRebase){
-          contract=new Contract(cfg.rewardsDistributor,REWARDS_DISTRIBUTOR_ABI,candidate.provider);
-          filter=contract.filters.Claimed();
-        }else{
-          contract=new Contract(lane.rewardContract,REWARD_ABI,candidate.provider);
-          filter=contract.filters.ClaimRewards();
-        }
-        const logs=await contract.queryFilter(filter,fromBlock,toBlock);
+        const filter={
+          address:addresses.length===1?addresses[0]:addresses,
+          topics:[isRebase?CLAIMED_TOPIC:CLAIM_REWARDS_TOPIC],
+          fromBlock,toBlock
+        };
+        const rawLogs=await candidate.provider.getLogs(filter);
+        const logs=parseSettlementLogs(rawLogs,isRebase);
         stats.providerSuccessCounts[candidate.label]=(stats.providerSuccessCounts[candidate.label]||0)+1;
         return logs;
       }catch(error){
         last=error;
-        recordFailure(candidate,error,kind,lane,fromBlock,toBlock);
+        recordFailure(candidate,error,kind,lane,fromBlock,toBlock,addresses.length);
         if(isRangeError(error)&&fromBlock<toBlock){
           stats.adaptiveSplitCount++;
           const mid=Math.floor((fromBlock+toBlock)/2);
-          const left=await queryCandidate({candidate,index,isRebase,kind,lane,fromBlock,toBlock:mid});
-          const right=await queryCandidate({candidate,index,isRebase,kind,lane,fromBlock:mid+1,toBlock});
+          const left=await queryCandidate({candidate,index,isRebase,kind,lane,fromBlock,toBlock:mid,addresses});
+          const right=await queryCandidate({candidate,index,isRebase,kind,lane,fromBlock:mid+1,toBlock,addresses});
+          return[...left,...right];
+        }
+        if(!isRebase&&isAddressFilterError(error)&&addresses.length>1){
+          stats.addressSplitCount++;
+          const mid=Math.ceil(addresses.length/2),leftAddresses=addresses.slice(0,mid),rightAddresses=addresses.slice(mid);
+          const left=await queryCandidate({candidate,index,isRebase,kind,lane,fromBlock,toBlock,addresses:leftAddresses});
+          const right=await queryCandidate({candidate,index,isRebase,kind,lane,fromBlock,toBlock,addresses:rightAddresses});
           return[...left,...right];
         }
         if(isRateLimitError(error)&&attempt<attempts){
@@ -279,28 +354,35 @@ function settlementRouterFor(cfg){
   };
   const query=async({kind,lane,fromBlock,toBlock})=>{
     const isRebase=kind==='rebase-distributor';
-    const address=isRebase?cfg.rewardsDistributor:lane.rewardContract;
-    const cacheKey=[isRebase?'rebase-all':'reward-all',lower(address),fromBlock,toBlock].join('|');
-    if(queryCache.has(cacheKey)){
+    const group=isRebase?{index:'rebase',addresses:[getAddress(cfg.rewardsDistributor)]}:rewardGroupByAddress.get(lower(lane.rewardContract));
+    if(!group)throw new Error(`Settlement reward contract not present in address groups: ${lane.rewardContract}`);
+    const cacheKey=[isRebase?'rebase-all':`reward-group-${group.index}`,fromBlock,toBlock].join('|');
+    let work=queryCache.get(cacheKey);
+    if(work){
       stats.cacheHits++;
-      return queryCache.get(cacheKey);
+    }else{
+      work=(async()=>{
+        let last=null;
+        const order=[preferredIndex,...candidates.map((_,i)=>i).filter(i=>i!==preferredIndex)];
+        for(const index of order){
+          const candidate=candidates[index];
+          try{
+            const logs=await queryCandidate({candidate,index,isRebase,kind,lane,fromBlock,toBlock,addresses:group.addresses});
+            if(index!==preferredIndex){preferredIndex=index;stats.failoverCount++;}
+            return logs;
+          }catch(error){last=error;}
+        }
+        throw last||new Error(`No settlement-log RPC available for ${cfg.protocol}`);
+      })();
+      queryCache.set(cacheKey,work);
     }
-    const work=(async()=>{
-      let last=null;
-      const order=[preferredIndex,...candidates.map((_,i)=>i).filter(i=>i!==preferredIndex)];
-      for(const index of order){
-        const candidate=candidates[index];
-        try{
-          const logs=await queryCandidate({candidate,index,isRebase,kind,lane,fromBlock,toBlock});
-          if(index!==preferredIndex){preferredIndex=index;stats.failoverCount++;}
-          return logs;
-        }catch(error){last=error;}
-      }
-      throw last||new Error(`No settlement-log RPC available for ${cfg.protocol}`);
-    })();
-    queryCache.set(cacheKey,work);
-    try{return await work;}
-    catch(error){queryCache.delete(cacheKey);throw error;}
+    try{
+      const logs=await work;
+      return isRebase?logs:logs.filter(log=>lower(log.address)===lower(lane.rewardContract));
+    }catch(error){
+      if(queryCache.get(cacheKey)===work)queryCache.delete(cacheKey);
+      throw error;
+    }
   };
   return{
     query,
@@ -308,7 +390,9 @@ function settlementRouterFor(cfg){
       preferredProvider:candidates[preferredIndex]?.label||null,
       candidateProviders:candidates.map(x=>x.label),
       requestSpacingMs:REQUEST_SPACING_MS,queryAttempts:stats.queryAttempts,cacheHits:stats.cacheHits,cacheEntries:queryCache.size,
-      adaptiveSplitCount:stats.adaptiveSplitCount,rateLimitRetryCount:stats.rateLimitRetryCount,failoverCount:stats.failoverCount,
+      pooledRewardAddressCount:rewardGroupByAddress.size,pooledRewardAddressGroupCount:rewardAddressGroups.length,
+      settlementAddressGroupSize:SETTLEMENT_ADDRESS_GROUP_SIZE,
+      adaptiveSplitCount:stats.adaptiveSplitCount,addressSplitCount:stats.addressSplitCount,rateLimitRetryCount:stats.rateLimitRetryCount,failoverCount:stats.failoverCount,
       providerSuccessCounts:{...stats.providerSuccessCounts},providerFailureCounts:{...stats.providerFailureCounts},
       failureSamples:[...stats.failureSamples]
     })
@@ -406,25 +490,62 @@ async function tokenMeta(provider,token,blockTag){
   return{symbol,decimals};
 }
 
-export function decodeRewardClaimTokenId({to,data,rewardContract,rewardToken,voter}){
+function decodeVoterClaimPayload({data,rewardContract,rewardToken}){
   try{
-    if(lower(to)===lower(rewardContract)){
-      const p=DIRECT_REWARD_IFACE.parseTransaction({data});
-      if(!p||p.name!=='getReward')return null;
-      const tokens=[...p.args[1]].map(lower);
-      if(!tokens.includes(lower(rewardToken)))return null;
-      return String(p.args[0]);
-    }
-    if(lower(to)===lower(voter)){
-      const p=VOTER_CLAIM_IFACE.parseTransaction({data});
-      if(!p||!['claimBribes','claimFees'].includes(p.name))return null;
-      const contracts=[...p.args[0]],tokens=[...p.args[1]],idx=contracts.findIndex(x=>lower(x)===lower(rewardContract));
-      if(idx<0||!Array.from(tokens[idx]||[]).map(lower).includes(lower(rewardToken)))return null;
-      return String(p.args[2]);
-    }
-  }catch{}
-  return null;
+    const p=VOTER_CLAIM_IFACE.parseTransaction({data});
+    if(!p||!['claimBribes','claimFees'].includes(p.name))return null;
+    const contracts=[...p.args[0]],tokens=[...p.args[1]],idx=contracts.findIndex(x=>lower(x)===lower(rewardContract));
+    if(idx<0||!Array.from(tokens[idx]||[]).map(lower).includes(lower(rewardToken)))return null;
+    return{tokenId:String(p.args[2]),path:p.name};
+  }catch{return null;}
 }
+
+function decodeHolderMulticallClaim({data,rewardContract,rewardToken,depth=0}){
+  if(depth>4)return null;
+  let parsed;
+  try{parsed=HOLDER_MULTICALL_IFACE.parseTransaction({data});}catch{return null;}
+  if(!parsed||parsed.name!=='multicall')return null;
+  const matches=[];
+  for(const inner of parsed.args[0]||[]){
+    const payload=String(inner||'0x');
+    const direct=decodeVoterClaimPayload({data:payload,rewardContract,rewardToken});
+    if(direct)matches.push(direct);
+    const nested=decodeHolderMulticallClaim({data:payload,rewardContract,rewardToken,depth:depth+1});
+    if(nested?.tokenId)matches.push({tokenId:nested.tokenId,path:nested.path});
+    else if(nested?.conflict)matches.push({tokenId:null,path:nested.path,conflict:true});
+  }
+  if(matches.some(x=>x.conflict))return{tokenId:null,path:'holder-multicall-conflicting-token-ids',conflict:true};
+  const ids=unique(matches.map(x=>x.tokenId).filter(Boolean));
+  if(ids.length===0)return null;
+  if(ids.length>1)return{tokenId:null,path:'holder-multicall-conflicting-token-ids',conflict:true};
+  const path=matches.find(x=>x.tokenId===ids[0])?.path||'claim';
+  return{tokenId:ids[0],path:`holder-multicall-${path}`,conflict:false};
+}
+
+export function decodeRewardClaimAttribution({to,data,rewardContract,rewardToken,voter,holder=null}){
+  const target=isAddress(to)?getAddress(to):null;
+  if(!target)return{tokenId:null,path:'transaction-target-unavailable'};
+  try{
+    if(lower(target)===lower(rewardContract)){
+      const p=DIRECT_REWARD_IFACE.parseTransaction({data});
+      if(!p||p.name!=='getReward')return{tokenId:null,path:'direct-reward-unmatched-calldata'};
+      const tokens=[...p.args[1]].map(lower);
+      if(!tokens.includes(lower(rewardToken)))return{tokenId:null,path:'direct-reward-unmatched-token'};
+      return{tokenId:String(p.args[0]),path:'direct-reward-getReward'};
+    }
+    if(lower(target)===lower(voter)){
+      const voterClaim=decodeVoterClaimPayload({data,rewardContract,rewardToken});
+      return voterClaim?{tokenId:voterClaim.tokenId,path:`voter-${voterClaim.path}`}:{tokenId:null,path:'voter-unmatched-calldata'};
+    }
+    if(holder&&isAddress(holder)&&lower(target)===lower(holder)){
+      const nested=decodeHolderMulticallClaim({data,rewardContract,rewardToken});
+      return nested?{tokenId:nested.tokenId,path:nested.path}:{tokenId:null,path:'holder-multicall-unmatched-calldata'};
+    }
+  }catch(error){return{tokenId:null,path:'calldata-decode-error',error:error?.message||String(error)};}
+  return{tokenId:null,path:'unresolved-top-level-call'};
+}
+
+export function decodeRewardClaimTokenId(args){return decodeRewardClaimAttribution(args).tokenId;}
 
 async function rewardClaimSettlements({provider,settlementRouter,cfg,lane,fromBlock,toBlock}){
   if(toBlock<fromBlock)return{complete:true,amountRaw:'0',events:[],unresolved:[]};
@@ -436,13 +557,13 @@ async function rewardClaimSettlements({provider,settlementRouter,cfg,lane,fromBl
       const recipient=String(log?.args?.[0]||''),rewardToken=String(log?.args?.[1]||''),amount=BigInt(log?.args?.[2]||0);
       if(lower(rewardToken)!==lower(lane.rewardToken)||lower(recipient)!==lower(lane.holder)||amount===0n)continue;
       const tx=await provider.getTransaction(log.transactionHash);
-      const decoded=tx?decodeRewardClaimTokenId({to:tx.to,data:tx.data,rewardContract:lane.rewardContract,rewardToken:lane.rewardToken,voter:cfg.voter}):null;
+      const attribution=tx?decodeRewardClaimAttribution({to:tx.to,data:tx.data,rewardContract:lane.rewardContract,rewardToken:lane.rewardToken,voter:cfg.voter,holder:lane.holder}):{tokenId:null,path:'transaction-unavailable'};
       const proof={
         blockNumber:Number(log.blockNumber),transactionHash:String(log.transactionHash||''),logIndex:Number(log.index??0),
-        recipient,rewardToken:lane.rewardToken,amountRaw:amount.toString(),decodedTokenId:decoded,
-        decodePath:tx?lower(tx.to)===lower(lane.rewardContract)?'direct-reward-getReward':lower(tx.to)===lower(cfg.voter)?'voter-claimFees-or-claimBribes':'unresolved-top-level-call':'transaction-unavailable'
+        recipient,rewardToken:lane.rewardToken,amountRaw:amount.toString(),decodedTokenId:attribution.tokenId,
+        decodePath:attribution.path
       };
-      if(decoded!==String(lane.tokenId)){unresolved.push(proof);continue;}
+      if(attribution.tokenId!==String(lane.tokenId)){unresolved.push(proof);continue;}
       total+=amount;
       events.push(proof);
     }
@@ -636,16 +757,17 @@ async function processLaneIntervals({lane,rows,provider,settlementRouter,cfg,pri
 export async function buildVe33Evidence({rewards,previous={},generatedAt=new Date().toISOString(),providers={}}={}){
   const startedAtMs=Date.now();
   const authority={executionAuthority:'none',walletAuthority:'none',claimingAuthority:'none',capitalExecution:false,methodologyMutationAuthority:'none'};
-  const prices=priceMap(rewards),existing=new Map((previous?.checkpoints||[]).filter(x=>x?.checkpointKey).map(x=>[x.checkpointKey,x])),priorEvents=new Map((previous?.events||[]).filter(x=>x?.eventKey).map(x=>[x.eventKey,x]));
-  const diagnostics={protocols:{},laneCount:0,acceptedPositiveIntervalCount:0,zeroIntervalCount:0,reconciliationCount:0,settlementQueryFailureCount:0,unresolvedSettlementCount:0,unvaluedIntervalCount:0,referenceAprUsed:false,unknownIsNotZero:true,stateReadConcurrency:STATE_READ_CONCURRENCY,settlementConcurrency:SETTLEMENT_CONCURRENCY,runtimeMs:null};
+  const compactedHistory=compactHistoricalCheckpoints(previous);
+  const prices=priceMap(rewards),existing=new Map(compactedHistory.checkpoints.map(x=>[x.checkpointKey,x])),priorEvents=new Map((previous?.events||[]).filter(x=>x?.eventKey).map(x=>[x.eventKey,x]));
+  const diagnostics={protocols:{},laneCount:0,acceptedPositiveIntervalCount:0,zeroIntervalCount:0,reconciliationCount:0,settlementQueryFailureCount:0,unresolvedSettlementCount:0,unvaluedIntervalCount:0,referenceAprUsed:false,unknownIsNotZero:true,stateReadConcurrency:STATE_READ_CONCURRENCY,settlementConcurrency:SETTLEMENT_CONCURRENCY,historyCompaction:compactedHistory.stats,runtimeMs:null};
 
   for(const[protocolKey,cfg]of Object.entries(PROTOCOLS)){
     const protocolStartedAt=Date.now();
     const provider=providers[protocolKey]||await providerFor(cfg);
-    const settlementRouter=settlementRouterFor(cfg);
     const latestNumber=await provider.getBlockNumber(),latestBlock=await getBlockReliable(provider,latestNumber);
     const observedAt=new Date(Number(latestBlock.timestamp)*1000).toISOString(),blockCache=new Map(),ownerCache=new Map();
     const lanes=await buildProtocolLanes({rewards,cfg,protocolKey,provider,latestNumber,prices});
+    const settlementRouter=settlementRouterFor(cfg,lanes);
     diagnostics.laneCount+=lanes.length;
     const pd={
       latestBlockNumber:latestNumber,observedAt,laneCount:lanes.length,boundaryFailures:[],boundaryCapability:[],
@@ -733,6 +855,7 @@ async function main(){
     status:output.status,checkpoints:output.checkpoints.length,events:output.events.length,lanes:output.diagnostics.laneCount,
     accepted:output.diagnostics.acceptedPositiveIntervalCount,reconciliations:output.diagnostics.reconciliationCount,
     settlementQueryFailures:output.diagnostics.settlementQueryFailureCount,
+    historyCompaction:output.diagnostics.historyCompaction,
     boundaryFailures:Object.values(output.diagnostics.protocols||{}).reduce((sum,x)=>sum+(x.boundaryFailures||[]).length,0),
     currentStateFailures:Object.values(output.diagnostics.protocols||{}).reduce((sum,x)=>sum+Number(x.currentStateFailureCount||0),0),
     historicalBoundarySkippedLaneReads:Object.values(output.diagnostics.protocols||{}).reduce((sum,x)=>sum+Number(x.historicalBoundarySkippedLaneReads||0),0),

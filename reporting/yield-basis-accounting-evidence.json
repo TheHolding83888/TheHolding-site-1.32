@@ -1,0 +1,40 @@
+{
+  "version": "0.1-yield-basis-factual-accrual-evidence",
+  "mechanism": "yield-basis-fees",
+  "generatedAt": null,
+  "status": "bootstrap-awaiting-first-boundary",
+  "fullAccountingStart": "2026-09-01T00:00:00.000Z",
+  "semantics": {
+    "openingBalanceCreatesIncome": false,
+    "earnedIndependentOfClaim": true,
+    "claimIsSettlementNotSecondIncome": true,
+    "formula": "closing preview_claim + Claim settlements - opening preview_claim, token by token",
+    "positiveDeltaRequired": true,
+    "referenceAprUsed": false,
+    "laterPriceMovementRewritesClosedIncome": false,
+    "unknownIsNotZero": true
+  },
+  "source": {
+    "chain": "Ethereum",
+    "chainId": 1,
+    "feeDistributor": "0xD11b416573EbC59b6B2387DA0D2c0D1b3b1F7A90",
+    "claimableMetric": "FeeDistributor.preview_claim(receiver,50,false)",
+    "settlementEvent": "Claim(user,token,amount)",
+    "rewardsSource": "companies/rewards-data.json",
+    "collectorReuse": "same FeeDistributor + wallet scope already used by rewards/company-rewards-engine.mjs"
+  },
+  "authority": {
+    "executionAuthority": "none",
+    "walletAuthority": "none",
+    "claimingAuthority": "none",
+    "capitalExecution": false,
+    "methodologyMutationAuthority": "none"
+  },
+  "checkpoints": [],
+  "events": [],
+  "diagnostics": {
+    "trackedWalletCount": 0,
+    "referenceAprUsed": false,
+    "unknownIsNotZero": true
+  }
+}
