@@ -311,7 +311,8 @@ async function main(){
     companies:output.summary.companyCount,mechanismInstances:output.summary.mechanismInstanceCount,
     uniqueMechanisms:output.summary.uniqueMechanismCount,coverageGaps:output.summary.reusableCoverageGapCount,
     unclassified:output.summary.unclassifiedMechanismInstanceCount,unmatchedLedgerEvents:output.summary.unmatchedCanonicalEventCount,
-    currentMonth:output.currentMonth,executionAuthority:output.authority.executionAuthority
+    currentMonth:output.currentMonth,executionAuthority:output.authority.executionAuthority,
+    topReusableGaps:output.gapRanking.slice(0,10)
   });
 }
 
