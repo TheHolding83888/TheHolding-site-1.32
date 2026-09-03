@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-03T12:09:50.381Z",
+  "generatedAt": "2026-09-03T12:25:33.237Z",
   "status": "watch",
-  "snapshotHash": "9a7810a32019a5662539ca0a93c4299e456c1317aff8421e09a5a61fffdbee24",
+  "snapshotHash": "9256bf6c9a796d264f7c8689ff7b8a9985aec6b54a99551d8518d81cf07f525f",
   "repository": {
-    "filesScanned": 912,
-    "bytesScanned": 25839290,
+    "filesScanned": 920,
+    "bytesScanned": 25958120,
     "criticalHashes": {
       ".github/workflows/admit-company-010-public.yml": "5feffbf58388675952487c3462d2f9149eecec6f3795483087010dd0d3b19cfb",
       ".github/workflows/ask-experience.yml": "deb9c4e1025390563f8a866f6ddf1c7870e748cbd6aba13fdbd6da2d38e983d4",
@@ -81,7 +81,7 @@
       ".github/workflows/update-project-memory-bootstrap.yml": "31b45f666ce234f6f461a71599661db607d0d0ba0731b09fd509460835db414f",
       ".github/workflows/update-proposal-work-queue.yml": "86f0f65b8b5de031bf72ed22934c37acb6d13e2fa80f995169285fa273e4be64",
       ".github/workflows/update-realised-cash-flow.yml": "d3d5351698ceacfe3bf93e7e61c5394f164c2f7c8dc82c3cce831a706aff89d5",
-      ".github/workflows/update-reporting.yml": "2f211c87d580e7badc72c5ad6e96a314d54e546cfc3645cd65d54ec83d2a943b",
+      ".github/workflows/update-reporting.yml": "c39ea750225125374e25e6060145adfd4ba40a6dbc2aad4d3f42cd35cf21cb74",
       ".github/workflows/update-runtime-owner-activation.yml": "a5f1506177cdd7d6a306d59c02393038d32b2c15fa930696cce4331f2ee5a677",
       ".github/workflows/update-stable-capital.yml": "2cab5cc5b960b633f7131e84d83a751036a73cdd6a60decc37910beb30d33954",
       ".github/workflows/update-vlcvx-votium-curve-gauge-flow.yml": "84982de193f009b5f45d31e803e454547a6fa2be69e5a44f08cd50be108f684e",
@@ -131,11 +131,11 @@
       ".github/workflows/verify-project-memory-bootstrap.yml": "95acc0cc2926d726a794a067f2d770b6a230874d823052ef50ad68a456e2d810",
       ".github/workflows/verify-project-memory-continuity-routing.yml": "69f486507c3d33744dd5db7ecabefc696250caeb0155f8fff776d6b571f8ed86",
       ".github/workflows/verify-proposal-lifecycle.yml": "9e5ea16e4c42e22cd55c800d2d1574eafe180ec1098826334cf7548a67167fcd",
-      ".github/workflows/verify-reporting-layer.yml": "e698712b04ad49bb4406df4e6efa6b7b0ea686ede5396953a60dbc750583c66c",
+      ".github/workflows/verify-reporting-layer.yml": "1dc7f46d459de1dc4e091eec81b37c3a1d88e42cfdec40334915aa8427f796ae",
       ".github/workflows/verify-rewards-drawer-row-coverage-parity.yml": "76168b29227af9950961b4b4643d4017be2bc3cf03596461f003c7cd1ff3a5c4",
       ".github/workflows/verify-rewards-protocol-asset-label-parity.yml": "91a4c686b4fc692f674fca0fff1ea9b8a59aded99775962866082c665c4fbdf1",
       ".github/workflows/verify-security-eval-detector.yml": "2c89f39584deb768f4f5900489cd3ab9bfeec9434eb7e8c9c5445cf622bc17ad",
-      ".github/workflows/verify-ve33-accounting.yml": "6ad9bf7960fe0f35fa544f1dc27e6ec234f5699f6a730c3ba98f4cf2794b0701",
+      ".github/workflows/verify-ve33-accounting.yml": "9164d6dc33998f4d651d871ecc750d4352fc9f22c9d4aff6e9bb5450713a6b38",
       ".github/workflows/verify-ve33-locked-managed-accounting.yml": "deb96c39ffbf38944bf182f49e3f0820cc4f854e41e3e2f068d7f07762705884",
       ".github/workflows/verify-vlcvx-full-registry-audit.yml": "a3cfca50323f74ea71aee0525d43d9fdcadebb5b112f859caead3197175f26c2",
       ".github/workflows/verify-vlcvx-votium-economic-candidate.yml": "45b319c29efac35fbfaf305da3f3ce153fd2e1bd733c53cf6787a5a19d08f694",
@@ -435,7 +435,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Wed, 02 Sep 2026 15:44:22 GMT",
+        "lastModified": "Wed, 02 Sep 2026 00:08:14 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -471,6 +471,48 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "d1270bebd71f88d9281c7908bd548307ac473e2aa9c11299a228ef24b4ccbfdd",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/update-reporting.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/update-reporting.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "2f211c87d580e7badc72c5ad6e96a314d54e546cfc3645cd65d54ec83d2a943b",
+        "currentSha256": "c39ea750225125374e25e6060145adfd4ba40a6dbc2aad4d3f42cd35cf21cb74"
+      }
+    },
+    {
+      "id": "ed0e1afa3073e53e4a1776f0bb4853be4c213c3d47fb142423fb972faca730d3",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/verify-reporting-layer.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-reporting-layer.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "e698712b04ad49bb4406df4e6efa6b7b0ea686ede5396953a60dbc750583c66c",
+        "currentSha256": "1dc7f46d459de1dc4e091eec81b37c3a1d88e42cfdec40334915aa8427f796ae"
+      }
+    },
+    {
+      "id": "1b902a3eca2062e0c958081718c109c4c17856fc2a112a7986c2dfbf87f37434",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/verify-ve33-accounting.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-ve33-accounting.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "6ad9bf7960fe0f35fa544f1dc27e6ec234f5699f6a730c3ba98f4cf2794b0701",
+        "currentSha256": "9164d6dc33998f4d651d871ecc750d4352fc9f22c9d4aff6e9bb5450713a6b38"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -1097,10 +1139,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 809,
+    "runCount": 810,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/09/2026-09-03T12-09-50-381Z-9a7810a320.json",
-    "latestRecordHash": "b9d2a09486bf6b2da8c9f265f1ec3fdadb3d07349ee7bcc8597f3e459859dbec",
+    "latestRecordPath": "security/security-vault/2026/09/2026-09-03T12-25-33-237Z-9256bf6c9a.json",
+    "latestRecordHash": "e3ba7d43b169d7dc6b4baef4ea92988d373fdcfdfd9d64eb179b9e51e555c256",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
