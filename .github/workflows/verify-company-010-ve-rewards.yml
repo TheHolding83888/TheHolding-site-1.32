@@ -4,9 +4,11 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - 'rewards/company-010-generic-ve-promotion.mjs'
       - 'rewards/company-010-ve-rewards.mjs'
       - 'rewards/company-010-rewards-overlay.mjs'
       - '.github/workflows/update-company-rewards.yml'
+      - '.github/workflows/verify-company-010-ve-rewards.yml'
       - 'companies/company-010-public-adapter.js'
       - 'intelligence/project-memory/THE_HOLDING_KNOWN_MECHANISM_REUSE_AND_PROMOTION_CANON_2026-08-18.md'
 
@@ -27,17 +29,21 @@ jobs:
       - name: Syntax
         run: |
           set -euo pipefail
+          node --check rewards/company-010-generic-ve-promotion.mjs
           node --check rewards/company-010-ve-rewards.mjs
           node --check rewards/company-010-rewards-overlay.mjs
           node --check companies/company-010-public-adapter.js
       - name: Install bounded dependency
         run: npm install --no-save --no-package-lock ethers@6
-      - name: Read Company #010 ve state
+      - name: Read Company #010 ve state through generic discovery
         env:
           BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
           BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
           OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
-        run: node rewards/company-010-ve-rewards.mjs
+        run: |
+          # Promotion diagnostics intentionally remain fail-closed and include
+          # direct operational discovery details when a route is incomplete.
+          node rewards/company-010-ve-rewards.mjs
       - name: Verify exact ve custody semantics
         run: |
           set -euo pipefail
@@ -55,7 +61,7 @@ jobs:
           if(d.authority?.executionAuthority!=='none')throw new Error('authority drift');
           console.log('Company #010 exact ve custody PASS',Object.fromEntries(Object.entries(d.routes).map(([k,v])=>[k,{status:v.status,veNftCount:v.veNftCount,mode:v.mode,publicState:v.publicState,compounded:v.compounded?.amount,claimable:v.claimable?.amount}])));
           NODE
-      - name: Build Company #010 rewards overlay and verify known-mechanism parity
+      - name: Build Company #010 rewards overlay and verify generic position preservation
         run: |
           set -euo pipefail
           node rewards/company-010-rewards-overlay.mjs
@@ -63,6 +69,7 @@ jobs:
           const fs=require('fs');
           const d=JSON.parse(fs.readFileSync('companies/rewards-data.json','utf8')),c=d.companies?.Cypher;
           const finite=x=>x!==null&&x!==undefined&&x!==''&&Number.isFinite(Number(x));
+          const wallet='0x64688f4adc3f72cdb44d07e4879c724cd7025696';
           const capability=d.diagnostics?.company010?.capability;
           const compatibleCapabilities=[
             'crv-and-ve-reward-semantics-0.4-measured-earned-presentation-parity',
@@ -73,6 +80,22 @@ jobs:
           for(const route of ['aerodrome-ve','velodrome-ve-direct']){
             const s=(c?.sources||[]).find(x=>x.route===route);
             if(!s||!['ok','partial'].includes(s.status)||!['Compounded','Claimable'].includes(s.details?.rewardState))throw new Error('measured public state missing: '+route);
+            const positions=[];
+            for(const p of s.details?.positions||[])positions.push({...p,holderAddress:p?.holderAddress||s.details?.wallet});
+            for(const wr of s.details?.walletResults||[])for(const p of wr?.details?.positions||[])positions.push({...p,holderAddress:p?.holderAddress||wr.wallet});
+            if(!positions.length)throw new Error('generic exact positions lost after overlay: '+route);
+            for(const p of positions){
+              if(String(p.holderAddress||'').toLowerCase()!==wallet)throw new Error('generic holder drift after overlay: '+route);
+              if(!/^\d+$/.test(String(p.tokenId||'')))throw new Error('generic tokenId lost after overlay: '+route);
+            }
+            if(route==='aerodrome-ve'){
+              const direct=positions.find(p=>p.mode==='direct');
+              if(!direct||direct.operationalDiscovery?.complete!==true||!Number.isFinite(Number(direct.rewardIndex?.contractCount)))throw new Error('Cypher Aero direct reward-index discovery missing');
+            }
+            if(route==='velodrome-ve-direct'){
+              const managed=positions.find(p=>p.mode==='managed');
+              if(!managed||!/^\d+$/.test(String(managed.managedTokenId||''))||!/^0x[0-9a-f]{40}$/i.test(String(managed.lockedManagedReward||'')))throw new Error('Cypher Velo managed custody proof missing');
+            }
             if(s.details?.rewardState==='Compounded'){
               const e=(c.embeddedIncome||[]).find(x=>x.route===route&&x.state==='Compounded');
               if(!e||e.claimableApplicable!==false||e.classification!=='compounded-locked'||!(Number(e.amount)>0))throw new Error('Compounded economic row missing: '+route);
@@ -93,7 +116,50 @@ jobs:
           const votium=(c?.sources||[]).find(x=>x.route==='votium-union');
           if(!votium||votium.status!=='warming'||votium.details?.unknownIsNotZero!==true)throw new Error('Votium must remain unresolved');
           if(c.totalUsdIsComplete!==false||c.settlement?.unknownRouteIsNotZero!==true)throw new Error('partial-total guard missing');
-          console.log('Company #010 rewards overlay dual-total known-mechanism parity PASS',{capability,embeddedUsd,claimableOnly,measuredEarnedUsd:c.measuredEarnedUsd});
+          console.log('Company #010 generic ve discovery + overlay preservation PASS',{capability,embeddedUsd,claimableOnly,measuredEarnedUsd:c.measuredEarnedUsd});
+          NODE
+      - name: Prove Cypher enters canonical ve33 factual discovery and closes Aero/Velo tracking gap
+        env:
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL || 'https://gateway.tenderly.co/public/optimism' }}
+          REWARDS_DATA_FILE: ./companies/rewards-data.json
+          VE33_EVIDENCE_FILE: /tmp/cypher-ve33-accounting-evidence.json
+          VE33_LOCKED_MANAGED_EVIDENCE_FILE: /tmp/cypher-ve33-locked-managed-accounting-evidence.json
+          ACCOUNTING_COVERAGE_FILE: /tmp/cypher-accounting-coverage.json
+          VE33_STATE_READ_CONCURRENCY: '2'
+          VE33_SETTLEMENT_CONCURRENCY: '2'
+        run: |
+          set -euo pipefail
+          node reporting/ve33-accounting-evidence.mjs
+          node reporting/ve33-locked-managed-accounting-evidence.mjs
+          node reporting/accounting-coverage.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const ve=JSON.parse(fs.readFileSync('/tmp/cypher-ve33-accounting-evidence.json','utf8'));
+          const lm=JSON.parse(fs.readFileSync('/tmp/cypher-ve33-locked-managed-accounting-evidence.json','utf8'));
+          const cov=JSON.parse(fs.readFileSync('/tmp/cypher-accounting-coverage.json','utf8'));
+          const same=x=>x?.company==='Cypher'&&x?.monthBoundary===false;
+          const cypherVe=(ve.checkpoints||[]).filter(same);
+          const cypherLm=(lm.checkpoints||[]).filter(same);
+          if(!cypherVe.some(x=>x.protocolKey==='aerodrome'))throw new Error('Cypher Aero current factual checkpoint missing');
+          if(!cypherVe.some(x=>x.protocolKey==='velodrome'))throw new Error('Cypher Velo current factual checkpoint missing');
+          if(!cypherLm.some(x=>x.protocolKey==='velodrome'))throw new Error('Cypher Velo LockedManaged current factual checkpoint missing');
+          if((cypherVe.length+cypherLm.length)!==new Set([...cypherVe,...cypherLm].map(x=>x.checkpointKey)).size)throw new Error('duplicate Cypher factual checkpoint identity');
+          const aero=(cov.summary?.reusableCoverageGaps||cov.reusableCoverageGaps||[]).find(x=>x.engineId==='aerodrome_veaero');
+          const velo=(cov.summary?.reusableCoverageGaps||cov.reusableCoverageGaps||[]).find(x=>x.engineId==='velodrome_vevelo');
+          const c=cov.companies?.Cypher;
+          if(c?.mechanisms?.aerodrome_veaero?.months?.[cov.currentMonth]?.factualTrackingActive!==true)throw new Error('Coverage did not admit Cypher Aero factual tracking');
+          if(c?.mechanisms?.velodrome_vevelo?.months?.[cov.currentMonth]?.factualTrackingActive!==true)throw new Error('Coverage did not admit Cypher Velo factual tracking');
+          if(aero&&Number(aero.factualTrackingCompanyCount)!==Number(aero.activeCompanyCount))throw new Error('Aerodrome reusable tracking gap remains after Cypher promotion');
+          if(velo&&Number(velo.factualTrackingCompanyCount)!==Number(velo.activeCompanyCount))throw new Error('Velodrome reusable tracking gap remains after Cypher promotion');
+          if(ve.authority?.executionAuthority!=='none'||lm.authority?.executionAuthority!=='none'||cov.authority?.executionAuthority!=='none')throw new Error('accounting authority drift');
+          console.log('Cypher canonical ve33 factual integration PASS',{
+            cypherVeCurrentCheckpoints:cypherVe.length,
+            cypherLockedManagedCurrentCheckpoints:cypherLm.length,
+            aeroTracking:c.mechanisms.aerodrome_veaero.months[cov.currentMonth].factualTrackingActive,
+            veloTracking:c.mechanisms.velodrome_vevelo.months[cov.currentMonth].factualTrackingActive,
+            executionAuthority:'none'
+          });
           NODE
       - name: Verify public measured-earned projection and fail-closed unknown pricing
         run: |
@@ -109,4 +175,4 @@ jobs:
       - name: Verify read-only boundary
         run: |
           set -euo pipefail
-          ! grep -Eqi 'wallet\.send|sendTransaction|eth_sendTransaction|eth_sendRawTransaction|private[_ -]?key|mnemonic|signer\.send' rewards/company-010-ve-rewards.mjs rewards/company-010-rewards-overlay.mjs companies/company-010-public-adapter.js
+          ! grep -Eqi 'wallet\.send|sendTransaction|eth_sendTransaction|eth_sendRawTransaction|private[_ -]?key|mnemonic|signer\.send' rewards/company-010-generic-ve-promotion.mjs rewards/company-010-ve-rewards.mjs rewards/company-010-rewards-overlay.mjs companies/company-010-public-adapter.js

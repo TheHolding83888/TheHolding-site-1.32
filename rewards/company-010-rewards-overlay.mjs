@@ -13,6 +13,7 @@ const finite=x=>x!==null&&x!==undefined&&x!==''&&Number.isFinite(Number(x));
 const round=(x,d=8)=>finite(x)?Number(Number(x).toFixed(d)):null;
 
 const data=read(DATA),state=read(STATE),ve=fs.existsSync(VE_STATE)?read(VE_STATE):null;
+const establishedCypher=data?.companies?.Cypher||null;
 if(!['0.3.9','0.3.10'].includes(String(data.version)))throw new Error(`Rewards v0.3.9/v0.3.10 required, got ${data.version}`);
 if(data.methodologyVersion!=='0.2.2-earned-inside-protocols-multiwallet')throw new Error('Rewards methodology mismatch');
 if(state?.version!=='0.3-company-010-production-state-stakedao-complete'||state?.company?.registry!=='010'||state?.company?.name!=='Cypher')throw new Error('CRV-strategy-complete Cypher canonical state required');
@@ -57,8 +58,10 @@ if(projectXEnabled){
 }
 
 function veRoute(key,row,token){
+  const route=key==='aerodrome'?'aerodrome-ve':'velodrome-ve-direct';
+  const establishedSource=(establishedCypher?.sources||[]).find(s=>s?.route===route)||null;
   const x=ve?.routes?.[key];
-  if(!x)return {source:{protocol:key==='aerodrome'?'Aerodrome':'Velodrome',route:key==='aerodrome'?'aerodrome-ve':'velodrome-ve-direct',status:'warming',chain:key==='aerodrome'?'Base':'Optimism',metric:'existing The Holding ve reward mechanism',note:'Company #010 exact ve state was not available in this run; unknown is not zero.',details:{walletAlias:'Wallet 2',rewardState:'Pending',unknownIsNotZero:true}},embedded:null};
+  if(!x)return {source:{protocol:key==='aerodrome'?'Aerodrome':'Velodrome',route,status:'warming',chain:key==='aerodrome'?'Base':'Optimism',metric:'existing The Holding ve reward mechanism',note:'Company #010 exact ve state was not available in this run; unknown is not zero.',details:{...(establishedSource?.details||{}),walletAlias:'Wallet 2',rewardState:'Pending',unknownIsNotZero:true}},embedded:null};
   const status=['ok','partial'].includes(x.status)?x.status:'warming';
   const rewardState=x.publicState||'Pending';
   const price=finite(row?.priceUsd)&&Number(row.priceUsd)>0?Number(row.priceUsd):null;
@@ -68,7 +71,7 @@ function veRoute(key,row,token){
     const amount=Number(x.compounded.amount);
     embedded={protocol:x.protocol,route:x.route,chain:x.chain,state:'Compounded',claimableApplicable:false,symbol:x.compounded.symbol,amount:round(amount,12),classification:'compounded-locked',usdValue:price!==null?round(amount*price,6):null,priceUsd:price,priceMethod:price!==null?'canonical-company-010-current-token-price':null,usdValueIncludedInClaimableTotal:false,usdValueIncludedInMeasuredEarnedTotal:price!==null,metric:'LockedManagedReward.earned(baseToken, veNFT)',note:'Managed veNFT reward remains locked in the strategy and is represented as Compounded, not as freely claimable income. USD is included only in measured earned presentation when priced, never in claimable totals.'};
   }
-  return {source:{protocol:x.protocol,route:x.route,status,chain:x.chain,metric:'VotingEscrow managed state + current earned / distributor claimable',note:x.mode==='managed-compounded'?'Company #010 veNFT is managed; locked managed reward is Compounded. Any free/distributor accrual remains separately Claimable.':x.mode==='direct'?'Company #010 veNFT is direct. Current distributor accrual is Claimable; managed Compounded status is not fabricated.':'Company #010 ve route has mixed or incomplete custody semantics; only measured amounts are admitted.',details:{walletAlias:x.walletAlias,wallet:x.wallet,veNftCount:x.veNftCount,managedCount:x.managedCount,directCount:x.directCount,mode:x.mode,rewardState,statusPublic:rewardState,unknownIsNotZero:status!=='ok',issues:x.issues||[]}},embedded};
+  return {source:{protocol:x.protocol,route:x.route,status,chain:x.chain,metric:'VotingEscrow managed state + current earned / distributor claimable',note:x.mode==='managed-compounded'?'Company #010 veNFT is managed; locked managed reward is Compounded. Any free/distributor accrual remains separately Claimable.':x.mode==='direct'?'Company #010 veNFT is direct. Current distributor accrual is Claimable; managed Compounded status is not fabricated.':'Company #010 ve route has mixed or incomplete custody semantics; only measured amounts are admitted.',details:{...(establishedSource?.details||{}),walletAlias:x.walletAlias,wallet:x.wallet,veNftCount:x.veNftCount,managedCount:x.managedCount,directCount:x.directCount,mode:x.mode,rewardState,statusPublic:rewardState,unknownIsNotZero:status!=='ok',issues:x.issues||[]}},embedded};
 }
 
 const aero=veRoute('aerodrome',aeroRow,'0x940181a94A35A4569E4529A3CDfB74e38FD98631');
