@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import {
   VERSION,MECHANISM,DISTRIBUTOR,FULL_ACCOUNTING_START,
-  reconcileEntitlement,trackedWalletsFromRewards,priceIndexFromRewards
+  reconcileEntitlement,trackedWalletsFromRewards,priceIndexFromRewards,blockAtOrBefore
 } from './yield-basis-accounting-evidence.mjs';
 
 assert.equal(VERSION,'0.1-yield-basis-factual-accrual-evidence');
@@ -58,6 +58,22 @@ const p=prices.get('Example.eth','0x0000000000000000000000000000000000000002','0
 assert.equal(p.unitUsd,74250.5);
 assert.equal(p.priceMethod,'redemption-value:WBTC@canonical');
 
+// A recent accounting boundary must be located from the recent chain tip rather
+// than by probing from genesis. This protects public RPCs from unnecessary
+// archive reads while preserving the exact at-or-before block contract.
+const requested=[];
+const fakeProvider={
+  async getBlock(number){
+    requested.push(Number(number));
+    return{number:Number(number),timestamp:Number(number)*12};
+  }
+};
+const targetBlock=99_000,latestBlock=100_000;
+const boundary=await blockAtOrBefore(fakeProvider,new Date(targetBlock*12*1000).toISOString(),latestBlock,new Map());
+assert.equal(boundary.blockNumber,targetBlock);
+assert.ok(Math.min(...requested)>95_000,`recent boundary search regressed into deep archive reads: ${Math.min(...requested)}`);
+assert.ok(requested.length<40,`recent boundary search used too many block reads: ${requested.length}`);
+
 console.log('Yield Basis factual accrual evidence validation OK',{
   version:VERSION,
   feeDistributor:DISTRIBUTOR,
@@ -66,6 +82,9 @@ console.log('Yield Basis factual accrual evidence validation OK',{
   claimIsSettlementNotSecondIncome:true,
   claimToZeroHandled:true,
   zeroWalletStatePreserved:true,
+  recentBoundarySearch:true,
+  boundaryLookupReads:requested.length,
+  oldestBoundaryProbe:Math.min(...requested),
   referenceAprUsed:false,
   unknownIsNotZero:true
 });
