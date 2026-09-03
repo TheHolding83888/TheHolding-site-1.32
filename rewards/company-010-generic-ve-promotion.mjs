@@ -14,6 +14,12 @@ const DIRECT_INDEX_MARKER=[
   '    const indexEntry = directVeRewardIndex.get(key) || null;',
   '    const recent = await boundedRecentVotedPools(cfg, tokenId, provider, indexEntry);'
 ].join('\n');
+const MAIN_EXIT_MARKER=[
+  'main().catch(err => {',
+  '  console.error(err);',
+  '  process.exitCode = 1;',
+  '});'
+].join('\n');
 const REQUIRED_ENGINE_MARKERS=[
   "const VERSION = '0.3.9'",
   'async function collectVeProtocol',
@@ -22,6 +28,7 @@ const REQUIRED_ENGINE_MARKERS=[
   'async function currentVoterRewardRegistry',
   'async function probeRewardParticipation',
   DIRECT_INDEX_MARKER,
+  MAIN_EXIT_MARKER,
   "case 'aerodrome-ve': return collectVeProtocol",
   "case 'velodrome-ve-direct': return collectVeProtocol"
 ];
@@ -168,6 +175,17 @@ function addStateNativeFirstOnboarding(source){
   return source.replace(DIRECT_INDEX_MARKER,replacement);
 }
 
+function addDeterministicChildExit(source){
+  if(!source.includes(MAIN_EXIT_MARKER))throw new Error('generic Rewards main-exit anchor changed');
+  const replacement=[
+    'main().then(() => process.exit(0)).catch(err => {',
+    '  console.error(err);',
+    '  process.exit(1);',
+    '});'
+  ].join('\n');
+  return source.replace(MAIN_EXIT_MARKER,replacement);
+}
+
 export function promoteCypherThroughGenericRewards(){
   if(!fs.existsSync(DATA))throw new Error(`canonical Rewards data missing: ${DATA}`);
   const original=fs.readFileSync(ENGINE,'utf8');
@@ -185,6 +203,7 @@ export function promoteCypherThroughGenericRewards(){
   const extension=`const COMPANIES = [\n  {\n    name: 'Cypher',\n    wallets: [{ alias: 'Wallet 2', address: '${WALLET}' }],\n    routes: ['aerodrome-ve', 'velodrome-ve-direct']\n  }\n];`;
   let transformed=original.slice(0,start)+extension+original.slice(end+3);
   transformed=addStateNativeFirstOnboarding(transformed);
+  transformed=addDeterministicChildExit(transformed);
 
   const tempDir=fs.mkdtempSync(path.join(path.dirname(ENGINE),'.holding-cypher-generic-'));
   const tempEngine=path.join(tempDir,'company-rewards-engine-cypher.mjs');
