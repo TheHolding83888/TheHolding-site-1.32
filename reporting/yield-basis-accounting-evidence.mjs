@@ -21,17 +21,19 @@ const ABI=[
   'event Claim(address indexed user,address indexed token,uint256 amount)'
 ];
 const ERC20_ABI=['function decimals() view returns (uint8)','function symbol() view returns (string)'];
-const MAX_LOG_BLOCKS=40_000;
+const MAX_LOG_BLOCKS=9_500;
 const MAX_CHECKPOINTS_PER_WALLET=460;
+const BLOCK_LOOKUP_TIMEOUT_MS=8_000;
+const BLOCK_LOOKUP_RETRIES=3;
+const RECENT_BOUNDARY_INITIAL_STEP=4_096;
 
 const lower=v=>String(v||'').toLowerCase();
 const finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v));
-const iso=v=>{const t=Date.parse(v||'');return Number.isFinite(t)?new Date(t).toISOString():null;};
 const round=(v,d=12)=>finite(v)?Number(Number(v).toFixed(d)):null;
 const isAddress=v=>/^0x[0-9a-f]{40}$/i.test(String(v||''));
 const walletStateKey=(company,wallet)=>`${company}|${lower(wallet)}|${MECHANISM}`;
-const tokenStateKey=(company,wallet,token)=>`${walletStateKey(company,wallet)}|${lower(token)}`;
 const previousDay=v=>new Date(Date.parse(v)-1).toISOString().slice(0,10);
+const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 
 async function readJson(file,fallback={}){try{return JSON.parse(await fs.readFile(file,'utf8'));}catch{return fallback;}}
 async function writeJson(file,data){await fs.mkdir(path.dirname(file),{recursive:true});await fs.writeFile(file,JSON.stringify(data,null,2)+'\n');}
@@ -82,13 +84,47 @@ export function priceIndexFromRewards(rewards){
   }};
 }
 
-async function blockAtOrBefore(provider,timestamp,latestNumber,cache){
+async function getBlockReliable(provider,blockNumber,{attempts=BLOCK_LOOKUP_RETRIES,timeoutMs=BLOCK_LOOKUP_TIMEOUT_MS}={}){
+  let last=null;
+  for(let attempt=1;attempt<=attempts;attempt++){
+    try{
+      const block=await Promise.race([
+        provider.getBlock(blockNumber),
+        new Promise((_,reject)=>setTimeout(()=>reject(new Error(`Ethereum block ${blockNumber} lookup timeout`)),timeoutMs))
+      ]);
+      if(block)return block;
+      last=new Error(`Ethereum block ${blockNumber} unavailable`);
+    }catch(error){last=error;}
+    if(attempt<attempts)await wait(250*attempt);
+  }
+  throw last||new Error(`Ethereum block ${blockNumber} unavailable`);
+}
+
+export async function blockAtOrBefore(provider,timestamp,latestNumber,cache=new Map()){
   const key=String(timestamp);if(cache.has(key))return cache.get(key);
   const target=Math.floor(Date.parse(timestamp)/1000);if(!Number.isFinite(target))throw new Error(`Invalid checkpoint timestamp ${timestamp}`);
-  let lo=0,hi=latestNumber;
-  while(lo<hi){const mid=Math.ceil((lo+hi)/2),b=await provider.getBlock(mid);if(!b)throw new Error(`Ethereum block ${mid} unavailable`);if(Number(b.timestamp)<=target)lo=mid;else hi=mid-1;}
-  const b=await provider.getBlock(lo);if(!b)throw new Error(`Ethereum boundary block ${lo} unavailable`);
-  const result={blockNumber:Number(b.number),blockTimestamp:new Date(Number(b.timestamp)*1000).toISOString()};cache.set(key,result);return result;
+  const latest=await getBlockReliable(provider,latestNumber);
+  if(Number(latest.timestamp)<=target){
+    const result={blockNumber:Number(latest.number),blockTimestamp:new Date(Number(latest.timestamp)*1000).toISOString()};
+    cache.set(key,result);return result;
+  }
+
+  let hiNumber=Number(latestNumber),loNumber=null,loBlock=null,step=RECENT_BOUNDARY_INITIAL_STEP;
+  while(loNumber===null){
+    const candidate=Math.max(0,Number(latestNumber)-step),block=await getBlockReliable(provider,candidate);
+    if(Number(block.timestamp)<=target){loNumber=candidate;loBlock=block;break;}
+    hiNumber=candidate;
+    if(candidate===0)throw new Error(`Yield Basis boundary ${timestamp} predates available chain history`);
+    step*=2;
+  }
+
+  while(loNumber+1<hiNumber){
+    const mid=Math.floor((loNumber+hiNumber)/2),block=await getBlockReliable(provider,mid);
+    if(Number(block.timestamp)<=target){loNumber=mid;loBlock=block;}else hiNumber=mid;
+  }
+  if(!loBlock)loBlock=await getBlockReliable(provider,loNumber);
+  const result={blockNumber:Number(loBlock.number),blockTimestamp:new Date(Number(loBlock.timestamp)*1000).toISOString()};
+  cache.set(key,result);return result;
 }
 
 function monthBoundaries(startIso,endIso){
@@ -151,14 +187,13 @@ export async function buildYieldBasisEvidence({rewards,previous={},generatedAt=n
   const wallets=trackedWalletsFromRewards(rewards),priceIndex=priceIndexFromRewards(rewards);
   if(!wallets.length)return{version:VERSION,mechanism:MECHANISM,generatedAt,status:'no-tracked-wallets',fullAccountingStart:FULL_ACCOUNTING_START,semantics:{openingBalanceCreatesIncome:false,earnedIndependentOfClaim:true,claimIsSettlementNotSecondIncome:true,formula:'closing preview_claim + Claim settlements - opening preview_claim, token by token',positiveDeltaRequired:true,referenceAprUsed:false,laterPriceMovementRewritesClosedIncome:false,unknownIsNotZero:true},source:{chain:'Ethereum',chainId:1,feeDistributor:DISTRIBUTOR,claimableMetric:'FeeDistributor.preview_claim(receiver,50,false)',settlementEvent:'Claim(user,token,amount)',rewardsSource:'companies/rewards-data.json'},authority,checkpoints:previous?.checkpoints||[],events:previous?.events||[],diagnostics:{trackedWalletCount:0,referenceAprUsed:false,unknownIsNotZero:true}};
 
-  const rpc=provider||new JsonRpcProvider(RPC_URL,1),contract=new Contract(DISTRIBUTOR,ABI,rpc),latestNumber=await rpc.getBlockNumber(),latestBlock=await rpc.getBlock(latestNumber);
-  if(!latestBlock)throw new Error('Ethereum latest block unavailable');
+  const rpc=provider||new JsonRpcProvider(RPC_URL,1),contract=new Contract(DISTRIBUTOR,ABI,rpc),latestNumber=await rpc.getBlockNumber(),latestBlock=await getBlockReliable(rpc,latestNumber);
   const currentObservedAt=new Date(Number(latestBlock.timestamp)*1000).toISOString(),blockCache=new Map(),metaCache=new Map();
   const byCheckpoint=new Map((previous?.checkpoints||[]).filter(x=>x?.checkpointKey).map(x=>[x.checkpointKey,x])),boundaryFailures=[];
 
   for(const w of wallets){
     for(const boundaryAt of monthBoundaries(FULL_ACCOUNTING_START,currentObservedAt)){
-      let b;try{b=await blockAtOrBefore(rpc,boundaryAt,latestNumber,blockCache);}catch(error){boundaryFailures.push({stateKey:w.stateKey,boundaryAt,error:error?.message||String(error)});continue;}
+      let b;try{b=await blockAtOrBefore(rpc,boundaryAt,latestNumber,blockCache);}catch(error){boundaryFailures.push({stateKey:w.stateKey,boundaryAt,error:error?.shortMessage||error?.message||String(error)});continue;}
       const key=`month-boundary:${w.stateKey}:${b.blockNumber}`;if(byCheckpoint.has(key))continue;
       try{byCheckpoint.set(key,await buildCheckpoint({provider:rpc,contract,walletRow:w,observedAt:boundaryAt,blockNumber:b.blockNumber,blockTimestamp:b.blockTimestamp,priceIndex,metaCache,kind:'month-boundary'}));}
       catch(error){boundaryFailures.push({stateKey:w.stateKey,boundaryAt,blockNumber:b.blockNumber,error:error?.shortMessage||error?.message||String(error)});}
@@ -204,7 +239,8 @@ export async function buildYieldBasisEvidence({rewards,previous={},generatedAt=n
 async function main(){
   const [rewards,previous]=await Promise.all([readJson(DEFAULT_REWARDS),readJson(DEFAULT_OUTPUT,{})]);
   const output=await buildYieldBasisEvidence({rewards,previous});await writeJson(DEFAULT_OUTPUT,output);
-  console.log('Yield Basis factual accrual evidence built',{status:output.status,checkpoints:output.checkpoints?.length||0,events:output.events?.length||0,acceptedPositiveTokenIntervals:output.diagnostics?.acceptedPositiveTokenIntervalCount||0,reconciliations:output.diagnostics?.reconciliationCount||0,unvalued:output.diagnostics?.unvaluedEventCount||0,executionAuthority:output.authority?.executionAuthority});
+  console.log('Yield Basis factual accrual evidence built',{status:output.status,checkpoints:output.checkpoints?.length||0,events:output.events?.length||0,acceptedPositiveTokenIntervals:output.diagnostics?.acceptedPositiveTokenIntervalCount||0,reconciliations:output.diagnostics?.reconciliationCount||0,unvalued:output.diagnostics?.unvaluedEventCount||0,boundaryFailures:output.diagnostics?.monthBoundaryFailures?.length||0,executionAuthority:output.authority?.executionAuthority});
+  if(output.diagnostics?.monthBoundaryFailures?.length)console.log('Yield Basis boundary failures JSON',JSON.stringify(output.diagnostics.monthBoundaryFailures,null,2));
 }
 
 if(process.argv[1]&&path.resolve(process.argv[1])===__filename)main().catch(error=>{console.error(error);process.exitCode=1;});
