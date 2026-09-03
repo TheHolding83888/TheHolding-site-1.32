@@ -1,0 +1,62 @@
+name: Verify Accounting Coverage Registry
+
+on:
+  pull_request:
+    paths:
+      - 'reporting/accounting-coverage.mjs'
+      - 'reporting/accounting-coverage-validation.mjs'
+      - 'reporting/accounting-coverage-gap-diagnostic.mjs'
+      - 'reporting/accounting-coverage-company-diagnostic.mjs'
+      - 'reporting/accounting-coverage.json'
+      - 'companies/productivity-data.json'
+      - 'companies/rewards-data.json'
+      - 'companies/embedded-yield-ledger.json'
+      - 'reporting/income-ledger.json'
+      - 'reporting/ve33-accounting-evidence.json'
+      - 'reporting/ve33-locked-managed-accounting-evidence.json'
+      - 'reporting/yield-basis-accounting-evidence.json'
+      - 'reporting/frax-yield-accounting-evidence.json'
+      - '.github/workflows/verify-accounting-coverage.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-accounting-coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: Validate dynamic factual-tracking coverage registry
+        shell: bash
+        env:
+          ACCOUNTING_COVERAGE_FILE: /tmp/accounting-coverage.json
+          ACCOUNTING_DIAGNOSTIC_COMPANY: Cypher
+          PRODUCTIVITY_DATA_FILE: ./companies/productivity-data.json
+          REWARDS_DATA_FILE: ./companies/rewards-data.json
+          INCOME_LEDGER_FILE: ./reporting/income-ledger.json
+          EMBEDDED_YIELD_LEDGER_FILE: ./companies/embedded-yield-ledger.json
+          VE33_EVIDENCE_FILE: ./reporting/ve33-accounting-evidence.json
+          VE33_LOCKED_MANAGED_EVIDENCE_FILE: ./reporting/ve33-locked-managed-accounting-evidence.json
+          YIELD_BASIS_EVIDENCE_FILE: ./reporting/yield-basis-accounting-evidence.json
+          FRAX_EVIDENCE_FILE: ./reporting/frax-yield-accounting-evidence.json
+        run: |
+          set -euo pipefail
+          node --check reporting/accounting-coverage.mjs
+          node --check reporting/accounting-coverage-validation.mjs
+          node --check reporting/accounting-coverage-gap-diagnostic.mjs
+          node --check reporting/accounting-coverage-company-diagnostic.mjs
+          node reporting/accounting-coverage.mjs
+          test -s "$ACCOUNTING_COVERAGE_FILE"
+          node reporting/accounting-coverage-validation.mjs
+          node reporting/accounting-coverage-gap-diagnostic.mjs
+          node reporting/accounting-coverage-company-diagnostic.mjs
+          git diff --check
