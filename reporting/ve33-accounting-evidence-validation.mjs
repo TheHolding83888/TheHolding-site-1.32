@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
 import { Interface } from 'ethers';
-import { VERSION, PROTOCOLS, mapLimit, reconcileEntitlement, decodeRewardClaimTokenId, trackedPositionDescriptors, compactHistoricalCheckpoints } from './ve33-accounting-evidence.mjs';
+import { VERSION, PROTOCOLS, mapLimit, reconcileEntitlement, decodeRewardClaimTokenId, trackedPositionDescriptors, compactHistoricalCheckpoints, buildSettlementAddressGroups } from './ve33-accounting-evidence.mjs';
 
 assert.equal(VERSION,'0.1-ve33-factual-accrual-evidence');
 assert.equal(PROTOCOLS.aerodrome.chainId,8453);
@@ -35,6 +35,22 @@ assert.equal(compacted.stats.retainedMonthBoundaryCount,2);
 assert.equal(compacted.stats.retainedEventProofCheckpointCount,2);
 assert.equal(compacted.stats.retainedLatestLaneCheckpointCount,2);
 assert.equal(compacted.stats.policy,'retain-month-boundaries-latest-per-lane-and-factual-event-proof-checkpoints');
+
+const pooledGroups=buildSettlementAddressGroups([
+  {kind:'voting-reward',rewardContract:'0x1111111111111111111111111111111111111111'},
+  {kind:'free-managed-reward',rewardContract:'0x2222222222222222222222222222222222222222'},
+  {kind:'voting-reward',rewardContract:'0x1111111111111111111111111111111111111111'},
+  {kind:'rebase-distributor',rewardContract:null}
+],1);
+assert.deepEqual(pooledGroups,[
+  ['0x1111111111111111111111111111111111111111'],
+  ['0x2222222222222222222222222222222222222222']
+]);
+const pooledSingleGroup=buildSettlementAddressGroups([
+  {kind:'voting-reward',rewardContract:'0x2222222222222222222222222222222222222222'},
+  {kind:'voting-reward',rewardContract:'0x1111111111111111111111111111111111111111'}
+],48);
+assert.deepEqual(pooledSingleGroup,[['0x1111111111111111111111111111111111111111','0x2222222222222222222222222222222222222222']]);
 
 let active=0,maxActive=0;
 const bounded=await mapLimit([1,2,3,4,5,6],2,async value=>{
