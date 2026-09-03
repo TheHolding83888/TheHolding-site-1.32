@@ -16,6 +16,10 @@ assert.equal(contract.dailySnapshotUtc,'05:07 UTC');
 assert.equal(contract.epistemics?.naturalScheduleProofRequired,true);
 assert.equal(contract.epistemics?.manualDispatchDoesNotProveSchedulerHealth,true);
 assert.equal(contract.epistemics?.unknownIsNotZero,true);
+assert.equal(contract.generatedStateCollisionRecovery?.mode,'fresh-main-recompute');
+assert.equal(contract.generatedStateCollisionRecovery?.oldHeadFailedJobRerunAllowed,false);
+assert.equal(contract.generatedStateCollisionRecovery?.conflictMergeGuessingAllowed,false);
+assert.match(String(contract.generatedStateCollisionRecovery?.reason||''),/fresh main/i,'generated-state collision recovery must explain fresh-main recompute');
 
 assert.equal(contract.authority?.repositoryMutationAuthority,true,'Rewards writer must retain bounded contents write authority');
 for(const key of ['workflowDispatchAuthority','capitalExecution','walletAuthority','methodologyMutationAuthority']){
@@ -46,5 +50,6 @@ console.log('Rewards workflow definition paired proof PASS',{
   productionWriterContentsAuthority:true,
   workflowDispatchAuthority:false,
   concurrency:'company-rewards-daily/non-cancellable',
-  naturalScheduleProofRequired:true
+  naturalScheduleProofRequired:true,
+  generatedStateCollisionRecovery:'fresh-main-recompute/no-old-head-rerun/no-merge-guessing'
 });
