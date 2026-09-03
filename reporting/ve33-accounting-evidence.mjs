@@ -104,6 +104,46 @@ function laneKey(x){
 function checkpointKey(lane,blockNumber){return`${lane.laneKey}|${blockNumber}`;}
 function eventKey(lane,open,close){return`ve33:${lane.laneKey}:${open.blockNumber}:${close.blockNumber}`;}
 
+export function compactHistoricalCheckpoints(previous={}){
+  const rows=(previous?.checkpoints||[]).filter(x=>x?.checkpointKey&&x?.laneKey&&Number.isFinite(Number(x.blockNumber)));
+  const byKey=new Map(rows.map(x=>[x.checkpointKey,x]));
+  const latestByLane=new Map();
+  for(const row of rows){
+    const prior=latestByLane.get(row.laneKey);
+    if(!prior||Number(row.blockNumber)>Number(prior.blockNumber))latestByLane.set(row.laneKey,row);
+  }
+
+  const eventProofKeys=new Set();
+  for(const event of previous?.events||[]){
+    const source=String(event?.sourceIdentity||'');
+    const arrow=source.indexOf('->');
+    if(arrow<=0)continue;
+    const openingKey=source.slice(0,arrow),closingKey=source.slice(arrow+2);
+    if(byKey.has(openingKey))eventProofKeys.add(openingKey);
+    if(byKey.has(closingKey))eventProofKeys.add(closingKey);
+  }
+
+  const keep=new Set(eventProofKeys);
+  for(const row of rows)if(row.monthBoundary===true)keep.add(row.checkpointKey);
+  for(const row of latestByLane.values())keep.add(row.checkpointKey);
+
+  const checkpoints=rows
+    .filter(x=>keep.has(x.checkpointKey))
+    .sort((a,b)=>a.laneKey.localeCompare(b.laneKey)||Number(a.blockNumber)-Number(b.blockNumber));
+  return{
+    checkpoints,
+    stats:{
+      inputCheckpointCount:rows.length,
+      retainedCheckpointCount:checkpoints.length,
+      droppedRedundantCheckpointCount:rows.length-checkpoints.length,
+      retainedMonthBoundaryCount:checkpoints.filter(x=>x.monthBoundary===true).length,
+      retainedEventProofCheckpointCount:eventProofKeys.size,
+      retainedLatestLaneCheckpointCount:latestByLane.size,
+      policy:'retain-month-boundaries-latest-per-lane-and-factual-event-proof-checkpoints'
+    }
+  };
+}
+
 function priceMap(rewards){
   const map=new Map();
   for(const c of Object.values(rewards?.companies||{}))for(const r of c?.rewards||[]){
@@ -636,8 +676,9 @@ async function processLaneIntervals({lane,rows,provider,settlementRouter,cfg,pri
 export async function buildVe33Evidence({rewards,previous={},generatedAt=new Date().toISOString(),providers={}}={}){
   const startedAtMs=Date.now();
   const authority={executionAuthority:'none',walletAuthority:'none',claimingAuthority:'none',capitalExecution:false,methodologyMutationAuthority:'none'};
-  const prices=priceMap(rewards),existing=new Map((previous?.checkpoints||[]).filter(x=>x?.checkpointKey).map(x=>[x.checkpointKey,x])),priorEvents=new Map((previous?.events||[]).filter(x=>x?.eventKey).map(x=>[x.eventKey,x]));
-  const diagnostics={protocols:{},laneCount:0,acceptedPositiveIntervalCount:0,zeroIntervalCount:0,reconciliationCount:0,settlementQueryFailureCount:0,unresolvedSettlementCount:0,unvaluedIntervalCount:0,referenceAprUsed:false,unknownIsNotZero:true,stateReadConcurrency:STATE_READ_CONCURRENCY,settlementConcurrency:SETTLEMENT_CONCURRENCY,runtimeMs:null};
+  const compactedHistory=compactHistoricalCheckpoints(previous);
+  const prices=priceMap(rewards),existing=new Map(compactedHistory.checkpoints.map(x=>[x.checkpointKey,x])),priorEvents=new Map((previous?.events||[]).filter(x=>x?.eventKey).map(x=>[x.eventKey,x]));
+  const diagnostics={protocols:{},laneCount:0,acceptedPositiveIntervalCount:0,zeroIntervalCount:0,reconciliationCount:0,settlementQueryFailureCount:0,unresolvedSettlementCount:0,unvaluedIntervalCount:0,referenceAprUsed:false,unknownIsNotZero:true,stateReadConcurrency:STATE_READ_CONCURRENCY,settlementConcurrency:SETTLEMENT_CONCURRENCY,historyCompaction:compactedHistory.stats,runtimeMs:null};
 
   for(const[protocolKey,cfg]of Object.entries(PROTOCOLS)){
     const protocolStartedAt=Date.now();
@@ -733,6 +774,7 @@ async function main(){
     status:output.status,checkpoints:output.checkpoints.length,events:output.events.length,lanes:output.diagnostics.laneCount,
     accepted:output.diagnostics.acceptedPositiveIntervalCount,reconciliations:output.diagnostics.reconciliationCount,
     settlementQueryFailures:output.diagnostics.settlementQueryFailureCount,
+    historyCompaction:output.diagnostics.historyCompaction,
     boundaryFailures:Object.values(output.diagnostics.protocols||{}).reduce((sum,x)=>sum+(x.boundaryFailures||[]).length,0),
     currentStateFailures:Object.values(output.diagnostics.protocols||{}).reduce((sum,x)=>sum+Number(x.currentStateFailureCount||0),0),
     historicalBoundarySkippedLaneReads:Object.values(output.diagnostics.protocols||{}).reduce((sum,x)=>sum+Number(x.historicalBoundarySkippedLaneReads||0),0),
