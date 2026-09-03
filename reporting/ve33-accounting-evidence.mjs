@@ -211,8 +211,9 @@ function providerLabel(url){
 function settlementRouterFor(cfg){
   const urls=unique([process.env[cfg.rpcEnv],...[...cfg.rpcFallbacks].reverse()]);
   const candidates=urls.map(url=>({url,label:providerLabel(url),provider:new JsonRpcProvider(url,cfg.chainId)}));
+  const queryCache=new Map();
   let preferredIndex=0;
-  const stats={queryAttempts:0,failoverCount:0,providerSuccessCounts:{},providerFailureCounts:{},failureSamples:[]};
+  const stats={queryAttempts:0,cacheHits:0,failoverCount:0,providerSuccessCounts:{},providerFailureCounts:{},failureSamples:[]};
   const recordFailure=(candidate,error,kind,lane,fromBlock,toBlock)=>{
     stats.providerFailureCounts[candidate.label]=(stats.providerFailureCounts[candidate.label]||0)+1;
     if(stats.failureSamples.length<FAILURE_SAMPLE_LIMIT)stats.failureSamples.push({
@@ -221,34 +222,53 @@ function settlementRouterFor(cfg){
     });
   };
   const query=async({kind,lane,fromBlock,toBlock})=>{
-    let last=null;
-    const order=[preferredIndex,...candidates.map((_,i)=>i).filter(i=>i!==preferredIndex)];
-    for(const index of order){
-      const candidate=candidates[index];
-      stats.queryAttempts++;
-      try{
-        let contract,filter;
-        if(kind==='rebase-distributor'){
-          contract=new Contract(cfg.rewardsDistributor,REWARDS_DISTRIBUTOR_ABI,candidate.provider);
-          filter=contract.filters.Claimed(BigInt(lane.tokenId));
-        }else{
-          contract=new Contract(lane.rewardContract,REWARD_ABI,candidate.provider);
-          filter=contract.filters.ClaimRewards(null,lane.rewardToken);
-        }
-        const logs=await contract.queryFilter(filter,fromBlock,toBlock);
-        stats.providerSuccessCounts[candidate.label]=(stats.providerSuccessCounts[candidate.label]||0)+1;
-        if(index!==preferredIndex){preferredIndex=index;stats.failoverCount++;}
-        return logs;
-      }catch(error){last=error;recordFailure(candidate,error,kind,lane,fromBlock,toBlock);}
+    const isRebase=kind==='rebase-distributor';
+    const address=isRebase?cfg.rewardsDistributor:lane.rewardContract;
+    const cacheKey=[isRebase?'rebase-all':'reward-all',lower(address),fromBlock,toBlock].join('|');
+    if(queryCache.has(cacheKey)){
+      stats.cacheHits++;
+      return queryCache.get(cacheKey);
     }
-    throw last||new Error(`No settlement-log RPC available for ${cfg.protocol}`);
+    const work=(async()=>{
+      let last=null;
+      const order=[preferredIndex,...candidates.map((_,i)=>i).filter(i=>i!==preferredIndex)];
+      for(const index of order){
+        const candidate=candidates[index];
+        const attempts=index===preferredIndex?3:1;
+        for(let attempt=1;attempt<=attempts;attempt++){
+          stats.queryAttempts++;
+          try{
+            let contract,filter;
+            if(isRebase){
+              contract=new Contract(cfg.rewardsDistributor,REWARDS_DISTRIBUTOR_ABI,candidate.provider);
+              filter=contract.filters.Claimed();
+            }else{
+              contract=new Contract(lane.rewardContract,REWARD_ABI,candidate.provider);
+              filter=contract.filters.ClaimRewards();
+            }
+            const logs=await contract.queryFilter(filter,fromBlock,toBlock);
+            stats.providerSuccessCounts[candidate.label]=(stats.providerSuccessCounts[candidate.label]||0)+1;
+            if(index!==preferredIndex){preferredIndex=index;stats.failoverCount++;}
+            return logs;
+          }catch(error){
+            last=error;
+            recordFailure(candidate,error,kind,lane,fromBlock,toBlock);
+            if(attempt<attempts)await wait(250*attempt);
+          }
+        }
+      }
+      throw last||new Error(`No settlement-log RPC available for ${cfg.protocol}`);
+    })();
+    queryCache.set(cacheKey,work);
+    try{return await work;}
+    catch(error){queryCache.delete(cacheKey);throw error;}
   };
   return{
     query,
     snapshot:()=>({
       preferredProvider:candidates[preferredIndex]?.label||null,
       candidateProviders:candidates.map(x=>x.label),
-      queryAttempts:stats.queryAttempts,failoverCount:stats.failoverCount,
+      queryAttempts:stats.queryAttempts,cacheHits:stats.cacheHits,cacheEntries:queryCache.size,failoverCount:stats.failoverCount,
       providerSuccessCounts:{...stats.providerSuccessCounts},providerFailureCounts:{...stats.providerFailureCounts},
       failureSamples:[...stats.failureSamples]
     })
@@ -373,8 +393,8 @@ async function rewardClaimSettlements({provider,settlementRouter,cfg,lane,fromBl
   for(let from=fromBlock;from<=toBlock;from+=MAX_LOG_BLOCKS){
     const to=Math.min(toBlock,from+MAX_LOG_BLOCKS-1),logs=await settlementRouter.query({kind:lane.kind,lane,fromBlock:from,toBlock:to});
     for(const log of logs){
-      const recipient=String(log?.args?.[0]||''),amount=BigInt(log?.args?.[2]||0);
-      if(lower(recipient)!==lower(lane.holder)||amount===0n)continue;
+      const recipient=String(log?.args?.[0]||''),rewardToken=String(log?.args?.[1]||''),amount=BigInt(log?.args?.[2]||0);
+      if(lower(rewardToken)!==lower(lane.rewardToken)||lower(recipient)!==lower(lane.holder)||amount===0n)continue;
       const tx=await provider.getTransaction(log.transactionHash);
       const decoded=tx?decodeRewardClaimTokenId({to:tx.to,data:tx.data,rewardContract:lane.rewardContract,rewardToken:lane.rewardToken,voter:cfg.voter}):null;
       const proof={
@@ -397,11 +417,13 @@ async function rebaseSettlements({settlementRouter,lane,fromBlock,toBlock}){
   for(let from=fromBlock;from<=toBlock;from+=MAX_LOG_BLOCKS){
     const to=Math.min(toBlock,from+MAX_LOG_BLOCKS-1),logs=await settlementRouter.query({kind:'rebase-distributor',lane,fromBlock:from,toBlock:to});
     for(const log of logs){
+      const tokenId=String(log?.args?.[0]||'');
+      if(tokenId!==String(lane.tokenId))continue;
       const amount=BigInt(log?.args?.[3]||0);
       total+=amount;
       events.push({
         blockNumber:Number(log.blockNumber),transactionHash:String(log.transactionHash||''),logIndex:Number(log.index??0),
-        tokenId:String(log.args?.[0]||lane.tokenId),epochStart:String(log.args?.[1]||''),epochEnd:String(log.args?.[2]||''),amountRaw:amount.toString()
+        tokenId,epochStart:String(log.args?.[1]||''),epochEnd:String(log.args?.[2]||''),amountRaw:amount.toString()
       });
     }
   }
