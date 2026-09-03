@@ -213,13 +213,69 @@ function settlementRouterFor(cfg){
   const candidates=urls.map(url=>({url,label:providerLabel(url),provider:new JsonRpcProvider(url,cfg.chainId)}));
   const queryCache=new Map();
   let preferredIndex=0;
-  const stats={queryAttempts:0,cacheHits:0,failoverCount:0,providerSuccessCounts:{},providerFailureCounts:{},failureSamples:[]};
+  let gateTail=Promise.resolve();
+  let nextRequestAt=0;
+  const REQUEST_SPACING_MS=220;
+  const stats={queryAttempts:0,cacheHits:0,adaptiveSplitCount:0,rateLimitRetryCount:0,failoverCount:0,providerSuccessCounts:{},providerFailureCounts:{},failureSamples:[]};
+  const errorText=error=>[
+    error?.error?.message,error?.info?.error?.message,error?.shortMessage,error?.message,String(error||'')
+  ].filter(Boolean).join(' | ').toLowerCase();
+  const isRateLimitError=error=>/rate limit|requests per second|too many requests|http 429|status 429|rps capacity|exceeded.*capacity/.test(errorText(error));
+  const isRangeError=error=>/block range is too large|limited to a 10,000 range|range.*too large|exceed.*block.*range/.test(errorText(error));
+  const pace=async()=>{
+    let release;
+    const previous=gateTail;
+    gateTail=new Promise(resolve=>{release=resolve;});
+    await previous;
+    const delay=Math.max(0,nextRequestAt-Date.now());
+    if(delay)await wait(delay);
+    nextRequestAt=Date.now()+REQUEST_SPACING_MS;
+    release();
+  };
   const recordFailure=(candidate,error,kind,lane,fromBlock,toBlock)=>{
     stats.providerFailureCounts[candidate.label]=(stats.providerFailureCounts[candidate.label]||0)+1;
     if(stats.failureSamples.length<FAILURE_SAMPLE_LIMIT)stats.failureSamples.push({
       provider:candidate.label,kind,laneKey:lane.laneKey,fromBlock,toBlock,
       error:error?.error?.message||error?.info?.error?.message||error?.shortMessage||error?.message||String(error)
     });
+  };
+  const queryCandidate=async({candidate,index,isRebase,kind,lane,fromBlock,toBlock})=>{
+    const attempts=index===preferredIndex?4:1;
+    let last=null;
+    for(let attempt=1;attempt<=attempts;attempt++){
+      await pace();
+      stats.queryAttempts++;
+      try{
+        let contract,filter;
+        if(isRebase){
+          contract=new Contract(cfg.rewardsDistributor,REWARDS_DISTRIBUTOR_ABI,candidate.provider);
+          filter=contract.filters.Claimed();
+        }else{
+          contract=new Contract(lane.rewardContract,REWARD_ABI,candidate.provider);
+          filter=contract.filters.ClaimRewards();
+        }
+        const logs=await contract.queryFilter(filter,fromBlock,toBlock);
+        stats.providerSuccessCounts[candidate.label]=(stats.providerSuccessCounts[candidate.label]||0)+1;
+        return logs;
+      }catch(error){
+        last=error;
+        recordFailure(candidate,error,kind,lane,fromBlock,toBlock);
+        if(isRangeError(error)&&fromBlock<toBlock){
+          stats.adaptiveSplitCount++;
+          const mid=Math.floor((fromBlock+toBlock)/2);
+          const left=await queryCandidate({candidate,index,isRebase,kind,lane,fromBlock,toBlock:mid});
+          const right=await queryCandidate({candidate,index,isRebase,kind,lane,fromBlock:mid+1,toBlock});
+          return[...left,...right];
+        }
+        if(isRateLimitError(error)&&attempt<attempts){
+          stats.rateLimitRetryCount++;
+          await wait(500*Math.pow(2,attempt-1));
+          continue;
+        }
+        break;
+      }
+    }
+    throw last||new Error(`Settlement log query failed for ${candidate.label}`);
   };
   const query=async({kind,lane,fromBlock,toBlock})=>{
     const isRebase=kind==='rebase-distributor';
@@ -234,28 +290,11 @@ function settlementRouterFor(cfg){
       const order=[preferredIndex,...candidates.map((_,i)=>i).filter(i=>i!==preferredIndex)];
       for(const index of order){
         const candidate=candidates[index];
-        const attempts=index===preferredIndex?3:1;
-        for(let attempt=1;attempt<=attempts;attempt++){
-          stats.queryAttempts++;
-          try{
-            let contract,filter;
-            if(isRebase){
-              contract=new Contract(cfg.rewardsDistributor,REWARDS_DISTRIBUTOR_ABI,candidate.provider);
-              filter=contract.filters.Claimed();
-            }else{
-              contract=new Contract(lane.rewardContract,REWARD_ABI,candidate.provider);
-              filter=contract.filters.ClaimRewards();
-            }
-            const logs=await contract.queryFilter(filter,fromBlock,toBlock);
-            stats.providerSuccessCounts[candidate.label]=(stats.providerSuccessCounts[candidate.label]||0)+1;
-            if(index!==preferredIndex){preferredIndex=index;stats.failoverCount++;}
-            return logs;
-          }catch(error){
-            last=error;
-            recordFailure(candidate,error,kind,lane,fromBlock,toBlock);
-            if(attempt<attempts)await wait(250*attempt);
-          }
-        }
+        try{
+          const logs=await queryCandidate({candidate,index,isRebase,kind,lane,fromBlock,toBlock});
+          if(index!==preferredIndex){preferredIndex=index;stats.failoverCount++;}
+          return logs;
+        }catch(error){last=error;}
       }
       throw last||new Error(`No settlement-log RPC available for ${cfg.protocol}`);
     })();
@@ -268,7 +307,8 @@ function settlementRouterFor(cfg){
     snapshot:()=>({
       preferredProvider:candidates[preferredIndex]?.label||null,
       candidateProviders:candidates.map(x=>x.label),
-      queryAttempts:stats.queryAttempts,cacheHits:stats.cacheHits,cacheEntries:queryCache.size,failoverCount:stats.failoverCount,
+      requestSpacingMs:REQUEST_SPACING_MS,queryAttempts:stats.queryAttempts,cacheHits:stats.cacheHits,cacheEntries:queryCache.size,
+      adaptiveSplitCount:stats.adaptiveSplitCount,rateLimitRetryCount:stats.rateLimitRetryCount,failoverCount:stats.failoverCount,
       providerSuccessCounts:{...stats.providerSuccessCounts},providerFailureCounts:{...stats.providerFailureCounts},
       failureSamples:[...stats.failureSamples]
     })
