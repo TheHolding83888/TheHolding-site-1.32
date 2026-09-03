@@ -13,13 +13,13 @@ export const VERSION='0.1-ve33-factual-accrual-evidence';
 export const FULL_ACCOUNTING_START='2026-09-01T00:00:00.000Z';
 const DEFAULT_REWARDS=process.env.REWARDS_DATA_FILE||path.join(ROOT,'companies','rewards-data.json');
 const DEFAULT_OUTPUT=process.env.VE33_EVIDENCE_FILE||path.join(ROOT,'reporting','ve33-accounting-evidence.json');
-const MAX_LOG_BLOCKS=80_000;
+const MAX_LOG_BLOCKS=9_500;
 const MAX_CHECKPOINTS_PER_LANE=460;
 const BLOCK_LOOKUP_TIMEOUT_MS=8_000;
 const BLOCK_LOOKUP_RETRIES=3;
 const RECENT_BOUNDARY_INITIAL_STEP=4_096;
 const STATE_READ_CONCURRENCY=Math.max(1,Math.min(16,Number(process.env.VE33_STATE_READ_CONCURRENCY||2)));
-const SETTLEMENT_CONCURRENCY=Math.max(1,Math.min(12,Number(process.env.VE33_SETTLEMENT_CONCURRENCY||6)));
+const SETTLEMENT_CONCURRENCY=Math.max(1,Math.min(12,Number(process.env.VE33_SETTLEMENT_CONCURRENCY||2)));
 const FAILURE_SAMPLE_LIMIT=20;
 
 export const PROTOCOLS=Object.freeze({
@@ -203,6 +203,118 @@ async function providerFor(cfg){
   throw last||new Error(`No ${cfg.protocol} RPC available`);
 }
 
+function providerLabel(url){
+  try{return new URL(url).hostname||'configured-rpc';}
+  catch{return'configured-rpc';}
+}
+
+function settlementRouterFor(cfg){
+  const urls=unique([process.env[cfg.rpcEnv],...[...cfg.rpcFallbacks].reverse()]);
+  const candidates=urls.map(url=>({url,label:providerLabel(url),provider:new JsonRpcProvider(url,cfg.chainId)}));
+  const queryCache=new Map();
+  let preferredIndex=0;
+  let gateTail=Promise.resolve();
+  let nextRequestAt=0;
+  const REQUEST_SPACING_MS=220;
+  const stats={queryAttempts:0,cacheHits:0,adaptiveSplitCount:0,rateLimitRetryCount:0,failoverCount:0,providerSuccessCounts:{},providerFailureCounts:{},failureSamples:[]};
+  const errorText=error=>[
+    error?.error?.message,error?.info?.error?.message,error?.shortMessage,error?.message,String(error||'')
+  ].filter(Boolean).join(' | ').toLowerCase();
+  const isRateLimitError=error=>/rate limit|requests per second|too many requests|http 429|status 429|rps capacity|exceeded.*capacity/.test(errorText(error));
+  const isRangeError=error=>/block range is too large|limited to a 10,000 range|range.*too large|exceed.*block.*range/.test(errorText(error));
+  const pace=async()=>{
+    let release;
+    const previous=gateTail;
+    gateTail=new Promise(resolve=>{release=resolve;});
+    await previous;
+    const delay=Math.max(0,nextRequestAt-Date.now());
+    if(delay)await wait(delay);
+    nextRequestAt=Date.now()+REQUEST_SPACING_MS;
+    release();
+  };
+  const recordFailure=(candidate,error,kind,lane,fromBlock,toBlock)=>{
+    stats.providerFailureCounts[candidate.label]=(stats.providerFailureCounts[candidate.label]||0)+1;
+    if(stats.failureSamples.length<FAILURE_SAMPLE_LIMIT)stats.failureSamples.push({
+      provider:candidate.label,kind,laneKey:lane.laneKey,fromBlock,toBlock,
+      error:error?.error?.message||error?.info?.error?.message||error?.shortMessage||error?.message||String(error)
+    });
+  };
+  const queryCandidate=async({candidate,index,isRebase,kind,lane,fromBlock,toBlock})=>{
+    const attempts=index===preferredIndex?4:1;
+    let last=null;
+    for(let attempt=1;attempt<=attempts;attempt++){
+      await pace();
+      stats.queryAttempts++;
+      try{
+        let contract,filter;
+        if(isRebase){
+          contract=new Contract(cfg.rewardsDistributor,REWARDS_DISTRIBUTOR_ABI,candidate.provider);
+          filter=contract.filters.Claimed();
+        }else{
+          contract=new Contract(lane.rewardContract,REWARD_ABI,candidate.provider);
+          filter=contract.filters.ClaimRewards();
+        }
+        const logs=await contract.queryFilter(filter,fromBlock,toBlock);
+        stats.providerSuccessCounts[candidate.label]=(stats.providerSuccessCounts[candidate.label]||0)+1;
+        return logs;
+      }catch(error){
+        last=error;
+        recordFailure(candidate,error,kind,lane,fromBlock,toBlock);
+        if(isRangeError(error)&&fromBlock<toBlock){
+          stats.adaptiveSplitCount++;
+          const mid=Math.floor((fromBlock+toBlock)/2);
+          const left=await queryCandidate({candidate,index,isRebase,kind,lane,fromBlock,toBlock:mid});
+          const right=await queryCandidate({candidate,index,isRebase,kind,lane,fromBlock:mid+1,toBlock});
+          return[...left,...right];
+        }
+        if(isRateLimitError(error)&&attempt<attempts){
+          stats.rateLimitRetryCount++;
+          await wait(500*Math.pow(2,attempt-1));
+          continue;
+        }
+        break;
+      }
+    }
+    throw last||new Error(`Settlement log query failed for ${candidate.label}`);
+  };
+  const query=async({kind,lane,fromBlock,toBlock})=>{
+    const isRebase=kind==='rebase-distributor';
+    const address=isRebase?cfg.rewardsDistributor:lane.rewardContract;
+    const cacheKey=[isRebase?'rebase-all':'reward-all',lower(address),fromBlock,toBlock].join('|');
+    if(queryCache.has(cacheKey)){
+      stats.cacheHits++;
+      return queryCache.get(cacheKey);
+    }
+    const work=(async()=>{
+      let last=null;
+      const order=[preferredIndex,...candidates.map((_,i)=>i).filter(i=>i!==preferredIndex)];
+      for(const index of order){
+        const candidate=candidates[index];
+        try{
+          const logs=await queryCandidate({candidate,index,isRebase,kind,lane,fromBlock,toBlock});
+          if(index!==preferredIndex){preferredIndex=index;stats.failoverCount++;}
+          return logs;
+        }catch(error){last=error;}
+      }
+      throw last||new Error(`No settlement-log RPC available for ${cfg.protocol}`);
+    })();
+    queryCache.set(cacheKey,work);
+    try{return await work;}
+    catch(error){queryCache.delete(cacheKey);throw error;}
+  };
+  return{
+    query,
+    snapshot:()=>({
+      preferredProvider:candidates[preferredIndex]?.label||null,
+      candidateProviders:candidates.map(x=>x.label),
+      requestSpacingMs:REQUEST_SPACING_MS,queryAttempts:stats.queryAttempts,cacheHits:stats.cacheHits,cacheEntries:queryCache.size,
+      adaptiveSplitCount:stats.adaptiveSplitCount,rateLimitRetryCount:stats.rateLimitRetryCount,failoverCount:stats.failoverCount,
+      providerSuccessCounts:{...stats.providerSuccessCounts},providerFailureCounts:{...stats.providerFailureCounts},
+      failureSamples:[...stats.failureSamples]
+    })
+  };
+}
+
 async function getBlockReliable(provider,blockNumber,{attempts=BLOCK_LOOKUP_RETRIES,timeoutMs=BLOCK_LOOKUP_TIMEOUT_MS}={}){
   let last=null;
   for(let attempt=1;attempt<=attempts;attempt++){
@@ -314,15 +426,15 @@ export function decodeRewardClaimTokenId({to,data,rewardContract,rewardToken,vot
   return null;
 }
 
-async function rewardClaimSettlements({provider,contract,cfg,lane,fromBlock,toBlock}){
+async function rewardClaimSettlements({provider,settlementRouter,cfg,lane,fromBlock,toBlock}){
   if(toBlock<fromBlock)return{complete:true,amountRaw:'0',events:[],unresolved:[]};
-  const filter=contract.filters.ClaimRewards(null,lane.rewardToken),events=[],unresolved=[];
+  const events=[],unresolved=[];
   let total=0n;
   for(let from=fromBlock;from<=toBlock;from+=MAX_LOG_BLOCKS){
-    const to=Math.min(toBlock,from+MAX_LOG_BLOCKS-1),logs=await contract.queryFilter(filter,from,to);
+    const to=Math.min(toBlock,from+MAX_LOG_BLOCKS-1),logs=await settlementRouter.query({kind:lane.kind,lane,fromBlock:from,toBlock:to});
     for(const log of logs){
-      const recipient=String(log?.args?.[0]||''),amount=BigInt(log?.args?.[2]||0);
-      if(lower(recipient)!==lower(lane.holder)||amount===0n)continue;
+      const recipient=String(log?.args?.[0]||''),rewardToken=String(log?.args?.[1]||''),amount=BigInt(log?.args?.[2]||0);
+      if(lower(rewardToken)!==lower(lane.rewardToken)||lower(recipient)!==lower(lane.holder)||amount===0n)continue;
       const tx=await provider.getTransaction(log.transactionHash);
       const decoded=tx?decodeRewardClaimTokenId({to:tx.to,data:tx.data,rewardContract:lane.rewardContract,rewardToken:lane.rewardToken,voter:cfg.voter}):null;
       const proof={
@@ -338,18 +450,20 @@ async function rewardClaimSettlements({provider,contract,cfg,lane,fromBlock,toBl
   return{complete:unresolved.length===0,amountRaw:total.toString(),events,unresolved};
 }
 
-async function rebaseSettlements({contract,lane,fromBlock,toBlock}){
+async function rebaseSettlements({settlementRouter,lane,fromBlock,toBlock}){
   if(toBlock<fromBlock)return{complete:true,amountRaw:'0',events:[]};
   const events=[];
   let total=0n;
   for(let from=fromBlock;from<=toBlock;from+=MAX_LOG_BLOCKS){
-    const to=Math.min(toBlock,from+MAX_LOG_BLOCKS-1),logs=await contract.queryFilter(contract.filters.Claimed(BigInt(lane.tokenId)),from,to);
+    const to=Math.min(toBlock,from+MAX_LOG_BLOCKS-1),logs=await settlementRouter.query({kind:'rebase-distributor',lane,fromBlock:from,toBlock:to});
     for(const log of logs){
+      const tokenId=String(log?.args?.[0]||'');
+      if(tokenId!==String(lane.tokenId))continue;
       const amount=BigInt(log?.args?.[3]||0);
       total+=amount;
       events.push({
         blockNumber:Number(log.blockNumber),transactionHash:String(log.transactionHash||''),logIndex:Number(log.index??0),
-        tokenId:String(log.args?.[0]||lane.tokenId),epochStart:String(log.args?.[1]||''),epochEnd:String(log.args?.[2]||''),amountRaw:amount.toString()
+        tokenId,epochStart:String(log.args?.[1]||''),epochEnd:String(log.args?.[2]||''),amountRaw:amount.toString()
       });
     }
   }
@@ -474,8 +588,8 @@ function sampleFailure(pd,{laneKey,boundaryAt,state,scope}){
   if(pd.stateFailureSamples.length<FAILURE_SAMPLE_LIMIT)pd.stateFailureSamples.push({laneKey,boundaryAt,scope,status,error:state?.error||null,owner:state?.owner||null});
 }
 
-async function processLaneIntervals({lane,rows,provider,cfg,priorEvents}){
-  const result={intervalCount:0,settlementEventCount:0,reconciliationCount:0,unresolvedSettlementCount:0,zeroIntervalCount:0,unvaluedIntervalCount:0,acceptedPositiveIntervalCount:0,events:[]};
+async function processLaneIntervals({lane,rows,provider,settlementRouter,cfg,priorEvents}){
+  const result={intervalCount:0,settlementEventCount:0,settlementQueryFailureCount:0,reconciliationCount:0,unresolvedSettlementCount:0,zeroIntervalCount:0,unvaluedIntervalCount:0,acceptedPositiveIntervalCount:0,events:[]};
   for(let i=1;i<rows.length;i++){
     const open=rows[i-1],close=rows[i];
     if(Number(close.blockNumber)<=Number(open.blockNumber))continue;
@@ -485,9 +599,9 @@ async function processLaneIntervals({lane,rows,provider,cfg,priorEvents}){
     let settlements;
     try{
       settlements=lane.kind==='rebase-distributor'
-        ?await rebaseSettlements({contract:new Contract(cfg.rewardsDistributor,REWARDS_DISTRIBUTOR_ABI,provider),lane,fromBlock:Number(open.blockNumber)+1,toBlock:Number(close.blockNumber)})
-        :await rewardClaimSettlements({provider,contract:new Contract(lane.rewardContract,REWARD_ABI,provider),cfg,lane,fromBlock:Number(open.blockNumber)+1,toBlock:Number(close.blockNumber)});
-    }catch{result.reconciliationCount++;continue;}
+        ?await rebaseSettlements({settlementRouter,lane,fromBlock:Number(open.blockNumber)+1,toBlock:Number(close.blockNumber)})
+        :await rewardClaimSettlements({provider,settlementRouter,cfg,lane,fromBlock:Number(open.blockNumber)+1,toBlock:Number(close.blockNumber)});
+    }catch{result.reconciliationCount++;result.settlementQueryFailureCount++;continue;}
     result.settlementEventCount+=(settlements.events||[]).length;
     if(settlements.complete!==true){
       result.reconciliationCount++;
@@ -523,11 +637,12 @@ export async function buildVe33Evidence({rewards,previous={},generatedAt=new Dat
   const startedAtMs=Date.now();
   const authority={executionAuthority:'none',walletAuthority:'none',claimingAuthority:'none',capitalExecution:false,methodologyMutationAuthority:'none'};
   const prices=priceMap(rewards),existing=new Map((previous?.checkpoints||[]).filter(x=>x?.checkpointKey).map(x=>[x.checkpointKey,x])),priorEvents=new Map((previous?.events||[]).filter(x=>x?.eventKey).map(x=>[x.eventKey,x]));
-  const diagnostics={protocols:{},laneCount:0,acceptedPositiveIntervalCount:0,zeroIntervalCount:0,reconciliationCount:0,unresolvedSettlementCount:0,unvaluedIntervalCount:0,referenceAprUsed:false,unknownIsNotZero:true,stateReadConcurrency:STATE_READ_CONCURRENCY,settlementConcurrency:SETTLEMENT_CONCURRENCY,runtimeMs:null};
+  const diagnostics={protocols:{},laneCount:0,acceptedPositiveIntervalCount:0,zeroIntervalCount:0,reconciliationCount:0,settlementQueryFailureCount:0,unresolvedSettlementCount:0,unvaluedIntervalCount:0,referenceAprUsed:false,unknownIsNotZero:true,stateReadConcurrency:STATE_READ_CONCURRENCY,settlementConcurrency:SETTLEMENT_CONCURRENCY,runtimeMs:null};
 
   for(const[protocolKey,cfg]of Object.entries(PROTOCOLS)){
     const protocolStartedAt=Date.now();
     const provider=providers[protocolKey]||await providerFor(cfg);
+    const settlementRouter=settlementRouterFor(cfg);
     const latestNumber=await provider.getBlockNumber(),latestBlock=await getBlockReliable(provider,latestNumber);
     const observedAt=new Date(Number(latestBlock.timestamp)*1000).toISOString(),blockCache=new Map(),ownerCache=new Map();
     const lanes=await buildProtocolLanes({rewards,cfg,protocolKey,provider,latestNumber,prices});
@@ -535,7 +650,7 @@ export async function buildVe33Evidence({rewards,previous={},generatedAt=new Dat
     const pd={
       latestBlockNumber:latestNumber,observedAt,laneCount:lanes.length,boundaryFailures:[],boundaryCapability:[],
       historicalBoundarySkippedLaneReads:0,currentStateFailureCount:0,currentCheckpointCount:0,stateFailureCounts:{},stateFailureSamples:[],
-      intervalCount:0,settlementEventCount:0,runtimeMs:null
+      intervalCount:0,settlementEventCount:0,settlementQueryFailureCount:0,settlementRpc:null,runtimeMs:null
     };
     diagnostics.protocols[protocolKey]=pd;
 
@@ -573,17 +688,20 @@ export async function buildVe33Evidence({rewards,previous={},generatedAt=new Dat
     }
 
     const protocolCheckpoints=[...existing.values()].filter(x=>x.protocolKey===protocolKey).sort((a,b)=>a.laneKey.localeCompare(b.laneKey)||Number(a.blockNumber)-Number(b.blockNumber));
-    const intervalResults=await mapLimit(lanes,SETTLEMENT_CONCURRENCY,async lane=>processLaneIntervals({lane,rows:protocolCheckpoints.filter(x=>x.laneKey===lane.laneKey),provider,cfg,priorEvents}));
+    const intervalResults=await mapLimit(lanes,SETTLEMENT_CONCURRENCY,async lane=>processLaneIntervals({lane,rows:protocolCheckpoints.filter(x=>x.laneKey===lane.laneKey),provider,settlementRouter,cfg,priorEvents}));
     for(const r of intervalResults){
       pd.intervalCount+=r.intervalCount;
       pd.settlementEventCount+=r.settlementEventCount;
+      pd.settlementQueryFailureCount+=r.settlementQueryFailureCount;
       diagnostics.reconciliationCount+=r.reconciliationCount;
+      diagnostics.settlementQueryFailureCount+=r.settlementQueryFailureCount;
       diagnostics.unresolvedSettlementCount+=r.unresolvedSettlementCount;
       diagnostics.zeroIntervalCount+=r.zeroIntervalCount;
       diagnostics.unvaluedIntervalCount+=r.unvaluedIntervalCount;
       diagnostics.acceptedPositiveIntervalCount+=r.acceptedPositiveIntervalCount;
       for(const event of r.events)priorEvents.set(event.eventKey,event);
     }
+    pd.settlementRpc=settlementRouter.snapshot();
     pd.runtimeMs=Date.now()-protocolStartedAt;
   }
 
@@ -601,7 +719,7 @@ export async function buildVe33Evidence({rewards,previous={},generatedAt=new Dat
     },
     scope:{
       included:['direct veNFT voting fee/incentive reward lanes','direct veNFT RewardsDistributor rebase lanes','managed FreeManagedReward lanes'],
-      deferred:['LockedManagedReward / Relay compounded lane pending exact withdrawal settlement identity','40 Acres payout non-overlap reconciliation with existing Defitea settlement evidence']
+      deferred:['LockedManagedReward / Relay compounded lane is handled by the separate ve33 locked-managed adapter','40 Acres payout non-overlap reconciliation with existing Defitea settlement evidence']
     },
     authority,checkpoints,events,diagnostics
   };
@@ -614,6 +732,7 @@ async function main(){
   console.log('ve(3,3) factual accounting evidence built',{
     status:output.status,checkpoints:output.checkpoints.length,events:output.events.length,lanes:output.diagnostics.laneCount,
     accepted:output.diagnostics.acceptedPositiveIntervalCount,reconciliations:output.diagnostics.reconciliationCount,
+    settlementQueryFailures:output.diagnostics.settlementQueryFailureCount,
     boundaryFailures:Object.values(output.diagnostics.protocols||{}).reduce((sum,x)=>sum+(x.boundaryFailures||[]).length,0),
     currentStateFailures:Object.values(output.diagnostics.protocols||{}).reduce((sum,x)=>sum+Number(x.currentStateFailureCount||0),0),
     historicalBoundarySkippedLaneReads:Object.values(output.diagnostics.protocols||{}).reduce((sum,x)=>sum+Number(x.historicalBoundarySkippedLaneReads||0),0),
