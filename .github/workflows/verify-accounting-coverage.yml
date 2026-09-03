@@ -6,8 +6,10 @@ on:
       - 'reporting/accounting-coverage.mjs'
       - 'reporting/accounting-coverage-validation.mjs'
       - 'reporting/accounting-coverage-gap-diagnostic.mjs'
+      - 'reporting/accounting-coverage-company-diagnostic.mjs'
       - 'reporting/accounting-coverage.json'
       - 'companies/productivity-data.json'
+      - 'companies/rewards-data.json'
       - 'companies/embedded-yield-ledger.json'
       - 'reporting/income-ledger.json'
       - 'reporting/ve33-accounting-evidence.json'
@@ -37,7 +39,9 @@ jobs:
         shell: bash
         env:
           ACCOUNTING_COVERAGE_FILE: /tmp/accounting-coverage.json
+          ACCOUNTING_DIAGNOSTIC_COMPANY: Cypher
           PRODUCTIVITY_DATA_FILE: ./companies/productivity-data.json
+          REWARDS_DATA_FILE: ./companies/rewards-data.json
           INCOME_LEDGER_FILE: ./reporting/income-ledger.json
           EMBEDDED_YIELD_LEDGER_FILE: ./companies/embedded-yield-ledger.json
           VE33_EVIDENCE_FILE: ./reporting/ve33-accounting-evidence.json
@@ -49,8 +53,10 @@ jobs:
           node --check reporting/accounting-coverage.mjs
           node --check reporting/accounting-coverage-validation.mjs
           node --check reporting/accounting-coverage-gap-diagnostic.mjs
+          node --check reporting/accounting-coverage-company-diagnostic.mjs
           node reporting/accounting-coverage.mjs
           test -s "$ACCOUNTING_COVERAGE_FILE"
           node reporting/accounting-coverage-validation.mjs
           node reporting/accounting-coverage-gap-diagnostic.mjs
+          node reporting/accounting-coverage-company-diagnostic.mjs
           git diff --check
