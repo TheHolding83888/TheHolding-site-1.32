@@ -10,6 +10,7 @@ on:
       - 'reporting/ve33-ledger-admission.mjs'
       - 'reporting/ve33-ledger-admission-validation.mjs'
       - 'reporting/ve33-accounting-evidence.json'
+      - 'reporting/ve33-settlement-query-diagnostic.mjs'
       - 'reporting/income-ledger.mjs'
       - 'reporting/income-ledger-validation.mjs'
       - '.github/workflows/update-reporting.yml'
@@ -40,6 +41,7 @@ jobs:
           node --check reporting/ve33-income-candidates-validation.mjs
           node --check reporting/ve33-ledger-admission.mjs
           node --check reporting/ve33-ledger-admission-validation.mjs
+          node --check reporting/ve33-settlement-query-diagnostic.mjs
           node reporting/ve33-accounting-evidence-validation.mjs
           node reporting/ve33-income-candidates-validation.mjs
           node reporting/ve33-ledger-admission-validation.mjs
@@ -60,6 +62,7 @@ jobs:
         env:
           REWARDS_DATA_FILE: ./companies/rewards-data.json
           VE33_EVIDENCE_FILE: /tmp/ve33-accounting-evidence.json
+          VE33_DIAGNOSTIC_EVIDENCE_FILE: /tmp/ve33-accounting-evidence.json
           VE33_STATE_READ_CONCURRENCY: '2'
           VE33_SETTLEMENT_CONCURRENCY: '2'
           BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
@@ -68,9 +71,20 @@ jobs:
           set -euo pipefail
           cp reporting/ve33-accounting-evidence.json "$VE33_EVIDENCE_FILE"
           node reporting/ve33-accounting-evidence.mjs
+          node reporting/ve33-settlement-query-diagnostic.mjs
           node - <<'NODE'
           const fs=require('fs');
           const e=JSON.parse(fs.readFileSync('/tmp/ve33-accounting-evidence.json','utf8'));
+          const settlementDiagnostics={
+            settlementQueryFailureCount:Number(e.diagnostics?.settlementQueryFailureCount||0),
+            protocols:Object.fromEntries(Object.entries(e.diagnostics?.protocols||{}).map(([k,v])=>[k,{
+              intervalCount:Number(v.intervalCount||0),
+              settlementEventCount:Number(v.settlementEventCount||0),
+              settlementQueryFailureCount:Number(v.settlementQueryFailureCount||0),
+              settlementRpc:v.settlementRpc||null
+            }]))
+          };
+          console.log('ve33 settlement routing diagnostics JSON',JSON.stringify(settlementDiagnostics,null,2));
           if(e.version!=='0.1-ve33-factual-accrual-evidence') throw new Error('live ve33 version drift');
           if(!(Number(e.diagnostics?.laneCount)>0)) throw new Error('live ve33 discovered no accounting lanes');
           const runtimeMs=Number(e.diagnostics?.runtimeMs);
