@@ -146,18 +146,30 @@ jobs:
           if((s.rewards?.unboundMechanisms||[]).includes('GMX GM markets'))errors.push('GMX still unbound in rewards');
           const embedded=(s.rewards?.embeddedIncomeMechanisms||[]).find(x=>x.id==='gmx-v2-market-liquidity');
           if(!embedded||embedded.incomeMode!=='embedded-in-gm-nav'||embedded.claimableApplicable!==false)errors.push('GMX embedded income mechanism');
+          const stakeEvidence=r.stakeDaoBase;
+          const stakeUsd=Number(stakeEvidence?.result?.totalPositionUsd);
+          const stakeResolved=stakeEvidence?.ok===true&&Number.isFinite(stakeUsd)&&stakeUsd>=0;
+          const stakeActive=stakeResolved&&stakeUsd>0;
           const stake=(s.capital?.positions||[]).find(x=>x.assetId==='stakedao-base-curve-4pool');
-          if(!(Number(stake?.valueUsd)>0))errors.push('Stake DAO capital');
-          if(stake?.underlying?.length!==4)errors.push('Stake DAO decomposition');
-          const expected=new Set(['USDC','USDbC','axlUSDC','crvUSD']);
-          for(const x of stake?.underlying||[])expected.delete(x.symbol);
-          if(expected.size)errors.push('Stake DAO missing '+[...expected].join(','));
+          const prod=(s.productivity?.positions||[]).find(x=>x.id==='stakedao_base_curve_4pool');
+          if(!stakeResolved)errors.push('Stake DAO current lifecycle unresolved');
+          if(stakeActive){
+            if(!(Number(stake?.valueUsd)>0))errors.push('Stake DAO active capital');
+            if(stake?.underlying?.length!==4)errors.push('Stake DAO active decomposition');
+            const expected=new Set(['USDC','USDbC','axlUSDC','crvUSD']);
+            for(const x of stake?.underlying||[])expected.delete(x.symbol);
+            if(expected.size)errors.push('Stake DAO missing '+[...expected].join(','));
+            if(!prod||prod.status!=='measured'||!(Number(prod.referenceAprPct)>=0))errors.push('Stake DAO active Curve Base APY');
+            if(r.stakeDaoBase?.result?.referenceAprSource!=='Curve official /v1/getBaseApys/base')errors.push('Stake DAO active APY source');
+          }else if(stakeResolved){
+            if(stake)errors.push('Stake DAO proven-zero capital row survived');
+            if(prod)errors.push('Stake DAO proven-zero Productivity row survived');
+            if(s.provenance?.stakeDaoBase?.zeroIsKnown!==true||s.provenance?.stakeDaoBase?.currentPositionActive!==false)errors.push('Stake DAO proven-zero provenance missing');
+            if(s.epistemicBoundary?.knownZeroIsNotUnknown!==true)errors.push('known-zero epistemic boundary missing');
+          }
           const reward=(s.rewards?.observations||[]).find(x=>x.id==='stakedao-base-curve-4pool-crv');
           if(!reward||reward.token!=='CRV'||reward.status!=='measured'||!(Number(reward.claimable)>=0))errors.push('Stake DAO CRV claimable');
-          const prod=(s.productivity?.positions||[]).find(x=>x.id==='stakedao_base_curve_4pool');
-          if(!prod||prod.status!=='measured'||!(Number(prod.referenceAprPct)>=0))errors.push('Stake DAO Curve Base APY');
-          if(r.stakeDaoBase?.result?.referenceAprSource!=='Curve official /v1/getBaseApys/base')errors.push('Stake DAO APY source');
-          if(r.stakeDaoBase?.result?.rewardAccounting?.source!=='Stake DAO verified Accountant integral state on Base')errors.push('Stake DAO reward source');
+          if(stakeActive&&r.stakeDaoBase?.result?.rewardAccounting?.source!=='Stake DAO verified Accountant integral state on Base')errors.push('Stake DAO active reward source');
           if((s.gaps||[]).some(x=>x.id==='fluid-net-eth'))errors.push('Fluid blocker remains');
           if(s.epistemicBoundary?.fluidOwnerPolicy!=='out-of-scope')errors.push('Fluid owner policy');
           if((s.capital?.positions||[]).some(x=>String(x.protocol||'').toLowerCase()==='fluid'))errors.push('Fluid capital leaked');
@@ -167,7 +179,7 @@ jobs:
           if(Math.abs(Number(c.network?.networkTvlUsd)-Number(c.network?.measuredCapitalFloorUsd))>0.05)errors.push('network exact/floor drift');
           if(c.authority?.executionAuthority!=='none'||s.authority?.executionAuthority!=='none'||r.authority?.executionAuthority!=='none'||gmx?.authority?.executionAuthority!=='none'||crv?.authority?.executionAuthority!=='none')errors.push('authority drift');
           if(errors.length)throw new Error(`Company #010 complete review failed: ${errors.join(', ')}`);
-          console.log('COMPANY #010 CRV + GMX + STAKE DAO COMPLETE REVIEW GREEN',{totalCapitalUsd:s.capital.totalCapitalUsd,concentratorUsd:conc.principal.navUsd,cvxCrvUsd:cvx.principal.navUsd,cvxCrvClaimableUsd:cvx.claimable.usd,gmxNavUsd:gmx.totalStrategyNavUsd,gmxMarkets:gmx.strategies.map(x=>({id:x.id,feeApyPct:x.yield.referenceAprPct,longWeight:x.poolExposureDiagnostic.long.grossTokenWeight,shortWeight:x.poolExposureDiagnostic.short.grossTokenWeight})),stakeDaoValueUsd:stake.valueUsd,stakeDaoClaimableCrv:reward.claimable,stakeDaoReferenceAprPct:prod.referenceAprPct,networkTvlUsd:c.network.networkTvlUsd,fluid:'out-of-scope',performance:s.performance.status,executionAuthority:'none'});
+          console.log('COMPANY #010 CRV + GMX + STAKE DAO LIFECYCLE REVIEW GREEN',{totalCapitalUsd:s.capital.totalCapitalUsd,concentratorUsd:conc.principal.navUsd,cvxCrvUsd:cvx.principal.navUsd,cvxCrvClaimableUsd:cvx.claimable.usd,gmxNavUsd:gmx.totalStrategyNavUsd,stakeDaoCurrentPositionActive:stakeActive,stakeDaoCurrentPositionUsd:stakeUsd,stakeDaoClaimableCrv:reward.claimable,stakeDaoReferenceAprPct:prod?.referenceAprPct??null,networkTvlUsd:c.network.networkTvlUsd,fluid:'out-of-scope',performance:s.performance.status,executionAuthority:'none'});
           NODE
       - name: Run Company #010 Productivity overlay
         run: |
@@ -202,8 +214,8 @@ jobs:
           const concEmbedded=(rc?.embeddedIncome||[]).find(x=>x.route==='concentrator-asdcrv');
           if(!concEmbedded||concEmbedded.state!=='Compounded'||concEmbedded.claimableApplicable!==false)errors.push('Concentrator compounded route');
           for(const route of ['aerodrome-ve','velodrome-ve-direct','votium-union']){
-            const s=(rc?.sources||[]).find(x=>x.route===route);
-            if(!s||s.status!=='warming'||s.details?.unknownIsNotZero!==true)errors.push('Rewards unknown route '+route);
+            const src=(rc?.sources||[]).find(x=>x.route===route);
+            if(!src||src.status!=='warming'||src.details?.unknownIsNotZero!==true)errors.push('Rewards unknown route '+route);
           }
           if(rc?.settlement?.unknownRouteIsNotZero!==true||rc?.settlement?.totalUsdIsComplete!==false)errors.push('Rewards completion guard');
           if(errors.length)throw new Error('Global Company #010 admission failed: '+errors.join(', '));

@@ -1,3 +1,4 @@
+# holding-workflow-definition-proof: intelligence/reliability/company-010-state-workflow-definition-proof.mjs
 name: "Update Company #010 · Cypher Production State"
 
 on:
@@ -129,16 +130,28 @@ jobs:
           if(!(Number(d.capital?.totalCapitalUsd)>0)||d.capital?.totalCapitalUsd!==d.capital?.knownCapitalFloorUsd) throw new Error('exact Cypher total missing');
           const eth=(d.capital?.positions||[]).find(x=>x.symbol==='ETH');
           if(!(Number(eth?.components?.aaveArbitrumWstEthEquivalentEth)>0)) throw new Error('Aave wstETH reconciliation missing');
+          const stakeEvidence=r.stakeDaoBase;
+          const stakeUsd=Number(stakeEvidence?.result?.totalPositionUsd);
+          const stakeResolved=stakeEvidence?.ok===true&&Number.isFinite(stakeUsd)&&stakeUsd>=0;
+          const stakeActive=stakeResolved&&stakeUsd>0;
           const stake=(d.capital?.positions||[]).find(x=>x.assetId==='stakedao-base-curve-4pool');
-          if(!(Number(stake?.valueUsd)>0)||stake?.underlying?.length!==4) throw new Error('Stake DAO capital/decomposition missing');
-          const syms=new Set(stake.underlying.map(x=>x.symbol));
-          for(const s of ['USDC','USDbC','axlUSDC','crvUSD'])if(!syms.has(s))throw new Error('Stake DAO underlying missing '+s);
+          const prod=(d.productivity?.positions||[]).find(x=>x.id==='stakedao_base_curve_4pool');
+          if(!stakeResolved) throw new Error('Stake DAO current lifecycle unresolved');
+          if(stakeActive){
+            if(!(Number(stake?.valueUsd)>0)||stake?.underlying?.length!==4) throw new Error('Stake DAO active capital/decomposition missing');
+            const syms=new Set(stake.underlying.map(x=>x.symbol));
+            for(const sym of ['USDC','USDbC','axlUSDC','crvUSD'])if(!syms.has(sym))throw new Error('Stake DAO underlying missing '+sym);
+            if(!prod||prod.status!=='measured'||!(Number(prod.referenceAprPct)>=0)) throw new Error('Stake DAO active base yield not measured');
+            if(r.stakeDaoBase?.result?.referenceAprSource!=='Curve official /v1/getBaseApys/base') throw new Error('Stake DAO active yield provenance mismatch');
+          }else{
+            if(stake) throw new Error('Stake DAO proven-zero capital row survived');
+            if(prod) throw new Error('Stake DAO proven-zero Productivity row survived');
+            if(d.provenance?.stakeDaoBase?.zeroIsKnown!==true||d.provenance?.stakeDaoBase?.currentPositionActive!==false) throw new Error('Stake DAO proven-zero provenance missing');
+            if(d.epistemicBoundary?.knownZeroIsNotUnknown!==true) throw new Error('known-zero epistemic boundary missing');
+          }
           const reward=(d.rewards?.observations||[]).find(x=>x.id==='stakedao-base-curve-4pool-crv');
           if(!reward||reward.token!=='CRV'||reward.status!=='measured'||!(Number(reward.claimable)>=0)) throw new Error('Stake DAO CRV reward not measured');
-          const prod=(d.productivity?.positions||[]).find(x=>x.id==='stakedao_base_curve_4pool');
-          if(!prod||prod.status!=='measured'||!(Number(prod.referenceAprPct)>=0)) throw new Error('Stake DAO base yield not measured');
-          if(r.stakeDaoBase?.result?.referenceAprSource!=='Curve official /v1/getBaseApys/base') throw new Error('Stake DAO yield provenance mismatch');
-          if(r.stakeDaoBase?.result?.rewardAccounting?.source!=='Stake DAO verified Accountant integral state on Base') throw new Error('Stake DAO reward provenance mismatch');
+          if(stakeActive&&r.stakeDaoBase?.result?.rewardAccounting?.source!=='Stake DAO verified Accountant integral state on Base') throw new Error('Stake DAO active reward provenance mismatch');
           const crv=d.strategies?.crv;
           if(crv?.version!=='0.1-company-010-crv-strategy-intelligence'||crv.status!=='measured'||crv.strategies?.length!==2) throw new Error('CRV strategy intelligence missing');
           if(crv.accountingBoundary?.wrappersNotSummedAsCrvUnits!==true||crv.accountingBoundary?.noDoubleCount!==true) throw new Error('CRV accounting boundary drift');
@@ -184,7 +197,7 @@ jobs:
           if((d.capital?.positions||[]).some(x=>String(x.protocol||'').toLowerCase()==='fluid')) throw new Error('Fluid capital leaked into Company #010');
           if(d.performance?.complete!==false||d.performance?.status!=='partial-cost-basis') throw new Error('Performance completeness drift');
           if(d.authority?.executionAuthority!=='none'||d.authority?.transactions!==false) throw new Error('authority drift');
-          console.log('Company #010 complete production admission PASS',{totalCapitalUsd:d.capital.totalCapitalUsd,stakeDaoValueUsd:stake.valueUsd,concentratorUsd:conc.principal.navUsd,cvxCrvUsd:cvx.principal.navUsd,cvxCrvAprPct:cvx.yield.referenceAprPct,cvxCrvClaimableUsd:cvx.claimable.usd,gmxNavUsd:g.totalStrategyNavUsd,projectXNavUsd:px.principal.navUsd,projectXNfts:px.nftCount,fluid:'out-of-scope',performance:d.performance.status});
+          console.log('Company #010 complete production admission PASS',{totalCapitalUsd:d.capital.totalCapitalUsd,stakeDaoCurrentPositionActive:stakeActive,stakeDaoCurrentPositionUsd:stakeUsd,concentratorUsd:conc.principal.navUsd,cvxCrvUsd:cvx.principal.navUsd,cvxCrvAprPct:cvx.yield.referenceAprPct,cvxCrvClaimableUsd:cvx.claimable.usd,gmxNavUsd:g.totalStrategyNavUsd,projectXNavUsd:px.principal.navUsd,projectXNfts:px.nftCount,fluid:'out-of-scope',performance:d.performance.status});
           NODE
       - name: Fingerprint source contract
         id: fingerprint
