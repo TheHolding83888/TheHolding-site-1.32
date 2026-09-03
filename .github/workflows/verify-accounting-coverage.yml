@@ -5,6 +5,7 @@ on:
     paths:
       - 'reporting/accounting-coverage.mjs'
       - 'reporting/accounting-coverage-validation.mjs'
+      - 'reporting/accounting-coverage-gap-diagnostic.mjs'
       - 'reporting/accounting-coverage.json'
       - 'companies/productivity-data.json'
       - 'companies/embedded-yield-ledger.json'
@@ -47,7 +48,9 @@ jobs:
           set -euo pipefail
           node --check reporting/accounting-coverage.mjs
           node --check reporting/accounting-coverage-validation.mjs
+          node --check reporting/accounting-coverage-gap-diagnostic.mjs
           node reporting/accounting-coverage.mjs
           test -s "$ACCOUNTING_COVERAGE_FILE"
           node reporting/accounting-coverage-validation.mjs
+          node reporting/accounting-coverage-gap-diagnostic.mjs
           git diff --check
