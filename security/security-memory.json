@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-03T14:13:17.005Z",
+  "generatedAt": "2026-09-03T16:45:05.413Z",
   "status": "watch",
-  "snapshotHash": "1d236acaa6b068ec19a09f1990152cc0bc9fe0b826d945520c2b077dec2eb222",
+  "snapshotHash": "22453a9c515b7f9e29c9f33cf2aad1dc2f740e834f4ac62f9ac263116a35abe8",
   "repository": {
-    "filesScanned": 923,
-    "bytesScanned": 25562724,
+    "filesScanned": 924,
+    "bytesScanned": 25570377,
     "criticalHashes": {
       ".github/workflows/admit-company-010-public.yml": "5feffbf58388675952487c3462d2f9149eecec6f3795483087010dd0d3b19cfb",
       ".github/workflows/ask-experience.yml": "deb9c4e1025390563f8a866f6ddf1c7870e748cbd6aba13fdbd6da2d38e983d4",
@@ -61,7 +61,7 @@
       ".github/workflows/update-change-intelligence.yml": "76e868b3fae223bdbfed15c4d60e36c7472314719be6ee2b8b900da9015dc538",
       ".github/workflows/update-company-010-hyperlend-income.yml": "99aa6cf82983372c316bb27ed2e4862d41eb349f3946c67fa746c23b841947c1",
       ".github/workflows/update-company-010-projectx-reference-apr.yml": "f3434862952258c73fb82ae6227b83ec5cdd65f7ab808651a37dfc1b8890203e",
-      ".github/workflows/update-company-010-state.yml": "ec1f4622590a9a2e7ec516b8603952b2b89dee63ea896cefde33a94e8e8515bb",
+      ".github/workflows/update-company-010-state.yml": "8a21c7750f805af37937c5b20106a0b91c5f577870f42b33332ef10b8f5cbecd",
       ".github/workflows/update-company-monthly-reports.yml": "3b8240f6420bfb997f76f9f493747b9c7aad8d4de2d6e11cec9c59d771c2ec4d",
       ".github/workflows/update-company-rewards.yml": "5ce2894f50205eb546fdbcf661c9a6d578f06784c1e774973f2fe6337694486f",
       ".github/workflows/update-comparative-intelligence.yml": "618f9ec51359ae75f5b8ebc6a3e2265c0913035f4b1e7d20f8788f290f47e787",
@@ -112,7 +112,7 @@
       ".github/workflows/verify-cognitive-recovery-order.yml": "bd9120b94369ec11b1135d58dd13363494b98e0f8d94431c5c7fdf1a38b41e87",
       ".github/workflows/verify-cognitive-release-coherence.yml": "f281af94fabc0d30dacc7e2bdba0408b23ee8e6496b2bcd97aa0470475e83039",
       ".github/workflows/verify-company-010-hyperlend-income.yml": "ab81be35e84d6f915ab9ba1c336de9d5d0cf66162d3fb71e04e788280e2e9cf3",
-      ".github/workflows/verify-company-010-production-integration.yml": "ed1f04408fea7be12f1c4b3532ace22ca6e96bb63efa9227e281435dad25df40",
+      ".github/workflows/verify-company-010-production-integration.yml": "eb894659a12105ab1613c17c5c54784d6aa238f3e3bf15f2d606134de8ec9757",
       ".github/workflows/verify-company-010-projectx-full-parity.yml": "b6d75d6d42cd45a45b2fcc06092c632586c3f0b422828b5fd43e899d9cd30e26",
       ".github/workflows/verify-company-010-projectx-reference-apr.yml": "101d09e2feaf77621b9630424c19e6ddf9850e96d657f5ccd91ed82c30b8b742",
       ".github/workflows/verify-company-010-public-admission.yml": "0a6d7530362c6b76aff2acde4a8523fe626b3622b2f7841a8377a17dabade64c",
@@ -436,7 +436,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Wed, 02 Sep 2026 00:08:14 GMT",
+        "lastModified": "Wed, 02 Sep 2026 05:04:22 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -472,6 +472,34 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "dac6148ec713bd605ea4ac26306b69f496bf205d9380145a30ca6fe8264b6fe8",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/update-company-010-state.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/update-company-010-state.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "ec1f4622590a9a2e7ec516b8603952b2b89dee63ea896cefde33a94e8e8515bb",
+        "currentSha256": "8a21c7750f805af37937c5b20106a0b91c5f577870f42b33332ef10b8f5cbecd"
+      }
+    },
+    {
+      "id": "bccb4c7a16c26f92ea72dcf458aa4c7484baaeb1872365df115feafe4304f28b",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/verify-company-010-production-integration.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-company-010-production-integration.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "ed1f04408fea7be12f1c4b3532ace22ca6e96bb63efa9227e281435dad25df40",
+        "currentSha256": "eb894659a12105ab1613c17c5c54784d6aa238f3e3bf15f2d606134de8ec9757"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -1098,10 +1126,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 811,
+    "runCount": 812,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/09/2026-09-03T14-13-17-005Z-1d236acaa6.json",
-    "latestRecordHash": "3bcc1b46cdff28c24d192f6a3d4c68913d529459ef23bb7fd9ae42669aed927b",
+    "latestRecordPath": "security/security-vault/2026/09/2026-09-03T16-45-05-413Z-22453a9c51.json",
+    "latestRecordHash": "411c1a4d653c7d2e78639f94710947632932b8220b38784f214f231bcd6e9f12",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
