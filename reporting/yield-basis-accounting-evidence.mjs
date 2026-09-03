@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
-import { Contract, JsonRpcProvider, getAddress, formatUnits } from 'ethers';
+import { Contract, Interface, JsonRpcProvider, getAddress, formatUnits } from 'ethers';
 
 const __filename=fileURLToPath(import.meta.url);
 const __dirname=path.dirname(__filename);
@@ -18,16 +18,22 @@ const DEFAULT_OUTPUT=process.env.YIELD_BASIS_EVIDENCE_FILE||path.join(ROOT,'repo
 const RPC_URL=process.env.ETH_RPC_URL||'https://ethereum-rpc.publicnode.com';
 const ARCHIVE_RPC_URL=process.env.ETH_ARCHIVE_RPC_URL||'https://eth.drpc.org';
 const ARCHIVE_RPC_FALLBACK_URL=process.env.ETH_ARCHIVE_RPC_FALLBACK_URL||'https://ethereum.public.blockpi.network/v1/rpc/public';
+const MULTICALL3='0xcA11bde05977b3631167028862bE2a173976CA11';
 const ABI=[
   'function preview_claim(address receiver,uint256 epoch_count,bool use_vest) returns (address[] tokens,uint256[] amounts)',
   'event Claim(address indexed user,address indexed token,uint256 amount)'
 ];
+const PREVIEW_SIGNATURE='preview_claim(address,uint256,bool)';
+const FD_INTERFACE=new Interface(ABI);
+const MULTICALL_ABI=['function aggregate3(tuple(address target,bool allowFailure,bytes callData)[] calls) payable returns (tuple(bool success,bytes returnData)[] returnData)'];
 const ERC20_ABI=['function decimals() view returns (uint8)','function symbol() view returns (string)'];
 const MAX_LOG_BLOCKS=9_500;
 const MAX_CHECKPOINTS_PER_WALLET=460;
 const BLOCK_LOOKUP_TIMEOUT_MS=8_000;
 const BLOCK_LOOKUP_RETRIES=3;
 const RECENT_BOUNDARY_INITIAL_STEP=4_096;
+const PREVIEW_PAGE_EPOCHS=10;
+const PREVIEW_PAGE_COUNT=5;
 
 const lower=v=>String(v||'').toLowerCase();
 const finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v));
@@ -146,16 +152,53 @@ async function tokenMeta(provider,token,cache,blockTag){
   const meta={token:getAddress(token),decimals:Number(decimalsRaw),symbol:String(symbolRaw)};cache.set(key,meta);return meta;
 }
 
-async function previewRows({contract,provider,walletRow,blockNumber,priceIndex,metaCache}){
-  const [tokens,amounts]=await contract.preview_claim.staticCall(walletRow.wallet,50,false,{blockTag:blockNumber,from:walletRow.wallet});
-  if(tokens.length!==amounts.length)throw new Error(`Yield Basis preview_claim tuple length mismatch for ${walletRow.wallet}`);
+async function rowsFromTokenAmounts({provider,walletRow,blockNumber,priceIndex,metaCache,tokenAmounts}){
   const rows=[];
-  for(let i=0;i<tokens.length;i++){
-    if(!isAddress(tokens[i]))throw new Error(`Yield Basis preview_claim invalid token for ${walletRow.wallet}`);
-    const meta=await tokenMeta(provider,tokens[i],metaCache,blockNumber),raw=BigInt(amounts[i]).toString(),price=priceIndex.get(walletRow.company,walletRow.wallet,meta.token);
+  for(const [tokenKey,rawValue] of [...tokenAmounts.entries()].sort((a,b)=>a[0].localeCompare(b[0]))){
+    const token=getAddress(tokenKey),meta=await tokenMeta(provider,token,metaCache,blockNumber),raw=BigInt(rawValue).toString(),price=priceIndex.get(walletRow.company,walletRow.wallet,meta.token);
     rows.push({token:meta.token,symbol:meta.symbol,decimals:meta.decimals,amountRaw:raw,amount:Number(formatUnits(raw,meta.decimals)),unitUsd:price?.unitUsd??null,valuationSource:price?.priceMethod||null,valuationObservedAt:price?.valuationObservedAt||null});
   }
-  return rows.sort((a,b)=>lower(a.token).localeCompare(lower(b.token)));
+  return rows;
+}
+
+async function previewRowsPaged({provider,walletRow,blockNumber,priceIndex,metaCache}){
+  const multicall=new Contract(MULTICALL3,MULTICALL_ABI,provider),callData=FD_INTERFACE.encodeFunctionData(PREVIEW_SIGNATURE,[walletRow.wallet,PREVIEW_PAGE_EPOCHS,false]);
+  const calls=Array.from({length:PREVIEW_PAGE_COUNT},()=>({target:DISTRIBUTOR,allowFailure:false,callData}));
+  const results=await multicall.aggregate3.staticCall(calls,{blockTag:blockNumber});
+  const tokenAmounts=new Map();
+  for(const result of results){
+    if(result?.success!==true)throw new Error(`Yield Basis paged preview_claim failed for ${walletRow.wallet}`);
+    const [tokens,amounts]=FD_INTERFACE.decodeFunctionResult(PREVIEW_SIGNATURE,result.returnData);
+    if(tokens.length!==amounts.length)throw new Error(`Yield Basis paged preview_claim tuple length mismatch for ${walletRow.wallet}`);
+    for(let i=0;i<tokens.length;i++){
+      if(!isAddress(tokens[i]))throw new Error(`Yield Basis paged preview_claim invalid token for ${walletRow.wallet}`);
+      const key=lower(tokens[i]);tokenAmounts.set(key,(tokenAmounts.get(key)||0n)+BigInt(amounts[i]));
+    }
+  }
+  return rowsFromTokenAmounts({provider,walletRow,blockNumber,priceIndex,metaCache,tokenAmounts});
+}
+
+async function previewRows({contract,provider,walletRow,blockNumber,priceIndex,metaCache,proofMeta=null}){
+  try{
+    const [tokens,amounts]=await contract.preview_claim.staticCall(walletRow.wallet,50,false,{blockTag:blockNumber,from:walletRow.wallet});
+    if(tokens.length!==amounts.length)throw new Error(`Yield Basis preview_claim tuple length mismatch for ${walletRow.wallet}`);
+    const tokenAmounts=new Map();
+    for(let i=0;i<tokens.length;i++){
+      if(!isAddress(tokens[i]))throw new Error(`Yield Basis preview_claim invalid token for ${walletRow.wallet}`);
+      tokenAmounts.set(lower(tokens[i]),BigInt(amounts[i]));
+    }
+    if(proofMeta)proofMeta.queryMode='direct-50-epoch-preview';
+    return rowsFromTokenAmounts({provider,walletRow,blockNumber,priceIndex,metaCache,tokenAmounts});
+  }catch(directError){
+    try{
+      const rows=await previewRowsPaged({provider,walletRow,blockNumber,priceIndex,metaCache});
+      if(proofMeta){proofMeta.queryMode='multicall3-sequential-5x10-epoch-preview';proofMeta.directError=errorText(directError);}
+      return rows;
+    }catch(pagedError){
+      const failure=new Error(`Yield Basis preview_claim direct and paged simulation failed: direct=${errorText(directError)} | paged=${errorText(pagedError)}`);
+      failure.directError=errorText(directError);failure.pagedError=errorText(pagedError);throw failure;
+    }
+  }
 }
 
 async function queryClaims(contract,wallet,fromBlock,toBlock){
@@ -184,8 +227,8 @@ function intervalMonth(open,close){
 }
 
 async function buildCheckpoint({provider,contract,walletRow,observedAt,blockNumber,blockTimestamp,priceIndex,metaCache,kind,providerLabel=null}){
-  const rows=await previewRows({contract,provider,walletRow,blockNumber,priceIndex,metaCache});
-  return{checkpointKey:`${kind}:${walletRow.stateKey}:${blockNumber}`,stateKey:walletRow.stateKey,company:walletRow.company,wallet:walletRow.wallet,walletAlias:walletRow.walletAlias,route:MECHANISM,observedAt,blockNumber,blockTimestamp,rows,boundaryProof:'block-tagged-FeeDistributor.preview_claim(receiver,50,false)',exactBlockTaggedState:true,monthBoundary:kind==='month-boundary',historicalStateProvider:kind==='month-boundary'?providerLabel:null,periodIncomeAuthority:false,currentClaimableBalanceIsPeriodIncome:false,unknownIsNotZero:true};
+  const proofMeta={},rows=await previewRows({contract,provider,walletRow,blockNumber,priceIndex,metaCache,proofMeta});
+  return{checkpointKey:`${kind}:${walletRow.stateKey}:${blockNumber}`,stateKey:walletRow.stateKey,company:walletRow.company,wallet:walletRow.wallet,walletAlias:walletRow.walletAlias,route:MECHANISM,observedAt,blockNumber,blockTimestamp,rows,boundaryProof:'block-tagged-FeeDistributor.preview_claim(receiver,50,false) or stateful-equivalent paged simulation',previewQueryMode:proofMeta.queryMode||null,directPreviewError:proofMeta.directError||null,exactBlockTaggedState:true,monthBoundary:kind==='month-boundary',historicalStateProvider:kind==='month-boundary'?providerLabel:null,periodIncomeAuthority:false,currentClaimableBalanceIsPeriodIncome:false,unknownIsNotZero:true};
 }
 
 async function buildHistoricalCheckpoint({candidates,walletRow,observedAt,blockNumber,blockTimestamp,priceIndex,metaCache,stats}){
@@ -272,7 +315,7 @@ export async function buildYieldBasisEvidence({rewards,previous={},generatedAt=n
   }
 
   const events=[...priorEvents.values()].sort((a,b)=>String(a.periodEnd||'').localeCompare(String(b.periodEnd||''))||a.eventKey.localeCompare(b.eventKey));
-  return{version:VERSION,mechanism:MECHANISM,generatedAt,status:diagnostics.reconciliationCount||diagnostics.unvaluedEventCount||boundaryFailures.length?'partial':'factual-boundary-tracking',fullAccountingStart:FULL_ACCOUNTING_START,semantics:{openingBalanceCreatesIncome:false,earnedIndependentOfClaim:true,claimIsSettlementNotSecondIncome:true,formula:'closing preview_claim + Claim settlements - opening preview_claim, token by token',positiveDeltaRequired:true,referenceAprUsed:false,laterPriceMovementRewritesClosedIncome:false,unknownIsNotZero:true},source:{chain:'Ethereum',chainId:1,feeDistributor:DISTRIBUTOR,claimableMetric:'FeeDistributor.preview_claim(receiver,50,false)',settlementEvent:'Claim(user,token,amount)',rewardsSource:'companies/rewards-data.json',collectorReuse:'same FeeDistributor + wallet scope already used by rewards/company-rewards-engine.mjs',historicalRpcPolicy:'capability-aware archive fallback; current state remains on primary RPC'},authority,checkpoints,events,diagnostics};
+  return{version:VERSION,mechanism:MECHANISM,generatedAt,status:diagnostics.reconciliationCount||diagnostics.unvaluedEventCount||boundaryFailures.length?'partial':'factual-boundary-tracking',fullAccountingStart:FULL_ACCOUNTING_START,semantics:{openingBalanceCreatesIncome:false,earnedIndependentOfClaim:true,claimIsSettlementNotSecondIncome:true,formula:'closing preview_claim + Claim settlements - opening preview_claim, token by token',positiveDeltaRequired:true,referenceAprUsed:false,laterPriceMovementRewritesClosedIncome:false,unknownIsNotZero:true},source:{chain:'Ethereum',chainId:1,feeDistributor:DISTRIBUTOR,claimableMetric:'FeeDistributor.preview_claim(receiver,50,false)',settlementEvent:'Claim(user,token,amount)',rewardsSource:'companies/rewards-data.json',collectorReuse:'same FeeDistributor + wallet scope already used by rewards/company-rewards-engine.mjs',historicalRpcPolicy:'capability-aware archive fallback; current state remains on primary RPC',historicalPreviewFallback:'Multicall3 sequential 5x10 epoch simulation preserves one eth_call state while avoiding monolithic preview limits'},authority,checkpoints,events,diagnostics};
 }
 
 async function main(){
