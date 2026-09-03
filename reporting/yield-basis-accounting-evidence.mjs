@@ -58,6 +58,10 @@ const errorText=error=>error?.shortMessage||error?.info?.error?.message||error?.
 async function readJson(file,fallback={}){try{return JSON.parse(await fs.readFile(file,'utf8'));}catch{return fallback;}}
 async function writeJson(file,data){await fs.mkdir(path.dirname(file),{recursive:true});await fs.writeFile(file,JSON.stringify(data,null,2)+'\n');}
 function bump(map,key){map[key]=Number(map[key]||0)+1;}
+async function historicalRead(label,fn){
+  try{return await fn();}
+  catch(error){throw new Error(`Yield Basis historical ${label} failed: ${errorText(error)}`);}
+}
 
 export function reconcileEntitlement(openingRaw,closingRaw,settlementRaw='0'){
   try{
@@ -177,18 +181,17 @@ async function enumerateTokenSet(fd,setId,blockTag,cache){
 
 async function storageDerivedPreview({provider,walletRow,blockNumber,blockTimestamp,priceIndex,metaCache,setCache}){
   const fd=new Contract(DISTRIBUTOR,ABI,provider),blockTs=Math.floor(Date.parse(blockTimestamp)/1000);
-  const [initialEpochRaw,lastClaimedRaw]=await Promise.all([
-    fd.INITIAL_EPOCH({blockTag:blockNumber}),fd.last_claimed_for(walletRow.wallet,{blockTag:blockNumber})
-  ]);
+  const initialEpochRaw=await historicalRead('FeeDistributor.INITIAL_EPOCH',()=>fd.INITIAL_EPOCH({blockTag:blockNumber}));
+  const lastClaimedRaw=await historicalRead(`FeeDistributor.last_claimed_for(${lower(walletRow.wallet)})`,()=>fd.last_claimed_for(walletRow.wallet,{blockTag:blockNumber}));
   const ve=new Contract(VOTING_ESCROW,VE_ABI,provider),initialEpoch=Number(initialEpochRaw),lastClaimed=Number(lastClaimedRaw);
   let epoch=lastClaimed===0?initialEpoch:lastClaimed+WEEK;
   const simulatedClaimed=new Map(),tokenAmounts=new Map();let epochsVisited=0;
   for(let i=0;i<50&&epoch<=blockTs;i++,epoch+=WEEK){
     epochsVisited++;
-    const [votesRaw,totalRaw,initialSetRaw,maxSetRaw]=await Promise.all([
-      ve.getPastVotes(walletRow.wallet,epoch,{blockTag:blockNumber}),ve.getPastTotalSupply(epoch,{blockTag:blockNumber}),
-      fd.initial_set_for_epoch(epoch,{blockTag:blockNumber}),fd.max_set_for_epoch(epoch,{blockTag:blockNumber})
-    ]);
+    const votesRaw=await historicalRead(`VotingEscrow.getPastVotes(${lower(walletRow.wallet)},${epoch})`,()=>ve.getPastVotes(walletRow.wallet,epoch,{blockTag:blockNumber}));
+    const totalRaw=await historicalRead(`VotingEscrow.getPastTotalSupply(${epoch})`,()=>ve.getPastTotalSupply(epoch,{blockTag:blockNumber}));
+    const initialSetRaw=await historicalRead(`FeeDistributor.initial_set_for_epoch(${epoch})`,()=>fd.initial_set_for_epoch(epoch,{blockTag:blockNumber}));
+    const maxSetRaw=await historicalRead(`FeeDistributor.max_set_for_epoch(${epoch})`,()=>fd.max_set_for_epoch(epoch,{blockTag:blockNumber}));
     const votes=BigInt(votesRaw),total=BigInt(totalRaw),initialSet=Number(initialSetRaw),maxSet=Number(maxSetRaw);
     if(initialSet===0)continue;
     if(maxSet<initialSet)throw new Error(`Yield Basis invalid token-set range ${initialSet}>${maxSet} at ${epoch}`);
@@ -197,16 +200,22 @@ async function storageDerivedPreview({provider,walletRow,blockNumber,blockTimest
       const tokens=await enumerateTokenSet(fd,setId,blockNumber,setCache);
       for(const token of tokens){
         const tk=lower(token);let claimed=simulatedClaimed.get(tk);
-        if(claimed===undefined){claimed=Number(await fd.claimed_epoch_for(walletRow.wallet,token,{blockTag:blockNumber}));simulatedClaimed.set(tk,claimed);}
+        if(claimed===undefined){
+          const claimedRaw=await historicalRead(`FeeDistributor.claimed_epoch_for(${lower(walletRow.wallet)},${tk})`,()=>fd.claimed_epoch_for(walletRow.wallet,token,{blockTag:blockNumber}));
+          claimed=Number(claimedRaw);simulatedClaimed.set(tk,claimed);
+        }
         if(claimed>=epoch)continue;
         if(total===0n)throw new Error(`Yield Basis zero total votes at claimable epoch ${epoch}`);
-        const balance=BigInt(await fd.balances_for_epoch(epoch,token,{blockTag:blockNumber})),amount=balance*votes/total;
+        const balanceRaw=await historicalRead(`FeeDistributor.balances_for_epoch(${epoch},${tk})`,()=>fd.balances_for_epoch(epoch,token,{blockTag:blockNumber}));
+        const balance=BigInt(balanceRaw),amount=balance*votes/total;
         if(amount>0n)tokenAmounts.set(tk,(tokenAmounts.get(tk)||0n)+amount);
         simulatedClaimed.set(tk,epoch);
       }
     }
   }
-  const rows=await rowsFromTokenAmounts({provider,walletRow,blockNumber,priceIndex,metaCache,tokenAmounts});
+  let rows;
+  try{rows=await rowsFromTokenAmounts({provider,walletRow,blockNumber,priceIndex,metaCache,tokenAmounts});}
+  catch(error){throw new Error(`Yield Basis historical ERC20 metadata/valuation rows failed: ${errorText(error)}`);}
   return{rows,epochsVisited,ve:VOTING_ESCROW,initialEpoch,lastClaimed};
 }
 
