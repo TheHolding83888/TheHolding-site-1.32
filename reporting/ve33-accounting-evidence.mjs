@@ -65,6 +65,7 @@ const VOTER_CLAIM_IFACE=new Interface([
   'function claimBribes(address[] bribes,address[][] tokens,uint256 tokenId)',
   'function claimFees(address[] fees,address[][] tokens,uint256 tokenId)'
 ]);
+const HOLDER_MULTICALL_IFACE=new Interface(['function multicall(bytes[] data) returns (bytes[] results)']);
 
 const lower=v=>String(v||'').toLowerCase();
 const finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v));
@@ -489,25 +490,62 @@ async function tokenMeta(provider,token,blockTag){
   return{symbol,decimals};
 }
 
-export function decodeRewardClaimTokenId({to,data,rewardContract,rewardToken,voter}){
+function decodeVoterClaimPayload({data,rewardContract,rewardToken}){
   try{
-    if(lower(to)===lower(rewardContract)){
-      const p=DIRECT_REWARD_IFACE.parseTransaction({data});
-      if(!p||p.name!=='getReward')return null;
-      const tokens=[...p.args[1]].map(lower);
-      if(!tokens.includes(lower(rewardToken)))return null;
-      return String(p.args[0]);
-    }
-    if(lower(to)===lower(voter)){
-      const p=VOTER_CLAIM_IFACE.parseTransaction({data});
-      if(!p||!['claimBribes','claimFees'].includes(p.name))return null;
-      const contracts=[...p.args[0]],tokens=[...p.args[1]],idx=contracts.findIndex(x=>lower(x)===lower(rewardContract));
-      if(idx<0||!Array.from(tokens[idx]||[]).map(lower).includes(lower(rewardToken)))return null;
-      return String(p.args[2]);
-    }
-  }catch{}
-  return null;
+    const p=VOTER_CLAIM_IFACE.parseTransaction({data});
+    if(!p||!['claimBribes','claimFees'].includes(p.name))return null;
+    const contracts=[...p.args[0]],tokens=[...p.args[1]],idx=contracts.findIndex(x=>lower(x)===lower(rewardContract));
+    if(idx<0||!Array.from(tokens[idx]||[]).map(lower).includes(lower(rewardToken)))return null;
+    return{tokenId:String(p.args[2]),path:p.name};
+  }catch{return null;}
 }
+
+function decodeHolderMulticallClaim({data,rewardContract,rewardToken,depth=0}){
+  if(depth>4)return null;
+  let parsed;
+  try{parsed=HOLDER_MULTICALL_IFACE.parseTransaction({data});}catch{return null;}
+  if(!parsed||parsed.name!=='multicall')return null;
+  const matches=[];
+  for(const inner of parsed.args[0]||[]){
+    const payload=String(inner||'0x');
+    const direct=decodeVoterClaimPayload({data:payload,rewardContract,rewardToken});
+    if(direct)matches.push(direct);
+    const nested=decodeHolderMulticallClaim({data:payload,rewardContract,rewardToken,depth:depth+1});
+    if(nested?.tokenId)matches.push({tokenId:nested.tokenId,path:nested.path});
+    else if(nested?.conflict)matches.push({tokenId:null,path:nested.path,conflict:true});
+  }
+  if(matches.some(x=>x.conflict))return{tokenId:null,path:'holder-multicall-conflicting-token-ids',conflict:true};
+  const ids=unique(matches.map(x=>x.tokenId).filter(Boolean));
+  if(ids.length===0)return null;
+  if(ids.length>1)return{tokenId:null,path:'holder-multicall-conflicting-token-ids',conflict:true};
+  const path=matches.find(x=>x.tokenId===ids[0])?.path||'claim';
+  return{tokenId:ids[0],path:`holder-multicall-${path}`,conflict:false};
+}
+
+export function decodeRewardClaimAttribution({to,data,rewardContract,rewardToken,voter,holder=null}){
+  const target=isAddress(to)?getAddress(to):null;
+  if(!target)return{tokenId:null,path:'transaction-target-unavailable'};
+  try{
+    if(lower(target)===lower(rewardContract)){
+      const p=DIRECT_REWARD_IFACE.parseTransaction({data});
+      if(!p||p.name!=='getReward')return{tokenId:null,path:'direct-reward-unmatched-calldata'};
+      const tokens=[...p.args[1]].map(lower);
+      if(!tokens.includes(lower(rewardToken)))return{tokenId:null,path:'direct-reward-unmatched-token'};
+      return{tokenId:String(p.args[0]),path:'direct-reward-getReward'};
+    }
+    if(lower(target)===lower(voter)){
+      const voterClaim=decodeVoterClaimPayload({data,rewardContract,rewardToken});
+      return voterClaim?{tokenId:voterClaim.tokenId,path:`voter-${voterClaim.path}`}:{tokenId:null,path:'voter-unmatched-calldata'};
+    }
+    if(holder&&isAddress(holder)&&lower(target)===lower(holder)){
+      const nested=decodeHolderMulticallClaim({data,rewardContract,rewardToken});
+      return nested?{tokenId:nested.tokenId,path:nested.path}:{tokenId:null,path:'holder-multicall-unmatched-calldata'};
+    }
+  }catch(error){return{tokenId:null,path:'calldata-decode-error',error:error?.message||String(error)};}
+  return{tokenId:null,path:'unresolved-top-level-call'};
+}
+
+export function decodeRewardClaimTokenId(args){return decodeRewardClaimAttribution(args).tokenId;}
 
 async function rewardClaimSettlements({provider,settlementRouter,cfg,lane,fromBlock,toBlock}){
   if(toBlock<fromBlock)return{complete:true,amountRaw:'0',events:[],unresolved:[]};
@@ -519,13 +557,13 @@ async function rewardClaimSettlements({provider,settlementRouter,cfg,lane,fromBl
       const recipient=String(log?.args?.[0]||''),rewardToken=String(log?.args?.[1]||''),amount=BigInt(log?.args?.[2]||0);
       if(lower(rewardToken)!==lower(lane.rewardToken)||lower(recipient)!==lower(lane.holder)||amount===0n)continue;
       const tx=await provider.getTransaction(log.transactionHash);
-      const decoded=tx?decodeRewardClaimTokenId({to:tx.to,data:tx.data,rewardContract:lane.rewardContract,rewardToken:lane.rewardToken,voter:cfg.voter}):null;
+      const attribution=tx?decodeRewardClaimAttribution({to:tx.to,data:tx.data,rewardContract:lane.rewardContract,rewardToken:lane.rewardToken,voter:cfg.voter,holder:lane.holder}):{tokenId:null,path:'transaction-unavailable'};
       const proof={
         blockNumber:Number(log.blockNumber),transactionHash:String(log.transactionHash||''),logIndex:Number(log.index??0),
-        recipient,rewardToken:lane.rewardToken,amountRaw:amount.toString(),decodedTokenId:decoded,
-        decodePath:tx?lower(tx.to)===lower(lane.rewardContract)?'direct-reward-getReward':lower(tx.to)===lower(cfg.voter)?'voter-claimFees-or-claimBribes':'unresolved-top-level-call':'transaction-unavailable'
+        recipient,rewardToken:lane.rewardToken,amountRaw:amount.toString(),decodedTokenId:attribution.tokenId,
+        decodePath:attribution.path
       };
-      if(decoded!==String(lane.tokenId)){unresolved.push(proof);continue;}
+      if(attribution.tokenId!==String(lane.tokenId)){unresolved.push(proof);continue;}
       total+=amount;
       events.push(proof);
     }
