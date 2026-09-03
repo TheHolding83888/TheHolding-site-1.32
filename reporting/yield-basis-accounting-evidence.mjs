@@ -12,6 +12,7 @@ const ROOT=path.resolve(__dirname,'..');
 export const VERSION='0.1-yield-basis-factual-accrual-evidence';
 export const MECHANISM='yield-basis-fees';
 export const DISTRIBUTOR='0xD11b416573EbC59b6B2387DA0D2c0D1b3b1F7A90';
+export const VOTING_ESCROW='0x8235c179E9e84688FBd8B12295EfC26834dAC211';
 export const FULL_ACCOUNTING_START='2026-09-01T00:00:00.000Z';
 const DEFAULT_REWARDS=process.env.REWARDS_DATA_FILE||path.join(ROOT,'companies','rewards-data.json');
 const DEFAULT_OUTPUT=process.env.YIELD_BASIS_EVIDENCE_FILE||path.join(ROOT,'reporting','yield-basis-accounting-evidence.json');
@@ -24,7 +25,6 @@ const MAX_TOKEN_SETS_PER_EPOCH=50;
 const ABI=[
   'function preview_claim(address receiver,uint256 epoch_count,bool use_vest) returns (address[] tokens,uint256[] amounts)',
   'function INITIAL_EPOCH() view returns (uint256)',
-  'function VE() view returns (address)',
   'function last_claimed_for(address) view returns (uint256)',
   'function initial_set_for_epoch(uint256) view returns (uint256)',
   'function max_set_for_epoch(uint256) view returns (uint256)',
@@ -177,11 +177,10 @@ async function enumerateTokenSet(fd,setId,blockTag,cache){
 
 async function storageDerivedPreview({provider,walletRow,blockNumber,blockTimestamp,priceIndex,metaCache,setCache}){
   const fd=new Contract(DISTRIBUTOR,ABI,provider),blockTs=Math.floor(Date.parse(blockTimestamp)/1000);
-  const [initialEpochRaw,veAddress,lastClaimedRaw]=await Promise.all([
-    fd.INITIAL_EPOCH({blockTag:blockNumber}),fd.VE({blockTag:blockNumber}),fd.last_claimed_for(walletRow.wallet,{blockTag:blockNumber})
+  const [initialEpochRaw,lastClaimedRaw]=await Promise.all([
+    fd.INITIAL_EPOCH({blockTag:blockNumber}),fd.last_claimed_for(walletRow.wallet,{blockTag:blockNumber})
   ]);
-  if(!isAddress(veAddress))throw new Error('Yield Basis VE address unavailable');
-  const ve=new Contract(veAddress,VE_ABI,provider),initialEpoch=Number(initialEpochRaw),lastClaimed=Number(lastClaimedRaw);
+  const ve=new Contract(VOTING_ESCROW,VE_ABI,provider),initialEpoch=Number(initialEpochRaw),lastClaimed=Number(lastClaimedRaw);
   let epoch=lastClaimed===0?initialEpoch:lastClaimed+WEEK;
   const simulatedClaimed=new Map(),tokenAmounts=new Map();let epochsVisited=0;
   for(let i=0;i<50&&epoch<=blockTs;i++,epoch+=WEEK){
@@ -208,7 +207,7 @@ async function storageDerivedPreview({provider,walletRow,blockNumber,blockTimest
     }
   }
   const rows=await rowsFromTokenAmounts({provider,walletRow,blockNumber,priceIndex,metaCache,tokenAmounts});
-  return{rows,epochsVisited,ve:getAddress(veAddress),initialEpoch,lastClaimed};
+  return{rows,epochsVisited,ve:VOTING_ESCROW,initialEpoch,lastClaimed};
 }
 
 async function directPreviewRows({contract,provider,walletRow,blockNumber,priceIndex,metaCache}){
@@ -275,7 +274,7 @@ async function queryClaimsWithFallback({candidates,wallet,fromBlock,toBlock,stat
 export async function buildYieldBasisEvidence({rewards,previous={},generatedAt=new Date().toISOString(),provider=null}={}){
   const authority={executionAuthority:'none',walletAuthority:'none',claimingAuthority:'none',capitalExecution:false,methodologyMutationAuthority:'none'};
   const wallets=trackedWalletsFromRewards(rewards),priceIndex=priceIndexFromRewards(rewards);
-  if(!wallets.length)return{version:VERSION,mechanism:MECHANISM,generatedAt,status:'no-tracked-wallets',fullAccountingStart:FULL_ACCOUNTING_START,semantics:{openingBalanceCreatesIncome:false,earnedIndependentOfClaim:true,claimIsSettlementNotSecondIncome:true,formula:'closing preview_claim + Claim settlements - opening preview_claim, token by token',positiveDeltaRequired:true,referenceAprUsed:false,laterPriceMovementRewritesClosedIncome:false,unknownIsNotZero:true},source:{chain:'Ethereum',chainId:1,feeDistributor:DISTRIBUTOR,claimableMetric:'FeeDistributor.preview_claim(receiver,50,false)',settlementEvent:'Claim(user,token,amount)',rewardsSource:'companies/rewards-data.json'},authority,checkpoints:previous?.checkpoints||[],events:previous?.events||[],diagnostics:{trackedWalletCount:0,referenceAprUsed:false,unknownIsNotZero:true}};
+  if(!wallets.length)return{version:VERSION,mechanism:MECHANISM,generatedAt,status:'no-tracked-wallets',fullAccountingStart:FULL_ACCOUNTING_START,semantics:{openingBalanceCreatesIncome:false,earnedIndependentOfClaim:true,claimIsSettlementNotSecondIncome:true,formula:'closing preview_claim + Claim settlements - opening preview_claim, token by token',positiveDeltaRequired:true,referenceAprUsed:false,laterPriceMovementRewritesClosedIncome:false,unknownIsNotZero:true},source:{chain:'Ethereum',chainId:1,feeDistributor:DISTRIBUTOR,votingEscrow:VOTING_ESCROW,claimableMetric:'FeeDistributor.preview_claim(receiver,50,false)',settlementEvent:'Claim(user,token,amount)',rewardsSource:'companies/rewards-data.json'},authority,checkpoints:previous?.checkpoints||[],events:previous?.events||[],diagnostics:{trackedWalletCount:0,referenceAprUsed:false,unknownIsNotZero:true}};
 
   const injected=provider!==null,rpc=provider||new JsonRpcProvider(RPC_URL,1),contract=new Contract(DISTRIBUTOR,ABI,rpc),latestNumber=await rpc.getBlockNumber(),latestBlock=await getBlockReliable(rpc,latestNumber);
   const historicalCandidates=injected?[{provider:rpc,label:'injected-provider'}]:unique([ARCHIVE_RPC_URL,ARCHIVE_RPC_FALLBACK_URL,RPC_URL]).map(url=>({provider:new JsonRpcProvider(url,1),label:rpcLabel(url)}));
@@ -319,7 +318,7 @@ export async function buildYieldBasisEvidence({rewards,previous={},generatedAt=n
 
   const events=[...priorEvents.values()].sort((a,b)=>String(a.periodEnd||'').localeCompare(String(b.periodEnd||''))||a.eventKey.localeCompare(b.eventKey));
   const storageProofOk=storageStats.fallbackCount===0||storageStats.crossCheckCount>0;
-  return{version:VERSION,mechanism:MECHANISM,generatedAt,status:diagnostics.reconciliationCount||diagnostics.unvaluedEventCount||boundaryFailures.length||storageStats.mismatchCount||!storageProofOk?'partial':'factual-boundary-tracking',fullAccountingStart:FULL_ACCOUNTING_START,semantics:{openingBalanceCreatesIncome:false,earnedIndependentOfClaim:true,claimIsSettlementNotSecondIncome:true,formula:'closing preview_claim + Claim settlements - opening preview_claim, token by token',positiveDeltaRequired:true,referenceAprUsed:false,laterPriceMovementRewritesClosedIncome:false,unknownIsNotZero:true},source:{chain:'Ethereum',chainId:1,feeDistributor:DISTRIBUTOR,claimableMetric:'FeeDistributor.preview_claim(receiver,50,false)',settlementEvent:'Claim(user,token,amount)',rewardsSource:'companies/rewards-data.json',collectorReuse:'same FeeDistributor + wallet scope already used by rewards/company-rewards-engine.mjs',historicalRpcPolicy:'capability-aware archive fallback; current state remains on primary RPC',historicalBoundaryFallback:'exact FeeDistributor/VE storage derivation of _claim economics without executing token transfers; cross-checked against direct preview_claim where callable'},authority,checkpoints,events,diagnostics};
+  return{version:VERSION,mechanism:MECHANISM,generatedAt,status:diagnostics.reconciliationCount||diagnostics.unvaluedEventCount||boundaryFailures.length||storageStats.mismatchCount||!storageProofOk?'partial':'factual-boundary-tracking',fullAccountingStart:FULL_ACCOUNTING_START,semantics:{openingBalanceCreatesIncome:false,earnedIndependentOfClaim:true,claimIsSettlementNotSecondIncome:true,formula:'closing preview_claim + Claim settlements - opening preview_claim, token by token',positiveDeltaRequired:true,referenceAprUsed:false,laterPriceMovementRewritesClosedIncome:false,unknownIsNotZero:true},source:{chain:'Ethereum',chainId:1,feeDistributor:DISTRIBUTOR,votingEscrow:VOTING_ESCROW,votingEscrowIdentitySource:'yield-basis/yb-core scripts/deploy_fee_distributor.py',claimableMetric:'FeeDistributor.preview_claim(receiver,50,false)',settlementEvent:'Claim(user,token,amount)',rewardsSource:'companies/rewards-data.json',collectorReuse:'same FeeDistributor + wallet scope already used by rewards/company-rewards-engine.mjs',historicalRpcPolicy:'capability-aware archive fallback; current state remains on primary RPC',historicalBoundaryFallback:'exact FeeDistributor/VE storage derivation of _claim economics without executing token transfers; cross-checked against direct preview_claim where callable'},authority,checkpoints,events,diagnostics};
 }
 
 async function main(){
