@@ -15,6 +15,12 @@
     "manualDispatchDoesNotProveSchedulerHealth": true,
     "unknownIsNotZero": true
   },
+  "generatedStateCollisionRecovery": {
+    "mode": "fresh-main-recompute",
+    "oldHeadFailedJobRerunAllowed": false,
+    "conflictMergeGuessingAllowed": false,
+    "reason": "A failed generated-state writer rerun preserves the original event head and can deterministically collide again after rewards-data.json has advanced. Recovery must begin from fresh main and recompute canonical state rather than merge generated JSON by guesswork."
+  },
   "authority": {
     "repositoryMutationAuthority": true,
     "workflowDispatchAuthority": false,
