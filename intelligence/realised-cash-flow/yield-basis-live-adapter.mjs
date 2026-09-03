@@ -41,7 +41,7 @@ const COMPANIES = [
     { alias: 'defitea.eth', address: '0x78bf5AF472d5f6014b641eD70DE01862C05dA8c3' },
     { alias: 'Defitea Operations', address: '0x6640C1AF0BF7e77fa223d4Af2F779e55dcFB8D2d' }
   ] },
-  { company: 'aerocvxyb.eth', wallets: [{ alias: 'Yield Basis wallet', address: '0x6c6543eBA07946706Fd10a1064FA773326B5f5a9' }] },
+  { company: 'aerocrvyb.eth', wallets: [{ alias: 'Yield Basis wallet', address: '0x6c6543eBA07946706Fd10a1064FA773326B5f5a9' }] },
   { company: '1milliondollar.eth', wallets: [{ alias: '1milliondollar.eth', address: '0xe4b9c9ced406baffe406e63f83d39daaef150596' }] }
 ].map(c => ({ ...c, wallets: c.wallets.map(w => ({ ...w, address: getAddress(w.address) })) }));
 
