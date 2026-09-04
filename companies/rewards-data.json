@@ -24027,13 +24027,14 @@
         "USDC",
         "AERO",
         "scrvUSD",
-        "VELO"
+        "VELO",
+        "kHYPE"
       ],
       "routeCoverage": 1,
-      "completeRouteCoverage": 0.833333,
-      "measuredRoutes": 6,
-      "completeRoutes": 5,
-      "routeCount": 6,
+      "completeRouteCoverage": 0.888889,
+      "measuredRoutes": 9,
+      "completeRoutes": 8,
+      "routeCount": 9,
       "pendingRoutes": 1,
       "unpricedRewards": 0,
       "rewards": [
@@ -24596,6 +24597,26 @@
             "currentRewardStateIsNotPeriodIncome": true,
             "unknownIsNotZero": true
           }
+        },
+        {
+          "protocol": "HyperLend",
+          "route": "hyperlend-khype",
+          "status": "ok",
+          "chain": "HyperEVM",
+          "metric": "kHYPE supply interest via scaled balance + liquidity index",
+          "note": "HyperLend lending interest accrues inside the hToken balance and is represented as Compounded / Embedded, never as freely claimable income.",
+          "details": {
+            "market": "kHYPE",
+            "hToken": "0xa55DE93CDE5A34c5521B7584022846829CB74366",
+            "referenceAprPct": 61.361305,
+            "rewardState": "Compounded",
+            "incomeMode": "embedded-lending-interest",
+            "claimableApplicable": false,
+            "embeddedMeasurementStatus": "measured",
+            "externalIncentivesStatus": "none",
+            "externalRewardAssetCount": 0,
+            "unknownIsNotZero": false
+          }
         }
       ],
       "embeddedIncome": [
@@ -24625,9 +24646,26 @@
           "usdValueIncludedInMeasuredEarnedTotal": true,
           "metric": "LockedManagedReward.earned(baseToken, veNFT)",
           "note": "Managed veNFT reward remains locked in the strategy and is represented as Compounded, not as freely claimable income. USD is included only in measured earned presentation when priced, never in claimable totals."
+        },
+        {
+          "protocol": "HyperLend",
+          "route": "hyperlend-khype",
+          "chain": "HyperEVM",
+          "state": "Compounded",
+          "claimableApplicable": false,
+          "symbol": "kHYPE",
+          "amount": 6.37e-10,
+          "classification": "compounded-embedded",
+          "usdValue": 0,
+          "priceUsd": 88.65553354,
+          "priceMethod": "canonical-company-010-current-hyperlend-oracle-price",
+          "usdValueIncludedInClaimableTotal": false,
+          "usdValueIncludedInMeasuredEarnedTotal": true,
+          "metric": "scaledBalance × (current liquidity index − previous user index)",
+          "note": "Supply interest is already embedded in current HyperLend hToken balance / NAV; this row is presentation-only measured earned and is never additive capital."
         }
       ],
-      "updatedAt": "2026-09-04T14:26:44.395Z",
+      "updatedAt": "2026-09-04T09:06:14.159Z",
       "settlementStatus": "partial-known-accrual",
       "settlement": {
         "readinessStatus": "partial",
@@ -38118,7 +38156,16 @@
         "multiLegComplete": true
       },
       "note": "Claimable, Compounded and unresolved routes are explicitly separated. Project X preserves both measured fee legs. Known ve Compounded routes preserve token + USD valuation parity with the generic Rewards mechanism. Claimable totals stay rewards-only; Passport measured earned presentation may add priced Compounded USD; unknown route amounts/prices are not zero.",
-      "executionAuthority": "none"
+      "executionAuthority": "none",
+      "hyperlendIncome": {
+        "version": "0.1-company-010-hyperlend-income-parity",
+        "state": "Compounded",
+        "claimableApplicable": false,
+        "embeddedMeasurementStatus": "measured",
+        "externalIncentivesStatus": "none",
+        "rewardAssetCount": 0,
+        "noDoubleCount": true
+      }
     },
     "defiteaUnion": {
       "capability": "0.3-defitea-vlcvx-route-graph-scrvusd-proof",
