@@ -18,6 +18,7 @@ const ROOT=path.resolve(path.dirname(__filename),'..');
 const PRODUCTIVITY_FILE=process.env.PRODUCTIVITY_DATA_FILE||path.join(ROOT,'companies','productivity-data.json');
 const INCOME_LEDGER_FILE=process.env.INCOME_LEDGER_FILE||path.join(ROOT,'reporting','income-ledger.json');
 const EMBEDDED_FILE=process.env.EMBEDDED_YIELD_LEDGER_FILE||path.join(ROOT,'companies','embedded-yield-ledger.json');
+const REWARDS_FILE=process.env.REWARDS_DATA_FILE||path.join(ROOT,'companies','rewards-data.json');
 const VE33_EVIDENCE_FILE=process.env.VE33_EVIDENCE_FILE||path.join(ROOT,'reporting','ve33-accounting-evidence.json');
 const VE33_LOCKED_MANAGED_EVIDENCE_FILE=process.env.VE33_LOCKED_MANAGED_EVIDENCE_FILE||path.join(ROOT,'reporting','ve33-locked-managed-accounting-evidence.json');
 const YIELD_BASIS_EVIDENCE_FILE=process.env.YIELD_BASIS_EVIDENCE_FILE||path.join(ROOT,'reporting','yield-basis-accounting-evidence.json');
@@ -152,7 +153,31 @@ function pushTrackingProof(out,{engineId,company,observedAt,sourceFile,proofKey}
   out.push({engineId,company:canonical,month,observedAt,sourceFile,proofKey:proofKey||null});
 }
 
-export function factualTrackingProofs({ve33={},ve33LockedManaged={},yieldBasis={},frax={}}={}){
+function strongVlCvxRouteProofs(rewards={}){
+  const out=[];
+  for(const [company,c] of Object.entries(rewards?.companies||{})){
+    const route=c?.vlCvxRoute;
+    const current=route?.currentRoute;
+    const source=(c?.sources||[]).find(x=>x?.route==='vlcvx-current-route');
+    if(route?.principalAsset!=='vlCVX'||!current?.routeId||source?.status!=='ok')continue;
+    const settlement=source?.details?.settlement||{};
+    let strong=false;
+    if(current.routeId==='votium-union'){
+      strong=settlement?.forwardingEffective===true&&Number(settlement?.allocationSharePct)===100&&settlement?.unknownIsNotZero===true;
+    }else if(current.routeId==='stake-dao-vlcvx'){
+      const root=String(settlement?.root||'').toLowerCase();
+      const activeRoot=String(settlement?.activeRoot||'').toLowerCase();
+      const claimProofs=Array.isArray(settlement?.claims)?settlement.claims:[];
+      const provenAbsent=settlement?.entitlement==='proven-absent-from-active-root';
+      strong=/^0x[0-9a-f]{64}$/.test(root)&&root===activeRoot&&settlement?.unknownIsNotZero===true&&(provenAbsent||claimProofs.every(x=>x?.proofValid===true));
+    }
+    if(!strong)continue;
+    pushTrackingProof(out,{engineId:'convex_vlcvx',company,observedAt:route?.generatedAt||c?.updatedAt||rewards?.generatedAt,sourceFile:'companies/rewards-data.json',proofKey:`vlcvx:${route?.wallet||company}:${current.routeId}`});
+  }
+  return out;
+}
+
+export function factualTrackingProofs({ve33={},ve33LockedManaged={},yieldBasis={},frax={},rewards={}}={}){
   const out=[];
   const ve33Rows=[
     ...((Array.isArray(ve33?.checkpoints)?ve33.checkpoints:[]).map(x=>({...x,__source:'reporting/ve33-accounting-evidence.json'}))),
@@ -169,6 +194,7 @@ export function factualTrackingProofs({ve33={},ve33LockedManaged={},yieldBasis={
   for(const row of Array.isArray(frax?.checkpoints)?frax.checkpoints:[]){
     pushTrackingProof(out,{engineId:'frax_vefrax',company:row?.company,observedAt:row?.observedAt,sourceFile:'reporting/frax-yield-accounting-evidence.json',proofKey:row?.checkpointKey});
   }
+  out.push(...strongVlCvxRouteProofs(rewards));
   return [...new Map(out.map(x=>[[x.engineId,x.company,x.month,x.proofKey].join('|'),x])).values()];
 }
 
@@ -233,7 +259,7 @@ function unmatchedEvents(events,mechanismRows){const known=mechanismRows.map(x=>
 export function buildAccountingCoverage({productivity={},ledger={},embedded={},factualEvidence={},generatedAt=null}={}){
   validateCanonicalLedgerContract(ledger);
   const tracking=factualTrackingProofs(factualEvidence);
-  const sourceTimes=[generatedAt,ledger?.generatedAt,productivity?.generatedAt,embedded?.generatedAt,factualEvidence?.ve33?.generatedAt,factualEvidence?.ve33LockedManaged?.generatedAt,factualEvidence?.yieldBasis?.generatedAt,factualEvidence?.frax?.generatedAt].filter(Boolean).sort();
+  const sourceTimes=[generatedAt,ledger?.generatedAt,productivity?.generatedAt,embedded?.generatedAt,factualEvidence?.rewards?.generatedAt,factualEvidence?.ve33?.generatedAt,factualEvidence?.ve33LockedManaged?.generatedAt,factualEvidence?.yieldBasis?.generatedAt,factualEvidence?.frax?.generatedAt].filter(Boolean).sort();
   const at=sourceTimes.at(-1)||new Date().toISOString();
   const currentMonth=monthKey(at)||new Date().toISOString().slice(0,7);
   const events=ledger.events||[];
@@ -275,8 +301,8 @@ export function buildAccountingCoverage({productivity={},ledger={},embedded={},f
 
   return{
     version:VERSION,generatedAt:at,status:'diagnostic-no-completion-authority',currentMonth,
-    sourceFreshness:{productivityGeneratedAt:productivity?.generatedAt||null,incomeLedgerGeneratedAt:ledger?.generatedAt||null,embeddedYieldGeneratedAt:embedded?.generatedAt||null,ve33EvidenceGeneratedAt:factualEvidence?.ve33?.generatedAt||null,ve33LockedManagedEvidenceGeneratedAt:factualEvidence?.ve33LockedManaged?.generatedAt||null,yieldBasisEvidenceGeneratedAt:factualEvidence?.yieldBasis?.generatedAt||null,fraxEvidenceGeneratedAt:factualEvidence?.frax?.generatedAt||null},
-    semantics:{canonicalLedgerIsSoleFactualIncomeAuthority:true,productivityCoverageIsNotAccountingCoverage:true,referenceMetricIsNotEarnedIncome:true,currentRewardStateIsNotPeriodIncome:true,factualTrackingProofIsNotPeriodIncome:true,zeroPeriodEventDoesNotImplyCoverageGap:true,coverageGapMeansMissingFactualTrackingCapability:true,factualEvidenceDoesNotImplyFullMechanismCoverage:true,partialEvidenceDoesNotCloseMonth:true,unknownIsNotZero:true,newCompanyDoesNotRequireNewAccountingEngineWhenMechanismAlreadySupported:true,unclassifiedMechanismIsVisibleGapNotZero:true,historicalCompanyAliasesCanonicalized:true,stringAliasCannotCreateNewCompanyIdentity:true},
+    sourceFreshness:{productivityGeneratedAt:productivity?.generatedAt||null,incomeLedgerGeneratedAt:ledger?.generatedAt||null,embeddedYieldGeneratedAt:embedded?.generatedAt||null,rewardsGeneratedAt:factualEvidence?.rewards?.generatedAt||null,ve33EvidenceGeneratedAt:factualEvidence?.ve33?.generatedAt||null,ve33LockedManagedEvidenceGeneratedAt:factualEvidence?.ve33LockedManaged?.generatedAt||null,yieldBasisEvidenceGeneratedAt:factualEvidence?.yieldBasis?.generatedAt||null,fraxEvidenceGeneratedAt:factualEvidence?.frax?.generatedAt||null},
+    semantics:{canonicalLedgerIsSoleFactualIncomeAuthority:true,productivityCoverageIsNotAccountingCoverage:true,referenceMetricIsNotEarnedIncome:true,currentRewardStateIsNotPeriodIncome:true,factualTrackingProofIsNotPeriodIncome:true,routeStateCanProveTrackingOnlyWithSettlementProof:true,unresolvedSettlementCannotProveFactualTracking:true,zeroPeriodEventDoesNotImplyCoverageGap:true,coverageGapMeansMissingFactualTrackingCapability:true,factualEvidenceDoesNotImplyFullMechanismCoverage:true,partialEvidenceDoesNotCloseMonth:true,unknownIsNotZero:true,newCompanyDoesNotRequireNewAccountingEngineWhenMechanismAlreadySupported:true,unclassifiedMechanismIsVisibleGapNotZero:true,historicalCompanyAliasesCanonicalized:true,stringAliasCannotCreateNewCompanyIdentity:true},
     completionPolicy:{registryHasMonthClosingAuthority:false,registryHasIncomeCreationAuthority:false,coverageGapRankingIsDiagnosticOnly:true},
     authority:{executionAuthority:'none',walletAuthority:'none',claimingAuthority:'none',capitalExecution:false,monthClosingAuthority:false,methodologyMutationAuthority:'none'},
     summary:{companyCount:companyNames.length,mechanismInstanceCount:flat.length,uniqueMechanismCount:mechanismIds.length,classifiedMechanismInstanceCount:flat.length-unclassified.length,unclassifiedMechanismInstanceCount:unclassified.length,reusableCoverageGapCount:gaps.length,canonicalLedgerEventCount:events.length,unmatchedCanonicalEventCount:unmatched.length,canonicalizedAliasCompanyCount:aliasObservations.length,factualTrackingProofCount:tracking.length},
@@ -287,10 +313,10 @@ export function buildAccountingCoverage({productivity={},ledger={},embedded={},f
 }
 
 async function main(){
-  const[productivity,ledger,embedded,ve33,ve33LockedManaged,yieldBasis,frax]=await Promise.all([
-    readJson(PRODUCTIVITY_FILE),readJson(INCOME_LEDGER_FILE),readJson(EMBEDDED_FILE),readOptionalJson(VE33_EVIDENCE_FILE),readOptionalJson(VE33_LOCKED_MANAGED_EVIDENCE_FILE),readOptionalJson(YIELD_BASIS_EVIDENCE_FILE),readOptionalJson(FRAX_EVIDENCE_FILE)
+  const[productivity,ledger,embedded,rewards,ve33,ve33LockedManaged,yieldBasis,frax]=await Promise.all([
+    readJson(PRODUCTIVITY_FILE),readJson(INCOME_LEDGER_FILE),readJson(EMBEDDED_FILE),readOptionalJson(REWARDS_FILE),readOptionalJson(VE33_EVIDENCE_FILE),readOptionalJson(VE33_LOCKED_MANAGED_EVIDENCE_FILE),readOptionalJson(YIELD_BASIS_EVIDENCE_FILE),readOptionalJson(FRAX_EVIDENCE_FILE)
   ]);
-  const output=buildAccountingCoverage({productivity,ledger,embedded,factualEvidence:{ve33,ve33LockedManaged,yieldBasis,frax}});
+  const output=buildAccountingCoverage({productivity,ledger,embedded,factualEvidence:{rewards,ve33,ve33LockedManaged,yieldBasis,frax}});
   await writeJson(OUTPUT_FILE,output);
   console.log('Accounting Coverage Registry v0.3 built',{
     companies:output.summary.companyCount,mechanismInstances:output.summary.mechanismInstanceCount,uniqueMechanisms:output.summary.uniqueMechanismCount,coverageGaps:output.summary.reusableCoverageGapCount,unclassified:output.summary.unclassifiedMechanismInstanceCount,unmatchedLedgerEvents:output.summary.unmatchedCanonicalEventCount,canonicalizedAliasCompanies:output.summary.canonicalizedAliasCompanyCount,factualTrackingProofs:output.summary.factualTrackingProofCount,currentMonth:output.currentMonth,executionAuthority:output.authority.executionAuthority,topReusableGaps:output.gapRanking.slice(0,10)
