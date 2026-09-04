@@ -45,6 +45,10 @@ for (const phrase of [
   'No new layer',
   'capability',
   'complexity',
+  'Continuous improvement / antifragility invariant',
+  'demonstrated failure class',
+  'canonical truth and canonical writer authority remain singular',
+  'Remove obsolete transition guards',
 ]) {
   if (!build.toLowerCase().includes(phrase.toLowerCase())) throw new Error(`Build Discipline canon missing durable phrase: ${phrase}`);
 }
@@ -135,6 +139,8 @@ for (const phrase of [
   'not a psychological profile',
   'autonomous observational/world evidence is the primary always-on lane',
   'cold durable references',
+  'Every material change should add a real capability or remove a demonstrated failure/complexity class',
+  'resilience must reuse canonical truth/writer paths instead of creating parallel machinery',
 ]) {
   if (!current.toLowerCase().includes(phrase.toLowerCase())) throw new Error(`CURRENT bootstrap missing phrase: ${phrase}`);
 }
@@ -152,4 +158,5 @@ console.log('CURRENT minimum recovery + Security + continuity-root + cold-canon 
   latestContinuity: currentLatest,
   continuityRoot: 'CONTINUITY.md',
   minimumRecoveryDocumentsAfterCurrent: 2,
+  continuousImprovementInvariant: true,
 });

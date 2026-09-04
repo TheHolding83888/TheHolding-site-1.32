@@ -67,6 +67,18 @@ The Holding should behave as a directed, bounded organism – not a maze of work
 - Every generated state has one canonical producer and one canonical source-of-truth path.
 - If orchestration becomes harder to explain than the capability it delivers, simplify before adding another layer.
 
+## Continuous improvement / antifragility invariant
+
+The Holding should become harder to break **without becoming harder to reason about**.
+
+- Do not add resilience machinery for hypothetical elegance. A new guard, fallback or recovery path must answer a demonstrated failure class or a clearly bounded high-consequence risk.
+- When a real production failure reveals a reusable class, prefer one generic fix that protects future mechanisms over repeated local patches.
+- Isolate local failures. A broken transport, sensor or protocol adapter should degrade its own evidence to explicit `UNKNOWN`, `partial` or `stale` state rather than corrupting unrelated truth planes.
+- Multiple observation or transport paths are allowed when they protect a real evidence boundary; canonical truth and canonical writer authority remain singular.
+- Recovery must be replayable/idempotent where practical: retrying a writer or rebuilding from canonical evidence must not double-count income or create duplicate state.
+- Remove obsolete transition guards, compatibility plumbing and temporary recovery code after the new canonical path is physically proven.
+- A hardening change is successful only when the reliability/capability gained is greater than the complexity it leaves behind.
+
 ## Owner quality standard
 
 The target is not maximum speed and not maximum complexity. The target is **super quality, order, reproducibility, controlled progress and a system that remains understandable as it compounds**.

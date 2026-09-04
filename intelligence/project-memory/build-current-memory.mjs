@@ -156,6 +156,7 @@ const lines = [
   '- Prefer reuse and simplification over parallel machinery.',
   '- No duplicate sources of truth and no orchestration loops.',
   '- Capability must grow faster than complexity; authority must grow slower than intelligence.',
+  '- Every material change should add a real capability or remove a demonstrated failure/complexity class; resilience must reuse canonical truth/writer paths instead of creating parallel machinery.',
   '',
   '## Durable-memory rule',
   '',

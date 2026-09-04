@@ -14,6 +14,7 @@ on:
       - 'intelligence/project-memory/verify-continuity-checkpoint.mjs'
       - 'intelligence/project-memory/build-current-memory.mjs'
       - 'intelligence/project-memory/verify-current-memory.mjs'
+      - 'intelligence/project-memory/THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md'
   push:
     branches: [main]
   schedule:
@@ -22,12 +23,64 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
 
 concurrency:
   group: continuity-checkpoint-main
   cancel-in-progress: false
 
 jobs:
+  classify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      should_checkpoint: ${{ steps.classify.outputs.should_checkpoint }}
+      reason: ${{ steps.classify.outputs.reason }}
+    steps:
+      - id: classify
+        name: Classify continuity boundary without merge-message coupling
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: ${{ github.api_url }}
+          REPOSITORY: ${{ github.repository }}
+          EVENT_NAME: ${{ github.event_name }}
+          HEAD_MESSAGE: ${{ github.event.head_commit.message }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          should=false
+          reason=not-a-material-boundary
+
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            should=true
+            reason=manual-dispatch
+          elif [ "$EVENT_NAME" = "schedule" ]; then
+            should=true
+            reason=daily-backstop
+          elif [ "$EVENT_NAME" = "push" ]; then
+            # Preserve the already-proven classic merge path, but do not depend
+            # on commit-message shape: squash/rebase merges are detected from
+            # GitHub's commit-to-PR association on the exact pushed head.
+            if [[ "$HEAD_MESSAGE" == "Merge PR #"* || "$HEAD_MESSAGE" == "Merge pull request #"* ]]; then
+              should=true
+              reason=classic-merge-message
+            else
+              response="$(curl -fsSL \
+                -H "Authorization: Bearer ${GH_TOKEN}" \
+                -H "Accept: application/vnd.github+json" \
+                -H "X-GitHub-Api-Version: 2022-11-28" \
+                "${API_URL}/repos/${REPOSITORY}/commits/${GITHUB_SHA}/pulls" || printf '[]')"
+              if printf '%s' "$response" | jq -e 'any(.[]; .merged_at != null and .base.ref == "main")' >/dev/null; then
+                should=true
+                reason=associated-merged-pr
+              fi
+            fi
+          fi
+
+          echo "should_checkpoint=$should" >> "$GITHUB_OUTPUT"
+          echo "reason=$reason" >> "$GITHUB_OUTPUT"
+          echo "Continuity boundary: $should ($reason)"
+
   verify:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
@@ -57,22 +110,18 @@ jobs:
           node --check intelligence/project-memory/verify-continuity-checkpoint.mjs
           node --check intelligence/project-memory/build-current-memory.mjs
           node --check intelligence/project-memory/verify-current-memory.mjs
+          CONTINUITY_TRIGGER_SHA="$(git rev-parse HEAD)" node intelligence/project-memory/build-continuity-checkpoint.mjs
           node intelligence/project-memory/verify-continuity-checkpoint.mjs
           node intelligence/project-memory/build-current-memory.mjs
           node intelligence/project-memory/verify-current-memory.mjs
           git diff --check
 
   checkpoint:
+    needs: classify
     permissions:
       contents: write
-    if: >-
-      ${{
-        github.event_name == 'workflow_dispatch' ||
-        github.event_name == 'schedule' ||
-        (github.event_name == 'push' &&
-          (startsWith(github.event.head_commit.message, 'Merge PR #') ||
-           startsWith(github.event.head_commit.message, 'Merge pull request #')))
-      }}
+      pull-requests: read
+    if: needs.classify.outputs.should_checkpoint == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -89,6 +138,9 @@ jobs:
           package-manager-cache: false
 
       - name: Publish immutable continuity checkpoint safely
+        env:
+          CONTINUITY_TRIGGER_SHA: ${{ github.sha }}
+          CONTINUITY_TRIGGER_REASON: ${{ needs.classify.outputs.reason }}
         shell: bash
         run: |
           set -euo pipefail
@@ -155,9 +207,10 @@ jobs:
             echo "**Root pointer:** \`intelligence/project-memory/CONTINUITY.md\`"
             echo "**Immutable snapshots:** \`THE_HOLDING_MASTER_CONTINUITY_*_AUTO_<sha>.md\`"
             echo "**CURRENT writer:** existing Project Memory Bootstrap only"
-            echo "**Automatic merge boundary:** enabled for merge commits"
+            echo "**Automatic merged-PR boundary:** merge-strategy independent"
+            echo "**Boundary reason:** \`${{ needs.classify.outputs.reason }}\`"
             echo "**Daily backstop:** 23:47 UTC"
             echo "**Execution authority:** none"
             echo
-            echo "The checkpoint writer can only append one immutable checkpoint and update the continuity root. A successful checkpoint push naturally wakes Project Memory Bootstrap, which remains the sole CURRENT.md writer."
+            echo "The checkpoint writer can only append one immutable checkpoint and update the continuity root. A successful checkpoint push naturally wakes Project Memory Bootstrap, which remains the sole CURRENT.md writer. Checkpoint machine snapshots declare whether their source artifacts predate the triggering boundary; they never substitute for physical production proof."
           } >> "$GITHUB_STEP_SUMMARY"
