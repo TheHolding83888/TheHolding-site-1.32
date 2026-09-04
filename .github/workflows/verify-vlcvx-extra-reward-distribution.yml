@@ -52,16 +52,20 @@ jobs:
           if(x.contract?.address?.toLowerCase()!=='0x9b622f2c40b80ef5efb14c2b2239511ffbfab702')throw new Error('distribution identity drift');
           if(x.contract?.locker?.toLowerCase()!=='0x72a19342e8f1838460ebfccef09f6585e32db86e')throw new Error('locker identity drift');
           if(x.summary?.companyCount!==4||x.companies?.length!==4)throw new Error('all four live vlCVX companies required');
-          if(!(x.summary?.rewardTokenCount>0)||!(x.summary?.rewardAddedEventCount>0))throw new Error('event-derived reward inventory empty');
+          if(x.source?.rewardInventoryScanComplete!==true||x.semantics?.rewardInventoryScanComplete!==true)throw new Error('reward inventory scan must be complete');
+          if(x.summary?.rewardAddedEventCount<0||x.summary?.rewardTokenCount<0)throw new Error('invalid reward inventory counters');
+          if(x.summary?.rewardTokenCount===0&&x.summary?.rewardAddedEventCount!==0)throw new Error('empty token inventory with non-empty RewardAdded history');
+          if(x.summary?.rewardAddedEventCount===0&&x.summary?.rewardInventoryStatus!=='complete-empty-rewardadded-history')throw new Error('empty history must be explicit complete-empty state');
           const regs=x.companies.map(c=>c.registry).sort().join(',');
           if(regs!=='002,004,007,010')throw new Error('vlCVX company set drift');
           if(x.semantics?.rewardInventoryIsEventDerived!==true||x.semantics?.currentRewardStateIsNotPeriodIncome!==true||x.semantics?.delegateIncentiveSettlementIsSeparate!==true||x.semantics?.doesNotByItselfResolveCurrentDelegateSettlement!==true)throw new Error('semantic boundary drift');
           for(const c of x.companies){
             if(c.evidenceClass!=='observed-current-state'||c.component!=='locked-cvx-extra-reward-distribution'||c.periodIncomeAuthority!==false||c.delegateIncentiveSettlementAuthority!==false||c.unknownIsNotZero!==true)throw new Error('company evidence boundary drift '+c.registry);
             if(c.claimableRewardCount!==x.summary.rewardTokenCount)throw new Error('reward token coverage drift '+c.registry);
+            if(x.summary.rewardTokenCount===0&&c.rewardInventoryStatus!=='complete-empty-rewardadded-history')throw new Error('company empty inventory state drift '+c.registry);
             for(const r of c.rewards||[])if(!r.token||!r.symbol||!Number.isFinite(Number(r.amount))||BigInt(r.amountRaw)<0n)throw new Error('invalid reward row '+c.registry);
           }
-          console.log('vlCVX EXTRA REWARD DISTRIBUTION PASS',{tokens:x.tokens.map(t=>({symbol:t.symbol,epochs:t.rewardEpochCount})),companies:x.companies.map(c=>({registry:c.registry,name:c.name,positiveRewards:c.positiveClaimableRewardCount}))});
+          console.log('vlCVX EXTRA REWARD DISTRIBUTION PASS',{inventory:x.summary.rewardInventoryStatus,tokens:x.tokens.map(t=>({symbol:t.symbol,epochs:t.rewardEpochCount})),companies:x.companies.map(c=>({registry:c.registry,name:c.name,positiveRewards:c.positiveClaimableRewardCount}))});
           NODE
 
       - name: Static no-execution guard
