@@ -227,6 +227,68 @@ export async function buildVlCvxExtraRewardDistributionProof({audit,provider}){
   };
 }
 
+export function applyVlCvxExtraRewardDistributionProof(data,proof){
+  if(proof?.version!==VERSION||proof?.executionAuthority!=='none'||proof?.claimTransactionAuthority!=='none')throw new Error('invalid vlCVX extra reward distribution proof');
+  if(proof?.source?.rewardInventoryScanComplete!==true||proof?.semantics?.rewardInventoryScanComplete!==true)throw new Error('vlCVX extra reward inventory is not complete');
+  if(proof?.semantics?.currentRewardStateIsNotPeriodIncome!==true||proof?.semantics?.delegateIncentiveSettlementIsSeparate!==true||proof?.semantics?.doesNotByItselfResolveCurrentDelegateSettlement!==true||proof?.semantics?.unknownIsNotZero!==true)throw new Error('vlCVX extra reward semantic boundary drift');
+  const inventory=proof?.summary?.rewardInventoryStatus;
+  if(!['event-derived-token-inventory','complete-empty-rewardadded-history'].includes(inventory))throw new Error('vlCVX extra reward inventory status invalid');
+  if(inventory==='complete-empty-rewardadded-history'&&(Number(proof?.summary?.rewardTokenCount)!==0||Number(proof?.summary?.rewardAddedEventCount)!==0))throw new Error('vlCVX complete-empty inventory counters drift');
+  for(const row of proof.companies||[]){
+    const c=data.companies?.[row.name];if(!c)throw new Error(`canonical Rewards company missing ${row.name}`);
+    if(row.component!=='locked-cvx-extra-reward-distribution'||row.periodIncomeAuthority!==false||row.delegateIncentiveSettlementAuthority!==false||row.unknownIsNotZero!==true)throw new Error(`vlCVX extra reward company boundary drift ${row.registry}`);
+    if(row.rewardInventoryStatus!==inventory)throw new Error(`vlCVX extra reward inventory parity drift ${row.registry}`);
+    c.sources=c.sources||[];
+    const source={
+      protocol:'Convex · vlCVX extra reward distribution',
+      route:'vlcvx-extra-reward-distribution',
+      status:'ok',
+      chain:'Ethereum',
+      metric:'vlCvxExtraRewardDistribution RewardAdded inventory + claimableRewards(address,token) current state',
+      note:inventory==='complete-empty-rewardadded-history'
+        ?'Complete bounded RewardAdded history contains no reward epochs for this distribution component. This is factual component tracking only: no period income is created and the separate delegate-incentive settlement lane remains unresolved where applicable.'
+        :'Reward-token inventory is derived from complete RewardAdded history and current claimable state is observed per token. This is factual component tracking only: no period income is created and delegate-incentive settlement remains separate.',
+      details:{
+        principalAsset:'vlCVX',
+        component:'locked-cvx-extra-reward-distribution',
+        wallet:row.wallet,
+        distribution:proof.contract.address,
+        locker:proof.contract.locker,
+        claimableRewardsMethod:proof.contract.claimableMethod,
+        rewardInventoryStatus:inventory,
+        rewardInventoryMethod:proof.source.rewardInventoryMethod,
+        rewardInventoryTransport:proof.source.rewardInventoryTransport,
+        rewardInventoryScanComplete:true,
+        rewardInventoryScanFromBlock:proof.source.rewardInventoryScanFromBlock,
+        rewardInventoryScanThroughBlock:proof.source.rewardInventoryScanThroughBlock,
+        rewardAddedEventCount:proof.summary.rewardAddedEventCount,
+        rewardTokenCount:proof.summary.rewardTokenCount,
+        rewards:row.rewards,
+        positiveClaimableRewardCount:row.positiveClaimableRewardCount,
+        currentRoute:row.currentRoute,
+        periodIncomeAuthority:false,
+        delegateIncentiveSettlementAuthority:false,
+        currentRewardStateIsNotPeriodIncome:true,
+        unknownIsNotZero:true
+      }
+    };
+    const i=c.sources.findIndex(x=>x.route===source.route);if(i>=0)c.sources[i]=source;else c.sources.push(source);
+  }
+  data.diagnostics=data.diagnostics||{};
+  data.diagnostics.vlCvxExtraRewardDistributionProof={
+    version:proof.version,
+    generatedAt:proof.generatedAt,
+    executionAuthority:'none',
+    component:'locked-cvx-extra-reward-distribution',
+    companyCount:proof.summary.companyCount,
+    rewardInventoryStatus:inventory,
+    rewardAddedEventCount:proof.summary.rewardAddedEventCount,
+    rewardTokenCount:proof.summary.rewardTokenCount,
+    semanticBoundary:'component factual state only; does not close delegate-incentive settlement or create period income'
+  };
+  return data;
+}
+
 export async function collectVlCvxExtraRewardDistributionProof({auditFile=AUDIT}={}){
   const audit=JSON.parse(fs.readFileSync(auditFile,'utf8'));
   const provider=await vlCvxExtraRewardProvider();
