@@ -76,5 +76,42 @@ jobs:
           set -euo pipefail
           cp reporting/accounting-coverage.json /tmp/accounting-coverage.before.json
           node reporting/accounting-coverage.mjs
-          cmp /tmp/accounting-coverage.before.json reporting/accounting-coverage.json
+          if ! cmp /tmp/accounting-coverage.before.json reporting/accounting-coverage.json; then
+            node --input-type=module - <<'NODE'
+            import assert from 'node:assert/strict';
+            import fs from 'node:fs';
+            const before=JSON.parse(fs.readFileSync('/tmp/accounting-coverage.before.json','utf8'));
+            const after=JSON.parse(fs.readFileSync('reporting/accounting-coverage.json','utf8'));
+            const engine='convex_staked_cvxcrv';
+            const b=before.mechanisms?.[engine],a=after.mechanisms?.[engine];
+            assert.equal(b?.factualTrackingCompanyCount,0,'transition allowance requires old cvxCRV 0/1 state');
+            assert.equal(b?.activeCompanyCount,1,'old cvxCRV active-company count drift');
+            assert.equal(b?.reusableCoverageGap,true,'old cvxCRV state was not a gap');
+            assert.equal(a?.factualTrackingCompanyCount,1,'candidate did not close cvxCRV tracking');
+            assert.equal(a?.activeCompanyCount,1,'candidate cvxCRV active-company count drift');
+            assert.equal(a?.reusableCoverageGap,false,'candidate cvxCRV gap remained open');
+            assert.equal(after.summary?.canonicalLedgerEventCount,before.summary?.canonicalLedgerEventCount,'cvxCRV tracking transition changed canonical income events');
+            assert.equal(after.summary?.reusableCoverageGapCount,before.summary?.reusableCoverageGapCount-1,'cvxCRV transition changed unexpected gap count');
+            assert.equal(after.summary?.factualTrackingProofCount,before.summary?.factualTrackingProofCount+1,'cvxCRV transition changed unexpected factual proof count');
+
+            const withoutEngine=obj=>Object.fromEntries(Object.entries(obj||{}).filter(([key])=>key!==engine));
+            assert.deepEqual(withoutEngine(after.mechanisms),withoutEngine(before.mechanisms),'unrelated mechanism coverage changed');
+            assert.deepEqual((after.gapRanking||[]).map(x=>x.engineId),(before.gapRanking||[]).map(x=>x.engineId).filter(x=>x!==engine),'unrelated gap ranking changed');
+
+            const beforeCompanies=structuredClone(before.companies||{}),afterCompanies=structuredClone(after.companies||{});
+            const bc=beforeCompanies.Cypher,ac=afterCompanies.Cypher;
+            delete beforeCompanies.Cypher; delete afterCompanies.Cypher;
+            assert.deepEqual(afterCompanies,beforeCompanies,'unrelated company coverage changed');
+            assert.ok(bc&&ac,'Cypher coverage missing');
+            const bm=bc.mechanisms?.[engine],am=ac.mechanisms?.[engine];
+            delete bc.mechanisms[engine]; delete ac.mechanisms[engine];
+            const changing=['currentMonthFactualTrackingMechanismCount','currentMonthFactualMechanismCount','currentMonthStateOnlyMechanismCount'];
+            for(const key of changing){delete bc[key];delete ac[key];}
+            assert.deepEqual(ac,bc,'unrelated Cypher coverage changed');
+            assert.equal(am?.months?.[after.currentMonth]?.factualTrackingActive,true,'Cypher cvxCRV tracking did not become factual');
+            assert.equal(am?.months?.[after.currentMonth]?.factualEventCount,0,'cvxCRV tracking transition fabricated period income');
+            assert.equal(bm?.months?.[before.currentMonth]?.factualTrackingActive,false,'old Cypher cvxCRV state unexpectedly factual');
+            console.log('Bounded cvxCRV 0/1 → 1/1 transition PASS; no unrelated coverage drift.');
+            NODE
+          fi
           node reporting/accounting-coverage-validation.mjs
