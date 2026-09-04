@@ -143,6 +143,20 @@ function strongVlCvxRouteProofs(rewards={}){
   return out;
 }
 
+function strongCvxCrvClaimableProofs(rewards={}){
+  const out=[];
+  for(const[company,c]of Object.entries(rewards?.companies||{})){
+    const source=(c?.sources||[]).find(x=>x?.route==='convex-staked-cvxcrv');
+    if(source?.status!=='ok'||lower(source?.protocol)!=='convex'||lower(source?.metric)!=='cvxcrvstakingwrapper earned(account)')continue;
+    const details=source?.details||{},rows=(c?.rewards||[]).filter(x=>x?.route==='convex-staked-cvxcrv'),declaredCount=Number(details?.rewardCount);
+    const rowsStrong=rows.every(x=>lower(x?.protocol)==='convex'&&x?.classification==='unclaimed'&&finite(x?.amount)&&Number(x.amount)>=0);
+    const strong=details?.rewardState==='Claimable'&&String(details?.stateVersion||'').length>0&&Number.isSafeInteger(declaredCount)&&declaredCount>=0&&declaredCount===rows.length&&rowsStrong;
+    if(!strong)continue;
+    pushTrackingProof(out,{engineId:'convex_staked_cvxcrv',company,observedAt:c?.updatedAt||rewards?.generatedAt,sourceFile:'companies/rewards-data.json',proofKey:`convex-staked-cvxcrv:${company}:${declaredCount}`});
+  }
+  return out;
+}
+
 function curveFeeAccrualProofs(ledger={}){
   const out=[],ext=ledger?.accountingExtensions?.curveFeeAccrual;
   const sem=ext?.semantics||{},authority=ext?.authority||{};
@@ -164,7 +178,7 @@ export function factualTrackingProofs({ve33={},ve33LockedManaged={},yieldBasis={
   for(const row of ve33Rows){if(row?.ok===false)continue;const engineId=row?.protocolKey==='aerodrome'?'aerodrome_veaero':row?.protocolKey==='velodrome'?'velodrome_vevelo':null;pushTrackingProof(out,{engineId,company:row?.company,observedAt:row?.observedAt,sourceFile:row?.__source,proofKey:row?.checkpointKey});}
   for(const row of Array.isArray(yieldBasis?.checkpoints)?yieldBasis.checkpoints:[])pushTrackingProof(out,{engineId:'yieldbasis_veyb',company:row?.company,observedAt:row?.observedAt,sourceFile:'reporting/yield-basis-accounting-evidence.json',proofKey:row?.checkpointKey});
   for(const row of Array.isArray(frax?.checkpoints)?frax.checkpoints:[])pushTrackingProof(out,{engineId:'frax_vefrax',company:row?.company,observedAt:row?.observedAt,sourceFile:'reporting/frax-yield-accounting-evidence.json',proofKey:row?.checkpointKey});
-  out.push(...strongVlCvxRouteProofs(rewards),...curveFeeAccrualProofs(ledger));
+  out.push(...strongVlCvxRouteProofs(rewards),...strongCvxCrvClaimableProofs(rewards),...curveFeeAccrualProofs(ledger));
   return[...new Map(out.map(x=>[[x.engineId,x.company,x.month,x.proofKey].join('|'),x])).values()];
 }
 
