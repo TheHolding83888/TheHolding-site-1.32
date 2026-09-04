@@ -1,0 +1,67 @@
+name: Verify vlCVX · Convex Team Eligibility
+
+on:
+  pull_request:
+    paths:
+      - 'rewards/vlcvx-convex-team-eligibility-proof.mjs'
+      - '.github/workflows/verify-vlcvx-convex-team-eligibility.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: Install read-only runtime
+        run: npm install --no-save --no-package-lock ethers@6
+
+      - name: Static no-execution guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check rewards/vlcvx-convex-team-eligibility-proof.mjs
+          if grep -En 'sendTransaction|new Wallet|\.vote\(|\.setDelegate\(|\.claim\(|\.getReward\(' rewards/vlcvx-convex-team-eligibility-proof.mjs; then
+            echo 'Unexpected execution-capable surface.'
+            exit 1
+          fi
+
+      - name: Build current vlCVX route audit
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          VLCVX_AUDIT_OUTPUT: /tmp/vlcvx-route-audit.json
+        run: |
+          set -euo pipefail
+          node rewards/vlcvx-registry-route-audit.mjs
+
+      - name: Inspect all onchain gauge proposals for Rook
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          VLCVX_AUDIT_OUTPUT: /tmp/vlcvx-route-audit.json
+          VLCVX_CONVEX_TEAM_OUTPUT: /tmp/vlcvx-convex-team-eligibility-proof.json
+        run: |
+          set -euo pipefail
+          node rewards/vlcvx-convex-team-eligibility-proof.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('/tmp/vlcvx-convex-team-eligibility-proof.json','utf8'));
+          if(x.version!=='0.1-vlcvx-convex-team-gauge-eligibility-proof')throw new Error('proof version drift');
+          if(x.executionAuthority!=='none'||x.claimTransactionAuthority!=='none')throw new Error('authority expansion');
+          if(x.subject?.registry!=='007'||x.subject?.currentRoute!=='convex-finance-vlcvx')throw new Error('Rook route identity drift');
+          if(String(x.subject?.currentGaugeDelegate||'').toLowerCase()!=='0x947b7742c403f20e5faccdac5e092c943e7d0277')throw new Error('Convex Team delegate drift');
+          if(Number(x.summary?.platformCount)!==2||!(Number(x.summary?.proposalCount)>0)||!(Number(x.summary?.weightedProposalCount)>0))throw new Error('onchain proposal coverage incomplete');
+          if(x.semantics?.gaugeDelegationIsVotingAuthorityNotIncomeEvent!==true||x.semantics?.userVoteOverrideIsSeparatelyObservable!==true||x.semantics?.noManualVoteDoesNotByItselfProveUniversalZeroIncome!==true||x.semantics?.unknownIsNotZero!==true)throw new Error('semantic boundary drift');
+          console.log('ROOK CONVEX-TEAM GAUGE PARTICIPATION PASS',x.summary);
+          NODE
