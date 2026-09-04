@@ -1,10 +1,9 @@
-import { Interface, JsonRpcProvider, getAddress } from 'ethers';
+import { Interface, JsonRpcProvider, formatUnits, getAddress } from 'ethers';
 
 export const VERSION='0.1-vlcvx-locker-platform-factual-accrual-adapter';
 const LOCKER=getAddress('0x72a19342e8F1838460eBFCCEf09F6585e32db86E');
 const RPCS=[...new Set([process.env.ETH_RPC_URL,'https://ethereum-rpc.publicnode.com','https://eth.llamarpc.com','https://eth.drpc.org'].filter(Boolean))];
 const REWARD_PAID_IFACE=new Interface(['event RewardPaid(address indexed _user,address indexed _rewardsToken,uint256 _reward)']);
-const REWARD_PAID_TOPIC0=REWARD_PAID_IFACE.getEvent('RewardPaid').topicHash;
 const finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v));
 const round=(v,d=12)=>Number(Number(v).toFixed(d));
 const lower=v=>String(v||'').toLowerCase();
@@ -29,7 +28,7 @@ export function extractVlCvxPlatformStates(rewards={}){
     const wallet=getAddress(d.wallet),locker=getAddress(d.locker);
     if(lower(locker)!==lower(LOCKER))throw new Error(`vlCVX platform locker drift ${company}`);
     for(const r of d.rewards||[]){
-      if(!r?.token||!r?.amountRaw||!r?.symbol)continue;
+      if(!r?.token||r?.amountRaw===null||r?.amountRaw===undefined||!r?.symbol)continue;
       const amountRaw=BigInt(r.amountRaw);
       if(amountRaw<0n)throw new Error(`vlCVX platform negative amount ${company} ${r.symbol}`);
       out.push({
@@ -114,7 +113,7 @@ export async function buildVlCvxPlatformAccrual({rewards={},marketData={},previo
       continue;
     }
     const decimals=Number.isInteger(Number(state.decimals))?Number(state.decimals):18;
-    const deltaAmount=Number(deltaRaw)/10**decimals;
+    const deltaAmount=Number(formatUnits(deltaRaw,decimals));
     if(!(deltaAmount>0))throw new Error(`vlCVX platform positive raw delta became invalid amount ${state.stateKey}`);
     const usdValue=finite(boundary.priceUsd)?round(deltaAmount*Number(boundary.priceUsd),8):null;
     events.push({
