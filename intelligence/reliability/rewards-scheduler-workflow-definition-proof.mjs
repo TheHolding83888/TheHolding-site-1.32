@@ -28,6 +28,8 @@ for(const key of ['workflowDispatchAuthority','capitalExecution','walletAuthorit
 
 const exactCron=`- cron: '${contract.cron}'`;
 assert.equal(workflow.split(exactCron).length-1,1,'Rewards workflow must contain exactly one canonical scheduler cron');
+const cypherGenericTrigger="- 'rewards/company-010-generic-ve-promotion.mjs'";
+assert.equal(workflow.split(cypherGenericTrigger).length-1,1,'Rewards writer must naturally wake for Cypher generic promotion source changes');
 assert.match(workflow,/permissions:\n  contents: write/,'Rewards writer contents permission drift');
 assert.doesNotMatch(workflow,/actions:\s*write/,'Rewards scheduler must not gain actions:write');
 assert.doesNotMatch(workflow,/\n\s*pull_request:/,'Rewards production writer must not gain pull_request execution');
@@ -47,6 +49,7 @@ console.log('Rewards workflow definition paired proof PASS',{
   workflow:WORKFLOW_PATH,
   cron:contract.cron,
   dailySnapshotUtc:contract.dailySnapshotUtc,
+  cypherGenericPromotionNaturalTrigger:true,
   productionWriterContentsAuthority:true,
   workflowDispatchAuthority:false,
   concurrency:'company-rewards-daily/non-cancellable',
