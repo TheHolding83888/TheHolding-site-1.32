@@ -16,11 +16,10 @@ const RPCS=[...new Set([
 const DISTRIBUTION=getAddress('0x9B622f2c40b80EF5efb14c2B2239511FfBFaB702');
 const LOCKER=getAddress('0x72a19342e8F1838460eBFCCEf09F6585e32db86E');
 const KNOWN_CREATION_TX='0x1591bd14e84575bb9f40681d7f9b9bc52f23699175f1d486f2e8f61241505e36';
-// Conservative pre-deployment boundary. The canonical Convex source predates deployment
-// and was already present in March 2022; Ethereum block 14,000,000 is January 2022.
-// We intentionally do not depend on old transaction receipts because otherwise healthy
-// non-archive RPC transports can return null for a historical receipt.
-const EVENT_SCAN_FROM_BLOCK=14_000_000;
+// Convex community's long-running subgraph indexes this V2 distribution from block 14,356,209.
+// Treat that as a conservative evidence boundary; current contract identity is still proven live.
+const EVENT_SCAN_FROM_BLOCK=14_356_209;
+const BLOCKSCOUT_LOGS='https://eth.blockscout.com/api';
 const DISTRIBUTION_ABI=[
   'function cvxlocker() view returns (address)',
   'function rewardEpochsCount(address _token) view returns (uint256)',
@@ -38,13 +37,10 @@ export async function vlCvxExtraRewardProvider(){
     try{
       const p=new JsonRpcProvider(url,1,{staticNetwork:true});
       await p.getBlockNumber();
-      // A provider that can answer current-state calls is not necessarily allowed to serve
-      // historical eth_getLogs. Test the exact evidence transport before selecting it.
-      await p.getLogs({address:DISTRIBUTION,topics:[rewardAddedTopic],fromBlock:EVENT_SCAN_FROM_BLOCK,toBlock:EVENT_SCAN_FROM_BLOCK+999});
       return p;
     }catch(e){last=e}
   }
-  throw last||new Error('Ethereum RPC with historical RewardAdded log access unavailable');
+  throw last||new Error('Ethereum current-state RPC unavailable');
 }
 
 async function tokenMeta(provider,address){
@@ -53,23 +49,76 @@ async function tokenMeta(provider,address){
   return{token,symbol:String(symbol),decimals:Number(decimals)};
 }
 
-async function scanRewardAdded(provider,fromBlock,toBlock){
+async function scanRewardAddedRpc(provider,fromBlock,toBlock){
   const logs=[];
   let cursor=fromBlock;
-  let span=100000;
+  let span=250000;
+  let calls=0;
   while(cursor<=toBlock){
+    if(++calls>250)throw new Error('RPC RewardAdded scan exceeded bounded call budget');
     const end=Math.min(toBlock,cursor+span-1);
     try{
       const rows=await provider.getLogs({address:DISTRIBUTION,topics:[rewardAddedTopic],fromBlock:cursor,toBlock:end});
       logs.push(...rows);
       cursor=end+1;
-      if(span<250000)span=Math.min(250000,span*2);
     }catch(e){
-      if(span<=1000)throw new Error(`RewardAdded log scan failed at ${cursor}-${end}: ${e?.shortMessage||e?.message||e}`);
-      span=Math.max(1000,Math.floor(span/2));
+      if(span<=50000)throw new Error(`RewardAdded RPC range unsupported at ${cursor}-${end}: ${e?.shortMessage||e?.message||e}`);
+      span=Math.max(50000,Math.floor(span/2));
     }
   }
   return logs;
+}
+
+function blockNumberOf(log){
+  const v=log.blockNumber??log.block_number;
+  if(typeof v==='number')return v;
+  if(typeof v==='string')return v.startsWith('0x')?Number.parseInt(v,16):Number.parseInt(v,10);
+  return NaN;
+}
+
+async function scanRewardAddedBlockscout(fromBlock,toBlock){
+  const logs=[];
+  const span=250000;
+  for(let cursor=fromBlock;cursor<=toBlock;cursor+=span){
+    const end=Math.min(toBlock,cursor+span-1);
+    const u=new URL(BLOCKSCOUT_LOGS);
+    u.searchParams.set('module','logs');
+    u.searchParams.set('action','getLogs');
+    u.searchParams.set('fromBlock',String(cursor));
+    u.searchParams.set('toBlock',String(end));
+    u.searchParams.set('address',DISTRIBUTION);
+    u.searchParams.set('topic0',rewardAddedTopic);
+    const r=await fetch(u,{headers:{accept:'application/json'},signal:AbortSignal.timeout(20000)});
+    if(!r.ok)throw new Error(`Blockscout RewardAdded HTTP ${r.status} at ${cursor}-${end}`);
+    const body=await r.json();
+    if(body?.status==='0'&&/no (records|logs)/i.test(String(body?.message||body?.result||'')))continue;
+    if(!Array.isArray(body?.result))throw new Error(`Blockscout RewardAdded malformed response at ${cursor}-${end}`);
+    if(body.result.length>=1000)throw new Error(`Blockscout RewardAdded range hit 1000-log cap at ${cursor}-${end}`);
+    for(const row of body.result){
+      const blockNumber=blockNumberOf(row);
+      if(!Number.isFinite(blockNumber))throw new Error('Blockscout RewardAdded row missing block number');
+      if(String(row?.topics?.[0]||'').toLowerCase()!==rewardAddedTopic.toLowerCase())continue;
+      logs.push({topics:row.topics,data:row.data,blockNumber,transactionHash:row.transactionHash||row.transaction_hash||null});
+    }
+  }
+  return logs;
+}
+
+async function collectRewardAddedHistory(toBlock){
+  const errors=[];
+  for(const url of RPCS){
+    try{
+      const provider=new JsonRpcProvider(url,1,{staticNetwork:true});
+      await provider.getBlockNumber();
+      const logs=await scanRewardAddedRpc(provider,EVENT_SCAN_FROM_BLOCK,toBlock);
+      return{logs,transport:'ethereum-json-rpc'};
+    }catch(e){errors.push(`rpc:${e?.shortMessage||e?.message||e}`)}
+  }
+  try{
+    const logs=await scanRewardAddedBlockscout(EVENT_SCAN_FROM_BLOCK,toBlock);
+    return{logs,transport:'blockscout-indexed-logs'};
+  }catch(e){errors.push(`blockscout:${e?.message||e}`)}
+  throw new Error(`RewardAdded history unavailable: ${errors.join(' | ')}`);
 }
 
 export async function buildVlCvxExtraRewardDistributionProof({audit,provider}){
@@ -89,7 +138,8 @@ export async function buildVlCvxExtraRewardDistributionProof({audit,provider}){
   const boundLocker=getAddress(await distribution.cvxlocker());
   if(boundLocker.toLowerCase()!==LOCKER.toLowerCase())throw new Error('extra reward distribution locker binding drift');
 
-  const logs=await scanRewardAdded(provider,EVENT_SCAN_FROM_BLOCK,latestBlock);
+  const history=await collectRewardAddedHistory(latestBlock);
+  const logs=history.logs;
   if(!logs.length)throw new Error('no RewardAdded history found');
   const tokenAddresses=[...new Set(logs.map(log=>getAddress(eventInterface.parseLog(log).args._token)).map(x=>x.toLowerCase()))].map(lower=>getAddress(lower));
   if(!tokenAddresses.length)throw new Error('RewardAdded history produced empty token inventory');
@@ -136,7 +186,9 @@ export async function buildVlCvxExtraRewardDistributionProof({audit,provider}){
     source:{
       implementation:'convex-eth/platform/contracts/contracts/vlCvxExtraRewardDistribution.sol',
       knownCreationTransaction:KNOWN_CREATION_TX,
+      eventBoundaryReference:'convex-community/convex-stats-subgraph vlCvxExtraRewardDistributionV2 startBlock',
       rewardInventoryMethod:'RewardAdded(address,uint256,uint256) event history',
+      rewardInventoryTransport:history.transport,
       archivalReceiptRequired:false
     },
     contract:{
@@ -179,6 +231,7 @@ async function main(){
   const out=await collectVlCvxExtraRewardDistributionProof();
   fs.writeFileSync(path.resolve(OUTPUT),JSON.stringify(out,null,2)+'\n');
   console.log('vlCVX EXTRA REWARD DISTRIBUTION PROOF PASS',JSON.stringify({
+    transport:out.source.rewardInventoryTransport,
     contract:out.contract,
     summary:out.summary,
     tokens:out.tokens.map(t=>({symbol:t.symbol,token:t.token,rewardEpochCount:t.rewardEpochCount})),
