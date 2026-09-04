@@ -1,0 +1,163 @@
+name: "The Holding · Continuity Checkpoint"
+# holding-control-plane: repository-writer
+# holding-truth-plane: project-memory-continuity
+# holding-control-domain: project-memory
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/update-continuity-checkpoint.yml'
+      - '.github/workflows/update-project-memory-bootstrap.yml'
+      - 'intelligence/project-memory/CONTINUITY.md'
+      - 'intelligence/project-memory/THE_HOLDING_MASTER_CONTINUITY_*.md'
+      - 'intelligence/project-memory/build-continuity-checkpoint.mjs'
+      - 'intelligence/project-memory/verify-continuity-checkpoint.mjs'
+      - 'intelligence/project-memory/build-current-memory.mjs'
+      - 'intelligence/project-memory/verify-current-memory.mjs'
+  push:
+    branches: [main]
+  schedule:
+    - cron: '47 23 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: continuity-checkpoint-main
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Verify continuity + CURRENT contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s intelligence/project-memory/CONTINUITY.md
+          test -s intelligence/project-memory/build-continuity-checkpoint.mjs
+          test -s intelligence/project-memory/verify-continuity-checkpoint.mjs
+          test -s intelligence/project-memory/build-current-memory.mjs
+          test -s intelligence/project-memory/verify-current-memory.mjs
+          node --check intelligence/project-memory/build-continuity-checkpoint.mjs
+          node --check intelligence/project-memory/verify-continuity-checkpoint.mjs
+          node --check intelligence/project-memory/build-current-memory.mjs
+          node --check intelligence/project-memory/verify-current-memory.mjs
+          node intelligence/project-memory/verify-continuity-checkpoint.mjs
+          node intelligence/project-memory/build-current-memory.mjs
+          node intelligence/project-memory/verify-current-memory.mjs
+          git diff --check
+
+  checkpoint:
+    permissions:
+      contents: write
+    if: >-
+      ${{
+        github.event_name == 'workflow_dispatch' ||
+        github.event_name == 'schedule' ||
+        (github.event_name == 'push' &&
+          (startsWith(github.event.head_commit.message, 'Merge PR #') ||
+           startsWith(github.event.head_commit.message, 'Merge pull request #')))
+      }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout canonical main
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Publish immutable continuity checkpoint safely
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Continuity"
+          git config user.email "continuity@theholding.ai"
+
+          build_and_stage() {
+            node intelligence/project-memory/build-continuity-checkpoint.mjs
+            node intelligence/project-memory/verify-continuity-checkpoint.mjs
+            git diff --check
+
+            git add intelligence/project-memory/CONTINUITY.md
+            git add intelligence/project-memory/THE_HOLDING_MASTER_CONTINUITY_*_AUTO_*.md
+
+            staged="$(git diff --cached --name-only)"
+            bad="$(printf '%s\n' "$staged" | grep -Ev '^(intelligence/project-memory/CONTINUITY\.md|intelligence/project-memory/THE_HOLDING_MASTER_CONTINUITY_.*_AUTO_[0-9a-f]{8}\.md)$' || true)"
+            if [ -n "$bad" ]; then
+              echo "ERROR: Continuity writer attempted to stage outside its bounded files"
+              echo "$bad"
+              exit 1
+            fi
+
+            auto_count="$(printf '%s\n' "$staged" | grep -Ec '^intelligence/project-memory/THE_HOLDING_MASTER_CONTINUITY_.*_AUTO_[0-9a-f]{8}\.md$' || true)"
+            if [ "$auto_count" -gt 1 ]; then
+              echo "ERROR: Continuity writer attempted to create more than one immutable checkpoint"
+              echo "$staged"
+              exit 1
+            fi
+          }
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            git clean -fd -- intelligence/project-memory
+            build_and_stage
+
+            if git diff --cached --quiet; then
+              echo "Continuity root/checkpoint already matches canonical main."
+              exit 0
+            fi
+
+            source_short="$(git rev-parse --short=8 HEAD)"
+            git commit -m "memory: checkpoint continuity at ${source_short}"
+            if git push origin HEAD:main; then
+              git fetch origin main
+              test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)"
+              echo "Verified immutable continuity checkpoint on remote main."
+              exit 0
+            fi
+
+            echo "Main moved during continuity publication; rebuilding from fresh main ($attempt/3)..."
+          done
+
+          echo "ERROR: unable to publish continuity checkpoint after retries"
+          exit 1
+
+      - name: Continuity summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "# The Holding · Continuity Checkpoint"
+            echo
+            echo "**Root pointer:** \`intelligence/project-memory/CONTINUITY.md\`"
+            echo "**Immutable snapshots:** \`THE_HOLDING_MASTER_CONTINUITY_*_AUTO_<sha>.md\`"
+            echo "**CURRENT writer:** existing Project Memory Bootstrap only"
+            echo "**Automatic merge boundary:** enabled for merge commits"
+            echo "**Daily backstop:** 23:47 UTC"
+            echo "**Execution authority:** none"
+            echo
+            echo "The checkpoint writer can only append one immutable checkpoint and update the continuity root. A successful checkpoint push naturally wakes Project Memory Bootstrap, which remains the sole CURRENT.md writer."
+          } >> "$GITHUB_STEP_SUMMARY"

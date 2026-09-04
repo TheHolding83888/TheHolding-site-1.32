@@ -1,4 +1,5 @@
 name: "The Holding · Project Memory Bootstrap"
+# holding-workflow-definition-proof: intelligence/reliability/project-memory-bootstrap-workflow-definition-proof.mjs
 
 on:
   push:
@@ -64,10 +65,16 @@ jobs:
           test -s intelligence/project-memory/README.md
           test -s intelligence/project-memory/THE_HOLDING_BUILD_DISCIPLINE_CANON_2026-08-14.md
           test -s intelligence/project-memory/THE_HOLDING_MEMORY_ROUTING_INDEX_2026-08-18.md
+          test -s intelligence/project-memory/CONTINUITY.md
+          test -s intelligence/project-memory/build-continuity-checkpoint.mjs
+          test -s intelligence/project-memory/verify-continuity-checkpoint.mjs
           test -s intelligence/project-memory/build-current-memory.mjs
           test -s intelligence/project-memory/verify-current-memory.mjs
+          node --check intelligence/project-memory/build-continuity-checkpoint.mjs
+          node --check intelligence/project-memory/verify-continuity-checkpoint.mjs
           node --check intelligence/project-memory/build-current-memory.mjs
           node --check intelligence/project-memory/verify-current-memory.mjs
+          node intelligence/project-memory/verify-continuity-checkpoint.mjs
 
       - name: Refresh CURRENT project memory safely
         shell: bash
@@ -77,6 +84,7 @@ jobs:
           git config user.email "project-memory@theholding.ai"
 
           rebuild() {
+            node intelligence/project-memory/verify-continuity-checkpoint.mjs
             node intelligence/project-memory/build-current-memory.mjs
             node intelligence/project-memory/verify-current-memory.mjs
             git diff --check
@@ -121,8 +129,9 @@ jobs:
             echo "# The Holding · Project Memory Bootstrap"
             echo
             echo "**Canonical entrypoint:** \`intelligence/project-memory/CURRENT.md\`"
-            echo "**Deep current checkpoint:** latest \`THE_HOLDING_MASTER_CONTINUITY_*.md\`"
-            echo "**Task-aware retrieval:** \`THE_HOLDING_MEMORY_ROUTING_INDEX_2026-08-18.md\`"
+            echo "**Continuity root:** \`intelligence/project-memory/CONTINUITY.md\`"
+            echo "**Deep current checkpoint:** immutable \`THE_HOLDING_MASTER_CONTINUITY_*.md\` selected by the root"
+            echo "**Task-aware retrieval:** \`THE_HOLDING_MEMORY_ROUTING_INDEX_v2_2026-08-26.md\`"
             echo "**Permanent factual archive:** \`intelligence/memory-vault/\`"
             echo "**Current Security authority:** fresh \`security/security-intelligence.json\`"
             echo "**Post-Sentinel refresh:** enabled after successful main Security Sentinel runs"
@@ -130,5 +139,5 @@ jobs:
             echo "**Generated mutation boundary:** CURRENT.md only"
             echo "**Schedule:** hourly backstop at minute 17"
             echo
-            echo "The updater is deterministic, verifies CURRENT against fresh Security plus the durable collaboration/routing contracts, and emits no commit when canonical source state has not changed."
+            echo "The updater is deterministic, validates the continuity root/checkpoint first, rebuilds CURRENT against fresh Security and durable contracts, and emits no commit when canonical source state has not changed."
           } >> "$GITHUB_STEP_SUMMARY"
