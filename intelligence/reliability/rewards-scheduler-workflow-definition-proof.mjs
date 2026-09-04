@@ -37,6 +37,16 @@ assert.match(workflow,/group:\s*company-rewards-daily/,'Rewards concurrency grou
 assert.match(workflow,/cancel-in-progress:\s*false/,'Rewards production writer must remain non-cancellable');
 assert.match(workflow,/node intelligence\/reliability\/rewards-scheduler-workflow-definition-proof\.mjs/,'Rewards scheduler contract preflight missing');
 
+// #616 closed Rook's current Convex-Team vlCVX tracking boundary. The production
+// writer must accept only that bounded factual state and must not regress to the
+// former `unresolved` final-parity expectation or turn tracking proof into income.
+assert.match(workflow,/currentRewardSettlement!=='no-votium-incentive-eligibility-observed-current-route'/,'Rook bounded Convex-Team settlement final-parity guard missing');
+assert.match(workflow,/trackingBoundaryComplete!==true/,'Rook factual tracking completion guard missing');
+assert.match(workflow,/periodIncomeAuthority!==false/,'Rook settlement income-authority isolation guard missing');
+assert.match(workflow,/universalExternalRewardZeroAsserted!==false/,'Rook universal-zero epistemic guard missing');
+assert.match(workflow,/vlCvxConvexTeamSettlement\?\.scope!=='tracking-proof-only'/,'Rook tracking-only diagnostic guard missing');
+assert.doesNotMatch(workflow,/currentRewardSettlement!=='unresolved'/,'stale Rook unresolved production parity guard survived');
+
 const rewardMinutes=5*60+7;
 for(const downstream of contract.downstreamSequence||[]){
   const m=/^(\d{2}):(\d{2}) UTC$/.exec(String(downstream.nominalUtc||''));
@@ -50,6 +60,8 @@ console.log('Rewards workflow definition paired proof PASS',{
   cron:contract.cron,
   dailySnapshotUtc:contract.dailySnapshotUtc,
   cypherGenericPromotionNaturalTrigger:true,
+  rookConvexTeamSettlementBoundary:true,
+  rookTrackingOnlyNoIncomeAuthority:true,
   productionWriterContentsAuthority:true,
   workflowDispatchAuthority:false,
   concurrency:'company-rewards-daily/non-cancellable',

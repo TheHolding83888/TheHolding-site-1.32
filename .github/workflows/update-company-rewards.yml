@@ -250,7 +250,10 @@ jobs:
           if(!['warming-baseline','ok','needs-flow-reconciliation'].includes(nine?.embeddedIncomeStatus))throw new Error('Company #009 embedded income state missing');
           const rook=d.companies?.["Rook's portfolio"];
           const rookCurrent=(rook?.sources||[]).find(x=>x.route==='vlcvx-current-route');
-          if(rookCurrent?.protocol!=='Convex Finance · vlCVX'||rookCurrent?.details?.currentRewardSettlement!=='unresolved'||rookCurrent?.details?.unknownIsNotZero!==true)throw new Error('Rook current Convex route epistemics missing');
+          const rookSettlement=rookCurrent?.details?.settlement||{};
+          if(rookCurrent?.protocol!=='Convex Finance · vlCVX'||rookCurrent?.status!=='ok'||rookCurrent?.details?.currentRewardSettlement!=='no-votium-incentive-eligibility-observed-current-route'||rookCurrent?.details?.unknownIsNotZero!==true)throw new Error('Rook current Convex factual tracking boundary missing');
+          if(rookSettlement?.evidenceClass!=='factual-current-route-eligibility-boundary'||rookSettlement?.trackingBoundaryComplete!==true||rookSettlement?.periodIncomeAuthority!==false||rookSettlement?.universalExternalRewardZeroAsserted!==false||rookSettlement?.unknownIsNotZero!==true)throw new Error('Rook current Convex settlement epistemics drift');
+          if(d.diagnostics?.vlCvxConvexTeamSettlement?.scope!=='tracking-proof-only'||d.diagnostics?.vlCvxConvexTeamSettlement?.rewardRowsCreated!==false||d.diagnostics?.vlCvxConvexTeamSettlement?.periodIncomeAuthority!==false)throw new Error('Rook tracking proof gained income authority');
           const received=d.diagnostics?.fortyAcresReceived;
           const def=d.companies?.['defitea.eth'];
           const defReceived=(def?.receivedIncome||[]).filter(x=>x.route==='forty-acres-velodrome-received'&&x.state==='Received');
@@ -260,7 +263,7 @@ jobs:
           if(defReceived.some(x=>x.claimableApplicable!==false||x.includedInClaimableTotal!==false||x.includedInMeasuredEarnedTotal!==false))throw new Error('Received leaked across accounting boundary');
           if((def?.rewards||[]).some(x=>x.classification==='received'||x.state==='Received'))throw new Error('Received leaked into current Claimable rewards array');
           if(d.diagnostics?.vlCvxRoutePromotion?.executionAuthority!=='none'||d.diagnostics?.vlCvxRouteAggregateFinalize?.executionAuthority!=='none'||d.diagnostics?.rewardsPassportHygiene?.executionAuthority!=='none'||d.diagnostics?.company009BeefyCvxCrv?.executionAuthority!=='none')throw new Error('Rewards authority drift');
-          console.log('Final Rewards parity PASS',{routes:expected,cypherStakeDaoRows:stake.length,cypherCvxCrvRows:cyCvx.length,company009Embedded:nine.embeddedIncomeStatus,defiteaReceivedTransfers:def.receivedIncomeTransferCount,defiteaReceivedUsd:def.receivedIncomeUsd});
+          console.log('Final Rewards parity PASS',{routes:expected,cypherStakeDaoRows:stake.length,cypherCvxCrvRows:cyCvx.length,company009Embedded:nine.embeddedIncomeStatus,rookSettlement:rookCurrent.details.currentRewardSettlement,defiteaReceivedTransfers:def.receivedIncomeTransferCount,defiteaReceivedUsd:def.receivedIncomeUsd});
           NODE
 
       - name: Commit updated rewards snapshot
