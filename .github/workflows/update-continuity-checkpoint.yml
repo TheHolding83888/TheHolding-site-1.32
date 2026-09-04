@@ -18,7 +18,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: continuity-checkpoint-main
@@ -60,6 +60,8 @@ jobs:
           git diff --check
 
   checkpoint:
+    permissions:
+      contents: write
     if: >-
       ${{
         github.event_name == 'workflow_dispatch' ||
@@ -117,6 +119,7 @@ jobs:
           for attempt in 1 2 3; do
             git fetch origin main
             git reset --hard origin/main
+            git clean -fd -- intelligence/project-memory
             build_and_stage
 
             if git diff --cached --quiet; then
