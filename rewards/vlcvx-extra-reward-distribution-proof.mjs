@@ -5,7 +5,14 @@ import { Contract, Interface, JsonRpcProvider, formatUnits, getAddress } from 'e
 const VERSION='0.1-vlcvx-extra-reward-distribution-proof';
 const AUDIT=process.env.VLCVX_AUDIT_OUTPUT||'/tmp/vlcvx-route-audit.json';
 const OUTPUT=process.env.VLCVX_EXTRA_REWARD_OUTPUT||'/tmp/vlcvx-extra-reward-distribution-proof.json';
-const RPCS=[...new Set([process.env.ETH_RPC_URL,'https://ethereum-rpc.publicnode.com','https://eth.llamarpc.com'].filter(Boolean))];
+const RPCS=[...new Set([
+  process.env.ETH_RPC_URL,
+  'https://ethereum-rpc.publicnode.com',
+  'https://eth.llamarpc.com',
+  'https://eth.drpc.org',
+  'https://rpc.flashbots.net',
+  'https://1rpc.io/eth'
+].filter(Boolean))];
 const DISTRIBUTION=getAddress('0x9B622f2c40b80EF5efb14c2B2239511FfBFaB702');
 const LOCKER=getAddress('0x72a19342e8F1838460eBFCCEf09F6585e32db86E');
 const KNOWN_CREATION_TX='0x1591bd14e84575bb9f40681d7f9b9bc52f23699175f1d486f2e8f61241505e36';
