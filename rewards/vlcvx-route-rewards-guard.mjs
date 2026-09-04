@@ -8,6 +8,7 @@ const RPCS=[...new Set([process.env.ETH_RPC_URL,'https://ethereum-rpc.publicnode
 const UNION_DIST=getAddress('0x17ac69dd3fb8f22b4f52dbdb8a3a0eb059367efc');
 const STAKE_DIST=getAddress('0x17F513CDE031C8B1E878Bde1Cb020cE29f77f380');
 const SCRVUSD=getAddress('0x0655977FEb2f289A4aB78af67BAB0d17aAb84367');
+const CONVEX_TEAM=getAddress('0x947B7742C403f20e5FaCcDAc5E092C943E7D0277');
 const STAKE_URL='https://raw.githubusercontent.com/stake-dao/bounties-report/main/bounties-reports/latest/vlCVX/vlcvx_merkle_delegators.json';
 const coder=AbiCoder.defaultAbiCoder();
 const same=(a,b)=>{try{return getAddress(a)===getAddress(b)}catch{return false}};
@@ -32,7 +33,11 @@ async function main(){
  // Stake DAO: active root, exact embedded proof, claimed subtraction and canonical current row.
  const sm=await json(STAKE_URL),sd=new Contract(STAKE_DIST,['function root() view returns (bytes32)','function claimed(address,address) view returns (uint256)'],p),sroot=await sd.root();if(String(sm.merkleRoot).toLowerCase()!==String(sroot).toLowerCase())throw new Error('Stake DAO latest delegator root is not active');const wallet=a.companies.find(x=>x.registry==='010').wallets.find(x=>x.hasVlCvx).address,entry=Object.entries(sm.claims||{}).find(([x])=>same(x,wallet));if(!entry)throw new Error('Cypher absent from active Stake DAO delegator root');const cy=d.companies.Cypher;for(const [tokenRaw,t] of Object.entries(entry[1].tokens||{})){const token=getAddress(tokenRaw),amount=BigInt(t.amount);if(!stakeProof(wallet,token,amount,t.proof,sroot))throw new Error('Stake DAO embedded proof invalid');const claimed=BigInt(await sd.claimed(wallet,token)),remaining=amount-claimed,rows=(cy.rewards||[]).filter(x=>x.route==='stake-dao-vlcvx'&&same(x.token,token));if(remaining>0n){if(rows.length!==1||rows[0].protocol!=='Stake DAO · vlCVX'||BigInt(rows[0].amountRaw)!==remaining)throw new Error('Stake DAO remaining entitlement parity failed')}else if(rows.length)throw new Error('fully claimed Stake DAO row leaked')}
  if((cy.sources||[]).some(x=>x.route==='votium-union'&&/union/i.test(String(x.protocol))))throw new Error('Cypher stale Votium+Union current source remains');
- const rook=d.companies["Rook's portfolio"],rookCurrent=(rook.sources||[]).find(x=>x.route==='vlcvx-current-route');if(rookCurrent?.protocol!=='Convex Finance · vlCVX'||rookCurrent?.details?.currentRewardSettlement!=='unresolved'||rookCurrent?.details?.unknownIsNotZero!==true)throw new Error('Rook current Convex route epistemics missing');
- console.log('vlCVX ROUTE PROMOTION GUARD PASS',{routes:expected,unionRoot:uroot,stakeDaoRoot:sroot});
+ const rook=d.companies["Rook's portfolio"],rookCurrent=(rook.sources||[]).find(x=>x.route==='vlcvx-current-route'),rs=rookCurrent?.details?.settlement||{};
+ if(rookCurrent?.protocol!=='Convex Finance · vlCVX'||rookCurrent?.status!=='ok'||rookCurrent?.details?.currentRewardSettlement!=='no-votium-incentive-eligibility-observed-current-route'||rookCurrent?.details?.unknownIsNotZero!==true)throw new Error('Rook current Convex route factual boundary missing');
+ if(rs?.evidenceClass!=='factual-current-route-eligibility-boundary'||rs?.trackingBoundaryComplete!==true||rs?.periodIncomeAuthority!==false||rs?.universalExternalRewardZeroAsserted!==false||rs?.unknownIsNotZero!==true)throw new Error('Rook current Convex settlement semantics drift');
+ if(!same(rs?.currentDelegateAddress,CONVEX_TEAM)||rs?.allWeightedProposalsConvexTeam!==true||rs?.noManualOrSurrogateOverrideOnWeightedProposals!==true||Number(rs?.manualOrSurrogateOverrideCount)!==0||Number(rs?.nonConvexTeamWeightedProposalCount)!==0)throw new Error('Rook Convex-Team participation proof missing');
+ if(rs?.lockerPlatformRewardsTrackedSeparately!==true||rs?.extraRewardDistributionTrackedSeparately!==true||rs?.legacyResidualRewardsTrackedSeparately!==true)throw new Error('Rook vlCVX component separation missing');
+ console.log('vlCVX ROUTE PROMOTION GUARD PASS',{routes:expected,unionRoot:uroot,stakeDaoRoot:sroot,rookSettlement:rookCurrent.details.currentRewardSettlement});
 }
 main().catch(e=>{console.error(e);process.exitCode=1});
