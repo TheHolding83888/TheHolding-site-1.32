@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-04T14:17:33.642Z",
+  "generatedAt": "2026-09-04T15:15:59.151Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 2,
-    "medium": 50,
+    "medium": 52,
     "low": 0,
     "info": 0
   },
   "source": {
-    "filesScanned": 947,
-    "bytesScanned": 28351104,
+    "filesScanned": 954,
+    "bytesScanned": 28794288,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Wed, 02 Sep 2026 09:46:00 GMT",
+        "lastModified": "Fri, 04 Sep 2026 00:16:10 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -55,7 +55,36 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [],
+    "newFindings": [
+      {
+        "id": "d18923110d78f91810b0676706d05e2bbf92522718f9f4e237e45ae40acd0179",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/verify-reporting-layer.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/verify-reporting-layer.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "1dc7f46d459de1dc4e091eec81b37c3a1d88e42cfdec40334915aa8427f796ae",
+          "currentSha256": "d285c0f069428141504f7db05f1890ba454ec085d94e1af6bcb85804a7f97f5e"
+        }
+      },
+      {
+        "id": "ee671bc83e209bd7e43218186cb75bacfa09fc4d547c2a4b807f84074fc29513",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/verify-vlcvx-platform-accounting.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/verify-vlcvx-platform-accounting.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "bd36c140827d54306807aafc56c1f54f20f01bd4f5e3329071e0ba6ae8f2d37f",
+          "currentSha256": "72e042aa2af941baf01e9c497bb2338d410ebcaab0f67d87e1d97396ed65eba9"
+        }
+      }
+    ],
     "resolvedFindings": []
   },
   "currentFindings": [
@@ -80,6 +109,34 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "d18923110d78f91810b0676706d05e2bbf92522718f9f4e237e45ae40acd0179",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/verify-reporting-layer.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-reporting-layer.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "1dc7f46d459de1dc4e091eec81b37c3a1d88e42cfdec40334915aa8427f796ae",
+        "currentSha256": "d285c0f069428141504f7db05f1890ba454ec085d94e1af6bcb85804a7f97f5e"
+      }
+    },
+    {
+      "id": "ee671bc83e209bd7e43218186cb75bacfa09fc4d547c2a4b807f84074fc29513",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/verify-vlcvx-platform-accounting.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-vlcvx-platform-accounting.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "bd36c140827d54306807aafc56c1f54f20f01bd4f5e3329071e0ba6ae8f2d37f",
+        "currentSha256": "72e042aa2af941baf01e9c497bb2338d410ebcaab0f67d87e1d97396ed65eba9"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -716,12 +773,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "969cfba5b9c8e5ea12babf1ea91a4689405c63c5e056d81c7064720ab85b833a",
+    "snapshotHash": "a8463f94354db5375ca6d624e9032f2d2994503d30a7be0102b8d7dc8758653b",
     "securityVault": {
-      "runCount": 828,
+      "runCount": 829,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/09/2026-09-04T14-17-33-642Z-969cfba5b9.json",
-      "latestRecordHash": "4ca0da5413bd1b5432b01c22fa2f23b77b49bd0d6f3eec116c34fa468c7e4303",
+      "latestRecordPath": "security/security-vault/2026/09/2026-09-04T15-15-59-151Z-a8463f9435.json",
+      "latestRecordHash": "31366ae570d0a43e48b1ec3357bcd421a5853fcc35d168f917e255836f255920",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
