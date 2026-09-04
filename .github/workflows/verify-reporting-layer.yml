@@ -88,7 +88,9 @@ jobs:
         env:
           REWARDS_DATA_FILE: ./companies/rewards-data.json
           YIELD_BASIS_EVIDENCE_FILE: /tmp/yield-basis-accounting-evidence.json
-          ETH_RPC_URL: ''
+          ETH_RPC_URL: 'https://eth.drpc.org'
+          ETH_ARCHIVE_RPC_URL: 'https://eth.drpc.org'
+          ETH_ARCHIVE_RPC_FALLBACK_URL: 'https://ethereum.public.blockpi.network/v1/rpc/public'
         run: |
           set -euo pipefail
           cp reporting/yield-basis-accounting-evidence.json "$YIELD_BASIS_EVIDENCE_FILE"
