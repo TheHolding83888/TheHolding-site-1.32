@@ -5,6 +5,7 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { build, finalizeCandidate, admitEvents } from './income-ledger.mjs';
 import { yieldBasisEvidenceCandidates, validateYieldBasisEvidence } from './yield-basis-income-candidates.mjs';
+import { runVlCvxPlatformLedgerAdmission } from './vlcvx-platform-ledger-admission.mjs';
 
 const __filename=fileURLToPath(import.meta.url);
 const __dirname=path.dirname(__filename);
@@ -67,18 +68,25 @@ export async function runYieldBasisLedgerAdmission({generatedAt=new Date().toISO
   // builder. The interim event set becomes previous append-only history, so
   // existing Frax / ve(3,3) / embedded / realised events remain immutable.
   const rebuilt=await build();
-  const finalLedger=annotate({rebuilt,priorLedger:ledger,evidence,admission,generatedAt});
-  await writeJson(LEDGER_FILE,finalLedger);
-  return finalLedger;
+  const yieldBasisLedger=annotate({rebuilt,priorLedger:ledger,evidence,admission,generatedAt});
+  await writeJson(LEDGER_FILE,yieldBasisLedger);
+
+  // Keep one canonical Reporting writer: the next mechanism-specific admission
+  // runs inside this same writer after Yield Basis, rather than adding a second
+  // scheduler or writer for the Canonical Income Ledger.
+  return runVlCvxPlatformLedgerAdmission({generatedAt});
 }
 
 async function main(){
   const output=await runYieldBasisLedgerAdmission();
-  console.log('Yield Basis evidence admitted through Canonical Ledger builder',{
+  console.log('Yield Basis + vlCVX platform evidence admitted through Canonical Ledger builder',{
     events:output.events?.length||0,
     yieldBasisCandidates:output.run?.yieldBasisCandidateEventCount||0,
     yieldBasisNewEvents:output.run?.yieldBasisNewEventsAdmitted||0,
     yieldBasisCheckpoints:output.run?.yieldBasisCheckpointCount||0,
+    vlCvxPlatformCandidates:output.run?.vlCvxPlatformCandidateEventCount||0,
+    vlCvxPlatformNewEvents:output.run?.vlCvxPlatformNewEventsAdmitted||0,
+    vlCvxPlatformBoundaries:output.run?.vlCvxPlatformBoundaryCount||0,
     executionAuthority:output.authority?.executionAuthority||null
   });
 }
