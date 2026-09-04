@@ -1,0 +1,48 @@
+name: "ONE-OFF · Full Git disaster recovery backup"
+
+on:
+  push:
+    branches:
+      - backup/disaster-recovery-2026-09-04
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Build full Git mirror and bundle
+        shell: bash
+        env:
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          mkdir -p backup-output
+          git clone --mirror "https://github.com/${REPO}.git" theholding-mirror.git
+          git -C theholding-mirror.git bundle create ../backup-output/THE_HOLDING_1.32_GIT_HISTORY_2026-09-04.bundle --all
+          tar -czf backup-output/THE_HOLDING_1.32_GIT_MIRROR_2026-09-04.tar.gz theholding-mirror.git
+          (
+            cd backup-output
+            shasum -a 256 THE_HOLDING_1.32_GIT_HISTORY_2026-09-04.bundle THE_HOLDING_1.32_GIT_MIRROR_2026-09-04.tar.gz > SHA256SUMS.txt
+          )
+          cat > backup-output/BACKUP_MANIFEST.txt <<'EOF'
+          The Holding 1.32 — Git disaster recovery backup
+          Created: 2026-09-04
+          Source repository: TheHolding83888/TheHolding-site-1.32
+          Contents:
+          - Full bare Git mirror archive with refs and object database
+          - Portable Git bundle containing all refs reachable from the mirror
+          - SHA-256 checksums
+          This backup is read-only with respect to main and does not modify production state.
+          EOF
+
+      - name: Upload disaster recovery package
+        uses: actions/upload-artifact@v4
+        with:
+          name: THE_HOLDING_FULL_DISASTER_BACKUP_2026-09-04
+          path: backup-output/
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0
