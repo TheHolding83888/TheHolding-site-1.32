@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { applyVlCvxLockerPlatformProof, collectVlCvxLockerPlatformProof } from './vlcvx-locker-platform-proof.mjs';
+import { applyVlCvxExtraRewardDistributionProof, collectVlCvxExtraRewardDistributionProof } from './vlcvx-extra-reward-distribution-proof.mjs';
 
 const OUTPUT=process.env.REWARDS_OUTPUT||path.resolve('companies/rewards-data.json');
 const TARGETS=['YieldRing.eth','defitea.eth',"Rook's portfolio",'Cypher'];
@@ -13,11 +14,29 @@ async function main(){
   const d=JSON.parse(fs.readFileSync(OUTPUT,'utf8'));
   const platformProof=await collectVlCvxLockerPlatformProof();
   applyVlCvxLockerPlatformProof(d,platformProof);
+  const extraRewardProof=await collectVlCvxExtraRewardDistributionProof();
+  applyVlCvxExtraRewardDistributionProof(d,extraRewardProof);
   for(const k of TARGETS)finalize(d.companies?.[k]);
   d.diagnostics=d.diagnostics||{};
-  d.diagnostics.vlCvxRouteAggregateFinalize={version:'0.2-vlcvx-route-aggregate-finalize-with-platform-component',generatedAt:new Date().toISOString(),executionAuthority:'none',targets:TARGETS,lockerPlatformComponentMaterialized:true,semanticBoundary:'CvxLockerV2 claimableRewards current state is component evidence only; no period income and no delegate-settlement completion is inferred.'};
+  d.diagnostics.vlCvxRouteAggregateFinalize={
+    version:'0.3-vlcvx-route-aggregate-finalize-with-platform-and-extra-components',
+    generatedAt:new Date().toISOString(),
+    executionAuthority:'none',
+    targets:TARGETS,
+    lockerPlatformComponentMaterialized:true,
+    extraRewardDistributionComponentMaterialized:true,
+    extraRewardDistributionInventoryStatus:extraRewardProof.summary.rewardInventoryStatus,
+    semanticBoundary:'CvxLockerV2 platform and vlCvxExtraRewardDistribution current state are component evidence only; neither creates period income nor resolves the separate delegate-incentive settlement lane.'
+  };
   fs.writeFileSync(OUTPUT,JSON.stringify(d,null,2)+'\n');
-  console.log('vlCVX aggregate finalize PASS',TARGETS.map(k=>({company:k,claimable:d.companies?.[k]?.claimableUsd??d.companies?.[k]?.totalUsd,measuredEarned:d.companies?.[k]?.measuredEarnedUsd??null,platformSource:(d.companies?.[k]?.sources||[]).find(x=>x.route==='vlcvx-locker-platform-rewards')?.status||null})));
+  console.log('vlCVX aggregate finalize PASS',TARGETS.map(k=>({
+    company:k,
+    claimable:d.companies?.[k]?.claimableUsd??d.companies?.[k]?.totalUsd,
+    measuredEarned:d.companies?.[k]?.measuredEarnedUsd??null,
+    platformSource:(d.companies?.[k]?.sources||[]).find(x=>x.route==='vlcvx-locker-platform-rewards')?.status||null,
+    extraRewardSource:(d.companies?.[k]?.sources||[]).find(x=>x.route==='vlcvx-extra-reward-distribution')?.status||null,
+    extraRewardInventory:(d.companies?.[k]?.sources||[]).find(x=>x.route==='vlcvx-extra-reward-distribution')?.details?.rewardInventoryStatus||null
+  })));
 }
 
 main().catch(e=>{console.error(e);process.exitCode=1});
