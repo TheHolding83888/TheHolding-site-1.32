@@ -15,6 +15,11 @@ const fmt = v => (v === null || v === undefined || v === '' ? 'n/a' : String(v))
 const num = v => Number.isFinite(Number(v)) ? Number(v) : null;
 const yesNo = v => v === true ? 'yes' : v === false ? 'no' : 'n/a';
 const safeLine = s => String(s ?? '').replace(/[\r\n]+/g, ' ').trim();
+const validCommit = sha => {
+  if (!/^[0-9a-f]{40}$/i.test(String(sha || ''))) return false;
+  try { git('cat-file', '-e', `${sha}^{commit}`); return true; }
+  catch { return false; }
+};
 
 if (!fs.existsSync(projectDir)) throw new Error('Project Memory directory missing');
 
@@ -24,6 +29,15 @@ const sourceTime = git('show', '-s', '--format=%cI', sourceHead);
 const sourceSubject = safeLine(git('show', '-s', '--format=%s', sourceHead));
 const sourceDate = new Date(sourceTime);
 if (Number.isNaN(sourceDate.getTime())) throw new Error(`Invalid source commit time: ${sourceTime}`);
+
+const requestedTriggerHead = String(process.env.CONTINUITY_TRIGGER_SHA || '').trim();
+const triggerHead = validCommit(requestedTriggerHead) ? requestedTriggerHead : sourceHead;
+const triggerTime = git('show', '-s', '--format=%cI', triggerHead);
+const triggerSubject = safeLine(git('show', '-s', '--format=%s', triggerHead));
+const triggerReason = safeLine(process.env.CONTINUITY_TRIGGER_REASON || (triggerHead === sourceHead ? 'source-head' : 'workflow-boundary'));
+const triggerEpoch = Date.parse(triggerTime);
+if (!Number.isFinite(triggerEpoch)) throw new Error(`Invalid continuity trigger time: ${triggerTime}`);
+
 const stamp = sourceDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
 const datePart = stamp.slice(0, 8);
 const timePart = stamp.slice(9, 15);
@@ -52,6 +66,23 @@ const gaps = mechanismRows
     referenceOnly: num(m?.referenceOnlyCompanyCount),
   }))
   .sort((a, b) => (b.productiveUsd ?? -1) - (a.productiveUsd ?? -1));
+
+const artifactFreshness = (label, generatedAt) => {
+  const parsed = Date.parse(generatedAt || '');
+  if (!Number.isFinite(parsed)) return { label, generatedAt: generatedAt ?? null, state: 'unknown-generated-at' };
+  return {
+    label,
+    generatedAt,
+    state: parsed >= triggerEpoch ? 'at-or-after-trigger-boundary' : 'predates-trigger-boundary-recheck-live',
+  };
+};
+const freshnessRows = [
+  artifactFreshness('Accounting Coverage', coverage?.generatedAt),
+  artifactFreshness('Canonical Income Ledger', ledger?.generatedAt),
+  artifactFreshness('Company Monthly Reports', monthly?.generatedAt),
+];
+const preBoundaryArtifacts = freshnessRows.filter(x => x.state !== 'at-or-after-trigger-boundary');
+const topGap = gaps[0] ?? null;
 
 const keyIds = [
   'aerodrome_veaero',
@@ -100,6 +131,10 @@ const lines = [
   `- Canonical source head: **${sourceHead}**`,
   `- Source commit time: **${sourceTime}**`,
   `- Source commit: **${sourceSubject || 'n/a'}**`,
+  `- Trigger boundary head: **${triggerHead}**`,
+  `- Trigger boundary time: **${triggerTime}**`,
+  `- Trigger boundary reason: **${triggerReason || 'n/a'}**`,
+  `- Trigger boundary commit: **${triggerSubject || 'n/a'}**`,
   `- Previous continuity: ${previousContinuity ? `\`${previousContinuity}\`` : 'none'}.`,
   `- Changed paths observed on source commit: ${changedFiles.length}.`,
   ...(changedFiles.length ? changedFiles.map(p => `  - \`${p}\``) : ['  - none reported by git diff-tree']),
@@ -119,7 +154,19 @@ const lines = [
   '',
   ...(gaps.length ? gaps.slice(0, 12).map(g => `- \`${g.id}\`: factual ${fmt(g.factual)}/${fmt(g.active)}; state-only ${fmt(g.stateOnly)}; reference-only ${fmt(g.referenceOnly)}; known productive value USD ${fmt(g.productiveUsd)}.`) : ['- None reported by the current Coverage Registry.']),
   '',
-  '## 3. NON-NEGOTIABLE ACCOUNTING / AUTHORITY LAWS',
+  '## 3. ACTIVE FRONTIER / ARTIFACT FRESHNESS',
+  '',
+  `- Trigger boundary: \`${triggerHead.slice(0,8)}\` at ${triggerTime}; reason: ${triggerReason || 'n/a'}.`,
+  ...freshnessRows.map(x => `- ${x.label}: ${x.state}; generatedAt ${fmt(x.generatedAt)}.`),
+  topGap
+    ? `- Diagnostic accounting frontier from the currently materialized Coverage artifact: \`${topGap.id}\` (${fmt(topGap.factual)}/${fmt(topGap.active)} factual tracking; known productive value USD ${fmt(topGap.productiveUsd)}).`
+    : '- Diagnostic accounting frontier: no reusable Coverage gap is currently materialized.',
+  ...(preBoundaryArtifacts.length
+    ? ['- **PRE-MATERIALIZATION WARNING:** one or more machine artifacts predate the trigger boundary. Their values are useful resume context only; re-read live artifacts and downstream Actions before declaring the triggering change physically complete.']
+    : ['- Machine snapshot is at-or-after the trigger boundary for Coverage, Canonical Income Ledger and Monthly Reports; live re-read is still required before any new action.']),
+  '- Active Frontier is diagnostic resume guidance only. It has no completion, methodology, wallet, claim or capital authority.',
+  '',
+  '## 4. NON-NEGOTIABLE ACCOUNTING / AUTHORITY LAWS',
   '',
   '- Canonical Income Ledger remains the sole factual earned-income recognition authority.',
   '- Reference APR/APY and reference generated income are analytics, not factual period-income authority.',
@@ -129,7 +176,7 @@ const lines = [
   '- No wallet signing, claiming, transaction execution, capital movement, automatic methodology mutation or execution-authority expansion is granted by this checkpoint.',
   '- Security watch findings stay visible; continuity automation must never improve status by suppressing detectors.',
   '',
-  '## 4. RESUME CONTRACT',
+  '## 5. RESUME CONTRACT',
   '',
   'Canonical recovery path:',
   '',
@@ -164,6 +211,7 @@ const rootLines = [
   '- immutable `THE_HOLDING_MASTER_CONTINUITY_*.md` files are never rewritten by the automatic checkpoint writer;',
   '- changing facts still come from live `main` + fresh machine artifacts + exact evidence;',
   '- the automatic writer has continuity-file authority only; `executionAuthority = none`;',
+  '- checkpoint snapshots explicitly expose whether key machine artifacts predate their trigger boundary;',
   '- `UNKNOWN != 0`; Reference APR/APY is never factual income authority;',
   '- `GREEN workflow != physically materialized production artifact`.',
   '',
@@ -174,8 +222,13 @@ console.log('Continuity checkpoint prepared', {
   checkpointName,
   sourceHead,
   sourceTime,
+  triggerHead,
+  triggerTime,
+  triggerReason,
   previousContinuity,
   security: security?.status ?? null,
   mechanismCount: mechanismRows.length,
   gapCount: gaps.length,
+  preBoundaryArtifacts: preBoundaryArtifacts.map(x => x.label),
+  activeFrontier: topGap?.id ?? null,
 });

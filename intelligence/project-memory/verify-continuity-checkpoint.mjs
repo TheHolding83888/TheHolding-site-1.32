@@ -22,6 +22,9 @@ const requiredCheckpointPhrases = [
   '`GREEN workflow != physically materialized production artifact`',
   'CURRENT → latest continuity → Routing Index → task-specific canon/context → live artifact → exact evidence',
   'No wallet signing, claiming, transaction execution, capital movement',
+  'ACTIVE FRONTIER / ARTIFACT FRESHNESS',
+  'Trigger boundary head:',
+  'Active Frontier is diagnostic resume guidance only',
 ];
 for (const phrase of requiredCheckpointPhrases) {
   if (!checkpoint.toLowerCase().includes(phrase.toLowerCase())) {
@@ -34,6 +37,19 @@ const checkpointHead = checkpoint.match(/^- Canonical source head: \*\*([0-9a-f]
 if (!rootHead || !checkpointHead || rootHead !== checkpointHead) {
   throw new Error(`Continuity source-head mismatch: root=${rootHead} checkpoint=${checkpointHead}`);
 }
+const triggerHead = checkpoint.match(/^- Trigger boundary head: \*\*([0-9a-f]{40})\*\*$/m)?.[1] ?? null;
+const triggerTime = checkpoint.match(/^- Trigger boundary time: \*\*([^*]+)\*\*$/m)?.[1] ?? null;
+if (!triggerHead || !triggerTime || !Number.isFinite(Date.parse(triggerTime))) {
+  throw new Error(`Continuity trigger boundary missing or malformed: head=${triggerHead} time=${triggerTime}`);
+}
+
+const freshnessRows = ['Accounting Coverage','Canonical Income Ledger','Company Monthly Reports'];
+const allowedFreshnessStates = ['at-or-after-trigger-boundary','predates-trigger-boundary-recheck-live','unknown-generated-at'];
+for (const label of freshnessRows) {
+  const statePattern = allowedFreshnessStates.join('|');
+  const row = checkpoint.match(new RegExp(`^- ${label}: (${statePattern}); generatedAt (.+)\\.$`, 'm'));
+  if (!row) throw new Error(`Continuity freshness row missing or malformed: ${label}`);
+}
 
 const allContinuities = fs.readdirSync(root)
   .filter(name => /^THE_HOLDING_MASTER_CONTINUITY_.*\.md$/.test(name))
@@ -43,6 +59,7 @@ if (!allContinuities.includes(latest)) throw new Error('Root latest checkpoint i
 const rootRequired = [
   'immutable `THE_HOLDING_MASTER_CONTINUITY_*.md` files are never rewritten',
   'executionAuthority = none',
+  'checkpoint snapshots explicitly expose whether key machine artifacts predate their trigger boundary',
   '`UNKNOWN != 0`',
   'Reference APR/APY is never factual income authority',
   '`GREEN workflow != physically materialized production artifact`',
@@ -54,5 +71,8 @@ for (const phrase of rootRequired) {
 console.log('Continuity root + immutable checkpoint contract PASS', {
   latest,
   sourceHead: rootHead,
+  triggerHead,
+  triggerTime,
   continuityCount: allContinuities.length,
+  freshnessAware: true,
 });
