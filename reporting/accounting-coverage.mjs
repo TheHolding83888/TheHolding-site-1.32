@@ -145,11 +145,12 @@ function strongVlCvxRouteProofs(rewards={}){
 
 function strongCvxCrvClaimableProofs(rewards={}){
   const out=[];
+  const allowedProtocols=new Set(['convex','convex · staked cvxcrv']);
   for(const[company,c]of Object.entries(rewards?.companies||{})){
     const source=(c?.sources||[]).find(x=>x?.route==='convex-staked-cvxcrv');
-    if(source?.status!=='ok'||lower(source?.protocol)!=='convex'||lower(source?.metric)!=='cvxcrvstakingwrapper earned(account)')continue;
+    if(source?.status!=='ok'||!allowedProtocols.has(lower(source?.protocol))||lower(source?.metric)!=='cvxcrvstakingwrapper earned(account)')continue;
     const details=source?.details||{},rows=(c?.rewards||[]).filter(x=>x?.route==='convex-staked-cvxcrv'),declaredCount=Number(details?.rewardCount);
-    const rowsStrong=rows.every(x=>lower(x?.protocol)==='convex'&&x?.classification==='unclaimed'&&finite(x?.amount)&&Number(x.amount)>=0);
+    const rowsStrong=rows.every(x=>allowedProtocols.has(lower(x?.protocol))&&x?.classification==='unclaimed'&&finite(x?.amount)&&Number(x.amount)>=0);
     const strong=details?.rewardState==='Claimable'&&String(details?.stateVersion||'').length>0&&Number.isSafeInteger(declaredCount)&&declaredCount>=0&&declaredCount===rows.length&&rowsStrong;
     if(!strong)continue;
     pushTrackingProof(out,{engineId:'convex_staked_cvxcrv',company,observedAt:c?.updatedAt||rewards?.generatedAt,sourceFile:'companies/rewards-data.json',proofKey:`convex-staked-cvxcrv:${company}:${declaredCount}`});

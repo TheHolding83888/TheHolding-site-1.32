@@ -135,6 +135,19 @@ const stateOnlySynthetic=buildAccountingCoverage({productivity:trackingProductiv
 assert.equal(stateOnlySynthetic.companies['FutureCo.eth'].mechanisms.aerodrome_veaero.months['2026-09'].status,'state-observed-not-factual-tracking');
 assert.equal(stateOnlySynthetic.mechanisms.aerodrome_veaero.reusableCoverageGap,true);
 
+// Canonical staked-cvxCRV source identity must prove tracking, while malformed identity must fail closed.
+const cvxCrvProductivity={generatedAt:'2026-09-04T18:55:00.000Z',engines:{convex_staked_cvxcrv:{protocol:'Convex'}},companies:{Cypher:{trackingStartedAt:'2026-09-01T00:00:00.000Z',breakdown:[{engineId:'convex_staked_cvxcrv',value:146.45,engineStatus:'ok'}]}}};
+const cvxCrvLedger={...emptyLedger,generatedAt:'2026-09-04T18:55:00.000Z',companies:{Cypher:{currentClaimableState:{rows:[{route:'convex-staked-cvxcrv',protocol:'Convex · staked cvxCRV'}]}}}};
+const cvxCrvRewards={generatedAt:'2026-09-04T18:55:00.000Z',companies:{Cypher:{updatedAt:'2026-09-04T18:55:00.000Z',sources:[{route:'convex-staked-cvxcrv',protocol:'Convex · staked cvxCRV',status:'ok',metric:'CvxCrvStakingWrapper earned(account)',details:{rewardState:'Claimable',stateVersion:'synthetic:v1',rewardCount:1}}],rewards:[{route:'convex-staked-cvxcrv',protocol:'Convex · staked cvxCRV',classification:'unclaimed',amount:1}]}}};
+const cvxCrvSynthetic=buildAccountingCoverage({productivity:cvxCrvProductivity,ledger:cvxCrvLedger,embedded:{},factualEvidence:{rewards:cvxCrvRewards},generatedAt:'2026-09-04T18:55:00.000Z'});
+assert.equal(cvxCrvSynthetic.mechanisms.convex_staked_cvxcrv.factualTrackingCompanyCount,1,'canonical staked-cvxCRV source identity did not prove tracking');
+assert.equal(cvxCrvSynthetic.mechanisms.convex_staked_cvxcrv.reusableCoverageGap,false,'canonical staked-cvxCRV source remained a false reusable gap');
+const malformedCvxCrvRewards=structuredClone(cvxCrvRewards);
+malformedCvxCrvRewards.companies.Cypher.sources[0].protocol='Convex-like';
+const malformedCvxCrvSynthetic=buildAccountingCoverage({productivity:cvxCrvProductivity,ledger:cvxCrvLedger,embedded:{},factualEvidence:{rewards:malformedCvxCrvRewards},generatedAt:'2026-09-04T18:55:00.000Z'});
+assert.equal(malformedCvxCrvSynthetic.mechanisms.convex_staked_cvxcrv.factualTrackingCompanyCount,0,'malformed staked-cvxCRV source identity gained tracking authority');
+assert.equal(malformedCvxCrvSynthetic.mechanisms.convex_staked_cvxcrv.reusableCoverageGap,true,'malformed staked-cvxCRV source failed open');
+
 // A recent canonical factual event also proves current in-period factual operation.
 const syntheticLedger={generatedAt:'2026-09-03T00:00:00.000Z',semantics:{referenceAprCanBackfillEarnedIncome:false,unknownIsNotZero:true},authority:{executionAuthority:'none',capitalExecution:false},events:[{eventKey:'future:curve:1',company:'FutureCo.eth',family:'accrued-entitlement',economicDate:'2026-09-03',periodStart:'2026-09-01T00:00:00.000Z',periodEnd:'2026-09-03T00:00:00.000Z',protocol:'Curve',route:'veCRV fees',asset:'crvUSD',usdValue:1}],companies:{'FutureCo.eth':{currentClaimableState:{rows:[]}}}};
 const syntheticProductivity={generatedAt:'2026-09-03T00:00:00.000Z',engines:{curve_vecrv:{protocol:'Curve'},future_unknown:{protocol:'Future Protocol'}},companies:{'FutureCo.eth':{trackingStartedAt:'2026-09-01T00:00:00.000Z',breakdown:[{engineId:'curve_vecrv',value:100,engineStatus:'ok'},{engineId:'future_unknown',value:50,engineStatus:'ok'}]}}};
@@ -164,5 +177,5 @@ for(const engineId of ['aerodrome_veaero','velodrome_vevelo','yieldbasis_veyb','
 }
 
 console.log('Accounting Coverage Registry v0.3 validation PASS',{
-  companyCount:data.summary.companyCount,mechanismInstances:data.summary.mechanismInstanceCount,uniqueMechanisms:data.summary.uniqueMechanismCount,reusableCoverageGaps:data.summary.reusableCoverageGapCount,unclassified:data.summary.unclassifiedMechanismInstanceCount,unmatchedLedgerEvents:data.summary.unmatchedCanonicalEventCount,canonicalizedAliasCompanies:data.summary.canonicalizedAliasCompanyCount,factualTrackingProofs:data.summary.factualTrackingProofCount,currentMonth:data.currentMonth,futureCompanyAutoDiscovery:true,zeroEventTrackingDoesNotCreateFalseGap:true,historicalAliasCannotCreatePhantomCompany:true,monthClosingAuthority:false
+  companyCount:data.summary.companyCount,mechanismInstances:data.summary.mechanismInstanceCount,uniqueMechanisms:data.summary.uniqueMechanismCount,reusableCoverageGaps:data.summary.reusableCoverageGapCount,unclassified:data.summary.unclassifiedMechanismInstanceCount,unmatchedLedgerEvents:data.summary.unmatchedCanonicalEventCount,canonicalizedAliasCompanies:data.summary.canonicalizedAliasCompanyCount,factualTrackingProofs:data.summary.factualTrackingProofCount,currentMonth:data.currentMonth,futureCompanyAutoDiscovery:true,zeroEventTrackingDoesNotCreateFalseGap:true,stakedCvxCrvCanonicalIdentityProof:true,historicalAliasCannotCreatePhantomCompany:true,monthClosingAuthority:false
 });
