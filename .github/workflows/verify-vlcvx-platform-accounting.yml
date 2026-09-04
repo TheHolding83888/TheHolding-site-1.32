@@ -62,7 +62,7 @@ jobs:
           console.log('vlCVX PLATFORM EXACT BLOCK PASS',{block:x.contract.observedBlock,companies:x.companies.map(c=>({registry:c.registry,name:c.name,positiveRewards:c.positiveClaimableRewardCount}))});
           NODE
 
-      - name: Simulate first factual accounting boundary
+      - name: Simulate factual accounting continuation
         env:
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
           REWARDS_OUTPUT: /tmp/vlcvx-platform-rewards.json
@@ -74,11 +74,13 @@ jobs:
           set -euo pipefail
           cp companies/rewards-data.json "$REWARDS_OUTPUT"
           cp reporting/income-ledger.json "$INCOME_LEDGER_FILE"
+          cp reporting/income-ledger.json /tmp/vlcvx-platform-income-ledger.before.json
           node rewards/vlcvx-route-rewards-finalize.mjs
           node reporting/vlcvx-platform-ledger-admission.mjs
           node - <<'NODE'
           const fs=require('fs');
           const r=JSON.parse(fs.readFileSync('/tmp/vlcvx-platform-rewards.json','utf8'));
+          const before=JSON.parse(fs.readFileSync('/tmp/vlcvx-platform-income-ledger.before.json','utf8'));
           const l=JSON.parse(fs.readFileSync('/tmp/vlcvx-platform-income-ledger.json','utf8'));
           const expected=['YieldRing.eth','defitea.eth',"Rook's portfolio",'Cypher'];
           const blocks=new Set();
@@ -92,11 +94,21 @@ jobs:
           const x=l.accountingExtensions?.vlCvxPlatformAccrual;if(!x)throw new Error('vlCVX platform accounting extension missing');
           if(x.version!=='0.1-vlcvx-locker-platform-factual-accrual-adapter'||x.status!=='factual-boundary-tracking'||x.authority?.executionAuthority!=='none')throw new Error('vlCVX platform accounting extension drift');
           if(x.semantics?.openingBalanceCreatesIncome!==false||x.semantics?.positiveDeltaRequiresNoInterveningRewardPaid!==true||x.semantics?.claimIsSettlementNotSecondIncome!==true||x.semantics?.referenceAprUsed!==false||x.semantics?.delegateIncentiveSettlementIsSeparate!==true||x.semantics?.unknownIsNotZero!==true)throw new Error('vlCVX platform accounting semantic drift');
-          if(x.diagnostics?.companyCount!==4||!(x.boundaries?.length>0))throw new Error('vlCVX platform first boundaries incomplete');
-          if((l.events||[]).some(e=>String(e.eventKey||'').startsWith('vlcvx-platform:')))throw new Error('opening platform balance created income');
+          if(x.diagnostics?.companyCount!==4||!(x.boundaries?.length>0))throw new Error('vlCVX platform boundaries incomplete');
+
+          const beforeKeys=new Set((before.events||[]).map(e=>e.eventKey));
+          const afterPlatform=(l.events||[]).filter(e=>String(e.eventKey||'').startsWith('vlcvx-platform:'));
+          const newPlatform=afterPlatform.filter(e=>!beforeKeys.has(e.eventKey));
+          if((before.events||[]).some(e=>!new Set((l.events||[]).map(x=>x.eventKey)).has(e.eventKey)))throw new Error('existing canonical income history was lost');
+          if(newPlatform.some(e=>e.family!=='accrued-entitlement'||e.route!=='vlcvx-locker-platform-rewards'||e.evidenceStatus!=='canonical-positive-claimable-delta-no-intervening-RewardPaid'||e.claimContinuityStatus!=='no-intervening-claim-proven'||e.currentClaimableBalanceIsPeriodIncome!==false||e.claimIsSecondIncomeEvent!==false||e.referenceAprUsed!==false||e.executionAuthority!=='none'))throw new Error('new vlCVX continuation event escaped factual semantics');
+          if((x.diagnostics?.baselineCount||0)>0&&newPlatform.length>0){
+            const newCompanies=new Set(newPlatform.map(e=>e.company));
+            const baselineCompanies=new Set((x.boundaries||[]).filter(b=>!before?.accountingExtensions?.vlCvxPlatformAccrual?.boundaries?.some(p=>p.stateKey===b.stateKey)).map(b=>b.company));
+            if([...baselineCompanies].some(c=>newCompanies.has(c)))throw new Error('opening platform baseline created income');
+          }
           const rook=(r.companies?.["Rook's portfolio"]?.sources||[]).find(x=>x.route==='vlcvx-current-route');
           if(rook?.details?.currentRewardSettlement!=='unresolved'||rook?.details?.unknownIsNotZero!==true)throw new Error('Rook delegate settlement falsely closed');
-          console.log('vlCVX PLATFORM FIRST BOUNDARY PASS',{block:[...blocks][0],boundaries:x.boundaries.length,companies:x.diagnostics.companyCount,openingEvents:0,rookDelegateSettlement:'unresolved'});
+          console.log('vlCVX PLATFORM CONTINUATION PASS',{block:[...blocks][0],boundaries:x.boundaries.length,companies:x.diagnostics.companyCount,existingPlatformEvents:afterPlatform.length-newPlatform.length,newPlatformEvents:newPlatform.length,rookDelegateSettlement:'unresolved'});
           NODE
 
       - name: Static no-execution and no-parallel-writer guard
