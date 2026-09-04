@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'rewards/vlcvx-registry-route-audit.mjs'
+      - 'rewards/vlcvx-locker-platform-proof.mjs'
       - 'rewards/union-vlcvx-allocation-audit.mjs'
       - 'rewards/vlcvx-route-rewards-overlay.mjs'
       - 'rewards/vlcvx-route-rewards-finalize.mjs'
@@ -45,6 +46,27 @@ jobs:
           set -euo pipefail
           node --check rewards/vlcvx-registry-route-audit.mjs
           node rewards/vlcvx-registry-route-audit.mjs
+
+      - name: Inspect live CvxLockerV2 platform reward state
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          VLCVX_AUDIT_OUTPUT: /tmp/vlcvx-route-audit.json
+          VLCVX_LOCKER_PLATFORM_OUTPUT: /tmp/vlcvx-locker-platform-proof.json
+        run: |
+          set -euo pipefail
+          node --check rewards/vlcvx-locker-platform-proof.mjs
+          node rewards/vlcvx-locker-platform-proof.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('/tmp/vlcvx-locker-platform-proof.json','utf8'));
+          if(x.version!=='0.1-vlcvx-locker-platform-proof')throw new Error('locker platform proof version drift');
+          if(x.executionAuthority!=='none'||x.claimTransactionAuthority!=='none')throw new Error('locker platform proof authority expansion');
+          if(x.summary?.companyCount!==4||x.companies?.length!==4)throw new Error('locker platform proof must cover all four live vlCVX companies');
+          if(x.semantics?.currentRewardStateIsNotPeriodIncome!==true||x.semantics?.delegateIncentiveSettlementIsSeparate!==true||x.semantics?.doesNotResolveVotiumStakeDaoOrConvexTeamSettlement!==true)throw new Error('locker platform semantic boundary missing');
+          const regs=x.companies.map(c=>c.registry).sort().join(',');if(regs!=='002,004,007,010')throw new Error('locker platform company set drift');
+          for(const c of x.companies){if(c.evidenceClass!=='observed-current-state'||c.component!=='locked-cvx-platform-rewards'||c.periodIncomeAuthority!==false||c.delegateIncentiveSettlementAuthority!==false)throw new Error('component evidence boundary drift '+c.registry);for(const r of c.rewards||[]){if(!r.token||!r.symbol||!Number.isFinite(Number(r.amount))||BigInt(r.amountRaw)<0n)throw new Error('invalid claimableRewards row '+c.registry)}}
+          console.log('vlCVX LOCKER PLATFORM STATE PASS',x.companies.map(c=>({registry:c.registry,name:c.name,route:c.currentRoute,positiveRewards:c.positiveClaimableRewardCount,rewards:c.rewards.map(r=>({symbol:r.symbol,amount:r.amount}))})));
+          NODE
 
       - name: Inspect live Union settlement allocations
         env:
@@ -155,7 +177,7 @@ jobs:
         run: |
           node - <<'NODE'
           const fs=require('fs');
-          for(const p of ['rewards/vlcvx-registry-route-audit.mjs','rewards/union-vlcvx-allocation-audit.mjs','rewards/vlcvx-route-rewards-overlay.mjs','rewards/vlcvx-route-rewards-finalize.mjs','rewards/vlcvx-route-rewards-guard.mjs','reporting/votium-union-accounting-evidence.mjs','reporting/votium-union-accounting-adapter.mjs']){
+          for(const p of ['rewards/vlcvx-registry-route-audit.mjs','rewards/vlcvx-locker-platform-proof.mjs','rewards/union-vlcvx-allocation-audit.mjs','rewards/vlcvx-route-rewards-overlay.mjs','rewards/vlcvx-route-rewards-finalize.mjs','rewards/vlcvx-route-rewards-guard.mjs','reporting/votium-union-accounting-evidence.mjs','reporting/votium-union-accounting-adapter.mjs']){
             const s=fs.readFileSync(p,'utf8');
             for(const bad of ['sendTransaction(','new Wallet(','setDelegate(','recordAllocation(','distributor.claim('])if(s.includes(bad))throw new Error('forbidden execution surface in '+p+': '+bad);
             if(!s.includes("executionAuthority:'none'"))throw new Error('execution authority guard missing in '+p);
