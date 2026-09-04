@@ -56,6 +56,14 @@ function blockNumberOf(log){
   return NaN;
 }
 
+function rewardTokenOf(log){
+  const topic0=String(log?.topics?.[0]||'');
+  const tokenTopic=String(log?.topics?.[1]||'');
+  if(topic0.toLowerCase()!==rewardAddedTopic.toLowerCase())throw new Error('legacy RewardAdded topic0 drift');
+  if(!/^0x[0-9a-fA-F]{64}$/.test(tokenTopic))throw new Error('legacy RewardAdded indexed token topic missing');
+  return getAddress(`0x${tokenTopic.slice(-40)}`);
+}
+
 async function scanRpc(p,fromBlock,toBlock){
   const logs=[];let cursor=fromBlock,span=250000,calls=0;
   while(cursor<=toBlock){
@@ -89,7 +97,7 @@ async function scanBlockscout(fromBlock,toBlock){
       const blockNumber=blockNumberOf(row);
       if(!Number.isFinite(blockNumber))throw new Error('Blockscout legacy RewardAdded missing block');
       if(String(row?.topics?.[0]||'').toLowerCase()!==rewardAddedTopic.toLowerCase())continue;
-      logs.push({topics:row.topics,data:row.data,blockNumber,transactionHash:row.transactionHash||row.transaction_hash||null});
+      logs.push({topics:row.topics,data:row.data??null,blockNumber,transactionHash:row.transactionHash||row.transaction_hash||null});
     }
   }
   return logs;
@@ -135,13 +143,15 @@ export async function collectVlCvxLegacyExtraRewardProof({auditFile=AUDIT}={}){
 
   const history=await rewardHistory(latestBlock);
   if(history.scanComplete!==true||history.fromBlock!==EVENT_SCAN_FROM_BLOCK||history.toBlock!==latestBlock)throw new Error('legacy RewardAdded history incomplete');
-  const parsed=history.logs.map(log=>({log,event:iface.parseLog(log)}));
-  const tokenAddresses=[...new Set(parsed.map(x=>getAddress(x.event.args._token).toLowerCase()))].map(getAddress);
+  // Token is indexed in RewardAdded. Derive inventory from topic[1] so indexed-log
+  // transports that omit the non-indexed data payload cannot create a false RED.
+  const parsed=history.logs.map(log=>({log,token:rewardTokenOf(log)}));
+  const tokenAddresses=[...new Set(parsed.map(x=>x.token.toLowerCase()))].map(getAddress);
   const tokens=[];
   for(const address of tokenAddresses){
     const meta=await tokenMeta(p,address),epochCount=Number(await dist.rewardEpochsCount(meta.token));
     if(!Number.isSafeInteger(epochCount)||epochCount<=0)throw new Error(`legacy reward epoch count invalid ${meta.token}`);
-    const eventCount=parsed.filter(x=>getAddress(x.event.args._token).toLowerCase()===meta.token.toLowerCase()).length;
+    const eventCount=parsed.filter(x=>x.token.toLowerCase()===meta.token.toLowerCase()).length;
     tokens.push({...meta,rewardEpochCount:epochCount,rewardAddedEventCount:eventCount});
   }
 
@@ -158,7 +168,7 @@ export async function collectVlCvxLegacyExtraRewardProof({auditFile=AUDIT}={}){
   const positive=rows.filter(x=>x.positiveClaimableRewardCount>0);
   return{
     version:VERSION,generatedAt:new Date().toISOString(),executionAuthority:'none',claimTransactionAuthority:'none',
-    source:{officialConvexContractsRegistry:'convex-eth/platform contracts/contracts.json',knownCreationTransaction:KNOWN_CREATION_TX,rewardInventoryMethod:'complete RewardAdded event history from conservative pre-deployment boundary',rewardInventoryTransport:history.transport,rewardInventoryScanComplete:true,rewardInventoryScanFromBlock:history.fromBlock,rewardInventoryScanThroughBlock:history.toBlock},
+    source:{officialConvexContractsRegistry:'convex-eth/platform contracts/contracts.json',knownCreationTransaction:KNOWN_CREATION_TX,rewardInventoryMethod:'complete RewardAdded indexed-token history from conservative pre-deployment boundary',rewardInventoryTransport:history.transport,rewardInventoryScanComplete:true,rewardInventoryScanFromBlock:history.fromBlock,rewardInventoryScanThroughBlock:history.toBlock},
     contract:{name:'vlCvxExtraRewardDistribution OLD',address:DISTRIBUTION,locker,expectedOldLocker:OLD_LOCKER,observedThroughBlock:latestBlock},
     semantics:{legacyResidualOnly:true,currentStateIsNotPeriodIncome:true,currentGaugeDelegateSettlementIsSeparate:true,positiveLegacyClaimableDoesNotProveCurrentDelegateIncentive:true,zeroClaimableIsObservedZeroForEnumeratedLegacyTokensOnly:true,unknownIsNotZero:true},
     summary:{registryCompanyCount:new Set(rows.map(x=>x.registry)).size,registryWalletCount:rows.length,currentVlCvxWalletCount:rows.filter(x=>x.currentVlCvx).length,rewardTokenCount:tokens.length,rewardAddedEventCount:history.logs.length,positiveClaimableWalletCount:positive.length,positiveCurrentVlCvxWalletCount:positive.filter(x=>x.currentVlCvx).length},
