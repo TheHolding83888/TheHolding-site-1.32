@@ -26,6 +26,9 @@ on:
       - 'reporting/reporting-engine-validation.mjs'
       - 'reporting/income-ledger.mjs'
       - 'reporting/income-ledger-validation.mjs'
+      - 'reporting/accounting-coverage.mjs'
+      - 'reporting/accounting-coverage-validation.mjs'
+      - 'reporting/accounting-coverage.json'
       - 'reporting/frax-yield-accounting-evidence.mjs'
       - 'reporting/frax-yield-accounting-evidence-validation.mjs'
       - 'reporting/frax-yield-accounting-evidence.json'
@@ -100,6 +103,8 @@ jobs:
           node --check reporting/reporting-engine-validation.mjs
           node --check reporting/income-ledger.mjs
           node --check reporting/income-ledger-validation.mjs
+          node --check reporting/accounting-coverage.mjs
+          node --check reporting/accounting-coverage-validation.mjs
           node --check reporting/frax-yield-accounting-evidence.mjs
           node --check reporting/frax-yield-accounting-evidence-validation.mjs
           node --check reporting/yield-basis-accounting-evidence.mjs
@@ -277,6 +282,20 @@ jobs:
           INCOME_LEDGER_FILE: ./reporting/income-ledger.json
         run: node reporting/yield-basis-ledger-admission.mjs
 
+      - name: Build + validate Accounting Coverage Registry
+        env:
+          PRODUCTIVITY_DATA_FILE: ./companies/productivity-data.json
+          INCOME_LEDGER_FILE: ./reporting/income-ledger.json
+          EMBEDDED_YIELD_LEDGER_FILE: ./companies/embedded-yield-ledger.json
+          VE33_EVIDENCE_FILE: ./reporting/ve33-accounting-evidence.json
+          VE33_LOCKED_MANAGED_EVIDENCE_FILE: ./reporting/ve33-locked-managed-accounting-evidence.json
+          YIELD_BASIS_EVIDENCE_FILE: ./reporting/yield-basis-accounting-evidence.json
+          FRAX_EVIDENCE_FILE: ./reporting/frax-yield-accounting-evidence.json
+          ACCOUNTING_COVERAGE_FILE: ./reporting/accounting-coverage.json
+        run: |
+          node reporting/accounting-coverage.mjs
+          node reporting/accounting-coverage-validation.mjs
+
       - name: Validate generated reporting data
         shell: bash
         run: |
@@ -419,6 +438,8 @@ jobs:
               reporting/income-ledger.mjs \
               reporting/income-ledger-validation.mjs \
               reporting/income-ledger-policy.json \
+              reporting/accounting-coverage.mjs \
+              reporting/accounting-coverage-validation.mjs \
               reporting/frax-yield-accounting-evidence.mjs \
               reporting/frax-yield-accounting-evidence-validation.mjs \
               reporting/yield-basis-accounting-evidence.mjs \
@@ -444,7 +465,7 @@ jobs:
           }
           critical_before="$(critical_fingerprint)"
 
-          git add reporting/reporting-data.json reporting/defitea-income-ledger.json reporting/frax-yield-accounting-evidence.json reporting/ve33-accounting-evidence.json reporting/ve33-locked-managed-accounting-evidence.json reporting/income-ledger.json reporting/yield-basis-accounting-evidence.json
+          git add reporting/reporting-data.json reporting/defitea-income-ledger.json reporting/frax-yield-accounting-evidence.json reporting/ve33-accounting-evidence.json reporting/ve33-locked-managed-accounting-evidence.json reporting/income-ledger.json reporting/yield-basis-accounting-evidence.json reporting/accounting-coverage.json
           if git diff --cached --quiet; then
             echo "No reporting data changes."
             exit 0
@@ -478,6 +499,8 @@ jobs:
             node reporting/reporting-engine-validation.mjs
             node reporting/yield-basis-accounting-evidence.mjs
             node reporting/yield-basis-ledger-admission.mjs
+            node reporting/accounting-coverage.mjs
+            node reporting/accounting-coverage-validation.mjs
             node reporting/income-ledger-validation.mjs
             node reporting/frax-yield-accounting-evidence-validation.mjs
             node reporting/yield-basis-accounting-evidence-validation.mjs
@@ -491,13 +514,13 @@ jobs:
             node reporting/ve33-locked-managed-ledger-admission-validation.mjs
             node reporting/defitea-income-composition-validation.mjs
             node reporting/defitea-forty-acres-settlement-validation.mjs
-            git add reporting/reporting-data.json reporting/defitea-income-ledger.json reporting/frax-yield-accounting-evidence.json reporting/ve33-accounting-evidence.json reporting/ve33-locked-managed-accounting-evidence.json reporting/income-ledger.json reporting/yield-basis-accounting-evidence.json
+            git add reporting/reporting-data.json reporting/defitea-income-ledger.json reporting/frax-yield-accounting-evidence.json reporting/ve33-accounting-evidence.json reporting/ve33-locked-managed-accounting-evidence.json reporting/income-ledger.json reporting/yield-basis-accounting-evidence.json reporting/accounting-coverage.json
             git commit --amend --no-edit
 
             mapfile -t ahead < <(git diff --name-only origin/main...HEAD)
             for f in "${ahead[@]}"; do
               case "$f" in
-                reporting/reporting-data.json|reporting/defitea-income-ledger.json|reporting/frax-yield-accounting-evidence.json|reporting/ve33-accounting-evidence.json|reporting/ve33-locked-managed-accounting-evidence.json|reporting/income-ledger.json|reporting/yield-basis-accounting-evidence.json) ;;
+                reporting/reporting-data.json|reporting/defitea-income-ledger.json|reporting/frax-yield-accounting-evidence.json|reporting/ve33-accounting-evidence.json|reporting/ve33-locked-managed-accounting-evidence.json|reporting/income-ledger.json|reporting/yield-basis-accounting-evidence.json|reporting/accounting-coverage.json) ;;
                 *) echo "Unexpected Reporting publish delta after rebase: $f"; exit 1 ;;
               esac
             done
