@@ -198,5 +198,5 @@ console.log('Project Memory CURRENT.md rebuilt', {
   activeCases: learning?.summary?.activeCaseCount ?? 0,
   activeProposals: proposals?.summary?.activeProposalCount ?? 0,
   builderCandidates: builder?.summary?.candidateCount ?? 0,
-  guardianResearchOnly: guardian?.summary?.guardianResearchOnly ?? guardian?.summary?.researchOnlyCount ?? 0,
+  guardianResearchOnly: guardian?.summary?.researchOnlyCount ?? 0,
 });
