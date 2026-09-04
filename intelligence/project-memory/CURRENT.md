@@ -8,7 +8,7 @@ Canonical source state represented here: **2026-09-04T04:32:55.230Z**
 
 ## Minimum recovery packet
 
-1. [THE_HOLDING_MASTER_CONTINUITY_2026-09-02_ACCOUNTING_FABRIC_POST_MERGE.md](./THE_HOLDING_MASTER_CONTINUITY_2026-09-02_ACCOUNTING_FABRIC_POST_MERGE.md)
+1. [THE_HOLDING_MASTER_CONTINUITY_2026-09-04_044230_ACCOUNTING_COVERAGE_BOUNDARY_GREEN.md](./THE_HOLDING_MASTER_CONTINUITY_2026-09-04_044230_ACCOUNTING_COVERAGE_BOUNDARY_GREEN.md)
 2. [Memory Routing Index v2](./THE_HOLDING_MEMORY_ROUTING_INDEX_v2_2026-08-26.md)
 3. Follow the router: load only the task-specific durable canon/context and live machine-readable evidence needed for the current objective.
 
@@ -42,7 +42,7 @@ Current authority boundary: **execution authority = none**. No wallet signing, t
 - **Permanent Memory Vault** — 58 Observer record(s), 346 material event(s), retention: indefinite; hard lifetime cap: none.
 - **Latest Vault record** — intelligence/memory-vault/2026/09/2026-09-03T11-30-02-352Z-2d99c03752.json.
 - **Decision Memory** — 2 append-only owner decision(s); executionAuthority: none.
-- **Project continuity** — CURRENT + latest master continuity + compact task router + routed specialized canons + Git history.
+- **Project continuity** — CURRENT + CONTINUITY root + latest master continuity + compact task router + routed specialized canons + Git history.
 
 ## Current cognitive stack
 
