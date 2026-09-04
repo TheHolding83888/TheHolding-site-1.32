@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'rewards/vlcvx-extra-reward-distribution-proof.mjs'
+      - 'rewards/vlcvx-route-rewards-finalize.mjs'
       - '.github/workflows/verify-vlcvx-extra-reward-distribution.yml'
   workflow_dispatch:
 
@@ -68,6 +69,42 @@ jobs:
           console.log('vlCVX EXTRA REWARD DISTRIBUTION PASS',{inventory:x.summary.rewardInventoryStatus,tokens:x.tokens.map(t=>({symbol:t.symbol,epochs:t.rewardEpochCount})),companies:x.companies.map(c=>({registry:c.registry,name:c.name,positiveRewards:c.positiveClaimableRewardCount}))});
           NODE
 
+      - name: Simulate canonical Rewards component materialization
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          VLCVX_AUDIT_OUTPUT: /tmp/vlcvx-route-audit.json
+          REWARDS_OUTPUT: /tmp/rewards-vlcvx-extra-materialization.json
+        run: |
+          set -euo pipefail
+          cp companies/rewards-data.json "$REWARDS_OUTPUT"
+          node --check rewards/vlcvx-route-rewards-finalize.mjs
+          node rewards/vlcvx-route-rewards-finalize.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('/tmp/rewards-vlcvx-extra-materialization.json','utf8'));
+          const expected=['YieldRing.eth','defitea.eth',"Rook's portfolio",'Cypher'];
+          const finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v));
+          const diag=d.diagnostics?.vlCvxRouteAggregateFinalize;
+          if(diag?.version!=='0.3-vlcvx-route-aggregate-finalize-with-platform-and-extra-components'||diag?.executionAuthority!=='none'||diag?.extraRewardDistributionComponentMaterialized!==true)throw new Error('aggregate finalizer diagnostic drift');
+          const proofDiag=d.diagnostics?.vlCvxExtraRewardDistributionProof;
+          if(!proofDiag||proofDiag.executionAuthority!=='none'||proofDiag.component!=='locked-cvx-extra-reward-distribution')throw new Error('extra reward proof diagnostic missing');
+          for(const key of expected){
+            const c=d.companies?.[key];if(!c)throw new Error('company missing '+key);
+            const src=(c.sources||[]).find(x=>x.route==='vlcvx-extra-reward-distribution');
+            if(!src||src.status!=='ok'||src.protocol!=='Convex · vlCVX extra reward distribution')throw new Error('extra distribution source missing '+key);
+            const x=src.details||{};
+            if(x.component!=='locked-cvx-extra-reward-distribution'||x.rewardInventoryScanComplete!==true||x.periodIncomeAuthority!==false||x.delegateIncentiveSettlementAuthority!==false||x.currentRewardStateIsNotPeriodIncome!==true||x.unknownIsNotZero!==true)throw new Error('extra distribution source boundary drift '+key);
+            if((c.rewards||[]).some(r=>r.route==='vlcvx-extra-reward-distribution'))throw new Error('component current state leaked into reward-income rows '+key);
+            const claimable=(c.rewards||[]).reduce((s,r)=>s+(finite(r.usdValue)?Number(r.usdValue):0),0);
+            const aggregate=Number(c.claimableUsd??c.totalUsd);
+            if(!Number.isFinite(aggregate)||Math.abs(aggregate-claimable)>0.00001)throw new Error('claimable aggregate drift '+key);
+          }
+          const rook=d.companies?.["Rook's portfolio"];
+          const route=(rook?.sources||[]).find(x=>x.route==='vlcvx-current-route');
+          if(route?.protocol!=='Convex Finance · vlCVX'||route?.details?.currentRewardSettlement!=='unresolved'||route?.details?.unknownIsNotZero!==true)throw new Error('Rook delegate settlement was falsely closed');
+          console.log('vlCVX EXTRA REWARD MATERIALIZATION PASS',{inventory:proofDiag.rewardInventoryStatus,companies:expected});
+          NODE
+
       - name: Static no-execution guard
         run: |
           node - <<'NODE'
@@ -77,5 +114,6 @@ jobs:
           for(const bad of ['sendTransaction(','new Wallet(','getReward(','setClaimIndex(','addReward(','addRewardToEpoch('])if(s.includes(bad))throw new Error('forbidden execution surface: '+bad);
           if(!s.includes("executionAuthority:'none'"))throw new Error('execution authority guard missing');
           if(!s.includes('doesNotByItselfResolveCurrentDelegateSettlement:true'))throw new Error('delegate settlement boundary missing');
+          if(!s.includes('applyVlCvxExtraRewardDistributionProof'))throw new Error('canonical Rewards materialization adapter missing');
           console.log('vlCVX extra reward no-execution guard PASS');
           NODE
