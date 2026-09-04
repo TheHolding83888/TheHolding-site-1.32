@@ -111,12 +111,12 @@ async function collectRewardAddedHistory(toBlock){
       const provider=new JsonRpcProvider(url,1,{staticNetwork:true});
       await provider.getBlockNumber();
       const logs=await scanRewardAddedRpc(provider,EVENT_SCAN_FROM_BLOCK,toBlock);
-      return{logs,transport:'ethereum-json-rpc'};
+      return{logs,transport:'ethereum-json-rpc',fromBlock:EVENT_SCAN_FROM_BLOCK,toBlock,scanComplete:true};
     }catch(e){errors.push(`rpc:${e?.shortMessage||e?.message||e}`)}
   }
   try{
     const logs=await scanRewardAddedBlockscout(EVENT_SCAN_FROM_BLOCK,toBlock);
-    return{logs,transport:'blockscout-indexed-logs'};
+    return{logs,transport:'blockscout-indexed-logs',fromBlock:EVENT_SCAN_FROM_BLOCK,toBlock,scanComplete:true};
   }catch(e){errors.push(`blockscout:${e?.message||e}`)}
   throw new Error(`RewardAdded history unavailable: ${errors.join(' | ')}`);
 }
@@ -139,10 +139,9 @@ export async function buildVlCvxExtraRewardDistributionProof({audit,provider}){
   if(boundLocker.toLowerCase()!==LOCKER.toLowerCase())throw new Error('extra reward distribution locker binding drift');
 
   const history=await collectRewardAddedHistory(latestBlock);
+  if(history.scanComplete!==true||history.fromBlock!==EVENT_SCAN_FROM_BLOCK||history.toBlock!==latestBlock)throw new Error('RewardAdded history completeness drift');
   const logs=history.logs;
-  if(!logs.length)throw new Error('no RewardAdded history found');
   const tokenAddresses=[...new Set(logs.map(log=>getAddress(eventInterface.parseLog(log).args._token)).map(x=>x.toLowerCase()))].map(lower=>getAddress(lower));
-  if(!tokenAddresses.length)throw new Error('RewardAdded history produced empty token inventory');
 
   const tokens=[];
   for(const address of tokenAddresses){
@@ -171,6 +170,7 @@ export async function buildVlCvxExtraRewardDistributionProof({audit,provider}){
       rewards,
       evidenceClass:'observed-current-state',
       component:'locked-cvx-extra-reward-distribution',
+      rewardInventoryStatus:tokens.length?'event-derived-token-inventory':'complete-empty-rewardadded-history',
       periodIncomeAuthority:false,
       delegateIncentiveSettlementAuthority:false,
       zeroIsObservedZero:true,
@@ -189,6 +189,9 @@ export async function buildVlCvxExtraRewardDistributionProof({audit,provider}){
       eventBoundaryReference:'convex-community/convex-stats-subgraph vlCvxExtraRewardDistributionV2 startBlock',
       rewardInventoryMethod:'RewardAdded(address,uint256,uint256) event history',
       rewardInventoryTransport:history.transport,
+      rewardInventoryScanComplete:history.scanComplete,
+      rewardInventoryScanFromBlock:history.fromBlock,
+      rewardInventoryScanThroughBlock:history.toBlock,
       archivalReceiptRequired:false
     },
     contract:{
@@ -196,13 +199,15 @@ export async function buildVlCvxExtraRewardDistributionProof({audit,provider}){
       address:DISTRIBUTION,
       locker:boundLocker,
       eventScanFromBlock:EVENT_SCAN_FROM_BLOCK,
-      firstObservedRewardAddedBlock:Math.min(...logs.map(x=>x.blockNumber)),
+      firstObservedRewardAddedBlock:logs.length?Math.min(...logs.map(x=>x.blockNumber)):null,
       observedThroughBlock:latestBlock,
       claimableMethod:'claimableRewards(address,address)'
     },
     semantics:{
       component:'locked-cvx-extra-reward-distribution',
       rewardInventoryIsEventDerived:true,
+      rewardInventoryScanComplete:true,
+      emptyRewardAddedHistoryMeansNoKnownRewardEpochs:true,
       holderEpochDistributionComponent:true,
       currentRewardStateIsNotPeriodIncome:true,
       delegateIncentiveSettlementIsSeparate:true,
@@ -214,6 +219,7 @@ export async function buildVlCvxExtraRewardDistributionProof({audit,provider}){
       companyCount:companies.length,
       rewardTokenCount:tokens.length,
       rewardAddedEventCount:logs.length,
+      rewardInventoryStatus:tokens.length?'event-derived-token-inventory':'complete-empty-rewardadded-history',
       positiveRewardCompanyCount:companies.filter(x=>x.positiveClaimableRewardCount>0).length
     },
     tokens,
@@ -235,7 +241,7 @@ async function main(){
     contract:out.contract,
     summary:out.summary,
     tokens:out.tokens.map(t=>({symbol:t.symbol,token:t.token,rewardEpochCount:t.rewardEpochCount})),
-    companies:out.companies.map(c=>({registry:c.registry,name:c.name,route:c.currentRoute,positiveRewards:c.positiveClaimableRewardCount,rewards:c.rewards.filter(r=>!r.observedZero).map(r=>({symbol:r.symbol,amount:r.amount}))}))
+    companies:out.companies.map(c=>({registry:c.registry,name:c.name,route:c.currentRoute,rewardInventoryStatus:c.rewardInventoryStatus,positiveRewards:c.positiveClaimableRewardCount,rewards:c.rewards.filter(r=>!r.observedZero).map(r=>({symbol:r.symbol,amount:r.amount}))}))
   },null,2));
 }
 
