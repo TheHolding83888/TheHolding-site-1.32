@@ -135,8 +135,10 @@ function strongVlCvxRouteProofs(rewards={}){
     else if(current.routeId==='stake-dao-vlcvx'){
       const root=lower(settlement?.root),activeRoot=lower(settlement?.activeRoot),claims=Array.isArray(settlement?.claims)?settlement.claims:[],provenAbsent=settlement?.entitlement==='proven-absent-from-active-root';
       strong=/^0x[0-9a-f]{64}$/.test(root)&&root===activeRoot&&settlement?.unknownIsNotZero===true&&(provenAbsent||claims.every(x=>x?.proofValid===true));
+    }else if(current.routeId==='convex-finance-vlcvx'){
+      strong=settlement?.evidenceClass==='factual-current-route-eligibility-boundary'&&settlement?.entitlement==='no-votium-incentive-eligibility-observed-current-route'&&settlement?.trackingBoundaryComplete===true&&settlement?.allWeightedProposalsConvexTeam===true&&settlement?.noManualOrSurrogateOverrideOnWeightedProposals===true&&Number(settlement?.manualOrSurrogateOverrideCount)===0&&Number(settlement?.nonConvexTeamWeightedProposalCount)===0&&settlement?.lockerPlatformRewardsTrackedSeparately===true&&settlement?.extraRewardDistributionTrackedSeparately===true&&settlement?.legacyResidualRewardsTrackedSeparately===true&&settlement?.periodIncomeAuthority===false&&settlement?.universalExternalRewardZeroAsserted===false&&settlement?.unknownIsNotZero===true;
     }
-    if(strong)pushTrackingProof(out,{engineId:'convex_vlcvx',company,observedAt:route?.generatedAt||c?.updatedAt||rewards?.generatedAt,sourceFile:'companies/rewards-data.json',proofKey:`vlcvx:${route?.wallet||company}:${current.routeId}`});
+    if(strong)pushTrackingProof(out,{engineId:'convex_vlcvx',company,observedAt:source?.details?.settlementGeneratedAt||route?.generatedAt||c?.updatedAt||rewards?.generatedAt,sourceFile:'companies/rewards-data.json',proofKey:`vlcvx:${route?.wallet||company}:${current.routeId}`});
   }
   return out;
 }
