@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { admitVlCvxPlatformIntoLedgerState } from './vlcvx-platform-ledger-admission.mjs';
 
-const LOCKER='0x72a19342e8F1838460eBFCCEf09F6585e32db86E',WALLET='0x7eC6331188468269DC7C1Cf6a84C972632178B1E',FXS='0x3432B6A60D23Ca0dFCa7761B7ab56459D9C964D';
+const LOCKER='0x72a19342e8F1838460eBFCCEf09F6585e32db86E',WALLET='0x7eC6331188468269DC7C1Cf6a84C972632178B1E',FXS='0x3432b6a60d23ca0dfca7761b7ab56459d9c964d';
 const rewards=(block,raw,at)=>({generatedAt:at,diagnostics:{vlCvxLockerPlatformProof:{generatedAt:at,observedBlock:block}},companies:{"Rook's portfolio":{sources:[{route:'vlcvx-locker-platform-rewards',status:'ok',details:{component:'locked-cvx-platform-rewards',wallet:WALLET,locker:LOCKER,observedBlock:block,rewards:[{token:FXS,symbol:'FXS',decimals:18,amountRaw:raw,amount:Number(raw)/1e18}],currentRoute:'convex-finance-vlcvx',periodIncomeAuthority:false,currentRewardStateIsNotPeriodIncome:true,unknownIsNotZero:true}}]}}});
 const market={prices:{'frax-share':{assetId:'frax-share',symbol:'FXS',usd:0.25,status:'fresh',observedAt:'2026-09-04T12:30:00.000Z',source:'test-canonical'}}};
 const provider={getLogs:async()=>[]};
