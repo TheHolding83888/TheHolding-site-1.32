@@ -1,0 +1,81 @@
+name: Verify vlCVX · Extra Reward Distribution
+
+on:
+  pull_request:
+    paths:
+      - 'rewards/vlcvx-extra-reward-distribution-proof.mjs'
+      - '.github/workflows/verify-vlcvx-extra-reward-distribution.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Install read-only runtime
+        run: npm install --no-save --no-package-lock ethers@6
+
+      - name: Build live vlCVX route inventory
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          VLCVX_AUDIT_OUTPUT: /tmp/vlcvx-route-audit.json
+        run: |
+          set -euo pipefail
+          node --check rewards/vlcvx-registry-route-audit.mjs
+          node rewards/vlcvx-registry-route-audit.mjs
+
+      - name: Prove generic extra reward distribution component
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          VLCVX_AUDIT_OUTPUT: /tmp/vlcvx-route-audit.json
+          VLCVX_EXTRA_REWARD_OUTPUT: /tmp/vlcvx-extra-reward-distribution-proof.json
+        run: |
+          set -euo pipefail
+          node --check rewards/vlcvx-extra-reward-distribution-proof.mjs
+          node rewards/vlcvx-extra-reward-distribution-proof.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('/tmp/vlcvx-extra-reward-distribution-proof.json','utf8'));
+          if(x.version!=='0.1-vlcvx-extra-reward-distribution-proof')throw new Error('extra reward proof version drift');
+          if(x.executionAuthority!=='none'||x.claimTransactionAuthority!=='none')throw new Error('authority expansion');
+          if(x.contract?.address?.toLowerCase()!=='0x9b622f2c40b80ef5efb14c2b2239511ffbfab702')throw new Error('distribution identity drift');
+          if(x.contract?.locker?.toLowerCase()!=='0x72a19342e8f1838460ebfccef09f6585e32db86e')throw new Error('locker identity drift');
+          if(x.summary?.companyCount!==4||x.companies?.length!==4)throw new Error('all four live vlCVX companies required');
+          if(x.source?.rewardInventoryScanComplete!==true||x.semantics?.rewardInventoryScanComplete!==true)throw new Error('reward inventory scan must be complete');
+          if(x.summary?.rewardAddedEventCount<0||x.summary?.rewardTokenCount<0)throw new Error('invalid reward inventory counters');
+          if(x.summary?.rewardTokenCount===0&&x.summary?.rewardAddedEventCount!==0)throw new Error('empty token inventory with non-empty RewardAdded history');
+          if(x.summary?.rewardAddedEventCount===0&&x.summary?.rewardInventoryStatus!=='complete-empty-rewardadded-history')throw new Error('empty history must be explicit complete-empty state');
+          const regs=x.companies.map(c=>c.registry).sort().join(',');
+          if(regs!=='002,004,007,010')throw new Error('vlCVX company set drift');
+          if(x.semantics?.rewardInventoryIsEventDerived!==true||x.semantics?.currentRewardStateIsNotPeriodIncome!==true||x.semantics?.delegateIncentiveSettlementIsSeparate!==true||x.semantics?.doesNotByItselfResolveCurrentDelegateSettlement!==true)throw new Error('semantic boundary drift');
+          for(const c of x.companies){
+            if(c.evidenceClass!=='observed-current-state'||c.component!=='locked-cvx-extra-reward-distribution'||c.periodIncomeAuthority!==false||c.delegateIncentiveSettlementAuthority!==false||c.unknownIsNotZero!==true)throw new Error('company evidence boundary drift '+c.registry);
+            if(c.claimableRewardCount!==x.summary.rewardTokenCount)throw new Error('reward token coverage drift '+c.registry);
+            if(x.summary.rewardTokenCount===0&&c.rewardInventoryStatus!=='complete-empty-rewardadded-history')throw new Error('company empty inventory state drift '+c.registry);
+            for(const r of c.rewards||[])if(!r.token||!r.symbol||!Number.isFinite(Number(r.amount))||BigInt(r.amountRaw)<0n)throw new Error('invalid reward row '+c.registry);
+          }
+          console.log('vlCVX EXTRA REWARD DISTRIBUTION PASS',{inventory:x.summary.rewardInventoryStatus,tokens:x.tokens.map(t=>({symbol:t.symbol,epochs:t.rewardEpochCount})),companies:x.companies.map(c=>({registry:c.registry,name:c.name,positiveRewards:c.positiveClaimableRewardCount}))});
+          NODE
+
+      - name: Static no-execution guard
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const p='rewards/vlcvx-extra-reward-distribution-proof.mjs';
+          const s=fs.readFileSync(p,'utf8');
+          for(const bad of ['sendTransaction(','new Wallet(','getReward(','setClaimIndex(','addReward(','addRewardToEpoch('])if(s.includes(bad))throw new Error('forbidden execution surface: '+bad);
+          if(!s.includes("executionAuthority:'none'"))throw new Error('execution authority guard missing');
+          if(!s.includes('doesNotByItselfResolveCurrentDelegateSettlement:true'))throw new Error('delegate settlement boundary missing');
+          console.log('vlCVX extra reward no-execution guard PASS');
+          NODE
