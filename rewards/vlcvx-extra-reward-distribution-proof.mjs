@@ -8,7 +8,12 @@ const OUTPUT=process.env.VLCVX_EXTRA_REWARD_OUTPUT||'/tmp/vlcvx-extra-reward-dis
 const RPCS=[...new Set([process.env.ETH_RPC_URL,'https://ethereum-rpc.publicnode.com','https://eth.llamarpc.com'].filter(Boolean))];
 const DISTRIBUTION=getAddress('0x9B622f2c40b80EF5efb14c2B2239511FfBFaB702');
 const LOCKER=getAddress('0x72a19342e8F1838460eBFCCEf09F6585e32db86E');
-const CREATION_TX='0x1591bd14e84575bb9f40681d7f9b9bc52f23699175f1d486f2e8f61241505e36';
+const KNOWN_CREATION_TX='0x1591bd14e84575bb9f40681d7f9b9bc52f23699175f1d486f2e8f61241505e36';
+// Conservative pre-deployment boundary. The canonical Convex source predates deployment
+// and was already present in March 2022; Ethereum block 14,000,000 is January 2022.
+// We intentionally do not depend on old transaction receipts because otherwise healthy
+// non-archive RPC transports can return null for a historical receipt.
+const EVENT_SCAN_FROM_BLOCK=14_000_000;
 const DISTRIBUTION_ABI=[
   'function cvxlocker() view returns (address)',
   'function rewardEpochsCount(address _token) view returns (uint256)',
@@ -63,20 +68,18 @@ export async function buildVlCvxExtraRewardDistributionProof({audit,provider}){
   const live=(audit.companies||[]).filter(x=>x.hasVlCvx);
   if(live.length!==4)throw new Error(`expected 4 live vlCVX companies, found ${live.length}`);
 
-  const [latestBlock,distributionCode,creationReceipt]=await Promise.all([
+  const [latestBlock,distributionCode]=await Promise.all([
     provider.getBlockNumber(),
-    provider.getCode(DISTRIBUTION),
-    provider.getTransactionReceipt(CREATION_TX)
+    provider.getCode(DISTRIBUTION)
   ]);
   if(!distributionCode||distributionCode==='0x')throw new Error('vlCVX extra reward distribution has no bytecode');
-  if(!creationReceipt?.blockNumber)throw new Error('vlCVX extra reward distribution creation receipt unavailable');
-  if(String(creationReceipt.contractAddress||'').toLowerCase()!==DISTRIBUTION.toLowerCase())throw new Error('creation transaction contract identity drift');
+  if(latestBlock<=EVENT_SCAN_FROM_BLOCK)throw new Error('invalid event scan boundary');
 
   const distribution=new Contract(DISTRIBUTION,DISTRIBUTION_ABI,provider);
   const boundLocker=getAddress(await distribution.cvxlocker());
   if(boundLocker.toLowerCase()!==LOCKER.toLowerCase())throw new Error('extra reward distribution locker binding drift');
 
-  const logs=await scanRewardAdded(provider,creationReceipt.blockNumber,latestBlock);
+  const logs=await scanRewardAdded(provider,EVENT_SCAN_FROM_BLOCK,latestBlock);
   if(!logs.length)throw new Error('no RewardAdded history found');
   const tokenAddresses=[...new Set(logs.map(log=>getAddress(eventInterface.parseLog(log).args._token)).map(x=>x.toLowerCase()))].map(lower=>getAddress(lower));
   if(!tokenAddresses.length)throw new Error('RewardAdded history produced empty token inventory');
@@ -122,14 +125,16 @@ export async function buildVlCvxExtraRewardDistributionProof({audit,provider}){
     claimTransactionAuthority:'none',
     source:{
       implementation:'convex-eth/platform/contracts/contracts/vlCvxExtraRewardDistribution.sol',
-      creationTransaction:CREATION_TX,
-      rewardInventoryMethod:'RewardAdded(address,uint256,uint256) event history'
+      knownCreationTransaction:KNOWN_CREATION_TX,
+      rewardInventoryMethod:'RewardAdded(address,uint256,uint256) event history',
+      archivalReceiptRequired:false
     },
     contract:{
       name:'vlCvxExtraRewardDistribution',
       address:DISTRIBUTION,
       locker:boundLocker,
-      creationBlock:creationReceipt.blockNumber,
+      eventScanFromBlock:EVENT_SCAN_FROM_BLOCK,
+      firstObservedRewardAddedBlock:Math.min(...logs.map(x=>x.blockNumber)),
       observedThroughBlock:latestBlock,
       claimableMethod:'claimableRewards(address,address)'
     },
