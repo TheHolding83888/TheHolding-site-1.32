@@ -1,0 +1,80 @@
+name: Verify Curve Fee · Factual Accounting
+
+on:
+  pull_request:
+    paths:
+      - 'reporting/curve-fee-accounting-adapter.mjs'
+      - 'reporting/curve-fee-accounting-adapter-validation.mjs'
+      - 'reporting/curve-fee-ledger-admission.mjs'
+      - 'reporting/curve-fee-ledger-admission-validation.mjs'
+      - 'reporting/curve-fee-accounting-coverage-validation.mjs'
+      - 'reporting/yield-basis-ledger-admission.mjs'
+      - 'reporting/accounting-coverage.mjs'
+      - '.github/workflows/verify-curve-fee-accounting.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: Install read-only accounting runtime
+        run: npm install --no-save --no-package-lock ethers@6
+
+      - name: Static syntax and no-execution guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check reporting/curve-fee-accounting-adapter.mjs
+          node --check reporting/curve-fee-accounting-adapter-validation.mjs
+          node --check reporting/curve-fee-ledger-admission.mjs
+          node --check reporting/curve-fee-ledger-admission-validation.mjs
+          node --check reporting/curve-fee-accounting-coverage-validation.mjs
+          node --check reporting/yield-basis-ledger-admission.mjs
+          node --check reporting/accounting-coverage.mjs
+          if grep -REn 'sendTransaction|signTransaction|wallet\.send|\.claim\(' reporting/curve-fee-*.mjs; then
+            echo 'Unexpected execution-capable call in Curve factual accounting lane.'
+            exit 1
+          fi
+
+      - name: Validate Curve factual lifecycle semantics
+        run: |
+          node reporting/curve-fee-accounting-adapter-validation.mjs
+          node reporting/curve-fee-ledger-admission-validation.mjs
+          node reporting/curve-fee-accounting-coverage-validation.mjs
+
+      - name: Verify live registry route discovery contract
+        run: |
+          node --input-type=module - <<'NODE'
+          import fs from 'node:fs';
+          import {discoverCurveFeeWallets} from './reporting/curve-fee-accounting-adapter.mjs';
+          const rewards=JSON.parse(fs.readFileSync('companies/rewards-data.json','utf8'));
+          const rows=discoverCurveFeeWallets(rewards);
+          const companies=[...new Set(rows.map(x=>x.company))].sort();
+          const expected=['05081966.eth',"Rook's portfolio",'defitea.eth'].sort();
+          if(JSON.stringify(companies)!==JSON.stringify(expected))throw new Error(`Curve route discovery drift: ${JSON.stringify(companies)}`);
+          if(rows.some(x=>!x.wallet))throw new Error('Curve route discovery produced a walletless row');
+          console.log('Curve live registry discovery PASS',{companies,wallets:rows.length});
+          NODE
+
+      - name: Prove no unrelated Accounting Coverage regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp reporting/accounting-coverage.json /tmp/accounting-coverage.before.json
+          node reporting/accounting-coverage.mjs
+          cmp /tmp/accounting-coverage.before.json reporting/accounting-coverage.json
+          node reporting/accounting-coverage-validation.mjs
