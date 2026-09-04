@@ -1,0 +1,115 @@
+name: Verify vlCVX · Platform Accounting
+
+on:
+  pull_request:
+    paths:
+      - 'rewards/vlcvx-locker-platform-proof.mjs'
+      - 'reporting/vlcvx-platform-accounting-adapter.mjs'
+      - 'reporting/vlcvx-platform-accounting-adapter-validation.mjs'
+      - 'reporting/vlcvx-platform-ledger-admission.mjs'
+      - 'reporting/vlcvx-platform-ledger-admission-validation.mjs'
+      - 'reporting/yield-basis-ledger-admission.mjs'
+      - '.github/workflows/verify-vlcvx-platform-accounting.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Install read-only runtime
+        run: npm install --no-save --no-package-lock ethers@6
+
+      - name: Validate mechanism accounting semantics
+        run: |
+          set -euo pipefail
+          node --check rewards/vlcvx-locker-platform-proof.mjs
+          node --check reporting/vlcvx-platform-accounting-adapter.mjs
+          node --check reporting/vlcvx-platform-accounting-adapter-validation.mjs
+          node --check reporting/vlcvx-platform-ledger-admission.mjs
+          node --check reporting/vlcvx-platform-ledger-admission-validation.mjs
+          node --check reporting/yield-basis-ledger-admission.mjs
+          node reporting/vlcvx-platform-accounting-adapter-validation.mjs
+          node reporting/vlcvx-platform-ledger-admission-validation.mjs
+
+      - name: Build exact-block live vlCVX platform proof
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          VLCVX_AUDIT_OUTPUT: /tmp/vlcvx-platform-route-audit.json
+          VLCVX_LOCKER_PLATFORM_OUTPUT: /tmp/vlcvx-platform-proof.json
+        run: |
+          set -euo pipefail
+          node rewards/vlcvx-registry-route-audit.mjs
+          node rewards/vlcvx-locker-platform-proof.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('/tmp/vlcvx-platform-proof.json','utf8'));
+          if(x.version!=='0.1-vlcvx-locker-platform-proof'||x.executionAuthority!=='none'||x.claimTransactionAuthority!=='none')throw new Error('platform proof identity/authority drift');
+          if(!Number.isSafeInteger(Number(x.contract?.observedBlock))||Number(x.contract.observedBlock)<=0)throw new Error('exact observed block missing');
+          if(x.summary?.companyCount!==4||x.companies?.length!==4)throw new Error('all four vlCVX companies required');
+          if(x.companies.some(c=>Number(c.observedBlock)!==Number(x.contract.observedBlock)||c.periodIncomeAuthority!==false||c.delegateIncentiveSettlementAuthority!==false||c.unknownIsNotZero!==true))throw new Error('platform proof boundary drift');
+          console.log('vlCVX PLATFORM EXACT BLOCK PASS',{block:x.contract.observedBlock,companies:x.companies.map(c=>({registry:c.registry,name:c.name,positiveRewards:c.positiveClaimableRewardCount}))});
+          NODE
+
+      - name: Simulate first factual accounting boundary
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          REWARDS_OUTPUT: /tmp/vlcvx-platform-rewards.json
+          REWARDS_DATA_FILE: /tmp/vlcvx-platform-rewards.json
+          VLCVX_AUDIT_OUTPUT: /tmp/vlcvx-platform-route-audit.json
+          INCOME_LEDGER_FILE: /tmp/vlcvx-platform-income-ledger.json
+          MARKET_DATA_FILE: ./intelligence/market-data/market-data.json
+        run: |
+          set -euo pipefail
+          cp companies/rewards-data.json "$REWARDS_OUTPUT"
+          cp reporting/income-ledger.json "$INCOME_LEDGER_FILE"
+          node rewards/vlcvx-route-rewards-finalize.mjs
+          node reporting/vlcvx-platform-ledger-admission.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const r=JSON.parse(fs.readFileSync('/tmp/vlcvx-platform-rewards.json','utf8'));
+          const l=JSON.parse(fs.readFileSync('/tmp/vlcvx-platform-income-ledger.json','utf8'));
+          const expected=['YieldRing.eth','defitea.eth',"Rook's portfolio",'Cypher'];
+          const blocks=new Set();
+          for(const name of expected){
+            const c=r.companies?.[name];if(!c)throw new Error('Rewards company missing '+name);
+            const s=(c.sources||[]).find(x=>x.route==='vlcvx-locker-platform-rewards');if(!s||s.status!=='ok')throw new Error('platform source missing '+name);
+            if(!Number.isSafeInteger(Number(s.details?.observedBlock)))throw new Error('platform source observed block missing '+name);
+            blocks.add(Number(s.details.observedBlock));
+          }
+          if(blocks.size!==1)throw new Error('platform source block parity drift');
+          const x=l.accountingExtensions?.vlCvxPlatformAccrual;if(!x)throw new Error('vlCVX platform accounting extension missing');
+          if(x.version!=='0.1-vlcvx-locker-platform-factual-accrual-adapter'||x.status!=='factual-boundary-tracking'||x.authority?.executionAuthority!=='none')throw new Error('vlCVX platform accounting extension drift');
+          if(x.semantics?.openingBalanceCreatesIncome!==false||x.semantics?.positiveDeltaRequiresNoInterveningRewardPaid!==true||x.semantics?.claimIsSettlementNotSecondIncome!==true||x.semantics?.referenceAprUsed!==false||x.semantics?.delegateIncentiveSettlementIsSeparate!==true||x.semantics?.unknownIsNotZero!==true)throw new Error('vlCVX platform accounting semantic drift');
+          if(x.diagnostics?.companyCount!==4||!(x.boundaries?.length>0))throw new Error('vlCVX platform first boundaries incomplete');
+          if((l.events||[]).some(e=>String(e.eventKey||'').startsWith('vlcvx-platform:')))throw new Error('opening platform balance created income');
+          const rook=(r.companies?.["Rook's portfolio"]?.sources||[]).find(x=>x.route==='vlcvx-current-route');
+          if(rook?.details?.currentRewardSettlement!=='unresolved'||rook?.details?.unknownIsNotZero!==true)throw new Error('Rook delegate settlement falsely closed');
+          console.log('vlCVX PLATFORM FIRST BOUNDARY PASS',{block:[...blocks][0],boundaries:x.boundaries.length,companies:x.diagnostics.companyCount,openingEvents:0,rookDelegateSettlement:'unresolved'});
+          NODE
+
+      - name: Static no-execution and no-parallel-writer guard
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          for(const p of ['rewards/vlcvx-locker-platform-proof.mjs','reporting/vlcvx-platform-accounting-adapter.mjs','reporting/vlcvx-platform-ledger-admission.mjs']){
+            const s=fs.readFileSync(p,'utf8');
+            for(const bad of ['sendTransaction(','new Wallet(','getReward(','withdraw(','setDelegate('])if(s.includes(bad))throw new Error('forbidden execution surface '+p+': '+bad);
+          }
+          const workflow=fs.readFileSync('.github/workflows/verify-vlcvx-platform-accounting.yml','utf8');
+          if(/contents:\s*write/.test(workflow))throw new Error('verifier gained write authority');
+          const yb=fs.readFileSync('reporting/yield-basis-ledger-admission.mjs','utf8');
+          if(!yb.includes('runVlCvxPlatformLedgerAdmission'))throw new Error('existing canonical Reporting writer integration missing');
+          console.log('vlCVX PLATFORM NO-EXECUTION / SINGLE-WRITER PASS');
+          NODE
