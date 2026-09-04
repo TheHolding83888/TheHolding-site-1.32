@@ -1,0 +1,77 @@
+name: Verify vlCVX · Legacy Extra Reward Residual
+
+on:
+  pull_request:
+    paths:
+      - 'rewards/vlcvx-legacy-extra-reward-proof.mjs'
+      - '.github/workflows/verify-vlcvx-legacy-extra-reward.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: Install read-only runtime
+        run: npm install --no-save --no-package-lock ethers@6
+
+      - name: Static syntax and no-execution guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check rewards/vlcvx-legacy-extra-reward-proof.mjs
+          if grep -En 'sendTransaction|new Wallet|\.getReward\(|\.getRewards\(|\.forfeitRewards\(|\.setClaimIndex\(' rewards/vlcvx-legacy-extra-reward-proof.mjs; then
+            echo 'Unexpected execution-capable legacy reward surface.'
+            exit 1
+          fi
+
+      - name: Build current full-registry vlCVX route audit
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          VLCVX_AUDIT_OUTPUT: /tmp/vlcvx-route-audit.json
+        run: |
+          set -euo pipefail
+          node rewards/vlcvx-registry-route-audit.mjs
+
+      - name: Prove legacy extra-reward residual state
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          VLCVX_AUDIT_OUTPUT: /tmp/vlcvx-route-audit.json
+          VLCVX_LEGACY_EXTRA_REWARD_OUTPUT: /tmp/vlcvx-legacy-extra-reward-proof.json
+        run: |
+          set -euo pipefail
+          node rewards/vlcvx-legacy-extra-reward-proof.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('/tmp/vlcvx-legacy-extra-reward-proof.json','utf8'));
+          if(x.version!=='0.1-vlcvx-legacy-extra-reward-proof')throw new Error('legacy proof version drift');
+          if(x.executionAuthority!=='none'||x.claimTransactionAuthority!=='none')throw new Error('legacy proof authority expansion');
+          if(String(x.contract?.address||'').toLowerCase()!=='0xdecc7d761496d30f30b92bdf764fb8803c79360d')throw new Error('legacy distribution identity drift');
+          if(String(x.contract?.locker||'').toLowerCase()!=='0xd18140b4b819b895a3dba5442f959fa44994af50')throw new Error('legacy locker binding drift');
+          if(x.source?.rewardInventoryScanComplete!==true)throw new Error('legacy reward inventory incomplete');
+          if(!(Number(x.summary?.rewardTokenCount)>0)||!(Number(x.summary?.rewardAddedEventCount)>0))throw new Error('legacy distribution unexpectedly has no proven reward history');
+          if(Number(x.summary?.registryCompanyCount)!==10)throw new Error('legacy audit did not cover all 10 companies');
+          if(Number(x.summary?.currentVlCvxWalletCount)!==4)throw new Error('current vlCVX wallet count drift');
+          if(x.semantics?.legacyResidualOnly!==true||x.semantics?.currentStateIsNotPeriodIncome!==true||x.semantics?.currentGaugeDelegateSettlementIsSeparate!==true||x.semantics?.positiveLegacyClaimableDoesNotProveCurrentDelegateIncentive!==true||x.semantics?.unknownIsNotZero!==true)throw new Error('legacy accounting semantic drift');
+          const rook=(x.wallets||[]).find(w=>w.registry==='007'&&w.currentVlCvx===true);
+          if(!rook||rook.currentRoute!=='convex-finance-vlcvx')throw new Error('Rook current Convex route not present in legacy audit');
+          console.log('vlCVX LEGACY RESIDUAL CANARY PASS',{
+            scan:[x.source.rewardInventoryScanFromBlock,x.source.rewardInventoryScanThroughBlock],
+            tokens:x.tokens.map(t=>({symbol:t.symbol,epochs:t.rewardEpochCount,events:t.rewardAddedEventCount})),
+            positiveWallets:x.positiveWallets.map(w=>({registry:w.registry,name:w.name,currentVlCvx:w.currentVlCvx,currentRoute:w.currentRoute,rewards:w.rewards.map(r=>({symbol:r.symbol,amount:r.amount}))})),
+            rook:{wallet:rook.wallet,currentRoute:rook.currentRoute,positiveClaimableRewardCount:rook.positiveClaimableRewardCount,rewards:rook.rewards.filter(r=>!r.observedZero).map(r=>({symbol:r.symbol,amount:r.amount}))}
+          });
+          NODE
