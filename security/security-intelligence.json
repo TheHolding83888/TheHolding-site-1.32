@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-04T18:36:39.140Z",
+  "generatedAt": "2026-09-04T19:26:40.724Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 2,
-    "medium": 50,
+    "medium": 51,
     "low": 0,
     "info": 0
   },
   "source": {
     "filesScanned": 964,
-    "bytesScanned": 29487164,
+    "bytesScanned": 29603992,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Fri, 04 Sep 2026 00:16:15 GMT",
+        "lastModified": "Fri, 04 Sep 2026 00:16:51 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -55,23 +55,23 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [],
-    "resolvedFindings": [
+    "newFindings": [
       {
-        "id": "652057540b4655d8280509bcf87dc1e14412c828ce1f931a616f184057e928e1",
+        "id": "4c2d2571acade29e5e8c7d766875bd23ef6462a1fded5cbde309de9974c88369",
         "severity": "medium",
         "category": "critical-surface-change",
-        "file": ".github/workflows/update-company-rewards.yml",
+        "file": ".github/workflows/verify-curve-fee-accounting.yml",
         "line": null,
         "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/update-company-rewards.yml.",
+        "summary": "Security-sensitive surface changed: .github/workflows/verify-curve-fee-accounting.yml.",
         "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
         "evidence": {
-          "previousSha256": "a77092f54b06e62e442d5b7c90a1d19e3c282d4b3c4079bef434e7defedaf9ed",
-          "currentSha256": "4bd25403845706822d6b579d5b8af3dedf4699f248118fcb48c1fa0238220898"
+          "previousSha256": "591b0301908a89ab3365fb9cbc27edbf9956c878eaa55b1e83137c018ddc7350",
+          "currentSha256": "ab21902c6498b58227b7aa28b1fdd8d4bae012ff36446f65d96c6cd4fcc8e9c9"
         }
       }
-    ]
+    ],
+    "resolvedFindings": []
   },
   "currentFindings": [
     {
@@ -95,6 +95,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "4c2d2571acade29e5e8c7d766875bd23ef6462a1fded5cbde309de9974c88369",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/verify-curve-fee-accounting.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-curve-fee-accounting.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "591b0301908a89ab3365fb9cbc27edbf9956c878eaa55b1e83137c018ddc7350",
+        "currentSha256": "ab21902c6498b58227b7aa28b1fdd8d4bae012ff36446f65d96c6cd4fcc8e9c9"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -731,12 +745,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "4f6f299d17d26d5f389e54319442c92b9bd11b56a2926662cce1953562adce31",
+    "snapshotHash": "3a02f4b860f69c3e6a39e2ab3b0944a8b5c9025d1873dd8654c8e33763e9af17",
     "securityVault": {
-      "runCount": 834,
+      "runCount": 835,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/09/2026-09-04T18-36-39-140Z-4f6f299d17.json",
-      "latestRecordHash": "e9f1727f98c30366527350750d25920abcff4bdcc62c4cef3bae35c6d0373357",
+      "latestRecordPath": "security/security-vault/2026/09/2026-09-04T19-26-40-724Z-3a02f4b860.json",
+      "latestRecordHash": "989f3e59966fe1f07eb77143a81b9472c861fad74285d4037209a727a66b6415",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
