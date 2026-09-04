@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { applyVlCvxLockerPlatformProof, collectVlCvxLockerPlatformProof } from './vlcvx-locker-platform-proof.mjs';
 import { applyVlCvxExtraRewardDistributionProof, collectVlCvxExtraRewardDistributionProof } from './vlcvx-extra-reward-distribution-proof.mjs';
+import { applyVlCvxConvexTeamSettlementProof, collectVlCvxConvexTeamSettlementProof } from './vlcvx-convex-team-settlement-proof.mjs';
 
 const OUTPUT=process.env.REWARDS_OUTPUT||path.resolve('companies/rewards-data.json');
 const TARGETS=['YieldRing.eth','defitea.eth',"Rook's portfolio",'Cypher'];
@@ -28,10 +29,12 @@ async function main(){
   applyVlCvxLockerPlatformProof(d,platformProof);
   const extraRewardProof=await collectVlCvxExtraRewardDistributionProof();
   applyVlCvxExtraRewardDistributionProof(d,extraRewardProof);
+  const convexTeamSettlementProof=await collectVlCvxConvexTeamSettlementProof();
+  applyVlCvxConvexTeamSettlementProof(d,convexTeamSettlementProof);
   for(const k of TARGETS)finalize(d.companies?.[k]);
   d.diagnostics=d.diagnostics||{};
   d.diagnostics.vlCvxRouteAggregateFinalize={
-    version:'0.3-vlcvx-route-aggregate-finalize-with-platform-and-extra-components',
+    version:'0.4-vlcvx-route-aggregate-finalize-with-convex-team-settlement-boundary',
     generatedAt:new Date().toISOString(),
     executionAuthority:'none',
     targets:TARGETS,
@@ -40,13 +43,17 @@ async function main(){
     exactBlockPlatformGuard:true,
     extraRewardDistributionComponentMaterialized:true,
     extraRewardDistributionInventoryStatus:extraRewardProof.summary.rewardInventoryStatus,
-    semanticBoundary:'CvxLockerV2 platform and vlCvxExtraRewardDistribution current state are component evidence only; neither creates period income nor resolves the separate delegate-incentive settlement lane.'
+    convexTeamSettlementBoundaryMaterialized:true,
+    convexTeamSettlementObservedBlock:convexTeamSettlementProof.observedBlock,
+    semanticBoundary:'CvxLockerV2 platform and vlCvxExtraRewardDistribution current state remain component evidence only. Rook Convex-Team proof closes only the current Votium eligibility/tracking boundary under reviewed eligibility paths; it creates no period income, no zero-income event, and no universal external-reward-zero assertion.'
   };
   fs.writeFileSync(OUTPUT,JSON.stringify(d,null,2)+'\n');
   console.log('vlCVX aggregate finalize PASS',TARGETS.map(k=>({
     company:k,
     claimable:d.companies?.[k]?.claimableUsd??d.companies?.[k]?.totalUsd,
     measuredEarned:d.companies?.[k]?.measuredEarnedUsd??null,
+    currentRouteStatus:(d.companies?.[k]?.sources||[]).find(x=>x.route==='vlcvx-current-route')?.status||null,
+    currentRewardSettlement:(d.companies?.[k]?.sources||[]).find(x=>x.route==='vlcvx-current-route')?.details?.currentRewardSettlement||null,
     platformSource:(d.companies?.[k]?.sources||[]).find(x=>x.route==='vlcvx-locker-platform-rewards')?.status||null,
     platformObservedBlock:(d.companies?.[k]?.sources||[]).find(x=>x.route==='vlcvx-locker-platform-rewards')?.details?.observedBlock||null,
     extraRewardSource:(d.companies?.[k]?.sources||[]).find(x=>x.route==='vlcvx-extra-reward-distribution')?.status||null,
