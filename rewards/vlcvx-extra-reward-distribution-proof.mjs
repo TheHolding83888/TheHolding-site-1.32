@@ -31,10 +31,13 @@ export async function vlCvxExtraRewardProvider(){
     try{
       const p=new JsonRpcProvider(url,1,{staticNetwork:true});
       await p.getBlockNumber();
+      // A provider that can answer current-state calls is not necessarily allowed to serve
+      // historical eth_getLogs. Test the exact evidence transport before selecting it.
+      await p.getLogs({address:DISTRIBUTION,topics:[rewardAddedTopic],fromBlock:EVENT_SCAN_FROM_BLOCK,toBlock:EVENT_SCAN_FROM_BLOCK+999});
       return p;
     }catch(e){last=e}
   }
-  throw last||new Error('Ethereum RPC unavailable');
+  throw last||new Error('Ethereum RPC with historical RewardAdded log access unavailable');
 }
 
 async function tokenMeta(provider,address){
