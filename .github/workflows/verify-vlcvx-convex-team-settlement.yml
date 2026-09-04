@@ -1,0 +1,101 @@
+name: Verify vlCVX · Convex Team Settlement Boundary
+
+on:
+  pull_request:
+    paths:
+      - 'rewards/vlcvx-convex-team-eligibility-proof.mjs'
+      - 'rewards/vlcvx-convex-team-settlement-proof.mjs'
+      - 'rewards/vlcvx-route-rewards-overlay.mjs'
+      - 'rewards/vlcvx-route-rewards-finalize.mjs'
+      - 'rewards/vlcvx-route-rewards-guard.mjs'
+      - 'reporting/accounting-coverage.mjs'
+      - '.github/workflows/verify-vlcvx-convex-team-settlement.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: Install read-only runtime
+        run: npm install --no-save --no-package-lock ethers@6
+
+      - name: Static authority and syntax guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check rewards/vlcvx-convex-team-settlement-proof.mjs
+          node --check rewards/vlcvx-route-rewards-finalize.mjs
+          node --check rewards/vlcvx-route-rewards-guard.mjs
+          node --check reporting/accounting-coverage.mjs
+          if grep -En 'sendTransaction|new Wallet|\.vote\(|\.setDelegate\(|\.claim\(|\.getReward\(' rewards/vlcvx-convex-team-settlement-proof.mjs; then
+            echo 'Unexpected execution-capable surface.'
+            exit 1
+          fi
+
+      - name: Build current vlCVX route and Union audits
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          VLCVX_AUDIT_OUTPUT: /tmp/vlcvx-route-audit.json
+          UNION_AUDIT_OUTPUT: /tmp/union-vlcvx-allocation-audit.json
+        run: |
+          set -euo pipefail
+          node rewards/vlcvx-registry-route-audit.mjs
+          node rewards/union-vlcvx-allocation-audit.mjs
+
+      - name: Materialize candidate Rewards in isolation
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          REWARDS_OUTPUT: /tmp/vlcvx-rewards-candidate.json
+          VLCVX_AUDIT_OUTPUT: /tmp/vlcvx-route-audit.json
+          UNION_AUDIT_OUTPUT: /tmp/union-vlcvx-allocation-audit.json
+        run: |
+          set -euo pipefail
+          cp companies/rewards-data.json "$REWARDS_OUTPUT"
+          node rewards/vlcvx-route-rewards-overlay.mjs
+          node rewards/vlcvx-route-rewards-finalize.mjs
+          node rewards/vlcvx-route-rewards-guard.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('/tmp/vlcvx-rewards-candidate.json','utf8'));
+          const c=d.companies?.["Rook's portfolio"];
+          const s=(c?.sources||[]).find(x=>x.route==='vlcvx-current-route');
+          const p=s?.details?.settlement||{};
+          if(s?.status!=='ok'||s?.protocol!=='Convex Finance · vlCVX')throw new Error('Rook current route not promoted');
+          if(s?.details?.currentRewardSettlement!=='no-votium-incentive-eligibility-observed-current-route')throw new Error('Rook settlement boundary missing');
+          if(p.trackingBoundaryComplete!==true||p.periodIncomeAuthority!==false||p.universalExternalRewardZeroAsserted!==false||p.unknownIsNotZero!==true)throw new Error('Rook settlement epistemics drift');
+          if(p.allWeightedProposalsConvexTeam!==true||p.noManualOrSurrogateOverrideOnWeightedProposals!==true||Number(p.manualOrSurrogateOverrideCount)!==0)throw new Error('Rook participation proof incomplete');
+          if(d.diagnostics?.vlCvxConvexTeamSettlement?.rewardRowsCreated!==false||d.diagnostics?.vlCvxConvexTeamSettlement?.periodIncomeAuthority!==false)throw new Error('tracking proof gained income authority');
+          console.log('ROOK CURRENT VLCVX TRACKING BOUNDARY PASS',{status:s.status,settlement:s.details.currentRewardSettlement,observedBlock:s.details.settlementObservedBlock});
+          NODE
+
+      - name: Prove Accounting Coverage reaches factual vlCVX 4 of 4 without income creation
+        env:
+          REWARDS_DATA_FILE: /tmp/vlcvx-rewards-candidate.json
+          ACCOUNTING_COVERAGE_FILE: /tmp/accounting-coverage.json
+        run: |
+          set -euo pipefail
+          node reporting/accounting-coverage.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('/tmp/accounting-coverage.json','utf8'));
+          const m=x.mechanisms?.convex_vlcvx;
+          if(!m)throw new Error('convex_vlcvx mechanism missing');
+          if(Number(m.activeCompanyCount)!==4||Number(m.factualTrackingCompanyCount)!==4||Number(m.stateOnlyCompanyCount)!==0||m.reusableCoverageGap!==false)throw new Error('convex_vlcvx did not reach bounded factual tracking 4/4');
+          if(m.referenceMetricIsAccountingAuthority!==false||m.completionAuthority!==false)throw new Error('coverage gained accounting completion authority');
+          if(x.semantics?.factualTrackingProofIsNotPeriodIncome!==true||x.semantics?.unknownIsNotZero!==true||x.authority?.executionAuthority!=='none')throw new Error('Accounting Coverage semantic authority drift');
+          console.log('VLCVX ACCOUNTING COVERAGE 4/4 PASS',{active:m.activeCompanyCount,factualTracking:m.factualTrackingCompanyCount,factualEvents:m.factualEventCompanyCount,stateOnly:m.stateOnlyCompanyCount,reusableCoverageGap:m.reusableCoverageGap});
+          NODE
