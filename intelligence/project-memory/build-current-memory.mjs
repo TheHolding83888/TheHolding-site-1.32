@@ -17,7 +17,19 @@ const continuityFiles = exists('intelligence/project-memory')
       .filter(name => /^THE_HOLDING_MASTER_CONTINUITY_.*\.md$/.test(name))
       .sort()
   : [];
-const latestContinuity = continuityFiles.at(-1) ?? null;
+
+const continuityRootFile = 'CONTINUITY.md';
+const continuityRootExists = exists(`intelligence/project-memory/${continuityRootFile}`);
+let continuityFromRoot = null;
+if (continuityRootExists) {
+  const continuityRoot = fs.readFileSync(rel(`intelligence/project-memory/${continuityRootFile}`), 'utf8');
+  const match = continuityRoot.match(/^Latest immutable checkpoint: \[(THE_HOLDING_MASTER_CONTINUITY_.*\.md)\]\(\.\/\1\)$/m);
+  continuityFromRoot = match?.[1] ?? null;
+  if (continuityFromRoot && !exists(`intelligence/project-memory/${continuityFromRoot}`)) {
+    throw new Error(`CONTINUITY.md points to missing checkpoint: ${continuityFromRoot}`);
+  }
+}
+const latestContinuity = continuityFromRoot ?? continuityFiles.at(-1) ?? null;
 
 // Full durable canons remain repository-owned and machine-verified, but they are
 // deliberately not all loaded into every chat. CURRENT carries their hot-path
@@ -114,7 +126,7 @@ const lines = [
   `- **Permanent Memory Vault** — ${val(vault?.runCount, 0)} Observer record(s), ${val(vault?.eventCount, 0)} material event(s), retention: ${val(vault?.policy?.canonicalRetention)}; hard lifetime cap: ${vault?.policy?.hardLifetimeCap === null ? 'none' : val(vault?.policy?.hardLifetimeCap)}.`,
   `- **Latest Vault record** — ${val(vault?.latestRecord?.recordPath)}.`,
   `- **Decision Memory** — ${val(decisions?.decisionCount, 0)} append-only owner decision(s); executionAuthority: ${val(decisions?.authority?.executionAuthority ?? decisions?.executionAuthority, 'none')}.`,
-  '- **Project continuity** — CURRENT + latest master continuity + compact task router + routed specialized canons + Git history.',
+  `- **Project continuity** — CURRENT + ${continuityRootExists ? 'CONTINUITY root + ' : ''}latest master continuity + compact task router + routed specialized canons + Git history.`,
   '',
   '## Current cognitive stack',
   '',
@@ -165,6 +177,9 @@ fs.writeFileSync(rel('intelligence/project-memory/CURRENT.md'), lines.join('\n')
 console.log('Project Memory CURRENT.md rebuilt', {
   sourceStateAsOf,
   latestContinuity,
+  continuityRootFile,
+  continuityRootExists,
+  continuityFromRoot,
   minimumRecoveryPacket: ['CURRENT.md', latestContinuity, memoryRoutingIndex],
   ownerCollaborationCanon,
   ownerCollaborationCanonExists,
