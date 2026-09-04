@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-04T13:18:43.642Z",
+  "generatedAt": "2026-09-04T13:25:29.596Z",
   "status": "watch",
-  "snapshotHash": "66f241682c9b4ffb61612dfbc13e8379ea7dc5f2343513625b292422021bed27",
+  "snapshotHash": "3436378c4606f5f32b0b07709035f139f9f6b4598d83267be85d2cb82b10a090",
   "repository": {
-    "filesScanned": 939,
-    "bytesScanned": 27904100,
+    "filesScanned": 940,
+    "bytesScanned": 27918240,
     "criticalHashes": {
       ".github/workflows/admit-company-010-public.yml": "5feffbf58388675952487c3462d2f9149eecec6f3795483087010dd0d3b19cfb",
       ".github/workflows/ask-experience.yml": "deb9c4e1025390563f8a866f6ddf1c7870e748cbd6aba13fdbd6da2d38e983d4",
@@ -139,7 +139,7 @@
       ".github/workflows/verify-security-eval-detector.yml": "2c89f39584deb768f4f5900489cd3ab9bfeec9434eb7e8c9c5445cf622bc17ad",
       ".github/workflows/verify-ve33-accounting.yml": "9164d6dc33998f4d651d871ecc750d4352fc9f22c9d4aff6e9bb5450713a6b38",
       ".github/workflows/verify-ve33-locked-managed-accounting.yml": "deb96c39ffbf38944bf182f49e3f0820cc4f854e41e3e2f068d7f07762705884",
-      ".github/workflows/verify-vlcvx-extra-reward-distribution.yml": "dd7feda4d7a240383bfbcb00e906eaa42f9fbdac3b823e3b0a916e294f9a855d",
+      ".github/workflows/verify-vlcvx-extra-reward-distribution.yml": "573c4a6626d1525741ecd84d5fb0522b0e0b0987826de45a9bb8283105604d75",
       ".github/workflows/verify-vlcvx-full-registry-audit.yml": "081de675595f800658992f96f34e2412a0ff61424f9ae8991b151733efaff06a",
       ".github/workflows/verify-vlcvx-votium-economic-candidate.yml": "45b319c29efac35fbfaf305da3f3ce153fd2e1bd733c53cf6787a5a19d08f694",
       ".github/workflows/workflow-control-plane.yml": "ee1603b549f0379dfbecbc28c46f60a59bd0b0d2491169e848575281626d01d8",
@@ -438,7 +438,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Fri, 04 Sep 2026 00:16:10 GMT",
+        "lastModified": "Fri, 04 Sep 2026 00:16:15 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -474,6 +474,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "2ffa1641d6094754f425c435cc7a2faf42fa8d1443ce71c7bbd8d9ab2c620e72",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/verify-vlcvx-extra-reward-distribution.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-vlcvx-extra-reward-distribution.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "dd7feda4d7a240383bfbcb00e906eaa42f9fbdac3b823e3b0a916e294f9a855d",
+        "currentSha256": "573c4a6626d1525741ecd84d5fb0522b0e0b0987826de45a9bb8283105604d75"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -1100,10 +1114,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 825,
+    "runCount": 826,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/09/2026-09-04T13-18-43-642Z-66f241682c.json",
-    "latestRecordHash": "2c03fa9891f02bb4946d3c2eff5e277f01646c40b1fbb743bd1ef69f14810e10",
+    "latestRecordPath": "security/security-vault/2026/09/2026-09-04T13-25-29-596Z-3436378c46.json",
+    "latestRecordHash": "50fc80a0ee3cf4427b3fb21439d622bbe9e82bb2c6f814cf4028d905a3b73f70",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
