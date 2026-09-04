@@ -31,12 +31,13 @@ async function main(){
   for(const k of TARGETS)finalize(d.companies?.[k]);
   d.diagnostics=d.diagnostics||{};
   d.diagnostics.vlCvxRouteAggregateFinalize={
-    version:'0.3.1-vlcvx-route-aggregate-finalize-exact-block-platform-guard',
+    version:'0.3-vlcvx-route-aggregate-finalize-with-platform-and-extra-components',
     generatedAt:new Date().toISOString(),
     executionAuthority:'none',
     targets:TARGETS,
     lockerPlatformComponentMaterialized:true,
     lockerPlatformObservedBlock:platformObservedBlock,
+    exactBlockPlatformGuard:true,
     extraRewardDistributionComponentMaterialized:true,
     extraRewardDistributionInventoryStatus:extraRewardProof.summary.rewardInventoryStatus,
     semanticBoundary:'CvxLockerV2 platform and vlCvxExtraRewardDistribution current state are component evidence only; neither creates period income nor resolves the separate delegate-incentive settlement lane.'
