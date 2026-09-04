@@ -24,8 +24,9 @@ let continuityFromRoot = null;
 if (continuityRootExists) {
   const continuityRoot = fs.readFileSync(rel(`intelligence/project-memory/${continuityRootFile}`), 'utf8');
   const match = continuityRoot.match(/^Latest immutable checkpoint: \[(THE_HOLDING_MASTER_CONTINUITY_.*\.md)\]\(\.\/\1\)$/m);
-  continuityFromRoot = match?.[1] ?? null;
-  if (continuityFromRoot && !exists(`intelligence/project-memory/${continuityFromRoot}`)) {
+  if (!match) throw new Error('CONTINUITY.md latest immutable checkpoint pointer missing or malformed');
+  continuityFromRoot = match[1];
+  if (!exists(`intelligence/project-memory/${continuityFromRoot}`)) {
     throw new Error(`CONTINUITY.md points to missing checkpoint: ${continuityFromRoot}`);
   }
 }
@@ -197,5 +198,5 @@ console.log('Project Memory CURRENT.md rebuilt', {
   activeCases: learning?.summary?.activeCaseCount ?? 0,
   activeProposals: proposals?.summary?.activeProposalCount ?? 0,
   builderCandidates: builder?.summary?.candidateCount ?? 0,
-  guardianResearchOnly: guardian?.summary?.researchOnlyCount ?? 0,
+  guardianResearchOnly: guardian?.summary?.guardianResearchOnly ?? guardian?.summary?.researchOnlyCount ?? 0,
 });
