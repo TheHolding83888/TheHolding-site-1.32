@@ -47,14 +47,37 @@ async function resolveHybridVault(provider,wallet){
     'function vaults(address) view returns (address)',
     'function user_to_vault(address) view returns (address)'
   ],provider);
+  const observations=[];
   const errors=[];
+
   for(const method of ['vaults','user_to_vault']){
     try{
       const value=getAddress(await factory[method](wallet));
-      return {resolved:true,vault:lower(value)===ZERO?null:value,method,errors};
-    }catch(error){errors.push(`${method}: ${error?.shortMessage||error?.message||error}`);}
+      observations.push({method,value});
+    }catch(error){
+      errors.push(`${method}: ${error?.shortMessage||error?.message||error}`);
+    }
   }
-  throw new Error(`HybridVault mapping unreadable for ${wallet}: ${errors.join(' | ')}`);
+
+  const nonZero=[...new Map(
+    observations
+      .filter(x=>lower(x.value)!==ZERO)
+      .map(x=>[lower(x.value),x])
+  ).values()];
+
+  if(nonZero.length>1){
+    throw new Error(`HybridVault mapping disagreement for ${wallet}: ${nonZero.map(x=>`${x.method}=${x.value}`).join(' | ')}`);
+  }
+  if(nonZero.length===1){
+    return {resolved:true,vault:nonZero[0].value,method:nonZero[0].method,observations,errors};
+  }
+
+  const successfulMethods=new Set(observations.map(x=>x.method));
+  if(successfulMethods.has('vaults')&&successfulMethods.has('user_to_vault')){
+    return {resolved:true,vault:null,method:'both-zero',observations,errors};
+  }
+
+  throw new Error(`HybridVault zero is not verified for ${wallet}; UNKNOWN != 0; ${errors.join(' | ')}`);
 }
 
 async function snapshot(url){
@@ -63,9 +86,11 @@ async function snapshot(url){
     const blockNumber=await provider.getBlockNumber();
     if(!(blockNumber>0))throw new Error('latest block unavailable');
     const holders=[];
+    const hybridVaultResolution=[];
     for(const wallet of WALLETS){
       holders.push({holder:wallet,owner:wallet,custody:'wallet'});
       const hybrid=await resolveHybridVault(provider,wallet);
+      hybridVaultResolution.push({wallet,...hybrid});
       if(hybrid.vault)holders.push({holder:hybrid.vault,owner:wallet,custody:'Yield Basis HybridVault'});
     }
     const uniqueHolders=[...new Map(holders.map(x=>[lower(x.holder),x])).values()];
@@ -79,10 +104,13 @@ async function snapshot(url){
         rows.push({...market,...h,directLtBalanceRaw:direct.toString(),gaugeShareBalanceRaw:gaugeShares.toString()});
       }
     }
-    const fingerprint=JSON.stringify(rows.map(x=>[
-      lower(x.lt),lower(x.gauge),lower(x.holder),x.directLtBalanceRaw,x.gaugeShareBalanceRaw
-    ]));
-    return {provider:host(url),blockNumber,holders:uniqueHolders,rows,fingerprint};
+    const fingerprint=JSON.stringify({
+      hybridVaults:hybridVaultResolution.map(x=>[lower(x.wallet),lower(x.vault||ZERO)]),
+      rows:rows.map(x=>[
+        lower(x.lt),lower(x.gauge),lower(x.holder),x.directLtBalanceRaw,x.gaugeShareBalanceRaw
+      ])
+    });
+    return {provider:host(url),blockNumber,holders:uniqueHolders,hybridVaultResolution,rows,fingerprint};
   }finally{
     provider.destroy();
   }
@@ -118,14 +146,15 @@ async function main(){
     quorum:{required:REQUIRED_QUORUM,matching:consensus.length,providers:consensus.map(x=>x.provider),blocks:consensus.map(x=>x.blockNumber)},
     company:{registry:'007',name:"Rook's portfolio",wallets:WALLETS},
     holders:canonical.holders,
+    hybridVaultResolution:canonical.hybridVaultResolution,
     markets,
-    semantics:{unknownIsNotZero:true,verifiedZeroMayLeaveCurrentInventory:true,historyMustBePreserved:true,currentStateIsNotPeriodIncome:true,referenceAprUsed:false},
+    semantics:{unknownIsNotZero:true,verifiedZeroMayLeaveCurrentInventory:true,historyMustBePreserved:true,currentStateIsNotPeriodIncome:true,referenceAprUsed:false,hybridVaultZeroRequiresBothMappings:true},
     authority:{readOnly:true,executionAuthority:'none',walletAuthority:'none',claimingAuthority:'none',capitalExecution:false},
     sourceErrors:errors
   };
   await fs.mkdir(path.dirname(OUTPUT),{recursive:true});
   await fs.writeFile(OUTPUT,JSON.stringify(output,null,2)+'\n');
-  console.log('Company #007 YBLP current-state proof',JSON.stringify({status:output.status,quorum:output.quorum,markets:markets.map(x=>({market:x.market,state:x.currentState,activeHoldings:x.activeHoldings.length}))}));
+  console.log('Company #007 YBLP current-state proof',JSON.stringify({status:output.status,quorum:output.quorum,hybridVaults:canonical.hybridVaultResolution.map(x=>({wallet:x.wallet,vault:x.vault,method:x.method})),markets:markets.map(x=>({market:x.market,state:x.currentState,activeHoldings:x.activeHoldings.length}))}));
 }
 
 main().catch(error=>{console.error(error);process.exitCode=1;});
