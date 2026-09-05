@@ -90,6 +90,10 @@ assert.equal(liquityLqtyObservationProofs(fabricatedPositive).length,0,'fabricat
 
 if(fs.existsSync(REWARDS_FILE)){
   const rewards=JSON.parse(fs.readFileSync(REWARDS_FILE,'utf8'));
+  const liveCompany=rewards?.companies?.['defitea.eth']||null;
+  const liveSource=(liveCompany?.sources||[]).find(x=>x?.route==='liquity-staking')||null;
+  const liveRows=(liveCompany?.rewards||[]).filter(x=>x?.route==='liquity-staking');
+  console.log('LIQUITY_LIVE_DIAGNOSTIC',JSON.stringify({generatedAt:rewards?.generatedAt||null,companyUpdatedAt:liveCompany?.updatedAt||null,source:liveSource,rows:liveRows},null,2));
   const proofs=liquityLqtyObservationProofs(rewards);
   assert.ok(proofs.some(x=>x.company==='defitea.eth'&&x.engineId==='liquity_lqty'),'live canonical Liquity observation does not satisfy factual tracking proof');
 }
