@@ -9,6 +9,7 @@ on:
       - 'reporting/accounting-coverage-company-diagnostic.mjs'
       - 'reporting/icp-nns-tracking-proof-validation.mjs'
       - 'reporting/pendle-spendle-tracking-proof-validation.mjs'
+      - 'reporting/resupply-tracking-proof-validation.mjs'
       - 'reporting/accounting-coverage.json'
       - 'companies/productivity-data.json'
       - 'companies/rewards-data.json'
@@ -62,8 +63,10 @@ jobs:
           node --check reporting/accounting-coverage-company-diagnostic.mjs
           node --check reporting/icp-nns-tracking-proof-validation.mjs
           node --check reporting/pendle-spendle-tracking-proof-validation.mjs
+          node --check reporting/resupply-tracking-proof-validation.mjs
           node reporting/icp-nns-tracking-proof-validation.mjs
           node reporting/pendle-spendle-tracking-proof-validation.mjs
+          node reporting/resupply-tracking-proof-validation.mjs
           node reporting/accounting-coverage.mjs
           test -s "$ACCOUNTING_COVERAGE_FILE"
           node --input-type=module - <<'NODE'
@@ -103,6 +106,27 @@ jobs:
           assert.ok(row?.factualTrackingProofSources?.includes('companies/rewards-data.json'),'Defitea sPENDLE canonical reward observation proof missing');
           assert.ok(!row?.completionBlockers?.includes('no-factual-engine-tracking-proof'),'Defitea sPENDLE still reports missing tracking proof');
           console.log('sPENDLE production-shaped coverage PASS',{tracking:`${engine.factualTrackingCompanyCount}/${engine.activeCompanyCount}`,factualEventCompanies:engine.factualEventCompanyCount,reusableCoverageGap:engine.reusableCoverageGap,periodIncomeAuthority:false});
+          NODE
+          node --input-type=module - <<'NODE'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          const data=JSON.parse(fs.readFileSync(process.env.ACCOUNTING_COVERAGE_FILE,'utf8'));
+          const engine=data.mechanisms?.resupply_rsup;
+          assert.ok(engine,'resupply_rsup mechanism missing');
+          assert.equal(engine.activeCompanyCount,1,'Resupply active company count drift');
+          assert.deepEqual(engine.companies,['defitea.eth'],'Resupply company identity drift');
+          assert.equal(engine.factualTrackingCompanyCount,1,'Resupply did not reach 1/1 factual tracking');
+          assert.deepEqual(engine.factualTrackingCompanies,['defitea.eth'],'Resupply factual tracking identity drift');
+          assert.equal(engine.factualEventCompanyCount,0,'Resupply tracking proof fabricated factual period events');
+          assert.equal(engine.reusableCoverageGap,false,'Resupply remained a reusable tracking gap');
+          const row=data.companies?.['defitea.eth']?.mechanisms?.resupply_rsup?.months?.[data.currentMonth];
+          assert.equal(row?.status,'factual-tracking-no-period-event','Defitea Resupply status drift');
+          assert.equal(row?.factualEventCount,0,'Resupply tracking proof fabricated income event');
+          assert.equal(row?.factualUsdSubtotal,null,'Resupply current reward state leaked into factual USD subtotal');
+          assert.deepEqual(row?.factualTrackingProofSources,['companies/rewards-data.json'],'Resupply proof source drift');
+          assert.ok(row?.completionBlockers?.includes('no-canonical-period-income-evidence'),'Resupply lost no-period-income blocker');
+          assert.ok(!data.gapRanking.some(x=>x.engineId==='resupply_rsup'),'Resupply remained in reusable gap ranking');
+          console.log('Resupply production-shaped coverage PASS',{tracking:`${engine.factualTrackingCompanyCount}/${engine.activeCompanyCount}`,factualEventCompanies:engine.factualEventCompanyCount,reusableCoverageGap:engine.reusableCoverageGap,periodIncomeAuthority:false});
           NODE
           node reporting/accounting-coverage-validation.mjs
           node reporting/accounting-coverage-gap-diagnostic.mjs
