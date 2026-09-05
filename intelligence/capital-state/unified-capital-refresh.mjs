@@ -1,14 +1,15 @@
 #!/usr/bin/env node
 /**
- * The Holding · Unified Capital Refresh v0.2.1
+ * The Holding · Unified Capital Refresh v0.2.2
  *
  * Orchestration only. Reuses existing canonical projectors/collectors/builders:
  * Defitea projection -> YieldRing projection -> Productivity collector
- * -> Company #010 compatibility -> YieldRing overlay -> General Balance -> Capital State.
+ * -> Company #010 compatibility -> YieldRing overlay -> General Balance
+ * -> Company #007 current-state downstream binding -> Capital State.
  *
- * v0.2.1 also fails closed if the exact veFXN Locker APR diverges between the
- * source report, canonical Productivity engine, current engine-history row,
- * and Defitea productive position. Prior history remains immutable.
+ * v0.2.2 binds Company #007 current Productivity/Capital to fresh discovery +
+ * targeted resolver evidence. Redeemed YBLP mechanisms leave CURRENT inventory
+ * without rewriting their historical observations.
  *
  * No execution authority. No wallet action. No methodology mutation.
  */
@@ -35,17 +36,18 @@ function run(label, cwd, script, env = {}) {
 function readJson(rel) { return JSON.parse(fs.readFileSync(path.join(ROOT, rel), 'utf8')); }
 function assert(ok, message) { if (!ok) throw new Error(message); }
 
-run('1/7 Project canonical Defitea state', ROOT, 'companies/defitea-public-capital-projection.mjs');
-run('2/7 Project canonical YieldRing state', ROOT, 'companies/yieldring-public-capital-projection.mjs');
-run('3/7 Refresh protocol APRs and established Productivity', path.join(ROOT, 'productivity'), 'productivity-engine.mjs', {
+run('1/8 Project canonical Defitea state', ROOT, 'companies/defitea-public-capital-projection.mjs');
+run('2/8 Project canonical YieldRing state', ROOT, 'companies/yieldring-public-capital-projection.mjs');
+run('3/8 Refresh protocol APRs and established Productivity', path.join(ROOT, 'productivity'), 'productivity-engine.mjs', {
   PAGE_FILE: '../companies/index.html',
   DATA_FILE: '../companies/productivity-data.json',
   REPORT_FILE: '../companies/productivity-source-report.json'
 });
-run('4/7 Admit Company #010 compatibility layer', ROOT, 'productivity/company-010-productivity-overlay.mjs');
-run('5/7 Apply canonical YieldRing Productivity overlay', ROOT, 'productivity/yieldring-productivity-overlay.mjs');
-run('6/7 Rebuild General Company Balance Sheet', ROOT, 'intelligence/capital-state/general-company-balance-sheet.mjs');
-run('7/7 Build Capital State', ROOT, 'intelligence/capital-state/capital-state.mjs');
+run('4/8 Admit Company #010 compatibility layer', ROOT, 'productivity/company-010-productivity-overlay.mjs');
+run('5/8 Apply canonical YieldRing Productivity overlay', ROOT, 'productivity/yieldring-productivity-overlay.mjs');
+run('6/8 Rebuild General Company Balance Sheet', ROOT, 'intelligence/capital-state/general-company-balance-sheet.mjs');
+run('7/8 Bind Company #007 current state downstream', ROOT, 'intelligence/capital-state/company-007-current-state-downstream.mjs');
+run('8/8 Build Capital State', ROOT, 'intelligence/capital-state/capital-state.mjs');
 
 const defitea = readJson('companies/defitea-canonical-state.json');
 const canonical = readJson('companies/yieldring-canonical-state.json');
@@ -53,6 +55,8 @@ const productivity = readJson('companies/productivity-data.json');
 const productivitySource = readJson('companies/productivity-source-report.json');
 const general = readJson('intelligence/capital-state/general-company-balance-sheet.json');
 const capital = readJson('intelligence/capital-state/capital-state.json');
+const company007Discovery = readJson('companies/company-007-discovery.json');
+const company007Resolve = readJson('companies/company-007-resolve.json');
 const companiesHtml = fs.readFileSync(path.join(ROOT, 'companies/index.html'), 'utf8');
 const yieldRingPage = fs.readFileSync(path.join(ROOT, 'yieldring/index.html'), 'utf8');
 
@@ -103,6 +107,15 @@ assert(productivity?.diagnostics?.company010?.executionAuthority === 'none', 'Co
 assert(productivity?.diagnostics?.yieldRing?.executionAuthority === 'none', 'YieldRing Productivity authority drift');
 assert(Date.parse(productivity.generatedAt) >= startedAt - 60_000, 'Productivity snapshot is not fresh for this unified run');
 
+const rookProd=productivity?.companies?.["Rook's portfolio"];
+const rookDiag=productivity?.diagnostics?.company007CurrentState;
+const activeYbMarkets=(company007Resolve?.results?.yieldBasis?.positions||[]).map(x=>x.market).sort();
+const expectedYbEngines=activeYbMarkets.map(x=>x==='yb-WBTC'?'yieldbasis_yblp_wbtc':x==='yb-WETH'?'yieldbasis_yblp_weth':`unsupported:${x}`).sort();
+const actualYbEngines=(rookProd?.breakdown||[]).map(x=>x.engineId).filter(x=>String(x).startsWith('yieldbasis_yblp_')).sort();
+assert(rookProd && rookDiag?.executionAuthority==='none' && rookDiag?.currentStateProofIsIncomeAuthority===false, 'Company #007 current-state Productivity authority missing');
+assert(JSON.stringify(actualYbEngines)===JSON.stringify(expectedYbEngines), `Company #007 current YBLP inventory drift expected=${expectedYbEngines} actual=${actualYbEngines}`);
+assert(JSON.stringify((rookDiag?.activeYieldBasisMarkets||[]).slice().sort())===JSON.stringify(activeYbMarkets), 'Company #007 current-state diagnostic/YB resolver mismatch');
+
 assert(general?.version === '0.1-general-company-balance-sheet' && general?.status === 'ok', 'General Balance contract mismatch');
 const dg = (general?.companies || []).find(x => x.registry === '004');
 const dga = (dg?.positions || []).find(x => x.assetId === 'aerodrome-finance');
@@ -113,6 +126,15 @@ const yg = (general?.companies || []).find(x => x.registry === '002');
 const ygb = (yg?.positions || []).find(x => x.assetId === 'bitcoin');
 const yga = (yg?.positions || []).find(x => x.assetId === 'aerodrome-finance');
 assert(yg && Number(ygb?.units) === 0.0334 && Number(yga?.units) === 678, 'YieldRing quantities missing from General Balance');
+
+const rookGeneral=(general?.companies||[]).find(x=>x.registry==='007');
+const discoveryBook=new Map((company007Discovery?.proposedCompanyBook||[]).map(x=>[x.symbol,x]));
+const rookBtc=(rookGeneral?.positions||[]).find(x=>x.assetId==='bitcoin'&&!x.productivityOnly);
+const rookEth=(rookGeneral?.positions||[]).find(x=>x.assetId==='ethereum'&&!x.productivityOnly);
+assert(rookGeneral?.sourceScope==='company-007-current-state-discovery-plus-targeted-resolver', 'Company #007 General Balance did not adopt current-state authority');
+assert(Math.abs(Number(rookBtc?.units)-Number(discoveryBook.get('BTC')?.quantity))<1e-12, 'Company #007 BTC current-state quantity drift');
+assert(Math.abs(Number(rookEth?.units)-Number(discoveryBook.get('ETH')?.quantity))<1e-12, 'Company #007 ETH current-state quantity drift');
+assert(general?.sourceState?.company007CurrentState?.executionAuthority==='none', 'Company #007 General Balance authority drift');
 
 assert(capital?.version === '0.3-capital-state' && capital?.status === 'ok', 'Capital State contract mismatch');
 assert(capital?.network?.registryCompanyCount === 10 && capital?.network?.measuredCompanyCount === 10, 'Capital State Registry coverage mismatch');
@@ -126,6 +148,10 @@ const yc = (capital?.companies || []).find(x => x.registry === '002');
 const ycb = (yc?.measuredPositions || []).find(x => x.assetId === 'bitcoin');
 const yca = (yc?.measuredPositions || []).find(x => x.assetId === 'aerodrome-finance');
 assert(yc && Number(ycb?.units) === 0.0334 && Number(yca?.units) === 678, 'YieldRing quantities missing from Capital State');
+const rc=(capital?.companies||[]).find(x=>x.registry==='007');
+const rcb=(rc?.measuredPositions||[]).find(x=>x.assetId==='bitcoin');
+const rce=(rc?.measuredPositions||[]).find(x=>x.assetId==='ethereum');
+assert(rc&&Math.abs(Number(rcb?.units)-Number(rookBtc?.units))<1e-12&&Math.abs(Number(rce?.units)-Number(rookEth?.units))<1e-12, 'Company #007 current-state quantities missing from Capital State');
 assert(capital?.authority?.executionAuthority === 'none', 'Capital State authority drift');
 
 assert(companiesHtml.includes('qty: 2632') && companiesHtml.includes('qty: 64.81'), 'Defitea Registry projection drift');
@@ -145,6 +171,9 @@ console.log('\nUNIFIED CAPITAL REFRESH PASS', {
   defiteaFxn: dcf.units,
   defiteaFxnCostBasisUsd: defitea.costBasis.fxn.costBasisUsd,
   yieldRingAprLatest: yp.aprLatest,
+  company007ActiveYbMarkets:activeYbMarkets,
+  company007ProductiveValue:rookProd.productiveValue,
+  company007TotalCapitalUsd:rookGeneral.totalCapitalUsd,
   networkTvlUsd: capital.network.networkTvlUsd,
   registryCompanies: capital.network.registryCompanyCount,
   executionAuthority: capital.authority.executionAuthority
