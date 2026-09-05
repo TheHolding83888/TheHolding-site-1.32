@@ -64,6 +64,11 @@ assert.equal(liquityLqtyObservationProofs(eth).length,1,'valid positive ETH Liqu
 const both=fixture({ethRaw:'1000000000000000000',lusdRaw:'2000000000000000000',rows:[row('native:ETH',1),row(LUSD,2)]});
 assert.equal(liquityLqtyObservationProofs(both).length,1,'valid ETH+LUSD Liquity observation stopped proving tracking');
 
+const enrichedLabel=fixture({ethRaw:'1000000000000000000',lusdRaw:'2000000000000000000',rows:[row('native:ETH',1),row(LUSD,2)]});
+enrichedLabel.companies['defitea.eth'].sources[0].protocol='Liquity · staked LQTY';
+for(const reward of enrichedLabel.companies['defitea.eth'].rewards)reward.protocol='Liquity · staked LQTY';
+assert.equal(liquityLqtyObservationProofs(enrichedLabel).length,1,'canonical enriched Liquity protocol label stopped proving tracking');
+
 const partial=fixture();partial.companies['defitea.eth'].sources[0].status='partial';
 assert.equal(liquityLqtyObservationProofs(partial).length,0,'partial Liquity source gained factual tracking authority');
 
@@ -90,12 +95,8 @@ assert.equal(liquityLqtyObservationProofs(fabricatedPositive).length,0,'fabricat
 
 if(fs.existsSync(REWARDS_FILE)){
   const rewards=JSON.parse(fs.readFileSync(REWARDS_FILE,'utf8'));
-  const liveCompany=rewards?.companies?.['defitea.eth']||null;
-  const liveSource=(liveCompany?.sources||[]).find(x=>x?.route==='liquity-staking')||null;
-  const liveRows=(liveCompany?.rewards||[]).filter(x=>x?.route==='liquity-staking');
-  console.log('LIQUITY_LIVE_DIAGNOSTIC',JSON.stringify({generatedAt:rewards?.generatedAt||null,companyUpdatedAt:liveCompany?.updatedAt||null,source:liveSource,rows:liveRows},null,2));
   const proofs=liquityLqtyObservationProofs(rewards);
   assert.ok(proofs.some(x=>x.company==='defitea.eth'&&x.engineId==='liquity_lqty'),'live canonical Liquity observation does not satisfy factual tracking proof');
 }
 
-console.log('Liquity LQTY factual tracking validation PASS',{zeroRewardTracking:true,positiveRewardTracking:true,unknownIsNotZero:true,periodIncomeAuthority:false,executionAuthority:'none'});
+console.log('Liquity LQTY factual tracking validation PASS',{zeroRewardTracking:true,positiveRewardTracking:true,enrichedProtocolLabel:true,unknownIsNotZero:true,periodIncomeAuthority:false,executionAuthority:'none'});
