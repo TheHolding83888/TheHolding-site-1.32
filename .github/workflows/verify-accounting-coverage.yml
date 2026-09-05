@@ -7,9 +7,12 @@ on:
       - 'reporting/accounting-coverage-validation.mjs'
       - 'reporting/accounting-coverage-gap-diagnostic.mjs'
       - 'reporting/accounting-coverage-company-diagnostic.mjs'
+      - 'reporting/icp-nns-tracking-proof-validation.mjs'
       - 'reporting/accounting-coverage.json'
       - 'companies/productivity-data.json'
       - 'companies/rewards-data.json'
+      - 'companies/icp-nns-rewards-state.json'
+      - 'intelligence/icp-nns/company-005-006-neuron-pool.json'
       - 'companies/embedded-yield-ledger.json'
       - 'reporting/income-ledger.json'
       - 'reporting/ve33-accounting-evidence.json'
@@ -42,6 +45,8 @@ jobs:
           ACCOUNTING_DIAGNOSTIC_COMPANY: Cypher
           PRODUCTIVITY_DATA_FILE: ./companies/productivity-data.json
           REWARDS_DATA_FILE: ./companies/rewards-data.json
+          ICP_NNS_STATE_FILE: ./companies/icp-nns-rewards-state.json
+          ICP_NNS_CONFIG_FILE: ./intelligence/icp-nns/company-005-006-neuron-pool.json
           INCOME_LEDGER_FILE: ./reporting/income-ledger.json
           EMBEDDED_YIELD_LEDGER_FILE: ./companies/embedded-yield-ledger.json
           VE33_EVIDENCE_FILE: ./reporting/ve33-accounting-evidence.json
@@ -54,8 +59,32 @@ jobs:
           node --check reporting/accounting-coverage-validation.mjs
           node --check reporting/accounting-coverage-gap-diagnostic.mjs
           node --check reporting/accounting-coverage-company-diagnostic.mjs
+          node --check reporting/icp-nns-tracking-proof-validation.mjs
+          node reporting/icp-nns-tracking-proof-validation.mjs
           node reporting/accounting-coverage.mjs
           test -s "$ACCOUNTING_COVERAGE_FILE"
+          node --input-type=module - <<'NODE'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          const data=JSON.parse(fs.readFileSync(process.env.ACCOUNTING_COVERAGE_FILE,'utf8'));
+          const engine=data.mechanisms?.icp_nns;
+          assert.ok(engine,'icp_nns mechanism missing');
+          assert.equal(engine.activeCompanyCount,2,'ICP NNS active company count drift');
+          assert.equal(engine.factualTrackingCompanyCount,2,'ICP NNS did not reach 2/2 factual tracking');
+          assert.equal(engine.factualEventCompanyCount,0,'ICP NNS tracking proof fabricated factual period events');
+          assert.equal(engine.currentMonthFactualEventCount,0,'ICP NNS tracking proof fabricated current-month events');
+          assert.equal(engine.currentMonthFactualUsdSubtotal,0,'eventless ICP NNS aggregate should remain zero subtotal, not estimated rewards');
+          assert.equal(engine.reusableCoverageGap,false,'ICP NNS remained a reusable tracking gap');
+          for(const company of engine.companies){
+            const row=data.companies?.[company]?.mechanisms?.icp_nns?.months?.[data.currentMonth];
+            assert.equal(row?.status,'factual-tracking-no-period-event',`${company} ICP NNS status drift`);
+            assert.equal(row?.factualEventCount,0,`${company} ICP NNS fabricated income event`);
+            assert.equal(row?.factualUsdSubtotal,null,`${company} ICP NNS estimated rewards leaked into factual USD subtotal`);
+            assert.deepEqual(row?.factualTrackingProofSources,['companies/icp-nns-rewards-state.json'],`${company} ICP NNS proof source drift`);
+            assert.ok(row?.completionBlockers?.includes('no-canonical-period-income-evidence'),`${company} ICP NNS lost no-period-income blocker`);
+          }
+          console.log('ICP NNS production-shaped coverage PASS',{tracking:`${engine.factualTrackingCompanyCount}/${engine.activeCompanyCount}`,factualEventCompanies:engine.factualEventCompanyCount,reusableCoverageGap:engine.reusableCoverageGap,periodIncomeAuthority:false});
+          NODE
           node reporting/accounting-coverage-validation.mjs
           node reporting/accounting-coverage-gap-diagnostic.mjs
           node reporting/accounting-coverage-company-diagnostic.mjs

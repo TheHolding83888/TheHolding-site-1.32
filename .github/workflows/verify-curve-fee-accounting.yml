@@ -70,11 +70,23 @@ jobs:
           console.log('Curve live registry discovery PASS',{companies,wallets:rows.length});
           NODE
 
-      - name: Prove no unrelated Accounting Coverage regression
+      - name: Prove Curve Accounting Coverage slice is unchanged
         shell: bash
         run: |
           set -euo pipefail
           cp reporting/accounting-coverage.json /tmp/accounting-coverage.before.json
           node reporting/accounting-coverage.mjs
-          cmp /tmp/accounting-coverage.before.json reporting/accounting-coverage.json
+          node --input-type=module - <<'NODE'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          const before=JSON.parse(fs.readFileSync('/tmp/accounting-coverage.before.json','utf8'));
+          const after=JSON.parse(fs.readFileSync('reporting/accounting-coverage.json','utf8'));
+          assert.deepEqual(after.mechanisms?.curve_vecrv,before.mechanisms?.curve_vecrv,'curve_vecrv aggregate coverage changed');
+          for(const [company,row] of Object.entries(before.companies||{})){
+            const prior=row?.mechanisms?.curve_vecrv;
+            if(!prior) continue;
+            assert.deepEqual(after.companies?.[company]?.mechanisms?.curve_vecrv,prior,`${company} curve_vecrv coverage changed`);
+          }
+          console.log('Curve-scoped Accounting Coverage regression guard PASS');
+          NODE
           node reporting/accounting-coverage-validation.mjs
