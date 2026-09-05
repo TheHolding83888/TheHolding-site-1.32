@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Accounting Coverage Registry v0.4
+ * The Holding · Accounting Coverage Registry v0.5
  *
  * Diagnostic machine map of productive mechanisms versus canonical factual
  * accounting capability. Canonical Income Ledger is the sole authority for
@@ -27,7 +27,7 @@ const ICP_NNS_STATE_FILE=process.env.ICP_NNS_STATE_FILE||path.join(ROOT,'compani
 const ICP_NNS_CONFIG_FILE=process.env.ICP_NNS_CONFIG_FILE||path.join(ROOT,'intelligence','icp-nns','company-005-006-neuron-pool.json');
 const OUTPUT_FILE=process.env.ACCOUNTING_COVERAGE_FILE||path.join(ROOT,'reporting','accounting-coverage.json');
 
-export const VERSION='0.4-resupply-factual-tracking-accounting-mechanism-coverage-registry';
+export const VERSION='0.5-liquity-factual-tracking-accounting-mechanism-coverage-registry';
 export const COMPANY_ALIASES=Object.freeze({'aerocrvyb.eth':'aerocvxyb.eth'});
 export function canonicalCompanyName(name){const raw=String(name||'').trim();return raw?(COMPANY_ALIASES[raw]||raw):'';}
 
@@ -227,6 +227,40 @@ export function resupplyRsupObservationProofs(rewards={}){
   return out;
 }
 
+export function liquityLqtyObservationProofs(rewards={}){
+  const out=[];
+  const governance='0x807def5e7d057df05c796f4bc75c3fe82bd6eee1';
+  const stakingV1='0x4f9fbb3f1e99b56e0fe2892e623ed36a76fc605d';
+  const lusd='0x5f98805a4e8be255a32880fdec7f6728c6568ba0';
+  const allowedSource='onchain: Liquity V1 LQTYStaking pending gain across wallet + V2 UserProxy';
+  const addressOk=v=>/^0x[0-9a-f]{40}$/.test(lower(v));
+  const rawOk=v=>/^\d+$/.test(String(v??''));
+  for(const[company,c]of Object.entries(rewards?.companies||{})){
+    const source=(c?.sources||[]).find(x=>x?.route==='liquity-staking');
+    if(source?.status!=='ok'||lower(source?.protocol)!=='liquity'||lower(source?.metric)!=='lqtystaking pending eth + lusd across direct wallet and liquity v2 userproxy')continue;
+    const details=source?.details||{},primary=lower(details?.primaryUserProxy),accounts=Array.isArray(details?.rewardAccounts)?details.rewardAccounts:[];
+    if(lower(details?.governance)!==governance||lower(details?.stakingV1)!==stakingV1||!addressOk(primary)||!(Number(details?.primaryUserProxyStakedLqty)>0)||details?.unknownIsNotZero!==true||details?.rewardState!=='Claimable'||!accounts.length)continue;
+    const accountAddresses=accounts.map(x=>lower(x?.account));
+    const accountKinds=new Set(['direct-v1','liquity-v2-userproxy']);
+    if(accountAddresses.some(x=>!addressOk(x))||new Set(accountAddresses).size!==accountAddresses.length)continue;
+    if(accounts.some(x=>!addressOk(x?.wallet)||!accountKinds.has(x?.accountKind)||x?.readError||!rawOk(x?.pendingEthRaw)||!rawOk(x?.pendingLusdRaw)))continue;
+    const primaryAccount=accounts.find(x=>lower(x?.account)===primary&&x?.accountKind==='liquity-v2-userproxy');
+    if(!primaryAccount||!(Number(primaryAccount?.stakedLqty)>0))continue;
+    let totalEthRaw=0n,totalLusdRaw=0n;
+    try{for(const row of accounts){totalEthRaw+=BigInt(row.pendingEthRaw);totalLusdRaw+=BigInt(row.pendingLusdRaw);}}catch{continue;}
+    const expectedTokens=[];if(totalEthRaw>0n)expectedTokens.push('native:eth');if(totalLusdRaw>0n)expectedTokens.push(lusd);
+    const rows=(c?.rewards||[]).filter(x=>x?.route==='liquity-staking');
+    const rowsStrong=rows.every(x=>lower(x?.protocol)==='liquity'&&x?.classification==='unclaimed'&&finite(x?.amount)&&Number(x.amount)>0&&x?.source===allowedSource&&['native:eth',lusd].includes(lower(x?.token))&&lower(x?.details?.userProxy)===primary&&x?.details?.unknownIsNotZero===true&&x?.details?.rewardState==='Claimable');
+    if(!rowsStrong||rows.length!==expectedTokens.length)continue;
+    const rowTokens=rows.map(x=>lower(x.token)).sort();
+    if(JSON.stringify(rowTokens)!==JSON.stringify([...expectedTokens].sort()))continue;
+    const observedAt=c?.updatedAt||rewards?.generatedAt;
+    if(!monthKey(observedAt))continue;
+    pushTrackingProof(out,{engineId:'liquity_lqty',company,observedAt,sourceFile:'companies/rewards-data.json',proofKey:`liquity-lqty:${primary}:${accounts.length}:${rows.length}`});
+  }
+  return out;
+}
+
 function strongVlCvxRouteProofs(rewards={}){
   const out=[];
   for(const[company,c]of Object.entries(rewards?.companies||{})){
@@ -281,7 +315,7 @@ export function factualTrackingProofs({ve33={},ve33LockedManaged={},yieldBasis={
   for(const row of ve33Rows){if(row?.ok===false)continue;const engineId=row?.protocolKey==='aerodrome'?'aerodrome_veaero':row?.protocolKey==='velodrome'?'velodrome_vevelo':null;pushTrackingProof(out,{engineId,company:row?.company,observedAt:row?.observedAt,sourceFile:row?.__source,proofKey:row?.checkpointKey});}
   for(const row of Array.isArray(yieldBasis?.checkpoints)?yieldBasis.checkpoints:[])pushTrackingProof(out,{engineId:'yieldbasis_veyb',company:row?.company,observedAt:row?.observedAt,sourceFile:'reporting/yield-basis-accounting-evidence.json',proofKey:row?.checkpointKey});
   for(const row of Array.isArray(frax?.checkpoints)?frax.checkpoints:[])pushTrackingProof(out,{engineId:'frax_vefrax',company:row?.company,observedAt:row?.observedAt,sourceFile:'reporting/frax-yield-accounting-evidence.json',proofKey:row?.checkpointKey});
-  out.push(...strongVlCvxRouteProofs(rewards),...strongCvxCrvClaimableProofs(rewards),...pendleSPendleObservationProofs(rewards),...veniceSVvvObservationProofs(rewards),...resupplyRsupObservationProofs(rewards),...curveFeeAccrualProofs(ledger),...icpNnsObservationProofs(icpNnsState,icpNnsConfig));
+  out.push(...strongVlCvxRouteProofs(rewards),...strongCvxCrvClaimableProofs(rewards),...pendleSPendleObservationProofs(rewards),...veniceSVvvObservationProofs(rewards),...resupplyRsupObservationProofs(rewards),...liquityLqtyObservationProofs(rewards),...curveFeeAccrualProofs(ledger),...icpNnsObservationProofs(icpNnsState,icpNnsConfig));
   return[...new Map(out.map(x=>[[x.engineId,x.company,x.month,x.proofKey].join('|'),x])).values()];
 }
 
@@ -333,7 +367,7 @@ async function main(){
   const[productivity,ledger,embedded,rewards,ve33,ve33LockedManaged,yieldBasis,frax,icpNnsState,icpNnsConfig]=await Promise.all([readJson(PRODUCTIVITY_FILE),readJson(INCOME_LEDGER_FILE),readJson(EMBEDDED_FILE),readOptionalJson(REWARDS_FILE),readOptionalJson(VE33_EVIDENCE_FILE),readOptionalJson(VE33_LOCKED_MANAGED_EVIDENCE_FILE),readOptionalJson(YIELD_BASIS_EVIDENCE_FILE),readOptionalJson(FRAX_EVIDENCE_FILE),readOptionalJson(ICP_NNS_STATE_FILE),readOptionalJson(ICP_NNS_CONFIG_FILE)]);
   const output=buildAccountingCoverage({productivity,ledger,embedded,factualEvidence:{rewards,ve33,ve33LockedManaged,yieldBasis,frax,icpNnsState,icpNnsConfig}});
   await writeJson(OUTPUT_FILE,output);
-  console.log('Accounting Coverage Registry v0.4 built',{companies:output.summary.companyCount,mechanismInstances:output.summary.mechanismInstanceCount,uniqueMechanisms:output.summary.uniqueMechanismCount,coverageGaps:output.summary.reusableCoverageGapCount,unclassified:output.summary.unclassifiedMechanismInstanceCount,unmatchedLedgerEvents:output.summary.unmatchedCanonicalEventCount,canonicalizedAliasCompanies:output.summary.canonicalizedAliasCompanyCount,factualTrackingProofs:output.summary.factualTrackingProofCount,currentMonth:output.currentMonth,executionAuthority:output.authority.executionAuthority,topReusableGaps:output.gapRanking.slice(0,10)});
+  console.log('Accounting Coverage Registry v0.5 built',{companies:output.summary.companyCount,mechanismInstances:output.summary.mechanismInstanceCount,uniqueMechanisms:output.summary.uniqueMechanismCount,coverageGaps:output.summary.reusableCoverageGapCount,unclassified:output.summary.unclassifiedMechanismInstanceCount,unmatchedLedgerEvents:output.summary.unmatchedCanonicalEventCount,canonicalizedAliasCompanies:output.summary.canonicalizedAliasCompanyCount,factualTrackingProofs:output.summary.factualTrackingProofCount,currentMonth:output.currentMonth,executionAuthority:output.authority.executionAuthority,topReusableGaps:output.gapRanking.slice(0,10)});
 }
 
 if(process.argv[1]&&path.resolve(process.argv[1])===__filename)main().catch(error=>{console.error(error);process.exitCode=1;});
