@@ -93,67 +93,86 @@ jobs:
           ETH_ARCHIVE_RPC_FALLBACK_URL: 'https://ethereum.public.blockpi.network/v1/rpc/public'
         run: |
           set -euo pipefail
+          cp reporting/yield-basis-accounting-evidence.json /tmp/yield-basis-accounting-evidence-persisted.json
           cp reporting/yield-basis-accounting-evidence.json "$YIELD_BASIS_EVIDENCE_FILE"
+
+          # A candidate that changes Yield Basis accounting itself must prove the
+          # full live boundary. An unrelated Reporting candidate may preserve a
+          # canonical partial state when public RPC/log sources are degraded;
+          # partial remains partial and never becomes income/completeness proof.
+          yb_sensitive=true
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base_sha="${{ github.event.pull_request.base.sha }}"
+            git fetch --no-tags --depth=1 origin "$base_sha"
+            if git diff --name-only "$base_sha" HEAD | grep -Eq '^reporting/yield-basis-(accounting-evidence\.mjs|accounting-evidence-validation\.mjs|accounting-evidence\.json|income-candidates\.mjs|income-candidates-validation\.mjs|ledger-admission\.mjs|ledger-admission-validation\.mjs)$'; then
+              yb_sensitive=true
+            else
+              yb_sensitive=false
+            fi
+          fi
+
           set +e
           node reporting/yield-basis-accounting-evidence.mjs
           live_canary_rc=$?
           set -e
-          if [ "$live_canary_rc" -ne 0 ]; then
-            echo "::warning::Yield Basis live economic source unavailable; preserving the persisted factual evidence boundary for this unrelated candidate."
-            node - <<'NODE'
+
+          YB_SENSITIVE="$yb_sensitive" YB_LIVE_RC="$live_canary_rc" node - <<'NODE'
           const fs=require('fs');
-          const e=JSON.parse(fs.readFileSync('/tmp/yield-basis-accounting-evidence.json','utf8'));
-          if(e.version!=='0.1-yield-basis-factual-accrual-evidence') throw new Error('persisted Yield Basis evidence version drift');
-          if(e.mechanism!=='yield-basis-fees') throw new Error('persisted Yield Basis mechanism drift');
-          if(e.status!=='factual-boundary-tracking') throw new Error('persisted Yield Basis evidence is not a complete factual boundary');
-          const tracked=Number(e.diagnostics?.trackedWalletCount||0);
-          if(!(tracked>0)) throw new Error('persisted Yield Basis evidence has no tracked wallets');
-          if((e.diagnostics?.monthBoundaryFailures||[]).length!==0) throw new Error('persisted Yield Basis evidence has month-boundary failures');
-          if((e.diagnostics?.claimQueryFailures||[]).length!==0) throw new Error('persisted Yield Basis evidence has Claim-log failures');
-          if(Number(e.diagnostics?.reconciliationCount||0)!==0) throw new Error('persisted Yield Basis evidence has reconciliation gaps');
-          if(Number(e.diagnostics?.unvaluedEventCount||0)!==0) throw new Error('persisted Yield Basis evidence has unvalued earned events');
-          if(e.semantics?.openingBalanceCreatesIncome!==false||e.semantics?.claimIsSettlementNotSecondIncome!==true||e.semantics?.referenceAprUsed!==false||e.semantics?.laterPriceMovementRewritesClosedIncome!==false||e.semantics?.unknownIsNotZero!==true) throw new Error('persisted Yield Basis accounting semantic drift');
-          if(e.authority?.executionAuthority!=='none'||e.authority?.walletAuthority!=='none'||e.authority?.claimingAuthority!=='none'||e.authority?.capitalExecution!==false||e.authority?.methodologyMutationAuthority!=='none') throw new Error('persisted Yield Basis authority expansion');
-          console.log('Yield Basis live-source fail-soft fallback PASS',{generatedAt:e.generatedAt,trackedWallets:tracked,events:(e.events||[]).length,executionAuthority:e.authority?.executionAuthority});
+          const persistedPath='/tmp/yield-basis-accounting-evidence-persisted.json';
+          const candidatePath='/tmp/yield-basis-accounting-evidence.json';
+          const persisted=JSON.parse(fs.readFileSync(persistedPath,'utf8'));
+          const candidate=JSON.parse(fs.readFileSync(candidatePath,'utf8'));
+          const sensitive=process.env.YB_SENSITIVE==='true';
+          const liveRc=Number(process.env.YB_LIVE_RC||0);
+
+          function validateCommon(e,label){
+            if(e.version!=='0.1-yield-basis-factual-accrual-evidence') throw new Error(label+' Yield Basis evidence version drift');
+            if(e.mechanism!=='yield-basis-fees') throw new Error(label+' Yield Basis mechanism drift');
+            if(!['factual-boundary-tracking','partial'].includes(e.status)) throw new Error(label+' Yield Basis status invalid: '+e.status);
+            const tracked=Number(e.diagnostics?.trackedWalletCount||0);
+            if(!(tracked>0)) throw new Error(label+' Yield Basis evidence has no tracked wallets');
+            if(Number(e.diagnostics?.unvaluedEventCount||0)!==0) throw new Error(label+' Yield Basis evidence has unvalued earned events');
+            if(e.semantics?.openingBalanceCreatesIncome!==false||e.semantics?.earnedIndependentOfClaim!==true||e.semantics?.claimIsSettlementNotSecondIncome!==true||e.semantics?.referenceAprUsed!==false||e.semantics?.laterPriceMovementRewritesClosedIncome!==false||e.semantics?.unknownIsNotZero!==true) throw new Error(label+' Yield Basis accounting semantic drift');
+            if(e.authority?.executionAuthority!=='none'||e.authority?.walletAuthority!=='none'||e.authority?.claimingAuthority!=='none'||e.authority?.capitalExecution!==false||e.authority?.methodologyMutationAuthority!=='none') throw new Error(label+' Yield Basis authority expansion');
+            const events=e.events||[];
+            if(new Set(events.map(x=>x.eventKey)).size!==events.length) throw new Error(label+' Yield Basis duplicate event identity');
+            const incomplete=(e.diagnostics?.monthBoundaryFailures||[]).length+(e.diagnostics?.claimQueryFailures||[]).length+Number(e.diagnostics?.reconciliationCount||0)+Number(e.diagnostics?.unvaluedEventCount||0);
+            if(e.status==='partial'&&incomplete===0) throw new Error(label+' Yield Basis partial status has no explicit incompleteness evidence');
+            return{tracked,events:events.length,incomplete};
+          }
+
+          const persistedSummary=validateCommon(persisted,'persisted');
+          const liveSummary=validateCommon(candidate,'live');
+
+          if(sensitive){
+            if(liveRc!==0) throw new Error('Yield Basis-sensitive candidate cannot fail-soft when live accounting collection fails');
+            if(candidate.status!=='factual-boundary-tracking') throw new Error('Yield Basis-sensitive candidate requires complete live factual boundary tracking: '+candidate.status);
+            if(liveSummary.incomplete!==0) throw new Error('Yield Basis-sensitive candidate has unresolved live boundary/reconciliation gaps');
+            const tracked=liveSummary.tracked;
+            const boundaries=(candidate.checkpoints||[]).filter(x=>x?.monthBoundary===true&&x?.observedAt==='2026-09-01T00:00:00.000Z');
+            const live=(candidate.checkpoints||[]).filter(x=>x?.monthBoundary!==true);
+            if(new Set(boundaries.map(x=>x.stateKey)).size!==tracked) throw new Error(`live Yield Basis Sep-1 boundary coverage incomplete: ${new Set(boundaries.map(x=>x.stateKey)).size}/${tracked}`);
+            if(new Set(live.map(x=>x.stateKey)).size!==tracked) throw new Error(`live Yield Basis current-state coverage incomplete: ${new Set(live.map(x=>x.stateKey)).size}/${tracked}`);
+            if(Number(candidate.diagnostics?.intervalCount||0)<tracked) throw new Error(`live Yield Basis opening-to-closing interval coverage incomplete: ${candidate.diagnostics?.intervalCount||0}/${tracked}`);
+            if(!liveSummary.events) throw new Error('live Yield Basis produced no factual earned events');
+            if(live.some(x=>x?.exactBlockTaggedState!==true||x?.periodIncomeAuthority!==false||x?.currentClaimableBalanceIsPeriodIncome!==false||x?.unknownIsNotZero!==true)) throw new Error('live Yield Basis checkpoint semantic drift');
+            console.log('Read-only live Yield Basis canary PASS',{status:candidate.status,trackedWallets:tracked,events:liveSummary.events,executionAuthority:candidate.authority?.executionAuthority});
+          }else if(liveRc!==0||candidate.status!=='factual-boundary-tracking'||liveSummary.incomplete!==0){
+            fs.copyFileSync(persistedPath,candidatePath);
+            console.log('Yield Basis unrelated-candidate fail-soft PASS',{
+              liveRc,
+              liveStatus:candidate.status,
+              preservedStatus:persisted.status,
+              persistedIncomplete:persistedSummary.incomplete,
+              trackedWallets:persistedSummary.tracked,
+              events:persistedSummary.events,
+              unknownIsNotZero:persisted.semantics?.unknownIsNotZero,
+              executionAuthority:persisted.authority?.executionAuthority
+            });
+          }else{
+            console.log('Read-only live Yield Basis canary PASS',{status:candidate.status,trackedWallets:liveSummary.tracked,events:liveSummary.events,executionAuthority:candidate.authority?.executionAuthority});
+          }
           NODE
-          else
-            node - <<'NODE'
-          const fs=require('fs');
-          const e=JSON.parse(fs.readFileSync('/tmp/yield-basis-accounting-evidence.json','utf8'));
-          if(e.version!=='0.1-yield-basis-factual-accrual-evidence') throw new Error('live Yield Basis evidence version drift');
-          if(e.mechanism!=='yield-basis-fees') throw new Error('live Yield Basis mechanism drift');
-          const tracked=Number(e.diagnostics?.trackedWalletCount||0);
-          if(!(tracked>0)) throw new Error('live Yield Basis discovered no tracked wallets from canonical Rewards');
-          if(e.status!=='factual-boundary-tracking') throw new Error('live Yield Basis is not complete factual boundary tracking: '+e.status);
-          if((e.diagnostics?.monthBoundaryFailures||[]).length!==0) throw new Error('live Yield Basis has month-boundary failures');
-          if((e.diagnostics?.claimQueryFailures||[]).length!==0) throw new Error('live Yield Basis has Claim-log query failures');
-          if(Number(e.diagnostics?.reconciliationCount||0)!==0) throw new Error('live Yield Basis has reconciliation gaps');
-          if(Number(e.diagnostics?.unvaluedEventCount||0)!==0) throw new Error('live Yield Basis has unvalued earned events');
-          const boundaries=(e.checkpoints||[]).filter(x=>x?.monthBoundary===true&&x?.observedAt==='2026-09-01T00:00:00.000Z');
-          const live=(e.checkpoints||[]).filter(x=>x?.monthBoundary!==true);
-          if(new Set(boundaries.map(x=>x.stateKey)).size!==tracked) throw new Error(`live Yield Basis Sep-1 boundary coverage incomplete: ${new Set(boundaries.map(x=>x.stateKey)).size}/${tracked}`);
-          if(new Set(live.map(x=>x.stateKey)).size!==tracked) throw new Error(`live Yield Basis current-state coverage incomplete: ${new Set(live.map(x=>x.stateKey)).size}/${tracked}`);
-          if(Number(e.diagnostics?.intervalCount||0)<tracked) throw new Error(`live Yield Basis opening-to-closing interval coverage incomplete: ${e.diagnostics?.intervalCount||0}/${tracked}`);
-          if(!Array.isArray(e.events)||e.events.length===0) throw new Error('live Yield Basis produced no factual earned events');
-          if(live.some(x=>x?.exactBlockTaggedState!==true||x?.periodIncomeAuthority!==false||x?.currentClaimableBalanceIsPeriodIncome!==false||x?.unknownIsNotZero!==true)) throw new Error('live Yield Basis checkpoint semantic drift');
-          if(e.semantics?.openingBalanceCreatesIncome!==false||e.semantics?.claimIsSettlementNotSecondIncome!==true||e.semantics?.referenceAprUsed!==false||e.semantics?.laterPriceMovementRewritesClosedIncome!==false||e.semantics?.unknownIsNotZero!==true) throw new Error('live Yield Basis accounting semantic drift');
-          if(e.authority?.executionAuthority!=='none'||e.authority?.walletAuthority!=='none'||e.authority?.claimingAuthority!=='none'||e.authority?.capitalExecution!==false||e.authority?.methodologyMutationAuthority!=='none') throw new Error('Yield Basis authority expansion');
-          const events=e.events||[];
-          if(new Set(events.map(x=>x.eventKey)).size!==events.length) throw new Error('live Yield Basis duplicate event identity');
-          console.log('Read-only live Yield Basis canary PASS',{
-            status:e.status,
-            trackedWallets:tracked,
-            checkpoints:e.diagnostics.checkpointCount,
-            monthBoundaries:e.diagnostics.monthBoundaryCount,
-            monthBoundaryFailures:(e.diagnostics.monthBoundaryFailures||[]).length,
-            intervals:e.diagnostics.intervalCount,
-            events:events.length,
-            reconciliation:e.diagnostics.reconciliationCount,
-            claimQueryFailures:(e.diagnostics.claimQueryFailures||[]).length,
-            unvalued:e.diagnostics.unvaluedEventCount
-          });
-          NODE
-          fi
           git diff --exit-code
 
       - name: Exercise full writer and canonical income history
@@ -264,9 +283,9 @@ jobs:
           const sourceYb=yb.events||[];
           const canonicalYb=events.filter(e=>e.sourceFile==='reporting/yield-basis-accounting-evidence.json');
           const sourceYbKeys=new Set(sourceYb.map(e=>e.eventKey));
-          if(!sourceYb.length) throw new Error('Yield Basis live evidence was not available for Canonical Ledger admission proof');
+          if(!sourceYb.length) throw new Error('Yield Basis evidence has no canonical admissible events');
           if(canonicalYb.length!==sourceYbKeys.size||canonicalYb.some(e=>!sourceYbKeys.has(e.eventKey))) throw new Error(`Yield Basis Canonical Ledger admission parity failed: ${canonicalYb.length}/${sourceYbKeys.size}`);
-          if(income.accountingExtensions?.yieldBasisAccrual?.status!=='factual-boundary-tracking') throw new Error('Yield Basis accounting extension did not preserve factual boundary status');
+          if(income.accountingExtensions?.yieldBasisAccrual?.status!==yb.status) throw new Error('Yield Basis accounting extension status drift: '+income.accountingExtensions?.yieldBasisAccrual?.status+' != '+yb.status);
           if(Number(income.run?.yieldBasisCandidateEventCount||0)!==sourceYbKeys.size) throw new Error('Yield Basis candidate count drift after Canonical Ledger admission');
 
           if((income.claimableSnapshots||[]).some(x=>x.stateOnly!==true||x.periodIncomeAuthority!==false||x.realisedCashFlowAuthority!==false||x.unknownIsNotZero!==true)) throw new Error('claimable state escaped accounting boundary');
@@ -284,6 +303,7 @@ jobs:
             voteMarketEvents:sourceVm,
             fortyAcresEvents:sourceFa,
             monetraEmbeddedIntervals:acceptedEmbedded,
+            yieldBasisStatus:yb.status,
             yieldBasisEvents:canonicalYb.length,
             claimableSnapshots:(income.claimableSnapshots||[]).length
           });
