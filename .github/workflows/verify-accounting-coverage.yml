@@ -8,6 +8,7 @@ on:
       - 'reporting/accounting-coverage-gap-diagnostic.mjs'
       - 'reporting/accounting-coverage-company-diagnostic.mjs'
       - 'reporting/icp-nns-tracking-proof-validation.mjs'
+      - 'reporting/pendle-spendle-tracking-proof-validation.mjs'
       - 'reporting/accounting-coverage.json'
       - 'companies/productivity-data.json'
       - 'companies/rewards-data.json'
@@ -60,7 +61,9 @@ jobs:
           node --check reporting/accounting-coverage-gap-diagnostic.mjs
           node --check reporting/accounting-coverage-company-diagnostic.mjs
           node --check reporting/icp-nns-tracking-proof-validation.mjs
+          node --check reporting/pendle-spendle-tracking-proof-validation.mjs
           node reporting/icp-nns-tracking-proof-validation.mjs
+          node reporting/pendle-spendle-tracking-proof-validation.mjs
           node reporting/accounting-coverage.mjs
           test -s "$ACCOUNTING_COVERAGE_FILE"
           node --input-type=module - <<'NODE'
@@ -84,6 +87,22 @@ jobs:
             assert.ok(row?.completionBlockers?.includes('no-canonical-period-income-evidence'),`${company} ICP NNS lost no-period-income blocker`);
           }
           console.log('ICP NNS production-shaped coverage PASS',{tracking:`${engine.factualTrackingCompanyCount}/${engine.activeCompanyCount}`,factualEventCompanies:engine.factualEventCompanyCount,reusableCoverageGap:engine.reusableCoverageGap,periodIncomeAuthority:false});
+          NODE
+          node --input-type=module - <<'NODE'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          const data=JSON.parse(fs.readFileSync(process.env.ACCOUNTING_COVERAGE_FILE,'utf8'));
+          const engine=data.mechanisms?.pendle_spendle;
+          assert.ok(engine,'pendle_spendle mechanism missing');
+          assert.equal(engine.activeCompanyCount,1,'sPENDLE active company count drift');
+          assert.equal(engine.factualTrackingCompanyCount,1,'sPENDLE did not reach 1/1 factual tracking');
+          assert.deepEqual(engine.factualTrackingCompanies,['defitea.eth'],'sPENDLE tracking company identity drift');
+          assert.equal(engine.reusableCoverageGap,false,'sPENDLE remained a reusable tracking gap');
+          const row=data.companies?.['defitea.eth']?.mechanisms?.pendle_spendle?.months?.[data.currentMonth];
+          assert.equal(row?.factualTrackingActive,true,'Defitea sPENDLE tracking is not active');
+          assert.ok(row?.factualTrackingProofSources?.includes('companies/rewards-data.json'),'Defitea sPENDLE canonical reward observation proof missing');
+          assert.ok(!row?.completionBlockers?.includes('no-factual-engine-tracking-proof'),'Defitea sPENDLE still reports missing tracking proof');
+          console.log('sPENDLE production-shaped coverage PASS',{tracking:`${engine.factualTrackingCompanyCount}/${engine.activeCompanyCount}`,factualEventCompanies:engine.factualEventCompanyCount,reusableCoverageGap:engine.reusableCoverageGap,periodIncomeAuthority:false});
           NODE
           node reporting/accounting-coverage-validation.mjs
           node reporting/accounting-coverage-gap-diagnostic.mjs

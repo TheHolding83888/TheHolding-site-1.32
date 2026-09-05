@@ -152,6 +152,34 @@ export function icpNnsObservationProofs(state={},config={}){
   return out;
 }
 
+export function pendleSPendleObservationProofs(rewards={}){
+  const out=[];
+  const allowedProtocols=new Set(['pendle','pendle · spendle']);
+  const allowedRewardSources=new Set([
+    'official Pendle API: dashboard merkle rewards',
+    'official Pendle API: sPENDLE accrued ETH fees'
+  ]);
+  for(const[company,c]of Object.entries(rewards?.companies||{})){
+    const source=(c?.sources||[]).find(x=>x?.route==='pendle-spendle');
+    if(source?.status!=='ok'||!allowedProtocols.has(lower(source?.protocol))||lower(source?.metric)!=='official spendle holder + dashboard claimable rewards apis')continue;
+    const walletResults=Array.isArray(source?.details?.walletResults)?source.details.walletResults:[];
+    if(!walletResults.length)continue;
+    const wallets=walletResults.map(x=>lower(x?.wallet));
+    if(wallets.some(x=>!/^0x[0-9a-f]{40}$/.test(x))||new Set(wallets).size!==wallets.length)continue;
+    if(walletResults.some(x=>x?.status!=='ok'||!Number.isSafeInteger(Number(x?.rewardCount))||Number(x.rewardCount)<0))continue;
+    const rows=(c?.rewards||[]).filter(x=>x?.route==='pendle-spendle');
+    const rowsStrong=rows.every(x=>allowedProtocols.has(lower(x?.protocol))&&x?.classification==='unclaimed'&&finite(x?.amount)&&Number(x.amount)>=0&&allowedRewardSources.has(x?.source)&&wallets.includes(lower(x?.details?.wallet)));
+    if(!rowsStrong)continue;
+    const counts=new Map(wallets.map(wallet=>[wallet,0]));
+    for(const row of rows){const wallet=lower(row?.details?.wallet);counts.set(wallet,(counts.get(wallet)||0)+1);}
+    if(walletResults.some(x=>counts.get(lower(x.wallet))!==Number(x.rewardCount)))continue;
+    const observedAt=c?.updatedAt||rewards?.generatedAt;
+    if(!monthKey(observedAt))continue;
+    pushTrackingProof(out,{engineId:'pendle_spendle',company,observedAt,sourceFile:'companies/rewards-data.json',proofKey:`pendle-spendle:${[...wallets].sort().join(',')}:${rows.length}`});
+  }
+  return out;
+}
+
 function strongVlCvxRouteProofs(rewards={}){
   const out=[];
   for(const[company,c]of Object.entries(rewards?.companies||{})){
@@ -206,7 +234,7 @@ export function factualTrackingProofs({ve33={},ve33LockedManaged={},yieldBasis={
   for(const row of ve33Rows){if(row?.ok===false)continue;const engineId=row?.protocolKey==='aerodrome'?'aerodrome_veaero':row?.protocolKey==='velodrome'?'velodrome_vevelo':null;pushTrackingProof(out,{engineId,company:row?.company,observedAt:row?.observedAt,sourceFile:row?.__source,proofKey:row?.checkpointKey});}
   for(const row of Array.isArray(yieldBasis?.checkpoints)?yieldBasis.checkpoints:[])pushTrackingProof(out,{engineId:'yieldbasis_veyb',company:row?.company,observedAt:row?.observedAt,sourceFile:'reporting/yield-basis-accounting-evidence.json',proofKey:row?.checkpointKey});
   for(const row of Array.isArray(frax?.checkpoints)?frax.checkpoints:[])pushTrackingProof(out,{engineId:'frax_vefrax',company:row?.company,observedAt:row?.observedAt,sourceFile:'reporting/frax-yield-accounting-evidence.json',proofKey:row?.checkpointKey});
-  out.push(...strongVlCvxRouteProofs(rewards),...strongCvxCrvClaimableProofs(rewards),...curveFeeAccrualProofs(ledger),...icpNnsObservationProofs(icpNnsState,icpNnsConfig));
+  out.push(...strongVlCvxRouteProofs(rewards),...strongCvxCrvClaimableProofs(rewards),...pendleSPendleObservationProofs(rewards),...curveFeeAccrualProofs(ledger),...icpNnsObservationProofs(icpNnsState,icpNnsConfig));
   return[...new Map(out.map(x=>[[x.engineId,x.company,x.month,x.proofKey].join('|'),x])).values()];
 }
 
