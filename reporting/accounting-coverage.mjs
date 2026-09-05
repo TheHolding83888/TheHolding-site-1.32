@@ -182,17 +182,18 @@ export function pendleSPendleObservationProofs(rewards={}){
 
 export function veniceSVvvObservationProofs(rewards={}){
   const out=[];
+  const allowedProtocols=new Set(['venice','venice · svvv']);
   const vvv='0xacfe6019ed1a7dc6f7b508c02d1b04ec88cc21bf';
   for(const[company,c]of Object.entries(rewards?.companies||{})){
     const source=(c?.sources||[]).find(x=>x?.route==='venice-staking');
-    if(source?.status!=='ok'||lower(source?.protocol)!=='venice'||lower(source?.metric)!=='stakingv2.pendingrewards(user)')continue;
+    if(source?.status!=='ok'||!allowedProtocols.has(lower(source?.protocol))||lower(source?.metric)!=='stakingv2.pendingrewards(user)')continue;
     const walletResults=Array.isArray(source?.details?.walletResults)?source.details.walletResults:[];
     if(!walletResults.length)continue;
     const wallets=walletResults.map(x=>lower(x?.wallet));
     if(wallets.some(x=>!/^0x[0-9a-f]{40}$/.test(x))||new Set(wallets).size!==wallets.length)continue;
     if(walletResults.some(x=>x?.status!=='ok'||!Number.isSafeInteger(Number(x?.rewardCount))||Number(x.rewardCount)<0))continue;
     const rows=(c?.rewards||[]).filter(x=>x?.route==='venice-staking');
-    const rowsStrong=rows.every(x=>lower(x?.protocol)==='venice'&&lower(x?.token)===vvv&&x?.classification==='unclaimed'&&finite(x?.amount)&&Number(x.amount)>=0&&lower(x?.source)==='onchain: venice stakingv2.pendingrewards'&&wallets.includes(lower(x?.details?.wallet)));
+    const rowsStrong=rows.every(x=>allowedProtocols.has(lower(x?.protocol))&&lower(x?.token)===vvv&&x?.classification==='unclaimed'&&finite(x?.amount)&&Number(x.amount)>=0&&lower(x?.source)==='onchain: venice stakingv2.pendingrewards'&&wallets.includes(lower(x?.details?.wallet)));
     if(!rowsStrong)continue;
     const counts=new Map(wallets.map(wallet=>[wallet,0]));
     for(const row of rows){const wallet=lower(row?.details?.wallet);counts.set(wallet,(counts.get(wallet)||0)+1);}
