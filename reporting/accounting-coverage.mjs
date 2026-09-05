@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Accounting Coverage Registry v0.7
+ * The Holding · Accounting Coverage Registry v0.8
  *
  * Diagnostic machine map of productive mechanisms versus canonical factual
  * accounting capability. Canonical Income Ledger is the sole authority for
@@ -28,7 +28,7 @@ const ICP_NNS_CONFIG_FILE=process.env.ICP_NNS_CONFIG_FILE||path.join(ROOT,'intel
 const COMPANY_010_STATE_FILE=process.env.COMPANY_010_STATE_FILE||path.join(ROOT,'companies','company-010-production-state.json');
 const OUTPUT_FILE=process.env.ACCOUNTING_COVERAGE_FILE||path.join(ROOT,'reporting','accounting-coverage.json');
 
-export const VERSION='0.7-projectx-factual-tracking-accounting-mechanism-coverage-registry';
+export const VERSION='0.8-concentrator-factual-tracking-accounting-mechanism-coverage-registry';
 export const COMPANY_ALIASES=Object.freeze({'aerocrvyb.eth':'aerocvxyb.eth'});
 export function canonicalCompanyName(name){const raw=String(name||'').trim();return raw?(COMPANY_ALIASES[raw]||raw):'';}
 
@@ -375,6 +375,37 @@ export function projectXWhypeUsdcObservationProofs(state={}){
   return out;
 }
 
+export function concentratorAsdCrvObservationProofs(state={}){
+  const out=[];
+  const engineId='concentrator_asdcrv',strategyId='concentrator-asdcrv',company='Cypher';
+  const approx=(a,b,tolerance=1e-9)=>finite(a)&&finite(b)&&Math.abs(Number(a)-Number(b))<=tolerance;
+  const crv=state?.strategies?.crv,provenance=state?.provenance?.crvStrategies||{},epistemic=state?.epistemicBoundary||{};
+  if(state?.company?.registry!=='010'||state?.company?.name!==company||crv?.version!=='0.1-company-010-crv-strategy-intelligence'||crv?.status!=='measured')return out;
+  if(state?.authority?.executionAuthority!=='none'||state?.authority?.transactions!==false||state?.authority?.capitalMovement!==false||crv?.authority?.readOnly!==true||crv?.authority?.executionAuthority!=='none')return out;
+  const boundary=crv?.accountingBoundary||{};
+  if(boundary?.directCrvSeparate!==true||boundary?.concentratorCountedOnce!==true||boundary?.cvxCrvSeparateAsset!==true||boundary?.wrappersNotSummedAsCrvUnits!==true||boundary?.noDoubleCount!==true)return out;
+  if(epistemic?.unknownIsNotZero!==true||epistemic?.referenceAprIsNotRealisedIncome!==true||epistemic?.noDoubleCount!==true||epistemic?.noTransactions!==true||epistemic?.crvWrapperUnitsAreNotAdditiveCrv!==true||epistemic?.compoundedIncomeIsNotClaimableReward!==true||epistemic?.claimableRewardIsNotPrincipal!==true)return out;
+  const strategies=Array.isArray(crv?.strategies)?crv.strategies:[],strategy=strategies.find(x=>x?.id===strategyId);
+  if(!strategy||strategy?.protocol!=='Concentrator')return out;
+  const principal=strategy?.principal||{},yieldState=strategy?.yield||{};
+  if(!(Number(principal?.asdCRVShares)>0)||!(Number(principal?.sdCRVUnderlying)>0)||!(Number(principal?.navUsd)>0))return out;
+  if(yieldState?.incomeMode!=='auto-compounded'||yieldState?.publicStatus!=='Compounded'||yieldState?.claimableApplicable!==false)return out;
+  const capital=(state?.capital?.positions||[]).find(x=>x?.assetId===strategyId);
+  if(!capital||capital?.protocol!=='Concentrator'||capital?.chain!=='Ethereum'||capital?.underlyingSymbol!=='sdCRV'||!lower(capital?.source).includes('converttoassets')||!lower(capital?.capitalRule).includes('not additive'))return out;
+  if(!approx(capital?.quantity,principal.asdCRVShares,1e-9)||!approx(capital?.underlyingQuantity,principal.sdCRVUnderlying,1e-9)||!approx(capital?.valueUsd,principal.navUsd,0.01))return out;
+  const productivity=(state?.productivity?.positions||[]).find(x=>x?.id===engineId);
+  if(!productivity||productivity?.incomeMode!=='auto-compounded'||productivity?.claimableApplicable!==false||!approx(productivity?.quantity,principal.asdCRVShares,1e-9)||!approx(productivity?.valueUsd,principal.navUsd,0.01))return out;
+  const embedded=(state?.rewards?.embeddedIncomeMechanisms||[]).filter(x=>x?.id===strategyId);
+  if(embedded.length!==1)return out;
+  const embeddedRow=embedded[0];
+  if(embeddedRow?.protocol!=='Concentrator'||embeddedRow?.chain!=='Ethereum'||embeddedRow?.incomeMode!=='auto-compounded'||embeddedRow?.claimableApplicable!==false||embeddedRow?.status!=='measured'||!lower(embeddedRow?.source).includes('converttoassets'))return out;
+  if(provenance?.version!=='0.1-company-010-crv-strategy-intelligence'||provenance?.concentratorResolverVersion!=='0.2-company-010-new-mechanism-measured-stakedao-asdcrv')return out;
+  const observedAt=provenance?.generatedAt||crv?.generatedAt||state?.generatedAt;
+  if(!monthKey(observedAt))return out;
+  pushTrackingProof(out,{engineId,company,observedAt,sourceFile:'companies/company-010-production-state.json#strategies.crv.concentrator-asdcrv',proofKey:`concentrator-asdcrv:${Number(principal.asdCRVShares).toFixed(12)}:${Number(principal.sdCRVUnderlying).toFixed(12)}:${observedAt}`});
+  return out;
+}
+
 function strongVlCvxRouteProofs(rewards={}){
   const out=[];
   for(const[company,c]of Object.entries(rewards?.companies||{})){
@@ -429,7 +460,7 @@ export function factualTrackingProofs({ve33={},ve33LockedManaged={},yieldBasis={
   for(const row of ve33Rows){if(row?.ok===false)continue;const engineId=row?.protocolKey==='aerodrome'?'aerodrome_veaero':row?.protocolKey==='velodrome'?'velodrome_vevelo':null;pushTrackingProof(out,{engineId,company:row?.company,observedAt:row?.observedAt,sourceFile:row?.__source,proofKey:row?.checkpointKey});}
   for(const row of Array.isArray(yieldBasis?.checkpoints)?yieldBasis.checkpoints:[])pushTrackingProof(out,{engineId:'yieldbasis_veyb',company:row?.company,observedAt:row?.observedAt,sourceFile:'reporting/yield-basis-accounting-evidence.json',proofKey:row?.checkpointKey});
   for(const row of Array.isArray(frax?.checkpoints)?frax.checkpoints:[])pushTrackingProof(out,{engineId:'frax_vefrax',company:row?.company,observedAt:row?.observedAt,sourceFile:'reporting/frax-yield-accounting-evidence.json',proofKey:row?.checkpointKey});
-  out.push(...strongVlCvxRouteProofs(rewards),...strongCvxCrvClaimableProofs(rewards),...pendleSPendleObservationProofs(rewards),...veniceSVvvObservationProofs(rewards),...resupplyRsupObservationProofs(rewards),...liquityLqtyObservationProofs(rewards),...hyperlendKhypeObservationProofs(company010State,rewards),...projectXWhypeUsdcObservationProofs(company010State),...curveFeeAccrualProofs(ledger),...icpNnsObservationProofs(icpNnsState,icpNnsConfig));
+  out.push(...strongVlCvxRouteProofs(rewards),...strongCvxCrvClaimableProofs(rewards),...pendleSPendleObservationProofs(rewards),...veniceSVvvObservationProofs(rewards),...resupplyRsupObservationProofs(rewards),...liquityLqtyObservationProofs(rewards),...hyperlendKhypeObservationProofs(company010State,rewards),...projectXWhypeUsdcObservationProofs(company010State),...concentratorAsdCrvObservationProofs(company010State),...curveFeeAccrualProofs(ledger),...icpNnsObservationProofs(icpNnsState,icpNnsConfig));
   return[...new Map(out.map(x=>[[x.engineId,x.company,x.month,x.proofKey].join('|'),x])).values()];
 }
 
@@ -481,7 +512,7 @@ async function main(){
   const[productivity,ledger,embedded,rewards,ve33,ve33LockedManaged,yieldBasis,frax,icpNnsState,icpNnsConfig,company010State]=await Promise.all([readJson(PRODUCTIVITY_FILE),readJson(INCOME_LEDGER_FILE),readJson(EMBEDDED_FILE),readOptionalJson(REWARDS_FILE),readOptionalJson(VE33_EVIDENCE_FILE),readOptionalJson(VE33_LOCKED_MANAGED_EVIDENCE_FILE),readOptionalJson(YIELD_BASIS_EVIDENCE_FILE),readOptionalJson(FRAX_EVIDENCE_FILE),readOptionalJson(ICP_NNS_STATE_FILE),readOptionalJson(ICP_NNS_CONFIG_FILE),readOptionalJson(COMPANY_010_STATE_FILE)]);
   const output=buildAccountingCoverage({productivity,ledger,embedded,factualEvidence:{rewards,ve33,ve33LockedManaged,yieldBasis,frax,icpNnsState,icpNnsConfig,company010State}});
   await writeJson(OUTPUT_FILE,output);
-  console.log('Accounting Coverage Registry v0.7 built',{companies:output.summary.companyCount,mechanismInstances:output.summary.mechanismInstanceCount,uniqueMechanisms:output.summary.uniqueMechanismCount,coverageGaps:output.summary.reusableCoverageGapCount,unclassified:output.summary.unclassifiedMechanismInstanceCount,unmatchedLedgerEvents:output.summary.unmatchedCanonicalEventCount,canonicalizedAliasCompanies:output.summary.canonicalizedAliasCompanyCount,factualTrackingProofs:output.summary.factualTrackingProofCount,currentMonth:output.currentMonth,executionAuthority:output.authority.executionAuthority,topReusableGaps:output.gapRanking.slice(0,10)});
+  console.log('Accounting Coverage Registry v0.8 built',{companies:output.summary.companyCount,mechanismInstances:output.summary.mechanismInstanceCount,uniqueMechanisms:output.summary.uniqueMechanismCount,coverageGaps:output.summary.reusableCoverageGapCount,unclassified:output.summary.unclassifiedMechanismInstanceCount,unmatchedLedgerEvents:output.summary.unmatchedCanonicalEventCount,canonicalizedAliasCompanies:output.summary.canonicalizedAliasCompanyCount,factualTrackingProofs:output.summary.factualTrackingProofCount,currentMonth:output.currentMonth,executionAuthority:output.authority.executionAuthority,topReusableGaps:output.gapRanking.slice(0,10)});
 }
 
 if(process.argv[1]&&path.resolve(process.argv[1])===__filename)main().catch(error=>{console.error(error);process.exitCode=1;});
