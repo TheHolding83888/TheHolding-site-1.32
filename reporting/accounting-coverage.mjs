@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Accounting Coverage Registry v0.6
+ * The Holding · Accounting Coverage Registry v0.7
  *
  * Diagnostic machine map of productive mechanisms versus canonical factual
  * accounting capability. Canonical Income Ledger is the sole authority for
@@ -22,13 +22,14 @@ const REWARDS_FILE=process.env.REWARDS_DATA_FILE||path.join(ROOT,'companies','re
 const VE33_EVIDENCE_FILE=process.env.VE33_EVIDENCE_FILE||path.join(ROOT,'reporting','ve33-accounting-evidence.json');
 const VE33_LOCKED_MANAGED_EVIDENCE_FILE=process.env.VE33_LOCKED_MANAGED_EVIDENCE_FILE||path.join(ROOT,'reporting','ve33-locked-managed-accounting-evidence.json');
 const YIELD_BASIS_EVIDENCE_FILE=process.env.YIELD_BASIS_EVIDENCE_FILE||path.join(ROOT,'reporting','yield-basis-accounting-evidence.json');
+const YIELD_BASIS_LP_EVIDENCE_FILE=process.env.YIELD_BASIS_LP_EVIDENCE_FILE||path.join(ROOT,'reporting','yield-basis-lp-accounting-evidence.json');
 const FRAX_EVIDENCE_FILE=process.env.FRAX_EVIDENCE_FILE||path.join(ROOT,'reporting','frax-yield-accounting-evidence.json');
 const ICP_NNS_STATE_FILE=process.env.ICP_NNS_STATE_FILE||path.join(ROOT,'companies','icp-nns-rewards-state.json');
 const ICP_NNS_CONFIG_FILE=process.env.ICP_NNS_CONFIG_FILE||path.join(ROOT,'intelligence','icp-nns','company-005-006-neuron-pool.json');
 const COMPANY_010_STATE_FILE=process.env.COMPANY_010_STATE_FILE||path.join(ROOT,'companies','company-010-production-state.json');
 const OUTPUT_FILE=process.env.ACCOUNTING_COVERAGE_FILE||path.join(ROOT,'reporting','accounting-coverage.json');
 
-export const VERSION='0.6-hyperlend-factual-tracking-accounting-mechanism-coverage-registry';
+export const VERSION='0.7-yield-basis-lp-factual-tracking-accounting-mechanism-coverage-registry';
 export const COMPANY_ALIASES=Object.freeze({'aerocrvyb.eth':'aerocvxyb.eth'});
 export function canonicalCompanyName(name){const raw=String(name||'').trim();return raw?(COMPANY_ALIASES[raw]||raw):'';}
 
@@ -96,7 +97,7 @@ export function discoverCompanies({productivity={},ledger={},embedded={}}={}){
   return unique(raw.map(canonicalCompanyName)).filter(Boolean).sort((a,b)=>a.localeCompare(b));
 }
 
-function productiveRows(productivity,name){const key=preferredCompanyKey(productivity?.companies,name);const rows=key?productivity?.companies?.[key]?.breakdown:null;return Array.isArray(rows)?rows:[];}
+function productiveRows(productivity,name){const key=preferredCompanyKey(productivity?.companies,name),rows=key?productivity?.companies?.[key]?.breakdown:null;return Array.isArray(rows)?rows:[];}
 function productiveValue(row){for(const key of['value','valueUsd','productiveValueUsd','productiveValue'])if(finite(row?.[key]))return Number(row[key]);return null;}
 function classForEngine(engineId,protocol=null){const known=ENGINE_CLASS[engineId];return known?{...known,classified:true}:{family:'unknown',mechanism:'unclassified',hints:unique([engineId,protocol]),classified:false};}
 
@@ -199,6 +200,32 @@ export function veniceSVvvObservationProofs(rewards={}){
     const observedAt=c?.updatedAt||rewards?.generatedAt;
     if(!monthKey(observedAt))continue;
     pushTrackingProof(out,{engineId:'venice_svvv',company,observedAt,sourceFile:'companies/rewards-data.json',proofKey:`venice-svvv:${[...wallets].sort().join(',')}:${rows.length}`});
+  }
+  return out;
+}
+
+export function yieldBasisLpObservationProofs(evidence={}){
+  const out=[];
+  const expected={
+    yieldbasis_yblp_wbtc:{market:'yb-WBTC',lt:'0x651d4b8168488fa163d85304662e8278d4c55baa',gauge:'0xaa0b1d265f23972eafb7d088e963bd31403a58f5'},
+    yieldbasis_yblp_weth:{market:'yb-WETH',lt:'0x2b9c9f3bdceb5d8e36a4704f08a78fca53343cea',gauge:'0xd829456fd63ada7de0657714a3a7a26de403e3d8'}
+  };
+  if(evidence?.version!=='0.1-yield-basis-lp-factual-tracking'||evidence?.status!=='ok')return out;
+  if(evidence?.semantics?.factualTrackingProofIsNotPeriodIncome!==true||evidence?.semantics?.openingBalanceCreatesIncome!==false||evidence?.semantics?.referenceAprUsed!==false||evidence?.semantics?.currentPpsIsNotPeriodIncome!==true||evidence?.semantics?.custodyLocationDoesNotCreateIncome!==true||evidence?.semantics?.unknownIsNotZero!==true)return out;
+  if(evidence?.authority?.readOnly!==true||evidence?.authority?.executionAuthority!=='none'||evidence?.authority?.walletAuthority!=='none'||evidence?.authority?.claimingAuthority!=='none'||evidence?.authority?.capitalExecution!==false||evidence?.authority?.methodologyMutationAuthority!=='none')return out;
+  const checkpoints=Array.isArray(evidence?.checkpoints)?evidence.checkpoints:[];
+  if(checkpoints.length!==Object.keys(expected).length)return out;
+  for(const row of checkpoints){
+    const want=expected[row?.engineId],holdings=Array.isArray(row?.holdings)?row.holdings:[],holders=Array.isArray(row?.holders)?row.holders:[];
+    if(!want||row?.ok!==true||row?.factualTrackingProof!==true||row?.periodIncomeAuthority!==false||row?.openingBalanceCreatesIncome!==false||row?.referenceAprUsed!==false||row?.unknownIsNotZero!==true||row?.executionAuthority!=='none')continue;
+    if(row?.company!=="Rook's portfolio"||String(row?.registry)!=='007'||row?.chain!=='Ethereum'||row?.protocol!=='Yield Basis'||row?.market!==want.market||lower(row?.lt)!==want.lt||lower(row?.gauge)!==want.gauge)continue;
+    if(!Number.isSafeInteger(Number(row?.blockNumber))||Number(row.blockNumber)<=0||!monthKey(row?.observedAt)||!/^0x[0-9a-f]+$/i.test(String(row?.pricePerShareRaw||''))||BigInt(row.pricePerShareRaw)<=0n)continue;
+    const addressOk=v=>/^0x[0-9a-f]{40}$/.test(lower(v)),quantityOk=v=>/^0x[0-9a-f]+$/i.test(String(v||''));
+    if(!holdings.length||holdings.some(x=>!addressOk(x?.wallet)||!quantityOk(x?.directLtBalanceRaw)||!quantityOk(x?.gaugeShareBalanceRaw)))continue;
+    if(!holdings.some(x=>BigInt(x.directLtBalanceRaw)>0n||BigInt(x.gaugeShareBalanceRaw)>0n))continue;
+    if(!holders.length||holders.some(x=>!addressOk(x?.wallet)||!quantityOk(x?.balanceRaw))||!holders.some(x=>BigInt(x.balanceRaw)>0n))continue;
+    if(!['direct-lt','gauge','mixed'].includes(row?.activeHoldingPath))continue;
+    pushTrackingProof(out,{engineId:row.engineId,company:row.company,observedAt:row.observedAt,sourceFile:'reporting/yield-basis-lp-accounting-evidence.json',proofKey:row?.checkpointKey||`yield-basis-lp:${row.engineId}:${row.blockNumber}`});
   }
   return out;
 }
@@ -370,13 +397,13 @@ function curveFeeAccrualProofs(ledger={}){
   return out;
 }
 
-export function factualTrackingProofs({ve33={},ve33LockedManaged={},yieldBasis={},frax={},rewards={},ledger={},icpNnsState={},icpNnsConfig={},company010State={}}={}){
+export function factualTrackingProofs({ve33={},ve33LockedManaged={},yieldBasis={},yieldBasisLp={},frax={},rewards={},ledger={},icpNnsState={},icpNnsConfig={},company010State={}}={}){
   const out=[];
   const ve33Rows=[...((Array.isArray(ve33?.checkpoints)?ve33.checkpoints:[]).map(x=>({...x,__source:'reporting/ve33-accounting-evidence.json'}))),...((Array.isArray(ve33LockedManaged?.checkpoints)?ve33LockedManaged.checkpoints:[]).map(x=>({...x,__source:'reporting/ve33-locked-managed-accounting-evidence.json'})))];
   for(const row of ve33Rows){if(row?.ok===false)continue;const engineId=row?.protocolKey==='aerodrome'?'aerodrome_veaero':row?.protocolKey==='velodrome'?'velodrome_vevelo':null;pushTrackingProof(out,{engineId,company:row?.company,observedAt:row?.observedAt,sourceFile:row?.__source,proofKey:row?.checkpointKey});}
   for(const row of Array.isArray(yieldBasis?.checkpoints)?yieldBasis.checkpoints:[])pushTrackingProof(out,{engineId:'yieldbasis_veyb',company:row?.company,observedAt:row?.observedAt,sourceFile:'reporting/yield-basis-accounting-evidence.json',proofKey:row?.checkpointKey});
   for(const row of Array.isArray(frax?.checkpoints)?frax.checkpoints:[])pushTrackingProof(out,{engineId:'frax_vefrax',company:row?.company,observedAt:row?.observedAt,sourceFile:'reporting/frax-yield-accounting-evidence.json',proofKey:row?.checkpointKey});
-  out.push(...strongVlCvxRouteProofs(rewards),...strongCvxCrvClaimableProofs(rewards),...pendleSPendleObservationProofs(rewards),...veniceSVvvObservationProofs(rewards),...resupplyRsupObservationProofs(rewards),...liquityLqtyObservationProofs(rewards),...hyperlendKhypeObservationProofs(company010State,rewards),...curveFeeAccrualProofs(ledger),...icpNnsObservationProofs(icpNnsState,icpNnsConfig));
+  out.push(...strongVlCvxRouteProofs(rewards),...strongCvxCrvClaimableProofs(rewards),...pendleSPendleObservationProofs(rewards),...veniceSVvvObservationProofs(rewards),...resupplyRsupObservationProofs(rewards),...liquityLqtyObservationProofs(rewards),...hyperlendKhypeObservationProofs(company010State,rewards),...yieldBasisLpObservationProofs(yieldBasisLp),...curveFeeAccrualProofs(ledger),...icpNnsObservationProofs(icpNnsState,icpNnsConfig));
   return[...new Map(out.map(x=>[[x.engineId,x.company,x.month,x.proofKey].join('|'),x])).values()];
 }
 
@@ -407,7 +434,7 @@ function unmatchedEvents(events,mechanismRows){const known=mechanismRows.map(x=>
 export function buildAccountingCoverage({productivity={},ledger={},embedded={},factualEvidence={},generatedAt=null}={}){
   validateCanonicalLedgerContract(ledger);
   const tracking=factualTrackingProofs({...factualEvidence,ledger});
-  const sourceTimes=[generatedAt,ledger?.generatedAt,productivity?.generatedAt,embedded?.generatedAt,factualEvidence?.rewards?.generatedAt,factualEvidence?.ve33?.generatedAt,factualEvidence?.ve33LockedManaged?.generatedAt,factualEvidence?.yieldBasis?.generatedAt,factualEvidence?.frax?.generatedAt,factualEvidence?.icpNnsState?.generatedAt,factualEvidence?.company010State?.provenance?.hyperlendIncome?.generatedAt,factualEvidence?.company010State?.generatedAt].filter(Boolean).sort(),at=sourceTimes.at(-1)||new Date().toISOString(),currentMonth=monthKey(at)||new Date().toISOString().slice(0,7),events=ledger.events||[],companyNames=discoverCompanies({productivity,ledger,embedded}),companies={},flat=[];
+  const sourceTimes=[generatedAt,ledger?.generatedAt,productivity?.generatedAt,embedded?.generatedAt,factualEvidence?.rewards?.generatedAt,factualEvidence?.ve33?.generatedAt,factualEvidence?.ve33LockedManaged?.generatedAt,factualEvidence?.yieldBasis?.generatedAt,factualEvidence?.yieldBasisLp?.generatedAt,factualEvidence?.frax?.generatedAt,factualEvidence?.icpNnsState?.generatedAt,factualEvidence?.company010State?.provenance?.hyperlendIncome?.generatedAt,factualEvidence?.company010State?.generatedAt].filter(Boolean).sort(),at=sourceTimes.at(-1)||new Date().toISOString(),currentMonth=monthKey(at)||new Date().toISOString().slice(0,7),events=ledger.events||[],companyNames=discoverCompanies({productivity,ledger,embedded}),companies={},flat=[];
   for(const name of companyNames){
     const months=companyMonths({productivity,ledger,embedded,name,asOfMonth:currentMonth}),stateRows=currentStateRows(ledger,name),mechanisms={};
     for(const item of mechanismInventory({productivity,embedded,company:name})){
@@ -421,14 +448,14 @@ export function buildAccountingCoverage({productivity={},ledger={},embedded={},f
   const mechanismIds=unique(flat.map(x=>x.mechanism.engineId)).sort(),mechanisms={};for(const engineId of mechanismIds)mechanisms[engineId]=mechanismAggregate(engineId,flat.filter(x=>x.mechanism.engineId===engineId),currentMonth);
   const unmatched=unmatchedEvents(events,flat),unclassified=flat.filter(x=>x.mechanism.classified!==true),gaps=Object.values(mechanisms).filter(x=>x.reusableCoverageGap).sort((a,b)=>b.activeCompanyCount-a.activeCompanyCount||(Number(b.knownProductiveValueUsdTotal||0)-Number(a.knownProductiveValueUsdTotal||0))||a.engineId.localeCompare(b.engineId)).map((x,index)=>({rank:index+1,engineId:x.engineId,activeCompanyCount:x.activeCompanyCount,knownProductiveValueUsdTotal:x.knownProductiveValueUsdTotal,factualTrackingCompanyCount:x.factualTrackingCompanyCount,factualEventCompanyCount:x.factualEventCompanyCount,factualCompanyCount:x.factualCompanyCount,stateOnlyCompanyCount:x.stateOnlyCompanyCount,referenceOnlyCompanyCount:x.referenceOnlyCompanyCount}));
   const aliasObservations=Object.values(companies).filter(c=>(c.sourceAliases||[]).some(x=>x!==c.name)).map(c=>({canonicalName:c.name,sourceAliases:c.sourceAliases}));
-  return{version:VERSION,generatedAt:at,status:'diagnostic-no-completion-authority',currentMonth,sourceFreshness:{productivityGeneratedAt:productivity?.generatedAt||null,incomeLedgerGeneratedAt:ledger?.generatedAt||null,embeddedYieldGeneratedAt:embedded?.generatedAt||null,rewardsGeneratedAt:factualEvidence?.rewards?.generatedAt||null,ve33EvidenceGeneratedAt:factualEvidence?.ve33?.generatedAt||null,ve33LockedManagedEvidenceGeneratedAt:factualEvidence?.ve33LockedManaged?.generatedAt||null,yieldBasisEvidenceGeneratedAt:factualEvidence?.yieldBasis?.generatedAt||null,fraxEvidenceGeneratedAt:factualEvidence?.frax?.generatedAt||null,icpNnsStateGeneratedAt:factualEvidence?.icpNnsState?.generatedAt||null,company010StateGeneratedAt:factualEvidence?.company010State?.provenance?.hyperlendIncome?.generatedAt||factualEvidence?.company010State?.generatedAt||null},semantics:{canonicalLedgerIsSoleFactualIncomeAuthority:true,productivityCoverageIsNotAccountingCoverage:true,referenceMetricIsNotEarnedIncome:true,currentRewardStateIsNotPeriodIncome:true,factualTrackingProofIsNotPeriodIncome:true,routeStateCanProveTrackingOnlyWithSettlementProof:true,unresolvedSettlementCannotProveFactualTracking:true,zeroPeriodEventDoesNotImplyCoverageGap:true,coverageGapMeansMissingFactualTrackingCapability:true,factualEvidenceDoesNotImplyFullMechanismCoverage:true,partialEvidenceDoesNotCloseMonth:true,unknownIsNotZero:true,newCompanyDoesNotRequireNewAccountingEngineWhenMechanismAlreadySupported:true,unclassifiedMechanismIsVisibleGapNotZero:true,historicalCompanyAliasesCanonicalized:true,stringAliasCannotCreateNewCompanyIdentity:true},completionPolicy:{registryHasMonthClosingAuthority:false,registryHasIncomeCreationAuthority:false,coverageGapRankingIsDiagnosticOnly:true},authority:{executionAuthority:'none',walletAuthority:'none',claimingAuthority:'none',capitalExecution:false,monthClosingAuthority:false,methodologyMutationAuthority:'none'},summary:{companyCount:companyNames.length,mechanismInstanceCount:flat.length,uniqueMechanismCount:mechanismIds.length,classifiedMechanismInstanceCount:flat.length-unclassified.length,unclassifiedMechanismInstanceCount:unclassified.length,reusableCoverageGapCount:gaps.length,canonicalLedgerEventCount:events.length,unmatchedCanonicalEventCount:unmatched.length,canonicalizedAliasCompanyCount:aliasObservations.length,factualTrackingProofCount:tracking.length},companyIdentityAliases:aliasObservations,gapRanking:gaps,unmatchedCanonicalEvents:unmatched.slice(0,50).map(e=>({eventKey:e?.eventKey||null,company:canonicalCompanyName(e?.company)||null,sourceCompany:e?.company||null,family:e?.family||null,protocol:e?.protocol||null,route:e?.route||null,sourceFile:e?.sourceFile||null})),mechanisms,companies};
+  return{version:VERSION,generatedAt:at,status:'diagnostic-no-completion-authority',currentMonth,sourceFreshness:{productivityGeneratedAt:productivity?.generatedAt||null,incomeLedgerGeneratedAt:ledger?.generatedAt||null,embeddedYieldGeneratedAt:embedded?.generatedAt||null,rewardsGeneratedAt:factualEvidence?.rewards?.generatedAt||null,ve33EvidenceGeneratedAt:factualEvidence?.ve33?.generatedAt||null,ve33LockedManagedEvidenceGeneratedAt:factualEvidence?.ve33LockedManaged?.generatedAt||null,yieldBasisEvidenceGeneratedAt:factualEvidence?.yieldBasis?.generatedAt||null,yieldBasisLpEvidenceGeneratedAt:factualEvidence?.yieldBasisLp?.generatedAt||null,fraxEvidenceGeneratedAt:factualEvidence?.frax?.generatedAt||null,icpNnsStateGeneratedAt:factualEvidence?.icpNnsState?.generatedAt||null,company010StateGeneratedAt:factualEvidence?.company010State?.provenance?.hyperlendIncome?.generatedAt||factualEvidence?.company010State?.generatedAt||null},semantics:{canonicalLedgerIsSoleFactualIncomeAuthority:true,productivityCoverageIsNotAccountingCoverage:true,referenceMetricIsNotEarnedIncome:true,currentRewardStateIsNotPeriodIncome:true,factualTrackingProofIsNotPeriodIncome:true,routeStateCanProveTrackingOnlyWithSettlementProof:true,unresolvedSettlementCannotProveFactualTracking:true,zeroPeriodEventDoesNotImplyCoverageGap:true,coverageGapMeansMissingFactualTrackingCapability:true,factualEvidenceDoesNotImplyFullMechanismCoverage:true,partialEvidenceDoesNotCloseMonth:true,unknownIsNotZero:true,newCompanyDoesNotRequireNewAccountingEngineWhenMechanismAlreadySupported:true,unclassifiedMechanismIsVisibleGapNotZero:true,historicalCompanyAliasesCanonicalized:true,stringAliasCannotCreateNewCompanyIdentity:true},completionPolicy:{registryHasMonthClosingAuthority:false,registryHasIncomeCreationAuthority:false,coverageGapRankingIsDiagnosticOnly:true},authority:{executionAuthority:'none',walletAuthority:'none',claimingAuthority:'none',capitalExecution:false,monthClosingAuthority:false,methodologyMutationAuthority:'none'},summary:{companyCount:companyNames.length,mechanismInstanceCount:flat.length,uniqueMechanismCount:mechanismIds.length,classifiedMechanismInstanceCount:flat.length-unclassified.length,unclassifiedMechanismInstanceCount:unclassified.length,reusableCoverageGapCount:gaps.length,canonicalLedgerEventCount:events.length,unmatchedCanonicalEventCount:unmatched.length,canonicalizedAliasCompanyCount:aliasObservations.length,factualTrackingProofCount:tracking.length},companyIdentityAliases:aliasObservations,gapRanking:gaps,unmatchedCanonicalEvents:unmatched.slice(0,50).map(e=>({eventKey:e?.eventKey||null,company:canonicalCompanyName(e?.company)||null,sourceCompany:e?.company||null,family:e?.family||null,protocol:e?.protocol||null,route:e?.route||null,sourceFile:e?.sourceFile||null})),mechanisms,companies};
 }
 
 async function main(){
-  const[productivity,ledger,embedded,rewards,ve33,ve33LockedManaged,yieldBasis,frax,icpNnsState,icpNnsConfig,company010State]=await Promise.all([readJson(PRODUCTIVITY_FILE),readJson(INCOME_LEDGER_FILE),readJson(EMBEDDED_FILE),readOptionalJson(REWARDS_FILE),readOptionalJson(VE33_EVIDENCE_FILE),readOptionalJson(VE33_LOCKED_MANAGED_EVIDENCE_FILE),readOptionalJson(YIELD_BASIS_EVIDENCE_FILE),readOptionalJson(FRAX_EVIDENCE_FILE),readOptionalJson(ICP_NNS_STATE_FILE),readOptionalJson(ICP_NNS_CONFIG_FILE),readOptionalJson(COMPANY_010_STATE_FILE)]);
-  const output=buildAccountingCoverage({productivity,ledger,embedded,factualEvidence:{rewards,ve33,ve33LockedManaged,yieldBasis,frax,icpNnsState,icpNnsConfig,company010State}});
+  const[productivity,ledger,embedded,rewards,ve33,ve33LockedManaged,yieldBasis,yieldBasisLp,frax,icpNnsState,icpNnsConfig,company010State]=await Promise.all([readJson(PRODUCTIVITY_FILE),readJson(INCOME_LEDGER_FILE),readJson(EMBEDDED_FILE),readOptionalJson(REWARDS_FILE),readOptionalJson(VE33_EVIDENCE_FILE),readOptionalJson(VE33_LOCKED_MANAGED_EVIDENCE_FILE),readOptionalJson(YIELD_BASIS_EVIDENCE_FILE),readOptionalJson(YIELD_BASIS_LP_EVIDENCE_FILE),readOptionalJson(FRAX_EVIDENCE_FILE),readOptionalJson(ICP_NNS_STATE_FILE),readOptionalJson(ICP_NNS_CONFIG_FILE),readOptionalJson(COMPANY_010_STATE_FILE)]);
+  const output=buildAccountingCoverage({productivity,ledger,embedded,factualEvidence:{rewards,ve33,ve33LockedManaged,yieldBasis,yieldBasisLp,frax,icpNnsState,icpNnsConfig,company010State}});
   await writeJson(OUTPUT_FILE,output);
-  console.log('Accounting Coverage Registry v0.6 built',{companies:output.summary.companyCount,mechanismInstances:output.summary.mechanismInstanceCount,uniqueMechanisms:output.summary.uniqueMechanismCount,coverageGaps:output.summary.reusableCoverageGapCount,unclassified:output.summary.unclassifiedMechanismInstanceCount,unmatchedLedgerEvents:output.summary.unmatchedCanonicalEventCount,canonicalizedAliasCompanies:output.summary.canonicalizedAliasCompanyCount,factualTrackingProofs:output.summary.factualTrackingProofCount,currentMonth:output.currentMonth,executionAuthority:output.authority.executionAuthority,topReusableGaps:output.gapRanking.slice(0,10)});
+  console.log('Accounting Coverage Registry v0.7 built',{companies:output.summary.companyCount,mechanismInstances:output.summary.mechanismInstanceCount,uniqueMechanisms:output.summary.uniqueMechanismCount,coverageGaps:output.summary.reusableCoverageGapCount,unclassified:output.summary.unclassifiedMechanismInstanceCount,unmatchedLedgerEvents:output.summary.unmatchedCanonicalEventCount,canonicalizedAliasCompanies:output.summary.canonicalizedAliasCompanyCount,factualTrackingProofs:output.summary.factualTrackingProofCount,currentMonth:output.currentMonth,executionAuthority:output.authority.executionAuthority,topReusableGaps:output.gapRanking.slice(0,10)});
 }
 
 if(process.argv[1]&&path.resolve(process.argv[1])===__filename)main().catch(error=>{console.error(error);process.exitCode=1;});
