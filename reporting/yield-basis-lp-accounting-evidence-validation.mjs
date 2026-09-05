@@ -16,7 +16,7 @@ function synthetic(){
     source:{chain:'Ethereum',blockNumber:24000000,observedAt,rpcHost:'synthetic'},
     semantics:{factualTrackingProofIsNotPeriodIncome:true,openingBalanceCreatesIncome:false,referenceAprUsed:false,currentPpsIsNotPeriodIncome:true,custodyLocationDoesNotCreateIncome:true,unknownIsNotZero:true},
     authority:{readOnly:true,executionAuthority:'none',walletAuthority:'none',claimingAuthority:'none',capitalExecution:false,methodologyMutationAuthority:'none'},
-    checkpoints:Object.entries(MARKETS).map(([engineId,m])=>({ok:true,engineId,company:COMPANY,registry:REGISTRY,chain:'Ethereum',protocol:'Yield Basis',market:m.market,family:m.family,lt:m.lt,gauge:m.gauge,blockNumber:24000000,observedAt,source:'ethereum-json-rpc',sourceMethod:'custody-aware synthetic',rpcHost:'synthetic',pricePerShareRaw:'0x0de0b6b3a7640000',holdings:[{wallet:'0x7ec6331188468269dc7c1cf6a84c972632178b1e',directLtBalanceRaw:'0x00',gaugeShareBalanceRaw:'0x01'}],positiveDirectLtHolderCount:0,positiveGaugeHolderCount:1,activeHoldingPath:'gauge',factualTrackingProof:true,periodIncomeAuthority:false,openingBalanceCreatesIncome:false,referenceAprUsed:false,unknownIsNotZero:true,executionAuthority:'none',checkpointKey:`yield-basis-lp:${engineId}:24000000`}))
+    checkpoints:Object.entries(MARKETS).map(([engineId,m])=>({ok:true,engineId,company:COMPANY,registry:REGISTRY,chain:'Ethereum',protocol:'Yield Basis',market:m.market,family:m.family,lt:m.lt,gauge:m.gauge,blockNumber:24000000,observedAt,source:'ethereum-json-rpc',sourceMethod:'custody-aware synthetic',rpcHost:'synthetic',pricePerShareRaw:'0x0de0b6b3a7640000',holdings:[{wallet:'0x7ec6331188468269dc7c1cf6a84c972632178b1e',directLtBalanceRaw:'0x00',gaugeShareBalanceRaw:'0x01'}],holders:[{wallet:'0x7ec6331188468269dc7c1cf6a84c972632178b1e',balanceRaw:'0x01',custodyPath:'gauge'}],positiveDirectLtHolderCount:0,positiveGaugeHolderCount:1,activeHoldingPath:'gauge',factualTrackingProof:true,periodIncomeAuthority:false,openingBalanceCreatesIncome:false,referenceAprUsed:false,unknownIsNotZero:true,executionAuthority:'none',checkpointKey:`yield-basis-lp:${engineId}:24000000`}))
   };
 }
 
@@ -26,6 +26,8 @@ assert.equal(validateEvidenceOutput(fixture),true);
 const directFixture=structuredClone(fixture);
 directFixture.checkpoints[0].holdings[0].directLtBalanceRaw='0x01';
 directFixture.checkpoints[0].holdings[0].gaugeShareBalanceRaw='0x00';
+directFixture.checkpoints[0].holders[0].balanceRaw='0x01';
+directFixture.checkpoints[0].holders[0].custodyPath='direct-lt';
 directFixture.checkpoints[0].positiveDirectLtHolderCount=1;
 directFixture.checkpoints[0].positiveGaugeHolderCount=0;
 directFixture.checkpoints[0].activeHoldingPath='direct-lt';
@@ -33,6 +35,7 @@ assert.equal(validateEvidenceOutput(directFixture),true,'direct LT custody stopp
 
 const noHolding=structuredClone(fixture);
 noHolding.checkpoints[0].holdings[0].gaugeShareBalanceRaw='0x00';
+noHolding.checkpoints[0].holders[0].balanceRaw='0x00';
 assert.throws(()=>validateEvidenceOutput(noHolding),/custody-aware holding proof invalid/,'zero company holding gained tracking authority');
 
 const incomeLeak=structuredClone(fixture);
