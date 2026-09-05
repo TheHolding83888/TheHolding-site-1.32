@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-05T03:34:56.654Z",
+  "generatedAt": "2026-09-05T03:41:37.947Z",
   "status": "watch",
-  "snapshotHash": "50dbcb3052feb1a0d60711d6b73299a43ef4f4e0b17ecac59e834eefb0d3b11c",
+  "snapshotHash": "007927d0f9f7b9611e39e84aa1c14bf335d23cbe23ce5a979da6fe62d9fd9f16",
   "repository": {
     "filesScanned": 969,
-    "bytesScanned": 29748563,
+    "bytesScanned": 29758596,
     "criticalHashes": {
       ".github/workflows/admit-company-010-public.yml": "5feffbf58388675952487c3462d2f9149eecec6f3795483087010dd0d3b19cfb",
       ".github/workflows/ask-experience.yml": "deb9c4e1025390563f8a866f6ddf1c7870e748cbd6aba13fdbd6da2d38e983d4",
@@ -106,7 +106,7 @@
       ".github/workflows/validate-yieldring-capital-state.yml": "72851330416153d65c8a9d11d800bedd3c1bd70a894dd7abc6a393b55f1ce31c",
       ".github/workflows/validate-yieldring-production-cascade.yml": "2e4d0b65e8b6e4608587e6c85f843d59e17832838af241fcb9d95b9d122c5e13",
       ".github/workflows/value-company-010-gmx-reader.yml": "eacf1a60777e9758fe48fcdc21d57796174fe6dac0a73fa0dbbb4d1606dc6ad1",
-      ".github/workflows/verify-accounting-coverage.yml": "cb491860854f1c3ef63ada5ed6b857cc359b29da0aa7a354d797190b2b492f2a",
+      ".github/workflows/verify-accounting-coverage.yml": "a74ab4a5d71437207e5ab15cf0c3c3e55020f89e5e83f34a4ae21b17e7db7418",
       ".github/workflows/verify-aerodrome-economic-candidate.yml": "9ff993e99d253b47e29e2a63115b138cf729cbbddec015d6d0aec33ca0669763",
       ".github/workflows/verify-ask-conversation-gauntlet.yml": "cc5410dd7b90a8041200d6d6f04bd64696c4ccbd51f248f16d3146432b571858",
       ".github/workflows/verify-brain-explanatory-context.yml": "4b63d5cbc68c6ddc67f1c96f57c48fea1e9068629717691073f3b953cde91081",
@@ -120,7 +120,7 @@
       ".github/workflows/verify-company-010-rewards-drawer.yml": "5a1f2d9545aa3a4988a2f00a9b60ba3f3d4a104df51271731397dc15f24275df",
       ".github/workflows/verify-company-010-ve-rewards.yml": "3bcd4d98eddbca6622b3568d0c4d966daf98073cbc136c561686bf33dbaf4a70",
       ".github/workflows/verify-company-monthly-reports.yml": "fa09448267b58ba5f225b50d07d0e8a12046992e84dbc1ae541492313f348207",
-      ".github/workflows/verify-curve-fee-accounting.yml": "591b0301908a89ab3365fb9cbc27edbf9956c878eaa55b1e83137c018ddc7350",
+      ".github/workflows/verify-curve-fee-accounting.yml": "a9d43e54b0b43d94ecc7dea92d4803c4d369e9be93cf5928d67b4890189ac881",
       ".github/workflows/verify-cvxcrv-income-parity.yml": "d15ba2b72124bc2af298ce9c1ccee53977e33e060c3782084eb1c056c9af0c3d",
       ".github/workflows/verify-defitea-union-scrvusd.yml": "7e6d7c38f908b5627c4f7321fa2c3a15642fafca3b6d333154945c16339171f9",
       ".github/workflows/verify-economic-graph-live-build.yml": "7a65a64da8d2920cda6e4b9cbdecfb4b9dad9035cde72b29bdb1f8ca3aa5fa00",
@@ -479,6 +479,34 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "659c769b5098f1c05a49ef4c670dbe2fb2ac59a68d9ac488f9a93ee34c4a0c07",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/verify-accounting-coverage.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-accounting-coverage.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "cb491860854f1c3ef63ada5ed6b857cc359b29da0aa7a354d797190b2b492f2a",
+        "currentSha256": "a74ab4a5d71437207e5ab15cf0c3c3e55020f89e5e83f34a4ae21b17e7db7418"
+      }
+    },
+    {
+      "id": "2982cca7166caf6a47b78b8f0ec20040d910f80086c38dc9fa5dfeb9012e6efd",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/verify-curve-fee-accounting.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-curve-fee-accounting.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "591b0301908a89ab3365fb9cbc27edbf9956c878eaa55b1e83137c018ddc7350",
+        "currentSha256": "a9d43e54b0b43d94ecc7dea92d4803c4d369e9be93cf5928d67b4890189ac881"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -1105,10 +1133,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 838,
+    "runCount": 839,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/09/2026-09-05T03-34-56-654Z-50dbcb3052.json",
-    "latestRecordHash": "a3a33afa6bb8b6785914c5287a93596615bf56a86c8c51bfa76797386184354d",
+    "latestRecordPath": "security/security-vault/2026/09/2026-09-05T03-41-37-947Z-007927d0f9.json",
+    "latestRecordHash": "b0f984c6b2696b35e2253fa6d2afd3c92e1f0b76e3294e94d81689e1b0d9fb6b",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
