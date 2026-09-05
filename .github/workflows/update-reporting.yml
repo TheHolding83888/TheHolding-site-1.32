@@ -16,6 +16,7 @@ on:
       - 'companies/stable-index-data.json'
       - 'companies/embedded-yield-ledger.json'
       - 'companies/productivity-data.json'
+      - 'companies/company-007-discovery.json'
       - 'companies/defitea-canonical-state.json'
       - 'intelligence/realised-cash-flow/realised-cash-flow.json'
       - 'reporting/reporting-scheduler-contract.json'
@@ -39,6 +40,9 @@ on:
       - 'reporting/yield-basis-ledger-admission.mjs'
       - 'reporting/yield-basis-ledger-admission-validation.mjs'
       - 'reporting/yield-basis-accounting-evidence.json'
+      - 'reporting/yield-basis-lp-accounting-evidence.mjs'
+      - 'reporting/yield-basis-lp-accounting-evidence-validation.mjs'
+      - 'reporting/yield-basis-lp-accounting-evidence.json'
       - 'reporting/ve33-accounting-evidence.mjs'
       - 'reporting/ve33-accounting-evidence-validation.mjs'
       - 'reporting/ve33-income-candidates.mjs'
@@ -116,6 +120,8 @@ jobs:
           node --check reporting/yield-basis-income-candidates-validation.mjs
           node --check reporting/yield-basis-ledger-admission.mjs
           node --check reporting/yield-basis-ledger-admission-validation.mjs
+          node --check reporting/yield-basis-lp-accounting-evidence.mjs
+          node --check reporting/yield-basis-lp-accounting-evidence-validation.mjs
           node --check reporting/ve33-accounting-evidence.mjs
           node --check reporting/ve33-accounting-evidence-validation.mjs
           node --check reporting/ve33-income-candidates.mjs
@@ -136,6 +142,7 @@ jobs:
           test -s reporting/income-ledger-policy.json
           test -s reporting/frax-yield-accounting-evidence.json
           test -s reporting/yield-basis-accounting-evidence.json
+          test -s companies/company-007-discovery.json
           test -s reporting/ve33-accounting-evidence.json
           test -s reporting/ve33-locked-managed-accounting-evidence.json
           test -s companies/defitea-canonical-state.json
@@ -152,6 +159,7 @@ jobs:
           node reporting/yield-basis-accounting-evidence-validation.mjs
           node reporting/yield-basis-income-candidates-validation.mjs
           node reporting/yield-basis-ledger-admission-validation.mjs
+          node reporting/yield-basis-lp-accounting-evidence-validation.mjs
           node reporting/ve33-accounting-evidence-validation.mjs
           node reporting/ve33-income-candidates-validation.mjs
           node reporting/ve33-ledger-admission-validation.mjs
@@ -227,6 +235,34 @@ jobs:
           node reporting/yield-basis-income-candidates-validation.mjs
           node reporting/yield-basis-ledger-admission-validation.mjs
 
+      - name: Build Yield Basis LP factual tracking evidence
+        shell: bash
+        env:
+          PRODUCTIVITY_DATA_FILE: ./companies/productivity-data.json
+          COMPANY_007_DISCOVERY_FILE: ./companies/company-007-discovery.json
+          YIELD_BASIS_LP_EVIDENCE_FILE: ./reporting/yield-basis-lp-accounting-evidence.json
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
+        run: |
+          set -euo pipefail
+          previous=/tmp/yield-basis-lp-accounting-evidence.previous.json
+          rm -f "$previous"
+          if [ -s "$YIELD_BASIS_LP_EVIDENCE_FILE" ]; then cp "$YIELD_BASIS_LP_EVIDENCE_FILE" "$previous"; fi
+          set +e
+          node reporting/yield-basis-lp-accounting-evidence.mjs
+          rc=$?
+          set -e
+          if [ "$rc" -ne 0 ]; then
+            if [ -s "$previous" ]; then
+              echo "::warning::Yield Basis LP current source mesh unavailable; preserving prior factual tracking proof. Stale proof can never create period income and naturally stops proving a new month."
+              cp "$previous" "$YIELD_BASIS_LP_EVIDENCE_FILE"
+            else
+              echo "Yield Basis LP has no prior factual proof to preserve; fail closed."
+              exit "$rc"
+            fi
+          fi
+          node reporting/yield-basis-lp-accounting-evidence-validation.mjs
+
       - name: Build Aerodrome + Velodrome factual accrual evidence
         env:
           REWARDS_DATA_FILE: ./companies/rewards-data.json
@@ -293,6 +329,7 @@ jobs:
           VE33_EVIDENCE_FILE: ./reporting/ve33-accounting-evidence.json
           VE33_LOCKED_MANAGED_EVIDENCE_FILE: ./reporting/ve33-locked-managed-accounting-evidence.json
           YIELD_BASIS_EVIDENCE_FILE: ./reporting/yield-basis-accounting-evidence.json
+          YIELD_BASIS_LP_EVIDENCE_FILE: ./reporting/yield-basis-lp-accounting-evidence.json
           FRAX_EVIDENCE_FILE: ./reporting/frax-yield-accounting-evidence.json
           ACCOUNTING_COVERAGE_FILE: ./reporting/accounting-coverage.json
         run: |
@@ -424,6 +461,7 @@ jobs:
         env:
           FRAXTAL_RPC_URL: ${{ secrets.FRAXTAL_RPC_URL }}
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
           BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
           OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
         shell: bash
@@ -451,6 +489,8 @@ jobs:
               reporting/yield-basis-income-candidates-validation.mjs \
               reporting/yield-basis-ledger-admission.mjs \
               reporting/yield-basis-ledger-admission-validation.mjs \
+              reporting/yield-basis-lp-accounting-evidence.mjs \
+              reporting/yield-basis-lp-accounting-evidence-validation.mjs \
               reporting/ve33-accounting-evidence.mjs \
               reporting/ve33-accounting-evidence-validation.mjs \
               reporting/ve33-income-candidates.mjs \
@@ -468,7 +508,28 @@ jobs:
           }
           critical_before="$(critical_fingerprint)"
 
-          git add reporting/reporting-data.json reporting/defitea-income-ledger.json reporting/frax-yield-accounting-evidence.json reporting/ve33-accounting-evidence.json reporting/ve33-locked-managed-accounting-evidence.json reporting/income-ledger.json reporting/yield-basis-accounting-evidence.json reporting/accounting-coverage.json
+          build_yblp_evidence() {
+            local evidence=reporting/yield-basis-lp-accounting-evidence.json
+            local previous=/tmp/yield-basis-lp-accounting-evidence.safe-writer-previous.json
+            rm -f "$previous"
+            if [ -s "$evidence" ]; then cp "$evidence" "$previous"; fi
+            set +e
+            node reporting/yield-basis-lp-accounting-evidence.mjs
+            local rc=$?
+            set -e
+            if [ "$rc" -ne 0 ]; then
+              if [ -s "$previous" ]; then
+                echo "::warning::Yield Basis LP source mesh unavailable during safe-writer rebuild; preserving prior factual tracking proof."
+                cp "$previous" "$evidence"
+              else
+                echo "Yield Basis LP has no prior factual proof to preserve; fail closed."
+                return "$rc"
+              fi
+            fi
+            node reporting/yield-basis-lp-accounting-evidence-validation.mjs
+          }
+
+          git add reporting/reporting-data.json reporting/defitea-income-ledger.json reporting/frax-yield-accounting-evidence.json reporting/ve33-accounting-evidence.json reporting/ve33-locked-managed-accounting-evidence.json reporting/income-ledger.json reporting/yield-basis-accounting-evidence.json reporting/yield-basis-lp-accounting-evidence.json reporting/accounting-coverage.json
           if git diff --cached --quiet; then
             echo "No reporting data changes."
             exit 0
@@ -502,6 +563,7 @@ jobs:
             node reporting/reporting-engine-validation.mjs
             node reporting/yield-basis-accounting-evidence.mjs
             node reporting/yield-basis-ledger-admission.mjs
+            build_yblp_evidence
             node reporting/accounting-coverage.mjs
             node reporting/accounting-coverage-validation.mjs
             node reporting/income-ledger-validation.mjs
@@ -517,13 +579,13 @@ jobs:
             node reporting/ve33-locked-managed-ledger-admission-validation.mjs
             node reporting/defitea-income-composition-validation.mjs
             node reporting/defitea-forty-acres-settlement-validation.mjs
-            git add reporting/reporting-data.json reporting/defitea-income-ledger.json reporting/frax-yield-accounting-evidence.json reporting/ve33-accounting-evidence.json reporting/ve33-locked-managed-accounting-evidence.json reporting/income-ledger.json reporting/yield-basis-accounting-evidence.json reporting/accounting-coverage.json
+            git add reporting/reporting-data.json reporting/defitea-income-ledger.json reporting/frax-yield-accounting-evidence.json reporting/ve33-accounting-evidence.json reporting/ve33-locked-managed-accounting-evidence.json reporting/income-ledger.json reporting/yield-basis-accounting-evidence.json reporting/yield-basis-lp-accounting-evidence.json reporting/accounting-coverage.json
             git commit --amend --no-edit
 
             mapfile -t ahead < <(git diff --name-only origin/main...HEAD)
             for f in "${ahead[@]}"; do
               case "$f" in
-                reporting/reporting-data.json|reporting/defitea-income-ledger.json|reporting/frax-yield-accounting-evidence.json|reporting/ve33-accounting-evidence.json|reporting/ve33-locked-managed-accounting-evidence.json|reporting/income-ledger.json|reporting/yield-basis-accounting-evidence.json|reporting/accounting-coverage.json) ;;
+                reporting/reporting-data.json|reporting/defitea-income-ledger.json|reporting/frax-yield-accounting-evidence.json|reporting/ve33-accounting-evidence.json|reporting/ve33-locked-managed-accounting-evidence.json|reporting/income-ledger.json|reporting/yield-basis-accounting-evidence.json|reporting/yield-basis-lp-accounting-evidence.json|reporting/accounting-coverage.json) ;;
                 *) echo "Unexpected Reporting publish delta after rebase: $f"; exit 1 ;;
               esac
             done
