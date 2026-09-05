@@ -28,7 +28,17 @@ export const MARKETS=Object.freeze({
   yieldbasis_yblp_wbtc:{market:'yb-WBTC',family:'BTC',lt:'0x651d4b8168488fa163d85304662e8278d4c55baa'},
   yieldbasis_yblp_weth:{market:'yb-WETH',family:'ETH',lt:'0x2b9c9f3bdceb5d8e36a4704f08a78fca53343cea'}
 });
-const RPC_URLS=[process.env.ETH_RPC_URL,process.env.ETH_RPC_URL_2,'https://eth.merkle.io','https://ethereum-rpc.publicnode.com','https://eth.drpc.org'].filter(Boolean);
+const RPC_URLS=[
+  process.env.ETH_RPC_URL,
+  process.env.ETH_RPC_URL_2,
+  'https://eth.merkle.io',
+  'https://eth.blockscout.com/api/eth-rpc',
+  'https://eth.llamarpc.com',
+  'https://ethereum-rpc.publicnode.com',
+  'https://eth.drpc.org',
+  'https://1rpc.io/eth',
+  'https://rpc.flashbots.net'
+].filter(Boolean);
 const TIMEOUT_MS=Number(process.env.YIELD_BASIS_LP_RPC_TIMEOUT_MS||8000);
 
 const lower=v=>String(v||'').trim().toLowerCase();
@@ -53,18 +63,6 @@ async function rpc(url,method,params=[],timeoutMs=TIMEOUT_MS){
     if(body?.result===null||body?.result===undefined)throw new Error(`${method} returned no result`);
     return body.result;
   }finally{clearTimeout(timer);}
-}
-
-async function selectRpc(){
-  const errors=[];
-  for(const url of RPC_URLS){
-    try{
-      const blockHex=await rpc(url,'eth_blockNumber');
-      if(!isHexQuantity(blockHex)||!positiveHex(blockHex))throw new Error('invalid latest block');
-      return{url,blockHex,errors};
-    }catch(error){errors.push(`${safeHost(url)}: ${String(error?.message||error)}`);}
-  }
-  throw new Error(`Ethereum RPC source mesh exhausted: ${errors.join(' | ')}`);
 }
 
 function canonicalWallets(discovery){
@@ -130,13 +128,25 @@ export async function buildEvidence({productivity,discovery,rpcUrl,blockHex}={})
   return output;
 }
 
+export async function buildEvidenceFromSourceMesh({productivity,discovery}={}){
+  const errors=[];
+  for(const url of RPC_URLS){
+    try{
+      const blockHex=await rpc(url,'eth_blockNumber');
+      if(!isHexQuantity(blockHex)||!positiveHex(blockHex))throw new Error('invalid latest block');
+      const output=await buildEvidence({productivity,discovery,rpcUrl:url,blockHex});
+      output.source.rpcFallbackErrors=errors;
+      return output;
+    }catch(error){errors.push(`${safeHost(url)}: ${String(error?.message||error)}`);}
+  }
+  throw new Error(`Ethereum RPC source mesh exhausted before a complete same-provider observation: ${errors.join(' | ')}`);
+}
+
 async function main(){
   const[productivity,discovery]=await Promise.all([readJson(PRODUCTIVITY_FILE),readJson(DISCOVERY_FILE)]);
-  const selected=await selectRpc();
-  const output=await buildEvidence({productivity,discovery,rpcUrl:selected.url,blockHex:selected.blockHex});
-  output.source.rpcFallbackErrors=selected.errors;
+  const output=await buildEvidenceFromSourceMesh({productivity,discovery});
   await writeJson(OUTPUT_FILE,output);
-  console.log('Yield Basis LP factual tracking evidence built',{status:output.status,blockNumber:output.source.blockNumber,checkpoints:output.checkpoints.length,company:COMPANY,executionAuthority:output.authority.executionAuthority});
+  console.log('Yield Basis LP factual tracking evidence built',{status:output.status,blockNumber:output.source.blockNumber,rpcHost:output.source.rpcHost,checkpoints:output.checkpoints.length,company:COMPANY,executionAuthority:output.authority.executionAuthority,fallbacks:output.source.rpcFallbackErrors.length});
 }
 
 if(process.argv[1]&&path.resolve(process.argv[1])===__filename)main().catch(error=>{console.error(error);process.exitCode=1;});
