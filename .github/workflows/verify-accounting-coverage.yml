@@ -10,6 +10,7 @@ on:
       - 'reporting/icp-nns-tracking-proof-validation.mjs'
       - 'reporting/pendle-spendle-tracking-proof-validation.mjs'
       - 'reporting/resupply-tracking-proof-validation.mjs'
+      - 'reporting/liquity-tracking-proof-validation.mjs'
       - 'reporting/accounting-coverage.json'
       - 'companies/productivity-data.json'
       - 'companies/rewards-data.json'
@@ -64,9 +65,11 @@ jobs:
           node --check reporting/icp-nns-tracking-proof-validation.mjs
           node --check reporting/pendle-spendle-tracking-proof-validation.mjs
           node --check reporting/resupply-tracking-proof-validation.mjs
+          node --check reporting/liquity-tracking-proof-validation.mjs
           node reporting/icp-nns-tracking-proof-validation.mjs
           node reporting/pendle-spendle-tracking-proof-validation.mjs
           node reporting/resupply-tracking-proof-validation.mjs
+          node reporting/liquity-tracking-proof-validation.mjs
           node reporting/accounting-coverage.mjs
           test -s "$ACCOUNTING_COVERAGE_FILE"
           node --input-type=module - <<'NODE'
@@ -127,6 +130,27 @@ jobs:
           assert.ok(row?.completionBlockers?.includes('no-canonical-period-income-evidence'),'Resupply lost no-period-income blocker');
           assert.ok(!data.gapRanking.some(x=>x.engineId==='resupply_rsup'),'Resupply remained in reusable gap ranking');
           console.log('Resupply production-shaped coverage PASS',{tracking:`${engine.factualTrackingCompanyCount}/${engine.activeCompanyCount}`,factualEventCompanies:engine.factualEventCompanyCount,reusableCoverageGap:engine.reusableCoverageGap,periodIncomeAuthority:false});
+          NODE
+          node --input-type=module - <<'NODE'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          const data=JSON.parse(fs.readFileSync(process.env.ACCOUNTING_COVERAGE_FILE,'utf8'));
+          const engine=data.mechanisms?.liquity_lqty;
+          assert.ok(engine,'liquity_lqty mechanism missing');
+          assert.equal(engine.activeCompanyCount,1,'Liquity active company count drift');
+          assert.deepEqual(engine.companies,['defitea.eth'],'Liquity company identity drift');
+          assert.equal(engine.factualTrackingCompanyCount,1,'Liquity did not reach 1/1 factual tracking');
+          assert.deepEqual(engine.factualTrackingCompanies,['defitea.eth'],'Liquity factual tracking identity drift');
+          assert.equal(engine.factualEventCompanyCount,0,'Liquity tracking proof fabricated factual period events');
+          assert.equal(engine.reusableCoverageGap,false,'Liquity remained a reusable tracking gap');
+          const row=data.companies?.['defitea.eth']?.mechanisms?.liquity_lqty?.months?.[data.currentMonth];
+          assert.equal(row?.status,'factual-tracking-no-period-event','Defitea Liquity status drift');
+          assert.equal(row?.factualEventCount,0,'Liquity tracking proof fabricated income event');
+          assert.equal(row?.factualUsdSubtotal,null,'Liquity current reward state leaked into factual USD subtotal');
+          assert.deepEqual(row?.factualTrackingProofSources,['companies/rewards-data.json'],'Liquity proof source drift');
+          assert.ok(row?.completionBlockers?.includes('no-canonical-period-income-evidence'),'Liquity lost no-period-income blocker');
+          assert.ok(!data.gapRanking.some(x=>x.engineId==='liquity_lqty'),'Liquity remained in reusable gap ranking');
+          console.log('Liquity production-shaped coverage PASS',{tracking:`${engine.factualTrackingCompanyCount}/${engine.activeCompanyCount}`,factualEventCompanies:engine.factualEventCompanyCount,reusableCoverageGap:engine.reusableCoverageGap,periodIncomeAuthority:false});
           NODE
           node reporting/accounting-coverage-validation.mjs
           node reporting/accounting-coverage-gap-diagnostic.mjs
