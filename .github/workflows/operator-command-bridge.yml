@@ -96,9 +96,9 @@ jobs:
             operation = cmd.operation;
             targetWorkflow = 'resolve-company-007.yml';
             dispatch = { ref: 'main' };
-          } else if (cmd.operation === 'refresh_productivity') {
+          } else if (cmd.operation === 'refresh_unified_capital') {
             operation = cmd.operation;
-            targetWorkflow = 'update-productivity.yml';
+            targetWorkflow = 'unified-capital-refresh.yml';
             dispatch = { ref: 'main' };
           } else if (cmd.operation === 'record_owner_decision') {
             operation = cmd.operation;
@@ -174,7 +174,7 @@ jobs:
         run: |
           set -euo pipefail
           case "$TARGET_WORKFLOW" in
-            refresh-cognitive-stack.yml|update-proposal-work-queue.yml|update-builder-candidates.yml|record-brain-decision.yml|discover-company-007.yml|resolve-company-007.yml|update-productivity.yml) ;;
+            refresh-cognitive-stack.yml|update-proposal-work-queue.yml|update-builder-candidates.yml|record-brain-decision.yml|discover-company-007.yml|resolve-company-007.yml|unified-capital-refresh.yml) ;;
             *) echo "Unexpected target workflow: $TARGET_WORKFLOW"; exit 1 ;;
           esac
 
@@ -297,13 +297,13 @@ jobs:
           # The command commit itself is reviewed before any downstream orchestration.
           wait_command_security
 
-          # Data-recovery operations are exact, Security-gated one-target dispatches.
-          # Their existing event-driven downstream owners remain authoritative.
-          if [[ "$OPERATION" =~ ^(discover_company_007|resolve_company_007|refresh_productivity)$ ]]; then
+          # Data operations are exact, Security-gated one-target dispatches.
+          # Reporting and Monthly Reports stay owned by their existing event-driven cascade.
+          if [[ "$OPERATION" =~ ^(discover_company_007|resolve_company_007|refresh_unified_capital)$ ]]; then
             case "$OPERATION" in
               discover_company_007) TARGET_LABEL='Discover Company #007' ;;
               resolve_company_007) TARGET_LABEL='Resolve Company #007' ;;
-              refresh_productivity) TARGET_LABEL='Update The Holding Productivity Data' ;;
+              refresh_unified_capital) TARGET_LABEL='The Holding Capital · Unified Refresh' ;;
               *) echo "Unexpected bounded data operation: $OPERATION"; exit 1 ;;
             esac
             TARGET_HEAD="$(main_sha)"
@@ -371,5 +371,5 @@ jobs:
             echo "**Wallet action:** disabled"
             echo "**Capital execution:** disabled"
             echo
-            echo "v0.7 preserves the Security → Cognitive → Learning → Decision-bound Proposal → Builder Candidate lane and adds Security-gated exact data-recovery dispatches for Company #007 discovery/resolve and Productivity. Reporting and Monthly Reports remain owned by their existing event-driven cascade."
+            echo "v0.7 preserves the Security → Cognitive → Learning → Decision-bound Proposal → Builder Candidate lane and adds Security-gated exact data operations for Company #007 discovery/resolve and the canonical Unified Capital Refresh. Reporting and Monthly Reports remain owned by their existing event-driven cascade; legacy Productivity remains recovery-only."
           } >> "$GITHUB_STEP_SUMMARY"
