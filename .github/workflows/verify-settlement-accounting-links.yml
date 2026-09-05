@@ -1,0 +1,76 @@
+# holding-workflow-definition-proof: intelligence/reliability/settlement-accounting-links-workflow-definition-proof.mjs
+name: Verify Settlement Accounting Links
+
+on:
+  pull_request:
+    paths:
+      - 'reporting/accounting-coverage.mjs'
+      - 'reporting/settlement-link-validation.mjs'
+      - '.github/workflows/verify-settlement-accounting-links.yml'
+      - 'intelligence/reliability/settlement-accounting-links-workflow-definition-proof.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-settlement-accounting-links:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: Verify workflow authority contract
+        run: node intelligence/reliability/settlement-accounting-links-workflow-definition-proof.mjs
+
+      - name: Prove explicit settlement relation without cross-family income authority
+        env:
+          ACCOUNTING_COVERAGE_FILE: /tmp/settlement-accounting-coverage.json
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check reporting/accounting-coverage.mjs
+          node --check reporting/settlement-link-validation.mjs
+          node reporting/settlement-link-validation.mjs
+          node reporting/accounting-coverage.mjs
+          test -s "$ACCOUNTING_COVERAGE_FILE"
+          node reporting/accounting-coverage-validation.mjs
+          node --input-type=module - <<'NODE'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          const data=JSON.parse(fs.readFileSync(process.env.ACCOUNTING_COVERAGE_FILE,'utf8'));
+          const ledger=JSON.parse(fs.readFileSync('reporting/income-ledger.json','utf8'));
+          const expected=(ledger.events||[]).filter(e=>e.company==='defitea.eth'&&e.family==='realised-cash-flow'&&e.route==='forty-acres-velodrome-received'&&e.protocol==='40 Acres · veVELO'&&e.sourceFile==='reporting/defitea-income-ledger.json'&&e.sourceFamily==='fortyAcresReceivedEvents'&&e.evidenceStatus==='canonical-actual-net-received');
+          assert.ok(expected.length>=5,'known canonical 40 Acres settlement history unexpectedly disappeared');
+          assert.equal(data.summary?.reusableCoverageGapCount,0,'reusable mechanism coverage regressed');
+          assert.deepEqual(data.gapRanking,[],'reusable gap ranking regressed');
+          assert.equal(data.summary?.settlementLinkedCanonicalEventCount,expected.length,'canonical settlement link count drift');
+          assert.equal(data.summary?.unmatchedCanonicalEventCount,0,'canonical events remain structurally unmatched');
+          assert.equal((data.unmatchedCanonicalEvents||[]).length,0,'unmatched event diagnostics remain populated');
+          assert.equal((data.settlementMechanismLinks||[]).length,expected.length,'settlement link evidence count drift');
+          for(const link of data.settlementMechanismLinks||[]){
+            assert.equal(link.company,'defitea.eth');
+            assert.equal(link.engineId,'velodrome_vevelo');
+            assert.equal(link.sourceAuthority,'canonical-income-ledger');
+            assert.equal(link.incomeFamily,'realised-cash-flow');
+            assert.equal(link.incomeFamilyPreserved,true);
+            assert.equal(link.periodIncomeAuthority,false);
+            assert.equal(link.factualTrackingAuthority,false);
+            assert.equal(link.executionAuthority,'none');
+          }
+          const current=data.companies?.['defitea.eth']?.mechanisms?.velodrome_vevelo?.months?.[data.currentMonth];
+          assert.ok(current,'Defitea velodrome_vevelo current-month row missing');
+          assert.equal(data.semantics?.canonicalLedgerIsSoleFactualIncomeAuthority,true);
+          assert.equal(data.semantics?.settlementLinkDoesNotChangeIncomeFamily,true);
+          assert.equal(data.semantics?.settlementLinkIsNotPeriodIncomeAuthority,true);
+          assert.equal(data.completionPolicy?.settlementLinksAreDiagnosticOnly,true);
+          assert.equal(data.authority?.executionAuthority,'none');
+          console.log('Production-shaped settlement reconciliation PASS',{settlementLinks:expected.length,unmatched:data.summary.unmatchedCanonicalEventCount,reusableGaps:data.summary.reusableCoverageGapCount,periodIncomeAuthority:false,executionAuthority:data.authority.executionAuthority});
+          NODE
+          git diff --check
