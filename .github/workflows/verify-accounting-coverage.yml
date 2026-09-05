@@ -9,8 +9,12 @@ on:
       - 'reporting/accounting-coverage-company-diagnostic.mjs'
       - 'reporting/icp-nns-tracking-proof-validation.mjs'
       - 'reporting/pendle-spendle-tracking-proof-validation.mjs'
+      - 'reporting/yield-basis-lp-accounting-evidence.mjs'
+      - 'reporting/yield-basis-lp-accounting-evidence-validation.mjs'
+      - 'reporting/yield-basis-lp-accounting-evidence.json'
       - 'reporting/accounting-coverage.json'
       - 'companies/productivity-data.json'
+      - 'companies/company-007-discovery.json'
       - 'companies/rewards-data.json'
       - 'companies/icp-nns-rewards-state.json'
       - 'intelligence/icp-nns/company-005-006-neuron-pool.json'
@@ -29,7 +33,7 @@ permissions:
 jobs:
   verify-accounting-coverage:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 4
     steps:
       - name: Checkout exact candidate
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -45,6 +49,7 @@ jobs:
           ACCOUNTING_COVERAGE_FILE: /tmp/accounting-coverage.json
           ACCOUNTING_DIAGNOSTIC_COMPANY: Cypher
           PRODUCTIVITY_DATA_FILE: ./companies/productivity-data.json
+          COMPANY_007_DISCOVERY_FILE: ./companies/company-007-discovery.json
           REWARDS_DATA_FILE: ./companies/rewards-data.json
           ICP_NNS_STATE_FILE: ./companies/icp-nns-rewards-state.json
           ICP_NNS_CONFIG_FILE: ./intelligence/icp-nns/company-005-006-neuron-pool.json
@@ -53,7 +58,10 @@ jobs:
           VE33_EVIDENCE_FILE: ./reporting/ve33-accounting-evidence.json
           VE33_LOCKED_MANAGED_EVIDENCE_FILE: ./reporting/ve33-locked-managed-accounting-evidence.json
           YIELD_BASIS_EVIDENCE_FILE: ./reporting/yield-basis-accounting-evidence.json
+          YIELD_BASIS_LP_EVIDENCE_FILE: /tmp/yield-basis-lp-accounting-evidence.json
           FRAX_EVIDENCE_FILE: ./reporting/frax-yield-accounting-evidence.json
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
         run: |
           set -euo pipefail
           node --check reporting/accounting-coverage.mjs
@@ -62,8 +70,14 @@ jobs:
           node --check reporting/accounting-coverage-company-diagnostic.mjs
           node --check reporting/icp-nns-tracking-proof-validation.mjs
           node --check reporting/pendle-spendle-tracking-proof-validation.mjs
+          node --check reporting/yield-basis-lp-accounting-evidence.mjs
+          node --check reporting/yield-basis-lp-accounting-evidence-validation.mjs
           node reporting/icp-nns-tracking-proof-validation.mjs
           node reporting/pendle-spendle-tracking-proof-validation.mjs
+          node reporting/yield-basis-lp-accounting-evidence-validation.mjs
+          node reporting/yield-basis-lp-accounting-evidence.mjs
+          test -s "$YIELD_BASIS_LP_EVIDENCE_FILE"
+          node reporting/yield-basis-lp-accounting-evidence-validation.mjs
           node reporting/accounting-coverage.mjs
           test -s "$ACCOUNTING_COVERAGE_FILE"
           node --input-type=module - <<'NODE'
@@ -86,7 +100,6 @@ jobs:
             assert.deepEqual(row?.factualTrackingProofSources,['companies/icp-nns-rewards-state.json'],`${company} ICP NNS proof source drift`);
             assert.ok(row?.completionBlockers?.includes('no-canonical-period-income-evidence'),`${company} ICP NNS lost no-period-income blocker`);
           }
-          console.log('ICP NNS production-shaped coverage PASS',{tracking:`${engine.factualTrackingCompanyCount}/${engine.activeCompanyCount}`,factualEventCompanies:engine.factualEventCompanyCount,reusableCoverageGap:engine.reusableCoverageGap,periodIncomeAuthority:false});
           NODE
           node --input-type=module - <<'NODE'
           import assert from 'node:assert/strict';
@@ -102,7 +115,28 @@ jobs:
           assert.equal(row?.factualTrackingActive,true,'Defitea sPENDLE tracking is not active');
           assert.ok(row?.factualTrackingProofSources?.includes('companies/rewards-data.json'),'Defitea sPENDLE canonical reward observation proof missing');
           assert.ok(!row?.completionBlockers?.includes('no-factual-engine-tracking-proof'),'Defitea sPENDLE still reports missing tracking proof');
-          console.log('sPENDLE production-shaped coverage PASS',{tracking:`${engine.factualTrackingCompanyCount}/${engine.activeCompanyCount}`,factualEventCompanies:engine.factualEventCompanyCount,reusableCoverageGap:engine.reusableCoverageGap,periodIncomeAuthority:false});
+          NODE
+          node --input-type=module - <<'NODE'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          const data=JSON.parse(fs.readFileSync(process.env.ACCOUNTING_COVERAGE_FILE,'utf8'));
+          for(const engineId of ['yieldbasis_yblp_weth','yieldbasis_yblp_wbtc']){
+            const engine=data.mechanisms?.[engineId];
+            assert.ok(engine,`${engineId} mechanism missing`);
+            assert.equal(engine.activeCompanyCount,1,`${engineId} active company count drift`);
+            assert.deepEqual(engine.companies,["Rook's portfolio"],`${engineId} company identity drift`);
+            assert.equal(engine.factualTrackingCompanyCount,1,`${engineId} did not reach 1/1 factual tracking`);
+            assert.equal(engine.factualEventCompanyCount,0,`${engineId} tracking proof fabricated factual period events`);
+            assert.equal(engine.reusableCoverageGap,false,`${engineId} remained a reusable tracking gap`);
+            const row=data.companies?.["Rook's portfolio"]?.mechanisms?.[engineId]?.months?.[data.currentMonth];
+            assert.equal(row?.status,'factual-tracking-no-period-event',`${engineId} status drift`);
+            assert.equal(row?.factualEventCount,0,`${engineId} fabricated income event`);
+            assert.equal(row?.factualUsdSubtotal,null,`${engineId} current PPS leaked into factual income`);
+            assert.deepEqual(row?.factualTrackingProofSources,['reporting/yield-basis-lp-accounting-evidence.json'],`${engineId} proof source drift`);
+            assert.ok(row?.completionBlockers?.includes('no-canonical-period-income-evidence'),`${engineId} lost no-period-income blocker`);
+          }
+          assert.equal(data.summary.reusableCoverageGapCount,7,'Yield Basis LP proof should remove exactly two reusable gaps from current production-shaped fixture');
+          console.log('Yield Basis LP production-shaped coverage PASS',{weth:'1/1',wbtc:'1/1',reusableCoverageGaps:data.summary.reusableCoverageGapCount,periodIncomeAuthority:false});
           NODE
           node reporting/accounting-coverage-validation.mjs
           node reporting/accounting-coverage-gap-diagnostic.mjs
