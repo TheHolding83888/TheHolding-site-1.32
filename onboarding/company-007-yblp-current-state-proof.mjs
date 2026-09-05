@@ -44,40 +44,33 @@ const positive=x=>{try{return BigInt(x)>0n}catch{return false}};
 
 async function resolveHybridVault(provider,wallet){
   const factory=new Contract(HYBRID_FACTORY,[
-    'function vaults(address) view returns (address)',
-    'function user_to_vault(address) view returns (address)'
+    'function user_to_vault(address) view returns (address)',
+    'function vault_to_user(address) view returns (address)'
   ],provider);
-  const observations=[];
-  const errors=[];
 
-  for(const method of ['vaults','user_to_vault']){
-    try{
-      const value=getAddress(await factory[method](wallet));
-      observations.push({method,value});
-    }catch(error){
-      errors.push(`${method}: ${error?.shortMessage||error?.message||error}`);
-    }
+  let vault;
+  try{
+    vault=getAddress(await factory.user_to_vault(wallet));
+  }catch(error){
+    throw new Error(`HybridVault user_to_vault unreadable for ${wallet}: ${error?.shortMessage||error?.message||error}`);
   }
 
-  const nonZero=[...new Map(
-    observations
-      .filter(x=>lower(x.value)!==ZERO)
-      .map(x=>[lower(x.value),x])
-  ).values()];
-
-  if(nonZero.length>1){
-    throw new Error(`HybridVault mapping disagreement for ${wallet}: ${nonZero.map(x=>`${x.method}=${x.value}`).join(' | ')}`);
-  }
-  if(nonZero.length===1){
-    return {resolved:true,vault:nonZero[0].value,method:nonZero[0].method,observations,errors};
+  if(lower(vault)===ZERO){
+    return {resolved:true,vault:null,method:'user_to_vault',inverseVerified:null};
   }
 
-  const successfulMethods=new Set(observations.map(x=>x.method));
-  if(successfulMethods.has('vaults')&&successfulMethods.has('user_to_vault')){
-    return {resolved:true,vault:null,method:'both-zero',observations,errors};
+  let owner;
+  try{
+    owner=getAddress(await factory.vault_to_user(vault));
+  }catch(error){
+    throw new Error(`HybridVault vault_to_user unreadable for ${wallet} via ${vault}: ${error?.shortMessage||error?.message||error}`);
   }
 
-  throw new Error(`HybridVault zero is not verified for ${wallet}; UNKNOWN != 0; ${errors.join(' | ')}`);
+  if(lower(owner)!==lower(wallet)){
+    throw new Error(`HybridVault inverse mapping mismatch for ${wallet}: user_to_vault=${vault}, vault_to_user=${owner}`);
+  }
+
+  return {resolved:true,vault,method:'user_to_vault',inverseVerified:true};
 }
 
 async function snapshot(url){
@@ -148,13 +141,13 @@ async function main(){
     holders:canonical.holders,
     hybridVaultResolution:canonical.hybridVaultResolution,
     markets,
-    semantics:{unknownIsNotZero:true,verifiedZeroMayLeaveCurrentInventory:true,historyMustBePreserved:true,currentStateIsNotPeriodIncome:true,referenceAprUsed:false,hybridVaultZeroRequiresBothMappings:true},
+    semantics:{unknownIsNotZero:true,verifiedZeroMayLeaveCurrentInventory:true,historyMustBePreserved:true,currentStateIsNotPeriodIncome:true,referenceAprUsed:false,hybridVaultZeroUsesCanonicalUserMapping:true,hybridVaultInverseVerifiedForNonZero:true},
     authority:{readOnly:true,executionAuthority:'none',walletAuthority:'none',claimingAuthority:'none',capitalExecution:false},
     sourceErrors:errors
   };
   await fs.mkdir(path.dirname(OUTPUT),{recursive:true});
   await fs.writeFile(OUTPUT,JSON.stringify(output,null,2)+'\n');
-  console.log('Company #007 YBLP current-state proof',JSON.stringify({status:output.status,quorum:output.quorum,hybridVaults:canonical.hybridVaultResolution.map(x=>({wallet:x.wallet,vault:x.vault,method:x.method})),markets:markets.map(x=>({market:x.market,state:x.currentState,activeHoldings:x.activeHoldings.length}))}));
+  console.log('Company #007 YBLP current-state proof',JSON.stringify({status:output.status,quorum:output.quorum,hybridVaults:canonical.hybridVaultResolution.map(x=>({wallet:x.wallet,vault:x.vault,method:x.method,inverseVerified:x.inverseVerified})),markets:markets.map(x=>({market:x.market,state:x.currentState,activeHoldings:x.activeHoldings.length}))}));
 }
 
 main().catch(error=>{console.error(error);process.exitCode=1;});

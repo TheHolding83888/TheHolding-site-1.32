@@ -716,37 +716,33 @@ async function discoverCurveLlamma() {
 }
 
 async function resolveHybridVaultForDiscovery(factory, wallet) {
-  const observations = [];
-  const errors = [];
-  for (const method of ['vaults', 'user_to_vault']) {
-    try {
-      observations.push({ method, value: getAddress(await factory[method](wallet)) });
-    } catch (e) {
-      errors.push(`${method}: ${errMsg(e)}`);
-    }
+  let vault;
+  try {
+    vault = getAddress(await factory.user_to_vault(wallet));
+  } catch (e) {
+    throw new Error(`HybridVault user_to_vault unreadable for ${wallet}: ${errMsg(e)}`);
   }
 
-  const nonZero = [...new Map(
-    observations
-      .filter(x => lower(x.value) !== lower(ZeroAddress))
-      .map(x => [lower(x.value), x])
-  ).values()];
+  if (lower(vault) === lower(ZeroAddress)) return null;
 
-  if (nonZero.length > 1) {
-    throw new Error(`HybridVault mapping disagreement for ${wallet}: ${nonZero.map(x => `${x.method}=${x.value}`).join(' | ')}`);
+  let owner;
+  try {
+    owner = getAddress(await factory.vault_to_user(vault));
+  } catch (e) {
+    throw new Error(`HybridVault vault_to_user unreadable for ${wallet} via ${vault}: ${errMsg(e)}`);
   }
-  if (nonZero.length === 1) return nonZero[0].value;
 
-  const successfulMethods = new Set(observations.map(x => x.method));
-  if (successfulMethods.has('vaults') && successfulMethods.has('user_to_vault')) return null;
+  if (lower(owner) !== lower(wallet)) {
+    throw new Error(`HybridVault inverse mapping mismatch for ${wallet}: user_to_vault=${vault}, vault_to_user=${owner}`);
+  }
 
-  throw new Error(`HybridVault zero is not verified for ${wallet}; UNKNOWN != 0; ${errors.join(' | ')}`);
+  return vault;
 }
 
 async function discoverHybridVaults(provider) {
   const factory = new Contract(YB_HYBRID_FACTORY, [
-    'function vaults(address) view returns (address)',
-    'function user_to_vault(address) view returns (address)'
+    'function user_to_vault(address) view returns (address)',
+    'function vault_to_user(address) view returns (address)'
   ], provider);
 
   const out = [];
