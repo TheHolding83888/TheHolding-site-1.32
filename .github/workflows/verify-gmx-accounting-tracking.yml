@@ -1,0 +1,73 @@
+# holding-workflow-definition-proof: intelligence/reliability/gmx-accounting-tracking-workflow-definition-proof.mjs
+name: Verify GMX Accounting Tracking
+
+on:
+  pull_request:
+    paths:
+      - 'reporting/accounting-coverage.mjs'
+      - 'reporting/gmx-tracking-proof-validation.mjs'
+      - 'companies/company-010-production-state.json'
+      - '.github/workflows/verify-gmx-accounting-tracking.yml'
+      - 'intelligence/reliability/gmx-accounting-tracking-workflow-definition-proof.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-gmx-accounting-tracking:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: Verify workflow authority contract
+        run: node intelligence/reliability/gmx-accounting-tracking-workflow-definition-proof.mjs
+
+      - name: Prove both GMX markets factual tracking without income authority
+        env:
+          ACCOUNTING_COVERAGE_FILE: /tmp/gmx-accounting-coverage.json
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check reporting/accounting-coverage.mjs
+          node --check reporting/gmx-tracking-proof-validation.mjs
+          node reporting/gmx-tracking-proof-validation.mjs
+          node reporting/accounting-coverage.mjs
+          test -s "$ACCOUNTING_COVERAGE_FILE"
+          node reporting/accounting-coverage-validation.mjs
+          node --input-type=module - <<'NODE'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          const data=JSON.parse(fs.readFileSync(process.env.ACCOUNTING_COVERAGE_FILE,'utf8'));
+          for(const engineId of ['gmx-gm-btc-usdc','gmx-gm-eth-usdc']){
+            const engine=data.mechanisms?.[engineId];
+            assert.ok(engine,`${engineId} missing`);
+            assert.equal(engine.activeCompanyCount,1,`${engineId} active company count drift`);
+            assert.deepEqual(engine.companies,['Cypher'],`${engineId} company identity drift`);
+            assert.equal(engine.factualTrackingCompanyCount,1,`${engineId} did not reach 1/1 factual tracking`);
+            assert.deepEqual(engine.factualTrackingCompanies,['Cypher'],`${engineId} factual tracking identity drift`);
+            assert.equal(engine.factualEventCompanyCount,0,`${engineId} tracking proof fabricated factual period events`);
+            assert.equal(engine.reusableCoverageGap,false,`${engineId} remained a reusable tracking gap`);
+            const row=data.companies?.Cypher?.mechanisms?.[engineId]?.months?.[data.currentMonth];
+            assert.equal(row?.status,'factual-tracking-no-period-event',`${engineId} current-month status drift`);
+            assert.equal(row?.factualEventCount,0,`${engineId} tracking proof fabricated income event`);
+            assert.equal(row?.factualUsdSubtotal,null,`${engineId} current GM NAV leaked into factual USD subtotal`);
+            assert.deepEqual(row?.factualTrackingProofSources,['companies/company-010-production-state.json#strategies.gmx'],`${engineId} proof source drift`);
+            assert.ok(row?.completionBlockers?.includes('no-canonical-period-income-evidence'),`${engineId} lost no-period-income blocker`);
+            assert.ok(!row?.completionBlockers?.includes('no-factual-engine-tracking-proof'),`${engineId} remained falsely uncovered`);
+            assert.ok(!data.gapRanking.some(x=>x.engineId===engineId),`${engineId} remained in reusable gap ranking`);
+          }
+          assert.equal(data.summary?.reusableCoverageGapCount,0,'current reusable accounting coverage frontier did not reach zero');
+          assert.equal(data.authority?.executionAuthority,'none','Accounting coverage execution authority expanded');
+          assert.equal(data.semantics?.referenceMetricIsNotEarnedIncome,true,'Reference analytics boundary drift');
+          assert.equal(data.semantics?.unknownIsNotZero,true,'UNKNOWN became zero');
+          console.log('GMX production-shaped coverage PASS',{gaps:data.summary.reusableCoverageGapCount,btc:'1/1',eth:'1/1',factualPeriodEvents:0,referenceAprAuthority:false,executionAuthority:data.authority.executionAuthority});
+          NODE
+          git diff --check
