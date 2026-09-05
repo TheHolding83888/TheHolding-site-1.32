@@ -59,29 +59,33 @@ async function resolveHybridVault(provider,wallet){
 
 async function snapshot(url){
   const provider=new JsonRpcProvider(url);
-  const blockNumber=await provider.getBlockNumber();
-  if(!(blockNumber>0))throw new Error('latest block unavailable');
-  const holders=[];
-  for(const wallet of WALLETS){
-    holders.push({holder:wallet,owner:wallet,custody:'wallet'});
-    const hybrid=await resolveHybridVault(provider,wallet);
-    if(hybrid.vault)holders.push({holder:hybrid.vault,owner:wallet,custody:'Yield Basis HybridVault'});
-  }
-  const uniqueHolders=[...new Map(holders.map(x=>[lower(x.holder),x])).values()];
-  const rows=[];
-  for(const market of MARKETS){
-    const lt=new Contract(market.lt,['function balanceOf(address) view returns (uint256)'],provider);
-    const gauge=new Contract(market.gauge,['function balanceOf(address) view returns (uint256)'],provider);
-    for(const h of uniqueHolders){
-      const direct=await lt.balanceOf(h.holder);
-      const gaugeShares=await gauge.balanceOf(h.holder);
-      rows.push({...market,...h,directLtBalanceRaw:direct.toString(),gaugeShareBalanceRaw:gaugeShares.toString()});
+  try{
+    const blockNumber=await provider.getBlockNumber();
+    if(!(blockNumber>0))throw new Error('latest block unavailable');
+    const holders=[];
+    for(const wallet of WALLETS){
+      holders.push({holder:wallet,owner:wallet,custody:'wallet'});
+      const hybrid=await resolveHybridVault(provider,wallet);
+      if(hybrid.vault)holders.push({holder:hybrid.vault,owner:wallet,custody:'Yield Basis HybridVault'});
     }
+    const uniqueHolders=[...new Map(holders.map(x=>[lower(x.holder),x])).values()];
+    const rows=[];
+    for(const market of MARKETS){
+      const lt=new Contract(market.lt,['function balanceOf(address) view returns (uint256)'],provider);
+      const gauge=new Contract(market.gauge,['function balanceOf(address) view returns (uint256)'],provider);
+      for(const h of uniqueHolders){
+        const direct=await lt.balanceOf(h.holder);
+        const gaugeShares=await gauge.balanceOf(h.holder);
+        rows.push({...market,...h,directLtBalanceRaw:direct.toString(),gaugeShareBalanceRaw:gaugeShares.toString()});
+      }
+    }
+    const fingerprint=JSON.stringify(rows.map(x=>[
+      lower(x.lt),lower(x.gauge),lower(x.holder),x.directLtBalanceRaw,x.gaugeShareBalanceRaw
+    ]));
+    return {provider:host(url),blockNumber,holders:uniqueHolders,rows,fingerprint};
+  }finally{
+    provider.destroy();
   }
-  const fingerprint=JSON.stringify(rows.map(x=>[
-    lower(x.lt),lower(x.gauge),lower(x.holder),x.directLtBalanceRaw,x.gaugeShareBalanceRaw
-  ]));
-  return {provider:host(url),blockNumber,holders:uniqueHolders,rows,fingerprint};
 }
 
 async function main(){
