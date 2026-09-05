@@ -21,6 +21,8 @@ const YB_VALIDATION_PATHS=[
   'reporting/yield-basis-income-candidates-validation.mjs',
   'reporting/yield-basis-ledger-admission-validation.mjs'
 ];
+const YBLP_BUILDER_PATH='reporting/yield-basis-lp-accounting-evidence.mjs';
+const YBLP_VALIDATION_PATH='reporting/yield-basis-lp-accounting-evidence-validation.mjs';
 const VE33_EVIDENCE_PATH='reporting/ve33-accounting-evidence.json';
 const VE33_BUILDER_PATH='reporting/ve33-accounting-evidence.mjs';
 const VE33_CANDIDATES_PATH='reporting/ve33-income-candidates.mjs';
@@ -54,6 +56,8 @@ const ybBuilder=fs.readFileSync(YB_BUILDER_PATH,'utf8');
 const ybCandidates=fs.readFileSync(YB_CANDIDATES_PATH,'utf8');
 const ybAdmission=fs.readFileSync(YB_ADMISSION_PATH,'utf8');
 const ybValidations=YB_VALIDATION_PATHS.map(p=>fs.readFileSync(p,'utf8')).join('\n');
+const yblpBuilder=fs.readFileSync(YBLP_BUILDER_PATH,'utf8');
+const yblpValidation=fs.readFileSync(YBLP_VALIDATION_PATH,'utf8');
 const ve33Evidence=JSON.parse(fs.readFileSync(VE33_EVIDENCE_PATH,'utf8'));
 const ve33Builder=fs.readFileSync(VE33_BUILDER_PATH,'utf8');
 const ve33Candidates=fs.readFileSync(VE33_CANDIDATES_PATH,'utf8');
@@ -94,7 +98,7 @@ assert.equal(incomePolicy.authority?.claimingAuthority,'none');
 assert.equal(incomePolicy.authority?.capitalExecution,false);
 assert.equal(incomePolicy.authority?.methodologyMutationAuthority,'none');
 
-assert.match(coverageBuilder,/Accounting Coverage Registry v0\.6/,'Coverage Registry builder identity drift');
+assert.match(coverageBuilder,/Accounting Coverage Registry v0\.7/,'Coverage Registry builder identity drift');
 assert.match(coverageBuilder,/Canonical Income Ledger is the sole authority for/,'Coverage Registry lost Canonical Ledger sole-authority boundary');
 assert.match(coverageBuilder,/Tracking proof never creates period income/,'Coverage tracking proof gained income authority');
 assert.match(coverageBuilder,/zeroPeriodEventDoesNotImplyCoverageGap:true/,'Coverage zero-event semantics missing');
@@ -155,6 +159,16 @@ assert.match(ybAdmission,/executionAuthority:'none'/,'Yield Basis admission auth
 assert.match(ybValidations,/claim-to-zero of the opening balance creates no new income/i,'Yield Basis claim reset regression test missing');
 assert.match(ybValidations,/mutation detected/,'Yield Basis immutable event mutation regression test missing');
 
+assert.match(yblpBuilder,/VERSION='0\.1-yield-basis-lp-factual-tracking'/,'Yield Basis LP tracking evidence identity missing');
+assert.match(yblpBuilder,/currentPpsIsNotPeriodIncome:true/,'Yield Basis LP current PPS escaped period-income boundary');
+assert.match(yblpBuilder,/custodyLocationDoesNotCreateIncome:true/,'Yield Basis LP custody path gained income authority');
+assert.match(yblpBuilder,/openingBalanceCreatesIncome:false/,'Yield Basis LP opening balance guard missing');
+assert.match(yblpBuilder,/referenceAprUsed:false/,'Yield Basis LP reference APR guard missing');
+assert.match(yblpBuilder,/executionAuthority:'none'/,'Yield Basis LP execution authority drift');
+assert.doesNotMatch(yblpBuilder,/sendTransaction\(|new Wallet\(/,'Yield Basis LP tracking gained transaction authority');
+assert.match(yblpValidation,/periodIncomeAuthority/,'Yield Basis LP validation lost period-income boundary coverage');
+assert.match(yblpValidation,/custody path/i,'Yield Basis LP validation lost custody-path proof');
+
 assert.equal(ve33Evidence.version,'0.1-ve33-factual-accrual-evidence');
 assert.equal(ve33Evidence.fullAccountingStart,'2026-09-01T00:00:00.000Z');
 assert.equal(ve33Evidence.semantics?.openingBalanceCreatesIncome,false);
@@ -207,7 +221,7 @@ assert.match(lockedBuilder,/grossVeNftPrincipalDeltaIsIncomeAuthority:false/,'Lo
 assert.match(lockedBuilder,/laterClaimOrPriceMoveDoesNotRewriteIncome:true/,'LockedManagedReward frozen income invariant missing');
 assert.doesNotMatch(lockedBuilder,/referenceAprUsed\s*:\s*true|referenceApyUsed\s*:\s*true/i,'LockedManagedReward builder gained APR/APY income authority');
 assert.match(lockedCandidates,/family:'embedded-income'/,'LockedManagedReward Canonical Ledger family mapping missing');
-assert.match(lockedCandidates,/sourceEvidenceFamily:e\.family/,'LockedManagedReward source evidence family preservation missing');
+assert.match(lockedCandidates,/sourceEvidenceFamily:e\.family/,'LockedManagedReward source family preservation missing');
 assert.match(lockedCandidates,/sourceFile:'reporting\/ve33-locked-managed-accounting-evidence\.json'/,'LockedManagedReward source provenance missing');
 assert.match(ve33Admission,/buildLockedManagedEvidence/,'LockedManagedReward evidence build missing from canonical admission path');
 assert.match(ve33Admission,/admitLockedManagedIntoLedgerState/,'LockedManagedReward canonical admission primitive missing');
@@ -232,11 +246,12 @@ assert.match(workflow,/workflow_run:\n\s+workflows:\n\s+- "Update Company Reward
 assert.match(workflow,/github\.event\.workflow_run\.conclusion == 'success'/,'Reporting workflow_run success gate missing');
 assert.match(workflow,/github\.event\.workflow_run\.head_branch == 'main'/,'Reporting workflow_run main-branch gate missing');
 assert.match(workflow,/ref: main/,'Reporting must consume canonical main');
-for(const source of ['companies/rewards-data.json','companies/stable-index-data.json','companies/embedded-yield-ledger.json','companies/productivity-data.json','companies/defitea-canonical-state.json','intelligence/realised-cash-flow/realised-cash-flow.json']) assert.ok(workflow.includes(`- '${source}'`),`Reporting freshness source missing: ${source}`);
+for(const source of ['companies/rewards-data.json','companies/stable-index-data.json','companies/embedded-yield-ledger.json','companies/productivity-data.json','companies/company-007-discovery.json','companies/defitea-canonical-state.json','intelligence/realised-cash-flow/realised-cash-flow.json']) assert.ok(workflow.includes(`- '${source}'`),`Reporting freshness source missing: ${source}`);
 for(const source of [
   'reporting/rate-continuity-policy.json','reporting/income-ledger-policy.json','reporting/reporting-engine.mjs','reporting/reporting-engine-validation.mjs','reporting/income-ledger.mjs','reporting/income-ledger-validation.mjs','reporting/accounting-coverage.mjs','reporting/accounting-coverage-validation.mjs','reporting/accounting-coverage.json',
   'reporting/frax-yield-accounting-evidence.mjs','reporting/frax-yield-accounting-evidence-validation.mjs','reporting/frax-yield-accounting-evidence.json',
   'reporting/yield-basis-accounting-evidence.mjs','reporting/yield-basis-accounting-evidence-validation.mjs','reporting/yield-basis-income-candidates.mjs','reporting/yield-basis-income-candidates-validation.mjs','reporting/yield-basis-ledger-admission.mjs','reporting/yield-basis-ledger-admission-validation.mjs','reporting/yield-basis-accounting-evidence.json',
+  'reporting/yield-basis-lp-accounting-evidence.mjs','reporting/yield-basis-lp-accounting-evidence-validation.mjs','reporting/yield-basis-lp-accounting-evidence.json',
   'reporting/ve33-accounting-evidence.mjs','reporting/ve33-accounting-evidence-validation.mjs','reporting/ve33-income-candidates.mjs','reporting/ve33-income-candidates-validation.mjs','reporting/ve33-ledger-admission.mjs','reporting/ve33-ledger-admission-validation.mjs','reporting/ve33-accounting-evidence.json',
   'reporting/ve33-locked-managed-accounting-evidence.mjs','reporting/ve33-locked-managed-accounting-evidence-validation.mjs','reporting/ve33-locked-managed-income-candidates.mjs','reporting/ve33-locked-managed-income-candidates-validation.mjs','reporting/ve33-locked-managed-ledger-admission-validation.mjs','reporting/ve33-locked-managed-accounting-evidence.json'
 ]) assert.ok(workflow.includes(`- '${source}'`),`Reporting deterministic code/policy wake missing: ${source}`);
@@ -247,6 +262,8 @@ assert.match(workflow,/node --check reporting\/accounting-coverage\.mjs/,'Covera
 assert.match(workflow,/node --check reporting\/accounting-coverage-validation\.mjs/,'Coverage Registry validation preflight missing');
 assert.match(workflow,/test -s reporting\/frax-yield-accounting-evidence\.json/,'Frax evidence preflight missing');
 assert.match(workflow,/test -s reporting\/yield-basis-accounting-evidence\.json/,'Yield Basis evidence preflight missing');
+assert.match(workflow,/node --check reporting\/yield-basis-lp-accounting-evidence\.mjs/,'Yield Basis LP builder preflight missing');
+assert.match(workflow,/node --check reporting\/yield-basis-lp-accounting-evidence-validation\.mjs/,'Yield Basis LP validation preflight missing');
 assert.match(workflow,/test -s reporting\/ve33-accounting-evidence\.json/,'ve33 evidence preflight missing');
 assert.match(workflow,/test -s reporting\/ve33-locked-managed-accounting-evidence\.json/,'LockedManagedReward evidence preflight missing');
 assert.match(workflow,/test -s intelligence\/realised-cash-flow\/realised-cash-flow\.json/,'Canonical Realised Cash Flow source preflight missing');
@@ -255,6 +272,7 @@ assert.match(workflow,/node reporting\/frax-yield-accounting-evidence-validation
 assert.match(workflow,/node reporting\/yield-basis-accounting-evidence-validation\.mjs/,'Yield Basis evidence validation missing');
 assert.match(workflow,/node reporting\/yield-basis-income-candidates-validation\.mjs/,'Yield Basis candidate validation missing');
 assert.match(workflow,/node reporting\/yield-basis-ledger-admission-validation\.mjs/,'Yield Basis ledger admission validation missing');
+assert.match(workflow,/node reporting\/yield-basis-lp-accounting-evidence-validation\.mjs/,'Yield Basis LP validation execution missing');
 assert.match(workflow,/node reporting\/ve33-accounting-evidence-validation\.mjs/,'ve33 evidence validation missing');
 assert.match(workflow,/node reporting\/ve33-income-candidates-validation\.mjs/,'ve33 candidate validation missing');
 assert.match(workflow,/node reporting\/ve33-ledger-admission-validation\.mjs/,'ve33 ledger admission validation missing');
@@ -270,6 +288,10 @@ assert.match(workflow,/ETH_RPC_URL:\s*\$\{\{ secrets\.ETH_RPC_URL \}\}/,'Yield B
 assert.match(workflow,/name: Admit Yield Basis evidence through Canonical Income Ledger/,'Yield Basis Canonical Ledger admission step missing');
 assert.match(workflow,/run: node reporting\/yield-basis-ledger-admission\.mjs/,'Yield Basis Canonical Ledger admission execution missing');
 assert.match(workflow,/YIELD_BASIS_EVIDENCE_FILE:\s*\.\/reporting\/yield-basis-accounting-evidence\.json/,'Yield Basis evidence runtime binding missing');
+assert.match(workflow,/name: Build Yield Basis LP factual tracking evidence/,'Yield Basis LP production build step missing');
+assert.match(workflow,/node reporting\/yield-basis-lp-accounting-evidence\.mjs/,'Yield Basis LP production writer execution missing');
+assert.match(workflow,/YIELD_BASIS_LP_EVIDENCE_FILE:\s*\.\/reporting\/yield-basis-lp-accounting-evidence\.json/,'Yield Basis LP evidence runtime binding missing');
+assert.match(workflow,/Stale proof can never create period income/,'Yield Basis LP fail-soft boundary missing');
 assert.match(workflow,/name: Build Aerodrome \+ Velodrome factual accrual evidence/,'ve33 factual accrual build step missing');
 assert.match(workflow,/run: node reporting\/ve33-accounting-evidence\.mjs/,'ve33 factual accrual writer execution missing');
 assert.match(workflow,/BASE_RPC_URL:\s*\$\{\{ secrets\.BASE_RPC_URL \}\}/,'Aerodrome RPC secret/fallback binding missing');
@@ -285,7 +307,7 @@ assert.match(workflow,/FRAX_YIELD_EVIDENCE_FILE:\s*\.\/reporting\/frax-yield-acc
 assert.match(workflow,/VE33_EVIDENCE_FILE:\s*\.\/reporting\/ve33-accounting-evidence\.json/,'ve33 evidence runtime binding missing');
 assert.match(workflow,/VE33_LOCKED_MANAGED_EVIDENCE_FILE:\s*\.\/reporting\/ve33-locked-managed-accounting-evidence\.json/,'LockedManagedReward evidence runtime binding missing');
 assert.match(workflow,/INCOME_LEDGER_FILE:\s*\.\/reporting\/income-ledger\.json/,'Canonical Income Ledger runtime output binding missing');
-assert.match(workflow,/git add reporting\/reporting-data\.json reporting\/defitea-income-ledger\.json reporting\/frax-yield-accounting-evidence\.json reporting\/ve33-accounting-evidence\.json reporting\/ve33-locked-managed-accounting-evidence\.json reporting\/income-ledger\.json reporting\/yield-basis-accounting-evidence\.json reporting\/accounting-coverage\.json/,'Canonical Reporting + Coverage publication staging missing');
+assert.match(workflow,/git add reporting\/reporting-data\.json reporting\/defitea-income-ledger\.json reporting\/frax-yield-accounting-evidence\.json reporting\/ve33-accounting-evidence\.json reporting\/ve33-locked-managed-accounting-evidence\.json reporting\/income-ledger\.json reporting\/yield-basis-accounting-evidence\.json reporting\/yield-basis-lp-accounting-evidence\.json reporting\/accounting-coverage\.json/,'Canonical Reporting + Coverage + YBLP publication staging missing');
 assert.match(workflow,/critical_fingerprint\(\)/,'Reporting race critical fingerprint missing');
 assert.match(workflow,/reporting\/accounting-coverage\.mjs/,'Coverage builder missing from critical fingerprint');
 assert.match(workflow,/reporting\/accounting-coverage-validation\.mjs/,'Coverage validation missing from critical fingerprint');
@@ -293,15 +315,17 @@ assert.match(workflow,/reporting\/frax-yield-accounting-evidence\.mjs/,'Frax evi
 assert.match(workflow,/reporting\/yield-basis-accounting-evidence\.mjs/,'Yield Basis evidence builder missing from critical fingerprint');
 assert.match(workflow,/reporting\/yield-basis-income-candidates\.mjs/,'Yield Basis candidates missing from critical fingerprint');
 assert.match(workflow,/reporting\/yield-basis-ledger-admission\.mjs/,'Yield Basis admission missing from critical fingerprint');
+assert.match(workflow,/reporting\/yield-basis-lp-accounting-evidence\.mjs/,'Yield Basis LP builder missing from critical fingerprint');
+assert.match(workflow,/reporting\/yield-basis-lp-accounting-evidence-validation\.mjs/,'Yield Basis LP validation missing from critical fingerprint');
 assert.match(workflow,/reporting\/ve33-accounting-evidence\.mjs/,'ve33 evidence builder missing from critical fingerprint');
 assert.match(workflow,/reporting\/ve33-ledger-admission\.mjs/,'ve33 admission missing from critical fingerprint');
 assert.match(workflow,/reporting\/ve33-locked-managed-accounting-evidence\.mjs/,'LockedManagedReward builder missing from critical fingerprint');
 assert.match(workflow,/reporting\/ve33-locked-managed-income-candidates\.mjs/,'LockedManagedReward candidates missing from critical fingerprint');
 assert.match(workflow,/reporting\/ve33-locked-managed-ledger-admission-validation\.mjs/,'LockedManagedReward admission guard missing from critical fingerprint');
 assert.match(workflow,/Critical Reporting code\/policy changed during publish rebase; fail closed/,'Reporting rebase code-drift fail-closed guard missing');
-assert.match(workflow,/node reporting\/frax-yield-accounting-evidence\.mjs\n\s+node reporting\/ve33-accounting-evidence\.mjs\n\s+node reporting\/income-ledger\.mjs\n\s+node reporting\/ve33-ledger-admission\.mjs\n\s+node reporting\/reporting-engine-validation\.mjs\n\s+node reporting\/yield-basis-accounting-evidence\.mjs\n\s+node reporting\/yield-basis-ledger-admission\.mjs\n\s+node reporting\/accounting-coverage\.mjs\n\s+node reporting\/accounting-coverage-validation\.mjs/,'Reporting rebase must rebuild canonical accounting before Coverage materialization');
+assert.match(workflow,/node reporting\/frax-yield-accounting-evidence\.mjs\n\s+node reporting\/ve33-accounting-evidence\.mjs\n\s+node reporting\/income-ledger\.mjs\n\s+node reporting\/ve33-ledger-admission\.mjs\n\s+node reporting\/reporting-engine-validation\.mjs\n\s+node reporting\/yield-basis-accounting-evidence\.mjs\n\s+node reporting\/yield-basis-ledger-admission\.mjs\n\s+build_yblp_evidence\n\s+node reporting\/accounting-coverage\.mjs\n\s+node reporting\/accounting-coverage-validation\.mjs/,'Reporting rebase must rebuild canonical accounting and YBLP proof before Coverage materialization');
 assert.match(workflow,/Unexpected Reporting publish delta after rebase/,'Reporting post-rebase publish scope guard missing');
-assert.match(workflow,/reporting\/frax-yield-accounting-evidence\.json\|reporting\/ve33-accounting-evidence\.json\|reporting\/ve33-locked-managed-accounting-evidence\.json\|reporting\/income-ledger\.json\|reporting\/yield-basis-accounting-evidence\.json\|reporting\/accounting-coverage\.json/,'Coverage artifact missing from safe publish scope');
+assert.match(workflow,/reporting\/frax-yield-accounting-evidence\.json\|reporting\/ve33-accounting-evidence\.json\|reporting\/ve33-locked-managed-accounting-evidence\.json\|reporting\/income-ledger\.json\|reporting\/yield-basis-accounting-evidence\.json\|reporting\/yield-basis-lp-accounting-evidence\.json\|reporting\/accounting-coverage\.json/,'Coverage/YBLP artifact missing from safe publish scope');
 assert.match(workflow,/accountingExtensions\?\.yieldBasisAccrual/,'Yield Basis generated ledger extension validation missing');
 assert.match(workflow,/tokenSpecificReconciliation!==true/,'Yield Basis token-specific reconciliation guard missing');
 assert.match(workflow,/accountingExtensions\?\.ve33LockedManaged/,'LockedManagedReward generated ledger extension validation missing');
@@ -323,10 +347,10 @@ console.log('Reporting workflow definition paired proof PASS',{
   cron:contract.cron,
   dailySnapshotUtc:contract.dailySnapshotUtc,
   workflowRunSources:['Update Company Rewards','Update Stable Capital','The Holding Capital · Unified Refresh'],
-  canonicalDataWakeCount:6,
+  canonicalDataWakeCount:7,
   rateContinuityPolicy:ratePolicy.version,
   canonicalIncomeLedgerPolicy:incomePolicy.version,
-  accountingCoverageRegistry:'0.6-hyperlend-factual-tracking-accounting-mechanism-coverage-registry',
+  accountingCoverageRegistry:'0.7-yield-basis-lp-factual-tracking-accounting-mechanism-coverage-registry',
   accountingCoveragePersistedByExistingWriter:true,
   accountingCoverageHasIncomeCreationAuthority:false,
   accountingCoverageHasMonthClosingAuthority:false,
@@ -339,6 +363,9 @@ console.log('Reporting workflow definition paired proof PASS',{
   yieldBasisClaimAware:true,
   yieldBasisTokenSpecific:true,
   yieldBasisRewardsCollectorReused:true,
+  yieldBasisLpFactualTracking:'0.1-yield-basis-lp-factual-tracking',
+  yieldBasisLpPeriodIncomeAuthority:false,
+  yieldBasisLpCustodyAware:true,
   ve33FactualAccrualEvidence:ve33Evidence.version,
   ve33FullAccountingStart:ve33Evidence.fullAccountingStart,
   ve33ClaimAware:true,
