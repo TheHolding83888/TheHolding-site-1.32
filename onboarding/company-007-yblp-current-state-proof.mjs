@@ -15,16 +15,16 @@ import { Contract, JsonRpcProvider, ZeroAddress, getAddress } from 'ethers';
 const VERSION='0.1-yblp-current-state-quorum';
 const OUTPUT=process.env.COMPANY_007_YBLP_CURRENT_STATE_OUTPUT||path.resolve('companies/company-007-yblp-current-state.json');
 const WALLETS=[
-  getAddress('0x7eC6331188468269DC7C1Cf6a84C972632178B1E'),
-  getAddress('0x9c548960bd053C8465F298a711b6343Ae0360309')
+  getAddress('0x7ec6331188468269dc7c1cf6a84c972632178b1e'),
+  getAddress('0x9c548960bd053c8465f298a711b6343ae0360309')
 ];
-const HYBRID_FACTORY=getAddress('0xBdC32268851C324c6185809271dfe6d8dab8dC5b');
+const HYBRID_FACTORY=getAddress('0xbdc32268851c324c6185809271dfe6d8dab8dc5b');
 const MARKETS=[
-  {family:'BTC',version:'current',market:'yb-WBTC',lt:getAddress('0x651D4b8168488FA163d85304662E8278d4c55BAa'),gauge:getAddress('0xAa0b1d265F23972eafB7d088e963BD31403A58F5')},
-  {family:'ETH',version:'current',market:'yb-WETH',lt:getAddress('0x2B9c9f3BdcEb5d8E36a4704F08a78Fca53343cEa'),gauge:getAddress('0xd829456FD63Ada7DE0657714A3A7A26DE403E3D8')},
-  {family:'BTC',version:'deprecated-v2',market:'yb-WBTC v2',lt:getAddress('0xfBF3C16676055776Ab9B286492D8f13e30e2E763'),gauge:getAddress('0xbc56e3edB67b56d598aCE07668b138815F45d7aa')},
-  {family:'BTC',version:'deprecated-legacy',market:'yb-WBTC Legacy',lt:getAddress('0x6095a220C5567360d459462A25b1AD5aEAD45204'),gauge:getAddress('0x37f45E64935e7B8383D2f034048B32770B04E8bd')},
-  {family:'ETH',version:'deprecated-legacy',market:'yb-WETH Legacy',lt:getAddress('0x931d40dD07b25B91932b481B63631Ea86d236e09'),gauge:getAddress('0xe4e656B5215a82009969219b1bAbB7c0757A3315')}
+  {family:'BTC',version:'current',market:'yb-WBTC',lt:getAddress('0x651d4b8168488fa163d85304662e8278d4c55baa'),gauge:getAddress('0xaa0b1d265f23972eafb7d088e963bd31403a58f5')},
+  {family:'ETH',version:'current',market:'yb-WETH',lt:getAddress('0x2b9c9f3bdceb5d8e36a4704f08a78fca53343cea'),gauge:getAddress('0xd829456fd63ada7de0657714a3a7a26de403e3d8')},
+  {family:'BTC',version:'deprecated-v2',market:'yb-WBTC v2',lt:getAddress('0xfbf3c16676055776ab9b286492d8f13e30e2e763'),gauge:getAddress('0xbc56e3edb67b56d598ace07668b138815f45d7aa')},
+  {family:'BTC',version:'deprecated-legacy',market:'yb-WBTC Legacy',lt:getAddress('0x6095a220c5567360d459462a25b1ad5aead45204'),gauge:getAddress('0x37f45e64935e7b8383d2f034048b32770b04e8bd')},
+  {family:'ETH',version:'deprecated-legacy',market:'yb-WETH Legacy',lt:getAddress('0x931d40dd07b25b91932b481b63631ea86d236e09'),gauge:getAddress('0xe4e656b5215a82009969219b1babb7c0757a3315')}
 ];
 const RPC_URLS=[
   process.env.ETH_RPC_URL,
