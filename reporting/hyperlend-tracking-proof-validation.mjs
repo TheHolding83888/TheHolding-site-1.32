@@ -17,6 +17,7 @@ function fixture(){
     generatedAt,
     company:{registry:'010',name:'Cypher',wallets:[{alias:'Wallet 2',address:WALLET}]},
     authority:{readOnly:true,walletSigning:false,transactions:false,capitalMovement:false,methodologyMutation:false,executionAuthority:'none'},
+    epistemicBoundary:{hyperlendSupplyInterestIsEmbedded:true,hyperlendEmbeddedInterestIsNotClaimable:true,hyperlendExternalIncentivesAreSeparate:true,hyperlendAprIsNotRealisedIncome:true},
     provenance:{hyperlendIncome:{version:'0.1-company-010-hyperlend-income-parity',generatedAt}},
     strategies:{
       hyperlend:{
