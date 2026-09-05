@@ -1,0 +1,31 @@
+name: Diagnose Yield Basis LP Custody
+
+on:
+  pull_request:
+    paths:
+      - 'reporting/yield-basis-lp-custody-diagnostic.mjs'
+      - '.github/workflows/diagnose-yblp-custody.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose-yblp-custody:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+      - name: Trace Company 007 WBTC YBLP custody since last canonical resolver
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
+        run: |
+          set -euo pipefail
+          node --check reporting/yield-basis-lp-custody-diagnostic.mjs
+          node reporting/yield-basis-lp-custody-diagnostic.mjs
