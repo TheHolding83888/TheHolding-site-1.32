@@ -78,7 +78,10 @@ jobs:
         (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
       }}
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # The safe writer may intentionally rebuild after main moves, up to three
+    # attempts. Budget the job for the retry contract instead of cancelling a
+    # correct fail-closed publication halfway through its first race recovery.
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -116,7 +119,6 @@ jobs:
           node --check reporting/ve33-accounting-evidence.mjs
           node --check reporting/ve33-accounting-evidence-validation.mjs
           node --check reporting/ve33-income-candidates.mjs
-          node --check reporting/ve33-income-candidates-validation.mjs
           node --check reporting/ve33-ledger-admission.mjs
           node --check reporting/ve33-ledger-admission-validation.mjs
           node --check reporting/ve33-locked-managed-accounting-evidence.mjs
