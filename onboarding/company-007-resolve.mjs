@@ -4,14 +4,12 @@ import crypto from 'node:crypto';
 import { Interface, formatUnits, getAddress } from 'ethers';
 
 const VERSION = '1.1-targeted-resolver';
-const YB_RESOLVER_VERSION = '1.8-canonical-quantity-source-mesh';
+const YB_RESOLVER_VERSION = '1.9-current-state-active-set';
+const CURRENT_STATE_VERSION = '0.1-yblp-current-state-quorum';
 const OUTPUT_PATH = process.env.COMPANY_007_RESOLVE_OUTPUT
   || path.resolve('companies/company-007-resolve.json');
-
-const YB_MARKETS = [
-  { symbol: 'yb-WBTC', family: 'BTC', lt: getAddress('0x651d4b8168488fa163d85304662e8278d4c55baa') },
-  { symbol: 'yb-WETH', family: 'ETH', lt: getAddress('0x2b9c9f3bdceb5d8e36a4704f08a78fca53343cea') }
-];
+const CURRENT_STATE_PATH = process.env.COMPANY_007_YBLP_CURRENT_STATE
+  || path.resolve('companies/company-007-yblp-current-state.json');
 
 const LT_IFACE = new Interface(['function pricePerShare() view returns (uint256)']);
 
@@ -34,7 +32,7 @@ function stableHash(value) {
 function blockTag(n) {
   const b = BigInt(n);
   if (b < 0n) throw new Error(`negative block number: ${n}`);
-  return `0x${b.toString(16)}`; // Ethereum JSON-RPC QUANTITY: minimal hex, no leading zero digits.
+  return `0x${b.toString(16)}`;
 }
 function positiveBigInt(x) {
   try {
@@ -82,7 +80,7 @@ async function rpc(url, method, params = [], timeoutMs = 7000) {
       headers: {
         'content-type': 'application/json',
         accept: 'application/json',
-        'user-agent': 'The-Holding-Company-007-YB-History/1.8'
+        'user-agent': 'The-Holding-Company-007-YB-History/1.9'
       },
       body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
       signal: ctrl.signal,
@@ -115,14 +113,14 @@ async function etherscanHistoricalCall(market, blockNumber) {
   const timer = setTimeout(() => ctrl.abort(), 9000);
   try {
     const r = await fetch(`https://api.etherscan.io/v2/api?${q.toString()}`, {
-      headers: { accept: 'application/json', 'user-agent': 'The-Holding-Company-007-YB-History/1.8' },
+      headers: { accept: 'application/json', 'user-agent': 'The-Holding-Company-007-YB-History/1.9' },
       signal: ctrl.signal,
       cache: 'no-store'
     });
     if (!r.ok) throw new Error(`HTTP ${r.status} ${r.statusText || ''}`.trim());
     const j = await r.json();
     if (j?.error) throw new Error(`Etherscan RPC ${j.error.code}: ${j.error.message || 'unknown error'}`);
-    if (!j?.result || j.result === '0x') throw new Error(`Etherscan eth_call returned no result`);
+    if (!j?.result || j.result === '0x') throw new Error('Etherscan eth_call returned no result');
     return j.result;
   } finally {
     clearTimeout(timer);
@@ -182,13 +180,15 @@ async function locateHistoricalBlock(latestBlock, latestTimestamp, targetTimesta
   return { block: null, provider: null, diagnostics };
 }
 
-function decodePps(out, ppsNow) {
+function decodePps(out, ppsNow = null) {
   const raw = positiveBigInt(LT_IFACE.decodeFunctionResult('pricePerShare', out)[0]);
-  if (raw <= 0n) throw new Error('historical PPS is non-positive');
+  if (raw <= 0n) throw new Error('PPS is non-positive');
   const pps = Number(formatUnits(raw, 18));
-  if (!(pps > 0) || !Number.isFinite(pps)) throw new Error('historical PPS decode invalid');
-  const ratio = ppsNow / pps;
-  if (!(ratio > 0.5 && ratio < 2)) throw new Error(`historical PPS sanity ratio out of bounds: ${ratio}`);
+  if (!(pps > 0) || !Number.isFinite(pps)) throw new Error('PPS decode invalid');
+  if (ppsNow != null) {
+    const ratio = ppsNow / pps;
+    if (!(ratio > 0.5 && ratio < 2)) throw new Error(`historical PPS sanity ratio out of bounds: ${ratio}`);
+  }
   return { raw, pps };
 }
 
@@ -197,8 +197,6 @@ async function historicalPps(market, blockNumber, ppsNow) {
   const data = LT_IFACE.encodeFunctionData('pricePerShare', []);
   const tag = blockTag(blockNumber);
 
-  // Direct historical eth_call is the actual capability we need. Do not gate on eth_getCode:
-  // some gateways proxy eth_call correctly but reject secondary historical methods.
   for (const source of HISTORY_RPC_SOURCES) {
     try {
       const out = await rpc(source.url, 'eth_call', [{ to: market.lt, data }, tag], 9000);
@@ -209,7 +207,6 @@ async function historicalPps(market, blockNumber, ppsNow) {
     }
   }
 
-  // Etherscan's official proxy API accepts an explicit hex block tag. Optional: skipped when no key exists.
   try {
     const out = await etherscanHistoricalCall(market, blockNumber);
     const decoded = decodePps(out, ppsNow);
@@ -231,36 +228,189 @@ function validateBaseline(d) {
   if (d?.results?.votium?.completeCurrentRootScan !== true) {
     throw new Error('baseline Votium current-root scan is not complete');
   }
-  const yb = d?.results?.yieldBasis;
-  if (!yb || !Array.isArray(yb.positions) || yb.positions.length !== 2) {
-    throw new Error('baseline Yield Basis positions missing');
+}
+
+function validateCurrentState(d) {
+  if (d?.version !== CURRENT_STATE_VERSION || d?.status !== 'ok') {
+    throw new Error('Company #007 YBLP current-state proof missing or incomplete');
   }
-  if (!(Number(yb.latestBlock) > 0) || !(Number(yb.latestTimestamp) > 0)) {
-    throw new Error('baseline Yield Basis latest block/timestamp missing');
+  if (d?.company?.registry !== '007' || d?.company?.name !== "Rook's portfolio") {
+    throw new Error('Company #007 YBLP current-state identity mismatch');
   }
-  for (const p of yb.positions) {
-    if (!(Number(p.ppsNow) > 0)) throw new Error(`baseline ${p.market} current PPS missing`);
+  if (d?.semantics?.unknownIsNotZero !== true || d?.semantics?.historyMustBePreserved !== true) {
+    throw new Error('Company #007 YBLP current-state semantic boundary mismatch');
+  }
+  if (d?.authority?.readOnly !== true || d?.authority?.executionAuthority !== 'none' || d?.authority?.capitalExecution !== false) {
+    throw new Error('Company #007 YBLP current-state authority expanded');
+  }
+  if (!(Number(d?.quorum?.matching) >= Number(d?.quorum?.required)) || Number(d?.quorum?.required) < 2) {
+    throw new Error('Company #007 YBLP current-state quorum invalid');
+  }
+  if (!Array.isArray(d?.markets) || !d.markets.length) throw new Error('Company #007 YBLP market universe missing');
+  for (const market of d.markets) {
+    if (!['BTC', 'ETH'].includes(market?.family)) throw new Error(`unexpected YBLP family: ${market?.family}`);
+    if (!['active', 'verified-zero'].includes(market?.currentState)) throw new Error(`invalid YBLP currentState: ${market?.market}`);
+    if (!/^0x[0-9a-fA-F]{40}$/.test(String(market?.lt || ''))) throw new Error(`invalid YBLP LT: ${market?.market}`);
+    if (!/^0x[0-9a-fA-F]{40}$/.test(String(market?.gauge || ''))) throw new Error(`invalid YBLP gauge: ${market?.market}`);
+    if (market.currentState === 'active' && !(market.activeHoldings || []).length) throw new Error(`active YBLP market lacks holdings: ${market.market}`);
+    if (market.currentState === 'verified-zero' && (market.activeHoldings || []).length) throw new Error(`verified-zero YBLP market has active holdings: ${market.market}`);
   }
 }
 
-async function resolveHistoryOnly(baseline) {
-  const prior = baseline.results.yieldBasis;
-  const latestBlock = Number(prior.latestBlock);
-  const latestTimestamp = Number(prior.latestTimestamp);
+function activeMarketsFromCurrentState(currentState) {
+  return currentState.markets
+    .filter(x => x.currentState === 'active')
+    .map(x => ({
+      symbol: x.market,
+      family: x.family,
+      version: x.version || null,
+      lt: getAddress(x.lt),
+      gauge: getAddress(x.gauge),
+      activeHoldings: x.activeHoldings || []
+    }));
+}
+
+async function currentPpsSnapshot(markets) {
+  const diagnostics = [];
+  if (!markets.length) return { block: null, provider: null, positions: [], diagnostics };
+  const data = LT_IFACE.encodeFunctionData('pricePerShare', []);
+
+  for (const url of HEADER_RPCS) {
+    const label = `ethereum-current:${safeHost(url)}`;
+    try {
+      const latestHex = await rpc(url, 'eth_blockNumber', [], 6000);
+      const latestBlock = Number(BigInt(latestHex));
+      const block = await getBlock(url, latestBlock);
+      const positions = [];
+      for (const market of markets) {
+        const out = await rpc(url, 'eth_call', [{ to: market.lt, data }, blockTag(latestBlock)], 9000);
+        const decoded = decodePps(out);
+        positions.push({ ...market, ppsNow: decoded.pps, ppsNowRaw: decoded.raw.toString() });
+      }
+      return { block, provider: label, positions, diagnostics };
+    } catch (e) {
+      diagnostics.push(`${label}: ${errorText(e)}`);
+    }
+  }
+  return { block: null, provider: null, positions: [], diagnostics };
+}
+
+async function resolveCurrentActiveSet(currentState) {
+  const activeMarkets = activeMarketsFromCurrentState(currentState);
+  const verifiedZeroMarkets = currentState.markets
+    .filter(x => x.currentState === 'verified-zero')
+    .map(x => ({ market: x.market, family: x.family, version: x.version || null, lt: x.lt, gauge: x.gauge }));
+
+  if (!activeMarkets.length) {
+    return {
+      status: 'ok',
+      chain: 'Ethereum',
+      latestBlock: null,
+      latestTimestamp: null,
+      referenceWindowDays: 30,
+      positions: [],
+      verifiedZeroMarkets,
+      currentStateProofGeneratedAt: currentState.generatedAt,
+      currentStateQuorum: currentState.quorum,
+      yieldBasisResolverVersion: YB_RESOLVER_VERSION,
+      recoveryMode: 'current-state-active-set; no active YBLP positions; historical records preserved outside current inventory',
+      sourceMeshExhausted: false,
+      blockTagEncoding: 'ethereum-json-rpc-quantity-no-leading-zero',
+      methodology: {
+        canonicalMetric: 'FT APY (30D) / Fundamental Trading APY',
+        formula: '(PPS_now / PPS_30d_ago)^(365 / elapsed_days) - 1',
+        emissionsIncluded: false,
+        redemptionPpsUsedForApr: false,
+        currentStateProofIsIncomeAuthority: false,
+        note: 'No active Yield Basis LP mechanism is present in the proven current inventory. Historical positions and prior income remain preserved; verified zero is not rewritten as historical absence.'
+      }
+    };
+  }
+
+  const current = await currentPpsSnapshot(activeMarkets);
+  if (!current.block || current.positions.length !== activeMarkets.length) {
+    return {
+      status: 'warming',
+      chain: 'Ethereum',
+      latestBlock: null,
+      latestTimestamp: null,
+      referenceWindowDays: 30,
+      positions: activeMarkets.map(x => ({
+        market: x.symbol,
+        family: x.family,
+        marketVersion: x.version,
+        lt: x.lt,
+        gauge: x.gauge,
+        activeHoldings: x.activeHoldings,
+        ppsNow: null,
+        pps30dAgo: null,
+        fundamentalTradingApy30dPct: null,
+        productivityStatus: 'warming',
+        historyError: `current PPS source mesh exhausted: ${current.diagnostics.join(' | ')}`
+      })),
+      verifiedZeroMarkets,
+      currentStateProofGeneratedAt: currentState.generatedAt,
+      currentStateQuorum: currentState.quorum,
+      yieldBasisResolverVersion: YB_RESOLVER_VERSION,
+      recoveryMode: 'current-state-active-set; current PPS source mesh exhausted; UNKNOWN retained',
+      currentPpsDiagnostics: current.diagnostics,
+      sourceMeshExhausted: true,
+      blockTagEncoding: 'ethereum-json-rpc-quantity-no-leading-zero',
+      methodology: {
+        canonicalMetric: 'FT APY (30D) / Fundamental Trading APY',
+        formula: '(PPS_now / PPS_30d_ago)^(365 / elapsed_days) - 1',
+        emissionsIncluded: false,
+        redemptionPpsUsedForApr: false,
+        currentStateProofIsIncomeAuthority: false,
+        note: 'Active-set identity is proven, but APR remains UNKNOWN until current and historical PPS are reproducibly observed.'
+      }
+    };
+  }
+
+  const latestBlock = current.block.number;
+  const latestTimestamp = current.block.timestamp;
   const targetTimestamp = latestTimestamp - 30 * 86400;
   const blockLookup = await locateHistoricalBlock(latestBlock, latestTimestamp, targetTimestamp);
-  const priorByMarket = new Map(prior.positions.map(p => [p.market, p]));
 
   if (!blockLookup.block) {
     return {
-      ...prior,
       status: 'warming',
+      chain: 'Ethereum',
+      latestBlock,
+      latestTimestamp,
+      referenceWindowDays: 30,
+      positions: current.positions.map(x => ({
+        market: x.symbol,
+        family: x.family,
+        marketVersion: x.version,
+        lt: x.lt,
+        gauge: x.gauge,
+        activeHoldings: x.activeHoldings,
+        ppsNow: round(x.ppsNow, 12),
+        pps30dAgo: null,
+        fundamentalTradingApy30dPct: null,
+        productivityStatus: 'warming',
+        historyError: `historical block lookup failed: ${blockLookup.diagnostics.join(' | ')}`
+      })),
+      verifiedZeroMarkets,
+      currentStateProofGeneratedAt: currentState.generatedAt,
+      currentStateQuorum: currentState.quorum,
       yieldBasisResolverVersion: YB_RESOLVER_VERSION,
-      recoveryMode: 'historical-source-mesh canonical-quantity diagnostic-safe; validated current PPS preserved',
+      recoveryMode: 'current-state-active-set; historical block source mesh exhausted; UNKNOWN retained',
+      currentPpsProvider: current.provider,
+      currentPpsDiagnostics: current.diagnostics,
       historicalBlockProvider: null,
       historicalBlockDiagnostics: blockLookup.diagnostics,
       sourceMeshExhausted: true,
-      sourceMeshError: `historical block lookup failed: ${blockLookup.diagnostics.join(' | ')}`
+      blockTagEncoding: 'ethereum-json-rpc-quantity-no-leading-zero',
+      methodology: {
+        canonicalMetric: 'FT APY (30D) / Fundamental Trading APY',
+        formula: '(PPS_now / PPS_30d_ago)^(365 / elapsed_days) - 1',
+        emissionsIncluded: false,
+        redemptionPpsUsedForApr: false,
+        currentStateProofIsIncomeAuthority: false,
+        note: 'Current active set and current PPS are proven; historical PPS is unavailable, so Reference APY remains UNKNOWN.'
+      }
     };
   }
 
@@ -268,32 +418,35 @@ async function resolveHistoryOnly(baseline) {
   const elapsedDays = elapsedSeconds / 86400;
   const positions = [];
 
-  for (const market of YB_MARKETS) {
-    const previous = priorByMarket.get(market.symbol);
-    if (!previous) throw new Error(`baseline market missing: ${market.symbol}`);
-    const ppsNow = Number(previous.ppsNow);
-    const hist = await historicalPps(market, blockLookup.block.number, ppsNow);
+  for (const market of current.positions) {
+    const hist = await historicalPps(market, blockLookup.block.number, market.ppsNow);
     const ppsPast = hist.pps;
     let apy = null;
     let status = 'warming';
     let historyError = null;
-
-    if (ppsPast != null && ppsPast > 0 && ppsNow > 0 && elapsedDays > 0) {
-      apy = (Math.pow(ppsNow / ppsPast, 365 / elapsedDays) - 1) * 100;
+    if (ppsPast != null && ppsPast > 0 && market.ppsNow > 0 && elapsedDays > 0) {
+      apy = (Math.pow(market.ppsNow / ppsPast, 365 / elapsedDays) - 1) * 100;
       status = 'ok';
     } else {
       historyError = `historical PPS source mesh exhausted: ${hist.diagnostics.join(' | ')}`;
     }
-
     positions.push({
-      ...previous,
+      market: market.symbol,
+      family: market.family,
+      marketVersion: market.version,
+      lt: market.lt,
+      gauge: market.gauge,
+      activeHoldings: market.activeHoldings,
+      ppsNow: round(market.ppsNow, 12),
+      ppsNowRaw: market.ppsNowRaw,
       pps30dAgo: ppsPast == null ? null : round(ppsPast, 12),
       historicalBlock: ppsPast == null ? null : blockLookup.block.number,
       historicalTimestamp: ppsPast == null ? null : blockLookup.block.timestamp,
       elapsedDays: round(elapsedDays, 6),
       fundamentalTradingApy30dPct: apy == null ? null : round(apy, 6),
       productivityStatus: status,
-      productivityMethod: 'validated baseline PPS_now vs historical LT.pricePerShare over bounded trailing-30-day interval; annualized; emissions excluded',
+      productivityMethod: 'proven current active-set LT.pricePerShare now vs historical LT.pricePerShare over bounded trailing-30-day interval; annualized; emissions excluded',
+      currentProvider: current.provider,
       historicalProvider: hist.provider,
       historicalDiagnostics: hist.diagnostics,
       historyError
@@ -302,37 +455,55 @@ async function resolveHistoryOnly(baseline) {
 
   const ok = positions.every(p => p.productivityStatus === 'ok');
   return {
-    ...prior,
     status: ok ? 'ok' : 'warming',
+    chain: 'Ethereum',
+    latestBlock,
+    latestTimestamp,
+    referenceWindowDays: 30,
     positions,
+    verifiedZeroMarkets,
+    currentStateProofGeneratedAt: currentState.generatedAt,
+    currentStateQuorum: currentState.quorum,
     yieldBasisResolverVersion: YB_RESOLVER_VERSION,
-    recoveryMode: 'historical-source-mesh + canonical JSON-RPC quantity block tags; configured RPCs + official public Merkle/Blockscout + optional Etherscan proxy; validated current PPS preserved',
+    recoveryMode: 'proven current-state active set + live current PPS + historical source mesh; stale closed positions excluded from current inventory only',
+    currentPpsProvider: current.provider,
+    currentPpsDiagnostics: current.diagnostics,
     historicalBlockProvider: blockLookup.provider,
     historicalBlockDiagnostics: blockLookup.diagnostics,
     sourceMeshExhausted: !ok,
     blockTagEncoding: 'ethereum-json-rpc-quantity-no-leading-zero',
     methodology: {
-      ...prior.methodology,
+      canonicalMetric: 'FT APY (30D) / Fundamental Trading APY',
+      formula: '(PPS_now / PPS_30d_ago)^(365 / elapsed_days) - 1',
       emissionsIncluded: false,
       redemptionPpsUsedForApr: false,
-      note: 'FT APY uses validated baseline PPS_now and trailing-30-day historical LT.pricePerShare. Historical sources are accepted only after a successful direct historical eth_call returning a positive, sane PPS. Emissions and redemption PPS remain excluded.'
+      currentStateProofIsIncomeAuthority: false,
+      currentInventoryDoesNotRewriteHistory: true,
+      unknownIsNotZero: true,
+      note: 'Only YBLP mechanisms proven active by the independent current-state quorum enter the current resolver. Verified-zero mechanisms leave current inventory but remain historical facts. Reference APY never becomes period-income authority.'
     }
   };
 }
 
 async function main() {
   if (!fs.existsSync(OUTPUT_PATH)) {
-    throw new Error(`Missing resolver baseline at ${OUTPUT_PATH}. Workflow must restore last-known-good baseline first.`);
+    throw new Error(`Missing resolver baseline at ${OUTPUT_PATH}. Workflow must preserve a last-known-good non-YB baseline.`);
   }
+  if (!fs.existsSync(CURRENT_STATE_PATH)) {
+    throw new Error(`Missing current-state proof at ${CURRENT_STATE_PATH}. Run Discover Company #007 first; UNKNOWN != 0.`);
+  }
+
   const baseline = JSON.parse(fs.readFileSync(OUTPUT_PATH, 'utf8'));
+  const currentState = JSON.parse(fs.readFileSync(CURRENT_STATE_PATH, 'utf8'));
   validateBaseline(baseline);
+  validateCurrentState(currentState);
 
   const preservedBefore = Object.fromEntries(
     ['crv', 'link', 'zk', 'votium'].map(k => [k, stableHash(baseline.results[k])])
   );
 
   const startedAt = nowIso();
-  const yieldBasis = await resolveHistoryOnly(baseline);
+  const yieldBasis = await resolveCurrentActiveSet(currentState);
   const output = structuredClone(baseline);
   output.generatedAt = nowIso();
   output.startedAt = startedAt;
@@ -346,12 +517,13 @@ async function main() {
     votiumResolved: true,
     readyForFinalIntegrator: yieldBasis.status === 'ok',
     note: yieldBasis.status === 'ok'
-      ? 'YB historical source mesh resolved both markets. CRV/LINK/ZK/Votium preserved exactly.'
-      : 'YB source mesh exhausted without a reproducible historical PPS. CRV/LINK/ZK/Votium preserved exactly; warming retained rather than inventing a value.'
+      ? `YB current active set resolved (${yieldBasis.positions.length} active mechanism(s)); verified-zero mechanisms excluded from current inventory without rewriting history.`
+      : 'YB active-set identity is preserved, but a current/historical PPS source remains unavailable. UNKNOWN retained; CRV/LINK/ZK/Votium preserved exactly.'
   };
   output.recovery = {
-    mode: 'yield-basis-history-only-source-mesh',
+    mode: 'yield-basis-current-active-set-source-mesh',
     resolverVersion: YB_RESOLVER_VERSION,
+    currentStateProof: CURRENT_STATE_PATH.replaceAll('\\', '/'),
     preservedResultSha256: preservedBefore
   };
 
@@ -363,8 +535,8 @@ async function main() {
 
   fs.mkdirSync(path.dirname(OUTPUT_PATH), { recursive: true });
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(output, null, 2) + '\n');
-  console.log(`Company #007 YB source-mesh resolver written: ${OUTPUT_PATH}`);
-  console.log(`Yield Basis: ${yieldBasis.status}`);
+  console.log(`Company #007 YB active-set resolver written: ${OUTPUT_PATH}`);
+  console.log(`Yield Basis: ${yieldBasis.status}; active=${yieldBasis.positions.length}; verifiedZero=${yieldBasis.verifiedZeroMarkets.length}`);
   for (const p of yieldBasis.positions || []) {
     console.log(`${p.market}: PPS30d=${p.pps30dAgo ?? 'warming'} FT_APY=${p.fundamentalTradingApy30dPct ?? 'warming'} provider=${p.historicalProvider ?? 'none'}`);
   }
@@ -373,6 +545,6 @@ async function main() {
 }
 
 main().catch(err => {
-  console.error(`Company #007 YB source-mesh resolver failed: ${errorText(err)}`);
+  console.error(`Company #007 YB active-set resolver failed: ${errorText(err)}`);
   process.exitCode = 1;
 });
