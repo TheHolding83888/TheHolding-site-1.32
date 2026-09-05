@@ -1,3 +1,4 @@
+# holding-workflow-definition-proof: intelligence/reliability/operator-command-bridge-workflow-definition-proof.mjs
 name: "The Holding Operator · Command Bridge"
 
 on:
@@ -55,7 +56,8 @@ jobs:
 
           const versions = new Set([
             '0.1-operator-command','0.2-operator-command','0.3-operator-command',
-            '0.4-operator-command','0.5-operator-command','0.6-operator-command'
+            '0.4-operator-command','0.5-operator-command','0.6-operator-command',
+            '0.7-operator-command'
           ]);
           if (!versions.has(cmd.version)) fail('Unexpected operator command version');
           if (cmd.requestedBy !== 'owner' || cmd.approval !== 'explicit') fail('Explicit owner approval marker is required');
@@ -85,6 +87,18 @@ jobs:
           } else if (cmd.operation === 'refresh_builder_candidates') {
             operation = cmd.operation;
             targetWorkflow = 'update-builder-candidates.yml';
+            dispatch = { ref: 'main' };
+          } else if (cmd.operation === 'discover_company_007') {
+            operation = cmd.operation;
+            targetWorkflow = 'discover-company-007.yml';
+            dispatch = { ref: 'main' };
+          } else if (cmd.operation === 'resolve_company_007') {
+            operation = cmd.operation;
+            targetWorkflow = 'resolve-company-007.yml';
+            dispatch = { ref: 'main' };
+          } else if (cmd.operation === 'refresh_unified_capital') {
+            operation = cmd.operation;
+            targetWorkflow = 'unified-capital-refresh.yml';
             dispatch = { ref: 'main' };
           } else if (cmd.operation === 'record_owner_decision') {
             operation = cmd.operation;
@@ -160,7 +174,7 @@ jobs:
         run: |
           set -euo pipefail
           case "$TARGET_WORKFLOW" in
-            refresh-cognitive-stack.yml|update-proposal-work-queue.yml|update-builder-candidates.yml|record-brain-decision.yml) ;;
+            refresh-cognitive-stack.yml|update-proposal-work-queue.yml|update-builder-candidates.yml|record-brain-decision.yml|discover-company-007.yml|resolve-company-007.yml|unified-capital-refresh.yml) ;;
             *) echo "Unexpected target workflow: $TARGET_WORKFLOW"; exit 1 ;;
           esac
 
@@ -283,6 +297,21 @@ jobs:
           # The command commit itself is reviewed before any downstream orchestration.
           wait_command_security
 
+          # Data operations are exact, Security-gated one-target dispatches.
+          # Reporting and Monthly Reports stay owned by their existing event-driven cascade.
+          if [[ "$OPERATION" =~ ^(discover_company_007|resolve_company_007|refresh_unified_capital)$ ]]; then
+            case "$OPERATION" in
+              discover_company_007) TARGET_LABEL='Discover Company #007' ;;
+              resolve_company_007) TARGET_LABEL='Resolve Company #007' ;;
+              refresh_unified_capital) TARGET_LABEL='The Holding Capital · Unified Refresh' ;;
+              *) echo "Unexpected bounded data operation: $OPERATION"; exit 1 ;;
+            esac
+            TARGET_HEAD="$(main_sha)"
+            dispatch_and_wait "$TARGET_WORKFLOW" /tmp/operator-target-dispatch.json "$TARGET_LABEL" "$TARGET_HEAD"
+            echo "target_run_id=$LAST_RUN_ID" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           printf '{"ref":"main"}' > /tmp/cognitive-dispatch.json
           COGNITIVE_HEAD="$(main_sha)"
           dispatch_and_wait 'refresh-cognitive-stack.yml' /tmp/cognitive-dispatch.json 'Cognitive Stack' "$COGNITIVE_HEAD"
@@ -322,7 +351,7 @@ jobs:
         shell: bash
         run: |
           {
-            echo "# The Holding · Operator Command Bridge v0.6"
+            echo "# The Holding · Operator Command Bridge v0.7"
             echo
             echo "**Command ID:** \`${{ steps.command.outputs.command_id }}\`"
             echo "**Operation:** \`${{ steps.command.outputs.operation }}\`"
@@ -342,5 +371,5 @@ jobs:
             echo "**Wallet action:** disabled"
             echo "**Capital execution:** disabled"
             echo
-            echo "v0.6 can perform Security → Cognitive → Learning → Decision-bound Proposal → Builder Candidate orchestration, while each downstream workflow remains independently fail-closed."
+            echo "v0.7 preserves the Security → Cognitive → Learning → Decision-bound Proposal → Builder Candidate lane and adds Security-gated exact data operations for Company #007 discovery/resolve and the canonical Unified Capital Refresh. Reporting and Monthly Reports remain owned by their existing event-driven cascade; legacy Productivity remains recovery-only."
           } >> "$GITHUB_STEP_SUMMARY"

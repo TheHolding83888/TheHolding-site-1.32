@@ -1,3 +1,4 @@
+# holding-workflow-definition-proof: intelligence/reliability/productivity-recovery-workflow-definition-proof.mjs
 name: Update The Holding Productivity Data
 
 # Legacy bounded recovery path. Automatic capital refresh is owned by
@@ -120,13 +121,13 @@ jobs:
               echo "Safe writer guard: rebase conflict; refusing to guess."
               exit 1
             fi
-            node - <<'NODE'
-            const fs=require('fs');
-            const m=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
-            const prices=m.prices||{};
-            if(m.semantics?.perAssetAuthoritySelectionApplied!==true||Object.keys(prices).length!==26||Number(m.authority?.onchainSelectedAssetCount)!==26)throw new Error('Canonical Market Data lost during Productivity recovery rebase');
-            for(const [id,row] of Object.entries(prices))if(row?.authority?.selectedLane!=='onchain'||row?.authority?.fallbackUsed!==false)throw new Error(`${id}: onchain authority lost during Productivity recovery rebase`);
-            NODE
+            node -e '
+              const fs=require("fs");
+              const m=JSON.parse(fs.readFileSync("intelligence/market-data/market-data.json","utf8"));
+              const prices=m.prices||{};
+              if(m.semantics?.perAssetAuthoritySelectionApplied!==true||Object.keys(prices).length!==26||Number(m.authority?.onchainSelectedAssetCount)!==26)throw new Error("Canonical Market Data lost during Productivity recovery rebase");
+              for(const [id,row] of Object.entries(prices))if(row?.authority?.selectedLane!=="onchain"||row?.authority?.fallbackUsed!==false)throw new Error(`${id}: onchain authority lost during Productivity recovery rebase`);
+            '
             NODE_OPTIONS='--import=${{ github.workspace }}/intelligence/market-data/coingecko-fetch-shim.mjs' \
             ETH_RPC_URL='${{ secrets.ETH_RPC_URL }}' \
             BASE_RPC_URL='${{ secrets.BASE_RPC_URL }}' \
