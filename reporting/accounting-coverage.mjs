@@ -232,12 +232,13 @@ export function liquityLqtyObservationProofs(rewards={}){
   const governance='0x807def5e7d057df05c796f4bc75c3fe82bd6eee1';
   const stakingV1='0x4f9fbb3f1e99b56e0fe2892e623ed36a76fc605d';
   const lusd='0x5f98805a4e8be255a32880fdec7f6728c6568ba0';
+  const allowedProtocols=new Set(['liquity','liquity · staked lqty']);
   const allowedSource='onchain: Liquity V1 LQTYStaking pending gain across wallet + V2 UserProxy';
   const addressOk=v=>/^0x[0-9a-f]{40}$/.test(lower(v));
   const rawOk=v=>/^\d+$/.test(String(v??''));
   for(const[company,c]of Object.entries(rewards?.companies||{})){
     const source=(c?.sources||[]).find(x=>x?.route==='liquity-staking');
-    if(source?.status!=='ok'||lower(source?.protocol)!=='liquity'||lower(source?.metric)!=='lqtystaking pending eth + lusd across direct wallet and liquity v2 userproxy')continue;
+    if(source?.status!=='ok'||!allowedProtocols.has(lower(source?.protocol))||lower(source?.metric)!=='lqtystaking pending eth + lusd across direct wallet and liquity v2 userproxy')continue;
     const details=source?.details||{},primary=lower(details?.primaryUserProxy),accounts=Array.isArray(details?.rewardAccounts)?details.rewardAccounts:[];
     if(lower(details?.governance)!==governance||lower(details?.stakingV1)!==stakingV1||!addressOk(primary)||!(Number(details?.primaryUserProxyStakedLqty)>0)||details?.unknownIsNotZero!==true||details?.rewardState!=='Claimable'||!accounts.length)continue;
     const accountAddresses=accounts.map(x=>lower(x?.account));
@@ -250,7 +251,7 @@ export function liquityLqtyObservationProofs(rewards={}){
     try{for(const row of accounts){totalEthRaw+=BigInt(row.pendingEthRaw);totalLusdRaw+=BigInt(row.pendingLusdRaw);}}catch{continue;}
     const expectedTokens=[];if(totalEthRaw>0n)expectedTokens.push('native:eth');if(totalLusdRaw>0n)expectedTokens.push(lusd);
     const rows=(c?.rewards||[]).filter(x=>x?.route==='liquity-staking');
-    const rowsStrong=rows.every(x=>lower(x?.protocol)==='liquity'&&x?.classification==='unclaimed'&&finite(x?.amount)&&Number(x.amount)>0&&x?.source===allowedSource&&['native:eth',lusd].includes(lower(x?.token))&&lower(x?.details?.userProxy)===primary&&x?.details?.unknownIsNotZero===true&&x?.details?.rewardState==='Claimable');
+    const rowsStrong=rows.every(x=>allowedProtocols.has(lower(x?.protocol))&&x?.classification==='unclaimed'&&finite(x?.amount)&&Number(x.amount)>0&&x?.source===allowedSource&&['native:eth',lusd].includes(lower(x?.token))&&lower(x?.details?.userProxy)===primary&&x?.details?.unknownIsNotZero===true&&x?.details?.rewardState==='Claimable');
     if(!rowsStrong||rows.length!==expectedTokens.length)continue;
     const rowTokens=rows.map(x=>lower(x.token)).sort();
     if(JSON.stringify(rowTokens)!==JSON.stringify([...expectedTokens].sort()))continue;
