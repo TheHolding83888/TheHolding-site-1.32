@@ -11,8 +11,12 @@ on:
       - 'reporting/pendle-spendle-tracking-proof-validation.mjs'
       - 'reporting/resupply-tracking-proof-validation.mjs'
       - 'reporting/liquity-tracking-proof-validation.mjs'
+      - 'reporting/yield-basis-lp-accounting-evidence.mjs'
+      - 'reporting/yield-basis-lp-accounting-evidence-validation.mjs'
+      - 'reporting/yield-basis-lp-accounting-evidence.json'
       - 'reporting/accounting-coverage.json'
       - 'companies/productivity-data.json'
+      - 'companies/company-007-discovery.json'
       - 'companies/rewards-data.json'
       - 'companies/icp-nns-rewards-state.json'
       - 'intelligence/icp-nns/company-005-006-neuron-pool.json'
@@ -31,7 +35,7 @@ permissions:
 jobs:
   verify-accounting-coverage:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 5
     steps:
       - name: Checkout exact candidate
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -47,6 +51,7 @@ jobs:
           ACCOUNTING_COVERAGE_FILE: /tmp/accounting-coverage.json
           ACCOUNTING_DIAGNOSTIC_COMPANY: Cypher
           PRODUCTIVITY_DATA_FILE: ./companies/productivity-data.json
+          COMPANY_007_DISCOVERY_FILE: ./companies/company-007-discovery.json
           REWARDS_DATA_FILE: ./companies/rewards-data.json
           ICP_NNS_STATE_FILE: ./companies/icp-nns-rewards-state.json
           ICP_NNS_CONFIG_FILE: ./intelligence/icp-nns/company-005-006-neuron-pool.json
@@ -55,7 +60,10 @@ jobs:
           VE33_EVIDENCE_FILE: ./reporting/ve33-accounting-evidence.json
           VE33_LOCKED_MANAGED_EVIDENCE_FILE: ./reporting/ve33-locked-managed-accounting-evidence.json
           YIELD_BASIS_EVIDENCE_FILE: ./reporting/yield-basis-accounting-evidence.json
+          YIELD_BASIS_LP_EVIDENCE_FILE: /tmp/yield-basis-lp-accounting-evidence.json
           FRAX_EVIDENCE_FILE: ./reporting/frax-yield-accounting-evidence.json
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
         run: |
           set -euo pipefail
           node --check reporting/accounting-coverage.mjs
@@ -66,10 +74,36 @@ jobs:
           node --check reporting/pendle-spendle-tracking-proof-validation.mjs
           node --check reporting/resupply-tracking-proof-validation.mjs
           node --check reporting/liquity-tracking-proof-validation.mjs
+          node --check reporting/yield-basis-lp-accounting-evidence.mjs
+          node --check reporting/yield-basis-lp-accounting-evidence-validation.mjs
           node reporting/icp-nns-tracking-proof-validation.mjs
           node reporting/pendle-spendle-tracking-proof-validation.mjs
           node reporting/resupply-tracking-proof-validation.mjs
           node reporting/liquity-tracking-proof-validation.mjs
+          node reporting/yield-basis-lp-accounting-evidence-validation.mjs
+
+          yblp_sensitive=true
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base_sha="${{ github.event.pull_request.base.sha }}"
+            git fetch --no-tags --depth=1 origin "$base_sha"
+            if git diff --name-only "$base_sha" HEAD | grep -Eq '^(reporting/yield-basis-lp-accounting-evidence\.mjs|reporting/yield-basis-lp-accounting-evidence-validation\.mjs|reporting/accounting-coverage\.mjs|companies/company-007-discovery\.json)$'; then
+              yblp_sensitive=true
+            else
+              yblp_sensitive=false
+            fi
+          fi
+
+          if [ "$yblp_sensitive" = "true" ]; then
+            node reporting/yield-basis-lp-accounting-evidence.mjs
+            test -s "$YIELD_BASIS_LP_EVIDENCE_FILE"
+            node reporting/yield-basis-lp-accounting-evidence-validation.mjs
+          elif [ -s reporting/yield-basis-lp-accounting-evidence.json ]; then
+            cp reporting/yield-basis-lp-accounting-evidence.json "$YIELD_BASIS_LP_EVIDENCE_FILE"
+            node reporting/yield-basis-lp-accounting-evidence-validation.mjs
+          else
+            echo "Yield Basis LP live proof is unrelated to this candidate and no persisted evidence exists yet; preserving UNKNOWN rather than freezing unrelated coverage work."
+          fi
+
           node reporting/accounting-coverage.mjs
           test -s "$ACCOUNTING_COVERAGE_FILE"
           node --input-type=module - <<'NODE'
@@ -152,6 +186,36 @@ jobs:
           assert.ok(!data.gapRanking.some(x=>x.engineId==='liquity_lqty'),'Liquity remained in reusable gap ranking');
           console.log('Liquity production-shaped coverage PASS',{tracking:`${engine.factualTrackingCompanyCount}/${engine.activeCompanyCount}`,factualEventCompanies:engine.factualEventCompanyCount,reusableCoverageGap:engine.reusableCoverageGap,periodIncomeAuthority:false});
           NODE
+          if [ "$yblp_sensitive" = "true" ]; then
+            node --input-type=module - <<'NODE'
+            import assert from 'node:assert/strict';
+            import fs from 'node:fs';
+            const data=JSON.parse(fs.readFileSync(process.env.ACCOUNTING_COVERAGE_FILE,'utf8'));
+            const baseline=JSON.parse(fs.readFileSync('reporting/accounting-coverage.json','utf8'));
+            const ids=['yieldbasis_yblp_weth','yieldbasis_yblp_wbtc'];
+            for(const engineId of ids){
+              const engine=data.mechanisms?.[engineId];
+              assert.ok(engine,`${engineId} mechanism missing`);
+              assert.equal(engine.activeCompanyCount,1,`${engineId} active company count drift`);
+              assert.deepEqual(engine.companies,["Rook's portfolio"],`${engineId} company identity drift`);
+              assert.equal(engine.factualTrackingCompanyCount,1,`${engineId} did not reach 1/1 factual tracking`);
+              assert.equal(engine.factualEventCompanyCount,0,`${engineId} tracking proof fabricated factual period events`);
+              assert.equal(engine.reusableCoverageGap,false,`${engineId} remained a reusable tracking gap`);
+              const row=data.companies?.["Rook's portfolio"]?.mechanisms?.[engineId]?.months?.[data.currentMonth];
+              assert.equal(row?.status,'factual-tracking-no-period-event',`${engineId} status drift`);
+              assert.equal(row?.factualEventCount,0,`${engineId} fabricated income event`);
+              assert.equal(row?.factualUsdSubtotal,null,`${engineId} current PPS leaked into factual income`);
+              assert.deepEqual(row?.factualTrackingProofSources,['reporting/yield-basis-lp-accounting-evidence.json'],`${engineId} proof source drift`);
+              assert.ok(row?.completionBlockers?.includes('no-canonical-period-income-evidence'),`${engineId} lost no-period-income blocker`);
+              assert.ok(!row?.completionBlockers?.includes('no-factual-engine-tracking-proof'),`${engineId} still reports missing tracking proof`);
+            }
+            const baselineYblpGaps=(baseline.gapRanking||[]).filter(x=>ids.includes(x.engineId)).length;
+            assert.equal(baselineYblpGaps,2,'production baseline no longer has exactly two YBLP tracking gaps; refresh the frontier instead of forcing stale assumptions');
+            assert.equal(data.summary.reusableCoverageGapCount,baseline.summary.reusableCoverageGapCount-baselineYblpGaps,'YBLP proof changed reusable gap count by more than its two mechanisms');
+            assert.ok(!(data.gapRanking||[]).some(x=>ids.includes(x.engineId)),'Yield Basis LP remained in reusable gap ranking');
+            console.log('Yield Basis LP production-shaped coverage PASS',{weth:'1/1',wbtc:'1/1',beforeGaps:baseline.summary.reusableCoverageGapCount,afterGaps:data.summary.reusableCoverageGapCount,periodIncomeAuthority:false});
+            NODE
+          fi
           node reporting/accounting-coverage-validation.mjs
           node reporting/accounting-coverage-gap-diagnostic.mjs
           node reporting/accounting-coverage-company-diagnostic.mjs
