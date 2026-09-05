@@ -137,7 +137,7 @@ const YB_MARKETS = [
   {
     family: 'BTC', version: 'current', name: 'yb-WBTC',
     asset: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599',
-    lt: '0x651D4b8168488FA163D85304662E8278d4c55BAa',
+    lt: '0x651D4b8168488FA163d85304662E8278d4c55BAa',
     gauge: '0xAa0b1d265F23972eafB7d088e963BD31403A58F5'
   },
   {
@@ -239,6 +239,8 @@ async function withProvider(chain, fn) {
       };
     } catch (e) {
       errors.push(`${chain}:${safeHost(url)}: ${errMsg(e)}`);
+    } finally {
+      provider.destroy();
     }
   }
   throw new Error(`${chain} providers exhausted: ${errors.join(' | ')}`);
@@ -713,6 +715,34 @@ async function discoverCurveLlamma() {
   };
 }
 
+async function resolveHybridVaultForDiscovery(factory, wallet) {
+  const observations = [];
+  const errors = [];
+  for (const method of ['vaults', 'user_to_vault']) {
+    try {
+      observations.push({ method, value: getAddress(await factory[method](wallet)) });
+    } catch (e) {
+      errors.push(`${method}: ${errMsg(e)}`);
+    }
+  }
+
+  const nonZero = [...new Map(
+    observations
+      .filter(x => lower(x.value) !== lower(ZeroAddress))
+      .map(x => [lower(x.value), x])
+  ).values()];
+
+  if (nonZero.length > 1) {
+    throw new Error(`HybridVault mapping disagreement for ${wallet}: ${nonZero.map(x => `${x.method}=${x.value}`).join(' | ')}`);
+  }
+  if (nonZero.length === 1) return nonZero[0].value;
+
+  const successfulMethods = new Set(observations.map(x => x.method));
+  if (successfulMethods.has('vaults') && successfulMethods.has('user_to_vault')) return null;
+
+  throw new Error(`HybridVault zero is not verified for ${wallet}; UNKNOWN != 0; ${errors.join(' | ')}`);
+}
+
 async function discoverHybridVaults(provider) {
   const factory = new Contract(YB_HYBRID_FACTORY, [
     'function vaults(address) view returns (address)',
@@ -721,11 +751,8 @@ async function discoverHybridVaults(provider) {
 
   const out = [];
   for (const w of COMPANY.wallets) {
-    let vault = ZeroAddress;
-    try { vault = await factory.vaults(w.address); } catch {
-      try { vault = await factory.user_to_vault(w.address); } catch {}
-    }
-    if (vault && lower(vault) !== lower(ZeroAddress)) {
+    const vault = await resolveHybridVaultForDiscovery(factory, w.address);
+    if (vault) {
       out.push({
         owner: w.address,
         ownerAlias: w.alias,
