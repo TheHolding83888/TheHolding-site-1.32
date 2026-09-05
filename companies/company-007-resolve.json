@@ -1,7 +1,7 @@
 {
   "version": "1.1-targeted-resolver",
-  "generatedAt": "2026-08-11T17:24:29.785Z",
-  "startedAt": "2026-08-11T17:24:25.036Z",
+  "generatedAt": "2026-09-05T16:21:14.171Z",
+  "startedAt": "2026-09-05T16:21:14.171Z",
   "company": {
     "registry": "007",
     "name": "Rook's portfolio",
@@ -144,96 +144,72 @@
     "yieldBasis": {
       "status": "ok",
       "chain": "Ethereum",
-      "latestBlock": 25732435,
-      "latestTimestamp": 1786459499,
+      "latestBlock": null,
+      "latestTimestamp": null,
       "referenceWindowDays": 30,
-      "positions": [
+      "positions": [],
+      "verifiedZeroMarkets": [
         {
           "market": "yb-WBTC",
           "family": "BTC",
+          "version": "current",
           "lt": "0x651D4b8168488FA163D85304662E8278d4c55BAa",
-          "directShares": 0.003333574880477841,
-          "mode": "unstaked-plain",
-          "ppsNow": 1.007081414011,
-          "pps30dAgo": 1.007419079525,
-          "historicalBlock": 25517221,
-          "historicalTimestamp": 1783867499,
-          "elapsedDays": 30,
-          "fundamentalTradingApy30dPct": -0.407039,
-          "redemptionPerShareUnderlying": 1.00719983,
-          "trdPct": 0.011758,
-          "productivityStatus": "ok",
-          "productivityMethod": "validated baseline PPS_now vs historical LT.pricePerShare over bounded trailing-30-day interval; annualized; emissions excluded",
-          "historyError": null,
-          "historicalProvider": "ethereum-history:eth.blockscout.com",
-          "historicalDiagnostics": [
-            "ethereum-history:eth.merkle.io: HTTP 429 Too Many Requests"
-          ]
+          "gauge": "0xAa0b1d265F23972eafB7d088e963BD31403A58F5"
         },
         {
           "market": "yb-WETH",
           "family": "ETH",
+          "version": "current",
           "lt": "0x2B9c9f3BdcEb5d8E36a4704F08a78Fca53343cEa",
-          "directShares": 0.28998705319949025,
-          "mode": "unstaked-plain",
-          "ppsNow": 1.010892221379,
-          "pps30dAgo": 1.01240802867,
-          "historicalBlock": 25517221,
-          "historicalTimestamp": 1783867499,
-          "elapsedDays": 30,
-          "fundamentalTradingApy30dPct": -1.806478,
-          "redemptionPerShareUnderlying": 1.010711368991,
-          "trdPct": -0.01789,
-          "productivityStatus": "ok",
-          "productivityMethod": "validated baseline PPS_now vs historical LT.pricePerShare over bounded trailing-30-day interval; annualized; emissions excluded",
-          "historyError": null,
-          "historicalProvider": "ethereum-history:eth.blockscout.com",
-          "historicalDiagnostics": [
-            "ethereum-history:eth.merkle.io: HTTP 429 Too Many Requests"
-          ]
+          "gauge": "0xd829456FD63Ada7DE0657714A3A7A26DE403E3D8"
+        },
+        {
+          "market": "yb-WBTC v2",
+          "family": "BTC",
+          "version": "deprecated-v2",
+          "lt": "0xfBF3C16676055776Ab9B286492D8f13e30e2E763",
+          "gauge": "0xbc56e3edB67b56d598aCE07668b138815F45d7aa"
+        },
+        {
+          "market": "yb-WBTC Legacy",
+          "family": "BTC",
+          "version": "deprecated-legacy",
+          "lt": "0x6095a220C5567360d459462A25b1AD5aEAD45204",
+          "gauge": "0x37f45E64935e7B8383D2f034048B32770B04E8bd"
+        },
+        {
+          "market": "yb-WETH Legacy",
+          "family": "ETH",
+          "version": "deprecated-legacy",
+          "lt": "0x931d40dD07b25B91932b481B63631Ea86d236e09",
+          "gauge": "0xe4e656B5215a82009969219b1bAbB7c0757A3315"
         }
       ],
+      "currentStateProofGeneratedAt": "2026-09-05T16:18:59.735Z",
+      "currentStateQuorum": {
+        "required": 2,
+        "matching": 2,
+        "providers": [
+          "eth.blockscout.com",
+          "ethereum-rpc.publicnode.com"
+        ],
+        "blocks": [
+          25912278,
+          25912279
+        ]
+      },
+      "yieldBasisResolverVersion": "1.9-current-state-active-set",
+      "recoveryMode": "current-state-active-set; no active YBLP positions; historical records preserved outside current inventory",
+      "sourceMeshExhausted": false,
+      "blockTagEncoding": "ethereum-json-rpc-quantity-no-leading-zero",
       "methodology": {
         "canonicalMetric": "FT APY (30D) / Fundamental Trading APY",
         "formula": "(PPS_now / PPS_30d_ago)^(365 / elapsed_days) - 1",
         "emissionsIncluded": false,
         "redemptionPpsUsedForApr": false,
-        "note": "FT APY uses validated baseline PPS_now and trailing-30-day historical LT.pricePerShare. Historical sources are accepted only after a successful direct historical eth_call returning a positive, sane PPS. Emissions and redemption PPS remain excluded."
-      },
-      "diagnostics": [],
-      "provider": "ethereum:ethereum-rpc.publicnode.com",
-      "discoveryCrossCheck": [
-        {
-          "market": "yb-WBTC",
-          "custody": "wallet",
-          "directLtShares": 0.003333574880477841,
-          "gaugeShares": 0,
-          "totalUnderlying": 0.00335757,
-          "productivityMode": {
-            "unstaked": "PPS / fee-growth productive",
-            "staked": null
-          }
-        },
-        {
-          "market": "yb-WETH",
-          "custody": "wallet",
-          "directLtShares": 0.28998705319949025,
-          "gaugeShares": 0,
-          "totalUnderlying": 0.29309327939659907,
-          "productivityMode": {
-            "unstaked": "PPS / fee-growth productive",
-            "staked": null
-          }
-        }
-      ],
-      "yieldBasisResolverVersion": "1.8-canonical-quantity-source-mesh",
-      "recoveryMode": "historical-source-mesh + canonical JSON-RPC quantity block tags; configured RPCs + official public Merkle/Blockscout + optional Etherscan proxy; validated current PPS preserved",
-      "historicalBlockProvider": "ethereum-header:eth.blockscout.com",
-      "historicalBlockDiagnostics": [
-        "ethereum-header:eth.merkle.io: HTTP 429 Too Many Requests"
-      ],
-      "sourceMeshExhausted": false,
-      "blockTagEncoding": "ethereum-json-rpc-quantity-no-leading-zero"
+        "currentStateProofIsIncomeAuthority": false,
+        "note": "No active Yield Basis LP mechanism is present in the proven current inventory. Historical positions and prior income remain preserved; verified zero is not rewritten as historical absence."
+      }
     },
     "votium": {
       "status": "ok",
@@ -482,11 +458,12 @@
     "yieldBasisProductivityResolved": true,
     "votiumResolved": true,
     "readyForFinalIntegrator": true,
-    "note": "YB historical source mesh resolved both markets. CRV/LINK/ZK/Votium preserved exactly."
+    "note": "YB current active set resolved (0 active mechanism(s)); verified-zero mechanisms excluded from current inventory without rewriting history."
   },
   "recovery": {
-    "mode": "yield-basis-history-only-source-mesh",
-    "resolverVersion": "1.8-canonical-quantity-source-mesh",
+    "mode": "yield-basis-current-active-set-source-mesh",
+    "resolverVersion": "1.9-current-state-active-set",
+    "currentStateProof": "companies/company-007-yblp-current-state.json",
     "preservedResultSha256": {
       "crv": "f02b72a1fc6a743f8e7aa9a586380a1042bbc4ecb4f772b48702c0f056a871c9",
       "link": "52e4968bf6c25a3f08df9111e26fb9cb1ab6c96c1f93a7c2b6e0d1437546c61a",
