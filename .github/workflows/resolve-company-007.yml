@@ -1,3 +1,4 @@
+# holding-workflow-definition-proof: intelligence/reliability/company-007-resolver-workflow-definition-proof.mjs
 name: "Resolve Company #007"
 
 on:
@@ -21,19 +22,19 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Restore validated Company #007 resolver baseline
+      - name: Validate current tracked Company #007 resolver baseline
         shell: bash
         run: |
           set -euo pipefail
           FILE="companies/company-007-resolve.json"
-          BASELINE_COMMIT="0e841d2606efe07ad4624ae5d0b32009ebed9c51"
-          mkdir -p companies
-          git cat-file -e "$BASELINE_COMMIT:$FILE"
-          git show "$BASELINE_COMMIT:$FILE" > "$FILE"
+          CURRENT_STATE="companies/company-007-yblp-current-state.json"
+          test -s "$FILE" || { echo "ERROR: current resolver baseline missing"; exit 1; }
+          test -s "$CURRENT_STATE" || { echo "ERROR: current YBLP proof missing; run Discover Company #007 first. UNKNOWN != 0."; exit 1; }
           cp "$FILE" /tmp/company-007-resolve.before-yb.json
           node - <<'NODE'
           const fs = require('fs');
           const d = JSON.parse(fs.readFileSync('/tmp/company-007-resolve.before-yb.json', 'utf8'));
+          const s = JSON.parse(fs.readFileSync('companies/company-007-yblp-current-state.json', 'utf8'));
           if (d.version !== '1.1-targeted-resolver') throw new Error('baseline resolver version mismatch');
           if (d.company?.registry !== '007') throw new Error('baseline registry mismatch');
           if (d.company?.name !== "Rook's portfolio") throw new Error('baseline company mismatch');
@@ -41,7 +42,10 @@ jobs:
             if (d.results?.[key]?.status !== 'ok') throw new Error(`baseline ${key} is not ok`);
           }
           if (d.results?.votium?.completeCurrentRootScan !== true) throw new Error('baseline Votium scan incomplete');
-          console.log('Validated #007 LKG baseline:', d.generatedAt);
+          if (s.version !== '0.1-yblp-current-state-quorum' || s.status !== 'ok') throw new Error('YBLP current-state proof incomplete');
+          if (s.semantics?.unknownIsNotZero !== true || s.semantics?.historyMustBePreserved !== true) throw new Error('YBLP current-state semantic boundary mismatch');
+          if (!(Number(s.quorum?.matching) >= Number(s.quorum?.required)) || Number(s.quorum?.required) < 2) throw new Error('YBLP current-state quorum invalid');
+          console.log('Validated #007 current LKG + current-state proof:', d.generatedAt, s.generatedAt);
           NODE
 
       - name: Setup Node.js
@@ -52,7 +56,7 @@ jobs:
       - name: Install resolver dependency
         run: npm install --no-save ethers@6
 
-      - name: "Resolve Company #007 Yield Basis canonical-quantity source mesh"
+      - name: "Resolve Company #007 Yield Basis proven active set"
         env:
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
           ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
@@ -60,9 +64,10 @@ jobs:
           ETH_ARCHIVE_RPC_URL_2: ${{ secrets.ETH_ARCHIVE_RPC_URL_2 }}
           ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
           COMPANY_007_RESOLVE_OUTPUT: companies/company-007-resolve.json
+          COMPANY_007_YBLP_CURRENT_STATE: companies/company-007-yblp-current-state.json
         run: node onboarding/company-007-resolve.mjs
 
-      - name: Validate JSON and preservation guard
+      - name: Validate JSON, active set and preservation guard
         shell: bash
         run: |
           set -euo pipefail
@@ -71,6 +76,7 @@ jobs:
           const crypto = require('crypto');
           const before = JSON.parse(fs.readFileSync('/tmp/company-007-resolve.before-yb.json', 'utf8'));
           const after = JSON.parse(fs.readFileSync('companies/company-007-resolve.json', 'utf8'));
+          const state = JSON.parse(fs.readFileSync('companies/company-007-yblp-current-state.json', 'utf8'));
           const hash = x => crypto.createHash('sha256').update(JSON.stringify(x)).digest('hex');
           if (after.version !== '1.1-targeted-resolver') throw new Error('resolver version mismatch');
           if (after.company?.registry !== '007') throw new Error('registry mismatch');
@@ -80,21 +86,27 @@ jobs:
           }
           const yb = after.results?.yieldBasis;
           if (!yb) throw new Error('Yield Basis result missing');
-          if (yb.yieldBasisResolverVersion !== '1.8-canonical-quantity-source-mesh') throw new Error('YB sub-version mismatch');
+          if (yb.yieldBasisResolverVersion !== '1.9-current-state-active-set') throw new Error('YB sub-version mismatch');
           if (yb.methodology?.emissionsIncluded !== false) throw new Error('YB emissions must be excluded');
           if (yb.methodology?.redemptionPpsUsedForApr !== false) throw new Error('redemption PPS must not be used for FT APY');
-          if (!Array.isArray(yb.positions) || yb.positions.length !== 2) throw new Error('expected two YB markets');
+          if (yb.methodology?.currentStateProofIsIncomeAuthority !== false) throw new Error('current-state proof gained income authority');
+          const expectedActive = (state.markets || []).filter(x => x.currentState === 'active').map(x => x.market).sort();
+          const actualActive = (yb.positions || []).map(x => x.market).sort();
+          if (JSON.stringify(expectedActive) !== JSON.stringify(actualActive)) throw new Error(`YBLP active-set mismatch expected=${expectedActive} actual=${actualActive}`);
+          const expectedZero = (state.markets || []).filter(x => x.currentState === 'verified-zero').map(x => x.market).sort();
+          const actualZero = (yb.verifiedZeroMarkets || []).map(x => x.market).sort();
+          if (JSON.stringify(expectedZero) !== JSON.stringify(actualZero)) throw new Error(`YBLP verified-zero mismatch expected=${expectedZero} actual=${actualZero}`);
           if (yb.status === 'ok') {
             for (const p of yb.positions) {
               if (!(Number(p.pps30dAgo) > 0)) throw new Error(`${p.market}: historical PPS missing`);
               if (!Number.isFinite(Number(p.fundamentalTradingApy30dPct))) throw new Error(`${p.market}: FT APY missing`);
               if (!p.historicalProvider) throw new Error(`${p.market}: historical provider missing`);
             }
-            console.log('YB SOURCE MESH v1.8: OK');
+            console.log('YB ACTIVE-SET SOURCE MESH v1.9: OK', {active:actualActive, verifiedZero:actualZero});
           } else {
             if (yb.status !== 'warming') throw new Error(`unexpected Yield Basis status: ${yb.status}`);
             if (yb.sourceMeshExhausted !== true) throw new Error('warming YB must explicitly mark sourceMeshExhausted=true');
-            console.log('YB SOURCE MESH v1.8: WARMING – all reproducible historical sources exhausted; diagnostics will be published.');
+            console.log('YB ACTIVE-SET SOURCE MESH v1.9: WARMING – UNKNOWN retained.');
           }
           NODE
 
@@ -108,7 +120,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -f "$FILE"
           if ! git diff --cached --quiet -- "$FILE"; then
-            git commit -m "Resolve Company #007 Yield Basis canonical quantity"
+            git commit -m "Resolve Company #007 Yield Basis current active set"
           else
             echo "Generated resolver matches tracked content."
           fi
