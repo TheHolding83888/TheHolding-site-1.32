@@ -94,7 +94,7 @@ assert.equal(incomePolicy.authority?.claimingAuthority,'none');
 assert.equal(incomePolicy.authority?.capitalExecution,false);
 assert.equal(incomePolicy.authority?.methodologyMutationAuthority,'none');
 
-assert.match(coverageBuilder,/Accounting Coverage Registry v0\.3/,'Coverage Registry builder identity drift');
+assert.match(coverageBuilder,/Accounting Coverage Registry v0\.6/,'Coverage Registry builder identity drift');
 assert.match(coverageBuilder,/Canonical Income Ledger is the sole authority for/,'Coverage Registry lost Canonical Ledger sole-authority boundary');
 assert.match(coverageBuilder,/Tracking proof never creates period income/,'Coverage tracking proof gained income authority');
 assert.match(coverageBuilder,/zeroPeriodEventDoesNotImplyCoverageGap:true/,'Coverage zero-event semantics missing');
@@ -222,7 +222,7 @@ assert.doesNotMatch(workflow,/actions:\s*write/,'Reporting scheduler must not ga
 assert.doesNotMatch(workflow,/\n\s*pull_request:/,'Reporting production writer must not gain pull_request execution');
 assert.match(workflow,/group:\s*reporting-daily/,'Reporting concurrency group drift');
 assert.match(workflow,/cancel-in-progress:\s*false/,'Reporting production writer must remain non-cancellable');
-assert.match(workflow,/timeout-minutes:\s*10/,'Reporting evidence runtime budget missing');
+assert.match(workflow,/timeout-minutes:\s*30/,'Reporting safe-writer retry runtime budget missing');
 assert.match(workflow,/npm install --no-save --no-package-lock ethers@6/,'Accounting runtime dependency missing');
 assert.match(workflow,/node reporting\/reporting-scheduled-runner\.mjs --validate-contract/,'Reporting scheduler contract preflight missing');
 assert.match(workflow,/run: node reporting\/reporting-scheduled-runner\.mjs/,'Reporting production writer must execute the contract-bound runner');
@@ -326,7 +326,7 @@ console.log('Reporting workflow definition paired proof PASS',{
   canonicalDataWakeCount:6,
   rateContinuityPolicy:ratePolicy.version,
   canonicalIncomeLedgerPolicy:incomePolicy.version,
-  accountingCoverageRegistry:'0.3-factual-tracking-accounting-mechanism-coverage-registry',
+  accountingCoverageRegistry:'0.6-hyperlend-factual-tracking-accounting-mechanism-coverage-registry',
   accountingCoveragePersistedByExistingWriter:true,
   accountingCoverageHasIncomeCreationAuthority:false,
   accountingCoverageHasMonthClosingAuthority:false,
