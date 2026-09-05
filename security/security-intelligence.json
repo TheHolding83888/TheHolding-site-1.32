@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-05T13:25:48.470Z",
+  "generatedAt": "2026-09-05T15:04:47.680Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 2,
-    "medium": 52,
+    "medium": 51,
     "low": 0,
     "info": 0
   },
   "source": {
-    "filesScanned": 982,
-    "bytesScanned": 31040077,
+    "filesScanned": 985,
+    "bytesScanned": 31173031,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Sat, 05 Sep 2026 02:38:24 GMT",
+        "lastModified": "Fri, 04 Sep 2026 06:02:25 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -56,6 +56,22 @@
   },
   "whatChanged": {
     "newFindings": [
+      {
+        "id": "3794c4b3d49c7abd0fe719ba25e0fd2dc49d4b9e43576c0e5bec7917dc3d37f9",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/discover-company-007.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/discover-company-007.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "1ec9ef74a866a6e83cbbb2f9edc068ffd3f9a7f5df5f861d48fb72b4a62ee771",
+          "currentSha256": "7f7f8bd6ef6a680cbd1d100c500f4b01dd351c3b0f8d8de875d3dbf74f0a7c24"
+        }
+      }
+    ],
+    "resolvedFindings": [
       {
         "id": "dc616edf78d178465d13cfc29ba1cae6fefbaacd379efc1a8860a33c41082fd1",
         "severity": "medium",
@@ -84,8 +100,7 @@
           "currentSha256": "f558c146cc8a133119b9f112c97a385e637d00f661f1c774156f4e6d619f6045"
         }
       }
-    ],
-    "resolvedFindings": []
+    ]
   },
   "currentFindings": [
     {
@@ -111,31 +126,17 @@
       "evidence": null
     },
     {
-      "id": "dc616edf78d178465d13cfc29ba1cae6fefbaacd379efc1a8860a33c41082fd1",
+      "id": "3794c4b3d49c7abd0fe719ba25e0fd2dc49d4b9e43576c0e5bec7917dc3d37f9",
       "severity": "medium",
       "category": "critical-surface-change",
-      "file": ".github/workflows/update-reporting.yml",
+      "file": ".github/workflows/discover-company-007.yml",
       "line": null,
       "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/update-reporting.yml.",
+      "summary": "Security-sensitive surface changed: .github/workflows/discover-company-007.yml.",
       "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
       "evidence": {
-        "previousSha256": "357aa0b3ea2051b4e73542f157cccd2325f866aa4787398edc85a82664845a0e",
-        "currentSha256": "be28a3e416ed2c8cc66e79b8df5d44a2a529de039ea938588ab64152211036b2"
-      }
-    },
-    {
-      "id": "5d3a7b47bc848b104e9d61710bb96db610c446c6b695e6b9433807c90069d7c5",
-      "severity": "medium",
-      "category": "critical-surface-change",
-      "file": ".github/workflows/verify-reporting-layer.yml",
-      "line": null,
-      "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/verify-reporting-layer.yml.",
-      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-      "evidence": {
-        "previousSha256": "d285c0f069428141504f7db05f1890ba454ec085d94e1af6bcb85804a7f97f5e",
-        "currentSha256": "f558c146cc8a133119b9f112c97a385e637d00f661f1c774156f4e6d619f6045"
+        "previousSha256": "1ec9ef74a866a6e83cbbb2f9edc068ffd3f9a7f5df5f861d48fb72b4a62ee771",
+        "currentSha256": "7f7f8bd6ef6a680cbd1d100c500f4b01dd351c3b0f8d8de875d3dbf74f0a7c24"
       }
     },
     {
@@ -773,12 +774,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "22dd07a655c8e7ddc7dffe3d66cca8f6273e50f773f0fc266ab90715c8aacb87",
+    "snapshotHash": "05a27a4ead1d0b93b1a9babaa0723c68a8a59a7da648bd08dc1e20795ecc0031",
     "securityVault": {
-      "runCount": 847,
+      "runCount": 848,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/09/2026-09-05T13-25-48-470Z-22dd07a655.json",
-      "latestRecordHash": "6ec7eab996c8281ae122116c7b4c7d4947cc531f05090158474512d7cc9e5470",
+      "latestRecordPath": "security/security-vault/2026/09/2026-09-05T15-04-47-680Z-05a27a4ead.json",
+      "latestRecordHash": "1269c5b31292be6c68c0a65cc885620f9cb2d0ac3027e26e475bbb2de54c30b1",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
