@@ -543,9 +543,7 @@
         "claimableState": "measured"
       }
     ],
-    "unboundMechanisms": [
-      "HyperLend"
-    ],
+    "unboundMechanisms": [],
     "rule": "Route readiness is not claimable amount and is not realised cash flow.",
     "observations": [
       {
@@ -629,6 +627,21 @@
         "status": "measured-mechanism",
         "source": "GMX official Providing liquidity documentation + exact-market Fee APY",
         "note": "LP fee income increases GM NAV. There is no separate claim step, so this mechanism must not be represented as a zero claimable reward."
+      },
+      {
+        "id": "hyperlend-khype",
+        "protocol": "HyperLend",
+        "chain": "HyperEVM",
+        "state": "Compounded",
+        "incomeMode": "embedded-lending-interest",
+        "claimableApplicable": false,
+        "symbol": "kHYPE",
+        "amount": 6.78e-10,
+        "usdValue": 0,
+        "referenceAprPct": 60.818474,
+        "measurementStatus": "measured",
+        "source": "HyperLend scaled balance + liquidity index",
+        "note": "Embedded lending interest is already inside current hToken balance and strategy NAV."
       }
     ]
   },
@@ -719,6 +732,14 @@
       "maximumWindowHours": 168,
       "activeNftCount": 1,
       "generatedAt": "2026-09-05T08:38:15.933Z"
+    },
+    "hyperlendIncome": {
+      "version": "0.1-company-010-hyperlend-income-parity",
+      "generatedAt": "2026-09-05T08:50:56.119Z",
+      "underlyingAsset": "0xfD739d4e423301CE9385c1fb8850539D657C296D",
+      "hToken": "0xa55DE93CDE5A34c5521B7584022846829CB74366",
+      "rewardsController": "0x2aF0d6754A58723c50b5e73E45D964bFDD99fE2F",
+      "proof": "HyperLend/Aave-compatible hToken scaled balance + liquidity index; separate RewardsController enumeration"
     }
   },
   "epistemicBoundary": {
@@ -751,7 +772,11 @@
     "projectXReferenceAprUsesObservedFeeGrowth": true,
     "projectXAprResetsOnStrategyChangeOrClaim": true,
     "projectXAprTracksDynamicActiveNftSet": true,
-    "projectXAprMinimumStableWindowHours": 24
+    "projectXAprMinimumStableWindowHours": 24,
+    "hyperlendSupplyInterestIsEmbedded": true,
+    "hyperlendEmbeddedInterestIsNotClaimable": true,
+    "hyperlendExternalIncentivesAreSeparate": true,
+    "hyperlendAprIsNotRealisedIncome": true
   },
   "authority": {
     "readOnly": true,
@@ -1167,6 +1192,74 @@
         "usdcIncludedInStrategyNav": true,
         "strategyNavCountedOnce": true,
         "claimableFeesExcludedFromCapital": true,
+        "noDoubleCount": true
+      },
+      "authority": {
+        "readOnly": true,
+        "walletSigning": false,
+        "transactions": false,
+        "executionAuthority": "none"
+      }
+    },
+    "hyperlend": {
+      "version": "0.1-company-010-hyperlend-income-parity",
+      "status": "measured",
+      "protocol": "HyperLend",
+      "chain": "HyperEVM",
+      "market": "kHYPE supply",
+      "underlyingAsset": "0xfD739d4e423301CE9385c1fb8850539D657C296D",
+      "hToken": "0xa55DE93CDE5A34c5521B7584022846829CB74366",
+      "hTokenSymbol": "hHyperEvmkHYPE",
+      "dataProvider": "0x5481bf8d3946E6A3168640c1D7523eB59F055a29",
+      "pool": "0x00A89d7a5A02160f20150EbEA7a2b5E4879A1A8b",
+      "referenceAprPct": 60.818474,
+      "income": {
+        "primary": {
+          "state": "Compounded",
+          "classification": "embedded-lending-interest",
+          "claimableApplicable": false,
+          "amount": 6.78e-10,
+          "symbol": "kHYPE",
+          "usdValue": 0,
+          "measurementStatus": "measured",
+          "metric": "scaledBalance × (current liquidity index − previous user index)",
+          "wallets": [
+            {
+              "wallet": "0xd90d1e395DE36e1e59C42F5dF537801C26BbC03f",
+              "walletAlias": "Wallet 1",
+              "scaledBalanceRaw": "0",
+              "previousLiquidityIndex": "0",
+              "currentLiquidityIndex": "1000008078125437146182476974",
+              "embeddedInterestSinceLastAction": 0,
+              "status": "measured"
+            },
+            {
+              "wallet": "0x64688F4Adc3f72CdB44d07e4879C724CD7025696",
+              "walletAlias": "Wallet 2",
+              "scaledBalanceRaw": "3745089665696700599",
+              "previousLiquidityIndex": "1000008077944336828699541466",
+              "currentLiquidityIndex": "1000008078125437146182476974",
+              "embeddedInterestSinceLastAction": 6.78e-10,
+              "status": "measured"
+            }
+          ],
+          "source": "HyperLend hToken scaledBalanceOf/getPreviousIndex + Pool getReserveNormalizedIncome",
+          "note": "Supply interest accrues inside the hToken balance. It is already part of strategy NAV and must not be added again to capital or claimable totals."
+        },
+        "externalIncentives": {
+          "status": "none",
+          "controller": "0x2aF0d6754A58723c50b5e73E45D964bFDD99fE2F",
+          "rewardAssetCount": 0,
+          "rewards": [],
+          "classification": "none",
+          "source": "HyperLend hToken RewardsController"
+        }
+      },
+      "accountingBoundary": {
+        "embeddedInterestAlreadyInPrincipalBalance": true,
+        "embeddedInterestNotAdditiveCapital": true,
+        "embeddedInterestNotClaimable": true,
+        "externalIncentivesSeparateFromSupplyApr": true,
         "noDoubleCount": true
       },
       "authority": {
