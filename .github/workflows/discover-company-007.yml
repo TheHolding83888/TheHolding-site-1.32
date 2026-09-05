@@ -1,3 +1,4 @@
+# holding-workflow-definition-proof: intelligence/reliability/company-007-discovery-workflow-definition-proof.mjs
 name: "Discover Company #007"
 
 on:
@@ -29,6 +30,13 @@ jobs:
       - name: Install discovery dependency
         run: npm install --no-save ethers@6
 
+      - name: "Prove Company #007 Yield Basis LP current state"
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
+          COMPANY_007_YBLP_CURRENT_STATE_OUTPUT: companies/company-007-yblp-current-state.json
+        run: node onboarding/company-007-yblp-current-state-proof.mjs
+
       - name: "Discover Company #007 current state"
         env:
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
@@ -41,13 +49,16 @@ jobs:
           COMPANY_007_DISCOVERY_OUTPUT: companies/company-007-discovery.json
         run: node onboarding/company-007-discovery.mjs
 
-      - name: Validate generated JSON
+      - name: Validate generated JSON and YBLP current-state boundary
         run: |
           node - <<'NODE'
           const fs = require('fs');
-          const p = 'companies/company-007-discovery.json';
-          if (!fs.existsSync(p)) throw new Error('discovery JSON was not created');
-          const d = JSON.parse(fs.readFileSync(p, 'utf8'));
+          const discoveryPath = 'companies/company-007-discovery.json';
+          const proofPath = 'companies/company-007-yblp-current-state.json';
+          if (!fs.existsSync(discoveryPath)) throw new Error('discovery JSON was not created');
+          if (!fs.existsSync(proofPath)) throw new Error('YBLP current-state proof was not created');
+          const d = JSON.parse(fs.readFileSync(discoveryPath, 'utf8'));
+          const p = JSON.parse(fs.readFileSync(proofPath, 'utf8'));
           if (d.version !== '1.0-current-state-fast') throw new Error('unexpected discovery version');
           if (d.company?.registry !== '007') throw new Error('registry mismatch');
           if (d.company?.name !== "Rook's portfolio") throw new Error('name mismatch');
@@ -56,34 +67,63 @@ jobs:
           if (!Array.isArray(d.proposedCompanyBook) || d.proposedCompanyBook.length !== 7) throw new Error('Company Book row count mismatch');
           const syms = d.proposedCompanyBook.map(x => x.symbol).join(',');
           if (syms !== 'BTC,ETH,AERO,CVX,CRV,LINK,ZK') throw new Error('Company Book symbols mismatch: ' + syms);
-          console.log('Discovery JSON validation passed');
+          if (p.version !== '0.1-yblp-current-state-quorum' || p.status !== 'ok') throw new Error('YBLP current-state proof is not complete');
+          if (p.semantics?.unknownIsNotZero !== true || p.semantics?.historyMustBePreserved !== true) throw new Error('YBLP semantic boundary mismatch');
+          if (p.authority?.executionAuthority !== 'none' || p.authority?.readOnly !== true) throw new Error('YBLP authority boundary mismatch');
+          if (!(Number(p.quorum?.matching) >= Number(p.quorum?.required)) || Number(p.quorum?.required) < 2) throw new Error('YBLP quorum boundary mismatch');
+
+          const lower = x => String(x || '').toLowerCase();
+          const positive = x => { try { return BigInt(x) > 0n; } catch { return false; } };
+          const proofActive = new Set();
+          for (const market of p.markets || []) {
+            if (!['active','verified-zero'].includes(market.currentState)) throw new Error(`invalid YBLP currentState for ${market.market}`);
+            for (const h of market.activeHoldings || []) {
+              if (!positive(h.directLtBalanceRaw) && !positive(h.gaugeShareBalanceRaw)) throw new Error(`non-positive active holding for ${market.market}`);
+              proofActive.add(`${market.market}|${lower(h.holder)}`);
+            }
+          }
+          const discoveryActive = new Set((d.discovery?.yieldBasis?.positions || []).map(x => `${x.market}|${lower(x.holder)}`));
+          const missing = [...proofActive].filter(x => !discoveryActive.has(x));
+          const extra = [...discoveryActive].filter(x => !proofActive.has(x));
+          if (missing.length || extra.length) throw new Error(`YBLP discovery/proof mismatch; missing=${missing.join(',')} extra=${extra.join(',')}`);
+
+          const proofBtcActive = (p.markets || []).some(x => x.family === 'BTC' && x.currentState === 'active');
+          const proofEthActive = (p.markets || []).some(x => x.family === 'ETH' && x.currentState === 'active');
+          const btc = d.proposedCompanyBook.find(x => x.symbol === 'BTC');
+          const eth = d.proposedCompanyBook.find(x => x.symbol === 'ETH');
+          if (!proofBtcActive && Number(btc?.internalBreakdown?.yieldBasisProductive || 0) !== 0) throw new Error('verified-zero YBLP BTC still appears as productive inventory');
+          if (!proofEthActive && Number(eth?.internalBreakdown?.yieldBasisProductive || 0) !== 0) throw new Error('verified-zero YBLP ETH still appears as productive inventory');
+          console.log('Discovery + YBLP current-state validation passed');
           NODE
 
-      - name: Publish discovery JSON to main
+      - name: Publish discovery and YBLP current-state proof to main
         shell: bash
         run: |
           set -euo pipefail
 
           FILE="companies/company-007-discovery.json"
+          PROOF="companies/company-007-yblp-current-state.json"
 
           test -s "$FILE" || {
             echo "ERROR: $FILE is missing or empty after discovery."
+            exit 1
+          }
+          test -s "$PROOF" || {
+            echo "ERROR: $PROOF is missing or empty after current-state proof."
             exit 1
           }
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # Force-add so a newly recreated file cannot be skipped by ignore/status edge cases.
-          git add -f "$FILE"
+          git add -f "$FILE" "$PROOF"
 
-          if ! git diff --cached --quiet -- "$FILE"; then
-            git commit -m "Update Company #007 discovery"
+          if ! git diff --cached --quiet -- "$FILE" "$PROOF"; then
+            git commit -m "Update Company #007 current state"
           else
-            echo "Generated discovery matches currently tracked content."
+            echo "Generated Company #007 current state matches currently tracked content."
           fi
 
-          # Push with bounded retry if a concurrent data Action moved main.
           for attempt in 1 2 3; do
             git fetch origin main
 
@@ -96,18 +136,22 @@ jobs:
             git rebase --abort || true
 
             if [ "$attempt" -eq 3 ]; then
-              echo "ERROR: failed to publish discovery JSON after retries."
+              echo "ERROR: failed to publish Company #007 current state after retries."
               exit 1
             fi
 
             sleep $((attempt * 2))
           done
 
-          # CRITICAL: green means the file is verifiably present on remote main.
           git fetch origin main
           git cat-file -e "origin/main:$FILE" || {
             echo "ERROR: workflow would otherwise be green, but $FILE is absent from origin/main."
             exit 1
           }
+          git cat-file -e "origin/main:$PROOF" || {
+            echo "ERROR: workflow would otherwise be green, but $PROOF is absent from origin/main."
+            exit 1
+          }
 
           echo "Verified on origin/main: $FILE"
+          echo "Verified on origin/main: $PROOF"
