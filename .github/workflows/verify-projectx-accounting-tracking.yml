@@ -1,0 +1,69 @@
+# holding-workflow-definition-proof: intelligence/reliability/projectx-accounting-tracking-workflow-definition-proof.mjs
+name: Verify Project X Accounting Tracking
+
+on:
+  pull_request:
+    paths:
+      - 'reporting/accounting-coverage.mjs'
+      - 'reporting/projectx-tracking-proof-validation.mjs'
+      - 'companies/company-010-production-state.json'
+      - '.github/workflows/verify-projectx-accounting-tracking.yml'
+      - 'intelligence/reliability/projectx-accounting-tracking-workflow-definition-proof.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-projectx-accounting-tracking:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: Verify workflow authority contract
+        run: node intelligence/reliability/projectx-accounting-tracking-workflow-definition-proof.mjs
+
+      - name: Prove Project X factual tracking without income authority
+        env:
+          ACCOUNTING_COVERAGE_FILE: /tmp/projectx-accounting-coverage.json
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check reporting/accounting-coverage.mjs
+          node --check reporting/projectx-tracking-proof-validation.mjs
+          node reporting/projectx-tracking-proof-validation.mjs
+          node reporting/accounting-coverage.mjs
+          test -s "$ACCOUNTING_COVERAGE_FILE"
+          node --input-type=module - <<'NODE'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          const data=JSON.parse(fs.readFileSync(process.env.ACCOUNTING_COVERAGE_FILE,'utf8'));
+          const engineId='projectx-whype-usdc';
+          const engine=data.mechanisms?.[engineId];
+          assert.ok(engine,'Project X WHYPE-USDC mechanism missing');
+          assert.equal(engine.activeCompanyCount,1,'Project X active company count drift');
+          assert.deepEqual(engine.companies,['Cypher'],'Project X company identity drift');
+          assert.equal(engine.factualTrackingCompanyCount,1,'Project X did not reach 1/1 factual tracking');
+          assert.deepEqual(engine.factualTrackingCompanies,['Cypher'],'Project X factual tracking identity drift');
+          assert.equal(engine.factualEventCompanyCount,0,'Project X tracking proof fabricated factual period events');
+          assert.equal(engine.reusableCoverageGap,false,'Project X remained a reusable tracking gap');
+          const row=data.companies?.Cypher?.mechanisms?.[engineId]?.months?.[data.currentMonth];
+          assert.equal(row?.status,'factual-tracking-no-period-event','Cypher Project X status drift');
+          assert.equal(row?.factualEventCount,0,'Project X tracking proof fabricated income event');
+          assert.equal(row?.factualUsdSubtotal,null,'Project X current claimable state leaked into factual USD subtotal');
+          assert.deepEqual(row?.factualTrackingProofSources,['companies/company-010-production-state.json#strategies.projectX'],'Project X proof source drift');
+          assert.ok(row?.completionBlockers?.includes('no-canonical-period-income-evidence'),'Project X lost no-period-income blocker');
+          assert.ok(!row?.completionBlockers?.includes('no-factual-engine-tracking-proof'),'Project X remained falsely uncovered');
+          assert.ok(!data.gapRanking.some(x=>x.engineId===engineId),'Project X remained in reusable gap ranking');
+          assert.equal(data.authority?.executionAuthority,'none','Accounting coverage execution authority expanded');
+          assert.equal(data.semantics?.referenceMetricIsNotEarnedIncome,true,'Reference analytics boundary drift');
+          console.log('Project X production-shaped coverage PASS',{tracking:`${engine.factualTrackingCompanyCount}/${engine.activeCompanyCount}`,factualEventCompanies:engine.factualEventCompanyCount,reusableCoverageGap:engine.reusableCoverageGap,periodIncomeAuthority:false,referenceAprAuthority:false,executionAuthority:data.authority.executionAuthority});
+          NODE
+          git diff --check
