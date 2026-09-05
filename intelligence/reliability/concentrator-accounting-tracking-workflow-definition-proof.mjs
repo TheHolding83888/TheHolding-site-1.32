@@ -21,7 +21,8 @@ assert.match(workflow,/permissions:\s*\n\s*contents:\s*read/);
 assert.doesNotMatch(workflow,/contents:\s*write/);
 assert.doesNotMatch(workflow,/secrets\./);
 assert.match(workflow,/node reporting\/concentrator-tracking-proof-validation\.mjs/);
-assert.match(workflow,/ACCOUNTING_COVERAGE_FILE=\/tmp\/concentrator-accounting-coverage\.json node reporting\/accounting-coverage\.mjs/);
+assert.match(workflow,/ACCOUNTING_COVERAGE_FILE:\s*\/tmp\/concentrator-accounting-coverage\.json/);
+assert.match(workflow,/node reporting\/accounting-coverage\.mjs/);
 
 assert.match(accounting,/export function concentratorAsdCrvObservationProofs\(state=\{\}\)/);
 assert.match(accounting,/engineId='concentrator_asdcrv'/);
