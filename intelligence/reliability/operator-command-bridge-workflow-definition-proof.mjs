@@ -15,25 +15,26 @@ assert.match(workflow, /'0\.7-operator-command'/, 'operator command v0.7 is not 
 for (const [operation, target] of [
   ['discover_company_007', 'discover-company-007.yml'],
   ['resolve_company_007', 'resolve-company-007.yml'],
-  ['refresh_productivity', 'update-productivity.yml'],
+  ['refresh_unified_capital', 'unified-capital-refresh.yml'],
 ]) {
   assert.ok(workflow.includes(`cmd.operation === '${operation}'`), `${operation} is not explicitly allowlisted`);
   assert.ok(workflow.includes(`targetWorkflow = '${target}'`), `${operation} target drift`);
 }
 
-assert.match(workflow, /refresh-cognitive-stack\.yml\|update-proposal-work-queue\.yml\|update-builder-candidates\.yml\|record-brain-decision\.yml\|discover-company-007\.yml\|resolve-company-007\.yml\|update-productivity\.yml/, 'shell-level exact workflow allowlist drift');
+assert.match(workflow, /refresh-cognitive-stack\.yml\|update-proposal-work-queue\.yml\|update-builder-candidates\.yml\|record-brain-decision\.yml\|discover-company-007\.yml\|resolve-company-007\.yml\|unified-capital-refresh\.yml/, 'shell-level exact workflow allowlist drift');
+assert.doesNotMatch(workflow, /targetWorkflow = 'update-productivity\.yml'/, 'legacy Productivity recovery must not become the normal operator bridge target');
 assert.match(workflow, /cmd\.requestedBy !== 'owner' \|\| cmd\.approval !== 'explicit'/, 'explicit owner approval gate missing');
 assert.match(workflow, /cmd\.arbitraryWorkflowAllowed !== false/, 'arbitrary workflow prohibition missing');
 assert.match(workflow, /cmd\.walletActionAllowed !== false/, 'wallet action prohibition missing');
 assert.match(workflow, /cmd\.capitalExecutionAllowed !== false/, 'capital execution prohibition missing');
 
 const securityInvocation = workflow.indexOf('\n          wait_command_security\n');
-const boundedDataLane = workflow.indexOf('if [[ "$OPERATION" =~ ^(discover_company_007|resolve_company_007|refresh_productivity)$ ]]', securityInvocation);
+const boundedDataLane = workflow.indexOf('if [[ "$OPERATION" =~ ^(discover_company_007|resolve_company_007|refresh_unified_capital)$ ]]', securityInvocation);
 assert.ok(securityInvocation >= 0, 'command-bound Security Sentinel invocation missing');
 assert.ok(boundedDataLane > securityInvocation, 'data-only lane must remain behind Security Sentinel');
 assert.match(workflow, /dispatch_and_wait "\$TARGET_WORKFLOW" \/tmp\/operator-target-dispatch\.json "\$TARGET_LABEL" "\$TARGET_HEAD"/, 'bounded data target dispatch missing');
-assert.match(workflow, /printf '\{"ref":"main"\}' > \/tmp\/operator-target-dispatch\.json|dispatch = \{ ref: 'main' \}/, 'main-only dispatch contract missing');
+assert.match(workflow, /dispatch = \{ ref: 'main' \}/, 'main-only dispatch contract missing');
 assert.doesNotMatch(workflow, /git push|git commit|\/contents\/[^\s"']+.*-X\s+(?:PUT|PATCH|POST)/, 'bridge gained repository mutation behavior');
 assert.doesNotMatch(workflow, /sendTransaction|eth_sendRawTransaction|eth_sendTransaction|\.transfer\(|\.approve\(/, 'bridge contains wallet/capital transaction behavior');
 
-console.log('Operator Command Bridge v0.7 bounded data-lane workflow definition proof PASS');
+console.log('Operator Command Bridge v0.7 bounded canonical-data lane workflow definition proof PASS');
