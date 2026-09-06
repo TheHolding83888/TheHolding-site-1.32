@@ -139,10 +139,17 @@ assert.equal(family.usdComplete,false);
 assert.equal(family.usd,null,'partial USD valuation must not masquerade as a complete family total');
 assert.equal(family.valuedUsdSubtotal,1);
 
-const source=fs.readFileSync(path.join(ROOT,'reporting/income-ledger.mjs'),'utf8');
+// The canonical entry point is now a thin extension facade while the original
+// builder remains byte-preserved in income-ledger-core.mjs. Validate authority
+// and epistemic invariants across the complete canonical implementation, not
+// only one physical file.
+const facadeSource=fs.readFileSync(path.join(ROOT,'reporting/income-ledger.mjs'),'utf8');
+const coreSource=fs.readFileSync(path.join(ROOT,'reporting/income-ledger-core.mjs'),'utf8');
+const source=`${facadeSource}\n${coreSource}`;
 for(const forbidden of ['sendTransaction(','new Wallet(','claimTransactionAuthority: true','executionAuthority: write']) assert.equal(source.includes(forbidden),false,`income ledger authority expansion: ${forbidden}`);
 assert.equal(source.includes('referenceAprCanBackfillEarnedIncome:false'),true,'explicit reference APR non-backfill semantic missing');
 assert.equal(source.includes('claimableShardRule:'),true,'claimable shard aggregation semantic missing');
+assert.equal(facadeSource.includes("export * from './income-ledger-core.mjs'"),true,'canonical ledger facade lost core export binding');
 
 console.log('Canonical Income Ledger validation PASS',{
   defiteaEntitlementEvents:sourceVote,

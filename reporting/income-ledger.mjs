@@ -1,232 +1,145 @@
 #!/usr/bin/env node
 /**
- * The Holding · Canonical Income Ledger v0.1
+ * The Holding · Canonical Income Ledger facade v0.1
  *
- * Durable append-only evidence ledger. Reference productivity, current
- * claimable state, accrued entitlement, realised cash flow, embedded income
- * and market performance remain distinct economic families.
+ * The pre-Project-X canonical builder is preserved byte-for-byte in
+ * income-ledger-core.mjs. This facade extends that same append-only ledger with
+ * Project X factual collectible-fee accruals, then asks the canonical core to
+ * rebuild all derived company/month views from the unified event history.
+ *
+ * No second ledger, no second source of truth, no Reference APR income, and no
+ * execution authority are introduced.
  */
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
-import { buildVotiumUnionAccrual } from './votium-union-accounting-adapter.mjs';
+import * as core from './income-ledger-core.mjs';
+import { buildProjectXIncomeCandidates } from './projectx-income-candidates.mjs';
+
+export * from './income-ledger-core.mjs';
+export { buildProjectXIncomeCandidates } from './projectx-income-candidates.mjs';
 
 const __filename=fileURLToPath(import.meta.url);
 const __dirname=path.dirname(__filename);
 const ROOT=path.resolve(__dirname,'..');
-
-const POLICY_FILE=process.env.INCOME_LEDGER_POLICY_FILE||path.join(ROOT,'reporting','income-ledger-policy.json');
-const REPORTING_FILE=process.env.REPORTING_DATA_FILE||path.join(ROOT,'reporting','reporting-data.json');
-const DEFITEA_LEDGER_FILE=process.env.DEFITEA_INCOME_LEDGER_FILE||path.join(ROOT,'reporting','defitea-income-ledger.json');
-const EMBEDDED_LEDGER_FILE=process.env.EMBEDDED_YIELD_LEDGER_FILE||path.join(ROOT,'companies','embedded-yield-ledger.json');
-const REWARDS_FILE=process.env.REWARDS_DATA_FILE||path.join(ROOT,'companies','rewards-data.json');
-const REALISED_FILE=process.env.REALISED_CASH_FLOW_FILE||path.join(ROOT,'intelligence','realised-cash-flow','realised-cash-flow.json');
-const COMPANY_009_BEEFY_FILE=process.env.COMPANY_009_BEEFY_INCOME_FILE||path.join(ROOT,'companies','company-009-beefy-cvxcrv-income.json');
-const VOTIUM_UNION_BOOTSTRAP_FILE=process.env.VOTIUM_UNION_BOOTSTRAP_FILE||path.join(ROOT,'reporting','votium-union-accounting-bootstrap.json');
-const FRAX_YIELD_EVIDENCE_FILE=process.env.FRAX_YIELD_EVIDENCE_FILE||path.join(ROOT,'reporting','frax-yield-accounting-evidence.json');
+const CORE_FILE=path.join(__dirname,'income-ledger-core.mjs');
+const PROJECTX_CANDIDATES_FILE=path.join(__dirname,'projectx-income-candidates.mjs');
+const HISTORY_FILE=process.env.PROJECTX_HISTORY_FILE||path.join(ROOT,'companies','company-010-projectx-rate-history.json');
 const OUTPUT_FILE=process.env.INCOME_LEDGER_FILE||path.join(ROOT,'reporting','income-ledger.json');
 
-const VERSION='0.1-canonical-income-ledger';
-const METHODOLOGY_VERSION='0.1-append-only-evidence-family-accounting';
-const DEFITEA='defitea.eth';
-const MONETRA='Monetra.eth';
-const COMPANY_009='1milliondollar.eth';
-const COMPANY_009_BEEFY_ROUTE='beefy-cvxcrv';
-const FRAX_YIELD_ROUTE='frax-yield';
+// The Reporting safe-writer already fingerprints income-ledger.mjs. These blob
+// guards extend that fail-closed contract to the extracted immutable core and
+// Project X candidate module without adding a second orchestration path.
+const EXPECTED_CORE_GIT_BLOB='3a1c26a22c08d98257fea83a8a513a987ef75d39';
+const EXPECTED_PROJECTX_CANDIDATES_GIT_BLOB='fd7860b37a1c45f772f826e43072b4a860072118';
 
-function finite(v){if(v===null||v===undefined||v==='')return NaN;const n=Number(v);return Number.isFinite(n)?n:NaN;}
-function round(v,d=8){const n=finite(v);if(!Number.isFinite(n))return null;const f=10**d;return Math.round(n*f)/f;}
-function dayKey(v){if(!v)return null;const t=Date.parse(v);return Number.isFinite(t)?new Date(t).toISOString().slice(0,10):(/^\d{4}-\d{2}-\d{2}/.test(String(v))?String(v).slice(0,10):null);}
-function monthKey(v){const d=dayKey(v);return d?d.slice(0,7):null;}
-function stableStringify(v){if(v===null||typeof v!=='object')return JSON.stringify(v);if(Array.isArray(v))return`[${v.map(stableStringify).join(',')}]`;return`{${Object.keys(v).sort().map(k=>`${JSON.stringify(k)}:${stableStringify(v[k])}`).join(',')}}`;}
-function sha256(v){return crypto.createHash('sha256').update(stableStringify(v)).digest('hex');}
 async function readJson(file,fallback={}){try{return JSON.parse(await fs.readFile(file,'utf8'));}catch{return fallback;}}
 async function writeJson(file,data){await fs.mkdir(path.dirname(file),{recursive:true});await fs.writeFile(file,JSON.stringify(data,null,2)+'\n');}
-
-function validatePolicy(policy){
-  if(policy?.version!=='0.1-canonical-income-ledger-policy')throw new Error('Canonical Income Ledger policy version mismatch');
-  if(!['production-candidate','production'].includes(policy?.status))throw new Error('Canonical Income Ledger policy status invalid');
-  for(const key of ['eventIdentityRequired','eventEconomicFieldsImmutableAfterAdmission','claimOrWalletMovementDoesNotErasePriorIncome','currentClaimableBalanceIsStateNotPeriodIncome','claimableDecreaseDoesNotProveRealisedCashFlow','claimableIncreaseWithoutMechanismIdentityDoesNotProvePeriodIncome','missingClaimableRouteDoesNotMeanZero','embeddedIncomeRequiresAcceptedCanonicalInterval','realisedCashFlowRequiresMechanismSpecificProof','referenceAprCanNeverBackfillEarnedIncome','stablePriceEffectIsSeparateFromEmbeddedIncome','unknownIsNotZero','crossFamilySummationForbidden']){
-    if(policy?.rules?.[key]!==true)throw new Error(`Canonical Income Ledger policy rule invalid: ${key}`);
-  }
-  const a=policy?.authority||{};
-  if(a.executionAuthority!=='none'||a.walletAuthority!=='none'||a.claimingAuthority!=='none'||a.capitalExecution!==false||a.methodologyMutationAuthority!=='none')throw new Error('Canonical Income Ledger authority expansion');
-  return policy;
+function gitBlobSha(content){const body=Buffer.isBuffer(content)?content:Buffer.from(content);const header=Buffer.from(`blob ${body.length}\0`);return crypto.createHash('sha1').update(Buffer.concat([header,body])).digest('hex');}
+async function verifyExtensionIntegrity(){
+  const[coreBytes,candidateBytes]=await Promise.all([fs.readFile(CORE_FILE),fs.readFile(PROJECTX_CANDIDATES_FILE)]);
+  const coreSha=gitBlobSha(coreBytes),candidateSha=gitBlobSha(candidateBytes);
+  if(coreSha!==EXPECTED_CORE_GIT_BLOB)throw new Error(`Canonical Income Ledger core integrity drift: ${coreSha}`);
+  if(candidateSha!==EXPECTED_PROJECTX_CANDIDATES_GIT_BLOB)throw new Error(`Project X income candidate module integrity drift: ${candidateSha}`);
+  return{coreSha,candidateSha};
 }
 
-function economicHashPayload(e){return{eventKey:e.eventKey,company:e.company,family:e.family,route:e.route||null,protocol:e.protocol||null,economicDate:e.economicDate||null,periodStart:e.periodStart||null,periodEnd:e.periodEnd||null,asset:e.asset||null,amount:e.amount??null,usdValue:e.usdValue??null,stablePriceEffectUsd:e.stablePriceEffectUsd??null,physicalEventId:e.physicalEventId||null,sourceIdentity:e.sourceIdentity||null};}
-function finalizeCandidate(e,generatedAt){
-  if(!e?.eventKey||!e?.company||!e?.family)throw new Error('Income event identity incomplete');
-  if(!['accrued-entitlement','realised-cash-flow','embedded-income'].includes(e.family))throw new Error(`Income event family invalid: ${e.family}`);
-  const out={...e,firstObservedAt:e.firstObservedAt||generatedAt,retention:'indefinite',laterStateChangeDoesNotEraseIncome:true,executionAuthority:'none'};
-  out.immutableEconomicFieldsHash=sha256(economicHashPayload(out));
-  return out;
-}
-function admitEvents(previousEvents,candidates){
-  const byKey=new Map(),physical=new Map();
-  for(const prior of Array.isArray(previousEvents)?previousEvents:[]){
-    if(!prior?.eventKey)throw new Error('Prior Canonical Income Ledger event missing eventKey');
-    const expected=sha256(economicHashPayload(prior));
-    if(prior.immutableEconomicFieldsHash&&prior.immutableEconomicFieldsHash!==expected)throw new Error(`Prior income event hash drift: ${prior.eventKey}`);
-    const normalized={...prior,immutableEconomicFieldsHash:expected};
-    byKey.set(prior.eventKey,normalized);
-    if(prior.family==='realised-cash-flow'&&prior.physicalEventId){
-      const k=`${prior.company}:${prior.physicalEventId}`;
-      if(physical.has(k)&&physical.get(k)!==prior.eventKey)throw new Error(`Prior realised physical event collision: ${k}`);
-      physical.set(k,prior.eventKey);
+function annotateProjectX(rebuilt,history,built,newEventsAdmitted,integrity,generatedAt){
+  const s=built.summary;
+  return{
+    ...rebuilt,
+    generatedAt,
+    sourceState:{
+      ...(rebuilt.sourceState||{}),
+      projectXFeeAccrual:{
+        file:'companies/company-010-projectx-rate-history.json',
+        version:history?.version||null,
+        engineVersion:history?.engineVersion||null,
+        generatedAt:history?.generatedAt||null,
+        observationCount:s.observationCount,
+        intervalCount:s.intervalCount,
+        acceptedIntervalCount:s.acceptedIntervalCount,
+        measuredZeroIntervalCount:s.measuredZeroIntervalCount,
+        fingerprintBoundaryCount:s.fingerprintBoundaryCount,
+        claimResetBoundaryCount:s.claimResetBoundaryCount,
+        crossMonthBoundaryCount:s.crossMonthBoundaryCount,
+        candidateEventCount:s.candidateEventCount,
+        sourceMethod:'adjacent same-fingerprint collect.staticCall fee growth',
+        referenceAprUsed:false,
+        currentClaimableBalanceIsPeriodIncome:false,
+        laterPriceMovementRewritesClosedIncome:false,
+        coreGitBlob:integrity.coreSha,
+        candidateModuleGitBlob:integrity.candidateSha
+      }
+    },
+    run:{
+      ...(rebuilt.run||{}),
+      projectXCandidateEventCount:s.candidateEventCount,
+      projectXNewEventsAdmitted:newEventsAdmitted,
+      projectXObservationCount:s.observationCount,
+      projectXAcceptedIntervalCount:s.acceptedIntervalCount,
+      projectXBoundaryCount:s.fingerprintBoundaryCount+s.claimResetBoundaryCount+s.crossMonthBoundaryCount
+    },
+    accountingExtensions:{
+      ...(rebuilt.accountingExtensions||{}),
+      projectXFeeAccrual:{
+        version:built.version,
+        source:'companies/company-010-projectx-rate-history.json',
+        company:'Cypher',
+        route:'projectx-whype-usdc',
+        family:'accrued-entitlement',
+        openingBalanceCreatesIncome:false,
+        fingerprintChangeCreatesIncome:false,
+        claimOrResetCreatesIncome:false,
+        claimOrResetIsSettlementBoundary:true,
+        crossMonthIntervalAutoAllocated:false,
+        currentClaimableBalanceIsPeriodIncome:false,
+        endpointObservedPriceFreezesValuation:true,
+        referenceAprUsed:false,
+        laterPriceMovementRewritesClosedIncome:false,
+        unknownIsNotZero:true,
+        executionAuthority:'none'
+      }
     }
-  }
-  let admitted=0;
-  for(const row of candidates){
-    const existing=byKey.get(row.eventKey);
-    if(existing){
-      if(existing.immutableEconomicFieldsHash!==row.immutableEconomicFieldsHash)throw new Error(`Income event economic mutation detected: ${row.eventKey}`);
-      continue;
-    }
-    if(row.family==='realised-cash-flow'&&row.physicalEventId){
-      const k=`${row.company}:${row.physicalEventId}`,priorKey=physical.get(k);
-      if(priorKey&&priorKey!==row.eventKey)throw new Error(`Cross-source realised cash-flow collision: ${k} -> ${priorKey} | ${row.eventKey}`);
-      physical.set(k,row.eventKey);
-    }
-    byKey.set(row.eventKey,row);admitted++;
-  }
-  return{events:[...byKey.values()].sort((a,b)=>String(a.economicDate||a.periodEnd||'').localeCompare(String(b.economicDate||b.periodEnd||''))||a.eventKey.localeCompare(b.eventKey)),admitted};
+  };
 }
 
-function defiteaCandidates(ledger,generatedAt){
-  const out=[];
-  for(const e of ledger?.voteMarketEvents||[]){
-    if(!e?.eventKey||!dayKey(e.eventDate)||!(finite(e.usdValue)>0))continue;
-    out.push(finalizeCandidate({eventKey:`defitea-entitlement:${e.eventKey}`,company:DEFITEA,family:'accrued-entitlement',economicDate:dayKey(e.eventDate),periodStart:dayKey(e.eventDate),periodEnd:dayKey(e.eventDate),route:e.route||null,protocol:e.protocol||null,asset:e.rewardSymbol||e.rewardToken||null,amount:Number.isFinite(finite(e.rewardAmount))?round(e.rewardAmount,12):null,usdValue:round(e.usdValue,8),valuationStatus:'source-valued-frozen',sourceFile:'reporting/defitea-income-ledger.json',sourceFamily:'voteMarketEvents',sourceIdentity:e.eventKey,evidenceStatus:'canonical-observed-entitlement-event',firstObservedAt:e.firstObservedAt||null},generatedAt));
+export async function build(){
+  const integrity=await verifyExtensionIntegrity();
+  const base=await core.build();
+  const history=await readJson(HISTORY_FILE);
+  const generatedAt=base?.generatedAt||new Date().toISOString();
+  const built=buildProjectXIncomeCandidates(history,core.finalizeCandidate,generatedAt);
+  const admitted=core.admitEvents(base?.events,built.candidates);
+  let rebuilt=base;
+
+  if(admitted.admitted>0){
+    // Temporary working-tree state only. If any subsequent validation/rebuild
+    // fails, the workflow fails and the safe writer never publishes it.
+    await writeJson(OUTPUT_FILE,{...base,events:admitted.events});
+    rebuilt=await core.build();
   }
-  for(const e of ledger?.fortyAcresReceivedEvents||[]){
-    if(!e?.eventKey||!dayKey(e.eventDate)||!(finite(e.usdValue)>0))continue;
-    const chainId=String(e.chain||'').toLowerCase().includes('optimism')?10:null,tx=String(e.txHash||'').toLowerCase(),idx=Number(e.logIndex);
-    const physical=chainId&&/^0x[0-9a-f]{64}$/.test(tx)&&Number.isInteger(idx)?`${chainId}:${tx}:${idx}`:null;
-    out.push(finalizeCandidate({eventKey:`defitea-received:${e.eventKey}`,company:DEFITEA,family:'realised-cash-flow',economicDate:dayKey(e.eventDate),periodStart:dayKey(e.eventDate),periodEnd:dayKey(e.eventDate),route:e.route||null,protocol:e.protocol||null,asset:e.payoutSymbol||e.payoutToken||null,amount:Number.isFinite(finite(e.amount))?round(e.amount,12):null,usdValue:round(e.usdValue,8),valuationStatus:'source-valued-frozen',physicalEventId:physical,sourceFile:'reporting/defitea-income-ledger.json',sourceFamily:'fortyAcresReceivedEvents',sourceIdentity:e.eventKey,evidenceStatus:'canonical-actual-net-received',firstObservedAt:e.firstObservedAt||null},generatedAt));
-  }
-  return out;
-}
-function embeddedCandidates(ledger,generatedAt){
-  const out=[];
-  if(ledger?.company?.name!==MONETRA||ledger?.company?.registry!=='008')return out;
-  for(const [positionId,p] of Object.entries(ledger?.positions||{}))for(const e of p?.intervalHistory||[]){
-    if(e?.status!=='ok'||e?.accepted!==true)continue;
-    const income=finite(e.incomeUsd);if(!Number.isFinite(income)||!e.startAt||!e.endAt)throw new Error(`${positionId}: accepted Embedded Yield interval missing canonical economics`);
-    const startMonth=monthKey(e.startAt),endMonth=monthKey(e.endAt);
-    out.push(finalizeCandidate({eventKey:`monetra-embedded:${positionId}:${e.startAt}:${e.endAt}`,company:MONETRA,family:'embedded-income',economicDate:dayKey(e.endAt),periodStart:e.startAt,periodEnd:e.endAt,route:positionId,protocol:e.protocol||p.protocol||null,asset:e.terminalSymbol||null,amount:Number.isFinite(finite(e.incomeUnderlying))?round(e.incomeUnderlying,12):null,usdValue:round(income,8),stablePriceEffectUsd:Number.isFinite(finite(e.stablePriceEffectUsd))?round(e.stablePriceEffectUsd,8):null,valuationStatus:'canonical-interval-end-valuation',periodAttributionStatus:startMonth&&startMonth===endMonth?'single-month':'cross-month-boundary-unallocated',sourceFile:'companies/embedded-yield-ledger.json',sourceFamily:'accepted intervalHistory',sourceIdentity:`${positionId}:${e.startAt}:${e.endAt}`,evidenceStatus:'accepted-canonical-embedded-yield-interval'},generatedAt));
-  }
-  return out;
-}
-function company009BeefyCandidates(source,generatedAt){
-  if(!source?.version)return{events:[],checkpointCount:0,zeroIncomeIntervalCount:0,sourcePresent:false};
-  if(source.version!=='0.1-company-009-beefy-cvxcrv-embedded-income')throw new Error('Company #009 Beefy source version drift');
-  if(source?.company?.registry!=='009'||source?.company?.name!==COMPANY_009)throw new Error('Company #009 Beefy identity mismatch');
-  if(source?.strategy?.id!==COMPANY_009_BEEFY_ROUTE||source?.strategy?.incomeMode!=='compounded-embedded'||source?.strategy?.claimableApplicable!==false)throw new Error('Company #009 Beefy strategy semantics drift');
-  const checkpoints=Array.isArray(source?.checkpoints)?source.checkpoints:[];
-  if(checkpoints.length<2)return{events:[],checkpointCount:checkpoints.length,zeroIncomeIntervalCount:0,sourcePresent:true};
-  let lastAt='';
-  for(const c of checkpoints){
-    if(!c?.observationId||!c?.generatedAt||!Number.isInteger(Number(c?.blockNumber)))throw new Error('Company #009 Beefy checkpoint identity incomplete');
-    if(lastAt&&c.generatedAt<=lastAt)throw new Error('Company #009 Beefy checkpoints are not strictly chronological');
-    lastAt=c.generatedAt;
-    if(!c?.sharesRaw||!c?.ppfsRaw||!(finite(c.shares)>0)||!(finite(c.ppfs)>0)||!(finite(c.cvxCrvPriceUsd)>0))throw new Error(`Company #009 Beefy checkpoint economics incomplete: ${c.observationId}`);
-  }
-  const out=[];let zeroIncomeIntervalCount=0;
-  for(let i=1;i<checkpoints.length;i++){
-    const a=checkpoints[i-1],b=checkpoints[i];
-    if(a.sharesRaw!==b.sharesRaw)throw new Error(`Company #009 Beefy share balance changed between ${a.observationId} and ${b.observationId}; attribution requires reconciliation`);
-    const shares=finite(b.shares),startPpfs=finite(a.ppfs),endPpfs=finite(b.ppfs),price=finite(b.cvxCrvPriceUsd),deltaPpfs=endPpfs-startPpfs;
-    if(deltaPpfs<-1e-15)throw new Error(`Company #009 Beefy PPFS decreased between ${a.observationId} and ${b.observationId}; loss accounting requires a separate canonical lane`);
-    if(deltaPpfs<=1e-15){zeroIncomeIntervalCount++;continue;}
-    const incomeUnderlying=shares*deltaPpfs,incomeUsd=incomeUnderlying*price;
-    if(!(incomeUnderlying>0)||!(incomeUsd>0))throw new Error(`Company #009 Beefy positive PPFS interval produced invalid income: ${a.observationId} -> ${b.observationId}`);
-    const startMonth=monthKey(a.generatedAt),endMonth=monthKey(b.generatedAt),sourceIdentity=`${a.observationId}:${b.observationId}`;
-    out.push(finalizeCandidate({eventKey:`company-009-beefy-embedded:${sourceIdentity}`,company:COMPANY_009,family:'embedded-income',economicDate:dayKey(b.generatedAt),periodStart:a.generatedAt,periodEnd:b.generatedAt,route:COMPANY_009_BEEFY_ROUTE,protocol:'Beefy',asset:'cvxCRV',amount:round(incomeUnderlying,12),usdValue:round(incomeUsd,8),valuationStatus:'frozen-at-interval-end-cvxcrv-price',valuationAsset:'cvxCRV',valuationUnitUsd:round(price,12),shareBalanceRaw:b.sharesRaw,startPpfs:round(startPpfs,18),endPpfs:round(endPpfs,18),periodAttributionStatus:startMonth&&startMonth===endMonth?'single-month':'cross-month-boundary-unallocated',sourceFile:'companies/company-009-beefy-cvxcrv-income.json',sourceFamily:'adjacent factual Beefy vault checkpoints',sourceIdentity,evidenceStatus:'canonical-constant-share-positive-ppfs-interval',referenceAprUsed:false},generatedAt));
-  }
-  return{events:out,checkpointCount:checkpoints.length,zeroIncomeIntervalCount,sourcePresent:true};
-}
-function realisedCandidates(realised,generatedAt){
-  const out=[];
-  for(const [company,c] of Object.entries(realised?.companies||{}))for(const row of c?.ledger?.rows||[]){
-    if(row?.classification!=='realised-income'||row?.countedAsRealisedCashFlow!==true)continue;
-    if(!row?.eventId||!row?.physicalEventId)throw new Error(`${company}: realised cash-flow accepted row missing canonical identity`);
-    const usd=finite(row.usdValue);
-    out.push(finalizeCandidate({eventKey:`realised:${row.eventId}`,company,family:'realised-cash-flow',economicDate:dayKey(row.timestamp),periodStart:row.timestamp||null,periodEnd:row.timestamp||null,route:row.adapterId||null,protocol:row.protocol||null,asset:row.asset||null,amount:Number.isFinite(finite(row.amount))?round(row.amount,12):null,usdValue:Number.isFinite(usd)?round(usd,8):null,valuationStatus:row.valuationStatus||'not-valued',physicalEventId:row.physicalEventId,sourceFile:'intelligence/realised-cash-flow/realised-cash-flow.json',sourceFamily:'accepted realised-income row',sourceIdentity:row.eventId,evidenceStatus:`tier-${row.evidenceTier||'unknown'}-mechanism-specific`},generatedAt));
-  }
-  return out;
-}
-function fraxYieldCandidates(source,generatedAt){
-  if(!source?.version)return[];
-  if(source.version!=='0.1-frax-yield-factual-accrual-evidence'||source?.mechanism!==FRAX_YIELD_ROUTE)throw new Error('Frax Yield accounting evidence identity drift');
-  const s=source?.semantics||{},a=source?.authority||{};
-  if(s.openingBalanceCreatesIncome!==false||s.earnedIndependentOfClaim!==true||s.claimIsSettlementNotSecondIncome!==true||s.referenceAprUsed!==false||s.laterPriceMovementRewritesClosedIncome!==false||s.unknownIsNotZero!==true)throw new Error('Frax Yield accounting semantics invalid');
-  if(a.executionAuthority!=='none'||a.walletAuthority!=='none'||a.claimingAuthority!=='none'||a.capitalExecution!==false||a.methodologyMutationAuthority!=='none')throw new Error('Frax Yield accounting authority expansion');
-  const seen=new Set(),out=[];
-  for(const e of source?.events||[]){
-    if(!e?.eventKey||seen.has(e.eventKey))throw new Error('Frax Yield duplicate or missing event identity');seen.add(e.eventKey);
-    if(e.family!=='accrued-entitlement'||e.route!==FRAX_YIELD_ROUTE||!e.company||!dayKey(e.economicDate)||!(finite(e.amount)>0)||!e.amountRaw)throw new Error(`Frax Yield event economics invalid: ${e.eventKey}`);
-    if(e.referenceAprUsed!==false||e.currentClaimableBalanceIsPeriodIncome!==false||e.claimIsSecondIncomeEvent!==false||e.laterClaimOrPriceMoveDoesNotRewriteIncome!==true||e.unknownIsNotZero!==true)throw new Error(`Frax Yield event recognition boundary invalid: ${e.eventKey}`);
-    if(e.usdValue!==null&&e.usdValue!==undefined&&!(finite(e.usdValue)>0))throw new Error(`Frax Yield event USD value invalid: ${e.eventKey}`);
-    out.push(finalizeCandidate({...e,sourceFile:'reporting/frax-yield-accounting-evidence.json',sourceFamily:'Frax YieldDistributor factual accrual evidence'},generatedAt));
-  }
-  return out;
+
+  return annotateProjectX(rebuilt,history,built,admitted.admitted,integrity,generatedAt);
 }
 
-function rewardStateRows(company){
-  const groups=new Map();
-  for(const r of company?.rewards||[]){
-    if(r?.includedInClaimableTotal===false)continue;
-    const route=String(r?.route||'').trim(),protocol=String(r?.protocol||'').trim(),chain=String(r?.chain||r?.details?.chain||'').trim(),token=String(r?.token||r?.symbol||'').trim(),wallet=String(r?.wallet||r?.details?.wallet||'').trim();
-    const routeKey=[route||protocol||'route-unknown',protocol||'protocol-unknown',chain||'chain-unknown',token||'token-unknown',wallet||'wallet-unknown'].map(x=>x.toLowerCase()).join(':');
-    let g=groups.get(routeKey);
-    if(!g){g={routeKey,route:route||null,protocol:protocol||null,chain:chain||null,token:r?.token||null,symbol:r?.symbol||null,wallet:wallet||null,shardCount:0,amountTotal:0,usdTotal:0,amountComplete:true,usdComplete:true,classifications:new Set(),sources:new Map()};groups.set(routeKey,g);}
-    g.shardCount++;const amount=finite(r?.amount),usd=finite(r?.usdValue);if(Number.isFinite(amount))g.amountTotal+=amount;else g.amountComplete=false;if(Number.isFinite(usd))g.usdTotal+=usd;else g.usdComplete=false;if(r?.classification)g.classifications.add(String(r.classification));if(r?.source!==null&&r?.source!==undefined){const k=stableStringify(r.source);g.sources.set(k,r.source);}
-  }
-  return[...groups.values()].map(g=>{const classifications=[...g.classifications].sort(),sources=[...g.sources.entries()].sort(([a],[b])=>a.localeCompare(b)).map(([,v])=>v);return{routeKey:g.routeKey,route:g.route,protocol:g.protocol,chain:g.chain,token:g.token,symbol:g.symbol,wallet:g.wallet,shardCount:g.shardCount,aggregation:g.shardCount>1?'same-mechanism-shards':'single-mechanism-shard',classification:classifications.length===1?classifications[0]:null,classifications,amount:g.amountComplete?round(g.amountTotal,12):null,amountComplete:g.amountComplete,usdValue:g.usdComplete?round(g.usdTotal,8):null,usdValueComplete:g.usdComplete,source:sources.length===1?sources[0]:null,sources,includedInClaimableTotal:true,stateOnly:true,periodIncomeAuthority:false,realisedCashFlowAuthority:false,unknownIsNotZero:true};}).sort((a,b)=>a.routeKey.localeCompare(b.routeKey));
-}
-function continuityFor(previous,current,policy){
-  const prev=new Map((previous?.rows||[]).map(x=>[x.routeKey,x])),cur=new Map((current?.rows||[]).map(x=>[x.routeKey,x]));
-  return[...new Set([...prev.keys(),...cur.keys()])].sort().map(routeKey=>{const a=prev.get(routeKey),b=cur.get(routeKey);let state,deltaAmount=null,deltaUsd=null;if(!a&&b)state=policy.claimableContinuity.new;else if(a&&!b)state=policy.claimableContinuity.missing;else{const av=finite(a?.amount),bv=finite(b?.amount),au=finite(a?.usdValue),bu=finite(b?.usdValue);if(Number.isFinite(av)&&Number.isFinite(bv)){deltaAmount=round(bv-av,12);state=bv>av?policy.claimableContinuity.increase:bv<av?policy.claimableContinuity.decrease:policy.claimableContinuity.unchanged;}else if(Number.isFinite(au)&&Number.isFinite(bu)){deltaUsd=round(bu-au,8);state=bu>au?policy.claimableContinuity.increase:bu<au?policy.claimableContinuity.decrease:policy.claimableContinuity.unchanged;}else state='comparison-unknown-not-zero';if(deltaUsd===null&&Number.isFinite(au)&&Number.isFinite(bu))deltaUsd=round(bu-au,8);}return{routeKey,state,previousAmount:a?.amount??null,currentAmount:b?.amount??null,deltaAmount,previousUsdValue:a?.usdValue??null,currentUsdValue:b?.usdValue??null,deltaUsd,periodIncomeAuthority:false,realisedCashFlowAuthority:false,unknownIsNotZero:true};});
-}
-function retainSnapshotsPerCompany(values,max){const groups=new Map();for(const row of values){if(!row?.company)continue;if(!groups.has(row.company))groups.set(row.company,[]);groups.get(row.company).push(row);}return[...groups.values()].flatMap(rows=>rows.sort((a,b)=>String(a.capturedAt).localeCompare(String(b.capturedAt))).slice(-max)).sort((a,b)=>String(a.capturedAt).localeCompare(String(b.capturedAt))||String(a.company).localeCompare(String(b.company)));}
-function buildClaimableSnapshots(previous,rewards,policy){
-  const prior=Array.isArray(previous)?previous:[];if(!rewards?.generatedAt||!rewards?.companies||typeof rewards.companies!=='object')return{snapshots:prior,currentByCompany:{},continuity:{}};
-  const byKey=new Map(prior.filter(x=>x?.snapshotKey).map(x=>[x.snapshotKey,x])),currentByCompany={},continuity={};
-  for(const [company,c] of Object.entries(rewards.companies)){const rows=rewardStateRows(c),snapshot={snapshotKey:`rewards:${rewards.generatedAt}:${company}`,capturedAt:rewards.generatedAt,company,canonicalClaimableTotalUsd:Number.isFinite(finite(c?.totalUsd))?round(c.totalUsd,8):null,rows,stateOnly:true,periodIncomeAuthority:false,realisedCashFlowAuthority:false,unknownIsNotZero:true};const priorCompany=[...byKey.values()].filter(x=>x.company===company&&x.capturedAt<rewards.generatedAt).sort((a,b)=>a.capturedAt.localeCompare(b.capturedAt)).at(-1)||null;continuity[company]=continuityFor(priorCompany,snapshot,policy);byKey.set(snapshot.snapshotKey,snapshot);currentByCompany[company]=snapshot;}
-  const max=Number(policy?.retention?.claimableSnapshots)||730;return{snapshots:retainSnapshotsPerCompany([...byKey.values()],max),currentByCompany,continuity};
+async function main(){
+  const output=await build();
+  await writeJson(OUTPUT_FILE,output);
+  console.log('Canonical Income Ledger built with Project X factual fee accrual',{
+    events:output.events?.length||0,
+    newEvents:output.run?.newEventsAdmitted||0,
+    projectXCandidates:output.run?.projectXCandidateEventCount||0,
+    projectXNewEvents:output.run?.projectXNewEventsAdmitted||0,
+    projectXAcceptedIntervals:output.run?.projectXAcceptedIntervalCount||0,
+    claimableSnapshots:output.claimableSnapshots?.length||0,
+    companies:Object.keys(output.companies||{}).length,
+    unknownIsNotZero:output.semantics?.unknownIsNotZero===true,
+    referenceAprUsed:false,
+    executionAuthority:output.authority?.executionAuthority||null
+  });
 }
 
-function eventMonth(e){if(e.family==='embedded-income'){const a=monthKey(e.periodStart),b=monthKey(e.periodEnd);return a&&a===b?b:null;}return monthKey(e.economicDate||e.periodEnd);}
-function familySummary(events){const valued=events.filter(e=>Number.isFinite(finite(e.usdValue))),unvalued=events.length-valued.length,subtotal=valued.reduce((s,e)=>s+finite(e.usdValue),0);return{eventCount:events.length,valuedEventCount:valued.length,unvaluedEventCount:unvalued,usdComplete:unvalued===0,usd:events.length&&unvalued===0?round(subtotal,8):(events.length===0?0:null),valuedUsdSubtotal:round(subtotal,8),unknownIsNotZero:true};}
-function buildMonthly(events,company){const groups=new Map();for(const e of events.filter(x=>x.company===company)){const m=eventMonth(e);if(!m)continue;if(!groups.has(m))groups.set(m,[]);groups.get(m).push(e);}const out={};for(const [month,rows] of [...groups.entries()].sort(([a],[b])=>a.localeCompare(b))){const accrued=rows.filter(x=>x.family==='accrued-entitlement'),realised=rows.filter(x=>x.family==='realised-cash-flow'),embedded=rows.filter(x=>x.family==='embedded-income'),stablePrice=embedded.filter(x=>Number.isFinite(finite(x.stablePriceEffectUsd))).reduce((s,x)=>s+finite(x.stablePriceEffectUsd),0);out[month]={month,families:{accruedEntitlement:familySummary(accrued),realisedCashFlow:familySummary(realised),embeddedIncome:familySummary(embedded)},stablePriceEffectUsd:embedded.length?round(stablePrice,8):null,combinedIncomeUsd:null,crossFamilySumAllowed:false,note:'Economic families stay separate; accrued entitlement, realised cash flow and embedded income may overlap economically.'};}return out;}
-function referenceState(reporting,company){const f=reporting?.funds?.[company];if(!f)return null;const latest=f.latestSnapshot||{},month=monthKey(latest.date||reporting.generatedAt),current=month?f.months?.[month]||null:null;return{semantic:f.semantic||null,latestDate:latest.date||null,currentMonth:month,currentMonthReferenceOrGeneratedIncomeUsd:Number.isFinite(finite(current?.cashFlowUsd??current?.generatedIncomeUsd))?round(current.cashFlowUsd??current.generatedIncomeUsd,8):null,source:'reporting/reporting-data.json',earnedIncomeAuthority:false};}
-function buildCompanies({events,currentByCompany,continuity,reporting,realised}){
-  const names=new Set(events.map(e=>e.company));Object.keys(currentByCompany||{}).forEach(x=>names.add(x));Object.keys(realised?.companies||{}).forEach(x=>names.add(x));if(reporting?.funds?.[DEFITEA])names.add(DEFITEA);if(reporting?.funds?.[MONETRA])names.add(MONETRA);
-  const out={};
-  for(const name of [...names].sort()){const rows=events.filter(e=>e.company===name),crossMonthEmbedded=rows.filter(e=>e.family==='embedded-income'&&eventMonth(e)===null).length,embeddedCoverage=name===MONETRA?'canonical-accepted-intervals-only':(name===COMPANY_009&&rows.some(e=>e.family==='embedded-income'&&e.route===COMPANY_009_BEEFY_ROUTE)?'partial-mechanism-specific-beefy-cvxcrv':'unknown'),accruedCoverage=rows.some(e=>e.family==='accrued-entitlement')?'partial-mechanism-specific':'unknown';out[name]={status:'partial',eventCount:rows.length,eventCountsByFamily:{accruedEntitlement:rows.filter(e=>e.family==='accrued-entitlement').length,realisedCashFlow:rows.filter(e=>e.family==='realised-cash-flow').length,embeddedIncome:rows.filter(e=>e.family==='embedded-income').length},referenceState:referenceState(reporting,name),currentClaimableState:currentByCompany?.[name]||null,claimableContinuity:continuity?.[name]||[],monthly:buildMonthly(events,name),coverage:{overallComplete:false,accruedEntitlement:accruedCoverage,realisedCashFlow:realised?.companies?.[name]?.ledger?.coverage?.complete===true?'complete':(rows.some(e=>e.family==='realised-cash-flow')?'partial-mechanism-specific':'unknown'),embeddedIncome:embeddedCoverage,crossMonthEmbeddedIntervalsExcludedFromMonthlyAttribution:crossMonthEmbedded,unknownIsNotZero:true}};}
-  return out;
-}
-
-async function build(){
-  const generatedAt=new Date().toISOString();
-  const [policyRaw,reporting,defiteaLedger,embedded,rewards,realised,company009Beefy,votiumUnionBootstrap,fraxYieldEvidence,previous]=await Promise.all([readJson(POLICY_FILE),readJson(REPORTING_FILE),readJson(DEFITEA_LEDGER_FILE),readJson(EMBEDDED_LEDGER_FILE),readJson(REWARDS_FILE),readJson(REALISED_FILE),readJson(COMPANY_009_BEEFY_FILE),readJson(VOTIUM_UNION_BOOTSTRAP_FILE),readJson(FRAX_YIELD_EVIDENCE_FILE),readJson(OUTPUT_FILE,{})]);
-  const policy=validatePolicy(policyRaw),beefy=company009BeefyCandidates(company009Beefy,generatedAt),fraxEvents=fraxYieldCandidates(fraxYieldEvidence,generatedAt);
-  const union=await buildVotiumUnionAccrual({rewards,bootstrap:votiumUnionBootstrap,previousExtension:previous?.accountingExtensions?.votiumUnionAccrual||null,generatedAt});
-  const unionEvents=(union.events||[]).map(e=>finalizeCandidate(e,generatedAt));
-  const candidates=[...defiteaCandidates(defiteaLedger,generatedAt),...embeddedCandidates(embedded,generatedAt),...beefy.events,...realisedCandidates(realised,generatedAt),...unionEvents,...fraxEvents];
-  const priorEventCount=Array.isArray(previous?.events)?previous.events.length:0,admitted=admitEvents(previous?.events,candidates),claimable=buildClaimableSnapshots(previous?.claimableSnapshots,rewards,policy),companies=buildCompanies({events:admitted.events,currentByCompany:claimable.currentByCompany,continuity:claimable.continuity,reporting,realised});
-  return{version:VERSION,methodologyVersion:METHODOLOGY_VERSION,policyVersion:policy.version,generatedAt,status:'partial',
-    semantics:{noCollapseRule:'Do not sum accrued entitlement + realised cash flow + embedded income + reference productivity into one income number without explicit non-overlap reconciliation.',claimableStateRule:'Current claimable balances and their deltas are state observations, not period-income or realised-cash-flow authority.',claimableShardRule:'Same-mechanism claimable rows may be aggregated as state only; if any shard lacks a numeric amount or USD value, that aggregate field remains UNKNOWN rather than treating the shard as zero.',continuityRule:'Claims, reinvestment, transfers, source disappearance and protocol resets do not erase previously admitted income events. Ambiguous decreases become local reconciliation-needed states.',unknownIsNotZero:true,referenceAprCanBackfillEarnedIncome:false,stablePriceEffectSeparate:true},
-    sourceState:{reporting:{file:'reporting/reporting-data.json',version:reporting?.version||null,generatedAt:reporting?.generatedAt||null},defiteaIncomeLedger:{file:'reporting/defitea-income-ledger.json',version:defiteaLedger?.version||null,updatedAt:defiteaLedger?.updatedAt||null},embeddedYieldLedger:{file:'companies/embedded-yield-ledger.json',version:embedded?.version||null,generatedAt:embedded?.generatedAt||null},company009BeefyEmbeddedIncome:{file:'companies/company-009-beefy-cvxcrv-income.json',version:company009Beefy?.version||null,generatedAt:company009Beefy?.generatedAt||null,strategyId:company009Beefy?.strategy?.id||null,checkpointCount:beefy.checkpointCount,candidateIntervalCount:beefy.events.length,zeroIncomeIntervalCount:beefy.zeroIncomeIntervalCount,referenceAprUsed:false,sourcePresent:beefy.sourcePresent},votiumUnionAccrual:{bootstrapFile:'reporting/votium-union-accounting-bootstrap.json',adapterVersion:union.extension?.version||null,status:union.extension?.status||null,latestDistributorWeek:union.extension?.diagnostics?.latestDistributorWeek??null,upstreamFreshness:union.extension?.diagnostics?.upstreamFreshness||null,candidateEventCount:unionEvents.length,referenceAprUsed:false},fraxYieldAccrual:{file:'reporting/frax-yield-accounting-evidence.json',version:fraxYieldEvidence?.version||null,status:fraxYieldEvidence?.status||null,fullAccountingStart:fraxYieldEvidence?.fullAccountingStart||null,candidateEventCount:fraxEvents.length,checkpointCount:Array.isArray(fraxYieldEvidence?.checkpoints)?fraxYieldEvidence.checkpoints.length:0,referenceAprUsed:false,laterPriceMovementRewritesClosedIncome:false},rewards:{file:'companies/rewards-data.json',version:rewards?.version||null,generatedAt:rewards?.generatedAt||null},realisedCashFlow:{file:'intelligence/realised-cash-flow/realised-cash-flow.json',version:realised?.version||null,generatedAt:realised?.generatedAt||null,overallCoverageComplete:realised?.methodology?.overallCoverageComplete===true}},
-    events:admitted.events,claimableSnapshots:claimable.snapshots,companies,
-    run:{candidateEventCount:candidates.length,newEventsAdmitted:admitted.admitted,retainedHistoricalEventCount:priorEventCount,claimableSnapshotCount:claimable.snapshots.length,company009BeefyCandidateEventCount:beefy.events.length,company009BeefyCheckpointCount:beefy.checkpointCount,votiumUnionCandidateEventCount:unionEvents.length,votiumUnionBoundaryCount:union.extension?.boundaries?.length||0,fraxYieldCandidateEventCount:fraxEvents.length,fraxYieldCheckpointCount:Array.isArray(fraxYieldEvidence?.checkpoints)?fraxYieldEvidence.checkpoints.length:0},
-    accountingExtensions:{company009BeefyEmbeddedIncome:{version:'0.1-constant-share-positive-ppfs',source:'companies/company-009-beefy-cvxcrv-income.json',referenceAprUsed:false,laterPriceMovementRewritesIncome:false,crossMonthIntervalsAutoAllocated:false,executionAuthority:'none'},votiumUnionAccrual:union.extension,fraxYieldAccrual:{version:fraxYieldEvidence?.version||null,source:'reporting/frax-yield-accounting-evidence.json',status:fraxYieldEvidence?.status||null,fullAccountingStart:fraxYieldEvidence?.fullAccountingStart||null,openingBalanceCreatesIncome:false,claimIsSettlementNotSecondIncome:true,referenceAprUsed:false,laterPriceMovementRewritesClosedIncome:false,executionAuthority:'none'}},
-    authority:{executionAuthority:'none',walletAuthority:'none',claimingAuthority:'none',capitalExecution:false,methodologyMutationAuthority:'none'}};
-}
-async function main(){const output=await build();await writeJson(OUTPUT_FILE,output);console.log('Canonical Income Ledger built',{events:output.events.length,newEvents:output.run.newEventsAdmitted,claimableSnapshots:output.claimableSnapshots.length,companies:Object.keys(output.companies).length,company009BeefyEvents:output.run.company009BeefyCandidateEventCount,votiumUnionEvents:output.run.votiumUnionCandidateEventCount,votiumUnionBoundaries:output.run.votiumUnionBoundaryCount,fraxYieldEvents:output.run.fraxYieldCandidateEventCount,fraxYieldCheckpoints:output.run.fraxYieldCheckpointCount,unknownIsNotZero:output.semantics.unknownIsNotZero,executionAuthority:output.authority.executionAuthority});}
-
-export{VERSION,METHODOLOGY_VERSION,validatePolicy,economicHashPayload,finalizeCandidate,admitEvents,defiteaCandidates,embeddedCandidates,company009BeefyCandidates,realisedCandidates,fraxYieldCandidates,rewardStateRows,continuityFor,buildClaimableSnapshots,eventMonth,familySummary,buildMonthly,build};
-if(process.argv[1]&&path.resolve(process.argv[1])===__filename)main().catch(err=>{console.error(err);process.exitCode=1;});
+if(process.argv[1]&&path.resolve(process.argv[1])===__filename)main().catch(error=>{console.error(error);process.exitCode=1;});
