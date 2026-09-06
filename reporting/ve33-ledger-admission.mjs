@@ -5,8 +5,13 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { build, finalizeCandidate, admitEvents } from './income-ledger.mjs';
 import { ve33EvidenceCandidates, validateVe33Evidence } from './ve33-income-candidates.mjs';
-import { buildLockedManagedEvidence } from './ve33-locked-managed-accounting-evidence.mjs';
+import { buildLockedManagedEvidence, LOCKED_MANAGED_VERSION } from './ve33-locked-managed-accounting-evidence.mjs';
 import { lockedManagedEvidenceCandidates, validateLockedManagedEvidence } from './ve33-locked-managed-income-candidates.mjs';
+import {
+  canReuseEvidence,
+  evidenceInputFingerprint,
+  SAFE_WRITER_EVIDENCE_REUSE
+} from './safe-writer-evidence-reuse.mjs';
 
 const __filename=fileURLToPath(import.meta.url);
 const __dirname=path.dirname(__filename);
@@ -88,8 +93,36 @@ export async function runVe33LedgerAdmission({generatedAt=new Date().toISOString
     readJson(EVIDENCE_FILE),readJson(LEDGER_FILE),readJson(REWARDS_FILE),readJson(LOCKED_EVIDENCE_FILE,{})
   ]);
 
-  const lockedEvidence=await buildLockedManagedEvidence({rewards,previous:previousLocked,generatedAt});
-  await writeJson(LOCKED_EVIDENCE_FILE,lockedEvidence);
+  const lockedFingerprint=evidenceInputFingerprint({
+    rewards,
+    root:ROOT,
+    extra:{
+      lane:'ve33-locked-managed',
+      version:LOCKED_MANAGED_VERSION,
+      ve33EvidenceInputFingerprint:evidence?.runner?.safeWriterInputFingerprint||null
+    }
+  });
+  const reuseLocked=canReuseEvidence({
+    previous:previousLocked,
+    fingerprint:lockedFingerprint,
+    root:ROOT,
+    env:process.env,
+    previousFingerprint:previousLocked?.provenance?.safeWriterInputFingerprint||null
+  });
+
+  let lockedEvidence;
+  if(reuseLocked){
+    lockedEvidence=previousLocked;
+  }else{
+    lockedEvidence=await buildLockedManagedEvidence({rewards,previous:previousLocked,generatedAt});
+    lockedEvidence.provenance={
+      ...(lockedEvidence.provenance||{}),
+      safeWriterInputFingerprint:lockedFingerprint,
+      safeWriterEvidenceReuseVersion:SAFE_WRITER_EVIDENCE_REUSE.version,
+      safeWriterEvidenceReuseMaxAgeMinutes:SAFE_WRITER_EVIDENCE_REUSE.maxAgeMinutes
+    };
+    await writeJson(LOCKED_EVIDENCE_FILE,lockedEvidence);
+  }
 
   const admission=admitVe33IntoLedgerState({ledger,evidence,generatedAt});
   const lockedAdmission=admitLockedManagedIntoLedgerState({ledger:admission.ledger,evidence:lockedEvidence,generatedAt});
