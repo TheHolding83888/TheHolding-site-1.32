@@ -1,7 +1,8 @@
-/* The Holding · Universal Company Monthly Reports adapter · v0.3.0
+/* The Holding · Universal Company Monthly Reports adapter · v0.4.0
  * Presentation only. Reads canonical /reporting/company-monthly-reports.json.
  * One reusable Monthly Reports surface for every Company Passport.
  * Accounting and tracking semantics are owned by the generated Reporting artifact.
+ * Observed factual values may be displayed without upgrading accounting completeness.
  */
 (() => {
   'use strict';
@@ -29,11 +30,15 @@
 
   const C = () => lang() === 'ru' ? {
     trigger: 'Ежемесячные отчёты', generated: 'Доход', monthYield: 'Доходность месяца',
+    observedIncome: 'Наблюдаемый доход', observedYield: 'Наблюдаемая доходность', observed: 'Наблюдаемо',
+    noEvents: 'Нет подтверждённых событий',
     avgTvl: 'Средний TVL', avgStable: 'Средний Stable Capital', avgProductive: 'Средний продуктивный капитал',
     avgCovered: 'Средний покрытый капитал', reports: 'Ежемесячные отчёты', live: 'Live',
     thisMonth: 'за месяц', full: 'Полный отчёт', close: 'Закрыть месячный отчёт'
   } : {
     trigger: 'Monthly Reports', generated: 'Generated', monthYield: 'Month Yield',
+    observedIncome: 'Observed Income', observedYield: 'Observed Yield', observed: 'Observed',
+    noEvents: 'No factual events',
     avgTvl: 'Average TVL', avgStable: 'Average Stable Capital', avgProductive: 'Average Productive Capital',
     avgCovered: 'Average Covered Capital', reports: 'Monthly Reports', live: 'Live',
     thisMonth: 'this month', full: 'Full Report', close: 'Close monthly report'
@@ -92,6 +97,23 @@
     el.classList.toggle('is-ultra', length >= 15);
   }
 
+  function displayMetric(month) {
+    const completeIncome = finite(month?.generatedIncomeUsd);
+    const evidenceCount = Number(month?.accountingEvidenceCount || 0);
+    const observed = !completeIncome
+      && month?.accountingStatus === 'partial-observed'
+      && evidenceCount > 0
+      && finite(month?.observedEarnedIncomeUsd);
+    return {
+      income: completeIncome ? month.generatedIncomeUsd : observed ? month.observedEarnedIncomeUsd : null,
+      yieldPct: finite(month?.monthlyYieldPct)
+        ? month.monthlyYieldPct
+        : observed && finite(month?.observedPeriodYieldPct) ? month.observedPeriodYieldPct : null,
+      observed,
+      unknown: !completeIncome && !observed
+    };
+  }
+
   async function load() {
     if (snapshot) return snapshot;
     if (loading) return loading;
@@ -129,7 +151,7 @@
       .th-mr-badge{grid-area:badge;justify-self:end;display:inline-flex;align-items:center;min-height:19px;padding:.14rem .38rem;border:1px solid rgba(10,124,78,.12);border-radius:999px;background:rgba(10,124,78,.05);color:var(--green);font-size:.49rem;font-weight:700;letter-spacing:.055em;text-transform:uppercase;white-space:nowrap}
       .th-mr-value-wrap{grid-area:value;min-width:0;display:flex;align-items:baseline;gap:.38rem}
       .th-mr-value{font-family:'Cormorant Garamond',serif;font-size:1.34rem;line-height:1.08;padding-bottom:.025em;font-weight:600;letter-spacing:-.02em;color:var(--gold);font-variant-numeric:tabular-nums;white-space:nowrap}
-      .th-mr-value-label{color:var(--text-3);font-size:.5rem;white-space:nowrap}
+      .th-mr-value-label{min-width:0;color:var(--text-3);font-size:.5rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       .th-mr-meta{grid-area:meta;justify-self:end;display:inline-flex;align-items:center;gap:.36rem;color:var(--text-2);font-size:.62rem;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
       .th-mr-chevron{width:.84rem;height:.84rem;color:var(--gold);transition:transform .22s ease;flex:0 0 auto}
       .th-monthly-report-disclosure.open .th-mr-chevron{transform:rotate(180deg)}
@@ -161,6 +183,8 @@
       .th-mr-core-value.is-dense{font-size:clamp(1.18rem,3.15vw,1.52rem);letter-spacing:-.034em}
       .th-mr-core-value.is-ultra{font-size:clamp(1.04rem,2.75vw,1.3rem);letter-spacing:-.038em}
       .th-mr-core-card:first-child .th-mr-core-value{color:var(--gold)}
+      .th-mr-accounting-note{margin:.04rem .18rem .34rem;color:var(--text-3);font-size:.49rem;font-weight:700;letter-spacing:.055em;text-transform:uppercase}
+      .th-mr-accounting-note[hidden]{display:none}
       .th-mr-context{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-width:0;padding:.63rem .18rem .7rem;border-bottom:1px solid var(--line)}
       .th-mr-context-label{min-width:0;color:var(--text-3);font-size:.51rem;font-weight:650;letter-spacing:.045em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
       .th-mr-context-value{flex:0 0 auto;color:var(--text-2);font-size:.69rem;font-weight:650;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -245,6 +269,7 @@
     const name = disclosure.dataset.company;
     selectedMonth.set(name, key);
     const copy = C();
+    const metric = displayMetric(month);
     const panel = disclosure.querySelector('.th-monthly-report-panel') || document.querySelector(`.th-monthly-report-panel.th-mr-portal-open[data-company="${name}"]`);
     if (!panel) return;
 
@@ -255,9 +280,18 @@
     }
     const generated = panel.querySelector('[data-th-mr-generated]');
     const yieldEl = panel.querySelector('[data-th-mr-yield]');
+    const generatedLabel = panel.querySelector('[data-th-mr-generated-label]');
+    const yieldLabel = panel.querySelector('[data-th-mr-yield-label]');
+    const note = panel.querySelector('[data-th-mr-accounting-note]');
     const capital = panel.querySelector('[data-th-mr-capital]');
-    if (generated) { generated.textContent = money(month.generatedIncomeUsd); fitCoreValue(generated); }
-    if (yieldEl) { yieldEl.textContent = pct(month.monthlyYieldPct); fitCoreValue(yieldEl); }
+    if (generated) { generated.textContent = money(metric.income); fitCoreValue(generated); }
+    if (yieldEl) { yieldEl.textContent = pct(metric.yieldPct); fitCoreValue(yieldEl); }
+    if (generatedLabel) generatedLabel.textContent = metric.observed ? copy.observedIncome : copy.generated;
+    if (yieldLabel) yieldLabel.textContent = metric.observed ? copy.observedYield : copy.monthYield;
+    if (note) {
+      note.hidden = !metric.observed && !metric.unknown;
+      note.textContent = metric.observed ? copy.observed : metric.unknown ? copy.noEvents : '';
+    }
     if (capital) capital.textContent = money0(month.averageCapitalUsd);
 
     panel.querySelectorAll('.th-mr-month').forEach(btn => {
@@ -275,6 +309,7 @@
     const copy = C();
     const { company, keys, currentKey, selectedKey } = state;
     const current = company.months[currentKey];
+    const currentMetric = displayMetric(current);
     const disclosure = node('div', 'th-monthly-report-disclosure');
     disclosure.dataset.company = name;
 
@@ -284,11 +319,11 @@
     trigger.appendChild(node('div', 'th-mr-kicker', copy.trigger));
     trigger.appendChild(node('span', 'th-mr-badge', `${monthShort(currentKey)} · ${copy.live}`));
     const valueWrap = node('div', 'th-mr-value-wrap');
-    valueWrap.appendChild(node('span', 'th-mr-value', money(current.generatedIncomeUsd)));
-    valueWrap.appendChild(node('span', 'th-mr-value-label', copy.thisMonth));
+    valueWrap.appendChild(node('span', 'th-mr-value', money(currentMetric.income)));
+    valueWrap.appendChild(node('span', 'th-mr-value-label', currentMetric.observed ? copy.observed : currentMetric.unknown ? copy.noEvents : copy.thisMonth));
     trigger.appendChild(valueWrap);
     const meta = node('div', 'th-mr-meta');
-    meta.appendChild(node('span', '', pct(current.monthlyYieldPct)));
+    meta.appendChild(node('span', '', pct(currentMetric.yieldPct)));
     meta.appendChild(svgIcon('chevron', 'th-mr-chevron'));
     trigger.appendChild(meta);
     disclosure.appendChild(trigger);
@@ -325,12 +360,19 @@
 
     const core = node('div', 'th-mr-core');
     const generatedCard = coreMetric(copy.generated, '—');
+    generatedCard.querySelector('.th-mr-core-label').dataset.thMrGeneratedLabel = 'true';
     generatedCard.querySelector('.th-mr-core-value').dataset.thMrGenerated = 'true';
     const yieldCard = coreMetric(copy.monthYield, '—');
+    yieldCard.querySelector('.th-mr-core-label').dataset.thMrYieldLabel = 'true';
     yieldCard.querySelector('.th-mr-core-value').dataset.thMrYield = 'true';
     core.appendChild(generatedCard);
     core.appendChild(yieldCard);
     panel.appendChild(core);
+
+    const accountingNote = node('div', 'th-mr-accounting-note');
+    accountingNote.dataset.thMrAccountingNote = 'true';
+    accountingNote.hidden = true;
+    panel.appendChild(accountingNote);
 
     const context = node('div', 'th-mr-context');
     context.appendChild(node('div', 'th-mr-context-label', capitalLabel(company)));
@@ -430,7 +472,8 @@
     return JSON.stringify([lang(), name, currentKey, company.capitalMetric, company.fullReportHref,
       ...keys.map(key => {
         const m = company.months[key];
-        return [key, m.generatedIncomeUsd, m.monthlyYieldPct, m.averageCapitalUsd, m.status];
+        return [key, m.generatedIncomeUsd, m.monthlyYieldPct, m.observedEarnedIncomeUsd, m.observedPeriodYieldPct,
+          m.accountingStatus, m.accountingEvidenceCount, m.averageCapitalUsd, m.status];
       })]);
   }
 
@@ -531,7 +574,7 @@
       bindGlobalClose();
       const observer = new MutationObserver(queueRender);
       observer.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['lang', 'class'] });
-      window.__TH_MONTHLY_REPORT_ADAPTER__ = { version: '0.3.0-universal-company-monthly-reports', renderAll };
+      window.__TH_MONTHLY_REPORT_ADAPTER__ = { version: '0.4.0-observed-factual-display', renderAll };
     } catch (err) {
       console.warn('[Monthly Reports]', err && err.message ? err.message : err);
     }
