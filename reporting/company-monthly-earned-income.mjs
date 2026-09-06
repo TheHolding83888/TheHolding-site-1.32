@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import { buildCanonicalEarnedIncomeView } from './canonical-earned-income-view.mjs';
+import { incomeOwnedByCompany } from './income-ownership.mjs';
 
 const REPORT_FILE = process.env.COMPANY_MONTHLY_REPORTS_FILE || './reporting/company-monthly-reports.json';
 const LEDGER_FILE = process.env.INCOME_LEDGER_FILE || './reporting/income-ledger.json';
@@ -23,7 +24,7 @@ function legacyDefiteaActual(month, row) {
 }
 
 function rowsForMonth(rows, company, month) {
-  return rows.filter(row => row.company === company && (row.month || monthKey(row.economicDate || row.periodEnd)) === month);
+  return rows.filter(row => incomeOwnedByCompany(row, company) && (row.month || monthKey(row.economicDate || row.periodEnd)) === month);
 }
 
 function sumUsd(rows) {
@@ -43,12 +44,15 @@ function yieldPct(incomeUsd, averageCapitalUsd) {
     : null;
 }
 
-report.version = '0.4-company-monthly-earned-income-accounting';
-report.methodologyVersion = '0.4-canonical-ledger-sole-income-recognition-authority';
+report.version = '0.5-company-monthly-earned-income-accounting';
+report.methodologyVersion = '0.5-canonical-ledger-exclusive-company-ownership';
 report.generatedAt = new Date().toISOString();
 report.accountingPolicy = {
   recognitionBasis: 'canonical-ledger-admitted-events-with-explicit-non-overlap-recognition',
   canonicalLedgerIsSoleMonthlyIncomeEventSource: true,
+  canonicalCompanyOwnsIncomeExclusively: true,
+  crossCompanyEarnedIncomeReattributionForbidden: true,
+  foreignCompanyReferenceIncomeIsContextOnly: true,
   monthlyLayerCreatesIncomeEvents: false,
   claimableSnapshotDeltaCreatesIncome: false,
   genericReceiptCreatesIncome: false,
@@ -106,7 +110,7 @@ for (const [companyName, company] of Object.entries(report.companies || {})) {
       row.accountingEvidenceCount = 1;
       row.accountingUnknownReason = null;
       row.incomeAccounting = {
-        version: '0.3-ledger-sole-recognition-authority',
+        version: '0.4-ledger-exclusive-company-owner',
         primaryMetric: {
           usd: row.generatedIncomeUsd,
           observedUsd: row.generatedIncomeUsd,
@@ -121,6 +125,8 @@ for (const [companyName, company] of Object.entries(report.companies || {})) {
         evidenceCount: 1,
         source: 'reporting/reporting-data.json legacy-verified-report',
         canonicalLedgerOnlyForNewPeriods: true,
+        canonicalCompanyOwnsIncomeExclusively: true,
+        crossCompanyReattributionAllowed: false,
         unknownIsNotZero: true,
         executionAuthority: 'none'
       };
@@ -148,7 +154,7 @@ for (const [companyName, company] of Object.entries(report.companies || {})) {
     row.accountingEvidenceCount = recognized.length;
     row.accountingUnknownReason = complete ? null : 'Not all active income mechanisms, settlement links, and period boundaries are proven. Reference analytics remains separate and is never substituted for earned income.';
     row.incomeAccounting = {
-      version: '0.3-ledger-sole-recognition-authority',
+      version: '0.4-ledger-exclusive-company-owner',
       primaryMetric: {
         usd: row.generatedIncomeUsd,
         observedUsd,
@@ -175,6 +181,8 @@ for (const [companyName, company] of Object.entries(report.companies || {})) {
       sourceGeneratedAt: ledger.generatedAt || null,
       monthlyLayerCreatesIncomeEvents: false,
       claimableSnapshotDeltaCreatesIncome: false,
+      canonicalCompanyOwnsIncomeExclusively: true,
+      crossCompanyReattributionAllowed: false,
       unknownIsNotZero: true,
       executionAuthority: 'none'
     };
