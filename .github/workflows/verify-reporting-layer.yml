@@ -257,7 +257,9 @@ jobs:
             if(reportPendle.rateStatus==='carried-forward'&&reportPendle.rateSource!=='previous-published-valid-reporting-rate') throw new Error('Pendle carry provenance invalid');
           }
 
-          if(l?.version!=='0.1-defitea-income-composition'||l?.accounting?.currentClaimableBalanceSummedDaily!==false) throw new Error('Defitea income ledger runtime contract failed');
+          if(l?.version!=='0.2-defitea-income-composition'||l?.accounting?.currentClaimableBalanceSummedDaily!==false) throw new Error('Defitea income ledger runtime contract failed');
+          if(l?.accounting?.canonicalIncomeOwnerField!=='company'||l?.accounting?.crossCompanyReattributionAllowed!==false) throw new Error('Defitea income ownership runtime contract failed');
+          if((l?.contributors||[]).some(x=>x?.incomeIncludedInDefiteaCashFlow!==false||x?.contextOnly!==true||x?.crossCompanyReattributionAllowed!==false)) throw new Error('Defitea foreign-company context escaped ownership boundary');
           const vm=l?.voteMarketEvents||[],fa=l?.fortyAcresReceivedEvents||[];
           if(new Set(vm.map(x=>x.eventKey)).size!==vm.length||new Set(fa.map(x=>x.eventKey)).size!==fa.length) throw new Error('Defitea source event dedupe failed');
           if(d?.fortyAcresSettlement?.accounting!=='actual-net-received-replaces-velodrome-reference-model'||d?.fortyAcresSettlement?.referenceDoubleCountPrevented!==true) throw new Error('40 Acres replacement runtime proof failed');
