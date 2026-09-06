@@ -1,4 +1,4 @@
-/* The Holding · Company Passport priority adapter · v0.3.0
+/* The Holding · Company Passport priority adapter · v0.4.0
  * Presentation only.
  * 1) Promotes the existing APR field to the first metadata row in every
  *    standard Company Passport.
@@ -8,20 +8,25 @@
  * 3) Shows the matching observed-period yield when factual income exists but
  *    full-month coverage is incomplete. That yield is explicitly labelled as
  *    observed/confirmed and never masquerades as a complete monthly yield.
+ * 4) Projects live diagnostic Accounting Coverage into subtle per-period
+ *    notices. Missing/uncertain mechanisms remain visible without blocking
+ *    already-confirmed income from being shown.
  *
  * This adapter never creates income, calculates factual income, estimates
  * missing days, changes accounting completion, substitutes Reference APR, or
- * expands execution authority. It only renders fields already materialized by
- * canonical Reporting.
+ * expands execution authority. Accounting Coverage remains diagnostic only.
  */
 (() => {
   'use strict';
   if (window.__TH_COMPANY_PASSPORT_PRIORITY_ADAPTER__) return;
 
   const REPORT_URL = '/reporting/company-monthly-reports.json';
+  const COVERAGE_URL = '/reporting/accounting-coverage.json';
   let queued = false;
   let monthlySnapshot = null;
   let monthlyLoading = null;
+  let coverageSnapshot = null;
+  let coverageLoading = null;
 
   const lang = () => (document.documentElement.lang || 'en').toLowerCase().startsWith('ru') ? 'ru' : 'en';
   const finite = value => value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value));
@@ -62,6 +67,31 @@
       })
       .finally(() => { monthlyLoading = null; });
     return monthlyLoading;
+  }
+
+  function loadCoverageSnapshot() {
+    if (coverageSnapshot) return Promise.resolve(coverageSnapshot);
+    if (coverageLoading) return coverageLoading;
+    coverageLoading = fetch(COVERAGE_URL + '?t=' + Date.now(), { cache: 'no-store' })
+      .then(response => {
+        if (!response.ok) throw new Error('Accounting Coverage HTTP ' + response.status);
+        return response.json();
+      })
+      .then(data => {
+        if (data?.status !== 'diagnostic-no-completion-authority') throw new Error('Accounting Coverage authority contract invalid');
+        if (data?.authority?.monthClosingAuthority !== false || data?.authority?.executionAuthority !== 'none') {
+          throw new Error('Accounting Coverage authority expanded');
+        }
+        coverageSnapshot = data;
+        return data;
+      })
+      .catch(err => {
+        coverageSnapshot = null;
+        console.warn('[Company Passport accounting transparency]', err?.message || err);
+        return null;
+      })
+      .finally(() => { coverageLoading = null; });
+    return coverageLoading;
   }
 
   function orderedMonths(company) {
@@ -114,7 +144,16 @@
       monthShort: 'за месяц',
       monthYield: 'Доходность месяца',
       observedYield: 'Подтверждённая доходность',
-      period: 'Период наблюдения'
+      period: 'Период наблюдения',
+      partial: 'Показан только подтверждённый доход. Неподтверждённые части в сумму не подставляются.',
+      awaiting: 'Трекинг активен; подтверждённых событий дохода за этот период пока нет.',
+      stateOnly: label => `${label} — пока не включено: состояние позиции видно, но фактический трекинг дохода не подтверждён.`,
+      referenceOnly: label => `${label} — пока не включено: фактический трекинг дохода ещё не подтверждён.`,
+      boundary: label => `${label} — часть периода пока не включена: требуется подтверждение границы периода.`,
+      unclassified: label => `${label} — пока не включено: механизм дохода ещё не классифицирован.`,
+      unresolved: label => `${label} — событие дохода пока не включено: требуется дополнительное подтверждение.`,
+      unresolvedGeneric: 'Часть событий дохода пока не включена: требуется дополнительное подтверждение.',
+      more: count => `Ещё ${count} ${count === 1 ? 'позиция' : count < 5 ? 'позиции' : 'позиций'} пока не включено.`
     } : {
       generated: 'Generated',
       observed: 'Observed earned income',
@@ -122,7 +161,16 @@
       monthShort: 'this month',
       monthYield: 'Month Yield',
       observedYield: 'Observed period yield',
-      period: 'Observation period'
+      period: 'Observation period',
+      partial: 'Only confirmed income is shown. Unconfirmed components are never substituted into the total.',
+      awaiting: 'Tracking is active; there are no confirmed income events for this period yet.',
+      stateOnly: label => `${label} — not counted yet: position state is visible, but factual income tracking is not proven.`,
+      referenceOnly: label => `${label} — not counted yet: factual income tracking is not proven.`,
+      boundary: label => `${label} — part of the period is not counted yet: the period boundary still needs proof.`,
+      unclassified: label => `${label} — not counted yet: the income mechanism is not classified.`,
+      unresolved: label => `${label} — income event is not counted yet: additional evidence is required.`,
+      unresolvedGeneric: 'Some income events are not counted yet because additional evidence is required.',
+      more: count => `${count} more ${count === 1 ? 'position is' : 'positions are'} not counted yet.`
     };
   }
 
@@ -142,6 +190,127 @@
     row.append(label, value);
     context.insertAdjacentElement('afterend', row);
     return row;
+  }
+
+  function ensureTransparencyStyle() {
+    if (document.getElementById('th-accounting-transparency-style')) return;
+    const style = document.createElement('style');
+    style.id = 'th-accounting-transparency-style';
+    style.textContent = `
+      .th-mr-accounting-notices{display:grid;gap:.24rem;margin:.02rem .18rem .42rem;padding-top:.34rem;border-top:1px solid var(--line)}
+      .th-mr-accounting-notices[hidden]{display:none}
+      .th-mr-accounting-notice{position:relative;padding-left:.68rem;color:var(--text-3);font-size:.5rem;font-weight:550;line-height:1.42;letter-spacing:.005em;text-transform:none}
+      .th-mr-accounting-notice::before{content:'·';position:absolute;left:.08rem;top:-.01em;color:var(--gold);font-size:.72rem;line-height:1}
+      @media(max-width:760.98px){.th-mr-accounting-notices{margin-left:.12rem;margin-right:.12rem}.th-mr-accounting-notice{font-size:.49rem}}
+    `;
+    document.head.appendChild(style);
+  }
+
+  function ensureNoticeHost(panel) {
+    let host = panel.querySelector('.th-mr-accounting-notices');
+    if (host) return host;
+    host = document.createElement('div');
+    host.className = 'th-mr-accounting-notices';
+    host.hidden = true;
+    const status = panel.querySelector('[data-th-mr-accounting-note]');
+    const context = panel.querySelector('.th-mr-context');
+    if (status) status.insertAdjacentElement('afterend', host);
+    else if (context) context.insertAdjacentElement('beforebegin', host);
+    else panel.appendChild(host);
+    return host;
+  }
+
+  function coverageCompany(name) {
+    const companies = coverageSnapshot?.companies || {};
+    if (companies[name]) return companies[name];
+    return Object.values(companies).find(company => Array.isArray(company?.sourceAliases) && company.sourceAliases.includes(name)) || null;
+  }
+
+  function sameCoverageCompany(eventCompany, requestedName) {
+    if (eventCompany === requestedName) return true;
+    const company = coverageCompany(requestedName);
+    return Boolean(company && (company.name === eventCompany || company.sourceAliases?.includes(eventCompany)));
+  }
+
+  function eventMonth(event) {
+    const raw = event?.economicDate || event?.periodEnd || event?.periodStart;
+    const t = Date.parse(raw || '');
+    return Number.isFinite(t) ? new Date(t).toISOString().slice(0, 7) : null;
+  }
+
+  function mechanismLabel(mechanism) {
+    const raw = mechanism?.protocol || mechanism?.engineId || 'Strategy';
+    return String(raw).replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+
+  function accountingNotices(companyName, monthKey, month, incomeView) {
+    if (month?.accountingCoverageComplete === true) return [];
+    const c = copy();
+    const notices = [];
+    const company = coverageCompany(companyName);
+
+    for (const mechanism of Object.values(company?.mechanisms || {})) {
+      const state = mechanism?.months?.[monthKey];
+      if (!state) continue;
+      const label = mechanismLabel(mechanism);
+      const blockers = Array.isArray(state.completionBlockers) ? state.completionBlockers : [];
+      if (mechanism?.classified !== true || blockers.includes('unclassified-income-mechanism')) {
+        notices.push({ key: `unclassified:${mechanism.engineId}`, text: c.unclassified(label) });
+        continue;
+      }
+      if (state.status === 'state-observed-not-factual-tracking') {
+        notices.push({ key: `state:${mechanism.engineId}`, text: c.stateOnly(label) });
+      } else if (state.status === 'reference-only-no-factual-tracking') {
+        notices.push({ key: `reference:${mechanism.engineId}`, text: c.referenceOnly(label) });
+      }
+      if (Number(state.crossMonthEvidenceCount || 0) > 0 || blockers.includes('cross-month-boundary-requires-explicit-allocation')) {
+        notices.push({ key: `boundary:${mechanism.engineId}`, text: c.boundary(label) });
+      }
+    }
+
+    const unmatched = (coverageSnapshot?.unmatchedCanonicalEvents || []).filter(event => {
+      const m = eventMonth(event);
+      return sameCoverageCompany(event?.company, companyName) && (!m || m === monthKey);
+    });
+    for (const event of unmatched) {
+      const label = String(event?.protocol || event?.route || event?.asset || '').trim();
+      notices.push({ key: `unmatched:${event?.eventKey || label}`, text: label ? c.unresolved(label) : c.unresolvedGeneric });
+    }
+
+    const unresolvedReasons = month?.incomeAccounting?.lifecycle?.unresolvedReasons || [];
+    if (unresolvedReasons.length && !unmatched.length) {
+      notices.push({ key: 'unresolved-ledger', text: c.unresolvedGeneric });
+    }
+
+    const deduped = [...new Map(notices.map(item => [item.key, item])).values()];
+    if (!deduped.length) {
+      if (incomeView.observedOnly) return [{ key: 'partial-confirmed-only', text: c.partial }];
+      return [{ key: 'awaiting-confirmed-evidence', text: c.awaiting }];
+    }
+
+    if (incomeView.observedOnly) deduped.unshift({ key: 'partial-confirmed-only', text: c.partial });
+    const maxDetailed = 6;
+    if (deduped.length <= maxDetailed) return deduped;
+    const hidden = deduped.length - maxDetailed;
+    return [...deduped.slice(0, maxDetailed), { key: `more:${hidden}`, text: c.more(hidden) }];
+  }
+
+  function renderAccountingNotices(panel, companyName, monthKey, month, incomeView) {
+    ensureTransparencyStyle();
+    const host = ensureNoticeHost(panel);
+    const notices = accountingNotices(companyName, monthKey, month, incomeView);
+    const fingerprint = JSON.stringify([lang(), coverageSnapshot?.generatedAt || null, monthKey, notices]);
+    if (host.dataset.thNoticeFingerprint === fingerprint) return;
+    host.dataset.thNoticeFingerprint = fingerprint;
+    host.replaceChildren();
+    notices.forEach(item => {
+      const line = document.createElement('div');
+      line.className = 'th-mr-accounting-notice';
+      line.dataset.noticeKey = item.key;
+      line.textContent = item.text;
+      host.appendChild(line);
+    });
+    host.hidden = notices.length === 0;
   }
 
   function patchDisclosure(disclosure, companyName, company) {
@@ -191,6 +360,7 @@
       periodRow.hidden = !(selectedIncome.observedOnly || selectedYield.observedOnly);
     }
 
+    renderAccountingNotices(panel, companyName, selectedKey, selected, selectedIncome);
     panel.dataset.thIncomeDisplay = selectedIncome.observedOnly ? 'observed-canonical' : 'complete-or-empty';
     panel.dataset.thYieldDisplay = selectedYield.observedOnly ? 'observed-period-canonical' : 'complete-or-empty';
   }
@@ -220,7 +390,7 @@
 
   function start() {
     promoteApr();
-    loadMonthlySnapshot()
+    Promise.all([loadMonthlySnapshot(), loadCoverageSnapshot()])
       .then(() => patchMonthlyReports())
       .catch(err => console.warn('[Company Passport observed income]', err?.message || err));
 
@@ -233,11 +403,14 @@
     });
 
     window.__TH_COMPANY_PASSPORT_PRIORITY_ADAPTER__ = {
-      version: '0.3.0-apr-plus-observed-canonical-income-and-yield',
+      version: '0.4.0-accounting-transparency',
       promoteApr,
       patchMonthlyReports,
       incomeDisplayPolicy: 'complete-generated-income-or-partial-observed-canonical-income-with-evidence',
       yieldDisplayPolicy: 'complete-month-yield-or-partial-observed-period-yield-with-canonical-income-evidence',
+      transparencyPolicy: 'diagnostic-accounting-coverage-notices-never-income-authority',
+      noticesCreateIncome: false,
+      coverageHasCompletionAuthority: false,
       referenceIncomeAuthority: false,
       executionAuthority: 'none'
     };
