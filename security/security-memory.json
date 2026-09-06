@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-06T16:11:46.899Z",
+  "generatedAt": "2026-09-06T16:55:16.526Z",
   "status": "watch",
-  "snapshotHash": "b64960166ea70c0e27507a4bf8ce0f039f095d469888979de4a40d308748bc61",
+  "snapshotHash": "ebde4573625bcb26daaf913aa4efe931380500a56f35698f84a10673c3dab3f3",
   "repository": {
-    "filesScanned": 1049,
-    "bytesScanned": 28188689,
+    "filesScanned": 1050,
+    "bytesScanned": 28202880,
     "criticalHashes": {
       ".github/workflows/admit-company-010-public.yml": "5feffbf58388675952487c3462d2f9149eecec6f3795483087010dd0d3b19cfb",
       ".github/workflows/ask-experience.yml": "deb9c4e1025390563f8a866f6ddf1c7870e748cbd6aba13fdbd6da2d38e983d4",
@@ -144,7 +144,7 @@
       ".github/workflows/verify-rewards-protocol-asset-label-parity.yml": "91a4c686b4fc692f674fca0fff1ea9b8a59aded99775962866082c665c4fbdf1",
       ".github/workflows/verify-security-eval-detector.yml": "2c89f39584deb768f4f5900489cd3ab9bfeec9434eb7e8c9c5445cf622bc17ad",
       ".github/workflows/verify-settlement-accounting-links.yml": "3894b6d585e5e042f17ab9b6a4c7d843e780c36902def93124e7926011979e21",
-      ".github/workflows/verify-ve33-accounting.yml": "9164d6dc33998f4d651d871ecc750d4352fc9f22c9d4aff6e9bb5450713a6b38",
+      ".github/workflows/verify-ve33-accounting.yml": "5ccd61d3b1f3ece1863bf4fcd28e411b45e6239423ceabbe057e912ebdccdd1d",
       ".github/workflows/verify-ve33-historical-rpc.yml": "5c061d15dba68f6dff80150d6af8ca40bf204c9185ce327f6a354a386890bc34",
       ".github/workflows/verify-ve33-locked-managed-accounting.yml": "deb96c39ffbf38944bf182f49e3f0820cc4f854e41e3e2f068d7f07762705884",
       ".github/workflows/verify-vlcvx-convex-team-eligibility.yml": "b139d5854e797ab6b59888a483559be9e99635bdf7219ccc709e424c291436d3",
@@ -450,7 +450,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Sat, 05 Sep 2026 02:38:24 GMT",
+        "lastModified": "Fri, 04 Sep 2026 06:02:25 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -486,6 +486,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "ed457edcefca3993ec73ff132703ca6769d0d91756b0c657150b8606d1aff49d",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/verify-ve33-accounting.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-ve33-accounting.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "9164d6dc33998f4d651d871ecc750d4352fc9f22c9d4aff6e9bb5450713a6b38",
+        "currentSha256": "5ccd61d3b1f3ece1863bf4fcd28e411b45e6239423ceabbe057e912ebdccdd1d"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -1112,10 +1126,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 887,
+    "runCount": 888,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/09/2026-09-06T16-11-46-899Z-b64960166e.json",
-    "latestRecordHash": "93da0ff2778a404d8718b202a4d336f6ce566597a7ee572f8e4c1573c09eb6dc",
+    "latestRecordPath": "security/security-vault/2026/09/2026-09-06T16-55-16-526Z-ebde457362.json",
+    "latestRecordHash": "9893689e13b352fd623e43e011f30b9db14ecdeeff3ee365bf54cd1f312a02e7",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
