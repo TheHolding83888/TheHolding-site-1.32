@@ -307,6 +307,14 @@ assert.match(workflow,/tokenSpecificReconciliation!==true/,'Yield Basis token-sp
 assert.match(workflow,/accountingExtensions\?\.ve33LockedManaged/,'LockedManagedReward generated ledger extension validation missing');
 assert.match(workflow,/sourceEvidenceFamily!=='embedded-compounded-income'/,'LockedManagedReward source semantic preservation guard missing');
 assert.match(workflow,/RATE_CONTINUITY_POLICY_FILE:\s*\.\/reporting\/rate-continuity-policy\.json/,'Reporting rate continuity runtime binding missing');
+assert.match(workflow,/composition\.version!=='0\.2-defitea-native-income-owner-isolation'/,'Defitea v0.2 composition ownership guard missing');
+assert.match(workflow,/composition\.crossCompanyReattributionAllowed!==false/,'Defitea cross-company composition ownership guard missing');
+assert.match(workflow,/composition\.associatedCompanyReferenceIncomeSemantic!=='context-only'/,'Defitea associated-company context-only guard missing');
+assert.match(workflow,/ledger\.version!=='0\.2-defitea-income-composition'/,'Defitea v0.2 income ledger guard missing');
+assert.match(workflow,/ledger\.accounting\?\.canonicalIncomeOwnerField!=='company'/,'Defitea canonical income owner field guard missing');
+assert.match(workflow,/ledger\.accounting\?\.crossCompanyReattributionAllowed!==false/,'Defitea ledger cross-company ownership guard missing');
+assert.match(workflow,/incomeIncludedInDefiteaCashFlow!==false/,'Defitea foreign-company income exclusion guard missing');
+assert.match(workflow,/contextOnly!==true/,'Defitea foreign-company context-only guard missing');
 
 assert.match(runner,/reporting-scheduler-contract\.json/,'scheduled runner is not bound to scheduler contract');
 assert.match(runner,/reporting-engine\.mjs/,'scheduled runner is not bound to existing Reporting engine');
