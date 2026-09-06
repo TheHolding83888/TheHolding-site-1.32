@@ -1,7 +1,9 @@
 #!/usr/bin/env node
+import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
+import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { JsonRpcProvider } from 'ethers';
 import {
@@ -20,6 +22,18 @@ const ROOT=path.resolve(__dirname,'..');
 
 export const VERSION='0.1-ve33-capability-aware-historical-rpc-runner';
 export const REQUIRED_HISTORICAL_BOUNDARIES=Object.freeze([DIRECT_ACCOUNTING_START,FULL_ACCOUNTING_START]);
+export const SAFE_WRITER_EVIDENCE_REUSE=Object.freeze({
+  version:'0.1-bounded-publication-reuse',
+  generatedDataCommit:'data: update reporting and canonical income ledger',
+  maxAgeMinutes:45,
+  semantics:{
+    reuseOnlyInsideGeneratedDataPublishCommit:true,
+    sourceFingerprintMustMatch:true,
+    staleEvidenceReuseForbidden:true,
+    currentChainRefreshRemainsDefaultOutsidePublish:true,
+    executionAuthority:'none'
+  }
+});
 const DEFAULT_REWARDS=process.env.REWARDS_DATA_FILE||path.join(ROOT,'companies','rewards-data.json');
 const DEFAULT_OUTPUT=process.env.VE33_EVIDENCE_FILE||path.join(ROOT,'reporting','ve33-accounting-evidence.json');
 const RPC_PROBE_TIMEOUT_MS=Math.max(2_000,Math.min(30_000,Number(process.env.VE33_HISTORICAL_RPC_PROBE_TIMEOUT_MS||10_000)));
@@ -30,6 +44,45 @@ const waitTimeout=(promise,ms,label)=>Promise.race([
   promise,
   new Promise((_,reject)=>setTimeout(()=>reject(new Error(`${label} timeout after ${ms}ms`)),ms))
 ]);
+const sha256=value=>crypto.createHash('sha256').update(String(value)).digest('hex');
+
+function git(args,{root=process.cwd()}={}){
+  return execFileSync('git',args,{cwd:root,encoding:'utf8',maxBuffer:2*1024*1024,stdio:['ignore','pipe','pipe']}).trim();
+}
+
+export function safeWriterPublishContext({root=process.cwd(),env=process.env}={}){
+  if(String(env?.GITHUB_ACTIONS||'').toLowerCase()!=='true')return false;
+  try{return git(['log','-1','--pretty=%s'],{root})===SAFE_WRITER_EVIDENCE_REUSE.generatedDataCommit;}
+  catch{return false;}
+}
+
+export function evidenceInputFingerprint({
+  rewards,
+  root=process.cwd(),
+  extra={},
+  repoPaths=['companies/rewards-data.json','intelligence/market-data/market-data.json','intelligence/market-data/market-data-scheduler-contract.json']
+}={}){
+  const blobs={};
+  for(const repoPath of repoPaths){
+    try{blobs[repoPath]=git(['rev-parse',`HEAD:${repoPath}`],{root});}
+    catch{blobs[repoPath]=null;}
+  }
+  return sha256(JSON.stringify({rewardsHash:sha256(JSON.stringify(rewards||{})),blobs,extra}));
+}
+
+export function evidenceFreshEnough(generatedAt,{now=Date.now(),maxAgeMinutes=SAFE_WRITER_EVIDENCE_REUSE.maxAgeMinutes}={}){
+  const t=Date.parse(generatedAt||'');
+  if(!Number.isFinite(t))return false;
+  const ageMinutes=(now-t)/60_000;
+  return ageMinutes>=0&&ageMinutes<=Number(maxAgeMinutes);
+}
+
+export function canReuseEvidence({previous,fingerprint,root=process.cwd(),env=process.env,maxAgeMinutes=SAFE_WRITER_EVIDENCE_REUSE.maxAgeMinutes,previousFingerprint=null}={}){
+  if(!safeWriterPublishContext({root,env}))return false;
+  const stored=previousFingerprint??previous?.runner?.safeWriterInputFingerprint??previous?.provenance?.safeWriterInputFingerprint??null;
+  if(!stored||stored!==fingerprint)return false;
+  return evidenceFreshEnough(previous?.generatedAt,{maxAgeMinutes});
+}
 
 async function readJson(file,fallback={}){try{return JSON.parse(await fs.readFile(file,'utf8'));}catch{return fallback;}}
 async function writeJson(file,data){await fs.mkdir(path.dirname(file),{recursive:true});await fs.writeFile(file,JSON.stringify(data,null,2)+'\n');}
@@ -228,7 +281,30 @@ export async function runVe33Accounting({rewards,previous={},generatedAt=new Dat
 
 async function main(){
   const[rewards,previous]=await Promise.all([readJson(DEFAULT_REWARDS),readJson(DEFAULT_OUTPUT,{})]);
+  const fingerprint=evidenceInputFingerprint({
+    rewards,
+    root:ROOT,
+    extra:{
+      runnerVersion:VERSION,
+      requireHistoricalRpc:requireHistoricalRpc(process.env),
+      requiredHistoricalBoundaries:[...REQUIRED_HISTORICAL_BOUNDARIES]
+    }
+  });
+
+  if(canReuseEvidence({previous,fingerprint,root:ROOT,env:process.env})){
+    console.log('ve33 safe-writer publication reuse',{
+      status:previous.status,
+      generatedAt:previous.generatedAt,
+      reuseVersion:SAFE_WRITER_EVIDENCE_REUSE.version,
+      executionAuthority:previous.authority?.executionAuthority||'none'
+    });
+    return previous;
+  }
+
   const output=await runVe33Accounting({rewards,previous});
+  output.runner.safeWriterInputFingerprint=fingerprint;
+  output.runner.safeWriterEvidenceReuseVersion=SAFE_WRITER_EVIDENCE_REUSE.version;
+  output.runner.safeWriterEvidenceReuseMaxAgeMinutes=SAFE_WRITER_EVIDENCE_REUSE.maxAgeMinutes;
   await writeJson(DEFAULT_OUTPUT,output);
   console.log('ve33 capability-aware accounting runner built',{
     status:output.status,
