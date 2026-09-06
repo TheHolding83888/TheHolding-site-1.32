@@ -1,5 +1,5 @@
 {
-  "version": "0.1-canonical-income-ledger-policy",
+  "version": "0.2-canonical-income-ledger-policy",
   "status": "production-candidate",
   "purpose": "Provide one append-only, evidence-family-aware income history for Reporting without collapsing reference productivity, accrued entitlement, realised cash flow, embedded income or market performance into one misleading number.",
   "families": [
@@ -23,7 +23,16 @@
     "referenceAprCanNeverBackfillEarnedIncome": true,
     "stablePriceEffectIsSeparateFromEmbeddedIncome": true,
     "unknownIsNotZero": true,
-    "crossFamilySummationForbidden": true
+    "crossFamilySummationForbidden": true,
+    "canonicalCompanyOwnsIncomeExclusively": true,
+    "crossCompanyEarnedIncomeReattributionForbidden": true,
+    "foreignCompanyReferenceIncomeIsContextOnly": true
+  },
+  "ownership": {
+    "authoritativeField": "company",
+    "targetAttributionRule": "row.company === targetCompany",
+    "crossCompanyReattributionAllowed": false,
+    "foreignCompanyReferenceIncome": "context-only"
   },
   "claimableContinuity": {
     "increase": "state-increase-observed-not-income-authority",
