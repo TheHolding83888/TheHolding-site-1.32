@@ -56,6 +56,15 @@ function incidentCore(incident) { const core = structuredClone(incident); delete
 function ledgerCore(ledger) { const core = structuredClone(ledger); delete core.integrity; return core; }
 function outputCore(output) { const core = structuredClone(output); delete core.integrity; return core; }
 function validSha(value) { return typeof value === 'string' && /^[0-9a-f]{40}$/.test(value); }
+function shortSha(value) { return validSha(value) ? value.slice(0, 12) : 'invalid'; }
+function commitEvidenceDetail(kind, evidence) {
+  const id = shortSha(evidence?.sha);
+  if (kind === 'not-ancestor') return `commit ${id} is not an ancestor of HEAD`;
+  if (kind === 'unreadable-subject') return `cannot read commit subject for ${id}`;
+  if (kind === 'subject-mismatch') return `ancestor commit ${id} subject does not contain expected marker`;
+  if (kind === 'subject-match') return `ancestor commit ${id} subject marker matched`;
+  return `commit ${id} evidence status unavailable`;
+}
 function getJsonPath(obj, jsonPath) {
   const parts = String(jsonPath ?? '').split('.').filter(Boolean);
   let cur = obj;
@@ -99,14 +108,14 @@ function verifyLedger(ledger) {
 function gitCommitEvidence(evidence) {
   if (!validSha(evidence.sha)) return { pass: false, detail: 'invalid commit sha' };
   const ancestry = spawnSync('git', ['merge-base', '--is-ancestor', evidence.sha, 'HEAD'], { cwd: ROOT });
-  if (ancestry.status !== 0) return { pass: false, detail: `commit is not an ancestor of HEAD: ${evidence.sha}` };
+  if (ancestry.status !== 0) return { pass: false, detail: commitEvidenceDetail('not-ancestor', evidence) };
   let subject = '';
   try { subject = execFileSync('git', ['show', '-s', '--format=%s', evidence.sha], { cwd: ROOT, encoding: 'utf8' }).trim(); }
-  catch { return { pass: false, detail: `cannot read commit subject: ${evidence.sha}` }; }
+  catch { return { pass: false, detail: commitEvidenceDetail('unreadable-subject', evidence) }; }
   if (evidence.subjectIncludes && !subject.toLowerCase().includes(String(evidence.subjectIncludes).toLowerCase())) {
-    return { pass: false, detail: `commit subject mismatch: ${subject}` };
+    return { pass: false, detail: commitEvidenceDetail('subject-mismatch', evidence) };
   }
-  return { pass: true, detail: `ancestor commit ${evidence.sha.slice(0, 12)} · ${subject}` };
+  return { pass: true, detail: commitEvidenceDetail('subject-match', evidence) };
 }
 function fileContainsEvidence(evidence) {
   const text = readText(evidence.path, false);
@@ -172,6 +181,8 @@ if (args.has('--self-test')) {
   const sample = { a: 1, b: { c: 2 } };
   if (stableStringify(sample) !== '{"a":1,"b":{"c":2}}') fail('stable stringify self-test failed');
   if (getJsonPath({ a: { b: [1, 2] } }, 'a.b').value.length !== 2) fail('json path self-test failed');
+  const sampleSha = '1111111111111111111111111111111111111111';
+  if (commitEvidenceDetail('subject-match', { sha: sampleSha }) !== 'ancestor commit 111111111111 subject marker matched') fail('commit evidence detail self-test failed');
   console.log(JSON.stringify({ status: 'pass', engineVersion: ENGINE_VERSION, executionAuthority: 'none' }, null, 2));
   process.exit(0);
 }
