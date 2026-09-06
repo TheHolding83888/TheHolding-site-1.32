@@ -1,0 +1,104 @@
+# holding-workflow-definition-proof: intelligence/reliability/projectx-income-accounting-workflow-definition-proof.mjs
+name: Verify Project X Income Accounting
+
+on:
+  pull_request:
+    paths:
+      - 'reporting/income-ledger.mjs'
+      - 'reporting/income-ledger-core.mjs'
+      - 'reporting/projectx-income-candidates.mjs'
+      - 'reporting/projectx-income-candidates-validation.mjs'
+      - 'companies/company-010-projectx-rate-history.json'
+      - 'reporting/company-monthly-earned-income.mjs'
+      - 'reporting/company-monthly-earned-income-validation.mjs'
+      - '.github/workflows/verify-projectx-income-accounting.yml'
+      - 'intelligence/reliability/projectx-income-accounting-workflow-definition-proof.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-projectx-income-accounting:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: Verify workflow authority contract
+        run: node intelligence/reliability/projectx-income-accounting-workflow-definition-proof.mjs
+
+      - name: Prove factual Project X fee candidates
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check reporting/income-ledger-core.mjs
+          node --check reporting/income-ledger.mjs
+          node --check reporting/projectx-income-candidates.mjs
+          node --check reporting/projectx-income-candidates-validation.mjs
+          node reporting/projectx-income-candidates-validation.mjs
+          node reporting/income-ledger-validation.mjs
+
+      - name: Exercise canonical ledger to monthly passport projection
+        shell: bash
+        run: |
+          set -euo pipefail
+          export INCOME_LEDGER_FILE=/tmp/projectx-income-ledger.json
+          node reporting/income-ledger.mjs
+          test -s "$INCOME_LEDGER_FILE"
+
+          PRODUCTIVITY_DATA_FILE=./companies/productivity-data.json \
+          REPORTING_DATA_FILE=./reporting/reporting-data.json \
+          INCOME_LEDGER_FILE="$INCOME_LEDGER_FILE" \
+          MEMORY_VAULT_DIR=./intelligence/memory-vault \
+          COMPANY_MONTHLY_REPORTS_FILE=/tmp/projectx-company-monthly-reports.json \
+          node reporting/company-monthly-reports.mjs
+
+          COMPANY_MONTHLY_REPORTS_FILE=/tmp/projectx-company-monthly-reports.json \
+          INCOME_LEDGER_FILE="$INCOME_LEDGER_FILE" \
+          REPORTING_DATA_FILE=./reporting/reporting-data.json \
+          node reporting/company-monthly-earned-income.mjs
+
+          COMPANY_MONTHLY_REPORTS_FILE=/tmp/projectx-company-monthly-reports.json \
+          INCOME_LEDGER_FILE="$INCOME_LEDGER_FILE" \
+          node reporting/company-monthly-earned-income-validation.mjs
+
+          node --input-type=module - <<'NODE'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          const ledger=JSON.parse(fs.readFileSync('/tmp/projectx-income-ledger.json','utf8'));
+          const reports=JSON.parse(fs.readFileSync('/tmp/projectx-company-monthly-reports.json','utf8'));
+          const events=(ledger.events||[]).filter(e=>e.company==='Cypher'&&e.route==='projectx-whype-usdc'&&e.family==='accrued-entitlement');
+          assert.ok(events.length>=14,'Project X canonical events missing');
+          assert.equal(events.every(e=>e.referenceAprUsed===false&&e.executionAuthority==='none'),true);
+          const aug=reports.companies?.Cypher?.months?.['2026-08'];
+          const sep=reports.companies?.Cypher?.months?.['2026-09'];
+          assert.equal(aug?.accountingStatus,'partial-observed');
+          assert.ok(Number(aug?.observedEarnedIncomeUsd)>2.20&&Number(aug?.observedEarnedIncomeUsd)<2.21,'Cypher August factual income projection drift');
+          assert.ok(Number(aug?.observedPeriodYieldPct)>0,'Cypher August observed-period yield missing');
+          assert.equal(sep?.accountingStatus,'partial-observed');
+          assert.ok(Number(sep?.observedEarnedIncomeUsd)>=0.52937216,'Cypher September factual income projection drift');
+          assert.ok(Number(sep?.observedPeriodYieldPct)>0,'Cypher September observed-period yield missing');
+          assert.equal(aug?.generatedIncomeUsd,null,'Partial August masqueraded as complete month');
+          assert.equal(sep?.generatedIncomeUsd,null,'Partial September masqueraded as complete month');
+          assert.equal(aug?.monthlyYieldPct,null,'Partial August masqueraded as complete-month yield');
+          assert.equal(sep?.monthlyYieldPct,null,'Partial September masqueraded as complete-month yield');
+          console.log('Project X end-to-end monthly projection PASS',{
+            canonicalEvents:events.length,
+            augustObservedIncomeUsd:aug.observedEarnedIncomeUsd,
+            augustObservedYieldPct:aug.observedPeriodYieldPct,
+            septemberObservedIncomeUsd:sep.observedEarnedIncomeUsd,
+            septemberObservedYieldPct:sep.observedPeriodYieldPct,
+            referenceAprAuthority:false,
+            executionAuthority:'none'
+          });
+          NODE
+
+      - name: Diff hygiene
+        run: git diff --check
