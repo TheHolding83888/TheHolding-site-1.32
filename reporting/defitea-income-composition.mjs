@@ -1,18 +1,23 @@
 #!/usr/bin/env node
 /**
- * The Holding · Defitea Income Composition v0.1
+ * The Holding · Defitea Income Composition v0.2
  *
- * Post-processes the canonical Reporting Layer without creating a second TVL
- * or market-price authority.
+ * Post-processes the canonical Reporting Layer without creating a second TVL,
+ * market-price authority, or cross-company income attribution path.
  *
  * Defitea report cash flow =
- *   Defitea 11-position base reference income
- *   + associated-company reference income (YieldRing + 05081966)
- *   + observed VoteMarket veCRV / veFXN entitlement events.
+ *   Defitea-native 11-position base reference income
+ *   + observed Defitea VoteMarket veCRV / veFXN entitlement events.
+ *
+ * Ownership boundary:
+ *   Income is attributable to a target company only when the canonical owner
+ *   row.company equals that target company. Associated-company Productivity
+ *   reference income is retained as context only and never enters Defitea cash
+ *   flow or Generated.
  *
  * Capital boundary:
- *   Defitea TVL remains Defitea-only. Associated-company capital is used only
- *   to model those companies' own income and is never added to Defitea TVL.
+ *   Defitea TVL remains Defitea-only. Associated-company capital is never added
+ *   to Defitea TVL.
  *
  * VoteMarket boundary:
  *   Current claimable balance is NOT summed every day. Each proven entitlement
@@ -26,6 +31,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
+import { incomeAttribution, incomeOwnedByCompany } from './income-ownership.mjs';
 
 const __filename=fileURLToPath(import.meta.url);
 const __dirname=path.dirname(__filename);
@@ -39,8 +45,8 @@ const REWARDS_DATA_FILE=process.env.REWARDS_DATA_FILE||path.join(ROOT,'companies
 const DEFITEA='defitea.eth';
 const CONTRIBUTORS=['YieldRing.eth','05081966.eth'];
 const VOTEMARKET_ROUTES=new Set(['votemarket-vecrv','votemarket-vefxn']);
-const LEDGER_VERSION='0.1-defitea-income-composition';
-const COMPOSITION_VERSION='0.1-defitea-associated-income-plus-votemarket-events';
+const LEDGER_VERSION='0.2-defitea-income-composition';
+const COMPOSITION_VERSION='0.2-defitea-native-income-owner-isolation';
 
 function finite(v){
   if(v===null||v===undefined||v==='') return NaN;
@@ -81,6 +87,7 @@ function collectVoteMarketEvents(rewards,{trackingStartedAt,existing=[]}={}){
       eventKey,
       eventDate,
       month:eventDate.slice(0,7),
+      company:DEFITEA,
       route:row.route,
       protocol:row.protocol||null,
       epoch:Number(row.details.epoch),
@@ -99,6 +106,7 @@ function collectVoteMarketEvents(rewards,{trackingStartedAt,existing=[]}={}){
       source:row.source||'canonical Rewards VoteMarket measurement',
       classificationAtAdmission:row.classification||null,
       entitlementIdentity:'epoch+campaign+gauge+wallet+reward-token',
+      canonicalIncomeOwner:DEFITEA,
       laterClaimDoesNotEraseIncome:true
     });
     admitted++;
@@ -113,23 +121,28 @@ function contributorRow(productivity,company,date){
   const apr=finite(c.aprLatest);
   const coverage=finite(c.coverage);
   if(c.status!=='ok'||coverage!==1||!(value>0)||!(apr>=0)){
-    throw new Error(`${company}: complete canonical Productivity state required for Defitea income contribution`);
+    throw new Error(`${company}: complete canonical Productivity state required for associated-company reference context`);
   }
   const daily=value*(apr/100)/365;
+  const attribution=incomeAttribution({company},DEFITEA);
   return {
     entryKey:`${date}:${company}`,
     date,
     month:date.slice(0,7),
     company,
+    canonicalIncomeOwner:company,
+    attributionTarget:DEFITEA,
     productiveValueUsd:round(value,2),
     referenceAprPct:round(apr,4),
     referenceIncomeUsd:round(daily,6),
     productivityGeneratedAt:productivity.generatedAt||null,
     productivityCoverage:coverage,
     productivityStatus:c.status,
-    incomeIncludedInDefiteaCashFlow:true,
+    incomeIncludedInDefiteaCashFlow:attribution.attributableToTarget,
+    crossCompanyReattributionAllowed:false,
+    foreignCompanyContextOnly:attribution.foreignCompanyContextOnly,
     includedInDefiteaTvl:false,
-    semantic:'associated-company-reference-income-not-capital-contribution'
+    semantic:'associated-company-reference-income-context-only-not-defitea-generated'
   };
 }
 
@@ -155,15 +168,23 @@ function sumByMonth(rows,valueField){
 
 function rebuildDefiteaMonths(fund,ledger){
   const months={...(fund?.months||{})};
-  const contributorByMonth=sumByMonth(ledger.contributorDaily,'referenceIncomeUsd');
-  const voteByMonth=sumByMonth(ledger.voteMarketEvents,'usdValue');
+  const contributorContextByMonth=sumByMonth(ledger.contributorDaily,'referenceIncomeUsd');
+  const contributorOwnedByMonth=sumByMonth(
+    (ledger.contributorDaily||[]).filter(row=>incomeOwnedByCompany(row,DEFITEA)),
+    'referenceIncomeUsd'
+  );
+  const voteByMonth=sumByMonth(
+    (ledger.voteMarketEvents||[]).filter(row=>!row?.company||incomeOwnedByCompany(row,DEFITEA)),
+    'usdValue'
+  );
   for(const [key,m] of Object.entries(months)){
     if(m?.mode!=='reference-model') continue;
     const base=finite(m.baseDefiteaReferenceCashFlowUsd??m.referenceCashFlowUsd??m.cashFlowUsd);
-    const contributor=contributorByMonth.get(key)||0;
+    const contributorContext=contributorContextByMonth.get(key)||0;
+    const contributorOwned=contributorOwnedByMonth.get(key)||0;
     const vote=voteByMonth.get(key)||0;
     if(!Number.isFinite(base)) throw new Error(`${key}: base Defitea reference cash flow missing`);
-    const unified=base+contributor+vote;
+    const unified=base+contributorOwned+vote;
     const avgTvl=finite(m.averageTvlUsd);
     const yld=avgTvl>0?unified/avgTvl*100:NaN;
     const sampleDays=Number(m.sampleDays||0);
@@ -173,16 +194,20 @@ function rebuildDefiteaMonths(fund,ledger){
     months[key]={
       ...m,
       baseDefiteaReferenceCashFlowUsd:round(base,2),
-      associatedCompanyReferenceCashFlowUsd:round(contributor,2),
+      associatedCompanyReferenceCashFlowUsd:round(contributorOwned,2),
+      associatedCompanyReferenceContextUsd:round(contributorContext,2),
+      crossCompanyReferenceIncomeExcludedUsd:round(contributorContext-contributorOwned,2),
       voteMarketObservedIncomeUsd:round(vote,2),
       cashFlowUsd:round(unified,2),
       monthlyYieldPct:Number.isFinite(yld)?round(yld,4):null,
       annualizedAprPct:Number.isFinite(annualized)?round(annualized,4):null,
       incomeCompositionVersion:COMPOSITION_VERSION,
+      incomeOwnershipRule:'row.company === target company',
+      crossCompanyReattributionAllowed:false,
       tvlSemantic:'defitea-only',
       associatedCompanyTvlIncluded:false,
       voteMarketAccounting:'deduplicated-observed-entitlement-events',
-      note:[m.note,'Unified Defitea cash flow adds associated-company reference income and deduplicated observed VoteMarket veCRV/veFXN entitlement events; associated-company TVL is excluded.'].filter(Boolean).join(' ')
+      note:[m.note,'Defitea cash flow includes Defitea-native reference income plus deduplicated observed Defitea VoteMarket veCRV/veFXN entitlement events. Associated-company reference income is context-only and excluded from Defitea cash flow and TVL.'].filter(Boolean).join(' ')
     };
   }
   return months;
@@ -241,17 +266,29 @@ function compose({reporting,productivity,rewards,ledger}){
   const contributorDaily=upsertContributorDaily(prior.contributorDaily,productivity,date);
   const nextLedger={
     ...prior,
+    version:LEDGER_VERSION,
     updatedAt:reporting.generatedAt||new Date().toISOString(),
     compositionVersion:COMPOSITION_VERSION,
-    contributors:CONTRIBUTORS.map(company=>({company,incomeIncludedInDefiteaCashFlow:true,includedInDefiteaTvl:false})),
+    contributors:CONTRIBUTORS.map(company=>({
+      company,
+      canonicalIncomeOwner:company,
+      attributionTarget:DEFITEA,
+      incomeIncludedInDefiteaCashFlow:incomeOwnedByCompany({company},DEFITEA),
+      crossCompanyReattributionAllowed:false,
+      contextOnly:true,
+      includedInDefiteaTvl:false
+    })),
     voteMarketRoutes:[...VOTEMARKET_ROUTES],
     contributorDaily,
     voteMarketEvents:vote.events,
     accounting:{
       defiteaTvlAuthority:'Defitea canonical 11-position Reporting snapshot only',
+      canonicalIncomeOwnerField:'company',
+      targetAttributionRule:'row.company === target company',
+      crossCompanyReattributionAllowed:false,
       associatedCompanyTvlIncluded:false,
-      contributorIncomeMethod:'productiveValue × Reference APR / 365',
-      voteMarketMethod:'one frozen USD income event per exact proven entitlement identity',
+      contributorIncomeMethod:'context-only productiveValue × Reference APR / 365; never Defitea cash flow or Generated',
+      voteMarketMethod:'one frozen USD Defitea income event per exact proven entitlement identity',
       currentClaimableBalanceSummedDaily:false,
       claimedEventRetention:'indefinite',
       unknownIsNotZero:true
@@ -262,7 +299,12 @@ function compose({reporting,productivity,rewards,ledger}){
   const years=[...new Set(Object.keys(months).map(k=>k.slice(0,4)).filter(x=>/^\d{4}$/.test(x)))];
   const summaries=Object.fromEntries(years.map(y=>[y,rebuildYearSummary(months,y)]));
   const contributorToday=contributorDaily.filter(x=>x.date===date).reduce((s,x)=>s+finite(x.referenceIncomeUsd),0);
-  const voteToday=vote.events.filter(x=>x.eventDate===date).reduce((s,x)=>s+finite(x.usdValue),0);
+  const contributorAttributedToday=contributorDaily
+    .filter(x=>x.date===date&&incomeOwnedByCompany(x,DEFITEA))
+    .reduce((s,x)=>s+finite(x.referenceIncomeUsd),0);
+  const voteToday=vote.events
+    .filter(x=>x.eventDate===date&&(!x.company||incomeOwnedByCompany(x,DEFITEA)))
+    .reduce((s,x)=>s+finite(x.usdValue),0);
 
   const nextReporting=structuredClone(reporting);
   nextReporting.funds[DEFITEA]={
@@ -273,18 +315,22 @@ function compose({reporting,productivity,rewards,ledger}){
       version:COMPOSITION_VERSION,
       ledger:'reporting/defitea-income-ledger.json',
       contributors:CONTRIBUTORS,
+      incomeOwnershipRule:'row.company === target company',
+      crossCompanyReattributionAllowed:false,
+      associatedCompanyReferenceIncomeSemantic:'context-only',
       associatedCompanyTvlIncluded:false,
       voteMarketRoutes:[...VOTEMARKET_ROUTES],
       voteMarketEventsRecorded:vote.events.length,
       voteMarketEventsAdmittedThisRun:vote.admitted,
       contributorDailyEntries:contributorDaily.length,
-      currentDayAssociatedCompanyReferenceIncomeUsd:round(contributorToday,6),
+      currentDayAssociatedCompanyReferenceContextUsd:round(contributorToday,6),
+      currentDayAssociatedCompanyAttributedIncomeUsd:round(contributorAttributedToday,6),
       currentDayVoteMarketEventIncomeUsd:round(voteToday,6),
       defiteaTvlUsd:fund.latestSnapshot.totalValueUsd,
       tvlSemantic:'defitea-only'
     }
   };
-  nextReporting.note=`${reporting.note||''} Defitea cash-flow composition additionally includes YieldRing.eth and 05081966.eth reference income plus deduplicated observed VoteMarket veCRV/veFXN entitlement events; their capital is not added to Defitea TVL.`.trim();
+  nextReporting.note=`${reporting.note||''} Defitea cash-flow composition now enforces exclusive canonical company ownership: YieldRing.eth and 05081966.eth reference income remains context-only and is excluded from Defitea cash flow and TVL; deduplicated observed Defitea VoteMarket veCRV/veFXN entitlement events remain Defitea-native income.`.trim();
   return {reporting:nextReporting,ledger:nextLedger};
 }
 
@@ -303,6 +349,8 @@ async function main(){
     currentMonthCashFlowUsd:current?.cashFlowUsd,
     baseDefiteaReferenceCashFlowUsd:current?.baseDefiteaReferenceCashFlowUsd,
     associatedCompanyReferenceCashFlowUsd:current?.associatedCompanyReferenceCashFlowUsd,
+    associatedCompanyReferenceContextUsd:current?.associatedCompanyReferenceContextUsd,
+    crossCompanyReferenceIncomeExcludedUsd:current?.crossCompanyReferenceIncomeExcludedUsd,
     voteMarketObservedIncomeUsd:current?.voteMarketObservedIncomeUsd,
     voteMarketEventsRecorded:out.ledger.voteMarketEvents.length
   });
