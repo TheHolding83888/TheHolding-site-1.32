@@ -1,13 +1,17 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
 import { PROTOCOLS, DIRECT_ACCOUNTING_START, FULL_ACCOUNTING_START } from './ve33-accounting-evidence.mjs';
-import { VERSION, REQUIRED_HISTORICAL_BOUNDARIES, historicalRpcUrls, requireHistoricalRpc, rpcLabel } from './ve33-accounting-runner.mjs';
 import {
+  VERSION,
+  REQUIRED_HISTORICAL_BOUNDARIES,
+  historicalRpcUrls,
+  requireHistoricalRpc,
+  rpcLabel,
   canReuseEvidence,
   evidenceFreshEnough,
   evidenceInputFingerprint,
   SAFE_WRITER_EVIDENCE_REUSE
-} from './safe-writer-evidence-reuse.mjs';
+} from './ve33-accounting-runner.mjs';
 
 assert.equal(VERSION,'0.1-ve33-capability-aware-historical-rpc-runner');
 assert.deepEqual(REQUIRED_HISTORICAL_BOUNDARIES,[DIRECT_ACCOUNTING_START,FULL_ACCOUNTING_START]);
