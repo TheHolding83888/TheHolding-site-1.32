@@ -159,8 +159,12 @@ export async function annotateHistoricalValuationResolution(ledger,{resolver=his
 
     if(!isEligible){events.push(event);continue;}
     eligible++;
-    const key=`${String(event.token).toLowerCase()}|${boundaryAt}`;
-    if(!cache.has(key))cache.set(key,Promise.resolve().then(()=>resolver({token:event.token,boundaryAt})).catch(error=>({ok:false,status:'historical-canonical-price-resolver-error',error:error?.message||String(error)})));
+    const closingBlockMatch=String(event?.eventKey||'').match(/:(\d+)$/);
+    const cacheBlock=closingBlockMatch?.[1]||String(event?.sourceIdentity||'');
+    const key=`${String(event.token).toLowerCase()}|${boundaryAt}|${cacheBlock}`;
+    if(!cache.has(key))cache.set(key,Promise.resolve().then(()=>resolver({
+      token:event.token,boundaryAt,eventKey:event.eventKey,sourceIdentity:event.sourceIdentity
+    })).catch(error=>({ok:false,status:'historical-canonical-price-resolver-error',error:error?.message||String(error)})));
     const valuation=await cache.get(key);
     const price=Number(valuation?.priceUsd),observedMs=Date.parse(valuation?.observedAt||''),boundaryMs=Date.parse(boundaryAt);
     if(valuation?.ok!==true||!(Number.isFinite(price)&&price>0)||!Number.isFinite(observedMs)||observedMs>boundaryMs){
@@ -179,6 +183,7 @@ export async function annotateHistoricalValuationResolution(ledger,{resolver=his
       continue;
     }
 
+    const sourceFamily=valuation.sourceFamily||'canonical-market-data-git-history';
     const resolution={
       version:HISTORICAL_VALUATION_RESOLUTION_VERSION,
       resolvesUsdValue:true,
@@ -191,7 +196,17 @@ export async function annotateHistoricalValuationResolution(ledger,{resolver=his
       sourceAssetId:valuation.assetId||null,
       sourceStatus:valuation.status||'historical-canonical-market-price',
       snapshotAgeMinutes:finite(valuation.ageMinutes)?round(valuation.ageMinutes,6):null,
-      sourceFamily:'canonical-market-data-git-history',
+      sourceFamily,
+      ...(sourceFamily==='historical-onchain-chainlink-at-boundary'?{
+        sourceChainId:Number(valuation.chainId),
+        sourceBlockNumber:Number(valuation.sourceBlockNumber),
+        sourceBlockTimestamp:valuation.sourceBlockTimestamp||null,
+        sourceContract:valuation.sourceContract||null,
+        sourceRoundId:valuation.roundId||null,
+        sourceAnsweredInRound:valuation.answeredInRound||null,
+        sourceRpcEndpointId:valuation.rpcEndpointId||null,
+        exactHistoricalBlock:valuation.exactHistoricalBlock===true
+      }:{}),
       originalUsdValue:null,
       economicFieldsMutated:false,
       referenceAprUsed:false,
@@ -225,7 +240,7 @@ export async function annotateHistoricalValuationResolution(ledger,{resolver=his
         ...(ledger?.sourceState||{}),
         historicalValuationResolution:{
           ...summary,
-          source:'canonical Market Data Git history at original accounting boundary'
+          source:'canonical Market Data Git history or exact historical onchain Chainlink at original accounting boundary'
         }
       },
       accountingExtensions:{
