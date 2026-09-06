@@ -14,7 +14,12 @@ export const CANONICAL_MARKET_DATA_REPO_PATH='intelligence/market-data/market-da
 export const MARKET_DATA_SCHEDULER_REPO_PATH='intelligence/market-data/market-data-scheduler-contract.json';
 export const HISTORICAL_TOKEN_ASSET_IDS=Object.freeze({
   '0x940181a94a35a4569e4529a3cdfb74e38fd98631':'aerodrome-finance',
-  '0x9560e827af36c94d2ac33a39bce1fe78631088db':'velodrome-finance'
+  '0x9560e827af36c94d2ac33a39bce1fe78631088db':'velodrome-finance',
+  // Canonical chain wrappers reuse the historical USD authority of their
+  // underlying canonical asset. This is an identity alias only: it does not
+  // create a price, use a current quote, or grant reward/accounting authority.
+  '0x4200000000000000000000000000000000000006':'ethereum',
+  '0x68f180fcce6836688e9084f035309e29bf0a2095':'bitcoin'
 });
 
 const lower=v=>String(v||'').toLowerCase();
