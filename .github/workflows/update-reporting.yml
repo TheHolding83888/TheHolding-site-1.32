@@ -339,8 +339,8 @@ jobs:
           if(d.vlCvxReconciliation?.referenceIncomeEngine!=='convex_vlcvx'||d.vlCvxReconciliation?.referenceAprIncludesVotiumIncentives!==true||d.vlCvxReconciliation?.claimableSettlementAddedToReferenceCashFlow!==false) throw new Error('Defitea vlCVX reconciliation boundary invalid');
 
           const composition=d.incomeComposition;
-          if(!composition||composition.version!=='0.1-defitea-associated-income-plus-votemarket-events') throw new Error('Defitea income composition missing');
-          if(composition.associatedCompanyTvlIncluded!==false||composition.tvlSemantic!=='defitea-only') throw new Error('Associated-company TVL leaked into Defitea TVL semantics');
+          if(!composition||composition.version!=='0.2-defitea-native-income-owner-isolation') throw new Error('Defitea income composition missing');
+          if(composition.associatedCompanyTvlIncluded!==false||composition.tvlSemantic!=='defitea-only'||composition.crossCompanyReattributionAllowed!==false||composition.associatedCompanyReferenceIncomeSemantic!=='context-only') throw new Error('Defitea income ownership/TVL semantics drift');
           if(JSON.stringify(composition.contributors)!==JSON.stringify(['YieldRing.eth','05081966.eth'])) throw new Error('Defitea income contributor contract drift');
           if(JSON.stringify(composition.voteMarketRoutes)!==JSON.stringify(['votemarket-vecrv','votemarket-vefxn'])) throw new Error('Defitea VoteMarket route contract drift');
 
@@ -349,9 +349,10 @@ jobs:
           if(settlement.claimableAffected!==false||settlement.tvlAffected!==false||settlement.executionAuthority!=='none') throw new Error('40 Acres settlement authority boundary drift');
 
           const ledger=JSON.parse(fs.readFileSync('reporting/defitea-income-ledger.json','utf8'));
-          if(ledger.version!=='0.1-defitea-income-composition') throw new Error('Defitea income ledger version drift');
+          if(ledger.version!=='0.2-defitea-income-composition') throw new Error('Defitea income ledger version drift');
           if(ledger.accounting?.associatedCompanyTvlIncluded!==false||ledger.accounting?.currentClaimableBalanceSummedDaily!==false) throw new Error('Defitea income ledger accounting boundary invalid');
-          if((ledger.contributors||[]).some(x=>x.includedInDefiteaTvl!==false||x.incomeIncludedInDefiteaCashFlow!==true)) throw new Error('Defitea contributor capital boundary invalid');
+          if(ledger.accounting?.canonicalIncomeOwnerField!=='company'||ledger.accounting?.crossCompanyReattributionAllowed!==false) throw new Error('Defitea income ownership runtime contract failed');
+          if((ledger.contributors||[]).some(x=>x.includedInDefiteaTvl!==false||x.incomeIncludedInDefiteaCashFlow!==false||x.contextOnly!==true||x.crossCompanyReattributionAllowed!==false)) throw new Error('Defitea foreign-company context escaped ownership boundary');
           const keys=(ledger.voteMarketEvents||[]).map(x=>x.eventKey);
           if(new Set(keys).size!==keys.length) throw new Error('VoteMarket income ledger duplicate event identity');
           if((ledger.voteMarketEvents||[]).some(x=>x.eventDate<d.trackingStartedAt||!(Number(x.usdValue)>0)||x.usdValueFrozenAtFirstAdmission!==true)) throw new Error('VoteMarket event admission boundary invalid');
