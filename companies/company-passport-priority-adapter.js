@@ -5,7 +5,7 @@
  * 2) Makes already-recognized Canonical Income Ledger income visible in the
  *    Monthly Reports surface even while full-period accounting coverage is
  *    still incomplete. Partial rows are explicitly labelled as observed /
- *    confirmed income and retain the exact observed period.
+ *    confirmed income and retain the exact report observation period.
  *
  * This adapter never creates income, estimates missing days, changes accounting
  * completion, substitutes Reference APR, or expands execution authority.
@@ -68,7 +68,8 @@
     if (finite(month.generatedIncomeUsd)) {
       return { usd: Number(month.generatedIncomeUsd), observedOnly: false };
     }
-    if (finite(month.observedEarnedIncomeUsd)) {
+    const hasObservedEvidence = month.accountingStatus === 'partial-observed' && Number(month.accountingEvidenceCount || 0) > 0;
+    if (hasObservedEvidence && finite(month.observedEarnedIncomeUsd)) {
       return { usd: Number(month.observedEarnedIncomeUsd), observedOnly: true };
     }
     return { usd: null, observedOnly: false };
@@ -94,13 +95,13 @@
       observed: 'Подтверждённый доход',
       observedShort: 'подтверждено',
       monthShort: 'за месяц',
-      period: 'Подтверждённый период'
+      period: 'Период наблюдения'
     } : {
       generated: 'Generated',
       observed: 'Observed earned income',
       observedShort: 'observed',
       monthShort: 'this month',
-      period: 'Observed period'
+      period: 'Observation period'
     };
   }
 
@@ -203,7 +204,7 @@
       version: '0.2.0-apr-plus-observed-canonical-income',
       promoteApr,
       patchMonthlyReports,
-      incomeDisplayPolicy: 'generated-income-when-complete-otherwise-observed-canonical-earned-income',
+      incomeDisplayPolicy: 'complete-generated-income-or-partial-observed-canonical-income-with-evidence',
       referenceIncomeAuthority: false,
       executionAuthority: 'none'
     };
