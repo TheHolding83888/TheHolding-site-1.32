@@ -23,6 +23,8 @@ const YB_VALIDATION_PATHS=[
 ];
 const VE33_EVIDENCE_PATH='reporting/ve33-accounting-evidence.json';
 const VE33_BUILDER_PATH='reporting/ve33-accounting-evidence.mjs';
+const VE33_RUNNER_PATH='reporting/ve33-accounting-runner.mjs';
+const VE33_RUNNER_VALIDATION_PATH='reporting/ve33-accounting-runner-validation.mjs';
 const VE33_CANDIDATES_PATH='reporting/ve33-income-candidates.mjs';
 const VE33_ADMISSION_PATH='reporting/ve33-ledger-admission.mjs';
 const VE33_VALIDATION_PATHS=[
@@ -56,6 +58,8 @@ const ybAdmission=fs.readFileSync(YB_ADMISSION_PATH,'utf8');
 const ybValidations=YB_VALIDATION_PATHS.map(p=>fs.readFileSync(p,'utf8')).join('\n');
 const ve33Evidence=JSON.parse(fs.readFileSync(VE33_EVIDENCE_PATH,'utf8'));
 const ve33Builder=fs.readFileSync(VE33_BUILDER_PATH,'utf8');
+const ve33Runner=fs.readFileSync(VE33_RUNNER_PATH,'utf8');
+const ve33RunnerValidation=fs.readFileSync(VE33_RUNNER_VALIDATION_PATH,'utf8');
 const ve33Candidates=fs.readFileSync(VE33_CANDIDATES_PATH,'utf8');
 const ve33Admission=fs.readFileSync(VE33_ADMISSION_PATH,'utf8');
 const ve33Validations=VE33_VALIDATION_PATHS.map(p=>fs.readFileSync(p,'utf8')).join('\n');
@@ -156,7 +160,9 @@ assert.match(ybValidations,/claim-to-zero of the opening balance creates no new 
 assert.match(ybValidations,/mutation detected/,'Yield Basis immutable event mutation regression test missing');
 
 assert.equal(ve33Evidence.version,'0.1-ve33-factual-accrual-evidence');
-assert.equal(ve33Evidence.fullAccountingStart,'2026-09-01T00:00:00.000Z');
+assert.equal(ve33Evidence.fullAccountingStart,'2026-08-01T00:00:00.000Z');
+assert.equal(ve33Evidence.directAccountingStart,'2026-08-01T00:00:00.000Z');
+assert.equal(ve33Evidence.managedFreeRewardAccountingStart,'2026-09-01T00:00:00.000Z');
 assert.equal(ve33Evidence.semantics?.openingBalanceCreatesIncome,false);
 assert.equal(ve33Evidence.semantics?.earnedIndependentOfClaim,true);
 assert.equal(ve33Evidence.semantics?.claimIsSettlementNotSecondIncome,true);
@@ -176,6 +182,14 @@ assert.match(ve33Builder,/currentClaimableBalanceIsPeriodIncome:false/,'ve33 cur
 assert.match(ve33Builder,/claimIsSecondIncomeEvent:false/,'ve33 claim dedup missing');
 assert.match(ve33Builder,/laterClaimOrPriceMoveDoesNotRewriteIncome:true/,'ve33 frozen income invariant missing');
 assert.doesNotMatch(ve33Builder,/referenceAprUsed\s*:\s*true|referenceApyUsed\s*:\s*true/i,'ve33 builder gained APR/APY income authority');
+assert.match(ve33Runner,/0\.1-ve33-capability-aware-historical-rpc-runner/,'ve33 historical RPC runner identity missing');
+assert.match(ve33Runner,/REQUIRED_HISTORICAL_BOUNDARIES=Object\.freeze\(\[DIRECT_ACCOUNTING_START,FULL_ACCOUNTING_START\]\)/,'ve33 historical RPC boundary pairing missing');
+assert.match(ve33Runner,/attachHistoricalCallRouter/,'ve33 current/archive RPC routing missing');
+assert.match(ve33Runner,/current-primary-with-archive-block-call-routing/,'ve33 current/archive routing mode missing');
+assert.match(ve33Runner,/historicalRpcPolicy:/,'ve33 historical RPC policy metadata missing');
+assert.match(ve33Runner,/executionAuthority:'none'/,'ve33 runner authority boundary missing');
+assert.match(ve33RunnerValidation,/REQUIRED_HISTORICAL_BOUNDARIES,\[DIRECT_ACCOUNTING_START,FULL_ACCOUNTING_START\]/,'ve33 runner boundary regression proof missing');
+assert.match(ve33RunnerValidation,/requireHistoricalRpc\(\{VE33_REQUIRE_HISTORICAL_RPC:'1'\}\),true/,'ve33 required historical RPC validation missing');
 assert.match(ve33Candidates,/ve33EvidenceCandidates/,'ve33 Canonical Ledger candidate contract missing');
 assert.match(ve33Candidates,/sourceFile:'reporting\/ve33-accounting-evidence\.json'/,'ve33 source provenance missing');
 assert.match(ve33Admission,/admitEvents\(ledger\?\.events,candidates\)/,'ve33 must use Canonical Ledger immutable admission primitive');
@@ -237,7 +251,7 @@ for(const source of [
   'reporting/rate-continuity-policy.json','reporting/income-ledger-policy.json','reporting/reporting-engine.mjs','reporting/reporting-engine-validation.mjs','reporting/income-ledger.mjs','reporting/income-ledger-validation.mjs','reporting/accounting-coverage.mjs','reporting/accounting-coverage-validation.mjs','reporting/accounting-coverage.json',
   'reporting/frax-yield-accounting-evidence.mjs','reporting/frax-yield-accounting-evidence-validation.mjs','reporting/frax-yield-accounting-evidence.json',
   'reporting/yield-basis-accounting-evidence.mjs','reporting/yield-basis-accounting-evidence-validation.mjs','reporting/yield-basis-income-candidates.mjs','reporting/yield-basis-income-candidates-validation.mjs','reporting/yield-basis-ledger-admission.mjs','reporting/yield-basis-ledger-admission-validation.mjs','reporting/yield-basis-accounting-evidence.json',
-  'reporting/ve33-accounting-evidence.mjs','reporting/ve33-accounting-evidence-validation.mjs','reporting/ve33-income-candidates.mjs','reporting/ve33-income-candidates-validation.mjs','reporting/ve33-ledger-admission.mjs','reporting/ve33-ledger-admission-validation.mjs','reporting/ve33-accounting-evidence.json',
+  'reporting/ve33-accounting-evidence.mjs','reporting/ve33-accounting-evidence-validation.mjs','reporting/ve33-accounting-runner.mjs','reporting/ve33-accounting-runner-validation.mjs','reporting/ve33-income-candidates.mjs','reporting/ve33-income-candidates-validation.mjs','reporting/ve33-ledger-admission.mjs','reporting/ve33-ledger-admission-validation.mjs','reporting/ve33-accounting-evidence.json',
   'reporting/ve33-locked-managed-accounting-evidence.mjs','reporting/ve33-locked-managed-accounting-evidence-validation.mjs','reporting/ve33-locked-managed-income-candidates.mjs','reporting/ve33-locked-managed-income-candidates-validation.mjs','reporting/ve33-locked-managed-ledger-admission-validation.mjs','reporting/ve33-locked-managed-accounting-evidence.json'
 ]) assert.ok(workflow.includes(`- '${source}'`),`Reporting deterministic code/policy wake missing: ${source}`);
 
@@ -256,6 +270,9 @@ assert.match(workflow,/node reporting\/yield-basis-accounting-evidence-validatio
 assert.match(workflow,/node reporting\/yield-basis-income-candidates-validation\.mjs/,'Yield Basis candidate validation missing');
 assert.match(workflow,/node reporting\/yield-basis-ledger-admission-validation\.mjs/,'Yield Basis ledger admission validation missing');
 assert.match(workflow,/node reporting\/ve33-accounting-evidence-validation\.mjs/,'ve33 evidence validation missing');
+assert.match(workflow,/node --check reporting\/ve33-accounting-runner\.mjs/,'ve33 historical RPC runner syntax preflight missing');
+assert.match(workflow,/node --check reporting\/ve33-accounting-runner-validation\.mjs/,'ve33 historical RPC runner validation syntax preflight missing');
+assert.match(workflow,/node reporting\/ve33-accounting-runner-validation\.mjs/,'ve33 historical RPC runner deterministic validation missing');
 assert.match(workflow,/node reporting\/ve33-income-candidates-validation\.mjs/,'ve33 candidate validation missing');
 assert.match(workflow,/node reporting\/ve33-ledger-admission-validation\.mjs/,'ve33 ledger admission validation missing');
 assert.match(workflow,/node reporting\/ve33-locked-managed-accounting-evidence-validation\.mjs/,'LockedManagedReward evidence validation missing');
@@ -271,7 +288,8 @@ assert.match(workflow,/name: Admit Yield Basis evidence through Canonical Income
 assert.match(workflow,/run: node reporting\/yield-basis-ledger-admission\.mjs/,'Yield Basis Canonical Ledger admission execution missing');
 assert.match(workflow,/YIELD_BASIS_EVIDENCE_FILE:\s*\.\/reporting\/yield-basis-accounting-evidence\.json/,'Yield Basis evidence runtime binding missing');
 assert.match(workflow,/name: Build Aerodrome \+ Velodrome factual accrual evidence/,'ve33 factual accrual build step missing');
-assert.match(workflow,/run: node reporting\/ve33-accounting-evidence\.mjs/,'ve33 factual accrual writer execution missing');
+assert.match(workflow,/run: node reporting\/ve33-accounting-runner\.mjs/,'ve33 historical RPC runner execution missing');
+assert.ok(workflow.split("VE33_REQUIRE_HISTORICAL_RPC: '1'").length-1>=2,'ve33 historical RPC requirement must apply to initial build and safe-writer rebuild');
 assert.match(workflow,/BASE_RPC_URL:\s*\$\{\{ secrets\.BASE_RPC_URL \}\}/,'Aerodrome RPC secret/fallback binding missing');
 assert.match(workflow,/OPTIMISM_RPC_URL:\s*\$\{\{ secrets\.OPTIMISM_RPC_URL \}\}/,'Velodrome RPC secret/fallback binding missing');
 assert.match(workflow,/name: Build Canonical Income Ledger/,'Canonical Income Ledger build step missing');
@@ -294,12 +312,14 @@ assert.match(workflow,/reporting\/yield-basis-accounting-evidence\.mjs/,'Yield B
 assert.match(workflow,/reporting\/yield-basis-income-candidates\.mjs/,'Yield Basis candidates missing from critical fingerprint');
 assert.match(workflow,/reporting\/yield-basis-ledger-admission\.mjs/,'Yield Basis admission missing from critical fingerprint');
 assert.match(workflow,/reporting\/ve33-accounting-evidence\.mjs/,'ve33 evidence builder missing from critical fingerprint');
+assert.match(workflow,/reporting\/ve33-accounting-runner\.mjs/,'ve33 historical RPC runner missing from critical fingerprint');
+assert.match(workflow,/reporting\/ve33-accounting-runner-validation\.mjs/,'ve33 historical RPC runner validation missing from critical fingerprint');
 assert.match(workflow,/reporting\/ve33-ledger-admission\.mjs/,'ve33 admission missing from critical fingerprint');
 assert.match(workflow,/reporting\/ve33-locked-managed-accounting-evidence\.mjs/,'LockedManagedReward builder missing from critical fingerprint');
 assert.match(workflow,/reporting\/ve33-locked-managed-income-candidates\.mjs/,'LockedManagedReward candidates missing from critical fingerprint');
 assert.match(workflow,/reporting\/ve33-locked-managed-ledger-admission-validation\.mjs/,'LockedManagedReward admission guard missing from critical fingerprint');
 assert.match(workflow,/Critical Reporting code\/policy changed during publish rebase; fail closed/,'Reporting rebase code-drift fail-closed guard missing');
-assert.match(workflow,/node reporting\/frax-yield-accounting-evidence\.mjs\n\s+node reporting\/ve33-accounting-evidence\.mjs\n\s+node reporting\/income-ledger\.mjs\n\s+node reporting\/ve33-ledger-admission\.mjs\n\s+node reporting\/reporting-engine-validation\.mjs\n\s+node reporting\/yield-basis-accounting-evidence\.mjs\n\s+node reporting\/yield-basis-ledger-admission\.mjs\n\s+node reporting\/accounting-coverage\.mjs\n\s+node reporting\/accounting-coverage-validation\.mjs/,'Reporting rebase must rebuild canonical accounting before Coverage materialization');
+assert.match(workflow,/node reporting\/frax-yield-accounting-evidence\.mjs\n\s+node reporting\/ve33-accounting-runner\.mjs\n\s+node reporting\/income-ledger\.mjs\n\s+node reporting\/ve33-ledger-admission\.mjs\n\s+node reporting\/reporting-engine-validation\.mjs\n\s+node reporting\/yield-basis-accounting-evidence\.mjs\n\s+node reporting\/yield-basis-ledger-admission\.mjs\n\s+node reporting\/accounting-coverage\.mjs\n\s+node reporting\/accounting-coverage-validation\.mjs/,'Reporting rebase must rebuild canonical accounting through the historical RPC runner before Coverage materialization');
 assert.match(workflow,/Unexpected Reporting publish delta after rebase/,'Reporting post-rebase publish scope guard missing');
 assert.match(workflow,/reporting\/frax-yield-accounting-evidence\.json\|reporting\/ve33-accounting-evidence\.json\|reporting\/ve33-locked-managed-accounting-evidence\.json\|reporting\/income-ledger\.json\|reporting\/yield-basis-accounting-evidence\.json\|reporting\/accounting-coverage\.json/,'Coverage artifact missing from safe publish scope');
 assert.match(workflow,/accountingExtensions\?\.yieldBasisAccrual/,'Yield Basis generated ledger extension validation missing');
@@ -349,6 +369,10 @@ console.log('Reporting workflow definition paired proof PASS',{
   yieldBasisRewardsCollectorReused:true,
   ve33FactualAccrualEvidence:ve33Evidence.version,
   ve33FullAccountingStart:ve33Evidence.fullAccountingStart,
+  ve33DirectAccountingStart:ve33Evidence.directAccountingStart,
+  ve33ManagedFreeRewardAccountingStart:ve33Evidence.managedFreeRewardAccountingStart,
+  ve33HistoricalRpcRunner:'0.1-ve33-capability-aware-historical-rpc-runner',
+  ve33HistoricalRpcRequiredInProduction:true,
   ve33ClaimAware:true,
   ve33RebaseCompoundingDedup:true,
   ve33CanonicalLedgerRebuild:true,

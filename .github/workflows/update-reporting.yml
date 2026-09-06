@@ -41,6 +41,8 @@ on:
       - 'reporting/yield-basis-accounting-evidence.json'
       - 'reporting/ve33-accounting-evidence.mjs'
       - 'reporting/ve33-accounting-evidence-validation.mjs'
+      - 'reporting/ve33-accounting-runner.mjs'
+      - 'reporting/ve33-accounting-runner-validation.mjs'
       - 'reporting/ve33-income-candidates.mjs'
       - 'reporting/ve33-income-candidates-validation.mjs'
       - 'reporting/ve33-ledger-admission.mjs'
@@ -118,6 +120,8 @@ jobs:
           node --check reporting/yield-basis-ledger-admission-validation.mjs
           node --check reporting/ve33-accounting-evidence.mjs
           node --check reporting/ve33-accounting-evidence-validation.mjs
+          node --check reporting/ve33-accounting-runner.mjs
+          node --check reporting/ve33-accounting-runner-validation.mjs
           node --check reporting/ve33-income-candidates.mjs
           node --check reporting/ve33-income-candidates-validation.mjs
           node --check reporting/ve33-ledger-admission.mjs
@@ -153,6 +157,7 @@ jobs:
           node reporting/yield-basis-income-candidates-validation.mjs
           node reporting/yield-basis-ledger-admission-validation.mjs
           node reporting/ve33-accounting-evidence-validation.mjs
+          node reporting/ve33-accounting-runner-validation.mjs
           node reporting/ve33-income-candidates-validation.mjs
           node reporting/ve33-ledger-admission-validation.mjs
           node reporting/ve33-locked-managed-accounting-evidence-validation.mjs
@@ -231,9 +236,10 @@ jobs:
         env:
           REWARDS_DATA_FILE: ./companies/rewards-data.json
           VE33_EVIDENCE_FILE: ./reporting/ve33-accounting-evidence.json
+          VE33_REQUIRE_HISTORICAL_RPC: '1'
           BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
           OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
-        run: node reporting/ve33-accounting-evidence.mjs
+        run: node reporting/ve33-accounting-runner.mjs
 
       - name: Validate Aerodrome + Velodrome factual accrual evidence
         run: |
@@ -427,6 +433,7 @@ jobs:
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
           BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
           OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
+          VE33_REQUIRE_HISTORICAL_RPC: '1'
         shell: bash
         run: |
           set -euo pipefail
@@ -454,6 +461,8 @@ jobs:
               reporting/yield-basis-ledger-admission-validation.mjs \
               reporting/ve33-accounting-evidence.mjs \
               reporting/ve33-accounting-evidence-validation.mjs \
+              reporting/ve33-accounting-runner.mjs \
+              reporting/ve33-accounting-runner-validation.mjs \
               reporting/ve33-income-candidates.mjs \
               reporting/ve33-income-candidates-validation.mjs \
               reporting/ve33-ledger-admission.mjs \
@@ -497,7 +506,7 @@ jobs:
             node reporting/defitea-income-composition.mjs
             node reporting/defitea-forty-acres-settlement.mjs
             node reporting/frax-yield-accounting-evidence.mjs
-            node reporting/ve33-accounting-evidence.mjs
+            node reporting/ve33-accounting-runner.mjs
             node reporting/income-ledger.mjs
             node reporting/ve33-ledger-admission.mjs
             node reporting/reporting-engine-validation.mjs
