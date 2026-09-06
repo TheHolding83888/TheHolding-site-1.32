@@ -1,0 +1,79 @@
+name: Verify ve33 Historical RPC Capability
+
+on:
+  pull_request:
+    paths:
+      - 'reporting/ve33-accounting-evidence.mjs'
+      - 'reporting/ve33-accounting-runner.mjs'
+      - 'reporting/ve33-accounting-runner-validation.mjs'
+      - '.github/workflows/update-reporting.yml'
+      - '.github/workflows/verify-ve33-historical-rpc.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify-ve33-historical-rpc:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: Install runtime dependency
+        run: npm install --no-save --no-package-lock ethers@6
+
+      - name: Deterministic runner validation
+        run: |
+          set -euo pipefail
+          node --check reporting/ve33-accounting-runner.mjs
+          node --check reporting/ve33-accounting-runner-validation.mjs
+          node reporting/ve33-accounting-runner-validation.mjs
+
+      - name: Live August + September historical-state canary
+        env:
+          REWARDS_DATA_FILE: ./companies/rewards-data.json
+          VE33_EVIDENCE_FILE: /tmp/ve33-accounting-evidence.json
+          VE33_REQUIRE_HISTORICAL_RPC: '1'
+          VE33_STATE_READ_CONCURRENCY: '2'
+          VE33_SETTLEMENT_CONCURRENCY: '2'
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL || 'https://gateway.tenderly.co/public/optimism' }}
+        run: |
+          set -euo pipefail
+          cp reporting/ve33-accounting-evidence.json "$VE33_EVIDENCE_FILE"
+          node reporting/ve33-accounting-runner.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('/tmp/ve33-accounting-evidence.json','utf8'));
+          const required=['2026-08-01T00:00:00.000Z','2026-09-01T00:00:00.000Z'];
+          if(x.runner?.version!=='0.1-ve33-capability-aware-historical-rpc-runner') throw new Error('historical RPC runner metadata missing');
+          if(x.runner?.requireHistoricalRpc!==true) throw new Error('historical RPC canary did not run in required mode');
+          for(const protocol of ['aerodrome','velodrome']){
+            const selection=x.runner?.selection?.[protocol];
+            if(selection?.status!=='archive-capable-provider-selected'||!selection?.selectedProvider) throw new Error(`no archive-capable historical provider selected for ${protocol}`);
+            const d=x.diagnostics?.protocols?.[protocol];
+            if(!d) throw new Error(`missing ${protocol} diagnostics`);
+            if((d.boundaryFailures||[]).length!==0) throw new Error(`${protocol} still has historical boundary failures: ${JSON.stringify(d.boundaryFailures)}`);
+            if(Number(d.historicalBoundarySkippedLaneReads||0)!==0) throw new Error(`${protocol} skipped historical lane reads`);
+            for(const boundaryAt of required){
+              const row=(d.boundaryCapability||[]).find(v=>v.boundaryAt===boundaryAt);
+              if(!row||row.available!==true||row.status!=='historical-state-readable') throw new Error(`${protocol} historical state unavailable at ${boundaryAt}`);
+            }
+            if(Number(d.currentStateFailureCount||0)!==0) throw new Error(`${protocol} current state regressed while selecting historical provider`);
+          }
+          if(x.authority?.executionAuthority!=='none'||x.authority?.walletAuthority!=='none'||x.authority?.claimingAuthority!=='none'||x.authority?.capitalExecution!==false) throw new Error('ve33 authority expansion');
+          console.log('ve33 historical RPC capability PASS',{
+            selected:Object.fromEntries(Object.entries(x.runner.selection).map(([k,v])=>[k,v.selectedProvider])),
+            boundaryFailures:Object.fromEntries(Object.entries(x.diagnostics.protocols).map(([k,v])=>[k,(v.boundaryFailures||[]).length])),
+            skipped:Object.fromEntries(Object.entries(x.diagnostics.protocols).map(([k,v])=>[k,v.historicalBoundarySkippedLaneReads||0])),
+            accepted:x.diagnostics.acceptedPositiveIntervalCount,
+            historicalPriceResolved:x.diagnostics.historicalPriceResolvedIntervalCount
+          });
+          NODE
+          git diff --exit-code
