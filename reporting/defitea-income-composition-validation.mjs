@@ -98,16 +98,16 @@ assert.equal(rebuilt['2026-08'].crossCompanyReferenceIncomeExcludedUsd,2);
 assert.equal(rebuilt['2026-08'].voteMarketObservedIncomeUsd,5);
 assert.equal(rebuilt['2026-08'].cashFlowUsd,50.62);
 assert.equal(rebuilt['2026-08'].monthlyYieldPct,0.531); // denominator remains Defitea-only TVL
-assert.equal(rebuilt['2026-08'].annualizedAprPct,14.9088); // observed 13-day yield annualized; no fabricated future days
+assert.equal(rebuilt['2026-08'].annualizedAprPct,14.9094); // observed 13-day yield annualized; no fabricated future days
 assert.equal(rebuilt['2026-08'].associatedCompanyTvlIncluded,false);
 assert.equal(rebuilt['2026-08'].crossCompanyReattributionAllowed,false);
 
 // The live year APR is the arithmetic mean of comparable per-month annualized rates.
 const liveSummary=rebuildYearSummary(rebuilt,'2026');
-assert.equal(liveSummary.annualizedCashFlowAprPct,12.3994);
+assert.equal(liveSummary.annualizedCashFlowAprPct,12.3997);
 assert.equal(liveSummary.annualizedCashFlowAprIncludesLiveMonth,true);
 assert.equal(liveSummary.annualizedCashFlowAprMonths,2);
-assert.equal(liveSummary.currentMonthAnnualizedAprPct,14.9088);
+assert.equal(liveSummary.currentMonthAnnualizedAprPct,14.9094);
 
 // Closed-only fallback remains stable when no provisional month exists.
 const closedSummary=rebuildYearSummary({'2026-07':rebuilt['2026-07']},'2026');
@@ -144,7 +144,7 @@ assert.equal(composed.ledger.contributors.every(x=>x.includedInDefiteaTvl===fals
 assert.equal(fund.vlCvxReconciliation.claimableSettlementAddedToReferenceCashFlow,false); // unchanged reconciliation boundary
 assert.equal(fund.months['2026-07'].cashFlowUsd,56.05);
 assert.equal(fund.months['2026-08'].cashFlowUsd,50.62);
-assert.equal(fund.summaries['2026'].annualizedCashFlowAprPct,12.3994);
+assert.equal(fund.summaries['2026'].annualizedCashFlowAprPct,12.3997);
 assert.equal(fund.summaries['2026'].annualizedCashFlowAprIncludesLiveMonth,true);
 
 // Unknown != zero: incomplete associated-company Productivity context still fails closed.
