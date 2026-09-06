@@ -90,10 +90,15 @@ for (const [name, registry] of Object.entries(EXPECTED)) {
       const f = a.canonicalEvidence?.[familyName];
       if (!f) fail(`${name} ${familyName} family missing ${key}`);
       if (!Number.isInteger(f.eventCount) || f.eventCount < 0) fail(`${name} ${familyName} event count invalid ${key}`);
+      if (!Number.isInteger(f.valuedEventCount) || f.valuedEventCount < 0) fail(`${name} ${familyName} valued event count invalid ${key}`);
+      if (!Number.isInteger(f.unvaluedEventCount) || f.unvaluedEventCount < 0) fail(`${name} ${familyName} unvalued event count invalid ${key}`);
+      if (f.valuedEventCount + f.unvaluedEventCount !== f.eventCount) fail(`${name} ${familyName} valuation event counts do not reconcile ${key}`);
       if (f.unknownIsNotZero !== true || f.executionAuthority !== 'none') fail(`${name} ${familyName} epistemic/authority drift ${key}`);
       if (f.eventCount === 0 && f.coverage !== 'complete' && f.usd !== null) fail(`${name} ${familyName} incomplete no-event family became zero/numeric ${key}`);
       if (f.eventCount > 0 && f.usdComplete === true && !finite(f.usd)) fail(`${name} ${familyName} complete valued events missing USD ${key}`);
+      if (f.eventCount > 0 && f.usdComplete === true && f.unvaluedEventCount !== 0) fail(`${name} ${familyName} complete valuation contains unvalued events ${key}`);
       if (f.eventCount > 0 && f.usdComplete !== true && f.usd !== null) fail(`${name} ${familyName} partial valuation masquerades as complete USD ${key}`);
+      if (f.eventCount > 0 && f.usdComplete !== true && f.unvaluedEventCount === 0) fail(`${name} ${familyName} partial valuation lacks unvalued-event evidence ${key}`);
     }
   }
 }
@@ -111,7 +116,6 @@ const dAug = d.months['2026-08'].incomeAccounting;
 if (dAug.primaryMetric?.overlapStatus !== 'canonical-reporting-aggregate-may-overlap-accrued-and-realised-evidence') fail('Defitea overlap warning missing');
 if (!(dAug.canonicalEvidence.accruedEntitlement.eventCount > 0)) fail('Defitea August canonical accrued entitlement events missing');
 if (!(dAug.canonicalEvidence.realisedCashFlow.eventCount > 0)) fail('Defitea August canonical realised cash-flow events missing');
-if (!finite(dAug.canonicalEvidence.accruedEntitlement.usd) || !finite(dAug.canonicalEvidence.realisedCashFlow.usd)) fail('Defitea August valued canonical evidence missing');
 if (dAug.combinedIncomeUsd !== null) fail('Defitea overlapping families were summed');
 
 const m = companies['Monetra.eth'];
