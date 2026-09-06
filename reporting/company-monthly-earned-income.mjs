@@ -44,8 +44,8 @@ function yieldPct(incomeUsd, averageCapitalUsd) {
     : null;
 }
 
-report.version = '0.5-company-monthly-earned-income-accounting';
-report.methodologyVersion = '0.5-canonical-ledger-exclusive-company-ownership';
+report.version = '0.4-company-monthly-earned-income-accounting';
+report.methodologyVersion = '0.4-canonical-ledger-sole-income-recognition-authority';
 report.generatedAt = new Date().toISOString();
 report.accountingPolicy = {
   recognitionBasis: 'canonical-ledger-admitted-events-with-explicit-non-overlap-recognition',
@@ -110,7 +110,7 @@ for (const [companyName, company] of Object.entries(report.companies || {})) {
       row.accountingEvidenceCount = 1;
       row.accountingUnknownReason = null;
       row.incomeAccounting = {
-        version: '0.4-ledger-exclusive-company-owner',
+        version: '0.3-ledger-sole-recognition-authority',
         primaryMetric: {
           usd: row.generatedIncomeUsd,
           observedUsd: row.generatedIncomeUsd,
@@ -154,7 +154,7 @@ for (const [companyName, company] of Object.entries(report.companies || {})) {
     row.accountingEvidenceCount = recognized.length;
     row.accountingUnknownReason = complete ? null : 'Not all active income mechanisms, settlement links, and period boundaries are proven. Reference analytics remains separate and is never substituted for earned income.';
     row.incomeAccounting = {
-      version: '0.4-ledger-exclusive-company-owner',
+      version: '0.3-ledger-sole-recognition-authority',
       primaryMetric: {
         usd: row.generatedIncomeUsd,
         observedUsd,
