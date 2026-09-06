@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 /**
- * THE HOLDING — LEARNING LOOP RELEASE GUARD v0.2
+ * THE HOLDING — LEARNING LOOP RELEASE GUARD v0.3
  *
  * Fail-closed exact-byte deployment coherence guard for the static Decision &
- * Outcome Learning components, including the owner-economic outcome review lane.
+ * Outcome Learning components, including owner-economic outcome review and the
+ * verified engineering lesson-candidate adapter.
  *
  * Mutable append-only ledgers and generated learning state are intentionally not
  * release-manifest members; the static code/policy/workflow plane is exact-bound
@@ -15,7 +16,7 @@ import crypto from 'node:crypto';
 
 const ROOT = process.cwd();
 const MANIFEST = 'intelligence/learning/learning-release.json';
-const GUARD_VERSION = '0.2-owner-outcome-static-release-coherence';
+const GUARD_VERSION = '0.3-engineering-lesson-candidate-static-release-coherence';
 
 function fail(message) { throw new Error(message); }
 function sha256(value) { return crypto.createHash('sha256').update(value).digest('hex'); }
@@ -39,6 +40,8 @@ const REQUIRED_FILES = [
   'intelligence/learning/owner-initiated-decision-recorder.mjs',
   'intelligence/learning/decision-learning-engine.mjs',
   'intelligence/learning/independent-learning-reviewer.mjs',
+  'intelligence/learning/engineering-lesson-candidate-adapter.mjs',
+  'intelligence/learning/independent-engineering-lesson-reviewer.mjs',
   'intelligence/learning/decision-policy.json',
   'intelligence/learning/owner-outcome-review-policy.json',
   'intelligence/learning/owner-outcome-review-recorder.mjs',
@@ -83,6 +86,7 @@ console.log(JSON.stringify({
   mutableEvidenceExcludedFromRelease: [
     'intelligence/learning/decision-ledger.json',
     'intelligence/learning/owner-outcome-review-ledger.json',
+    'intelligence/learning/engineering-incident-ledger.json',
     'intelligence/learning-state/**',
   ],
   files: vector,

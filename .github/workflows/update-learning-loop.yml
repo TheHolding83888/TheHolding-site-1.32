@@ -1,3 +1,4 @@
+# holding-workflow-definition-proof: intelligence/reliability/update-learning-loop-workflow-definition-proof.mjs
 name: "The Holding Brain · Decision Outcome Learning Loop"
 
 on:
@@ -15,6 +16,9 @@ on:
       - 'intelligence/learning/decision-policy.json'
       - 'intelligence/learning/decision-learning-engine.mjs'
       - 'intelligence/learning/independent-learning-reviewer.mjs'
+      - 'intelligence/learning/engineering-incident-ledger.json'
+      - 'intelligence/learning/engineering-lesson-candidate-adapter.mjs'
+      - 'intelligence/learning/independent-engineering-lesson-reviewer.mjs'
       - 'intelligence/learning/owner-outcome-review-ledger.json'
       - 'intelligence/learning/owner-outcome-review-policy.json'
       - 'intelligence/learning/owner-outcome-review-recorder.mjs'
@@ -65,16 +69,20 @@ jobs:
           set -euo pipefail
           node --check intelligence/learning/decision-learning-engine.mjs
           node --check intelligence/learning/independent-learning-reviewer.mjs
+          node --check intelligence/learning/engineering-lesson-candidate-adapter.mjs
+          node --check intelligence/learning/independent-engineering-lesson-reviewer.mjs
           node --check intelligence/learning/decision-recorder.mjs
           node --check intelligence/learning/owner-outcome-review-recorder.mjs
           node --check intelligence/learning/owner-outcome-experience-engine.mjs
           node --check intelligence/learning/independent-owner-outcome-experience-reviewer.mjs
           node intelligence/learning/decision-recorder.mjs --self-test
           node intelligence/learning/independent-learning-reviewer.mjs --self-test
+          node intelligence/learning/engineering-lesson-candidate-adapter.mjs --self-test
+          node intelligence/learning/independent-engineering-lesson-reviewer.mjs --self-test
           node intelligence/learning/owner-outcome-review-recorder.mjs --self-test
           node intelligence/learning/owner-outcome-experience-engine.mjs --self-test
           node intelligence/learning/independent-owner-outcome-experience-reviewer.mjs --self-test
-          node -e "JSON.parse(require('fs').readFileSync('intelligence/learning/decision-policy.json','utf8')); JSON.parse(require('fs').readFileSync('intelligence/learning/decision-ledger.json','utf8')); JSON.parse(require('fs').readFileSync('intelligence/learning/owner-outcome-review-policy.json','utf8')); JSON.parse(require('fs').readFileSync('intelligence/learning/owner-outcome-review-ledger.json','utf8'));"
+          node -e "JSON.parse(require('fs').readFileSync('intelligence/learning/decision-policy.json','utf8')); JSON.parse(require('fs').readFileSync('intelligence/learning/decision-ledger.json','utf8')); JSON.parse(require('fs').readFileSync('intelligence/learning/engineering-incident-ledger.json','utf8')); JSON.parse(require('fs').readFileSync('intelligence/learning/owner-outcome-review-policy.json','utf8')); JSON.parse(require('fs').readFileSync('intelligence/learning/owner-outcome-review-ledger.json','utf8'));"
 
       - name: Build owner economic outcome experience
         run: |
@@ -108,6 +116,14 @@ jobs:
           echo "skip=false" >> "$GITHUB_OUTPUT"
           echo "unchanged=false" >> "$GITHUB_OUTPUT"
 
+      - name: Build verified engineering lesson candidates
+        if: steps.build.outputs.skip != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          node intelligence/learning/engineering-lesson-candidate-adapter.mjs
+          node intelligence/learning/independent-engineering-lesson-reviewer.mjs
+
       - name: Independent reviewer
         if: steps.build.outputs.skip != 'true' && steps.build.outputs.unchanged != 'true'
         run: node intelligence/learning/independent-learning-reviewer.mjs
@@ -127,6 +143,7 @@ jobs:
           const ctx = JSON.parse(fs.readFileSync('intelligence/learning-state/learning-context.json','utf8'));
           const ev = JSON.parse(fs.readFileSync('intelligence/learning-state/learning-eval.json','utf8'));
           const owner = JSON.parse(fs.readFileSync('intelligence/learning-state/owner-outcome-experience.json','utf8'));
+          const engineering = JSON.parse(fs.readFileSync('intelligence/learning-state/engineering-lesson-candidates.json','utf8'));
           if (ev.status !== 'pass') throw new Error('Independent learning review status is not PASS');
           if (ctx.constraints?.executionAllowed !== false) throw new Error('Learning Loop enabled execution');
           if (ctx.constraints?.walletActionAllowed !== false) throw new Error('Learning Loop enabled wallet action');
@@ -134,11 +151,15 @@ jobs:
           if (ctx.operatingContract?.executionAuthority !== 'none') throw new Error('Learning Loop execution authority changed');
           if (owner.operatingContract?.executionAuthority !== 'none') throw new Error('Owner outcome experience execution authority changed');
           if (owner.operatingContract?.causalClaimAuthority !== 'none') throw new Error('Owner outcome experience causal authority changed');
+          if (engineering.operatingContract?.executionAuthority !== 'none') throw new Error('Engineering learning execution authority changed');
+          if (engineering.operatingContract?.causalClaimAuthority !== 'none') throw new Error('Engineering learning causal authority changed');
+          if (engineering.summary?.formalLessonCount !== 0) throw new Error('Engineering candidates were upgraded into formal Lessons');
           console.log('Decision Outcome Learning Loop PASS', {
             learningHash: ctx.integrity?.learningHash,
             decisions: ctx.summary?.decisionCount,
             settledOutcomes: ctx.summary?.settledOutcomeCount,
             lessons: ctx.summary?.lessonCount,
+            verifiedEngineeringLessonCandidates: engineering.summary?.verifiedCandidateCount,
             ownerEconomicDecisions: owner.summary?.ownerEconomicDecisionCount,
             ownerReviewDue: owner.summary?.reviewDueCount,
             ownerLearnedLessons: owner.summary?.learnedLessonCount,
@@ -149,6 +170,10 @@ jobs:
       - name: Verify owner outcome experience
         if: steps.build.outputs.skip != 'true'
         run: node intelligence/learning/independent-owner-outcome-experience-reviewer.mjs
+
+      - name: Verify engineering lesson candidates
+        if: steps.build.outputs.skip != 'true'
+        run: node intelligence/learning/independent-engineering-lesson-reviewer.mjs
 
       - name: Suppress generatedAt-only owner outcome churn
         if: steps.build.outputs.skip != 'true'
@@ -201,6 +226,7 @@ jobs:
             intelligence/learning-state/learning-brief.md
             intelligence/learning-state/learning-eval.json
             intelligence/learning-state/owner-outcome-experience.json
+            intelligence/learning-state/engineering-lesson-candidates.json
           )
           for file in "${staged[@]}"; do
             ok=false
@@ -227,6 +253,7 @@ jobs:
             node intelligence/learning/learning-release-guard.mjs
             node intelligence/learning/independent-learning-reviewer.mjs --verify-current
             node intelligence/learning/independent-owner-outcome-experience-reviewer.mjs
+            node intelligence/learning/independent-engineering-lesson-reviewer.mjs
 
             if git push origin HEAD:main; then
               exit 0
@@ -260,10 +287,15 @@ jobs:
           const e = fs.existsSync('intelligence/learning-state/learning-eval.json')
             ? JSON.parse(fs.readFileSync('intelligence/learning-state/learning-eval.json','utf8'))
             : null;
+          const engineering = fs.existsSync('intelligence/learning-state/engineering-lesson-candidates.json')
+            ? JSON.parse(fs.readFileSync('intelligence/learning-state/engineering-lesson-candidates.json','utf8'))
+            : null;
           console.log(`**Core status:** ${e?.status?.toUpperCase?.() ?? 'VERIFIED / UNCHANGED'}`);
           console.log(`**Owner decisions:** ${c?.summary?.decisionCount ?? 'n/a'}`);
           console.log(`**Core settled outcomes:** ${c?.summary?.settledOutcomeCount ?? 'n/a'}`);
           console.log(`**Core lessons:** ${c?.summary?.lessonCount ?? 'n/a'}`);
+          console.log(`**Verified engineering lesson candidates:** ${engineering?.summary?.verifiedCandidateCount ?? 0}`);
+          console.log(`**Pending engineering incidents:** ${engineering?.summary?.pendingEvidenceCount ?? 0}`);
           console.log(`**Owner economic decisions:** ${owner?.summary?.ownerEconomicDecisionCount ?? 0}`);
           console.log(`**Owner outcome reviews due:** ${owner?.summary?.reviewDueCount ?? 0}`);
           console.log(`**Owner outcome reviews completed:** ${owner?.summary?.reviewedCount ?? 0}`);
