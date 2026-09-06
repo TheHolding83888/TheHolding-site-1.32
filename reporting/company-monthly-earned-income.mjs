@@ -37,6 +37,12 @@ function familySummary(rows, family) {
   return { eventCount: selected.length, usd: sumUsd(selected) };
 }
 
+function yieldPct(incomeUsd, averageCapitalUsd) {
+  return finite(incomeUsd) && finite(averageCapitalUsd) && Number(averageCapitalUsd) > 0
+    ? round(Number(incomeUsd) / Number(averageCapitalUsd) * 100, 6)
+    : null;
+}
+
 report.version = '0.4-company-monthly-earned-income-accounting';
 report.methodologyVersion = '0.4-canonical-ledger-sole-income-recognition-authority';
 report.generatedAt = new Date().toISOString();
@@ -56,6 +62,8 @@ report.accountingPolicy = {
   laterClaimOrTransferRewritesEarnedIncome: false,
   incompleteCoverageMayMasqueradeAsZero: false,
   incompleteCoverageMayMasqueradeAsCompleteIncome: false,
+  observedPeriodYieldUsesCanonicalEarnedIncomeOnly: true,
+  observedPeriodYieldDoesNotImplyFullMonthCoverage: true,
   executionAuthority: 'none'
 };
 report.accountingEvidence = {
@@ -89,18 +97,24 @@ for (const [companyName, company] of Object.entries(report.companies || {})) {
 
     if (legacyDefiteaActual(month, row)) {
       row.generatedIncomeUsd = round(oldReferenceUsd, 8);
-      row.monthlyYieldPct = finite(row.averageCapitalUsd) && Number(row.averageCapitalUsd) > 0
-        ? round(Number(row.generatedIncomeUsd) / Number(row.averageCapitalUsd) * 100, 6)
-        : null;
+      row.monthlyYieldPct = yieldPct(row.generatedIncomeUsd, row.averageCapitalUsd);
+      row.observedEarnedIncomeUsd = row.generatedIncomeUsd;
+      row.observedPeriodYieldPct = row.monthlyYieldPct;
       row.semantic = 'canonical-earned-income';
       row.accountingStatus = 'complete-legacy-verified-realised';
       row.accountingCoverageComplete = true;
       row.accountingEvidenceCount = 1;
       row.accountingUnknownReason = null;
-      row.observedEarnedIncomeUsd = row.generatedIncomeUsd;
       row.incomeAccounting = {
         version: '0.3-ledger-sole-recognition-authority',
-        primaryMetric: { usd: row.generatedIncomeUsd, observedUsd: row.generatedIncomeUsd, semantic: 'canonical-earned-income', earnedIncomeAuthority: true, valuationFrozen: true },
+        primaryMetric: {
+          usd: row.generatedIncomeUsd,
+          observedUsd: row.generatedIncomeUsd,
+          observedPeriodYieldPct: row.observedPeriodYieldPct,
+          semantic: 'canonical-earned-income',
+          earnedIncomeAuthority: true,
+          valuationFrozen: true
+        },
         referenceAnalytics: row.referenceAnalytics,
         accountingStatus: row.accountingStatus,
         coverageComplete: true,
@@ -120,12 +134,14 @@ for (const [companyName, company] of Object.entries(report.companies || {})) {
     const ledgerCoverageComplete = ledger?.companies?.[companyName]?.coverage?.overallComplete === true;
     const allRecognizedValued = recognized.every(event => finite(event.usdValue));
     const complete = ledgerCoverageComplete && unresolved.length === 0 && allRecognizedValued;
+    const observedPeriodYieldPct = (complete || recognized.length > 0)
+      ? yieldPct(observedUsd, row.averageCapitalUsd)
+      : null;
 
     row.observedEarnedIncomeUsd = observedUsd;
+    row.observedPeriodYieldPct = observedPeriodYieldPct;
     row.generatedIncomeUsd = complete ? observedUsd : null;
-    row.monthlyYieldPct = complete && finite(row.averageCapitalUsd) && Number(row.averageCapitalUsd) > 0
-      ? round(Number(observedUsd) / Number(row.averageCapitalUsd) * 100, 6)
-      : null;
+    row.monthlyYieldPct = complete ? observedPeriodYieldPct : null;
     row.semantic = complete ? 'canonical-earned-income' : 'canonical-earned-income-incomplete-coverage';
     row.accountingStatus = complete ? 'complete' : (recognized.length ? 'partial-observed' : 'unknown-incomplete-coverage');
     row.accountingCoverageComplete = complete;
@@ -136,6 +152,7 @@ for (const [companyName, company] of Object.entries(report.companies || {})) {
       primaryMetric: {
         usd: row.generatedIncomeUsd,
         observedUsd,
+        observedPeriodYieldPct,
         semantic: row.semantic,
         earnedIncomeAuthority: complete,
         valuationFrozen: true
@@ -173,5 +190,7 @@ console.log('Company Monthly Reports canonical-ledger projection applied', {
   settlementOnlyEvents: earned.summary.settlementOnlyEventCount,
   claimableSnapshotDerivedIncomeEvents: 0,
   completeMonths: Object.values(report.companies || {}).flatMap(c => Object.values(c.months || {})).filter(m => m.accountingCoverageComplete === true).length,
+  partialObservedMonths: Object.values(report.companies || {}).flatMap(c => Object.values(c.months || {})).filter(m => m.accountingStatus === 'partial-observed').length,
+  partialObservedYieldMonths: Object.values(report.companies || {}).flatMap(c => Object.values(c.months || {})).filter(m => m.accountingStatus === 'partial-observed' && finite(m.observedPeriodYieldPct)).length,
   partialOrUnknownMonths: Object.values(report.companies || {}).flatMap(c => Object.values(c.months || {})).filter(m => m.accountingCoverageComplete !== true).length
 });
