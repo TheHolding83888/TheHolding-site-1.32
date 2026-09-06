@@ -1,17 +1,17 @@
 {
-  "version": "0.9-gmx-factual-tracking-accounting-mechanism-coverage-registry",
-  "generatedAt": "2026-09-05T19:16:25.003Z",
+  "version": "0.10-explicit-settlement-link-accounting-mechanism-coverage-registry",
+  "generatedAt": "2026-09-06T03:39:35.282Z",
   "status": "diagnostic-no-completion-authority",
   "currentMonth": "2026-09",
   "sourceFreshness": {
     "productivityGeneratedAt": "2026-09-05T17:13:16.659Z",
-    "incomeLedgerGeneratedAt": "2026-09-05T19:16:25.003Z",
+    "incomeLedgerGeneratedAt": "2026-09-06T03:39:35.282Z",
     "embeddedYieldGeneratedAt": "2026-09-05T09:20:22.413Z",
     "rewardsGeneratedAt": "2026-09-05T09:08:06.261Z",
-    "ve33EvidenceGeneratedAt": "2026-09-05T19:10:56.982Z",
-    "ve33LockedManagedEvidenceGeneratedAt": "2026-09-05T19:11:39.089Z",
-    "yieldBasisEvidenceGeneratedAt": "2026-09-05T19:15:19.513Z",
-    "fraxEvidenceGeneratedAt": "2026-09-05T19:10:53.046Z",
+    "ve33EvidenceGeneratedAt": "2026-09-06T03:32:31.239Z",
+    "ve33LockedManagedEvidenceGeneratedAt": "2026-09-06T03:34:31.584Z",
+    "yieldBasisEvidenceGeneratedAt": "2026-09-06T03:38:03.101Z",
+    "fraxEvidenceGeneratedAt": "2026-09-06T03:32:25.130Z",
     "icpNnsStateGeneratedAt": "2026-09-05T09:08:06.261Z",
     "company010ProjectXGeneratedAt": "2026-09-05T08:37:50.283Z",
     "company010GmxGeneratedAt": "2026-09-05T08:37:49.840Z",
@@ -25,6 +25,8 @@
     "factualTrackingProofIsNotPeriodIncome": true,
     "routeStateCanProveTrackingOnlyWithSettlementProof": true,
     "unresolvedSettlementCannotProveFactualTracking": true,
+    "settlementLinkDoesNotChangeIncomeFamily": true,
+    "settlementLinkIsNotPeriodIncomeAuthority": true,
     "zeroPeriodEventDoesNotImplyCoverageGap": true,
     "coverageGapMeansMissingFactualTrackingCapability": true,
     "factualEvidenceDoesNotImplyFullMechanismCoverage": true,
@@ -38,7 +40,8 @@
   "completionPolicy": {
     "registryHasMonthClosingAuthority": false,
     "registryHasIncomeCreationAuthority": false,
-    "coverageGapRankingIsDiagnosticOnly": true
+    "coverageGapRankingIsDiagnosticOnly": true,
+    "settlementLinksAreDiagnosticOnly": true
   },
   "authority": {
     "executionAuthority": "none",
@@ -55,10 +58,11 @@
     "classifiedMechanismInstanceCount": 50,
     "unclassifiedMechanismInstanceCount": 0,
     "reusableCoverageGapCount": 0,
-    "canonicalLedgerEventCount": 512,
-    "unmatchedCanonicalEventCount": 5,
+    "canonicalLedgerEventCount": 520,
+    "settlementLinkedCanonicalEventCount": 5,
+    "unmatchedCanonicalEventCount": 0,
     "canonicalizedAliasCompanyCount": 1,
-    "factualTrackingProofCount": 2404
+    "factualTrackingProofCount": 2456
   },
   "companyIdentityAliases": [
     {
@@ -70,53 +74,94 @@
     }
   ],
   "gapRanking": [],
-  "unmatchedCanonicalEvents": [
+  "settlementMechanismLinks": [
     {
       "eventKey": "defitea-received:40acres:0x5c98f5a7823c6bfd3f98716498761a79afd71ed70f3bf24cf69e2ddde6ce8971:24",
       "company": "defitea.eth",
-      "sourceCompany": "defitea.eth",
-      "family": "realised-cash-flow",
-      "protocol": "40 Acres · veVELO",
-      "route": "forty-acres-velodrome-received",
-      "sourceFile": "reporting/defitea-income-ledger.json"
-    },
-    {
-      "eventKey": "defitea-received:40acres:0xf797bdd16ad53801df0b3d6fcf0c0d0065ceade5f3fce9af6c576273d2fd15e1:22",
-      "company": "defitea.eth",
-      "sourceCompany": "defitea.eth",
-      "family": "realised-cash-flow",
-      "protocol": "40 Acres · veVELO",
-      "route": "forty-acres-velodrome-received",
-      "sourceFile": "reporting/defitea-income-ledger.json"
-    },
-    {
-      "eventKey": "defitea-received:40acres:0xf07a791b2e1c047fb6e2e64a3fbad6f601879958739266e458a30b70a9112d65:259",
-      "company": "defitea.eth",
-      "sourceCompany": "defitea.eth",
-      "family": "realised-cash-flow",
-      "protocol": "40 Acres · veVELO",
-      "route": "forty-acres-velodrome-received",
-      "sourceFile": "reporting/defitea-income-ledger.json"
-    },
-    {
-      "eventKey": "defitea-received:40acres:0xc0c39ded0b75f902138488cd6531b5c96e4d3a68402dbc109f26f71d771233b0:66",
-      "company": "defitea.eth",
-      "sourceCompany": "defitea.eth",
-      "family": "realised-cash-flow",
-      "protocol": "40 Acres · veVELO",
-      "route": "forty-acres-velodrome-received",
-      "sourceFile": "reporting/defitea-income-ledger.json"
+      "engineId": "velodrome_vevelo",
+      "relation": "realised-settlement-to-active-productive-mechanism",
+      "sourceAuthority": "canonical-income-ledger",
+      "sourceFile": "reporting/defitea-income-ledger.json",
+      "sourceFamily": "fortyAcresReceivedEvents",
+      "sourceIdentity": "40acres:0x5c98f5a7823c6bfd3f98716498761a79afd71ed70f3bf24cf69e2ddde6ce8971:24",
+      "physicalEventId": "10:0x5c98f5a7823c6bfd3f98716498761a79afd71ed70f3bf24cf69e2ddde6ce8971:24",
+      "incomeFamily": "realised-cash-flow",
+      "incomeFamilyPreserved": true,
+      "periodIncomeAuthority": false,
+      "factualTrackingAuthority": false,
+      "referenceMetricAuthority": false,
+      "executionAuthority": "none"
     },
     {
       "eventKey": "defitea-received:40acres:0xaadcad7a66460ca54a26e9200db1a671d94b75124efcbe5fe17617b547915be1:98",
       "company": "defitea.eth",
-      "sourceCompany": "defitea.eth",
-      "family": "realised-cash-flow",
-      "protocol": "40 Acres · veVELO",
-      "route": "forty-acres-velodrome-received",
-      "sourceFile": "reporting/defitea-income-ledger.json"
+      "engineId": "velodrome_vevelo",
+      "relation": "realised-settlement-to-active-productive-mechanism",
+      "sourceAuthority": "canonical-income-ledger",
+      "sourceFile": "reporting/defitea-income-ledger.json",
+      "sourceFamily": "fortyAcresReceivedEvents",
+      "sourceIdentity": "40acres:0xaadcad7a66460ca54a26e9200db1a671d94b75124efcbe5fe17617b547915be1:98",
+      "physicalEventId": "10:0xaadcad7a66460ca54a26e9200db1a671d94b75124efcbe5fe17617b547915be1:98",
+      "incomeFamily": "realised-cash-flow",
+      "incomeFamilyPreserved": true,
+      "periodIncomeAuthority": false,
+      "factualTrackingAuthority": false,
+      "referenceMetricAuthority": false,
+      "executionAuthority": "none"
+    },
+    {
+      "eventKey": "defitea-received:40acres:0xc0c39ded0b75f902138488cd6531b5c96e4d3a68402dbc109f26f71d771233b0:66",
+      "company": "defitea.eth",
+      "engineId": "velodrome_vevelo",
+      "relation": "realised-settlement-to-active-productive-mechanism",
+      "sourceAuthority": "canonical-income-ledger",
+      "sourceFile": "reporting/defitea-income-ledger.json",
+      "sourceFamily": "fortyAcresReceivedEvents",
+      "sourceIdentity": "40acres:0xc0c39ded0b75f902138488cd6531b5c96e4d3a68402dbc109f26f71d771233b0:66",
+      "physicalEventId": "10:0xc0c39ded0b75f902138488cd6531b5c96e4d3a68402dbc109f26f71d771233b0:66",
+      "incomeFamily": "realised-cash-flow",
+      "incomeFamilyPreserved": true,
+      "periodIncomeAuthority": false,
+      "factualTrackingAuthority": false,
+      "referenceMetricAuthority": false,
+      "executionAuthority": "none"
+    },
+    {
+      "eventKey": "defitea-received:40acres:0xf07a791b2e1c047fb6e2e64a3fbad6f601879958739266e458a30b70a9112d65:259",
+      "company": "defitea.eth",
+      "engineId": "velodrome_vevelo",
+      "relation": "realised-settlement-to-active-productive-mechanism",
+      "sourceAuthority": "canonical-income-ledger",
+      "sourceFile": "reporting/defitea-income-ledger.json",
+      "sourceFamily": "fortyAcresReceivedEvents",
+      "sourceIdentity": "40acres:0xf07a791b2e1c047fb6e2e64a3fbad6f601879958739266e458a30b70a9112d65:259",
+      "physicalEventId": "10:0xf07a791b2e1c047fb6e2e64a3fbad6f601879958739266e458a30b70a9112d65:259",
+      "incomeFamily": "realised-cash-flow",
+      "incomeFamilyPreserved": true,
+      "periodIncomeAuthority": false,
+      "factualTrackingAuthority": false,
+      "referenceMetricAuthority": false,
+      "executionAuthority": "none"
+    },
+    {
+      "eventKey": "defitea-received:40acres:0xf797bdd16ad53801df0b3d6fcf0c0d0065ceade5f3fce9af6c576273d2fd15e1:22",
+      "company": "defitea.eth",
+      "engineId": "velodrome_vevelo",
+      "relation": "realised-settlement-to-active-productive-mechanism",
+      "sourceAuthority": "canonical-income-ledger",
+      "sourceFile": "reporting/defitea-income-ledger.json",
+      "sourceFamily": "fortyAcresReceivedEvents",
+      "sourceIdentity": "40acres:0xf797bdd16ad53801df0b3d6fcf0c0d0065ceade5f3fce9af6c576273d2fd15e1:22",
+      "physicalEventId": "10:0xf797bdd16ad53801df0b3d6fcf0c0d0065ceade5f3fce9af6c576273d2fd15e1:22",
+      "incomeFamily": "realised-cash-flow",
+      "incomeFamilyPreserved": true,
+      "periodIncomeAuthority": false,
+      "factualTrackingAuthority": false,
+      "referenceMetricAuthority": false,
+      "executionAuthority": "none"
     }
   ],
+  "unmatchedCanonicalEvents": [],
   "mechanisms": {
     "aerodrome_veaero": {
       "engineId": "aerodrome_veaero",
@@ -748,8 +793,8 @@
       "stateOnlyCompanies": [],
       "referenceOnlyCompanyCount": 0,
       "referenceOnlyCompanies": [],
-      "currentMonthFactualEventCount": 242,
-      "currentMonthFactualUsdSubtotal": 1.72479807,
+      "currentMonthFactualEventCount": 250,
+      "currentMonthFactualUsdSubtotal": 1.77670006,
       "reusableCoverageGap": false,
       "referenceMetricIsAccountingAuthority": false,
       "completionAuthority": false
@@ -1245,7 +1290,7 @@
             "2026-09": {
               "status": "factual-tracking-no-period-event",
               "factualTrackingActive": true,
-              "factualTrackingProofCount": 59,
+              "factualTrackingProofCount": 61,
               "factualTrackingProofSources": [
                 "reporting/ve33-locked-managed-accounting-evidence.json"
               ],
@@ -1360,17 +1405,17 @@
             "2026-09": {
               "status": "factual-period-evidence",
               "factualTrackingActive": true,
-              "factualTrackingProofCount": 65,
+              "factualTrackingProofCount": 67,
               "factualTrackingProofSources": [
                 "reporting/frax-yield-accounting-evidence.json"
               ],
-              "factualEventCount": 60,
-              "factualValuedEventCount": 60,
-              "factualUsdSubtotal": 0.08502995,
+              "factualEventCount": 62,
+              "factualValuedEventCount": 62,
+              "factualUsdSubtotal": 0.09073708,
               "currentStateRouteCount": 1,
               "crossMonthEvidenceCount": 0,
               "firstFactualEvidenceAt": "2026-09-02T06:49:40.775Z",
-              "lastFactualEvidenceAt": "2026-09-05T19:10:53.000Z",
+              "lastFactualEvidenceAt": "2026-09-06T03:32:25.000Z",
               "mechanismCompleteForMonth": false,
               "completionBlockers": []
             }
@@ -1631,7 +1676,7 @@
             "2026-09": {
               "status": "factual-tracking-no-period-event",
               "factualTrackingActive": true,
-              "factualTrackingProofCount": 354,
+              "factualTrackingProofCount": 366,
               "factualTrackingProofSources": [
                 "reporting/ve33-locked-managed-accounting-evidence.json"
               ],
@@ -1739,7 +1784,7 @@
             "2026-09": {
               "status": "factual-period-evidence",
               "factualTrackingActive": true,
-              "factualTrackingProofCount": 56,
+              "factualTrackingProofCount": 58,
               "factualTrackingProofSources": [
                 "reporting/yield-basis-accounting-evidence.json"
               ],
@@ -1985,7 +2030,7 @@
             "2026-09": {
               "status": "factual-period-evidence",
               "factualTrackingActive": true,
-              "factualTrackingProofCount": 56,
+              "factualTrackingProofCount": 58,
               "factualTrackingProofSources": [
                 "reporting/yield-basis-accounting-evidence.json"
               ],
@@ -2345,7 +2390,7 @@
             "2026-09": {
               "status": "factual-tracking-no-period-event",
               "factualTrackingActive": true,
-              "factualTrackingProofCount": 50,
+              "factualTrackingProofCount": 52,
               "factualTrackingProofSources": [
                 "reporting/ve33-accounting-evidence.json",
                 "reporting/ve33-locked-managed-accounting-evidence.json"
@@ -2427,7 +2472,7 @@
             "2026-09": {
               "status": "factual-tracking-no-period-event",
               "factualTrackingActive": true,
-              "factualTrackingProofCount": 61,
+              "factualTrackingProofCount": 63,
               "factualTrackingProofSources": [
                 "reporting/ve33-accounting-evidence.json",
                 "reporting/ve33-locked-managed-accounting-evidence.json"
@@ -2593,17 +2638,17 @@
             "2026-09": {
               "status": "factual-period-evidence",
               "factualTrackingActive": true,
-              "factualTrackingProofCount": 130,
+              "factualTrackingProofCount": 134,
               "factualTrackingProofSources": [
                 "reporting/frax-yield-accounting-evidence.json"
               ],
-              "factualEventCount": 122,
-              "factualValuedEventCount": 122,
-              "factualUsdSubtotal": 1.46602069,
+              "factualEventCount": 126,
+              "factualValuedEventCount": 126,
+              "factualUsdSubtotal": 1.50055415,
               "currentStateRouteCount": 4,
               "crossMonthEvidenceCount": 0,
               "firstFactualEvidenceAt": "2026-09-02T06:49:40.775Z",
-              "lastFactualEvidenceAt": "2026-09-05T19:10:53.000Z",
+              "lastFactualEvidenceAt": "2026-09-06T03:32:25.000Z",
               "mechanismCompleteForMonth": false,
               "completionBlockers": []
             }
@@ -2975,7 +3020,7 @@
             "2026-09": {
               "status": "factual-period-evidence",
               "factualTrackingActive": true,
-              "factualTrackingProofCount": 112,
+              "factualTrackingProofCount": 116,
               "factualTrackingProofSources": [
                 "reporting/yield-basis-accounting-evidence.json"
               ],
@@ -3053,7 +3098,7 @@
             "2026-09": {
               "status": "factual-period-evidence",
               "factualTrackingActive": true,
-              "factualTrackingProofCount": 56,
+              "factualTrackingProofCount": 58,
               "factualTrackingProofSources": [
                 "reporting/yield-basis-accounting-evidence.json"
               ],
@@ -3665,7 +3710,7 @@
             "2026-09": {
               "status": "factual-tracking-no-period-event",
               "factualTrackingActive": true,
-              "factualTrackingProofCount": 354,
+              "factualTrackingProofCount": 366,
               "factualTrackingProofSources": [
                 "reporting/ve33-locked-managed-accounting-evidence.json"
               ],
@@ -3861,7 +3906,7 @@
             "2026-09": {
               "status": "factual-tracking-no-period-event",
               "factualTrackingActive": true,
-              "factualTrackingProofCount": 118,
+              "factualTrackingProofCount": 122,
               "factualTrackingProofSources": [
                 "reporting/ve33-locked-managed-accounting-evidence.json"
               ],
@@ -3975,17 +4020,17 @@
             "2026-09": {
               "status": "factual-period-evidence",
               "factualTrackingActive": true,
-              "factualTrackingProofCount": 65,
+              "factualTrackingProofCount": 67,
               "factualTrackingProofSources": [
                 "reporting/frax-yield-accounting-evidence.json"
               ],
-              "factualEventCount": 60,
-              "factualValuedEventCount": 60,
-              "factualUsdSubtotal": 0.17374743,
+              "factualEventCount": 62,
+              "factualValuedEventCount": 62,
+              "factualUsdSubtotal": 0.18540883,
               "currentStateRouteCount": 1,
               "crossMonthEvidenceCount": 0,
               "firstFactualEvidenceAt": "2026-09-02T06:49:40.775Z",
-              "lastFactualEvidenceAt": "2026-09-05T19:10:53.000Z",
+              "lastFactualEvidenceAt": "2026-09-06T03:32:25.000Z",
               "mechanismCompleteForMonth": false,
               "completionBlockers": []
             }
