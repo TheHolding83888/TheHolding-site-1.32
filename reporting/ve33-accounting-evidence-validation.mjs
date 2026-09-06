@@ -1,9 +1,12 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
 import { Interface } from 'ethers';
-import { VERSION, PROTOCOLS, mapLimit, reconcileEntitlement, decodeRewardClaimTokenId, decodeRewardClaimAttribution, trackedPositionDescriptors, compactHistoricalCheckpoints, buildSettlementAddressGroups } from './ve33-accounting-evidence.mjs';
+import { VERSION, DIRECT_ACCOUNTING_START, FULL_ACCOUNTING_START, PROTOCOLS, mapLimit, reconcileEntitlement, decodeRewardClaimTokenId, decodeRewardClaimAttribution, trackedPositionDescriptors, compactHistoricalCheckpoints, buildSettlementAddressGroups } from './ve33-accounting-evidence.mjs';
 
 assert.equal(VERSION,'0.1-ve33-factual-accrual-evidence');
+assert.equal(DIRECT_ACCOUNTING_START,'2026-08-01T00:00:00.000Z');
+assert.equal(FULL_ACCOUNTING_START,'2026-09-01T00:00:00.000Z');
+assert.ok(Date.parse(DIRECT_ACCOUNTING_START)<Date.parse(FULL_ACCOUNTING_START),'direct historical recovery must not move managed accounting start');
 assert.equal(PROTOCOLS.aerodrome.chainId,8453);
 assert.equal(PROTOCOLS.velodrome.chainId,10);
 

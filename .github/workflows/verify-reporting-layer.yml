@@ -22,6 +22,19 @@ on:
       - 'reporting/yield-basis-income-candidates-validation.mjs'
       - 'reporting/yield-basis-ledger-admission.mjs'
       - 'reporting/yield-basis-ledger-admission-validation.mjs'
+      - 'reporting/historical-canonical-price.mjs'
+      - 'reporting/historical-canonical-price-validation.mjs'
+      - 'reporting/ve33-accounting-evidence.mjs'
+      - 'reporting/ve33-accounting-evidence-validation.mjs'
+      - 'reporting/ve33-income-candidates.mjs'
+      - 'reporting/ve33-income-candidates-validation.mjs'
+      - 'reporting/ve33-ledger-admission.mjs'
+      - 'reporting/ve33-ledger-admission-validation.mjs'
+      - 'reporting/ve33-locked-managed-accounting-evidence.mjs'
+      - 'reporting/ve33-locked-managed-accounting-evidence-validation.mjs'
+      - 'reporting/ve33-locked-managed-income-candidates.mjs'
+      - 'reporting/ve33-locked-managed-income-candidates-validation.mjs'
+      - 'reporting/ve33-locked-managed-ledger-admission-validation.mjs'
       - 'intelligence/realised-cash-flow/realised-cash-flow.json'
       - '.github/workflows/update-reporting.yml'
       - '.github/workflows/verify-reporting-layer.yml'
@@ -35,10 +48,12 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 9
+    timeout-minutes: 12
     steps:
       - name: Checkout exact candidate
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
@@ -66,7 +81,20 @@ jobs:
             reporting/yield-basis-income-candidates.mjs \
             reporting/yield-basis-income-candidates-validation.mjs \
             reporting/yield-basis-ledger-admission.mjs \
-            reporting/yield-basis-ledger-admission-validation.mjs; do
+            reporting/yield-basis-ledger-admission-validation.mjs \
+            reporting/historical-canonical-price.mjs \
+            reporting/historical-canonical-price-validation.mjs \
+            reporting/ve33-accounting-evidence.mjs \
+            reporting/ve33-accounting-evidence-validation.mjs \
+            reporting/ve33-income-candidates.mjs \
+            reporting/ve33-income-candidates-validation.mjs \
+            reporting/ve33-ledger-admission.mjs \
+            reporting/ve33-ledger-admission-validation.mjs \
+            reporting/ve33-locked-managed-accounting-evidence.mjs \
+            reporting/ve33-locked-managed-accounting-evidence-validation.mjs \
+            reporting/ve33-locked-managed-income-candidates.mjs \
+            reporting/ve33-locked-managed-income-candidates-validation.mjs \
+            reporting/ve33-locked-managed-ledger-admission-validation.mjs; do
             node --check "$f"
           done
           test -s reporting/reporting-scheduler-contract.json
@@ -81,7 +109,40 @@ jobs:
           node reporting/yield-basis-accounting-evidence-validation.mjs
           node reporting/yield-basis-income-candidates-validation.mjs
           node reporting/yield-basis-ledger-admission-validation.mjs
+          node reporting/historical-canonical-price-validation.mjs
+          node reporting/ve33-accounting-evidence-validation.mjs
+          node reporting/ve33-income-candidates-validation.mjs
+          node reporting/ve33-ledger-admission-validation.mjs
+          node reporting/ve33-locked-managed-accounting-evidence-validation.mjs
+          node reporting/ve33-locked-managed-income-candidates-validation.mjs
+          node reporting/ve33-locked-managed-ledger-admission-validation.mjs
           git diff --check
+
+      - name: Prove August historical canonical AERO + VELO valuation
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module - <<'NODE'
+          import assert from 'node:assert/strict';
+          import { historicalCanonicalPriceAtBoundary } from './reporting/historical-canonical-price.mjs';
+          const boundaryAt='2026-09-01T00:00:00.000Z';
+          const aero=await historicalCanonicalPriceAtBoundary({token:'0x940181a94A35A4569E4529A3CDfB74e38FD98631',boundaryAt});
+          const velo=await historicalCanonicalPriceAtBoundary({token:'0x9560e827aF36c94D2Ac33a39bCE1Fe78631088Db',boundaryAt});
+          assert.equal(aero.ok,true,'AERO historical canonical price unavailable: '+JSON.stringify(aero));
+          assert.equal(velo.ok,true,'VELO historical canonical price unavailable: '+JSON.stringify(velo));
+          assert.equal(aero.assetId,'aerodrome-finance');
+          assert.equal(velo.assetId,'velodrome-finance');
+          assert.equal(aero.priceUsd,0.47301682);
+          assert.equal(velo.priceUsd,0.021860940606858108);
+          assert.ok(aero.commitSha&&velo.commitSha,'historical valuation commit provenance missing');
+          assert.ok(Number(aero.ageMinutes)<=25&&Number(velo.ageMinutes)<=25,'historical canonical price exceeded scheduler freshness contract');
+          assert.ok(Date.parse(aero.observedAt)<=Date.parse(boundaryAt)&&Date.parse(velo.observedAt)<=Date.parse(boundaryAt),'future price leaked into historical accounting');
+          console.log('August historical canonical valuation PASS',{
+            boundaryAt,
+            aero:{usd:aero.priceUsd,observedAt:aero.observedAt,commit:aero.commitSha},
+            velo:{usd:velo.priceUsd,observedAt:velo.observedAt,commit:velo.commitSha}
+          });
+          NODE
 
       - name: Read-only live Yield Basis accounting canary
         shell: bash
@@ -361,7 +422,7 @@ jobs:
           set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');
-          const files=['reporting/reporting-engine.mjs','reporting/reporting-scheduled-runner.mjs','reporting/defitea-income-composition.mjs','reporting/defitea-forty-acres-settlement.mjs','reporting/income-ledger.mjs','.github/workflows/update-reporting.yml'];
+          const files=['reporting/reporting-engine.mjs','reporting/reporting-scheduled-runner.mjs','reporting/defitea-income-composition.mjs','reporting/defitea-forty-acres-settlement.mjs','reporting/income-ledger.mjs','reporting/historical-canonical-price.mjs','reporting/ve33-accounting-evidence.mjs','.github/workflows/update-reporting.yml'];
           const text=files.map(f=>fs.readFileSync(f,'utf8')).join('\n');
           const schedule=JSON.parse(fs.readFileSync('reporting/reporting-scheduler-contract.json','utf8'));
           const ratePolicy=JSON.parse(fs.readFileSync('reporting/rate-continuity-policy.json','utf8'));

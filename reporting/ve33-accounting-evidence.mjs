@@ -4,12 +4,14 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { Contract, Interface, JsonRpcProvider, getAddress, formatUnits } from 'ethers';
+import { historicalCanonicalPriceAtBoundary } from './historical-canonical-price.mjs';
 
 const __filename=fileURLToPath(import.meta.url);
 const __dirname=path.dirname(__filename);
 const ROOT=path.resolve(__dirname,'..');
 
 export const VERSION='0.1-ve33-factual-accrual-evidence';
+export const DIRECT_ACCOUNTING_START='2026-08-01T00:00:00.000Z';
 export const FULL_ACCOUNTING_START='2026-09-01T00:00:00.000Z';
 const DEFAULT_REWARDS=process.env.REWARDS_DATA_FILE||path.join(ROOT,'companies','rewards-data.json');
 const DEFAULT_OUTPUT=process.env.VE33_EVIDENCE_FILE||path.join(ROOT,'reporting','ve33-accounting-evidence.json');
@@ -622,7 +624,7 @@ async function buildProtocolLanes({rewards,cfg,protocolKey,provider,latestNumber
     if(p.mode==='direct'){
       lanes.push({
         protocolKey,protocol:cfg.protocol,chain:cfg.chain,chainId:cfg.chainId,route:p.route,company:p.company,
-        holder:p.holder,walletAlias:p.walletAlias,tokenId:p.tokenId,custodyContext:p.custodyContext,
+        holder:p.holder,walletAlias:p.walletAlias,tokenId:p.tokenId,custodyContext:p.custodyContext,accountingStart:DIRECT_ACCOUNTING_START,
         kind:'rebase-distributor',distributor:cfg.rewardsDistributor,rewardContract:null,
         rewardToken:getAddress(cfg.baseToken),rewardSymbol:cfg.baseSymbol,decimals:18
       });
@@ -633,7 +635,7 @@ async function buildProtocolLanes({rewards,cfg,protocolKey,provider,latestNumber
           const token=tokens[i],meta=metas[i];
           lanes.push({
             protocolKey,protocol:cfg.protocol,chain:cfg.chain,chainId:cfg.chainId,route:p.route,company:p.company,
-            holder:p.holder,walletAlias:p.walletAlias,tokenId:p.tokenId,custodyContext:p.custodyContext,
+            holder:p.holder,walletAlias:p.walletAlias,tokenId:p.tokenId,custodyContext:p.custodyContext,accountingStart:DIRECT_ACCOUNTING_START,
             kind:'voting-reward',rewardContract:getAddress(rewardAddress),distributor:null,
             rewardToken:getAddress(token),rewardSymbol:meta.symbol,decimals:meta.decimals
           });
@@ -646,7 +648,7 @@ async function buildProtocolLanes({rewards,cfg,protocolKey,provider,latestNumber
         const token=tokens[i],meta=metas[i];
         lanes.push({
           protocolKey,protocol:cfg.protocol,chain:cfg.chain,chainId:cfg.chainId,route:p.route,company:p.company,
-          holder:p.holder,walletAlias:p.walletAlias,tokenId:p.tokenId,custodyContext:p.custodyContext,
+          holder:p.holder,walletAlias:p.walletAlias,tokenId:p.tokenId,custodyContext:p.custodyContext,accountingStart:FULL_ACCOUNTING_START,
           managedTokenId:p.managedTokenId,kind:'free-managed-reward',rewardContract:getAddress(p.freeManagedReward),
           distributor:null,rewardToken:getAddress(token),rewardSymbol:meta.symbol,decimals:meta.decimals
         });
@@ -686,7 +688,7 @@ async function readLaneState({provider,cfg,lane,blockNumber,observedAt,monthBoun
       rewardContract:lane.rewardContract,distributor:lane.distributor,rewardToken:lane.rewardToken,rewardSymbol:lane.rewardSymbol,
       decimals:lane.decimals,observedAt,blockNumber,entitlementRaw:BigInt(raw).toString(),
       entitlementAmount:round(Number(formatUnits(raw,lane.decimals)),12),monthBoundary,exactBlockTaggedState:true,
-      periodIncomeAuthority:false,unknownIsNotZero:true
+      accountingStart:lane.accountingStart||FULL_ACCOUNTING_START,periodIncomeAuthority:false,unknownIsNotZero:true
     };
   }catch(error){return{ok:false,status:'state-read-unavailable',error:error?.shortMessage||error?.message||String(error)};}
 }
@@ -709,8 +711,8 @@ function sampleFailure(pd,{laneKey,boundaryAt,state,scope}){
   if(pd.stateFailureSamples.length<FAILURE_SAMPLE_LIMIT)pd.stateFailureSamples.push({laneKey,boundaryAt,scope,status,error:state?.error||null,owner:state?.owner||null});
 }
 
-async function processLaneIntervals({lane,rows,provider,settlementRouter,cfg,priorEvents}){
-  const result={intervalCount:0,settlementEventCount:0,settlementQueryFailureCount:0,reconciliationCount:0,unresolvedSettlementCount:0,zeroIntervalCount:0,unvaluedIntervalCount:0,acceptedPositiveIntervalCount:0,events:[]};
+async function processLaneIntervals({lane,rows,provider,settlementRouter,cfg,priorEvents,historicalPriceResolver}){
+  const result={intervalCount:0,settlementEventCount:0,settlementQueryFailureCount:0,reconciliationCount:0,unresolvedSettlementCount:0,zeroIntervalCount:0,unvaluedIntervalCount:0,historicalPriceResolvedIntervalCount:0,historicalPriceUnresolvedIntervalCount:0,acceptedPositiveIntervalCount:0,events:[]};
   for(let i=1;i<rows.length;i++){
     const open=rows[i-1],close=rows[i];
     if(Number(close.blockNumber)<=Number(open.blockNumber))continue;
@@ -734,13 +736,28 @@ async function processLaneIntervals({lane,rows,provider,settlementRouter,cfg,pri
     if(r.earnedRaw==='0'){result.zeroIntervalCount++;continue;}
     const month=intervalMonth(open,close);
     if(!month){result.reconciliationCount++;continue;}
-    const amount=Number(formatUnits(BigInt(r.earnedRaw),lane.decimals)),unitUsd=lane.price?.priceUsd||null,usdValue=finite(unitUsd)?amount*Number(unitUsd):null;
+
+    let valuation=null;
+    if(close.monthBoundary===true){
+      valuation=await historicalPriceResolver({token:lane.rewardToken,boundaryAt:close.observedAt});
+      if(valuation?.ok===true)result.historicalPriceResolvedIntervalCount++;
+      else result.historicalPriceUnresolvedIntervalCount++;
+    }
+    const amount=Number(formatUnits(BigInt(r.earnedRaw),lane.decimals));
+    const unitUsd=close.monthBoundary===true?(valuation?.ok===true?valuation.priceUsd:null):(lane.price?.priceUsd||null);
+    const usdValue=finite(unitUsd)?amount*Number(unitUsd):null;
     if(!finite(usdValue))result.unvaluedIntervalCount++;
     result.events.push({
       eventKey:key,company:lane.company,family:'accrued-entitlement',economicDate:eventEconomicDate(close),periodStart:open.observedAt,periodEnd:close.observedAt,
       route:lane.route,protocol:lane.protocol,chain:lane.chain,chainId:lane.chainId,asset:lane.rewardSymbol,token:lane.rewardToken,
       amount:round(amount,12),amountRaw:r.earnedRaw,usdValue:finite(usdValue)?round(usdValue,8):null,valuationUnitUsd:finite(unitUsd)?round(unitUsd,12):null,
-      valuationAt:lane.price?.observedAt||close.observedAt,valuationStatus:finite(usdValue)?'frozen-at-closing-accounting-boundary':'unvalued-fail-closed',
+      valuationAt:close.monthBoundary===true?(valuation?.ok===true?valuation.observedAt:close.observedAt):(lane.price?.observedAt||close.observedAt),
+      valuationStatus:finite(usdValue)?(close.monthBoundary===true?'historical-canonical-market-price-frozen-at-closing-accounting-boundary':'frozen-at-closing-accounting-boundary'):'unvalued-fail-closed',
+      valuationSourceFile:close.monthBoundary===true?(valuation?.sourceFile||null):null,
+      valuationSourceCommit:close.monthBoundary===true?(valuation?.commitSha||null):null,
+      valuationSourceAssetId:close.monthBoundary===true?(valuation?.assetId||null):null,
+      valuationSourceStatus:close.monthBoundary===true?(valuation?.status||null):(lane.price?.priceMethod||null),
+      valuationSnapshotAgeMinutes:close.monthBoundary===true&&finite(valuation?.ageMinutes)?round(valuation.ageMinutes,6):null,
       sourceFile:'reporting/ve33-accounting-evidence.json',sourceFamily:'ve(3,3) cumulative entitlement with claim settlement reconciliation',
       sourceIdentity:`${open.checkpointKey}->${close.checkpointKey}`,evidenceStatus:'factual-opening-plus-settlement-to-closing-reconciliation',
       mechanismKind:lane.kind,holder:lane.holder,custodyContext:lane.custodyContext,tokenId:lane.tokenId,rewardContract:lane.rewardContract,distributor:lane.distributor,
@@ -754,12 +771,18 @@ async function processLaneIntervals({lane,rows,provider,settlementRouter,cfg,pri
   return result;
 }
 
-export async function buildVe33Evidence({rewards,previous={},generatedAt=new Date().toISOString(),providers={}}={}){
+export async function buildVe33Evidence({rewards,previous={},generatedAt=new Date().toISOString(),providers={},historicalPriceResolver=historicalCanonicalPriceAtBoundary}={}){
   const startedAtMs=Date.now();
   const authority={executionAuthority:'none',walletAuthority:'none',claimingAuthority:'none',capitalExecution:false,methodologyMutationAuthority:'none'};
   const compactedHistory=compactHistoricalCheckpoints(previous);
   const prices=priceMap(rewards),existing=new Map(compactedHistory.checkpoints.map(x=>[x.checkpointKey,x])),priorEvents=new Map((previous?.events||[]).filter(x=>x?.eventKey).map(x=>[x.eventKey,x]));
-  const diagnostics={protocols:{},laneCount:0,acceptedPositiveIntervalCount:0,zeroIntervalCount:0,reconciliationCount:0,settlementQueryFailureCount:0,unresolvedSettlementCount:0,unvaluedIntervalCount:0,referenceAprUsed:false,unknownIsNotZero:true,stateReadConcurrency:STATE_READ_CONCURRENCY,settlementConcurrency:SETTLEMENT_CONCURRENCY,historyCompaction:compactedHistory.stats,runtimeMs:null};
+  const historicalPriceCache=new Map();
+  const resolveHistoricalPrice=async({token,boundaryAt})=>{
+    const key=`${lower(token)}|${boundaryAt}`;
+    if(!historicalPriceCache.has(key))historicalPriceCache.set(key,Promise.resolve().then(()=>historicalPriceResolver({token,boundaryAt})).catch(error=>({ok:false,status:'historical-canonical-price-resolver-error',error:error?.message||String(error)})));
+    return historicalPriceCache.get(key);
+  };
+  const diagnostics={protocols:{},laneCount:0,acceptedPositiveIntervalCount:0,zeroIntervalCount:0,reconciliationCount:0,settlementQueryFailureCount:0,unresolvedSettlementCount:0,unvaluedIntervalCount:0,historicalPriceResolvedIntervalCount:0,historicalPriceUnresolvedIntervalCount:0,referenceAprUsed:false,unknownIsNotZero:true,stateReadConcurrency:STATE_READ_CONCURRENCY,settlementConcurrency:SETTLEMENT_CONCURRENCY,historyCompaction:compactedHistory.stats,runtimeMs:null};
 
   for(const[protocolKey,cfg]of Object.entries(PROTOCOLS)){
     const protocolStartedAt=Date.now();
@@ -776,26 +799,28 @@ export async function buildVe33Evidence({rewards,previous={},generatedAt=new Dat
     };
     diagnostics.protocols[protocolKey]=pd;
 
-    const boundaries=monthBoundaries(FULL_ACCOUNTING_START,observedAt),boundaryBlocks=new Map();
+    const boundaries=monthBoundaries(DIRECT_ACCOUNTING_START,observedAt),boundaryBlocks=new Map();
     for(const boundaryAt of boundaries){
+      const eligibleLanes=lanes.filter(lane=>Date.parse(boundaryAt)>=Date.parse(lane.accountingStart||FULL_ACCOUNTING_START));
+      if(!eligibleLanes.length)continue;
       try{
         const block=await blockAtOrBefore(provider,boundaryAt,latestNumber,blockCache);
-        const capability=await probeHistoricalBoundary({provider,cfg,lanes,blockNumber:block.blockNumber});
-        pd.boundaryCapability.push({boundaryAt,blockNumber:block.blockNumber,status:capability.status,available:capability.available});
+        const capability=await probeHistoricalBoundary({provider,cfg,lanes:eligibleLanes,blockNumber:block.blockNumber});
+        pd.boundaryCapability.push({boundaryAt,blockNumber:block.blockNumber,status:capability.status,available:capability.available,eligibleLaneCount:eligibleLanes.length});
         if(capability.available){
-          boundaryBlocks.set(boundaryAt,block);
+          boundaryBlocks.set(boundaryAt,{...block,eligibleLanes});
         }else{
-          pd.historicalBoundarySkippedLaneReads+=lanes.length;
-          pd.boundaryFailures.push({laneKey:null,boundaryAt,status:'historical-boundary-state-unavailable',affectedLaneCount:lanes.length,sampleTokenId:capability.sampleTokenId||null,error:capability.error||null});
+          pd.historicalBoundarySkippedLaneReads+=eligibleLanes.length;
+          pd.boundaryFailures.push({laneKey:null,boundaryAt,status:'historical-boundary-state-unavailable',affectedLaneCount:eligibleLanes.length,sampleTokenId:capability.sampleTokenId||null,error:capability.error||null});
         }
       }catch(error){
-        pd.historicalBoundarySkippedLaneReads+=lanes.length;
-        pd.boundaryFailures.push({laneKey:null,boundaryAt,status:'boundary-block-unavailable',affectedLaneCount:lanes.length,error:error?.shortMessage||error?.message||String(error)});
+        pd.historicalBoundarySkippedLaneReads+=eligibleLanes.length;
+        pd.boundaryFailures.push({laneKey:null,boundaryAt,status:'boundary-block-unavailable',affectedLaneCount:eligibleLanes.length,error:error?.shortMessage||error?.message||String(error)});
       }
     }
 
     for(const[boundaryAt,b]of boundaryBlocks){
-      const pending=lanes.filter(lane=>!existing.has(checkpointKey(lane,b.blockNumber)));
+      const pending=b.eligibleLanes.filter(lane=>!existing.has(checkpointKey(lane,b.blockNumber)));
       const results=await mapLimit(pending,STATE_READ_CONCURRENCY,async lane=>({lane,state:await readLaneState({provider,cfg,lane,blockNumber:b.blockNumber,observedAt:boundaryAt,monthBoundary:true,ownerCache})}));
       for(const{lane,state}of results){
         if(state.ok)existing.set(state.checkpointKey,state);
@@ -810,7 +835,7 @@ export async function buildVe33Evidence({rewards,previous={},generatedAt=new Dat
     }
 
     const protocolCheckpoints=[...existing.values()].filter(x=>x.protocolKey===protocolKey).sort((a,b)=>a.laneKey.localeCompare(b.laneKey)||Number(a.blockNumber)-Number(b.blockNumber));
-    const intervalResults=await mapLimit(lanes,SETTLEMENT_CONCURRENCY,async lane=>processLaneIntervals({lane,rows:protocolCheckpoints.filter(x=>x.laneKey===lane.laneKey),provider,settlementRouter,cfg,priorEvents}));
+    const intervalResults=await mapLimit(lanes,SETTLEMENT_CONCURRENCY,async lane=>processLaneIntervals({lane,rows:protocolCheckpoints.filter(x=>x.laneKey===lane.laneKey),provider,settlementRouter,cfg,priorEvents,historicalPriceResolver:resolveHistoricalPrice}));
     for(const r of intervalResults){
       pd.intervalCount+=r.intervalCount;
       pd.settlementEventCount+=r.settlementEventCount;
@@ -820,6 +845,8 @@ export async function buildVe33Evidence({rewards,previous={},generatedAt=new Dat
       diagnostics.unresolvedSettlementCount+=r.unresolvedSettlementCount;
       diagnostics.zeroIntervalCount+=r.zeroIntervalCount;
       diagnostics.unvaluedIntervalCount+=r.unvaluedIntervalCount;
+      diagnostics.historicalPriceResolvedIntervalCount+=r.historicalPriceResolvedIntervalCount;
+      diagnostics.historicalPriceUnresolvedIntervalCount+=r.historicalPriceUnresolvedIntervalCount;
       diagnostics.acceptedPositiveIntervalCount+=r.acceptedPositiveIntervalCount;
       for(const event of r.events)priorEvents.set(event.eventKey,event);
     }
@@ -829,18 +856,21 @@ export async function buildVe33Evidence({rewards,previous={},generatedAt=new Dat
 
   const checkpoints=retainCheckpoints([...existing.values()].filter(x=>x?.checkpointKey));
   const events=[...priorEvents.values()].sort((a,b)=>String(a.periodEnd||'').localeCompare(String(b.periodEnd||''))||a.eventKey.localeCompare(b.eventKey));
+  diagnostics.historicalPriceCacheEntries=historicalPriceCache.size;
   diagnostics.runtimeMs=Date.now()-startedAtMs;
   const partial=diagnostics.reconciliationCount||diagnostics.unvaluedIntervalCount||Object.values(diagnostics.protocols).some(x=>x.boundaryFailures.length||x.currentStateFailureCount||Object.values(x.stateFailureCounts||{}).some(Number));
   return{
-    version:VERSION,generatedAt,status:partial?'partial':'factual-boundary-tracking',fullAccountingStart:FULL_ACCOUNTING_START,
+    version:VERSION,generatedAt,status:partial?'partial':'factual-boundary-tracking',fullAccountingStart:DIRECT_ACCOUNTING_START,
+    directAccountingStart:DIRECT_ACCOUNTING_START,managedFreeRewardAccountingStart:FULL_ACCOUNTING_START,
     semantics:{
       openingBalanceCreatesIncome:false,earnedIndependentOfClaim:true,claimIsSettlementNotSecondIncome:true,
       rebaseDepositIntoVeNftIsSecondIncome:false,referenceAprUsed:false,laterPriceMovementRewritesClosedIncome:false,unknownIsNotZero:true,
+      historicalClosedIntervalPriceSource:'canonical market-data Git history only; unmapped or stale price remains UNKNOWN',
       directVotingRewardFormula:'closing earned + proven ClaimRewards - opening earned',
       rebaseFormula:'closing claimable + proven Claimed - opening claimable'
     },
     scope:{
-      included:['direct veNFT voting fee/incentive reward lanes','direct veNFT RewardsDistributor rebase lanes','managed FreeManagedReward lanes'],
+      included:['direct veNFT voting fee/incentive reward lanes from 2026-08-01','direct veNFT RewardsDistributor rebase lanes from 2026-08-01','managed FreeManagedReward lanes from 2026-09-01'],
       deferred:['LockedManagedReward / Relay compounded lane is handled by the separate ve33 locked-managed adapter','40 Acres payout non-overlap reconciliation with existing Defitea settlement evidence']
     },
     authority,checkpoints,events,diagnostics
@@ -855,6 +885,8 @@ async function main(){
     status:output.status,checkpoints:output.checkpoints.length,events:output.events.length,lanes:output.diagnostics.laneCount,
     accepted:output.diagnostics.acceptedPositiveIntervalCount,reconciliations:output.diagnostics.reconciliationCount,
     settlementQueryFailures:output.diagnostics.settlementQueryFailureCount,
+    historicalPriceResolved:output.diagnostics.historicalPriceResolvedIntervalCount,
+    historicalPriceUnresolved:output.diagnostics.historicalPriceUnresolvedIntervalCount,
     historyCompaction:output.diagnostics.historyCompaction,
     boundaryFailures:Object.values(output.diagnostics.protocols||{}).reduce((sum,x)=>sum+(x.boundaryFailures||[]).length,0),
     currentStateFailures:Object.values(output.diagnostics.protocols||{}).reduce((sum,x)=>sum+Number(x.currentStateFailureCount||0),0),
