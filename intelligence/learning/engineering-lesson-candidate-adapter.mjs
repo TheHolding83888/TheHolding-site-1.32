@@ -61,8 +61,8 @@ function commitEvidenceDetail(kind, evidence) {
   const id = shortSha(evidence?.sha);
   if (kind === 'not-ancestor') return `commit ${id} is not an ancestor of HEAD`;
   if (kind === 'unreadable-subject') return `cannot read commit subject for ${id}`;
-  if (kind === 'subject-mismatch') return `ancestor commit ${id} subject does not contain expected marker`;
-  if (kind === 'subject-match') return `ancestor commit ${id} subject marker matched`;
+  if (kind === 'subject-mismatch') return `ancestor commit ${id} · required subject marker mismatch`;
+  if (kind === 'subject-match') return `ancestor commit ${id} · required subject marker matched`;
   return `commit ${id} evidence status unavailable`;
 }
 function getJsonPath(obj, jsonPath) {
@@ -182,7 +182,7 @@ if (args.has('--self-test')) {
   if (stableStringify(sample) !== '{"a":1,"b":{"c":2}}') fail('stable stringify self-test failed');
   if (getJsonPath({ a: { b: [1, 2] } }, 'a.b').value.length !== 2) fail('json path self-test failed');
   const sampleSha = '1111111111111111111111111111111111111111';
-  if (commitEvidenceDetail('subject-match', { sha: sampleSha }) !== 'ancestor commit 111111111111 subject marker matched') fail('commit evidence detail self-test failed');
+  if (commitEvidenceDetail('subject-match', { sha: sampleSha }) !== 'ancestor commit 111111111111 · required subject marker matched') fail('commit evidence detail self-test failed');
   console.log(JSON.stringify({ status: 'pass', engineVersion: ENGINE_VERSION, executionAuthority: 'none' }, null, 2));
   process.exit(0);
 }
