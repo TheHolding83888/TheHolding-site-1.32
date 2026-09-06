@@ -6,8 +6,9 @@ import { fileURLToPath } from 'node:url';
 import {
   VERSION,validatePolicy,economicHashPayload,finalizeCandidate,admitEvents,
   defiteaCandidates,embeddedCandidates,realisedCandidates,rewardStateRows,
-  continuityFor,eventMonth,familySummary,buildMonthly
+  continuityFor,eventMonth,familySummary,buildMonthly,annotateFortyAcresSettlementRecognition
 } from './income-ledger.mjs';
+import { recognitionDecision } from './canonical-earned-income-view.mjs';
 import crypto from 'node:crypto';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
@@ -50,6 +51,44 @@ const sourceVote=(defitea.voteMarketEvents||[]).filter(e=>e?.eventKey&&Number(e?
 const source40=(defitea.fortyAcresReceivedEvents||[]).filter(e=>e?.eventKey&&Number(e?.usdValue)>0).length;
 assert.equal(dc.filter(e=>e.family==='accrued-entitlement').length,sourceVote,'VoteMarket canonical entitlement admission parity');
 assert.equal(dc.filter(e=>e.family==='realised-cash-flow').length,source40,'40 Acres canonical received admission parity');
+
+const settlementAnnotated=annotateFortyAcresSettlementRecognition({events:dc},defitea);
+assert.equal(settlementAnnotated.annotated,source40,'all and only proven 40 Acres receipts must receive settlement metadata');
+const settlementRows=settlementAnnotated.ledger.events.filter(e=>e.route==='forty-acres-velodrome-received');
+assert.equal(settlementRows.length,source40,'40 Acres settlement annotation parity drift');
+for(const e of settlementRows){
+  assert.equal(e.incomeRecognition?.recognizesEarnedIncome,false,'40 Acres receipt re-recognized earned income');
+  assert.equal(e.incomeRecognition?.settlementOf,'canonical-accrued-income:velodrome_vevelo:defitea.eth');
+  assert.equal(e.incomeRecognition?.economicFieldsMutated,false);
+  assert.equal(e.incomeRecognition?.executionAuthority,'none');
+  assert.equal(e.immutableEconomicFieldsHash,hash(economicHashPayload(e)),`settlement metadata mutated canonical economics ${e.eventKey}`);
+  const decision=recognitionDecision(e);
+  assert.equal(decision.status,'settlement-only',`40 Acres receipt did not become settlement-only ${e.eventKey}`);
+  assert.equal(decision.reason,'settlement-of-prior-earned-income');
+}
+assert.equal(
+  settlementAnnotated.ledger.events.filter(e=>e.route!=='forty-acres-velodrome-received').every(e=>e.incomeRecognition===undefined),
+  true,
+  '40 Acres recognition metadata leaked to unrelated Defitea events'
+);
+
+if(settlementRows.length){
+  const conflicted={events:structuredClone(settlementAnnotated.ledger.events)};
+  const victim=conflicted.events.find(e=>e.route==='forty-acres-velodrome-received');
+  victim.incomeRecognition={recognizesEarnedIncome:true,recognitionId:'forbidden-double-recognition'};
+  assert.throws(
+    ()=>annotateFortyAcresSettlementRecognition(conflicted,defitea),
+    /income-recognition conflict/,
+    'conflicting prior recognition must fail closed'
+  );
+}
+const invalidSettlementSource=structuredClone(defitea);
+invalidSettlementSource.fortyAcresSettlement.referenceDoubleCountPrevented=false;
+assert.throws(
+  ()=>annotateFortyAcresSettlementRecognition({events:dc},invalidSettlementSource),
+  /settlement recognition contract unavailable or drifted/,
+  'invalid settlement contract must fail closed'
+);
 
 let acceptedEmbedded=0;
 for(const p of Object.values(embedded.positions||{})) acceptedEmbedded+=(p.intervalHistory||[]).filter(e=>e?.status==='ok'&&e?.accepted===true).length;
@@ -150,10 +189,12 @@ for(const forbidden of ['sendTransaction(','new Wallet(','claimTransactionAuthor
 assert.equal(source.includes('referenceAprCanBackfillEarnedIncome:false'),true,'explicit reference APR non-backfill semantic missing');
 assert.equal(source.includes('claimableShardRule:'),true,'claimable shard aggregation semantic missing');
 assert.equal(facadeSource.includes("export * from './income-ledger-core.mjs'"),true,'canonical ledger facade lost core export binding');
+assert.equal(facadeSource.includes('annotateFortyAcresSettlementRecognition'),true,'40 Acres settlement-only recognition extension missing');
 
 console.log('Canonical Income Ledger validation PASS',{
   defiteaEntitlementEvents:sourceVote,
   defiteaReceivedEvents:source40,
+  fortyAcresSettlementOnlyRecognitions:settlementAnnotated.annotated,
   monetraAcceptedEmbeddedIntervals:acceptedEmbedded,
   mechanismSpecificRealisedEvents:acceptedRealised,
   candidateEvents:all.length,

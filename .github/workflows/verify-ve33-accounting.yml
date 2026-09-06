@@ -27,12 +27,37 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+
+      - name: Classify ve33 live-canary scope
+        id: scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          collector_sensitive=true
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base_sha="${{ github.event.pull_request.base.sha }}"
+            git fetch --no-tags --depth=1 origin "$base_sha"
+            changed="$(git diff --name-only "$base_sha" HEAD)"
+            printf '%s\n' "$changed"
+            if printf '%s\n' "$changed" | grep -Eq '^(reporting/ve33-(accounting-evidence|accounting-evidence-validation|income-candidates|income-candidates-validation|ledger-admission|ledger-admission-validation|settlement-query-diagnostic|unresolved-settlement-diagnostic)\.mjs|reporting/ve33-accounting-evidence\.json|\.github/workflows/update-reporting\.yml)$'; then
+              collector_sensitive=true
+            else
+              collector_sensitive=false
+            fi
+          fi
+          echo "collector_sensitive=$collector_sensitive" >> "$GITHUB_OUTPUT"
+          echo "ve33 collector-sensitive change: $collector_sensitive"
+
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '22'
+
       - name: Install runtime dependency
         run: npm install --no-save --no-package-lock ethers@6
+
       - name: Syntax and deterministic accounting validation
         run: |
           set -euo pipefail
@@ -60,7 +85,14 @@ jobs:
           console.log('ve33 evidence policy validation OK');
           NODE
 
+      - name: Unrelated-change live-canary boundary
+        if: steps.scope.outputs.collector_sensitive != 'true'
+        run: |
+          echo 'Full live Base + Optimism ve33 collector canary intentionally skipped: this PR does not change ve33 collection, admission, diagnostics, persisted evidence, or production wiring.'
+          echo 'Deterministic ve33 invariants remain mandatory here; Canonical Ledger/Reporting integration is verified by the Reporting workflow.'
+
       - name: Read-only live Base + Optimism accounting canary
+        if: steps.scope.outputs.collector_sensitive == 'true'
         env:
           REWARDS_DATA_FILE: ./companies/rewards-data.json
           VE33_EVIDENCE_FILE: /tmp/ve33-accounting-evidence.json

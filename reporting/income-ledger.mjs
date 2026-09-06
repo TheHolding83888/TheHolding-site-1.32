@@ -4,8 +4,8 @@
  *
  * The pre-Project-X canonical builder is preserved byte-for-byte in
  * income-ledger-core.mjs. This facade extends that same append-only ledger with
- * Project X factual collectible-fee accruals, then asks the canonical core to
- * rebuild all derived company/month views from the unified event history.
+ * Project X factual collectible-fee accruals and deterministic non-economic
+ * recognition metadata for proven settlement lanes.
  *
  * No second ledger, no second source of truth, no Reference APR income, and no
  * execution authority are introduced.
@@ -27,7 +27,12 @@ const ROOT=path.resolve(__dirname,'..');
 const CORE_FILE=path.join(__dirname,'income-ledger-core.mjs');
 const PROJECTX_CANDIDATES_FILE=path.join(__dirname,'projectx-income-candidates.mjs');
 const HISTORY_FILE=process.env.PROJECTX_HISTORY_FILE||path.join(ROOT,'companies','company-010-projectx-rate-history.json');
+const DEFITEA_LEDGER_FILE=process.env.DEFITEA_INCOME_LEDGER_FILE||path.join(ROOT,'reporting','defitea-income-ledger.json');
 const OUTPUT_FILE=process.env.INCOME_LEDGER_FILE||path.join(ROOT,'reporting','income-ledger.json');
+
+const FORTY_ACRES_ROUTE='forty-acres-velodrome-received';
+const FORTY_ACRES_SETTLEMENT_VERSION='0.1-40acres-actual-received-replaces-velodrome-reference';
+const FORTY_ACRES_SETTLEMENT_OF='canonical-accrued-income:velodrome_vevelo:defitea.eth';
 
 // The Reporting safe-writer already fingerprints income-ledger.mjs. These blob
 // guards extend that fail-closed contract to the extracted immutable core and
@@ -44,6 +49,89 @@ async function verifyExtensionIntegrity(){
   if(coreSha!==EXPECTED_CORE_GIT_BLOB)throw new Error(`Canonical Income Ledger core integrity drift: ${coreSha}`);
   if(candidateSha!==EXPECTED_PROJECTX_CANDIDATES_GIT_BLOB)throw new Error(`Project X income candidate module integrity drift: ${candidateSha}`);
   return{coreSha,candidateSha};
+}
+
+export function annotateFortyAcresSettlementRecognition(ledger,defiteaSource){
+  const contract=defiteaSource?.fortyAcresSettlement||null;
+  const sourceEvents=Array.isArray(defiteaSource?.fortyAcresReceivedEvents)?defiteaSource.fortyAcresReceivedEvents:[];
+  if(!sourceEvents.length)return{ledger,annotated:0};
+  if(
+    contract?.version!==FORTY_ACRES_SETTLEMENT_VERSION||
+    contract?.route!==FORTY_ACRES_ROUTE||
+    contract?.principalId!=='velodrome-finance'||
+    contract?.referenceDoubleCountPrevented!==true||
+    contract?.unknownIsNotZero!==true||
+    contract?.executionAuthority!=='none'
+  )throw new Error('40 Acres settlement recognition contract unavailable or drifted');
+
+  const trackingSince=String(contract.trackingSince||'');
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(trackingSince))throw new Error('40 Acres settlement tracking boundary invalid');
+  const sourceKeys=new Set(sourceEvents.map(x=>x?.eventKey).filter(Boolean).map(x=>`defitea-received:${x}`));
+  let annotated=0;
+  const events=(ledger?.events||[]).map(event=>{
+    if(!sourceKeys.has(event?.eventKey))return event;
+    if(
+      event.company!=='defitea.eth'||event.family!=='realised-cash-flow'||event.route!==FORTY_ACRES_ROUTE||
+      event.protocol!=='40 Acres · veVELO'||event.sourceFile!=='reporting/defitea-income-ledger.json'||
+      event.sourceFamily!=='fortyAcresReceivedEvents'||event.evidenceStatus!=='canonical-actual-net-received'||
+      !event.physicalEventId||String(event.economicDate||'')<trackingSince||event.executionAuthority!=='none'
+    )throw new Error(`40 Acres canonical settlement identity drift: ${event?.eventKey||'unknown'}`);
+    const prior=event.incomeRecognition||null;
+    if(prior&&(
+      prior.recognizesEarnedIncome!==false||prior.settlementOf!==FORTY_ACRES_SETTLEMENT_OF
+    ))throw new Error(`40 Acres income-recognition conflict: ${event.eventKey}`);
+    annotated++;
+    return{
+      ...event,
+      incomeRecognition:{
+        recognizesEarnedIncome:false,
+        settlementOf:FORTY_ACRES_SETTLEMENT_OF,
+        recognitionBasis:'settlement-of-canonical-ve33-earned-accrual-lane',
+        settlementStatus:'settled-net-receipt',
+        mechanismId:'velodrome_vevelo',
+        sourceContractVersion:contract.version,
+        economicFieldsMutated:false,
+        executionAuthority:'none'
+      }
+    };
+  });
+
+  if(annotated!==sourceKeys.size)throw new Error(`40 Acres settlement recognition parity mismatch: ${annotated}/${sourceKeys.size}`);
+  return{
+    ledger:{
+      ...ledger,
+      events,
+      sourceState:{
+        ...(ledger?.sourceState||{}),
+        fortyAcresSettlementRecognition:{
+          source:'reporting/defitea-income-ledger.json#fortyAcresSettlement',
+          version:'0.1-canonical-settlement-only-recognition',
+          sourceContractVersion:contract.version,
+          route:FORTY_ACRES_ROUTE,
+          mechanismId:'velodrome_vevelo',
+          settlementOf:FORTY_ACRES_SETTLEMENT_OF,
+          eventCount:annotated,
+          economicFieldsMutated:false,
+          referenceAprUsed:false,
+          executionAuthority:'none'
+        }
+      },
+      accountingExtensions:{
+        ...(ledger?.accountingExtensions||{}),
+        fortyAcresSettlementRecognition:{
+          version:'0.1-canonical-settlement-only-recognition',
+          family:'realised-cash-flow',
+          recognizesEarnedIncome:false,
+          settlementOf:FORTY_ACRES_SETTLEMENT_OF,
+          accruedIncomeRemainsEarnedIncomeAuthority:true,
+          receiptDoesNotReRecognizeIncome:true,
+          unknownIsNotZero:true,
+          executionAuthority:'none'
+        }
+      }
+    },
+    annotated
+  };
 }
 
 function annotateProjectX(rebuilt,history,built,newEventsAdmitted,integrity,generatedAt){
@@ -109,7 +197,7 @@ function annotateProjectX(rebuilt,history,built,newEventsAdmitted,integrity,gene
 export async function build(){
   const integrity=await verifyExtensionIntegrity();
   const base=await core.build();
-  const history=await readJson(HISTORY_FILE);
+  const[history,defiteaSource]=await Promise.all([readJson(HISTORY_FILE),readJson(DEFITEA_LEDGER_FILE)]);
   const generatedAt=base?.generatedAt||new Date().toISOString();
   const built=buildProjectXIncomeCandidates(history,core.finalizeCandidate,generatedAt);
   const admitted=core.admitEvents(base?.events,built.candidates);
@@ -122,18 +210,27 @@ export async function build(){
     rebuilt=await core.build();
   }
 
-  return annotateProjectX(rebuilt,history,built,admitted.admitted,integrity,generatedAt);
+  const projectXAnnotated=annotateProjectX(rebuilt,history,built,admitted.admitted,integrity,generatedAt);
+  const settlementAnnotated=annotateFortyAcresSettlementRecognition(projectXAnnotated,defiteaSource);
+  return{
+    ...settlementAnnotated.ledger,
+    run:{
+      ...(settlementAnnotated.ledger.run||{}),
+      fortyAcresSettlementOnlyRecognitionCount:settlementAnnotated.annotated
+    }
+  };
 }
 
 async function main(){
   const output=await build();
   await writeJson(OUTPUT_FILE,output);
-  console.log('Canonical Income Ledger built with Project X factual fee accrual',{
+  console.log('Canonical Income Ledger built with factual accrual and settlement recognition',{
     events:output.events?.length||0,
     newEvents:output.run?.newEventsAdmitted||0,
     projectXCandidates:output.run?.projectXCandidateEventCount||0,
     projectXNewEvents:output.run?.projectXNewEventsAdmitted||0,
     projectXAcceptedIntervals:output.run?.projectXAcceptedIntervalCount||0,
+    fortyAcresSettlementOnlyRecognitions:output.run?.fortyAcresSettlementOnlyRecognitionCount||0,
     claimableSnapshots:output.claimableSnapshots?.length||0,
     companies:Object.keys(output.companies||{}).length,
     unknownIsNotZero:output.semantics?.unknownIsNotZero===true,
