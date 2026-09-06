@@ -1,14 +1,18 @@
-/* The Holding · Company Passport priority adapter · v0.2.0
+/* The Holding · Company Passport priority adapter · v0.3.0
  * Presentation only.
  * 1) Promotes the existing APR field to the first metadata row in every
  *    standard Company Passport.
  * 2) Makes already-recognized Canonical Income Ledger income visible in the
  *    Monthly Reports surface even while full-period accounting coverage is
- *    still incomplete. Partial rows are explicitly labelled as observed /
- *    confirmed income and retain the exact report observation period.
+ *    still incomplete.
+ * 3) Shows the matching observed-period yield when factual income exists but
+ *    full-month coverage is incomplete. That yield is explicitly labelled as
+ *    observed/confirmed and never masquerades as a complete monthly yield.
  *
- * This adapter never creates income, estimates missing days, changes accounting
- * completion, substitutes Reference APR, or expands execution authority.
+ * This adapter never creates income, calculates factual income, estimates
+ * missing days, changes accounting completion, substitutes Reference APR, or
+ * expands execution authority. It only renders fields already materialized by
+ * canonical Reporting.
  */
 (() => {
   'use strict';
@@ -24,6 +28,7 @@
   const money = value => finite(value)
     ? '$' + Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
     : '—';
+  const pct = value => finite(value) ? Number(value).toFixed(2) + '%' : '—';
 
   function setText(el, text) {
     if (el && el.textContent !== text) el.textContent = text;
@@ -75,6 +80,18 @@
     return { usd: null, observedOnly: false };
   }
 
+  function displayYield(month) {
+    if (!month) return { value: null, observedOnly: false };
+    if (finite(month.monthlyYieldPct)) {
+      return { value: Number(month.monthlyYieldPct), observedOnly: false };
+    }
+    const hasObservedEvidence = month.accountingStatus === 'partial-observed' && Number(month.accountingEvidenceCount || 0) > 0;
+    if (hasObservedEvidence && finite(month.observedPeriodYieldPct)) {
+      return { value: Number(month.observedPeriodYieldPct), observedOnly: true };
+    }
+    return { value: null, observedOnly: false };
+  }
+
   function formatPeriod(month) {
     if (!month?.periodStart && !month?.periodEnd) return '—';
     const locale = lang() === 'ru' ? 'ru-RU' : 'en-US';
@@ -95,12 +112,16 @@
       observed: 'Подтверждённый доход',
       observedShort: 'подтверждено',
       monthShort: 'за месяц',
+      monthYield: 'Доходность месяца',
+      observedYield: 'Подтверждённая доходность',
       period: 'Период наблюдения'
     } : {
       generated: 'Generated',
       observed: 'Observed earned income',
       observedShort: 'observed',
       monthShort: 'this month',
+      monthYield: 'Month Yield',
+      observedYield: 'Observed period yield',
       period: 'Observation period'
     };
   }
@@ -128,14 +149,18 @@
     if (!keys.length) return;
     const currentKey = keys[keys.length - 1];
     const current = company.months[currentKey];
-    const currentDisplay = displayIncome(current);
+    const currentIncome = displayIncome(current);
+    const currentYield = displayYield(current);
     const c = copy();
 
     const triggerValue = disclosure.querySelector('.th-mr-trigger .th-mr-value');
     const triggerLabel = disclosure.querySelector('.th-mr-trigger .th-mr-value-label');
-    setText(triggerValue, money(currentDisplay.usd));
-    setText(triggerLabel, currentDisplay.observedOnly ? c.observedShort : c.monthShort);
-    disclosure.dataset.thIncomeDisplay = currentDisplay.observedOnly ? 'observed-canonical' : 'complete-or-empty';
+    const triggerYield = disclosure.querySelector('.th-mr-trigger .th-mr-meta span');
+    setText(triggerValue, money(currentIncome.usd));
+    setText(triggerLabel, currentIncome.observedOnly ? c.observedShort : c.monthShort);
+    setText(triggerYield, pct(currentYield.value));
+    disclosure.dataset.thIncomeDisplay = currentIncome.observedOnly ? 'observed-canonical' : 'complete-or-empty';
+    disclosure.dataset.thYieldDisplay = currentYield.observedOnly ? 'observed-period-canonical' : 'complete-or-empty';
 
     const panel = disclosure.querySelector('.th-monthly-report-panel') ||
       document.querySelector(`.th-monthly-report-panel.th-mr-portal-open[data-company="${CSS.escape(companyName)}"]`);
@@ -146,21 +171,28 @@
       ? activeButton.dataset.month
       : currentKey;
     const selected = company.months[selectedKey];
-    const selectedDisplay = displayIncome(selected);
+    const selectedIncome = displayIncome(selected);
+    const selectedYield = displayYield(selected);
 
     const generatedValue = panel.querySelector('[data-th-mr-generated]');
     const generatedLabel = generatedValue?.closest('.th-mr-core-card')?.querySelector('.th-mr-core-label');
-    setText(generatedValue, money(selectedDisplay.usd));
-    setText(generatedLabel, selectedDisplay.observedOnly ? c.observed : c.generated);
+    setText(generatedValue, money(selectedIncome.usd));
+    setText(generatedLabel, selectedIncome.observedOnly ? c.observed : c.generated);
+
+    const yieldValue = panel.querySelector('[data-th-mr-yield]');
+    const yieldLabel = yieldValue?.closest('.th-mr-core-card')?.querySelector('.th-mr-core-label');
+    setText(yieldValue, pct(selectedYield.value));
+    setText(yieldLabel, selectedYield.observedOnly ? c.observedYield : c.monthYield);
 
     const periodRow = ensurePeriodRow(panel);
     if (periodRow) {
       setText(periodRow.querySelector('[data-th-observed-period-label]'), c.period);
       setText(periodRow.querySelector('[data-th-observed-period-value]'), formatPeriod(selected));
-      periodRow.hidden = !selectedDisplay.observedOnly;
+      periodRow.hidden = !(selectedIncome.observedOnly || selectedYield.observedOnly);
     }
 
-    panel.dataset.thIncomeDisplay = selectedDisplay.observedOnly ? 'observed-canonical' : 'complete-or-empty';
+    panel.dataset.thIncomeDisplay = selectedIncome.observedOnly ? 'observed-canonical' : 'complete-or-empty';
+    panel.dataset.thYieldDisplay = selectedYield.observedOnly ? 'observed-period-canonical' : 'complete-or-empty';
   }
 
   function patchMonthlyReports() {
@@ -201,10 +233,11 @@
     });
 
     window.__TH_COMPANY_PASSPORT_PRIORITY_ADAPTER__ = {
-      version: '0.2.0-apr-plus-observed-canonical-income',
+      version: '0.3.0-apr-plus-observed-canonical-income-and-yield',
       promoteApr,
       patchMonthlyReports,
       incomeDisplayPolicy: 'complete-generated-income-or-partial-observed-canonical-income-with-evidence',
+      yieldDisplayPolicy: 'complete-month-yield-or-partial-observed-period-yield-with-canonical-income-evidence',
       referenceIncomeAuthority: false,
       executionAuthority: 'none'
     };
