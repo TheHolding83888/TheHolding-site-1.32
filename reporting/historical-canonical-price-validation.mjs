@@ -1,19 +1,30 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
 import {
-  VERSION,HISTORICAL_TOKEN_ASSET_IDS,canonicalAssetIdForHistoricalToken,selectHistoricalCanonicalPrice
+  VERSION,HISTORICAL_TOKEN_ASSET_IDS,HISTORICAL_OPTIMISM_CHAINLINK_TOKEN_FEEDS,
+  canonicalAssetIdForHistoricalToken,historicalOptimismChainlinkRouteForToken,closingBlockFromVe33Identity,
+  selectHistoricalCanonicalPrice,historicalCanonicalPriceAtBoundary
 } from './historical-canonical-price.mjs';
 import { annotateHistoricalValuationResolution } from './income-ledger.mjs';
 import { recognitionDecision, resolvedUsdValue } from './canonical-earned-income-view.mjs';
 
-assert.equal(VERSION,'0.1-historical-canonical-market-price');
+assert.equal(VERSION,'0.2-historical-canonical-market-or-exact-chainlink-price');
 assert.equal(Object.keys(HISTORICAL_TOKEN_ASSET_IDS).length,4);
+assert.equal(Object.keys(HISTORICAL_OPTIMISM_CHAINLINK_TOKEN_FEEDS).length,4);
 assert.equal(canonicalAssetIdForHistoricalToken('0x940181a94A35A4569E4529A3CDfB74e38FD98631'),'aerodrome-finance');
 assert.equal(canonicalAssetIdForHistoricalToken('0x9560e827aF36c94D2Ac33a39bCE1Fe78631088Db'),'velodrome-finance');
 assert.equal(canonicalAssetIdForHistoricalToken('0x4200000000000000000000000000000000000006'),'ethereum');
 assert.equal(canonicalAssetIdForHistoricalToken('0x68f180fcCe6836688e9084f035309E29Bf0A2095'),'bitcoin');
 assert.equal(canonicalAssetIdForHistoricalToken('0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85'),null);
 assert.equal(canonicalAssetIdForHistoricalToken('0x1111111111111111111111111111111111111111'),null);
+assert.equal(historicalOptimismChainlinkRouteForToken('0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85')?.assetId,'usd-coin');
+assert.equal(historicalOptimismChainlinkRouteForToken('0x4200000000000000000000000000000000000042')?.assetId,'optimism');
+assert.equal(historicalOptimismChainlinkRouteForToken('0x94b008aa00579c1307B0ef2c499ad98a8ce58e58')?.assetId,'tether');
+assert.equal(historicalOptimismChainlinkRouteForToken('0x1F32b1c2345538c0c6f582fCB022739c4A194Ebb')?.assetId,'wrapped-steth');
+assert.equal(historicalOptimismChainlinkRouteForToken('0x9dAbAE7274D28A45F0B65Bf8ED201A5731492ca0'),null);
+assert.equal(closingBlockFromVe33Identity({eventKey:'ve33:synthetic:154971811:156311011'}),156311011);
+assert.equal(closingBlockFromVe33Identity({sourceIdentity:'lane|154971811->lane|156311011'}),156311011);
+assert.equal(closingBlockFromVe33Identity({eventKey:'ve33:synthetic:no-block'}),null);
 
 const snapshot={
   version:'1.2-market-data-truthful-canonical-provenance',
@@ -106,6 +117,85 @@ const unusable=selectHistoricalCanonicalPrice({
 assert.equal(unusable.ok,false);
 assert.equal(unusable.status,'canonical-price-status-not-usable');
 
+// Deterministic exact-block Chainlink proof: every feed read must be pinned to
+// the already-proven ve33 closing block, never "latest" or a current price.
+const chainlinkBoundary='2026-09-01T00:00:00.000Z';
+const chainlinkBoundarySeconds=Math.floor(Date.parse(chainlinkBoundary)/1000);
+const chainlinkClosingBlock=156311011;
+const chainlinkBlockTag=`0x${BigInt(chainlinkClosingBlock).toString(16)}`;
+const abiWord=value=>BigInt(value).toString(16).padStart(64,'0');
+const encodeRoundData=({roundId,answer,startedAt,updatedAt,answeredInRound})=>
+  `0x${abiWord(roundId)}${abiWord(answer)}${abiWord(startedAt)}${abiWord(updatedAt)}${abiWord(answeredInRound)}`;
+const optimismTestRegistry={networks:{optimism:{chainId:10,rpcFailover:[{id:'test-optimism',url:'https://optimism.example'}]}}};
+function chainlinkRpc({answer=99990000n,updatedAt=BigInt(chainlinkBoundarySeconds-300),blockTimestamp=chainlinkBoundarySeconds-2}={}){
+  return async({endpoint,method,params})=>{
+    assert.equal(endpoint.id,'test-optimism');
+    if(method==='eth_getBlockByNumber'){
+      assert.equal(params[0],chainlinkBlockTag);
+      assert.equal(params[1],false);
+      return{number:chainlinkBlockTag,timestamp:`0x${BigInt(blockTimestamp).toString(16)}`};
+    }
+    if(method==='eth_call'){
+      assert.equal(params[1],chainlinkBlockTag,'historical Chainlink call escaped exact ve33 closing block');
+      if(params[0]?.data==='0x313ce567')return`0x${abiWord(8)}`;
+      if(params[0]?.data==='0xfeaf968c')return encodeRoundData({
+        roundId:42n,answer,startedAt:updatedAt-60n,updatedAt,answeredInRound:42n
+      });
+    }
+    throw new Error(`unexpected RPC method ${method}`);
+  };
+}
+
+const historicalUsdc=await historicalCanonicalPriceAtBoundary({
+  token:'0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',boundaryAt:chainlinkBoundary,
+  eventKey:`ve33:synthetic:${154971811}:${chainlinkClosingBlock}`,
+  onchainRegistry:optimismTestRegistry,rpcCall:chainlinkRpc()
+});
+assert.equal(historicalUsdc.ok,true);
+assert.equal(historicalUsdc.status,'historical-onchain-chainlink-price');
+assert.equal(historicalUsdc.sourceFamily,'historical-onchain-chainlink-at-boundary');
+assert.equal(historicalUsdc.assetId,'usd-coin');
+assert.equal(historicalUsdc.priceUsd,0.9999);
+assert.equal(historicalUsdc.chainId,10);
+assert.equal(historicalUsdc.sourceBlockNumber,chainlinkClosingBlock);
+assert.equal(historicalUsdc.exactHistoricalBlock,true);
+assert.equal(historicalUsdc.currentPriceUsed,false);
+assert.equal(historicalUsdc.referenceAprUsed,false);
+assert.equal(historicalUsdc.sourceContract.toLowerCase(),'0x16a9fa2fda030272ce99b29cf780dfa30361e0f3');
+assert.equal(historicalUsdc.roundId,'42');
+assert.equal(historicalUsdc.answeredInRound,'42');
+
+const noClosingBlock=await historicalCanonicalPriceAtBoundary({
+  token:'0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',boundaryAt:chainlinkBoundary,
+  eventKey:'ve33:synthetic:no-closing-block',onchainRegistry:optimismTestRegistry,rpcCall:chainlinkRpc()
+});
+assert.equal(noClosingBlock.ok,false);
+assert.equal(noClosingBlock.status,'ve33-closing-block-proof-missing');
+
+const staleHistoricalUsdc=await historicalCanonicalPriceAtBoundary({
+  token:'0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',boundaryAt:chainlinkBoundary,
+  eventKey:`ve33:synthetic:${154971811}:${chainlinkClosingBlock}`,
+  onchainRegistry:optimismTestRegistry,rpcCall:chainlinkRpc({updatedAt:BigInt(chainlinkBoundarySeconds-100000)})
+});
+assert.equal(staleHistoricalUsdc.ok,false);
+assert.equal(staleHistoricalUsdc.status,'historical-onchain-chainlink-price-stale');
+
+const futureHistoricalUsdc=await historicalCanonicalPriceAtBoundary({
+  token:'0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',boundaryAt:chainlinkBoundary,
+  eventKey:`ve33:synthetic:${154971811}:${chainlinkClosingBlock}`,
+  onchainRegistry:optimismTestRegistry,rpcCall:chainlinkRpc({updatedAt:BigInt(chainlinkBoundarySeconds+1)})
+});
+assert.equal(futureHistoricalUsdc.ok,false);
+assert.equal(futureHistoricalUsdc.status,'historical-chainlink-observation-time-invalid');
+
+const unsupportedMsUsd=await historicalCanonicalPriceAtBoundary({
+  token:'0x9dAbAE7274D28A45F0B65Bf8ED201A5731492ca0',boundaryAt:chainlinkBoundary,
+  eventKey:`ve33:synthetic:${154971811}:${chainlinkClosingBlock}`,
+  onchainRegistry:optimismTestRegistry,rpcCall:chainlinkRpc()
+});
+assert.equal(unsupportedMsUsd.ok,false);
+assert.equal(unsupportedMsUsd.status,'token-not-canonical-market-data-mapped');
+
 const immutableWethEvent={
   eventKey:'ve33:test:weth:august',company:'defitea.eth',family:'accrued-entitlement',route:'velodrome-ve',protocol:'Velodrome',
   economicDate:'2026-08-31',periodStart:'2026-08-01T00:00:00.000Z',periodEnd:'2026-09-01T00:00:00.000Z',
@@ -122,7 +212,7 @@ const resolvedLedger=await annotateHistoricalValuationResolution({
     return{
       ok:true,status:'historical-canonical-market-price',assetId:'ethereum',priceUsd:2466.06838126,
       observedAt:'2026-08-31T23:52:53.619Z',ageMinutes:7.10635,commitSha:'historical-commit',
-      sourceFile:'intelligence/market-data/market-data.json'
+      sourceFile:'intelligence/market-data/market-data.json',sourceFamily:'canonical-market-data-git-history'
     };
   }
 });
@@ -138,8 +228,34 @@ assert.ok(Number(resolvedEvent.valuationResolution?.resolvedUsdValue)>0);
 assert.equal(resolvedUsdValue(resolvedEvent),resolvedEvent.valuationResolution.resolvedUsdValue);
 assert.equal(recognitionDecision(resolvedEvent).status,'recognized','proven historical valuation resolution must make factual accrual recognizable');
 
+const immutableUsdcEvent={
+  ...immutableWethEvent,
+  eventKey:`ve33:test:usdc:${154971811}:${chainlinkClosingBlock}`,
+  asset:'USDC',token:'0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',amount:0.3,
+  immutableEconomicFieldsHash:'immutable-usdc-sentinel'
+};
+const onchainResolvedLedger=await annotateHistoricalValuationResolution({
+  version:'0.1-canonical-income-ledger',events:[immutableUsdcEvent]
+},{resolver:async()=>historicalUsdc});
+assert.equal(onchainResolvedLedger.resolvedEventCount,1);
+const onchainResolvedEvent=onchainResolvedLedger.ledger.events[0];
+assert.equal(onchainResolvedEvent.usdValue,null,'exact historical Chainlink resolution must not rewrite raw event USD');
+assert.equal(onchainResolvedEvent.immutableEconomicFieldsHash,'immutable-usdc-sentinel');
+assert.equal(onchainResolvedEvent.valuationResolution?.sourceFamily,'historical-onchain-chainlink-at-boundary');
+assert.equal(onchainResolvedEvent.valuationResolution?.sourceChainId,10);
+assert.equal(onchainResolvedEvent.valuationResolution?.sourceBlockNumber,chainlinkClosingBlock);
+assert.equal(onchainResolvedEvent.valuationResolution?.exactHistoricalBlock,true);
+assert.equal(onchainResolvedEvent.valuationResolution?.sourceStatus,'historical-onchain-chainlink-price');
+assert.equal(resolvedUsdValue(onchainResolvedEvent),onchainResolvedEvent.valuationResolution.resolvedUsdValue);
+assert.equal(recognitionDecision(onchainResolvedEvent).status,'recognized');
+
+const malformedOnchainEvent=structuredClone(onchainResolvedEvent);
+malformedOnchainEvent.valuationResolution.exactHistoricalBlock=false;
+assert.equal(resolvedUsdValue(malformedOnchainEvent),null,'malformed historical onchain provenance must fail closed');
+assert.equal(recognitionDecision(malformedOnchainEvent).status,'unresolved');
+
 const unsupportedLedger=await annotateHistoricalValuationResolution({
-  version:'0.1-canonical-income-ledger',events:[{...immutableWethEvent,eventKey:'ve33:test:usdc:august',asset:'USDC',token:'0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',amount:0.3}]
+  version:'0.1-canonical-income-ledger',events:[{...immutableWethEvent,eventKey:'ve33:test:msusd:august',asset:'msUSD',token:'0x9dAbAE7274D28A45F0B65Bf8ED201A5731492ca0',amount:0.003}]
 },{resolver:async()=>({ok:false,status:'token-not-canonical-market-data-mapped',assetId:null})});
 assert.equal(unsupportedLedger.resolvedEventCount,0);
 assert.equal(unsupportedLedger.unresolvedEventCount,1);
@@ -151,4 +267,4 @@ const noRewrite=await annotateHistoricalValuationResolution({version:'0.1-canoni
 assert.equal(noRewrite.eligibleEventCount,0);
 assert.equal(noRewrite.ledger.events[0].usdValue,1,'closed numeric valuation must never be rewritten');
 
-console.log('Historical canonical market price validation OK');
+console.log('Historical canonical + exact onchain Chainlink market price validation OK');
