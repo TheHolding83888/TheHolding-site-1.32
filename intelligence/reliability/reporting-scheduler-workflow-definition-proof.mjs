@@ -94,7 +94,7 @@ assert.equal(incomePolicy.authority?.claimingAuthority,'none');
 assert.equal(incomePolicy.authority?.capitalExecution,false);
 assert.equal(incomePolicy.authority?.methodologyMutationAuthority,'none');
 
-assert.match(coverageBuilder,/Accounting Coverage Registry v0\.6/,'Coverage Registry builder identity drift');
+assert.match(coverageBuilder,/Accounting Coverage Registry v0\.10/,'Coverage Registry builder identity drift');
 assert.match(coverageBuilder,/Canonical Income Ledger is the sole authority for/,'Coverage Registry lost Canonical Ledger sole-authority boundary');
 assert.match(coverageBuilder,/Tracking proof never creates period income/,'Coverage tracking proof gained income authority');
 assert.match(coverageBuilder,/zeroPeriodEventDoesNotImplyCoverageGap:true/,'Coverage zero-event semantics missing');
@@ -326,7 +326,7 @@ console.log('Reporting workflow definition paired proof PASS',{
   canonicalDataWakeCount:6,
   rateContinuityPolicy:ratePolicy.version,
   canonicalIncomeLedgerPolicy:incomePolicy.version,
-  accountingCoverageRegistry:'0.6-hyperlend-factual-tracking-accounting-mechanism-coverage-registry',
+  accountingCoverageRegistry:'0.10-explicit-settlement-link-accounting-mechanism-coverage-registry',
   accountingCoveragePersistedByExistingWriter:true,
   accountingCoverageHasIncomeCreationAuthority:false,
   accountingCoverageHasMonthClosingAuthority:false,
