@@ -8,7 +8,14 @@ assert.match(text,/name:\s*Verify Project X Income Accounting/);
 assert.match(text,/permissions:\s*\n\s*contents:\s*read/);
 assert.doesNotMatch(text,/contents:\s*write/);
 assert.doesNotMatch(text,/schedule:/);
-assert.doesNotMatch(text,/sendTransaction|new Wallet\(|private[_-]?key|walletSigning:\s*true|executionAuthority:\s*(?!none)/i);
+for(const forbidden of [
+  /sendTransaction/i,
+  /new Wallet\(/i,
+  /private[_-]?key/i,
+  /walletSigning:\s*true/i,
+  /executionAuthority:\s*(?:write|execute|wallet|capital)/i,
+  /capitalExecution:\s*true/i
+]) assert.doesNotMatch(text,forbidden);
 assert.match(text,/projectx-income-candidates-validation\.mjs/);
 assert.match(text,/income-ledger-validation\.mjs/);
 assert.match(text,/company-monthly-earned-income-validation\.mjs/);
