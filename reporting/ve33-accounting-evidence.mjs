@@ -488,7 +488,7 @@ async function tokenMeta(provider,token,blockTag){
   const c=new Contract(token,ERC20_ABI,provider);
   let symbol='TOKEN',decimals=18;
   try{symbol=await c.symbol({blockTag});}catch{}
-  try{decimals=Number(await c.decimals({blockTag});}catch{}
+  try{decimals=Number(await c.decimals({blockTag}));}catch{}
   return{symbol,decimals};
 }
 
