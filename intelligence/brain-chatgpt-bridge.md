@@ -1,10 +1,10 @@
 # The Holding Brain — ChatGPT Bridge
 
-Generated: 2026-09-05T17:11:01.509Z
+Generated: 2026-09-06T08:53:02.376Z
 Bridge status: watch
 Grounded Brain: watch · delta
-Brain generated: 2026-09-05T17:11:00.068Z
-Brain snapshot: 5cc9ec757bc32e56a94073e6d25b4619f5716bfe6d53c1f8b3c320aac49c081a
+Brain generated: 2026-09-06T08:53:00.864Z
+Brain snapshot: ecd364e0f07e668fe092a109a183122018abd30234d67ffb6ba1f156ca2c2137
 Cases: 25
 Evidence objects: 40
 
@@ -27,7 +27,7 @@ What follows: The signal is real, but the current deterministic policy has no ca
 
 Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 
-Evidence: EV-1d23735bad510bad
+Evidence: EV-83d34c3a6d6959ab
 
 ### 2. .github/workflows/production-deployment-smoke.yml
 
@@ -42,7 +42,7 @@ What follows: The signal is real, but the current deterministic policy has no ca
 
 Deterministic action: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 
-Evidence: EV-44ce2bca614b53d0
+Evidence: EV-2b48bed87ed2673c
 
 ### 3. 50 current findings
 
@@ -57,7 +57,7 @@ What follows: A DOM execution sink exists. Risk depends on whether external or u
 
 Deterministic action: Classify the sink by provenance first. Replace with textContent or safe DOM construction only where untrusted/dynamic data can reach the sink; avoid blind bulk rewrites.
 
-Evidence: EV-1156e08dc28a3455
+Evidence: EV-733a235e541aba53
 
 ### 4. pendle_spendle
 
