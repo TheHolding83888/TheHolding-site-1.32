@@ -10,6 +10,10 @@
 
 const VERSION = '0.1-canonical-earned-income-view';
 const HISTORICAL_VALUATION_RESOLUTION_VERSION = '0.1-canonical-historical-valuation-resolution';
+const HISTORICAL_VALUATION_SOURCE_FAMILIES = new Set([
+  'canonical-market-data-git-history',
+  'historical-onchain-chainlink-at-boundary'
+]);
 const finite = v => v !== null && v !== undefined && v !== '' && Number.isFinite(Number(v));
 const round = (v, d = 8) => finite(v) ? Math.round(Number(v) * 10 ** d) / 10 ** d : null;
 
@@ -27,6 +31,28 @@ function eventMonth(event) {
   return monthKey(event?.economicDate || event?.periodEnd);
 }
 
+function historicalValuationSourceValid(resolution, boundaryMs, observedMs) {
+  const family = resolution?.sourceFamily;
+  if (!HISTORICAL_VALUATION_SOURCE_FAMILIES.has(family)) return false;
+  if (family === 'canonical-market-data-git-history') return true;
+
+  if (
+    resolution?.sourceStatus !== 'historical-onchain-chainlink-price' ||
+    Number(resolution?.sourceChainId) !== 10 ||
+    !Number.isSafeInteger(Number(resolution?.sourceBlockNumber)) || Number(resolution.sourceBlockNumber) <= 0 ||
+    resolution?.exactHistoricalBlock !== true ||
+    !/^0x[0-9a-f]{40}$/i.test(String(resolution?.sourceContract || '')) ||
+    !/^\d+$/.test(String(resolution?.sourceRoundId || '')) ||
+    !/^\d+$/.test(String(resolution?.sourceAnsweredInRound || ''))
+  ) return false;
+  const blockMs = Date.parse(resolution?.sourceBlockTimestamp || '');
+  if (!Number.isFinite(blockMs) || blockMs > boundaryMs || observedMs > blockMs) return false;
+  try {
+    if (BigInt(resolution.sourceRoundId) <= 0n || BigInt(resolution.sourceAnsweredInRound) < BigInt(resolution.sourceRoundId)) return false;
+  } catch { return false; }
+  return true;
+}
+
 function resolvedUsdValue(event) {
   if (finite(event?.usdValue)) return round(event.usdValue, 8);
   const r = event?.valuationResolution || null;
@@ -38,7 +64,6 @@ function resolvedUsdValue(event) {
     r?.currentPriceUsed !== false ||
     r?.unknownIsNotZero !== true ||
     r?.executionAuthority !== 'none' ||
-    r?.sourceFamily !== 'canonical-market-data-git-history' ||
     r?.originalUsdValue !== null ||
     String(r?.boundaryAt || '') !== String(event?.periodEnd || '') ||
     !finite(event?.amount) || Number(event.amount) <= 0 ||
@@ -48,6 +73,7 @@ function resolvedUsdValue(event) {
   const observedMs = Date.parse(r.observedAt || '');
   const boundaryMs = Date.parse(r.boundaryAt || '');
   if (!Number.isFinite(observedMs) || !Number.isFinite(boundaryMs) || observedMs > boundaryMs) return null;
+  if (!historicalValuationSourceValid(r, boundaryMs, observedMs)) return null;
   const expected = round(Number(event.amount) * Number(r.valuationUnitUsd), 8);
   const actual = round(r.resolvedUsdValue, 8);
   if (!finite(expected) || !finite(actual) || Math.abs(Number(expected) - Number(actual)) > 0.00000002) return null;
@@ -212,6 +238,7 @@ function buildCanonicalEarnedIncomeView(ledger) {
       embeddedCompoundingRecognizedAsEarnedIncome: true,
       settlementDoesNotReRecognizeIncome: true,
       historicalValuationResolutionMayCompleteUnknownUsdWithoutMutatingEconomicEvent: true,
+      exactHistoricalOnchainChainlinkResolutionAllowed:true,
       unknownIsNotZero: true
     },
     recognized,
@@ -228,4 +255,4 @@ function buildCanonicalEarnedIncomeView(ledger) {
   };
 }
 
-export { VERSION, monthKey, eventMonth, resolvedUsdValue, recognitionDecision, buildCanonicalEarnedIncomeView };
+export { VERSION, monthKey, eventMonth, historicalValuationSourceValid, resolvedUsdValue, recognitionDecision, buildCanonicalEarnedIncomeView };
