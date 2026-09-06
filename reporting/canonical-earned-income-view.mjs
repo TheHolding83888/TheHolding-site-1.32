@@ -9,6 +9,7 @@
  */
 
 const VERSION = '0.1-canonical-earned-income-view';
+const HISTORICAL_VALUATION_RESOLUTION_VERSION = '0.1-canonical-historical-valuation-resolution';
 const finite = v => v !== null && v !== undefined && v !== '' && Number.isFinite(Number(v));
 const round = (v, d = 8) => finite(v) ? Math.round(Number(v) * 10 ** d) / 10 ** d : null;
 
@@ -26,11 +27,38 @@ function eventMonth(event) {
   return monthKey(event?.economicDate || event?.periodEnd);
 }
 
+function resolvedUsdValue(event) {
+  if (finite(event?.usdValue)) return round(event.usdValue, 8);
+  const r = event?.valuationResolution || null;
+  if (
+    r?.version !== HISTORICAL_VALUATION_RESOLUTION_VERSION ||
+    r?.resolvesUsdValue !== true ||
+    r?.economicFieldsMutated !== false ||
+    r?.referenceAprUsed !== false ||
+    r?.currentPriceUsed !== false ||
+    r?.unknownIsNotZero !== true ||
+    r?.executionAuthority !== 'none' ||
+    r?.sourceFamily !== 'canonical-market-data-git-history' ||
+    r?.originalUsdValue !== null ||
+    String(r?.boundaryAt || '') !== String(event?.periodEnd || '') ||
+    !finite(event?.amount) || Number(event.amount) <= 0 ||
+    !finite(r?.valuationUnitUsd) || Number(r.valuationUnitUsd) <= 0 ||
+    !finite(r?.resolvedUsdValue) || Number(r.resolvedUsdValue) <= 0
+  ) return null;
+  const observedMs = Date.parse(r.observedAt || '');
+  const boundaryMs = Date.parse(r.boundaryAt || '');
+  if (!Number.isFinite(observedMs) || !Number.isFinite(boundaryMs) || observedMs > boundaryMs) return null;
+  const expected = round(Number(event.amount) * Number(r.valuationUnitUsd), 8);
+  const actual = round(r.resolvedUsdValue, 8);
+  if (!finite(expected) || !finite(actual) || Math.abs(Number(expected) - Number(actual)) > 0.00000002) return null;
+  return actual;
+}
+
 function recognitionDecision(event) {
   if (!event?.eventKey || !event?.company || !event?.family) {
     return { status: 'unresolved', reason: 'canonical-event-identity-incomplete' };
   }
-  if (!finite(event.usdValue)) {
+  if (!finite(resolvedUsdValue(event))) {
     return { status: 'unresolved', reason: 'canonical-event-usd-valuation-incomplete' };
   }
   const month = eventMonth(event);
@@ -100,6 +128,7 @@ function buildCanonicalEarnedIncomeView(ledger) {
 
   for (const event of ledger.events || []) {
     const decision = recognitionDecision(event);
+    const effectiveUsdValue = resolvedUsdValue(event);
     const base = {
       eventKey: event.eventKey,
       company: event.company,
@@ -108,12 +137,13 @@ function buildCanonicalEarnedIncomeView(ledger) {
       protocol: event.protocol || null,
       asset: event.asset || null,
       amount: event.amount ?? null,
-      usdValue: finite(event.usdValue) ? round(event.usdValue, 8) : null,
+      usdValue: finite(effectiveUsdValue) ? round(effectiveUsdValue, 8) : null,
       economicDate: event.economicDate || null,
       periodStart: event.periodStart || null,
       periodEnd: event.periodEnd || null,
       sourceIdentity: event.sourceIdentity || null,
       immutableEconomicFieldsHash: event.immutableEconomicFieldsHash || null,
+      valuationResolutionVersion: event?.valuationResolution?.version || null,
       executionAuthority: 'none'
     };
 
@@ -181,6 +211,7 @@ function buildCanonicalEarnedIncomeView(ledger) {
       accruedIncomeRecognizedBeforeClaim: true,
       embeddedCompoundingRecognizedAsEarnedIncome: true,
       settlementDoesNotReRecognizeIncome: true,
+      historicalValuationResolutionMayCompleteUnknownUsdWithoutMutatingEconomicEvent: true,
       unknownIsNotZero: true
     },
     recognized,
@@ -197,4 +228,4 @@ function buildCanonicalEarnedIncomeView(ledger) {
   };
 }
 
-export { VERSION, monthKey, eventMonth, recognitionDecision, buildCanonicalEarnedIncomeView };
+export { VERSION, monthKey, eventMonth, resolvedUsdValue, recognitionDecision, buildCanonicalEarnedIncomeView };

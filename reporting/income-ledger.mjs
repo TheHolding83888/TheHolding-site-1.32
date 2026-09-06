@@ -17,6 +17,7 @@ import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import * as core from './income-ledger-core.mjs';
 import { buildProjectXIncomeCandidates } from './projectx-income-candidates.mjs';
+import { historicalCanonicalPriceAtBoundary } from './historical-canonical-price.mjs';
 
 export * from './income-ledger-core.mjs';
 export { buildProjectXIncomeCandidates } from './projectx-income-candidates.mjs';
@@ -33,6 +34,9 @@ const OUTPUT_FILE=process.env.INCOME_LEDGER_FILE||path.join(ROOT,'reporting','in
 const FORTY_ACRES_ROUTE='forty-acres-velodrome-received';
 const FORTY_ACRES_SETTLEMENT_VERSION='0.1-40acres-actual-received-replaces-velodrome-reference';
 const FORTY_ACRES_SETTLEMENT_OF='canonical-accrued-income:velodrome_vevelo:defitea.eth';
+const HISTORICAL_VALUATION_RESOLUTION_VERSION='0.1-canonical-historical-valuation-resolution';
+const VE33_SOURCE_FILE='reporting/ve33-accounting-evidence.json';
+const MONTH_BOUNDARY=/^\d{4}-\d{2}-01T00:00:00\.000Z$/;
 
 // The Reporting safe-writer already fingerprints income-ledger.mjs. These blob
 // guards extend that fail-closed contract to the extracted immutable core and
@@ -43,6 +47,8 @@ const EXPECTED_PROJECTX_CANDIDATES_GIT_BLOB='fd7860b37a1c45f772f826e43072b4a8600
 async function readJson(file,fallback={}){try{return JSON.parse(await fs.readFile(file,'utf8'));}catch{return fallback;}}
 async function writeJson(file,data){await fs.mkdir(path.dirname(file),{recursive:true});await fs.writeFile(file,JSON.stringify(data,null,2)+'\n');}
 function gitBlobSha(content){const body=Buffer.isBuffer(content)?content:Buffer.from(content);const header=Buffer.from(`blob ${body.length}\0`);return crypto.createHash('sha1').update(Buffer.concat([header,body])).digest('hex');}
+const finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v));
+const round=(v,d=8)=>finite(v)?Math.round(Number(v)*10**d)/10**d:null;
 async function verifyExtensionIntegrity(){
   const[coreBytes,candidateBytes]=await Promise.all([fs.readFile(CORE_FILE),fs.readFile(PROJECTX_CANDIDATES_FILE)]);
   const coreSha=gitBlobSha(coreBytes),candidateSha=gitBlobSha(candidateBytes);
@@ -134,6 +140,107 @@ export function annotateFortyAcresSettlementRecognition(ledger,defiteaSource){
   };
 }
 
+export async function annotateHistoricalValuationResolution(ledger,{resolver=historicalCanonicalPriceAtBoundary}={}){
+  const cache=new Map();
+  let eligible=0,resolved=0,unresolved=0;
+  const unresolvedStatuses={};
+  const events=[];
+
+  for(const event of ledger?.events||[]){
+    const boundaryAt=String(event?.periodEnd||'');
+    const isEligible=
+      event?.family==='accrued-entitlement'&&
+      event?.sourceFile===VE33_SOURCE_FILE&&
+      event?.usdValue===null&&
+      event?.valuationStatus==='unvalued-fail-closed'&&
+      MONTH_BOUNDARY.test(boundaryAt)&&
+      event?.token&&finite(event?.amount)&&Number(event.amount)>0&&
+      event?.unknownIsNotZero===true&&event?.executionAuthority==='none';
+
+    if(!isEligible){events.push(event);continue;}
+    eligible++;
+    const key=`${String(event.token).toLowerCase()}|${boundaryAt}`;
+    if(!cache.has(key))cache.set(key,Promise.resolve().then(()=>resolver({token:event.token,boundaryAt})).catch(error=>({ok:false,status:'historical-canonical-price-resolver-error',error:error?.message||String(error)})));
+    const valuation=await cache.get(key);
+    const price=Number(valuation?.priceUsd),observedMs=Date.parse(valuation?.observedAt||''),boundaryMs=Date.parse(boundaryAt);
+    if(valuation?.ok!==true||!(Number.isFinite(price)&&price>0)||!Number.isFinite(observedMs)||observedMs>boundaryMs){
+      unresolved++;
+      const status=valuation?.status||'historical-canonical-price-unavailable';
+      unresolvedStatuses[status]=(unresolvedStatuses[status]||0)+1;
+      events.push(event);
+      continue;
+    }
+
+    const resolvedUsdValue=round(Number(event.amount)*price,8);
+    if(!(finite(resolvedUsdValue)&&Number(resolvedUsdValue)>0)){
+      unresolved++;
+      unresolvedStatuses['resolved-usd-value-invalid']=(unresolvedStatuses['resolved-usd-value-invalid']||0)+1;
+      events.push(event);
+      continue;
+    }
+
+    const resolution={
+      version:HISTORICAL_VALUATION_RESOLUTION_VERSION,
+      resolvesUsdValue:true,
+      resolvedUsdValue,
+      valuationUnitUsd:round(price,12),
+      boundaryAt,
+      observedAt:valuation.observedAt,
+      sourceFile:valuation.sourceFile||null,
+      sourceCommit:valuation.commitSha||null,
+      sourceAssetId:valuation.assetId||null,
+      sourceStatus:valuation.status||'historical-canonical-market-price',
+      snapshotAgeMinutes:finite(valuation.ageMinutes)?round(valuation.ageMinutes,6):null,
+      sourceFamily:'canonical-market-data-git-history',
+      originalUsdValue:null,
+      economicFieldsMutated:false,
+      referenceAprUsed:false,
+      currentPriceUsed:false,
+      unknownIsNotZero:true,
+      executionAuthority:'none'
+    };
+    const prior=event.valuationResolution||null;
+    if(prior&&JSON.stringify(prior)!==JSON.stringify(resolution))throw new Error(`Historical valuation-resolution conflict: ${event.eventKey}`);
+    resolved++;
+    events.push({...event,valuationResolution:resolution});
+  }
+
+  const summary={
+    version:HISTORICAL_VALUATION_RESOLUTION_VERSION,
+    eligibleEventCount:eligible,
+    resolvedEventCount:resolved,
+    unresolvedEventCount:unresolved,
+    unresolvedStatuses,
+    economicFieldsMutated:false,
+    referenceAprUsed:false,
+    currentPriceUsed:false,
+    unknownIsNotZero:true,
+    executionAuthority:'none'
+  };
+  return{
+    ledger:{
+      ...ledger,
+      events,
+      sourceState:{
+        ...(ledger?.sourceState||{}),
+        historicalValuationResolution:{
+          ...summary,
+          source:'canonical Market Data Git history at original accounting boundary'
+        }
+      },
+      accountingExtensions:{
+        ...(ledger?.accountingExtensions||{}),
+        historicalValuationResolution:{
+          ...summary,
+          immutableEventUsdValueRewritten:false,
+          resolvedValueLivesInNonEconomicMetadata:true
+        }
+      }
+    },
+    ...summary
+  };
+}
+
 function annotateProjectX(rebuilt,history,built,newEventsAdmitted,integrity,generatedAt){
   const s=built.summary;
   return{
@@ -212,11 +319,14 @@ export async function build(){
 
   const projectXAnnotated=annotateProjectX(rebuilt,history,built,admitted.admitted,integrity,generatedAt);
   const settlementAnnotated=annotateFortyAcresSettlementRecognition(projectXAnnotated,defiteaSource);
+  const valuationAnnotated=await annotateHistoricalValuationResolution(settlementAnnotated.ledger);
   return{
-    ...settlementAnnotated.ledger,
+    ...valuationAnnotated.ledger,
     run:{
-      ...(settlementAnnotated.ledger.run||{}),
-      fortyAcresSettlementOnlyRecognitionCount:settlementAnnotated.annotated
+      ...(valuationAnnotated.ledger.run||{}),
+      fortyAcresSettlementOnlyRecognitionCount:settlementAnnotated.annotated,
+      historicalValuationResolvedEventCount:valuationAnnotated.resolvedEventCount,
+      historicalValuationUnresolvedEventCount:valuationAnnotated.unresolvedEventCount
     }
   };
 }
@@ -224,13 +334,15 @@ export async function build(){
 async function main(){
   const output=await build();
   await writeJson(OUTPUT_FILE,output);
-  console.log('Canonical Income Ledger built with factual accrual and settlement recognition',{
+  console.log('Canonical Income Ledger built with factual accrual, settlement recognition and historical valuation resolution',{
     events:output.events?.length||0,
     newEvents:output.run?.newEventsAdmitted||0,
     projectXCandidates:output.run?.projectXCandidateEventCount||0,
     projectXNewEvents:output.run?.projectXNewEventsAdmitted||0,
     projectXAcceptedIntervals:output.run?.projectXAcceptedIntervalCount||0,
     fortyAcresSettlementOnlyRecognitions:output.run?.fortyAcresSettlementOnlyRecognitionCount||0,
+    historicalValuationResolvedEvents:output.run?.historicalValuationResolvedEventCount||0,
+    historicalValuationUnresolvedEvents:output.run?.historicalValuationUnresolvedEventCount||0,
     claimableSnapshots:output.claimableSnapshots?.length||0,
     companies:Object.keys(output.companies||{}).length,
     unknownIsNotZero:output.semantics?.unknownIsNotZero===true,
