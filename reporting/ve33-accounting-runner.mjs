@@ -13,6 +13,11 @@ import {
   trackedPositionDescriptors,
   buildVe33Evidence
 } from './ve33-accounting-evidence.mjs';
+import {
+  canReuseEvidence,
+  evidenceInputFingerprint,
+  SAFE_WRITER_EVIDENCE_REUSE
+} from './safe-writer-evidence-reuse.mjs';
 
 const __filename=fileURLToPath(import.meta.url);
 const __dirname=path.dirname(__filename);
@@ -228,7 +233,30 @@ export async function runVe33Accounting({rewards,previous={},generatedAt=new Dat
 
 async function main(){
   const[rewards,previous]=await Promise.all([readJson(DEFAULT_REWARDS),readJson(DEFAULT_OUTPUT,{})]);
+  const fingerprint=evidenceInputFingerprint({
+    rewards,
+    root:ROOT,
+    extra:{
+      runnerVersion:VERSION,
+      requireHistoricalRpc:requireHistoricalRpc(process.env),
+      requiredHistoricalBoundaries:[...REQUIRED_HISTORICAL_BOUNDARIES]
+    }
+  });
+
+  if(canReuseEvidence({previous,fingerprint,root:ROOT,env:process.env})){
+    console.log('ve33 safe-writer publication reuse',{
+      status:previous.status,
+      generatedAt:previous.generatedAt,
+      reuseVersion:SAFE_WRITER_EVIDENCE_REUSE.version,
+      executionAuthority:previous.authority?.executionAuthority||'none'
+    });
+    return previous;
+  }
+
   const output=await runVe33Accounting({rewards,previous});
+  output.runner.safeWriterInputFingerprint=fingerprint;
+  output.runner.safeWriterEvidenceReuseVersion=SAFE_WRITER_EVIDENCE_REUSE.version;
+  output.runner.safeWriterEvidenceReuseMaxAgeMinutes=SAFE_WRITER_EVIDENCE_REUSE.maxAgeMinutes;
   await writeJson(DEFAULT_OUTPUT,output);
   console.log('ve33 capability-aware accounting runner built',{
     status:output.status,
