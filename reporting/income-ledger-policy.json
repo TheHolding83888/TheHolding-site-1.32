@@ -23,7 +23,16 @@
     "referenceAprCanNeverBackfillEarnedIncome": true,
     "stablePriceEffectIsSeparateFromEmbeddedIncome": true,
     "unknownIsNotZero": true,
-    "crossFamilySummationForbidden": true
+    "crossFamilySummationForbidden": true,
+    "canonicalCompanyOwnsIncomeExclusively": true,
+    "crossCompanyEarnedIncomeReattributionForbidden": true,
+    "foreignCompanyReferenceIncomeIsContextOnly": true
+  },
+  "ownership": {
+    "authoritativeField": "company",
+    "targetAttributionRule": "row.company === targetCompany",
+    "crossCompanyReattributionAllowed": false,
+    "foreignCompanyReferenceIncome": "context-only"
   },
   "claimableContinuity": {
     "increase": "state-increase-observed-not-income-authority",

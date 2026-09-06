@@ -17,11 +17,20 @@ const productivity={
   }
 };
 
-// Contributor arithmetic fixture: deliberately simple deterministic values.
+// Associated-company arithmetic remains observable as context, but canonical
+// ownership prevents cross-company re-attribution into Defitea cash flow.
 assert.equal(CONTRIBUTORS.length,2);
-assert.equal(contributorRow(productivity,'YieldRing.eth','2026-08-22').referenceIncomeUsd,1);
-assert.equal(contributorRow(productivity,'05081966.eth','2026-08-22').referenceIncomeUsd,1);
-assert.equal(contributorRow(productivity,'YieldRing.eth','2026-08-22').includedInDefiteaTvl,false);
+const yieldRingContext=contributorRow(productivity,'YieldRing.eth','2026-08-22');
+const firstCompanyContext=contributorRow(productivity,'05081966.eth','2026-08-22');
+assert.equal(yieldRingContext.referenceIncomeUsd,1);
+assert.equal(firstCompanyContext.referenceIncomeUsd,1);
+assert.equal(yieldRingContext.canonicalIncomeOwner,'YieldRing.eth');
+assert.equal(firstCompanyContext.canonicalIncomeOwner,'05081966.eth');
+assert.equal(yieldRingContext.incomeIncludedInDefiteaCashFlow,false);
+assert.equal(firstCompanyContext.incomeIncludedInDefiteaCashFlow,false);
+assert.equal(yieldRingContext.foreignCompanyContextOnly,true);
+assert.equal(yieldRingContext.crossCompanyReattributionAllowed,false);
+assert.equal(yieldRingContext.includedInDefiteaTvl,false);
 
 const vmBase={
   generatedAt:'2026-08-22T05:45:00Z',
@@ -53,6 +62,7 @@ const first=collectVoteMarketEvents(vmBase,{trackingStartedAt:'2026-08-09',exist
 assert.equal(first.events.length,2);
 assert.equal(first.admitted,2);
 assert.equal(first.events.reduce((s,x)=>s+x.usdValue,0),5);
+assert.equal(first.events.every(x=>x.company==='defitea.eth'),true);
 assert.equal(first.events.some(x=>x.eventDate<'2026-08-09'),false);
 
 // Same current claimable snapshot cannot be counted twice.
@@ -66,8 +76,8 @@ const third=collectVoteMarketEvents(afterClaim,{trackingStartedAt:'2026-08-09',e
 assert.equal(third.events.length,2);
 assert.equal(third.events.reduce((s,x)=>s+x.usdValue,0),5);
 
-// Production-scale synthetic month: values are intentionally close to the
-// observed Aug-21 Defitea Reporting scale, but remain deterministic test data.
+// Production-scale synthetic month: foreign-company reference rows remain in
+// the ledger as context, but only Defitea-owned mechanisms enter Defitea cash flow.
 const months={
   '2026-07':{month:'2026-07',status:'final-reported',mode:'reported-realised',cashFlowUsd:56.05,monthlyYieldPct:0.82,annualizedAprPct:9.89,averageTvlUsd:6835.37},
   '2026-08':{month:'2026-08',status:'provisional',mode:'reference-model',cashFlowUsd:45.62,referenceCashFlowUsd:45.62,averageTvlUsd:9532.58,sampleDays:13,monthlyYieldPct:0.4785,annualizedAprPct:13.954}
@@ -82,20 +92,22 @@ const ledger={
 const rebuilt=rebuildDefiteaMonths({months},ledger);
 assert.equal(rebuilt['2026-07'].cashFlowUsd,56.05); // immutable legacy family untouched
 assert.equal(rebuilt['2026-08'].baseDefiteaReferenceCashFlowUsd,45.62);
-assert.equal(rebuilt['2026-08'].associatedCompanyReferenceCashFlowUsd,2);
+assert.equal(rebuilt['2026-08'].associatedCompanyReferenceCashFlowUsd,0);
+assert.equal(rebuilt['2026-08'].associatedCompanyReferenceContextUsd,2);
+assert.equal(rebuilt['2026-08'].crossCompanyReferenceIncomeExcludedUsd,2);
 assert.equal(rebuilt['2026-08'].voteMarketObservedIncomeUsd,5);
-assert.equal(rebuilt['2026-08'].cashFlowUsd,52.62);
-assert.equal(rebuilt['2026-08'].monthlyYieldPct,0.552); // denominator remains Defitea-only TVL
-assert.equal(rebuilt['2026-08'].annualizedAprPct,15.4985); // observed 13-day yield annualized; no fabricated future days
+assert.equal(rebuilt['2026-08'].cashFlowUsd,50.62);
+assert.equal(rebuilt['2026-08'].monthlyYieldPct,0.531); // denominator remains Defitea-only TVL
+assert.equal(rebuilt['2026-08'].annualizedAprPct,14.9094); // observed 13-day yield annualized; no fabricated future days
 assert.equal(rebuilt['2026-08'].associatedCompanyTvlIncluded,false);
+assert.equal(rebuilt['2026-08'].crossCompanyReattributionAllowed,false);
 
 // The live year APR is the arithmetic mean of comparable per-month annualized rates.
-// This fixture keeps the live month in a realistic Defitea-scale range.
 const liveSummary=rebuildYearSummary(rebuilt,'2026');
-assert.equal(liveSummary.annualizedCashFlowAprPct,12.6943);
+assert.equal(liveSummary.annualizedCashFlowAprPct,12.3997);
 assert.equal(liveSummary.annualizedCashFlowAprIncludesLiveMonth,true);
 assert.equal(liveSummary.annualizedCashFlowAprMonths,2);
-assert.equal(liveSummary.currentMonthAnnualizedAprPct,15.4985);
+assert.equal(liveSummary.currentMonthAnnualizedAprPct,14.9094);
 
 // Closed-only fallback remains stable when no provisional month exists.
 const closedSummary=rebuildYearSummary({'2026-07':rebuilt['2026-07']},'2026');
@@ -123,22 +135,28 @@ const composed=compose({reporting,productivity,rewards:vmBase,ledger:{contributo
 const fund=composed.reporting.funds['defitea.eth'];
 assert.equal(fund.latestSnapshot.totalValueUsd,9532.58); // no associated-company TVL leakage
 assert.equal(fund.incomeComposition.associatedCompanyTvlIncluded,false);
+assert.equal(fund.incomeComposition.crossCompanyReattributionAllowed,false);
+assert.equal(fund.incomeComposition.currentDayAssociatedCompanyReferenceContextUsd,2);
+assert.equal(fund.incomeComposition.currentDayAssociatedCompanyAttributedIncomeUsd,0);
+assert.equal(composed.ledger.contributors.every(x=>x.incomeIncludedInDefiteaCashFlow===false),true);
+assert.equal(composed.ledger.contributors.every(x=>x.contextOnly===true),true);
 assert.equal(composed.ledger.contributors.every(x=>x.includedInDefiteaTvl===false),true);
 assert.equal(fund.vlCvxReconciliation.claimableSettlementAddedToReferenceCashFlow,false); // unchanged reconciliation boundary
 assert.equal(fund.months['2026-07'].cashFlowUsd,56.05);
-assert.equal(fund.months['2026-08'].cashFlowUsd,52.62);
-assert.equal(fund.summaries['2026'].annualizedCashFlowAprPct,12.6943);
+assert.equal(fund.months['2026-08'].cashFlowUsd,50.62);
+assert.equal(fund.summaries['2026'].annualizedCashFlowAprPct,12.3997);
 assert.equal(fund.summaries['2026'].annualizedCashFlowAprIncludesLiveMonth,true);
 
-// Unknown != zero: incomplete contributor Productivity must fail closed.
+// Unknown != zero: incomplete associated-company Productivity context still fails closed.
 assert.throws(()=>contributorRow({companies:{'YieldRing.eth':{status:'partial',coverage:0.5,productiveValue:1000,aprLatest:10}}},'YieldRing.eth','2026-08-22'),/complete canonical Productivity state required/);
 
 console.log('Defitea income composition validation PASS',{
   voteMarketEvents:first.events.length,
   duplicateAdmissions:second.admitted,
   retainedAfterClaim:third.events.length,
-  contributorDailyUsd:2,
-  unifiedAugustCashFlowUsd:rebuilt['2026-08'].cashFlowUsd,
+  associatedCompanyReferenceContextUsd:2,
+  associatedCompanyAttributedIncomeUsd:0,
+  defiteaAugustCashFlowUsd:rebuilt['2026-08'].cashFlowUsd,
   liveAugustAnnualizedAprPct:rebuilt['2026-08'].annualizedAprPct,
   liveYearAnnualizedAprPct:liveSummary.annualizedCashFlowAprPct,
   defiteaOnlyTvlUsd:9532.58

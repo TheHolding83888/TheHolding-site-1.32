@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import { buildCanonicalEarnedIncomeView } from './canonical-earned-income-view.mjs';
+import { incomeOwnedByCompany } from './income-ownership.mjs';
 
 const REPORT_FILE = process.env.COMPANY_MONTHLY_REPORTS_FILE || './reporting/company-monthly-reports.json';
 const LEDGER_FILE = process.env.INCOME_LEDGER_FILE || './reporting/income-ledger.json';
@@ -23,7 +24,7 @@ function legacyDefiteaActual(month, row) {
 }
 
 function rowsForMonth(rows, company, month) {
-  return rows.filter(row => row.company === company && (row.month || monthKey(row.economicDate || row.periodEnd)) === month);
+  return rows.filter(row => incomeOwnedByCompany(row, company) && (row.month || monthKey(row.economicDate || row.periodEnd)) === month);
 }
 
 function sumUsd(rows) {
@@ -49,6 +50,9 @@ report.generatedAt = new Date().toISOString();
 report.accountingPolicy = {
   recognitionBasis: 'canonical-ledger-admitted-events-with-explicit-non-overlap-recognition',
   canonicalLedgerIsSoleMonthlyIncomeEventSource: true,
+  canonicalCompanyOwnsIncomeExclusively: true,
+  crossCompanyEarnedIncomeReattributionForbidden: true,
+  foreignCompanyReferenceIncomeIsContextOnly: true,
   monthlyLayerCreatesIncomeEvents: false,
   claimableSnapshotDeltaCreatesIncome: false,
   genericReceiptCreatesIncome: false,
@@ -121,6 +125,8 @@ for (const [companyName, company] of Object.entries(report.companies || {})) {
         evidenceCount: 1,
         source: 'reporting/reporting-data.json legacy-verified-report',
         canonicalLedgerOnlyForNewPeriods: true,
+        canonicalCompanyOwnsIncomeExclusively: true,
+        crossCompanyReattributionAllowed: false,
         unknownIsNotZero: true,
         executionAuthority: 'none'
       };
@@ -175,6 +181,8 @@ for (const [companyName, company] of Object.entries(report.companies || {})) {
       sourceGeneratedAt: ledger.generatedAt || null,
       monthlyLayerCreatesIncomeEvents: false,
       claimableSnapshotDeltaCreatesIncome: false,
+      canonicalCompanyOwnsIncomeExclusively: true,
+      crossCompanyReattributionAllowed: false,
       unknownIsNotZero: true,
       executionAuthority: 'none'
     };
