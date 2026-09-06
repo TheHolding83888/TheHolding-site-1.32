@@ -6,54 +6,72 @@ executionAuthority: **none**
 
 > This file is not live truth. A new chat MUST start from live `intelligence/project-memory/CURRENT.md` on `main`, then latest continuity → Router → fresh artifacts / exact Actions evidence.
 
-## Active objective
+## Completed in this chat
 
-1. Finish PR #653 — Defitea native income ownership.
-2. Then finish the independent Learning public-metadata privacy repair.
+### PR #653 — Defitea native income ownership
 
-## Fresh branch state at checkpoint
+Merged successfully.
 
-- live `main`: `d3376b93ea7f383a1910f9979fd71a9f339c19a5`
-- PR #653 branch `fix/defitea-native-income-ownership-20260906`: `7e1e2935c0bef7bee8bfc94af30ac5ef6790d28a`
-- privacy branch `fix/learning-public-metadata-redaction-20260906`: `1dae18d3feccb692abbaf3d59f509c02f8224953`
+- PR: `#653` — `Defitea: enforce native income ownership`
+- exact validated PR head before merge: `84f99f894b157d3cd51643d7f5f490e4ab2029fd`
+- merge commit: `ae7808bd98a007a48b659fffee17a333c124da15`
+- Reporting Layer: success
+- Company Monthly Reports: success
+- Project X Income Accounting: success
+- Company 009 Beefy Income Ledger: success
+- Repository Hygiene: success
+- Commit Identity Privacy: success
 
-These SHAs are resume hints only. Re-fetch all three before acting.
-
-## PR #653
-
-Intent: canonical income belongs only to the company named by the canonical row/event (`row.company === target company`). YieldRing / 05081966 Productivity income may remain reference context but must not enter Defitea cash flow / Generated or Defitea TVL.
-
-Important invariants:
-- Canonical Income Ledger remains sole factual earned-income authority.
-- Reference APR stays non-authoritative.
-- `UNKNOWN != 0`.
+Economic / accounting invariant preserved:
+- canonical earned income belongs only to the company named by the canonical row/event;
+- foreign-company Productivity income may remain reference context but must not enter Defitea cash flow / Generated;
+- Canonical Income Ledger remains factual earned-income authority;
+- Reference APR remains non-authoritative;
+- `UNKNOWN != 0`;
 - no wallet/capital execution.
 
-Earlier blockers already fixed:
-- monthly/reporting version drift;
-- Defitea runtime ledger schema must remain `0.1-defitea-income-composition`, while composition semantics may be v0.2.
+### PR #655 — Learning public-metadata privacy repair
 
-Before merge: inspect exact-head checks on the CURRENT #653 head, especially Reporting Layer full writer/integration; compare against fresh `main`; merge only if clean/mergeable.
+Merged successfully.
 
-## Learning privacy repair
+- PR: `#655` — `Learning: redact repository metadata from engineering evidence`
+- exact validated PR head before merge: `5757ecf80af87f816d1a86c2a1cd7c8cb6cbb396`
+- merge commit: `def5eb1bad912040633f047bb46874c54f89e1db`
+- diff at merge: exactly 2 files
+  - `intelligence/learning/engineering-lesson-candidate-adapter.mjs`
+  - `intelligence/learning-state/engineering-lesson-candidates.json`
+- Public Surface Privacy Guard: success
+- Repository Hygiene Guard: success
+- Commit Identity Privacy Guard: success
+- all 7 exact-head check-runs were completed with no failure / pending before merge.
 
-Root cause: engineering lesson adapter verified git subjects correctly but published raw commit subjects into `engineering-lesson-candidates.json`; one merge subject contained repository-owner metadata and Public Surface Privacy Guard correctly rejected it.
+Privacy invariant preserved:
+- raw git commit subjects remain internal to verification;
+- generated/public evidence diagnostics expose only short SHA + marker matched/mismatch;
+- Public Surface Privacy Guard was not weakened or bypassed;
+- no Learning authority expansion;
+- no policy/methodology mutation authority;
+- no wallet/capital execution.
 
-Correct direction:
-- keep subject verification internal;
-- publish only sanitized evidence diagnostics (short SHA + marker matched/mismatch);
-- do NOT weaken Public Surface Privacy Guard;
-- generated `engineering-lesson-candidates.json` must exactly match adapter semantics and have a valid recomputed integrity hash;
-- verify independent engineering reviewer + Public Surface Privacy Guard before merge.
+## Fresh main at final checkpoint
 
-Current privacy branch contains the adapter redaction work and a sanitized generated output, but verify that adapter output strings and committed generated output are exactly deterministic before opening/merging its PR.
+Immediately after #655 merge:
 
-## Resume order
+- `main`: `def5eb1bad912040633f047bb46874c54f89e1db`
 
-1. live CURRENT
-2. latest continuity linked by CURRENT
-3. Router
-4. fresh `main`
-5. exact PR #653 head/checks/diff → finish/merge/prove
-6. exact privacy branch diff/checks → finish/open PR/merge/prove
-7. refresh normal continuity after material completion
+Post-merge push checks had already started. At the last inspection, some push-side checks (including automatic checkpoint / Cloudflare) were still in progress. Treat this as a timing note only, not a blocker claim. Re-fetch exact live state before acting.
+
+## Resume order for next chat
+
+1. read live `CURRENT.md` from `main`;
+2. read latest continuity linked by CURRENT;
+3. read Router;
+4. fetch fresh `main` (it may have advanced automatically);
+5. inspect post-merge checks for `def5eb1b…` or the newer live main if automation advanced it;
+6. confirm Public Surface Privacy Guard is green on live state;
+7. confirm normal automatic continuity/checkpoint materialized after the merges;
+8. only then pick the next real blocker from fresh evidence — do not reopen #653 or #655 unless live evidence shows a regression.
+
+## Important note
+
+This handoff branch is intentionally separate from production work. Do not merge this temporary chat-checkpoint into `main`; it exists only so another chat can recover this conversation if context is lost.
