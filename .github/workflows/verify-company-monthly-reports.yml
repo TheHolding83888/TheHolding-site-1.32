@@ -15,6 +15,7 @@ on:
       - 'reporting/icp-nns-factual-intervals-validation.mjs'
       - 'intelligence/icp-nns/company-005-006-neuron-pool.json'
       - 'companies/company-monthly-report-adapter.js'
+      - 'companies/company-passport-priority-adapter.js'
       - '.github/workflows/update-company-monthly-reports.yml'
       - '.github/workflows/verify-company-monthly-reports.yml'
   workflow_dispatch:
@@ -49,6 +50,7 @@ jobs:
           node --check reporting/icp-nns-factual-intervals.mjs
           node --check reporting/icp-nns-factual-intervals-validation.mjs
           node --check companies/company-monthly-report-adapter.js
+          node --check companies/company-passport-priority-adapter.js
           git diff --check
 
       - name: Exercise exact monthly accounting candidate
@@ -146,7 +148,7 @@ jobs:
           set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');
-          const files=['reporting/company-monthly-reports.mjs','reporting/canonical-earned-income-view.mjs','reporting/company-monthly-earned-income.mjs','reporting/accounting-coverage.mjs','reporting/icp-nns-factual-intervals.mjs','companies/company-monthly-report-adapter.js'];
+          const files=['reporting/company-monthly-reports.mjs','reporting/canonical-earned-income-view.mjs','reporting/company-monthly-earned-income.mjs','reporting/accounting-coverage.mjs','reporting/icp-nns-factual-intervals.mjs','companies/company-monthly-report-adapter.js','companies/company-passport-priority-adapter.js'];
           const text=files.map(f=>fs.readFileSync(f,'utf8')).join('\n');
           for(const bad of ['api.coingecko.com','COINGECKO_API_KEY','new Wallet(','sendTransaction(','executionAuthority: write','registryHasMonthClosingAuthority:true','monthClosingAuthority:true']){
             if(text.includes(bad)) throw new Error('unexpected monthly reporting authority/data discovery: '+bad);
@@ -161,6 +163,10 @@ jobs:
           const view=fs.readFileSync('reporting/canonical-earned-income-view.mjs','utf8');
           for(const required of ['claimableSnapshotsCreateIncome: false','genericReceiptCreatesIncome: false','settlementDoesNotReRecognizeIncome: true']){
             if(!view.includes(required)) throw new Error('canonical earned-income view invariant missing: '+required);
+          }
+          const priority=fs.readFileSync('companies/company-passport-priority-adapter.js','utf8');
+          for(const required of ["const COVERAGE_URL = '/reporting/accounting-coverage.json'",'noticesCreateIncome: false','coverageHasCompletionAuthority: false','referenceIncomeAuthority: false',"data?.status !== 'diagnostic-no-completion-authority'"]){
+            if(!priority.includes(required)) throw new Error('accounting transparency boundary missing: '+required);
           }
           const coverage=JSON.parse(fs.readFileSync('/tmp/accounting-coverage.json','utf8'));
           if(coverage.status!=='diagnostic-no-completion-authority'||coverage.authority?.monthClosingAuthority!==false) throw new Error('Accounting coverage diagnostic gained completion authority');
