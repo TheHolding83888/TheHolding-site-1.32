@@ -45,7 +45,7 @@ const REWARDS_DATA_FILE=process.env.REWARDS_DATA_FILE||path.join(ROOT,'companies
 const DEFITEA='defitea.eth';
 const CONTRIBUTORS=['YieldRing.eth','05081966.eth'];
 const VOTEMARKET_ROUTES=new Set(['votemarket-vecrv','votemarket-vefxn']);
-const LEDGER_VERSION='0.2-defitea-income-composition';
+const LEDGER_VERSION='0.1-defitea-income-composition';
 const COMPOSITION_VERSION='0.2-defitea-native-income-owner-isolation';
 
 function finite(v){
