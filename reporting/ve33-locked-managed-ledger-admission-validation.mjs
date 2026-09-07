@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { admitLockedManagedIntoLedgerState } from './ve33-ledger-admission.mjs';
 
 const baseEvidence={
-  version:'0.1-ve33-locked-managed-factual-accrual',
-  semantics:{openingBalanceCreatesIncome:false,earnedIndependentOfWithdrawal:true,withdrawalIsSettlementNotSecondIncome:true,grossVeNftPrincipalDeltaIsIncomeAuthority:false,referenceAprUsed:false,laterPriceMovementRewritesClosedIncome:false,unknownIsNotZero:true},
+  version:'0.2-ve33-locked-managed-historical-factual-accrual',
+  semantics:{openingBalanceCreatesIncome:false,earnedIndependentOfWithdrawal:true,withdrawalIsSettlementNotSecondIncome:true,grossVeNftPrincipalDeltaIsIncomeAuthority:false,referenceAprUsed:false,laterPriceMovementRewritesClosedIncome:false,unknownIsNotZero:true,historicalBoundaryIdentityMustMatch:true,historicalClosedIntervalPriceSource:'canonical market-data Git history only; unmapped or stale price remains UNKNOWN'},
   authority:{executionAuthority:'none',walletAuthority:'none',claimingAuthority:'none',capitalExecution:false,methodologyMutationAuthority:'none'},
   checkpoints:[],events:[]
 };
