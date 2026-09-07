@@ -236,7 +236,10 @@ assert.doesNotMatch(workflow,/actions:\s*write/,'Reporting scheduler must not ga
 assert.doesNotMatch(workflow,/\n\s*pull_request:/,'Reporting production writer must not gain pull_request execution');
 assert.match(workflow,/group:\s*reporting-daily/,'Reporting concurrency group drift');
 assert.match(workflow,/cancel-in-progress:\s*false/,'Reporting production writer must remain non-cancellable');
-assert.match(workflow,/timeout-minutes:\s*30/,'Reporting safe-writer retry runtime budget missing');
+const timeoutMatch=workflow.match(/timeout-minutes:\s*(\d+)/);
+assert.ok(timeoutMatch,'Reporting safe-writer retry runtime budget missing');
+const safeWriterTimeoutMinutes=Number(timeoutMatch[1]);
+assert.ok(safeWriterTimeoutMinutes>=75,'Reporting safe-writer runtime budget is too small for the three-attempt race-rebuild contract');
 assert.match(workflow,/npm install --no-save --no-package-lock ethers@6/,'Accounting runtime dependency missing');
 assert.match(workflow,/node reporting\/reporting-scheduled-runner\.mjs --validate-contract/,'Reporting scheduler contract preflight missing');
 assert.match(workflow,/run: node reporting\/reporting-scheduled-runner\.mjs/,'Reporting production writer must execute the contract-bound runner');
@@ -390,6 +393,7 @@ console.log('Reporting workflow definition paired proof PASS',{
   appendOnlyIncomeHistory:true,
   stateOnlyClaimableSnapshots:true,
   rebaseRebuildGuard:true,
+  safeWriterTimeoutMinutes,
   productionWriterPullRequestAuthority:false,
   workflowDispatchAuthority:false,
   concurrency:'reporting-daily/non-cancellable',
