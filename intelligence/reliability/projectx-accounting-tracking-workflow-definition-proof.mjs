@@ -21,6 +21,11 @@ assert.doesNotMatch(workflow,/git\s+(add|commit|push)|update-ref|create-pull-req
 assert.match(workflow,/node reporting\/projectx-tracking-proof-validation\.mjs/,'Project X deterministic validator is not executed');
 assert.match(workflow,/node reporting\/accounting-coverage\.mjs/,'production Accounting Coverage builder is not executed');
 assert.match(workflow,/node intelligence\/reliability\/projectx-accounting-tracking-workflow-definition-proof\.mjs/,'workflow does not self-check its authority contract');
+assert.match(workflow,/reporting\/income-ledger\.json/,'Project X verifier is not bound to Canonical Income Ledger period-event truth');
+assert.match(workflow,/canonicalLedgerIsSoleFactualIncomeAuthority/,'Project X verifier lost Canonical Ledger sole factual-income authority check');
+assert.match(workflow,/factualTrackingProofIsNotPeriodIncome/,'Project X verifier lost tracking-proof non-income boundary');
+assert.match(workflow,/Coverage period-event count diverged from Canonical Income Ledger/,'Project X verifier still assumes a fixed period-event count instead of canonical truth');
+assert.doesNotMatch(workflow,/factualEventCompanyCount,0,'Project X tracking proof fabricated factual period events'/,'Project X verifier retained stale zero-event invariant');
 
 const start=engine.indexOf('export function projectXWhypeUsdcObservationProofs');
 const end=engine.indexOf('\nfunction strongVlCvxRouteProofs',start);

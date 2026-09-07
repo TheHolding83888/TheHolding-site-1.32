@@ -7,6 +7,7 @@ const STATE_FILE=process.env.COMPANY_010_STATE_FILE||'./companies/company-010-pr
 const live=JSON.parse(fs.readFileSync(STATE_FILE,'utf8'));
 const clone=()=>structuredClone(live);
 const proof=state=>concentratorAsdCrvObservationProofs(state);
+const embeddedRow=state=>state.rewards.embeddedIncomeMechanisms.find(x=>x.id==='concentrator-asdcrv');
 
 let proofs=proof(live);
 assert.equal(proofs.length,1,'live Concentrator current-state observation must prove factual tracking');
@@ -14,15 +15,36 @@ assert.equal(proofs[0].engineId,'concentrator_asdcrv');
 assert.equal(proofs[0].company,'Cypher');
 assert.equal(proofs[0].sourceFile,'companies/company-010-production-state.json#strategies.crv.concentrator-asdcrv');
 
+// Both explicit mechanism-measured statuses are valid tracking states. A
+// temporarily unavailable Reference APR must not revoke factual tracking.
+const pendingRate=clone();
+embeddedRow(pendingRate).status='measured-mechanism-rate-pending';
+embeddedRow(pendingRate).referenceAprPct=null;
+assert.equal(proof(pendingRate).length,1,'measured Concentrator mechanism lost tracking only because Reference APR is pending');
+
 // Reference analytics must never participate in factual tracking qualification.
 const referenceDrift=clone();
 const refStrategy=referenceDrift.strategies.crv.strategies.find(x=>x.id==='concentrator-asdcrv');
 const refProductivity=referenceDrift.productivity.positions.find(x=>x.id==='concentrator_asdcrv');
-const refEmbedded=referenceDrift.rewards.embeddedIncomeMechanisms.find(x=>x.id==='concentrator-asdcrv');
+const refEmbedded=embeddedRow(referenceDrift);
 refStrategy.yield.referenceAprPct=999999;
 refProductivity.referenceAprPct=999999;
 refEmbedded.referenceAprPct=999999;
 assert.equal(proof(referenceDrift).length,1,'Reference APR leaked into Concentrator factual tracking authority');
+
+const nullReference=clone();
+nullReference.strategies.crv.strategies.find(x=>x.id==='concentrator-asdcrv').yield.referenceAprPct=null;
+nullReference.productivity.positions.find(x=>x.id==='concentrator_asdcrv').referenceAprPct=null;
+embeddedRow(nullReference).referenceAprPct=null;
+assert.equal(proof(nullReference).length,1,'null Reference APR incorrectly revoked measured Concentrator tracking');
+
+const unmeasuredStatus=clone();
+embeddedRow(unmeasuredStatus).status='unknown';
+assert.equal(proof(unmeasuredStatus).length,0,'unmeasured Concentrator state gained factual tracking authority');
+
+const missingConvertToAssets=clone();
+embeddedRow(missingConvertToAssets).source='unknown';
+assert.equal(proof(missingConvertToAssets).length,0,'Concentrator tracking admitted without convertToAssets source proof');
 
 const capitalMismatch=clone();
 capitalMismatch.capital.positions.find(x=>x.assetId==='concentrator-asdcrv').quantity+=1;
@@ -37,7 +59,7 @@ claimableDrift.strategies.crv.strategies.find(x=>x.id==='concentrator-asdcrv').y
 assert.equal(proof(claimableDrift).length,0,'Concentrator compounded/claimable boundary failed open');
 
 const embeddedDrift=clone();
-embeddedDrift.rewards.embeddedIncomeMechanisms.find(x=>x.id==='concentrator-asdcrv').incomeMode='separate-claimable-rewards';
+embeddedRow(embeddedDrift).incomeMode='separate-claimable-rewards';
 assert.equal(proof(embeddedDrift).length,0,'Concentrator embedded-income projection mismatch failed open');
 
 const authorityDrift=clone();
@@ -54,6 +76,7 @@ assert.equal(proof(unknownPrincipal).length,0,'unknown Concentrator underlying w
 
 console.log('Concentrator asdCRV factual tracking validation PASS',{
   currentStateTracking:true,
+  measuredRatePendingTracking:true,
   referenceAprAuthority:false,
   periodIncomeAuthority:false,
   claimAuthority:false,
