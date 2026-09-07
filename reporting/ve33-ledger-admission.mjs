@@ -5,12 +5,18 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { build, finalizeCandidate, admitEvents } from './income-ledger.mjs';
 import { ve33EvidenceCandidates, validateVe33Evidence } from './ve33-income-candidates.mjs';
-import { buildLockedManagedEvidence, LOCKED_MANAGED_VERSION } from './ve33-locked-managed-accounting-evidence.mjs';
+import {
+  buildLockedManagedEvidence,
+  LOCKED_MANAGED_VERSION,
+  LOCKED_MANAGED_ACCOUNTING_START,
+  trackedLockedManagedDescriptors
+} from './ve33-locked-managed-accounting-evidence.mjs';
 import { lockedManagedEvidenceCandidates, validateLockedManagedEvidence } from './ve33-locked-managed-income-candidates.mjs';
 import {
   canReuseEvidence,
   evidenceInputFingerprint,
-  SAFE_WRITER_EVIDENCE_REUSE
+  SAFE_WRITER_EVIDENCE_REUSE,
+  selectHistoricalProviders
 } from './ve33-accounting-runner.mjs';
 
 const __filename=fileURLToPath(import.meta.url);
@@ -42,6 +48,34 @@ export function admitLockedManagedIntoLedgerState({ledger,evidence,generatedAt=n
   return{ledger:{...ledger,events:admitted.events},newEventsAdmitted:admitted.admitted,candidateEventCount:candidates.length};
 }
 
+export function requiredLockedManagedHistoricalProtocols(rewards){
+  return [...new Set(trackedLockedManagedDescriptors(rewards).map(x=>x.protocolKey).filter(Boolean))].sort();
+}
+
+export function validateLockedManagedHistoricalSelection({rewards,selection}={}){
+  const required=requiredLockedManagedHistoricalProtocols(rewards),missing=[];
+  for(const protocolKey of required){
+    const row=selection?.diagnostics?.[protocolKey];
+    if(row?.status!=='archive-capable-provider-selected'||!selection?.providers?.[protocolKey])missing.push(protocolKey);
+  }
+  if(missing.length)throw new Error(`locked-managed historical RPC capability missing for: ${missing.join(', ')}`);
+  return required;
+}
+
+function compactHistoricalSelection(selection,required=[]){
+  return Object.fromEntries(required.map(protocolKey=>{
+    const row=selection?.diagnostics?.[protocolKey]||{};
+    return[protocolKey,{
+      status:row.status||null,
+      selectedProvider:row.selectedProvider||null,
+      currentProvider:row.currentProvider||null,
+      routingMode:row.routingMode||null,
+      requiredBoundaries:row.requiredBoundaries||[],
+      executionAuthority:'none'
+    }];
+  }));
+}
+
 function annotate(rebuilt,evidence,admission,lockedEvidence,lockedAdmission,generatedAt){
   const checkpointCount=Array.isArray(evidence?.checkpoints)?evidence.checkpoints.length:0;
   const eventCount=Array.isArray(evidence?.events)?evidence.events.length:0;
@@ -62,6 +96,7 @@ function annotate(rebuilt,evidence,admission,lockedEvidence,lockedAdmission,gene
         file:'reporting/ve33-locked-managed-accounting-evidence.json',version:lockedEvidence?.version||null,status:lockedEvidence?.status||null,
         fullAccountingStart:lockedEvidence?.fullAccountingStart||null,checkpointCount:lockedCheckpointCount,candidateEventCount:lockedEventCount,
         includedMechanisms:lockedEvidence?.scope?.included||[],excludedMechanisms:lockedEvidence?.scope?.excluded||[],
+        historicalRpcSelection:lockedEvidence?.provenance?.historicalRpcSelection||null,
         referenceAprUsed:false,grossVeNftPrincipalDeltaIsIncomeAuthority:false,laterPriceMovementRewritesClosedIncome:false
       }
     },
@@ -82,6 +117,7 @@ function annotate(rebuilt,evidence,admission,lockedEvidence,lockedAdmission,gene
         version:lockedEvidence?.version||null,source:'reporting/ve33-locked-managed-accounting-evidence.json',status:lockedEvidence?.status||null,
         fullAccountingStart:lockedEvidence?.fullAccountingStart||null,openingBalanceCreatesIncome:false,earnedIndependentOfWithdrawal:true,
         withdrawalIsSettlementNotSecondIncome:true,grossVeNftPrincipalDeltaIsIncomeAuthority:false,referenceAprUsed:false,
+        historicalBoundaryIdentityMustMatch:true,historicalClosedIntervalPriceSource:'canonical market-data Git history only; unmapped or stale price remains UNKNOWN',
         laterPriceMovementRewritesClosedIncome:false,unknownIsNotZero:true,executionAuthority:'none'
       }
     }
@@ -99,6 +135,8 @@ export async function runVe33LedgerAdmission({generatedAt=new Date().toISOString
     extra:{
       lane:'ve33-locked-managed',
       version:LOCKED_MANAGED_VERSION,
+      accountingStart:LOCKED_MANAGED_ACCOUNTING_START,
+      historicalCanonicalPriceRequiredForClosedMonth:true,
       ve33EvidenceInputFingerprint:evidence?.runner?.safeWriterInputFingerprint||null
     }
   });
@@ -114,12 +152,17 @@ export async function runVe33LedgerAdmission({generatedAt=new Date().toISOString
   if(reuseLocked){
     lockedEvidence=previousLocked;
   }else{
-    lockedEvidence=await buildLockedManagedEvidence({rewards,previous:previousLocked,generatedAt});
+    const selection=await selectHistoricalProviders({rewards,env:process.env});
+    const requiredHistoricalProtocols=validateLockedManagedHistoricalSelection({rewards,selection});
+    lockedEvidence=await buildLockedManagedEvidence({rewards,previous:previousLocked,generatedAt,providers:selection.providers});
     lockedEvidence.provenance={
       ...(lockedEvidence.provenance||{}),
       safeWriterInputFingerprint:lockedFingerprint,
       safeWriterEvidenceReuseVersion:SAFE_WRITER_EVIDENCE_REUSE.version,
-      safeWriterEvidenceReuseMaxAgeMinutes:SAFE_WRITER_EVIDENCE_REUSE.maxAgeMinutes
+      safeWriterEvidenceReuseMaxAgeMinutes:SAFE_WRITER_EVIDENCE_REUSE.maxAgeMinutes,
+      historicalRpcRequired:true,
+      historicalRpcSelection:compactHistoricalSelection(selection,requiredHistoricalProtocols),
+      executionAuthority:'none'
     };
     await writeJson(LOCKED_EVIDENCE_FILE,lockedEvidence);
   }
@@ -142,12 +185,8 @@ async function main(){
   const output=await runVe33LedgerAdmission();
   console.log('ve(3,3) evidence admitted through Canonical Ledger builder',{
     events:output.events?.length||0,
-    ve33Candidates:output.run?.ve33CandidateEventCount||0,
-    ve33NewEvents:output.run?.ve33NewEventsAdmitted||0,
-    ve33Checkpoints:output.run?.ve33CheckpointCount||0,
-    lockedManagedCandidates:output.run?.ve33LockedManagedCandidateEventCount||0,
-    lockedManagedNewEvents:output.run?.ve33LockedManagedNewEventsAdmitted||0,
-    lockedManagedCheckpoints:output.run?.ve33LockedManagedCheckpointCount||0,
+    ve33Candidates:output.run?.ve33CandidateEventCount||0,ve33NewEvents:output.run?.ve33NewEventsAdmitted||0,ve33Checkpoints:output.run?.ve33CheckpointCount||0,
+    lockedManagedCandidates:output.run?.ve33LockedManagedCandidateEventCount||0,lockedManagedNewEvents:output.run?.ve33LockedManagedNewEventsAdmitted||0,lockedManagedCheckpoints:output.run?.ve33LockedManagedCheckpointCount||0,
     executionAuthority:output.authority?.executionAuthority||null
   });
 }
