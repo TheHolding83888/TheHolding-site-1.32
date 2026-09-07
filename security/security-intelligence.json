@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-07T14:13:09.970Z",
+  "generatedAt": "2026-09-07T14:46:09.868Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 2,
-    "medium": 50,
+    "medium": 51,
     "low": 0,
     "info": 0
   },
   "source": {
-    "filesScanned": 1063,
-    "bytesScanned": 29296436,
+    "filesScanned": 1067,
+    "bytesScanned": 29454586,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Sat, 05 Sep 2026 02:38:24 GMT",
+        "lastModified": "Fri, 04 Sep 2026 07:32:28 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -55,7 +55,22 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [],
+    "newFindings": [
+      {
+        "id": "5681538234818b0b04ce4c4edafc0bec5b2d31842125f66f957c3ec362690289",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/update-reporting.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/update-reporting.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "e637429b144fbdc3827717eff90eb8ffc2e9b9d625e2f9bc1fa5aed79275ec02",
+          "currentSha256": "1de2704a9463ebdcd8dc862e8ae554f6dd6c1fa983f245b7346d8d04badb5d81"
+        }
+      }
+    ],
     "resolvedFindings": []
   },
   "currentFindings": [
@@ -80,6 +95,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "5681538234818b0b04ce4c4edafc0bec5b2d31842125f66f957c3ec362690289",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/update-reporting.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/update-reporting.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "e637429b144fbdc3827717eff90eb8ffc2e9b9d625e2f9bc1fa5aed79275ec02",
+        "currentSha256": "1de2704a9463ebdcd8dc862e8ae554f6dd6c1fa983f245b7346d8d04badb5d81"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -716,12 +745,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "3e65c9698cb169fccc14b59e87b9cd6a8ca25fbeb3b24088aa682515de454559",
+    "snapshotHash": "e00105e91ef764db71b847a00b7ca665a05679c75ac7290f6e66569cb5edcba0",
     "securityVault": {
-      "runCount": 900,
+      "runCount": 901,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/09/2026-09-07T14-13-09-970Z-3e65c9698c.json",
-      "latestRecordHash": "c906de1b13d595aeb737832fd05994f894b0272e82669708484475e4921fc193",
+      "latestRecordPath": "security/security-vault/2026/09/2026-09-07T14-46-09-868Z-e00105e91e.json",
+      "latestRecordHash": "4dff51b43ed0382f2def63ecf51709532fe3e91672a88d9b46261ca50f610aae",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }

@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-07T14:13:09.970Z",
+  "generatedAt": "2026-09-07T14:46:09.868Z",
   "status": "watch",
-  "snapshotHash": "3e65c9698cb169fccc14b59e87b9cd6a8ca25fbeb3b24088aa682515de454559",
+  "snapshotHash": "e00105e91ef764db71b847a00b7ca665a05679c75ac7290f6e66569cb5edcba0",
   "repository": {
-    "filesScanned": 1063,
-    "bytesScanned": 29296436,
+    "filesScanned": 1067,
+    "bytesScanned": 29454586,
     "criticalHashes": {
       ".github/workflows/admit-company-010-public.yml": "5feffbf58388675952487c3462d2f9149eecec6f3795483087010dd0d3b19cfb",
       ".github/workflows/ask-experience.yml": "deb9c4e1025390563f8a866f6ddf1c7870e748cbd6aba13fdbd6da2d38e983d4",
@@ -82,7 +82,7 @@
       ".github/workflows/update-project-memory-bootstrap.yml": "b808325631039498017553d575cf5acabbf6ec58f411817a842ad6439471d46f",
       ".github/workflows/update-proposal-work-queue.yml": "86f0f65b8b5de031bf72ed22934c37acb6d13e2fa80f995169285fa273e4be64",
       ".github/workflows/update-realised-cash-flow.yml": "d3d5351698ceacfe3bf93e7e61c5394f164c2f7c8dc82c3cce831a706aff89d5",
-      ".github/workflows/update-reporting.yml": "e637429b144fbdc3827717eff90eb8ffc2e9b9d625e2f9bc1fa5aed79275ec02",
+      ".github/workflows/update-reporting.yml": "1de2704a9463ebdcd8dc862e8ae554f6dd6c1fa983f245b7346d8d04badb5d81",
       ".github/workflows/update-runtime-owner-activation.yml": "a5f1506177cdd7d6a306d59c02393038d32b2c15fa930696cce4331f2ee5a677",
       ".github/workflows/update-stable-capital.yml": "2cab5cc5b960b633f7131e84d83a751036a73cdd6a60decc37910beb30d33954",
       ".github/workflows/update-vlcvx-votium-curve-gauge-flow.yml": "84982de193f009b5f45d31e803e454547a6fa2be69e5a44f08cd50be108f684e",
@@ -147,6 +147,7 @@
       ".github/workflows/verify-ve33-accounting.yml": "c897efe6f756c449c0689a219f0cd205213599aa67f3b4b2c026359c247b6096",
       ".github/workflows/verify-ve33-historical-rpc.yml": "5c061d15dba68f6dff80150d6af8ca40bf204c9185ce327f6a354a386890bc34",
       ".github/workflows/verify-ve33-locked-managed-accounting.yml": "deb96c39ffbf38944bf182f49e3f0820cc4f854e41e3e2f068d7f07762705884",
+      ".github/workflows/verify-ve33-volatile-pool-valuation.yml": "ebf84544a5c2a28d88595f4e150cf5d47c349cff2135283637a5767cae6b5ad3",
       ".github/workflows/verify-vlcvx-convex-team-eligibility.yml": "b139d5854e797ab6b59888a483559be9e99635bdf7219ccc709e424c291436d3",
       ".github/workflows/verify-vlcvx-convex-team-settlement.yml": "27f9856e5ff30195a66d44342add14cdea7e4e94e738d50be382d24d358fe07a",
       ".github/workflows/verify-vlcvx-extra-reward-distribution.yml": "eafd9e08b89839a264344a1112a295b58d57d713b75154057e1d6d8606102c7d",
@@ -450,7 +451,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Sat, 05 Sep 2026 02:38:24 GMT",
+        "lastModified": "Fri, 04 Sep 2026 07:32:28 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -486,6 +487,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "5681538234818b0b04ce4c4edafc0bec5b2d31842125f66f957c3ec362690289",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/update-reporting.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/update-reporting.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "e637429b144fbdc3827717eff90eb8ffc2e9b9d625e2f9bc1fa5aed79275ec02",
+        "currentSha256": "1de2704a9463ebdcd8dc862e8ae554f6dd6c1fa983f245b7346d8d04badb5d81"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -1112,10 +1127,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 900,
+    "runCount": 901,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/09/2026-09-07T14-13-09-970Z-3e65c9698c.json",
-    "latestRecordHash": "c906de1b13d595aeb737832fd05994f894b0272e82669708484475e4921fc193",
+    "latestRecordPath": "security/security-vault/2026/09/2026-09-07T14-46-09-868Z-e00105e91e.json",
+    "latestRecordHash": "4dff51b43ed0382f2def63ecf51709532fe3e91672a88d9b46261ca50f610aae",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
