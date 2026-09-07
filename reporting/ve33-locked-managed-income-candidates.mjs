@@ -2,6 +2,7 @@ export const LOCKED_MANAGED_EVIDENCE_VERSION='0.2-ve33-locked-managed-historical
 
 const finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v));
 const dayKey=v=>{const t=Date.parse(v||'');return Number.isFinite(t)?new Date(t).toISOString().slice(0,10):null;};
+const isMonthBoundary=v=>{const t=Date.parse(v||'');if(!Number.isFinite(t))return false;const d=new Date(t);return d.getUTCDate()===1&&d.getUTCHours()===0&&d.getUTCMinutes()===0&&d.getUTCSeconds()===0&&d.getUTCMilliseconds()===0;};
 
 export function validateLockedManagedEvidence(source){
   if(!source?.version)return{present:false};
@@ -21,9 +22,7 @@ export function lockedManagedEvidenceCandidates(source,finalizeCandidate,generat
     if(!e.holder||!e.tokenId||!e.managedTokenId||!e.rewardContract||!e.token)throw new Error(`locked-managed event identity incomplete: ${e.eventKey}`);
     if(e.recognitionState!=='compounded-locked'||e.openingBalanceCreatesIncome!==false||e.earnedIndependentOfWithdrawal!==true||e.withdrawalIsSettlementNotSecondIncome!==true||e.grossVeNftPrincipalDeltaIsIncomeAuthority!==false||e.referenceAprUsed!==false||e.currentClaimableBalanceIsPeriodIncome!==false||e.claimIsSecondIncomeEvent!==false||e.laterClaimOrPriceMoveDoesNotRewriteIncome!==true||e.unknownIsNotZero!==true)throw new Error(`locked-managed recognition boundary invalid: ${e.eventKey}`);
     if(e.usdValue!==null&&e.usdValue!==undefined&&!(finite(e.usdValue)&&Number(e.usdValue)>0))throw new Error(`locked-managed USD value invalid: ${e.eventKey}`);
-    if(e.periodEnd?.endsWith('T00:00:00.000Z')&&String(e.periodStart||'').slice(0,7)!==String(e.economicDate||'').slice(0,7)){
-      if(e.valuationStatus!=='historical-canonical-market-price-frozen-at-closing-accounting-boundary'&&e.usdValue!==null&&e.usdValue!==undefined)throw new Error(`locked-managed historical valuation boundary invalid: ${e.eventKey}`);
-    }
+    if(isMonthBoundary(e.periodEnd)&&e.usdValue!==null&&e.usdValue!==undefined&&e.valuationStatus!=='historical-canonical-market-price-frozen-at-closing-accounting-boundary')throw new Error(`locked-managed historical valuation boundary invalid: ${e.eventKey}`);
     out.push(finalizeCandidate({...e,family:'embedded-income',sourceEvidenceFamily:e.family,sourceFile:'reporting/ve33-locked-managed-accounting-evidence.json',sourceFamily:'ve(3,3) LockedManagedReward factual accrual'},generatedAt));
   }
   return out;
