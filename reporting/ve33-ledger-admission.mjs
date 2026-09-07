@@ -97,6 +97,7 @@ function annotate(rebuilt,evidence,admission,lockedEvidence,lockedAdmission,gene
         fullAccountingStart:lockedEvidence?.fullAccountingStart||null,checkpointCount:lockedCheckpointCount,candidateEventCount:lockedEventCount,
         includedMechanisms:lockedEvidence?.scope?.included||[],excludedMechanisms:lockedEvidence?.scope?.excluded||[],
         historicalRpcSelection:lockedEvidence?.provenance?.historicalRpcSelection||null,
+        lastEarnNoSettlementProofCount:lockedEvidence?.diagnostics?.lastEarnNoSettlementProofCount||0,
         referenceAprUsed:false,grossVeNftPrincipalDeltaIsIncomeAuthority:false,laterPriceMovementRewritesClosedIncome:false
       }
     },
@@ -117,7 +118,8 @@ function annotate(rebuilt,evidence,admission,lockedEvidence,lockedAdmission,gene
         version:lockedEvidence?.version||null,source:'reporting/ve33-locked-managed-accounting-evidence.json',status:lockedEvidence?.status||null,
         fullAccountingStart:lockedEvidence?.fullAccountingStart||null,openingBalanceCreatesIncome:false,earnedIndependentOfWithdrawal:true,
         withdrawalIsSettlementNotSecondIncome:true,grossVeNftPrincipalDeltaIsIncomeAuthority:false,referenceAprUsed:false,
-        historicalBoundaryIdentityMustMatch:true,historicalClosedIntervalPriceSource:'canonical market-data Git history only; unmapped or stale price remains UNKNOWN',
+        historicalBoundaryIdentityMustMatch:true,unchangedLastEarnAcrossExactBoundariesProvesNoSettlement:true,
+        historicalClosedIntervalPriceSource:'canonical market-data Git history only; unmapped or stale price remains UNKNOWN',
         laterPriceMovementRewritesClosedIncome:false,unknownIsNotZero:true,executionAuthority:'none'
       }
     }
@@ -137,6 +139,7 @@ export async function runVe33LedgerAdmission({generatedAt=new Date().toISOString
       version:LOCKED_MANAGED_VERSION,
       accountingStart:LOCKED_MANAGED_ACCOUNTING_START,
       historicalCanonicalPriceRequiredForClosedMonth:true,
+      exactLastEarnSettlementContinuityProof:true,
       ve33EvidenceInputFingerprint:evidence?.runner?.safeWriterInputFingerprint||null
     }
   });
@@ -162,6 +165,7 @@ export async function runVe33LedgerAdmission({generatedAt=new Date().toISOString
       safeWriterEvidenceReuseMaxAgeMinutes:SAFE_WRITER_EVIDENCE_REUSE.maxAgeMinutes,
       historicalRpcRequired:true,
       historicalRpcSelection:compactHistoricalSelection(selection,requiredHistoricalProtocols),
+      exactLastEarnSettlementContinuityProof:true,
       executionAuthority:'none'
     };
     await writeJson(LOCKED_EVIDENCE_FILE,lockedEvidence);
