@@ -18,6 +18,10 @@ import { fileURLToPath } from 'node:url';
 import * as core from './income-ledger-core.mjs';
 import { buildProjectXIncomeCandidates } from './projectx-income-candidates.mjs';
 import { historicalCanonicalPriceAtBoundary } from './historical-canonical-price.mjs';
+import {
+  ve33EventIdentity,
+  historicalValuationSourceMatchesVe33Identity
+} from './ve33-historical-valuation-identity.mjs';
 
 export * from './income-ledger-core.mjs';
 export { buildProjectXIncomeCandidates } from './projectx-income-candidates.mjs';
@@ -140,9 +144,37 @@ export function annotateFortyAcresSettlementRecognition(ledger,defiteaSource){
   };
 }
 
+function withoutValuationResolution(event){
+  if(!event?.valuationResolution)return event;
+  const{valuationResolution,...clean}=event;
+  return clean;
+}
+
+function reusableIdentityBoundResolution(event,identity){
+  const r=event?.valuationResolution||null;
+  if(
+    r?.version!==HISTORICAL_VALUATION_RESOLUTION_VERSION||r?.identityBound!==true||
+    String(r?.identityToken||'').toLowerCase()!==identity.token||
+    String(r?.boundaryAt||'')!==String(event?.periodEnd||'')||
+    r?.economicFieldsMutated!==false||r?.referenceAprUsed!==false||r?.currentPriceUsed!==false||
+    r?.unknownIsNotZero!==true||r?.executionAuthority!=='none'||r?.originalUsdValue!==null||
+    !finite(r?.valuationUnitUsd)||Number(r.valuationUnitUsd)<=0||!finite(r?.resolvedUsdValue)||Number(r.resolvedUsdValue)<=0||
+    !historicalValuationSourceMatchesVe33Identity(event,r)
+  )return false;
+  const observedMs=Date.parse(r.observedAt||''),boundaryMs=Date.parse(r.boundaryAt||'');
+  if(!Number.isFinite(observedMs)||!Number.isFinite(boundaryMs)||observedMs>boundaryMs)return false;
+  if(r.sourceFamily==='historical-onchain-chainlink-at-boundary'){
+    if(r?.exactHistoricalBlock!==true||Number(r?.sourceBlockNumber)!==Number(identity.closeBlock))return false;
+    const blockMs=Date.parse(r?.sourceBlockTimestamp||'');
+    if(!Number.isFinite(blockMs)||blockMs>boundaryMs||observedMs>blockMs)return false;
+  }
+  const expected=round(Number(event.amount)*Number(r.valuationUnitUsd),8);
+  return finite(expected)&&Math.abs(Number(expected)-Number(r.resolvedUsdValue))<=0.00000002;
+}
+
 export async function annotateHistoricalValuationResolution(ledger,{resolver=historicalCanonicalPriceAtBoundary}={}){
   const cache=new Map();
-  let eligible=0,resolved=0,unresolved=0;
+  let eligible=0,resolved=0,unresolved=0,identityMismatchEventCount=0,legacyResolutionReplacedCount=0,invalidPriorResolutionClearedCount=0,reusedIdentityBoundResolutionCount=0;
   const unresolvedStatuses={};
   const events=[];
 
@@ -154,16 +186,32 @@ export async function annotateHistoricalValuationResolution(ledger,{resolver=his
       event?.usdValue===null&&
       event?.valuationStatus==='unvalued-fail-closed'&&
       MONTH_BOUNDARY.test(boundaryAt)&&
-      event?.token&&finite(event?.amount)&&Number(event.amount)>0&&
+      finite(event?.amount)&&Number(event.amount)>0&&
       event?.unknownIsNotZero===true&&event?.executionAuthority==='none';
 
     if(!isEligible){events.push(event);continue;}
     eligible++;
-    const closingBlockMatch=String(event?.eventKey||'').match(/:(\d+)$/);
-    const cacheBlock=closingBlockMatch?.[1]||String(event?.sourceIdentity||'');
-    const key=`${String(event.token).toLowerCase()}|${boundaryAt}|${cacheBlock}`;
+    const identity=ve33EventIdentity(event);
+    const prior=event?.valuationResolution||null;
+    const cleanEvent=withoutValuationResolution(event);
+    if(!identity.ok){
+      unresolved++;
+      unresolvedStatuses[identity.status]=(unresolvedStatuses[identity.status]||0)+1;
+      if(prior)invalidPriorResolutionClearedCount++;
+      events.push(cleanEvent);
+      continue;
+    }
+    if(identity.eventTokenMatchesIdentity!==true)identityMismatchEventCount++;
+    if(reusableIdentityBoundResolution(event,identity)){
+      resolved++;
+      reusedIdentityBoundResolutionCount++;
+      events.push(event);
+      continue;
+    }
+
+    const key=`${identity.token}|${boundaryAt}|${identity.closeBlock}`;
     if(!cache.has(key))cache.set(key,Promise.resolve().then(()=>resolver({
-      token:event.token,boundaryAt,eventKey:event.eventKey,sourceIdentity:event.sourceIdentity
+      token:identity.token,boundaryAt,eventKey:event.eventKey,sourceIdentity:event.sourceIdentity
     })).catch(error=>({ok:false,status:'historical-canonical-price-resolver-error',error:error?.message||String(error)})));
     const valuation=await cache.get(key);
     const price=Number(valuation?.priceUsd),observedMs=Date.parse(valuation?.observedAt||''),boundaryMs=Date.parse(boundaryAt);
@@ -171,7 +219,8 @@ export async function annotateHistoricalValuationResolution(ledger,{resolver=his
       unresolved++;
       const status=valuation?.status||'historical-canonical-price-unavailable';
       unresolvedStatuses[status]=(unresolvedStatuses[status]||0)+1;
-      events.push(event);
+      if(prior)invalidPriorResolutionClearedCount++;
+      events.push(cleanEvent);
       continue;
     }
 
@@ -179,7 +228,8 @@ export async function annotateHistoricalValuationResolution(ledger,{resolver=his
     if(!(finite(resolvedUsdValue)&&Number(resolvedUsdValue)>0)){
       unresolved++;
       unresolvedStatuses['resolved-usd-value-invalid']=(unresolvedStatuses['resolved-usd-value-invalid']||0)+1;
-      events.push(event);
+      if(prior)invalidPriorResolutionClearedCount++;
+      events.push(cleanEvent);
       continue;
     }
 
@@ -207,6 +257,12 @@ export async function annotateHistoricalValuationResolution(ledger,{resolver=his
         sourceRpcEndpointId:valuation.rpcEndpointId||null,
         exactHistoricalBlock:valuation.exactHistoricalBlock===true
       }:{}),
+      identityBound:true,
+      identityToken:identity.token,
+      identityOpenBlock:identity.openBlock,
+      identityCloseBlock:identity.closeBlock,
+      eventTokenMatchesIdentity:identity.eventTokenMatchesIdentity===true,
+      identitySource:'ve33-eventKey+sourceIdentity',
       originalUsdValue:null,
       economicFieldsMutated:false,
       referenceAprUsed:false,
@@ -214,10 +270,23 @@ export async function annotateHistoricalValuationResolution(ledger,{resolver=his
       unknownIsNotZero:true,
       executionAuthority:'none'
     };
-    const prior=event.valuationResolution||null;
-    if(prior&&JSON.stringify(prior)!==JSON.stringify(resolution))throw new Error(`Historical valuation-resolution conflict: ${event.eventKey}`);
+    if(!historicalValuationSourceMatchesVe33Identity(event,resolution)){
+      unresolved++;
+      unresolvedStatuses['historical-valuation-source-identity-mismatch']=(unresolvedStatuses['historical-valuation-source-identity-mismatch']||0)+1;
+      if(prior)invalidPriorResolutionClearedCount++;
+      events.push(cleanEvent);
+      continue;
+    }
+    if(sourceFamily==='historical-onchain-chainlink-at-boundary'&&Number(resolution.sourceBlockNumber)!==Number(identity.closeBlock)){
+      unresolved++;
+      unresolvedStatuses['historical-chainlink-block-identity-mismatch']=(unresolvedStatuses['historical-chainlink-block-identity-mismatch']||0)+1;
+      if(prior)invalidPriorResolutionClearedCount++;
+      events.push(cleanEvent);
+      continue;
+    }
+    if(prior&&JSON.stringify(prior)!==JSON.stringify(resolution))legacyResolutionReplacedCount++;
     resolved++;
-    events.push({...event,valuationResolution:resolution});
+    events.push({...cleanEvent,valuationResolution:resolution});
   }
 
   const summary={
@@ -226,6 +295,11 @@ export async function annotateHistoricalValuationResolution(ledger,{resolver=his
     resolvedEventCount:resolved,
     unresolvedEventCount:unresolved,
     unresolvedStatuses,
+    identityMismatchEventCount,
+    legacyResolutionReplacedCount,
+    invalidPriorResolutionClearedCount,
+    reusedIdentityBoundResolutionCount,
+    identityBinding:'ve33-eventKey+sourceIdentity',
     economicFieldsMutated:false,
     referenceAprUsed:false,
     currentPriceUsed:false,
@@ -248,7 +322,8 @@ export async function annotateHistoricalValuationResolution(ledger,{resolver=his
         historicalValuationResolution:{
           ...summary,
           immutableEventUsdValueRewritten:false,
-          resolvedValueLivesInNonEconomicMetadata:true
+          resolvedValueLivesInNonEconomicMetadata:true,
+          mutableEventTokenMetadataIsNotValuationAuthority:true
         }
       }
     },
