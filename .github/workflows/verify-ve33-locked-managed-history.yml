@@ -83,15 +83,45 @@ jobs:
           const defiteaLanes=trackedLockedManagedDescriptors(rewards).filter(x=>x.company==='defitea.eth'&&x.protocolKey==='aerodrome');
           if(!defiteaLanes.length) throw new Error('Defitea Aerodrome locked-managed lane missing');
           const aug='2026-08-01T00:00:00.000Z',sep='2026-09-01T00:00:00.000Z';
+          const laneDiagnostics=[];
           for(const lane of defiteaLanes){
             const rows=(evidence.checkpoints||[]).filter(x=>x.laneKey===lane.laneKey);
             const opening=rows.find(x=>x.observedAt===aug&&x.monthBoundary===true);
             const closing=rows.find(x=>x.observedAt===sep&&x.monthBoundary===true);
             if(!opening||!closing) throw new Error(`Defitea August exact locked-managed boundaries missing: ${lane.laneKey}`);
             if(opening.exactBlockTaggedState!==true||closing.exactBlockTaggedState!==true) throw new Error(`Defitea August boundary not exact block-tagged state: ${lane.laneKey}`);
+            laneDiagnostics.push({
+              laneKey:lane.laneKey,
+              tokenId:lane.tokenId,
+              managedTokenId:lane.managedTokenId,
+              lockedManagedReward:lane.lockedManagedReward,
+              rewardToken:lane.rewardToken,
+              openingBlock:opening.blockNumber,
+              openingRaw:opening.entitlementRaw,
+              openingAmount:opening.entitlementAmount,
+              closingBlock:closing.blockNumber,
+              closingRaw:closing.entitlementRaw,
+              closingAmount:closing.entitlementAmount,
+              rawDelta:(BigInt(closing.entitlementRaw)-BigInt(opening.entitlementRaw)).toString()
+            });
           }
 
           const august=(evidence.events||[]).filter(x=>x.company==='defitea.eth'&&x.protocol==='Aerodrome'&&x.periodAttributionMonth==='2026-08');
+          console.log('Defitea August locked-managed boundary diagnosis',{
+            lanes:laneDiagnostics,
+            augustEvents:august.map(x=>({eventKey:x.eventKey,amount:x.amount,amountRaw:x.amountRaw,usdValue:x.usdValue,openingEntitlementRaw:x.openingEntitlementRaw,closingEntitlementRaw:x.closingEntitlementRaw,settlementRaw:x.settlementRaw,settlementEventCount:x.settlementEventCount,valuationStatus:x.valuationStatus})),
+            diagnostics:{
+              acceptedPositiveIntervalCount:evidence.diagnostics?.acceptedPositiveIntervalCount||0,
+              zeroIntervalCount:evidence.diagnostics?.zeroIntervalCount||0,
+              reconciliationCount:evidence.diagnostics?.reconciliationCount||0,
+              unresolvedSettlementEventCount:evidence.diagnostics?.unresolvedSettlementEventCount||0,
+              unvaluedIntervalCount:evidence.diagnostics?.unvaluedIntervalCount||0,
+              historicalPriceResolvedIntervalCount:evidence.diagnostics?.historicalPriceResolvedIntervalCount||0,
+              historicalPriceUnresolvedIntervalCount:evidence.diagnostics?.historicalPriceUnresolvedIntervalCount||0,
+              aerodrome:evidence.diagnostics?.protocols?.aerodrome||null
+            }
+          });
+
           if(!august.length) throw new Error('Defitea August locked-managed factual event missing');
           const positive=august.filter(x=>Number(x.amount)>0);
           if(!positive.length) throw new Error('Defitea August locked-managed factual accrual is not positive');
