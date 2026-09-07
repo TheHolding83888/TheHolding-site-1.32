@@ -58,6 +58,7 @@ export function historicalValuationSourceMatchesVe33Identity(event,resolution){
       lower(resolution?.quoteToken)===lower(route.quoteToken)&&
       lower(resolution?.quoteChainlinkContract)===lower(route.quoteChainlinkFeed)&&
       Number(resolution?.twapGranularity)===Number(route.twapGranularity)&&
+      resolution?.poolStable===route.poolStable&&
       resolution?.stablecoinPegAssumptionUsed===false&&
       String(resolution?.sourceStatus||'')==='historical-onchain-velodrome-twap-chainlink-price';
   }
