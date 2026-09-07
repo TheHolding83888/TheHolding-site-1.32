@@ -8,7 +8,7 @@ export function validateLockedManagedEvidence(source){
   if(!source?.version)return{present:false};
   if(source.version!==LOCKED_MANAGED_EVIDENCE_VERSION)throw new Error('locked-managed evidence version drift');
   const s=source?.semantics||{},a=source?.authority||{};
-  if(s.openingBalanceCreatesIncome!==false||s.earnedIndependentOfWithdrawal!==true||s.withdrawalIsSettlementNotSecondIncome!==true||s.grossVeNftPrincipalDeltaIsIncomeAuthority!==false||s.referenceAprUsed!==false||s.laterPriceMovementRewritesClosedIncome!==false||s.unknownIsNotZero!==true||s.historicalBoundaryIdentityMustMatch!==true||!String(s.historicalClosedIntervalPriceSource||'').includes('canonical market-data Git history'))throw new Error('locked-managed evidence semantics invalid');
+  if(s.openingBalanceCreatesIncome!==false||s.earnedIndependentOfWithdrawal!==true||s.withdrawalIsSettlementNotSecondIncome!==true||s.grossVeNftPrincipalDeltaIsIncomeAuthority!==false||s.referenceAprUsed!==false||s.laterPriceMovementRewritesClosedIncome!==false||s.unknownIsNotZero!==true||s.historicalBoundaryIdentityMustMatch!==true||s.unchangedLastEarnAcrossExactBoundariesProvesNoSettlement!==true||!String(s.historicalClosedIntervalPriceSource||'').includes('canonical market-data Git history'))throw new Error('locked-managed evidence semantics invalid');
   if(a.executionAuthority!=='none'||a.walletAuthority!=='none'||a.claimingAuthority!=='none'||a.capitalExecution!==false||a.methodologyMutationAuthority!=='none')throw new Error('locked-managed authority expansion');
   return{present:true};
 }
