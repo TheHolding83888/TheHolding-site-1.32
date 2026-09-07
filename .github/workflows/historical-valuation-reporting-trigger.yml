@@ -1,0 +1,31 @@
+name: The Holding Accounting · Historical Valuation Materialization Trigger
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'reporting/historical-canonical-price.mjs'
+      - 'reporting/historical-canonical-price-validation.mjs'
+      - 'reporting/ve33-historical-valuation-identity.mjs'
+      - 'reporting/canonical-earned-income-view.mjs'
+      - '.github/workflows/historical-valuation-reporting-trigger.yml'
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: historical-valuation-reporting-trigger
+  cancel-in-progress: false
+
+jobs:
+  dispatch-reporting:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch canonical Reporting materialization
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh workflow run update-reporting.yml --repo "$GITHUB_REPOSITORY" --ref main
+          echo "Dispatched canonical Update The Holding Reporting Data workflow on main."
