@@ -83,7 +83,7 @@ jobs:
     # The safe writer may intentionally rebuild after main moves, up to three
     # attempts. Budget the job for the retry contract instead of cancelling a
     # correct fail-closed publication halfway through its first race recovery.
-    timeout-minutes: 30
+    timeout-minutes: 90
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
