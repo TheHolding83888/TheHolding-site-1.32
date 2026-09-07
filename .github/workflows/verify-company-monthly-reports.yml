@@ -88,6 +88,9 @@ jobs:
               month:latest?.month,
               earnedIncomeUsd:latest?.generatedIncomeUsd,
               observedEarnedIncomeUsd:latest?.observedEarnedIncomeUsd,
+              confirmedUsd:latest?.incomeView?.confirmed?.usd,
+              estimatedUsd:latest?.incomeView?.estimated?.usd,
+              estimatedAvailable:latest?.incomeView?.estimated?.available,
               accountingStatus:latest?.accountingStatus,
               coverageComplete:latest?.accountingCoverageComplete,
               unresolvedLifecycleEvents:latest?.incomeAccounting?.lifecycle?.unresolvedEventCount,
@@ -154,7 +157,7 @@ jobs:
             if(text.includes(bad)) throw new Error('unexpected monthly reporting authority/data discovery: '+bad);
           }
           const accounting=fs.readFileSync('reporting/company-monthly-earned-income.mjs','utf8');
-          for(const required of ['canonicalLedgerIsSoleMonthlyIncomeEventSource: true','monthlyLayerCreatesIncomeEvents: false','claimableSnapshotDeltaCreatesIncome: false','genericReceiptCreatesIncome: false','referenceIncomeIsPrimaryMetric: false','currentRewardBalanceIsPeriodIncome: false','incompleteCoverageMayMasqueradeAsCompleteIncome: false']){
+          for(const required of ['canonicalLedgerIsSoleMonthlyIncomeEventSource: true','monthlyLayerCreatesIncomeEvents: false','claimableSnapshotDeltaCreatesIncome: false','genericReceiptCreatesIncome: false','referenceIncomeIsPrimaryMetric: false','currentRewardBalanceIsPeriodIncome: false','incompleteCoverageMayMasqueradeAsCompleteIncome: false','confirmedAndEstimatedAreNonAdditive: true','estimatedIncomeCanCloseAccountingCoverage: false','estimatedIncomeCanReplaceUnknown: false']){
             if(!accounting.includes(required)) throw new Error('accounting fail-closed invariant missing: '+required);
           }
           for(const forbidden of ['buildObservedRewardAccruals','observed-native-reward-delta','reward-accrual:']){
@@ -165,11 +168,19 @@ jobs:
             if(!view.includes(required)) throw new Error('canonical earned-income view invariant missing: '+required);
           }
           const priority=fs.readFileSync('companies/company-passport-priority-adapter.js','utf8');
-          for(const required of ["const COVERAGE_URL = '/reporting/accounting-coverage.json'",'noticesCreateIncome: false','coverageHasCompletionAuthority: false','referenceIncomeAuthority: false',"data?.status !== 'diagnostic-no-completion-authority'"]){
+          for(const required of ["const COVERAGE_URL = '/reporting/accounting-coverage.json'","const INCOME_VIEW_VERSION = '0.1-confirmed-estimated-non-additive'",'estimated.earnedIncomeAuthority !== false','estimated.factualIncomeAuthority !== false','estimated.canCloseAccountingCoverage !== false','estimated.canReplaceUnknown !== false',"estimated.basis !== 'existing-reference-model'",'browserCalculatesEstimatedIncome: false','confirmedPlusEstimatedIsValidTotal: false','estimatedIncomeAuthority: false','estimatedCanCloseAccountingCoverage: false','noticesCreateIncome: false','coverageHasCompletionAuthority: false','referenceIncomeAuthority: false',"data?.status !== 'diagnostic-no-completion-authority'"]){
             if(!priority.includes(required)) throw new Error('accounting transparency boundary missing: '+required);
           }
+          if(priority.includes('referenceAnalytics?.generatedIncomeUsd')) throw new Error('Passport UI bypasses incomeView and reads reference analytics directly');
           const coverage=JSON.parse(fs.readFileSync('/tmp/accounting-coverage.json','utf8'));
           if(coverage.status!=='diagnostic-no-completion-authority'||coverage.authority?.monthClosingAuthority!==false) throw new Error('Accounting coverage diagnostic gained completion authority');
+          const monthly=JSON.parse(fs.readFileSync('/tmp/company-monthly-reports.json','utf8'));
+          if(monthly.presentationModelVersion!=='0.1-confirmed-estimated-non-additive') throw new Error('monthly confirmed/estimated contract missing');
+          for(const [name,company] of Object.entries(monthly.companies||{})) for(const [month,row] of Object.entries(company.months||{})) {
+            const incomeView=row.incomeView;
+            if(!incomeView||incomeView.relationship?.additive!==false||incomeView.relationship?.confirmedPlusEstimatedIsValidTotal!==false) throw new Error(`${name} ${month} confirmed/estimated relationship drift`);
+            if(incomeView.estimated?.earnedIncomeAuthority!==false||incomeView.estimated?.factualIncomeAuthority!==false||incomeView.estimated?.canCloseAccountingCoverage!==false||incomeView.estimated?.canReplaceUnknown!==false) throw new Error(`${name} ${month} estimated authority expanded`);
+          }
           const icp=JSON.parse(fs.readFileSync('/tmp/icp-nns-factual-intervals.json','utf8'));
           if(icp.referenceAprUsed!==false||icp.accountingAuthority!==false||icp.admissionCandidateCount!==0) throw new Error('ICP NNS baseline crossed factual accounting boundary');
           console.log('Company Monthly Reports authority/accounting boundary PASS');
