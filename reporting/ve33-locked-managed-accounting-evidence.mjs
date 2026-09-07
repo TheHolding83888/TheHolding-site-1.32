@@ -15,8 +15,9 @@ export const LOCKED_MANAGED_VERSION='0.2-ve33-locked-managed-historical-factual-
 export const LOCKED_MANAGED_ACCOUNTING_START=DIRECT_ACCOUNTING_START;
 const DEFAULT_REWARDS=process.env.REWARDS_DATA_FILE||path.join(ROOT,'companies','rewards-data.json');
 const DEFAULT_OUTPUT=process.env.VE33_LOCKED_MANAGED_EVIDENCE_FILE||path.join(ROOT,'reporting','ve33-locked-managed-accounting-evidence.json');
-const MAX_LOG_BLOCKS=80_000;
+const MAX_LOG_BLOCKS=9_500;
 const MAX_CHECKPOINTS_PER_LANE=460;
+const FAILURE_SAMPLE_LIMIT=20;
 
 const VE_MANAGED_ABI=[
   'function idToManaged(uint256 tokenId) view returns (uint256)',
@@ -24,6 +25,7 @@ const VE_MANAGED_ABI=[
 ];
 const LOCKED_REWARD_ABI=[
   'function earned(address token,uint256 tokenId) view returns (uint256)',
+  'function lastEarn(address token,uint256 tokenId) view returns (uint256)',
   'event ClaimRewards(address indexed from,address indexed reward,uint256 amount)'
 ];
 const WITHDRAW_IFACE=new Interface(['function withdrawManaged(uint256 tokenId)']);
@@ -118,6 +120,26 @@ function monthBoundaries(startIso,endIso){
 function eventEconomicDate(close){return close?.monthBoundary?previousDay(close.observedAt):String(close.observedAt).slice(0,10);}
 function intervalMonth(open,close){const economicDate=eventEconomicDate(close),month=economicDate.slice(0,7),a=String(open.observedAt).slice(0,7),b=close.monthBoundary?month:String(close.observedAt).slice(0,7);return a===b?month:(close.monthBoundary?month:null);}
 
+export function compactLockedManagedCheckpoints(previous={}){
+  const rows=(previous?.checkpoints||[]).filter(x=>x?.checkpointKey&&x?.laneKey&&Number.isFinite(Number(x.blockNumber)));
+  const byKey=new Map(rows.map(x=>[x.checkpointKey,x]));
+  const latestByLane=new Map();
+  for(const row of rows){const prior=latestByLane.get(row.laneKey);if(!prior||Number(row.blockNumber)>Number(prior.blockNumber))latestByLane.set(row.laneKey,row);}
+  const eventProofKeys=new Set();
+  for(const event of previous?.events||[]){
+    const source=String(event?.sourceIdentity||''),arrow=source.indexOf('->');
+    if(arrow<=0)continue;
+    const openingKey=source.slice(0,arrow),closingKey=source.slice(arrow+2);
+    if(byKey.has(openingKey))eventProofKeys.add(openingKey);
+    if(byKey.has(closingKey))eventProofKeys.add(closingKey);
+  }
+  const keep=new Set(eventProofKeys);
+  for(const row of rows)if(row.monthBoundary===true)keep.add(row.checkpointKey);
+  for(const row of latestByLane.values())keep.add(row.checkpointKey);
+  const checkpoints=rows.filter(x=>keep.has(x.checkpointKey)).sort((a,b)=>a.laneKey.localeCompare(b.laneKey)||Number(a.blockNumber)-Number(b.blockNumber));
+  return{checkpoints,stats:{inputCheckpointCount:rows.length,retainedCheckpointCount:checkpoints.length,droppedRedundantCheckpointCount:rows.length-checkpoints.length,retainedMonthBoundaryCount:checkpoints.filter(x=>x.monthBoundary===true).length,retainedEventProofCheckpointCount:eventProofKeys.size,retainedLatestLaneCheckpointCount:latestByLane.size,policy:'retain-month-boundaries-latest-per-lane-and-factual-event-proof-checkpoints'}};
+}
+
 async function readLaneState({provider,cfg,lane,blockNumber,observedAt,monthBoundary=false}){
   try{
     const ve=new Contract(cfg.votingEscrow,VE_MANAGED_ABI,provider);
@@ -127,9 +149,18 @@ async function readLaneState({provider,cfg,lane,blockNumber,observedAt,monthBoun
     const locked=getAddress(await ve.managedToLocked(managedId,{blockTag:blockNumber}));
     if(locked===ZeroAddress||lower(locked)!==lower(lane.lockedManagedReward))return{ok:false,status:'locked-managed-reward-mismatch',observedLockedManagedReward:locked};
     const reward=new Contract(lane.lockedManagedReward,LOCKED_REWARD_ABI,provider);
-    const raw=BigInt(await reward.earned(lane.rewardToken,BigInt(lane.tokenId),{blockTag:blockNumber}));
-    return{ok:true,checkpointKey:checkpointKey(lane,blockNumber),laneKey:lane.laneKey,company:lane.company,protocolKey:lane.protocolKey,protocol:lane.protocol,chain:lane.chain,chainId:lane.chainId,route:lane.route,holder:lane.holder,walletAlias:lane.walletAlias,custodyContext:lane.custodyContext,tokenId:lane.tokenId,managedTokenId:lane.managedTokenId,lockedManagedReward:lane.lockedManagedReward,rewardToken:lane.rewardToken,rewardSymbol:lane.rewardSymbol,decimals:lane.decimals,observedAt,blockNumber,entitlementRaw:raw.toString(),entitlementAmount:round(Number(formatUnits(raw,lane.decimals)),12),monthBoundary,exactBlockTaggedState:true,accountingStart:LOCKED_MANAGED_ACCOUNTING_START,periodIncomeAuthority:false,unknownIsNotZero:true};
+    const[raw,lastEarn]=await Promise.all([
+      reward.earned(lane.rewardToken,BigInt(lane.tokenId),{blockTag:blockNumber}),
+      reward.lastEarn(lane.rewardToken,BigInt(lane.tokenId),{blockTag:blockNumber})
+    ]);
+    return{ok:true,checkpointKey:checkpointKey(lane,blockNumber),laneKey:lane.laneKey,company:lane.company,protocolKey:lane.protocolKey,protocol:lane.protocol,chain:lane.chain,chainId:lane.chainId,route:lane.route,holder:lane.holder,walletAlias:lane.walletAlias,custodyContext:lane.custodyContext,tokenId:lane.tokenId,managedTokenId:lane.managedTokenId,lockedManagedReward:lane.lockedManagedReward,rewardToken:lane.rewardToken,rewardSymbol:lane.rewardSymbol,decimals:lane.decimals,observedAt,blockNumber,entitlementRaw:BigInt(raw).toString(),entitlementAmount:round(Number(formatUnits(raw,lane.decimals)),12),lastEarnRaw:BigInt(lastEarn).toString(),lastEarnTimestamp:Number(lastEarn),monthBoundary,exactBlockTaggedState:true,accountingStart:LOCKED_MANAGED_ACCOUNTING_START,periodIncomeAuthority:false,unknownIsNotZero:true};
   }catch(error){return{ok:false,status:'archive-state-unavailable',error:error?.shortMessage||error?.message||String(error)};}
+}
+
+export function settlementContinuityFromLastEarn(open,close){
+  if(open?.lastEarnRaw===null||open?.lastEarnRaw===undefined||close?.lastEarnRaw===null||close?.lastEarnRaw===undefined)return{proven:false,status:'lastEarn-boundary-proof-missing'};
+  if(String(open.lastEarnRaw)===String(close.lastEarnRaw))return{proven:true,status:'exact-boundary-lastEarn-unchanged-no-settlement',amountRaw:'0',events:[],unresolvedEventCount:0};
+  return{proven:false,status:'lastEarn-changed-settlement-reconciliation-required',openingLastEarnRaw:String(open.lastEarnRaw),closingLastEarnRaw:String(close.lastEarnRaw)};
 }
 
 export function decodeWithdrawManagedTokenId({to,data,votingEscrow}){
@@ -137,7 +168,7 @@ export function decodeWithdrawManagedTokenId({to,data,votingEscrow}){
 }
 
 async function lockedSettlements({provider,cfg,lane,fromBlock,toBlock}){
-  if(toBlock<fromBlock)return{amountRaw:'0',events:[],unresolvedEventCount:0};
+  if(toBlock<fromBlock)return{amountRaw:'0',events:[],unresolvedEventCount:0,continuityStatus:'empty-range-no-settlement'};
   const reward=new Contract(lane.lockedManagedReward,LOCKED_REWARD_ABI,provider),events=[];let total=0n,unresolvedEventCount=0;
   const filter=reward.filters.ClaimRewards(null,lane.rewardToken);
   for(let from=fromBlock;from<=toBlock;from+=MAX_LOG_BLOCKS){
@@ -151,7 +182,7 @@ async function lockedSettlements({provider,cfg,lane,fromBlock,toBlock}){
       }else if(decoded===null){unresolvedEventCount++;}
     }
   }
-  return{amountRaw:total.toString(),events,unresolvedEventCount};
+  return{amountRaw:total.toString(),events,unresolvedEventCount,continuityStatus:'claim-rewards-withdraw-managed-log-reconciliation'};
 }
 
 function retainCheckpoints(rows){
@@ -161,14 +192,15 @@ function retainCheckpoints(rows){
 
 export async function buildLockedManagedEvidence({rewards,previous={},generatedAt=new Date().toISOString(),providers={},historicalPriceResolver=historicalCanonicalPriceAtBoundary}={}){
   const authority={executionAuthority:'none',walletAuthority:'none',claimingAuthority:'none',capitalExecution:false,methodologyMutationAuthority:'none'};
-  const prices=priceMap(rewards),existing=new Map((previous?.checkpoints||[]).filter(x=>x?.checkpointKey).map(x=>[x.checkpointKey,x])),priorEvents=new Map((previous?.events||[]).filter(x=>x?.eventKey).map(x=>[x.eventKey,x]));
+  const compactedHistory=compactLockedManagedCheckpoints(previous);
+  const prices=priceMap(rewards),existing=new Map(compactedHistory.checkpoints.map(x=>[x.checkpointKey,x])),priorEvents=new Map((previous?.events||[]).filter(x=>x?.eventKey).map(x=>[x.eventKey,x]));
   const historicalPriceCache=new Map();
   const resolveHistoricalPrice=async({token,boundaryAt})=>{
     const key=`${lower(token)}|${boundaryAt}`;
     if(!historicalPriceCache.has(key))historicalPriceCache.set(key,Promise.resolve().then(()=>historicalPriceResolver({token,boundaryAt})).catch(error=>({ok:false,status:'historical-canonical-price-resolver-error',error:error?.message||String(error)})));
     return historicalPriceCache.get(key);
   };
-  const diagnostics={protocols:{},laneCount:0,acceptedPositiveIntervalCount:0,zeroIntervalCount:0,reconciliationCount:0,unvaluedIntervalCount:0,unresolvedSettlementEventCount:0,historicalPriceResolvedIntervalCount:0,historicalPriceUnresolvedIntervalCount:0,historicalPriceCacheEntries:0,referenceAprUsed:false,unknownIsNotZero:true};
+  const diagnostics={protocols:{},laneCount:0,acceptedPositiveIntervalCount:0,zeroIntervalCount:0,reconciliationCount:0,settlementQueryFailureCount:0,settlementQueryFailureSamples:[],lastEarnNoSettlementProofCount:0,unvaluedIntervalCount:0,unresolvedSettlementEventCount:0,historicalPriceResolvedIntervalCount:0,historicalPriceUnresolvedIntervalCount:0,historicalPriceCacheEntries:0,historyCompaction:compactedHistory.stats,referenceAprUsed:false,unknownIsNotZero:true};
   const descriptors=trackedLockedManagedDescriptors(rewards);
 
   for(const[protocolKey,cfg]of Object.entries(PROTOCOLS)){
@@ -184,7 +216,8 @@ export async function buildLockedManagedEvidence({rewards,previous={},generatedA
     for(const lane of lanes){
       lane.price=prices.get(lower(lane.rewardToken))||null;
       for(const[boundaryAt,b]of boundaryBlocks){
-        const key=checkpointKey(lane,b.blockNumber);if(existing.has(key))continue;
+        const key=checkpointKey(lane,b.blockNumber),prior=existing.get(key);
+        if(prior?.lastEarnRaw!==undefined&&prior?.lastEarnRaw!==null)continue;
         const state=await readLaneState({provider,cfg,lane,blockNumber:b.blockNumber,observedAt:boundaryAt,monthBoundary:true});
         if(state.ok)existing.set(key,state);
         else if(['not-managed-at-boundary','managed-token-mismatch','locked-managed-reward-mismatch'].includes(state.status))pd.inactiveBoundaries.push({laneKey:lane.laneKey,boundaryAt,...state});
@@ -192,14 +225,23 @@ export async function buildLockedManagedEvidence({rewards,previous={},generatedA
       }
       const current=await readLaneState({provider,cfg,lane,blockNumber:latestNumber,observedAt,monthBoundary:false});if(current.ok)existing.set(current.checkpointKey,current);else pd.boundaryFailures.push({laneKey:lane.laneKey,boundaryAt:observedAt,...current});
     }
-    const protocolCheckpoints=[...existing.values()].filter(x=>x.protocolKey===protocolKey).sort((a,b)=>a.laneKey.localeCompare(b.laneKey)||Number(a.blockNumber)-Number(b.blockNumber));
+    const protocolCheckpoints=[...existing.values()].filter(x=>x.protocolKey===protocolKey&&x.lastEarnRaw!==undefined&&x.lastEarnRaw!==null).sort((a,b)=>a.laneKey.localeCompare(b.laneKey)||Number(a.blockNumber)-Number(b.blockNumber));
     for(const lane of lanes){
       const rows=protocolCheckpoints.filter(x=>x.laneKey===lane.laneKey);
       for(let i=1;i<rows.length;i++){
         const open=rows[i-1],close=rows[i];if(Number(close.blockNumber)<=Number(open.blockNumber))continue;pd.intervalCount++;
         const key=eventKey(lane,open,close);if(priorEvents.has(key))continue;
-        let settlements;try{settlements=await lockedSettlements({provider,cfg,lane,fromBlock:Number(open.blockNumber)+1,toBlock:Number(close.blockNumber)});}catch{diagnostics.reconciliationCount++;continue;}
-        pd.settlementEventCount+=settlements.events.length;diagnostics.unresolvedSettlementEventCount+=settlements.unresolvedEventCount;
+        let settlements=settlementContinuityFromLastEarn(open,close);
+        if(settlements.proven===true){diagnostics.lastEarnNoSettlementProofCount++;}
+        else{
+          try{settlements=await lockedSettlements({provider,cfg,lane,fromBlock:Number(open.blockNumber)+1,toBlock:Number(close.blockNumber)});}
+          catch(error){
+            diagnostics.reconciliationCount++;diagnostics.settlementQueryFailureCount++;
+            if(diagnostics.settlementQueryFailureSamples.length<FAILURE_SAMPLE_LIMIT)diagnostics.settlementQueryFailureSamples.push({laneKey:lane.laneKey,fromBlock:Number(open.blockNumber)+1,toBlock:Number(close.blockNumber),openingLastEarnRaw:open.lastEarnRaw,closingLastEarnRaw:close.lastEarnRaw,error:error?.shortMessage||error?.message||String(error)});
+            continue;
+          }
+        }
+        pd.settlementEventCount+=(settlements.events||[]).length;diagnostics.unresolvedSettlementEventCount+=Number(settlements.unresolvedEventCount||0);
         const r=reconcileEntitlement(open.entitlementRaw,close.entitlementRaw,settlements.amountRaw);if(!r.accepted){diagnostics.reconciliationCount++;continue;}if(r.earnedRaw==='0'){diagnostics.zeroIntervalCount++;continue;}
         const month=intervalMonth(open,close);if(!month){diagnostics.reconciliationCount++;continue;}
         let valuation=null;
@@ -211,15 +253,15 @@ export async function buildLockedManagedEvidence({rewards,previous={},generatedA
         const amount=Number(formatUnits(BigInt(r.earnedRaw),lane.decimals));
         const unitUsd=close.monthBoundary===true?(valuation?.ok===true?valuation.priceUsd:null):(lane.price?.priceUsd||null);
         const usdValue=finite(unitUsd)?amount*Number(unitUsd):null;if(!finite(usdValue))diagnostics.unvaluedIntervalCount++;
-        priorEvents.set(key,{eventKey:key,company:lane.company,family:'embedded-compounded-income',economicDate:eventEconomicDate(close),periodStart:open.observedAt,periodEnd:close.observedAt,route:lane.route,protocol:lane.protocol,chain:lane.chain,chainId:lane.chainId,asset:lane.rewardSymbol,token:lane.rewardToken,amount:round(amount,12),amountRaw:r.earnedRaw,usdValue:finite(usdValue)?round(usdValue,8):null,valuationUnitUsd:finite(unitUsd)?round(unitUsd,12):null,valuationAt:close.monthBoundary===true?(valuation?.ok===true?valuation.observedAt:close.observedAt):(lane.price?.observedAt||close.observedAt),valuationStatus:finite(usdValue)?(close.monthBoundary===true?'historical-canonical-market-price-frozen-at-closing-accounting-boundary':'frozen-at-closing-accounting-boundary'):'unvalued-fail-closed',valuationSourceFile:close.monthBoundary===true?(valuation?.sourceFile||null):null,valuationSourceCommit:close.monthBoundary===true?(valuation?.commitSha||null):null,valuationSourceAssetId:close.monthBoundary===true?(valuation?.assetId||null):null,valuationSourceStatus:close.monthBoundary===true?(valuation?.status||null):(lane.price?.priceMethod||null),valuationSnapshotAgeMinutes:close.monthBoundary===true&&finite(valuation?.ageMinutes)?round(valuation.ageMinutes,6):null,sourceFile:'reporting/ve33-locked-managed-accounting-evidence.json',sourceFamily:'ve(3,3) LockedManagedReward factual accrual',sourceIdentity:`${open.checkpointKey}->${close.checkpointKey}`,evidenceStatus:'factual-locked-managed-opening-plus-settlement-to-closing-reconciliation',mechanismKind:'locked-managed-reward',holder:lane.holder,custodyContext:lane.custodyContext,tokenId:lane.tokenId,managedTokenId:lane.managedTokenId,rewardContract:lane.lockedManagedReward,openingEntitlementRaw:open.entitlementRaw,closingEntitlementRaw:close.entitlementRaw,settlementRaw:settlements.amountRaw,settlementEventCount:settlements.events.length,settlementProofs:settlements.events,periodAttributionMonth:month,recognitionState:'compounded-locked',openingBalanceCreatesIncome:false,earnedIndependentOfWithdrawal:true,withdrawalIsSettlementNotSecondIncome:true,grossVeNftPrincipalDeltaIsIncomeAuthority:false,referenceAprUsed:false,currentClaimableBalanceIsPeriodIncome:false,claimIsSecondIncomeEvent:false,laterClaimOrPriceMoveDoesNotRewriteIncome:true,unknownIsNotZero:true,executionAuthority:'none'});diagnostics.acceptedPositiveIntervalCount++;
+        priorEvents.set(key,{eventKey:key,company:lane.company,family:'embedded-compounded-income',economicDate:eventEconomicDate(close),periodStart:open.observedAt,periodEnd:close.observedAt,route:lane.route,protocol:lane.protocol,chain:lane.chain,chainId:lane.chainId,asset:lane.rewardSymbol,token:lane.rewardToken,amount:round(amount,12),amountRaw:r.earnedRaw,usdValue:finite(usdValue)?round(usdValue,8):null,valuationUnitUsd:finite(unitUsd)?round(unitUsd,12):null,valuationAt:close.monthBoundary===true?(valuation?.ok===true?valuation.observedAt:close.observedAt):(lane.price?.observedAt||close.observedAt),valuationStatus:finite(usdValue)?(close.monthBoundary===true?'historical-canonical-market-price-frozen-at-closing-accounting-boundary':'frozen-at-closing-accounting-boundary'):'unvalued-fail-closed',valuationSourceFile:close.monthBoundary===true?(valuation?.sourceFile||null):null,valuationSourceCommit:close.monthBoundary===true?(valuation?.commitSha||null):null,valuationSourceAssetId:close.monthBoundary===true?(valuation?.assetId||null):null,valuationSourceStatus:close.monthBoundary===true?(valuation?.status||null):(lane.price?.priceMethod||null),valuationSnapshotAgeMinutes:close.monthBoundary===true&&finite(valuation?.ageMinutes)?round(valuation.ageMinutes,6):null,sourceFile:'reporting/ve33-locked-managed-accounting-evidence.json',sourceFamily:'ve(3,3) LockedManagedReward factual accrual',sourceIdentity:`${open.checkpointKey}->${close.checkpointKey}`,evidenceStatus:'factual-locked-managed-opening-plus-settlement-to-closing-reconciliation',mechanismKind:'locked-managed-reward',holder:lane.holder,custodyContext:lane.custodyContext,tokenId:lane.tokenId,managedTokenId:lane.managedTokenId,rewardContract:lane.lockedManagedReward,openingEntitlementRaw:open.entitlementRaw,closingEntitlementRaw:close.entitlementRaw,openingLastEarnRaw:open.lastEarnRaw,closingLastEarnRaw:close.lastEarnRaw,settlementContinuityStatus:settlements.continuityStatus||settlements.status||null,settlementRaw:settlements.amountRaw,settlementEventCount:(settlements.events||[]).length,settlementProofs:settlements.events||[],periodAttributionMonth:month,recognitionState:'compounded-locked',openingBalanceCreatesIncome:false,earnedIndependentOfWithdrawal:true,withdrawalIsSettlementNotSecondIncome:true,grossVeNftPrincipalDeltaIsIncomeAuthority:false,referenceAprUsed:false,currentClaimableBalanceIsPeriodIncome:false,claimIsSecondIncomeEvent:false,laterClaimOrPriceMoveDoesNotRewriteIncome:true,unknownIsNotZero:true,executionAuthority:'none'});diagnostics.acceptedPositiveIntervalCount++;
       }
     }
   }
   diagnostics.historicalPriceCacheEntries=historicalPriceCache.size;
   const checkpoints=retainCheckpoints([...existing.values()].filter(x=>x?.checkpointKey)),events=[...priorEvents.values()].sort((a,b)=>String(a.periodEnd||'').localeCompare(String(b.periodEnd||''))||a.eventKey.localeCompare(b.eventKey));
   const partial=diagnostics.reconciliationCount||diagnostics.unvaluedIntervalCount||Object.values(diagnostics.protocols).some(x=>(x.boundaryFailures||[]).length);
-  return{version:LOCKED_MANAGED_VERSION,generatedAt,status:partial?'partial':'factual-boundary-tracking',fullAccountingStart:LOCKED_MANAGED_ACCOUNTING_START,semantics:{openingBalanceCreatesIncome:false,earnedIndependentOfWithdrawal:true,withdrawalIsSettlementNotSecondIncome:true,grossVeNftPrincipalDeltaIsIncomeAuthority:false,referenceAprUsed:false,laterPriceMovementRewritesClosedIncome:false,unknownIsNotZero:true,historicalBoundaryIdentityMustMatch:true,historicalClosedIntervalPriceSource:'canonical market-data Git history only; unmapped or stale price remains UNKNOWN',recognitionFormula:'closing LockedManagedReward.earned + proven withdrawManaged settlement - opening LockedManagedReward.earned'},scope:{included:['Aerodrome/Velodrome LockedManagedReward compounded entitlement from 2026-08-01 where exact historical managed identity is proven'],excluded:['gross veNFT principal deltas','unproven withdrawal settlement attribution','Reference APR/APY inferred income','historical periods where managed identity cannot be proven exactly']},authority,checkpoints,events,diagnostics};
+  return{version:LOCKED_MANAGED_VERSION,generatedAt,status:partial?'partial':'factual-boundary-tracking',fullAccountingStart:LOCKED_MANAGED_ACCOUNTING_START,semantics:{openingBalanceCreatesIncome:false,earnedIndependentOfWithdrawal:true,withdrawalIsSettlementNotSecondIncome:true,grossVeNftPrincipalDeltaIsIncomeAuthority:false,referenceAprUsed:false,laterPriceMovementRewritesClosedIncome:false,unknownIsNotZero:true,historicalBoundaryIdentityMustMatch:true,unchangedLastEarnAcrossExactBoundariesProvesNoSettlement:true,historicalClosedIntervalPriceSource:'canonical market-data Git history only; unmapped or stale price remains UNKNOWN',recognitionFormula:'closing LockedManagedReward.earned + proven withdrawManaged settlement - opening LockedManagedReward.earned'},scope:{included:['Aerodrome/Velodrome LockedManagedReward compounded entitlement from 2026-08-01 where exact historical managed identity is proven'],excluded:['gross veNFT principal deltas','unproven withdrawal settlement attribution','Reference APR/APY inferred income','historical periods where managed identity cannot be proven exactly']},authority,checkpoints,events,diagnostics};
 }
 
-async function main(){const[rewards,previous]=await Promise.all([readJson(DEFAULT_REWARDS),readJson(DEFAULT_OUTPUT,{})]);const output=await buildLockedManagedEvidence({rewards,previous});await writeJson(DEFAULT_OUTPUT,output);console.log('ve(3,3) LockedManagedReward accounting evidence built',{status:output.status,lanes:output.diagnostics.laneCount,checkpoints:output.checkpoints.length,events:output.events.length,accepted:output.diagnostics.acceptedPositiveIntervalCount,reconciliations:output.diagnostics.reconciliationCount,historicalPriceResolved:output.diagnostics.historicalPriceResolvedIntervalCount,historicalPriceUnresolved:output.diagnostics.historicalPriceUnresolvedIntervalCount,executionAuthority:output.authority.executionAuthority});}
+async function main(){const[rewards,previous]=await Promise.all([readJson(DEFAULT_REWARDS),readJson(DEFAULT_OUTPUT,{})]);const output=await buildLockedManagedEvidence({rewards,previous});await writeJson(DEFAULT_OUTPUT,output);console.log('ve(3,3) LockedManagedReward accounting evidence built',{status:output.status,lanes:output.diagnostics.laneCount,checkpoints:output.checkpoints.length,events:output.events.length,accepted:output.diagnostics.acceptedPositiveIntervalCount,reconciliations:output.diagnostics.reconciliationCount,lastEarnNoSettlementProofs:output.diagnostics.lastEarnNoSettlementProofCount,settlementQueryFailures:output.diagnostics.settlementQueryFailureCount,historicalPriceResolved:output.diagnostics.historicalPriceResolvedIntervalCount,historicalPriceUnresolved:output.diagnostics.historicalPriceUnresolvedIntervalCount,executionAuthority:output.authority.executionAuthority});}
 if(process.argv[1]&&path.resolve(process.argv[1])===__filename)main().catch(error=>{console.error(error);process.exitCode=1;});
