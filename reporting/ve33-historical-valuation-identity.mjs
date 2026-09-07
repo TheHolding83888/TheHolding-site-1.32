@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 import {
   canonicalAssetIdForHistoricalToken,
-  historicalOptimismChainlinkRouteForToken
+  historicalOptimismChainlinkRouteForToken,
+  historicalOptimismVelodromeTwapRouteForToken
 } from './historical-canonical-price.mjs';
 
 const lower=v=>String(v||'').toLowerCase();
@@ -47,6 +48,18 @@ export function historicalValuationSourceMatchesVe33Identity(event,resolution){
       String(resolution?.sourceAssetId||'')===String(route.assetId)&&
       lower(resolution?.sourceContract)===lower(route.contract)&&
       String(resolution?.sourceStatus||'')==='historical-onchain-chainlink-price';
+  }
+  if(family==='historical-onchain-velodrome-twap-chainlink-at-boundary'){
+    const route=historicalOptimismVelodromeTwapRouteForToken(identity.token);
+    return Boolean(route)&&
+      Number(resolution?.sourceChainId)===Number(route.chainId)&&
+      String(resolution?.sourceAssetId||'')===String(route.assetId)&&
+      lower(resolution?.sourceContract)===lower(route.pool)&&
+      lower(resolution?.quoteToken)===lower(route.quoteToken)&&
+      lower(resolution?.quoteChainlinkContract)===lower(route.quoteChainlinkFeed)&&
+      Number(resolution?.twapGranularity)===Number(route.twapGranularity)&&
+      resolution?.stablecoinPegAssumptionUsed===false&&
+      String(resolution?.sourceStatus||'')==='historical-onchain-velodrome-twap-chainlink-price';
   }
   return false;
 }
