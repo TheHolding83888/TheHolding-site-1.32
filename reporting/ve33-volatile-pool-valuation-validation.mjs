@@ -63,6 +63,7 @@ const valuationResolution={
   resolvedUsdValue:amount*valuationUnitUsd,
   sourceFamily:'historical-onchain-velodrome-twap-chainlink-at-boundary',
   sourceStatus:'historical-onchain-velodrome-twap-chainlink-price',
+  sourceAssetId:route.assetId,
   sourceChainId:10,
   sourceBlockNumber:closingBlock,
   sourceBlockTimestamp:blockTimestamp,
