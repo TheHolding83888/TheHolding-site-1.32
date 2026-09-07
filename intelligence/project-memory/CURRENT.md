@@ -4,11 +4,11 @@
 >
 > Start from this live `main` file. Then load only the minimum recovery packet below. Full owner/build/history canons remain machine-verified durable contracts and are loaded only when the compact router says they are relevant. Changing facts still come from live generated artifacts and exact workflow evidence, not prose memory.
 
-Canonical source state represented here: **2026-09-07T13:02:45.973Z**
+Canonical continuity boundary represented here: **2026-09-07T14:06:05Z**. Changing subsystem snapshots below retain their own explicit `generatedAt` timestamps and must be refreshed from live artifacts when needed.
 
 ## Minimum recovery packet
 
-1. [THE_HOLDING_MASTER_CONTINUITY_2026-09-07_101136_AUTO_e228c968.md](./THE_HOLDING_MASTER_CONTINUITY_2026-09-07_101136_AUTO_e228c968.md)
+1. [THE_HOLDING_MASTER_CONTINUITY_2026-09-07_140605_MANUAL_53b42e68.md](./THE_HOLDING_MASTER_CONTINUITY_2026-09-07_140605_MANUAL_53b42e68.md)
 2. [Memory Routing Index v2](./THE_HOLDING_MEMORY_ROUTING_INDEX_v2_2026-08-26.md)
 3. Follow the router: load only the task-specific durable canon/context and live machine-readable evidence needed for the current objective.
 
