@@ -237,6 +237,7 @@ jobs:
           REWARDS_DATA_FILE: ./companies/rewards-data.json
           VE33_EVIDENCE_FILE: ./reporting/ve33-accounting-evidence.json
           VE33_REQUIRE_HISTORICAL_RPC: '1'
+          VE33_SETTLEMENT_ADDRESS_GROUP_SIZE: '96'
           BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
           OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
         run: node reporting/ve33-accounting-runner.mjs
@@ -434,6 +435,7 @@ jobs:
           BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
           OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
           VE33_REQUIRE_HISTORICAL_RPC: '1'
+          VE33_SETTLEMENT_ADDRESS_GROUP_SIZE: '96'
         shell: bash
         run: |
           set -euo pipefail

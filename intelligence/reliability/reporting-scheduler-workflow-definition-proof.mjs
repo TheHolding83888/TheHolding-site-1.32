@@ -221,7 +221,7 @@ assert.match(lockedBuilder,/grossVeNftPrincipalDeltaIsIncomeAuthority:false/,'Lo
 assert.match(lockedBuilder,/laterClaimOrPriceMoveDoesNotRewriteIncome:true/,'LockedManagedReward frozen income invariant missing');
 assert.doesNotMatch(lockedBuilder,/referenceAprUsed\s*:\s*true|referenceApyUsed\s*:\s*true/i,'LockedManagedReward builder gained APR/APY income authority');
 assert.match(lockedCandidates,/family:'embedded-income'/,'LockedManagedReward Canonical Ledger family mapping missing');
-assert.match(lockedCandidates,/sourceEvidenceFamily:e\.family/,'LockedManagedReward source evidence family preservation missing');
+assert.match(lockedCandidates,/sourceEvidenceFamily:e\.family/,'LockedManagedReward source family preservation missing');
 assert.match(lockedCandidates,/sourceFile:'reporting\/ve33-locked-managed-accounting-evidence\.json'/,'LockedManagedReward source provenance missing');
 assert.match(ve33Admission,/buildLockedManagedEvidence/,'LockedManagedReward evidence build missing from canonical admission path');
 assert.match(ve33Admission,/admitLockedManagedIntoLedgerState/,'LockedManagedReward canonical admission primitive missing');
@@ -290,6 +290,7 @@ assert.match(workflow,/YIELD_BASIS_EVIDENCE_FILE:\s*\.\/reporting\/yield-basis-a
 assert.match(workflow,/name: Build Aerodrome \+ Velodrome factual accrual evidence/,'ve33 factual accrual build step missing');
 assert.match(workflow,/run: node reporting\/ve33-accounting-runner\.mjs/,'ve33 historical RPC runner execution missing');
 assert.ok(workflow.split("VE33_REQUIRE_HISTORICAL_RPC: '1'").length-1>=2,'ve33 historical RPC requirement must apply to initial build and safe-writer rebuild');
+assert.equal(workflow.split("VE33_SETTLEMENT_ADDRESS_GROUP_SIZE: '96'").length-1,2,'ve33 settlement address batching must be explicit in initial build and safe-writer rebuild');
 assert.match(workflow,/BASE_RPC_URL:\s*\$\{\{ secrets\.BASE_RPC_URL \}\}/,'Aerodrome RPC secret/fallback binding missing');
 assert.match(workflow,/OPTIMISM_RPC_URL:\s*\$\{\{ secrets\.OPTIMISM_RPC_URL \}\}/,'Velodrome RPC secret/fallback binding missing');
 assert.match(workflow,/name: Build Canonical Income Ledger/,'Canonical Income Ledger build step missing');
@@ -373,6 +374,7 @@ console.log('Reporting workflow definition paired proof PASS',{
   ve33ManagedFreeRewardAccountingStart:ve33Evidence.managedFreeRewardAccountingStart,
   ve33HistoricalRpcRunner:'0.1-ve33-capability-aware-historical-rpc-runner',
   ve33HistoricalRpcRequiredInProduction:true,
+  ve33SettlementAddressGroupSize:96,
   ve33ClaimAware:true,
   ve33RebaseCompoundingDedup:true,
   ve33CanonicalLedgerRebuild:true,

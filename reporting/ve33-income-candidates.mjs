@@ -1,3 +1,5 @@
+import { ve33EventIdentity } from './ve33-historical-valuation-identity.mjs';
+
 export const VE33_EVIDENCE_VERSION='0.1-ve33-factual-accrual-evidence';
 
 const finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v));
@@ -17,6 +19,9 @@ export function ve33EvidenceCandidates(source,finalizeCandidate,generatedAt){
   const out=[],seen=new Set();
   for(const e of source?.events||[]){
     if(!e?.eventKey||seen.has(e.eventKey))throw new Error('ve33 duplicate or missing event identity');seen.add(e.eventKey);
+    const identity=ve33EventIdentity(e);
+    if(!identity.ok)throw new Error(`ve33 event identity invalid: ${e.eventKey}: ${identity.status}`);
+    if(identity.eventTokenMatchesIdentity!==true)throw new Error(`ve33 event token does not match immutable identity: ${e.eventKey}`);
     if(e.family!=='accrued-entitlement'||!e.company||!e.route||!e.protocol||!dayKey(e.economicDate)||!(finite(e.amount)&&Number(e.amount)>0)||!e.amountRaw)throw new Error(`ve33 event economics invalid: ${e.eventKey}`);
     if(!['voting-reward','free-managed-reward','rebase-distributor'].includes(e.mechanismKind))throw new Error(`ve33 unsupported mechanism kind: ${e.eventKey}`);
     if(!e.holder||!e.tokenId||!e.token)throw new Error(`ve33 event mechanism identity incomplete: ${e.eventKey}`);
