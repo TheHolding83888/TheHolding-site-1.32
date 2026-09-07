@@ -249,7 +249,7 @@ assert.match(workflow,/workflow_run:\n\s+workflows:\n\s+- "Update Company Reward
 assert.match(workflow,/github\.event\.workflow_run\.conclusion == 'success'/,'Reporting workflow_run success gate missing');
 assert.match(workflow,/github\.event\.workflow_run\.head_branch == 'main'/,'Reporting workflow_run main-branch gate missing');
 assert.match(workflow,/ref: main/,'Reporting must consume canonical main');
-for(const source of ['companies/rewards-data.json','companies/stable-index-data.json','companies/embedded-yield-ledger.json','companies/productivity-data.json','companies/defitea-canonical-state.json','intelligence/realised-cash-flow/realised-cash-flow.json']) assert.ok(workflow.includes(`- '${source}'`),`Reporting freshness source missing: ${source}`);
+for(const source of ['companies/rewards-data.json','companies/stable-index-data.json','companies/embedded-yield-ledger.json','companies/productivity-data.json','companies/defitea-canonical-state.json','companies/company-010-production-state.json','intelligence/realised-cash-flow/realised-cash-flow.json']) assert.ok(workflow.includes(`- '${source}'`),`Reporting freshness source missing: ${source}`);
 for(const source of [
   'reporting/rate-continuity-policy.json','reporting/income-ledger-policy.json','reporting/reporting-engine.mjs','reporting/reporting-engine-validation.mjs','reporting/income-ledger.mjs','reporting/income-ledger-validation.mjs','reporting/accounting-coverage.mjs','reporting/accounting-coverage-validation.mjs','reporting/accounting-coverage.json',
   'reporting/frax-yield-accounting-evidence.mjs','reporting/frax-yield-accounting-evidence-validation.mjs','reporting/frax-yield-accounting-evidence.json',
@@ -355,7 +355,7 @@ console.log('Reporting workflow definition paired proof PASS',{
   cron:contract.cron,
   dailySnapshotUtc:contract.dailySnapshotUtc,
   workflowRunSources:['Update Company Rewards','Update Stable Capital','The Holding Capital · Unified Refresh'],
-  canonicalDataWakeCount:6,
+  canonicalDataWakeCount:7,
   rateContinuityPolicy:ratePolicy.version,
   canonicalIncomeLedgerPolicy:incomePolicy.version,
   accountingCoverageRegistry:'0.10-explicit-settlement-link-accounting-mechanism-coverage-registry',
