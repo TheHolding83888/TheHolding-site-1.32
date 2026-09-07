@@ -45,6 +45,7 @@ jobs:
           import assert from 'node:assert/strict';
           import fs from 'node:fs';
           const data=JSON.parse(fs.readFileSync(process.env.ACCOUNTING_COVERAGE_FILE,'utf8'));
+          const ledger=JSON.parse(fs.readFileSync('reporting/income-ledger.json','utf8'));
           const engineId='projectx-whype-usdc';
           const engine=data.mechanisms?.[engineId];
           assert.ok(engine,'Project X WHYPE-USDC mechanism missing');
@@ -52,18 +53,36 @@ jobs:
           assert.deepEqual(engine.companies,['Cypher'],'Project X company identity drift');
           assert.equal(engine.factualTrackingCompanyCount,1,'Project X did not reach 1/1 factual tracking');
           assert.deepEqual(engine.factualTrackingCompanies,['Cypher'],'Project X factual tracking identity drift');
-          assert.equal(engine.factualEventCompanyCount,0,'Project X tracking proof fabricated factual period events');
           assert.equal(engine.reusableCoverageGap,false,'Project X remained a reusable tracking gap');
-          const row=data.companies?.Cypher?.mechanisms?.[engineId]?.months?.[data.currentMonth];
-          assert.equal(row?.status,'factual-tracking-no-period-event','Cypher Project X status drift');
-          assert.equal(row?.factualEventCount,0,'Project X tracking proof fabricated income event');
-          assert.equal(row?.factualUsdSubtotal,null,'Project X current claimable state leaked into factual USD subtotal');
+
+          // Period-event truth belongs to the Canonical Income Ledger, not to
+          // the tracking proof. Compare Coverage to the canonical source
+          // instead of assuming that the current month must contain zero events.
+          const currentMonth=data.currentMonth;
+          const eventText=e=>[e?.route,e?.protocol,e?.asset,e?.token,e?.sourceFamily,e?.sourceIdentity,e?.sourceFile,e?.mechanismKind].map(v=>String(v||'').toLowerCase()).join(' ');
+          const monthKey=v=>{const t=Date.parse(v||'');return Number.isFinite(t)?new Date(t).toISOString().slice(0,7):null;};
+          const canonicalEvents=(ledger.events||[]).filter(e=>e?.company==='Cypher'&&e?.family==='accrued-entitlement'&&monthKey(e?.economicDate||e?.periodEnd)===currentMonth&&['projectx','project x','whype'].some(h=>eventText(e).includes(h)));
+          const canonicalValued=canonicalEvents.filter(e=>e?.usdValue!==null&&e?.usdValue!==undefined&&e?.usdValue!==''&&Number.isFinite(Number(e.usdValue)));
+          const canonicalUsd=canonicalEvents.length&&canonicalValued.length===canonicalEvents.length?Number(canonicalValued.reduce((s,e)=>s+Number(e.usdValue),0).toFixed(8)):null;
+
+          assert.equal(engine.currentMonthFactualEventCount,canonicalEvents.length,'Project X Coverage period-event count diverged from Canonical Income Ledger');
+          assert.equal(engine.factualEventCompanyCount,canonicalEvents.length>0?1:0,'Project X factual-event company count diverged from Canonical Income Ledger');
+          const row=data.companies?.Cypher?.mechanisms?.[engineId]?.months?.[currentMonth];
+          assert.equal(row?.factualEventCount,canonicalEvents.length,'Project X tracking proof changed canonical period-event count');
+          assert.equal(row?.factualUsdSubtotal,canonicalUsd,'Project X Coverage factual USD diverged from Canonical Income Ledger');
+          assert.equal(row?.status,canonicalEvents.length?'factual-period-evidence':'factual-tracking-no-period-event','Cypher Project X status drift');
           assert.deepEqual(row?.factualTrackingProofSources,['companies/company-010-production-state.json#strategies.projectX'],'Project X proof source drift');
-          assert.ok(row?.completionBlockers?.includes('no-canonical-period-income-evidence'),'Project X lost no-period-income blocker');
+          if(canonicalEvents.length){
+            assert.ok(!row?.completionBlockers?.includes('no-canonical-period-income-evidence'),'Project X retained no-period-income blocker despite canonical events');
+          }else{
+            assert.ok(row?.completionBlockers?.includes('no-canonical-period-income-evidence'),'Project X lost no-period-income blocker without canonical events');
+          }
           assert.ok(!row?.completionBlockers?.includes('no-factual-engine-tracking-proof'),'Project X remained falsely uncovered');
           assert.ok(!data.gapRanking.some(x=>x.engineId===engineId),'Project X remained in reusable gap ranking');
           assert.equal(data.authority?.executionAuthority,'none','Accounting coverage execution authority expanded');
+          assert.equal(data.semantics?.canonicalLedgerIsSoleFactualIncomeAuthority,true,'Canonical Ledger sole factual-income authority drift');
+          assert.equal(data.semantics?.factualTrackingProofIsNotPeriodIncome,true,'Tracking proof gained period-income authority');
           assert.equal(data.semantics?.referenceMetricIsNotEarnedIncome,true,'Reference analytics boundary drift');
-          console.log('Project X production-shaped coverage PASS',{tracking:`${engine.factualTrackingCompanyCount}/${engine.activeCompanyCount}`,factualEventCompanies:engine.factualEventCompanyCount,reusableCoverageGap:engine.reusableCoverageGap,periodIncomeAuthority:false,referenceAprAuthority:false,executionAuthority:data.authority.executionAuthority});
+          console.log('Project X production-shaped coverage PASS',{tracking:`${engine.factualTrackingCompanyCount}/${engine.activeCompanyCount}`,canonicalPeriodEvents:canonicalEvents.length,factualEventCompanies:engine.factualEventCompanyCount,reusableCoverageGap:engine.reusableCoverageGap,periodIncomeAuthority:'canonical-ledger-only',referenceAprAuthority:false,executionAuthority:data.authority.executionAuthority});
           NODE
           git diff --check
