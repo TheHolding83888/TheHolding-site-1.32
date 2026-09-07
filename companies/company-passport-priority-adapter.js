@@ -1,20 +1,21 @@
-/* The Holding · Company Passport priority adapter · v0.4.0
+/* The Holding · Company Passport priority adapter · v0.5.0
  * Presentation only.
  * 1) Promotes the existing APR field to the first metadata row in every
  *    standard Company Passport.
- * 2) Makes already-recognized Canonical Income Ledger income visible in the
- *    Monthly Reports surface even while full-period accounting coverage is
- *    still incomplete.
- * 3) Shows the matching observed-period yield when factual income exists but
- *    full-month coverage is incomplete. That yield is explicitly labelled as
- *    observed/confirmed and never masquerades as a complete monthly yield.
- * 4) Projects live diagnostic Accounting Coverage into subtle per-period
+ * 2) Makes Canonical Income Ledger income visible as Confirmed even while
+ *    full-period accounting coverage is still incomplete.
+ * 3) Shows the backend-provided Estimated lane as a separate, non-additive
+ *    alternative model view for the same period.
+ * 4) Shows the matching confirmed-period yield when factual income exists but
+ *    full-month coverage is incomplete.
+ * 5) Projects live diagnostic Accounting Coverage into subtle per-period
  *    notices. Missing/uncertain mechanisms remain visible without blocking
  *    already-confirmed income from being shown.
  *
  * This adapter never creates income, calculates factual income, estimates
- * missing days, changes accounting completion, substitutes Reference APR, or
- * expands execution authority. Accounting Coverage remains diagnostic only.
+ * missing days in the browser, adds Confirmed + Estimated, changes accounting
+ * completion, substitutes Reference APR for factual income, or expands
+ * execution authority. Accounting Coverage remains diagnostic only.
  */
 (() => {
   'use strict';
@@ -22,6 +23,7 @@
 
   const REPORT_URL = '/reporting/company-monthly-reports.json';
   const COVERAGE_URL = '/reporting/accounting-coverage.json';
+  const INCOME_VIEW_VERSION = '0.1-confirmed-estimated-non-additive';
   let queued = false;
   let monthlySnapshot = null;
   let monthlyLoading = null;
@@ -98,8 +100,25 @@
     return Object.keys(company?.months || {}).filter(key => company.months[key]).sort();
   }
 
+  function validIncomeView(month) {
+    const view = month?.incomeView;
+    if (view?.version !== INCOME_VIEW_VERSION) return null;
+    if (view?.unknownIsNotZero !== true || view?.executionAuthority !== 'none') return null;
+    if (view?.relationship?.additive !== false || view?.relationship?.confirmedPlusEstimatedIsValidTotal !== false) return null;
+    if (view?.relationship?.estimatedMayOverlapConfirmedEconomics !== true || view?.relationship?.estimatedIsAlternativeAnalyticView !== true) return null;
+    return view;
+  }
+
   function displayIncome(month) {
     if (!month) return { usd: null, observedOnly: false };
+    const view = validIncomeView(month);
+    if (view?.confirmed) {
+      const confirmed = view.confirmed;
+      if (confirmed.factualRecognizedAmount === true && finite(confirmed.usd)) {
+        return { usd: Number(confirmed.usd), observedOnly: confirmed.fullPeriodComplete !== true };
+      }
+      return { usd: null, observedOnly: false };
+    }
     if (finite(month.generatedIncomeUsd)) {
       return { usd: Number(month.generatedIncomeUsd), observedOnly: false };
     }
@@ -112,6 +131,14 @@
 
   function displayYield(month) {
     if (!month) return { value: null, observedOnly: false };
+    const view = validIncomeView(month);
+    if (view?.confirmed) {
+      const confirmed = view.confirmed;
+      if (confirmed.factualRecognizedAmount === true && finite(confirmed.yieldPct)) {
+        return { value: Number(confirmed.yieldPct), observedOnly: confirmed.fullPeriodComplete !== true };
+      }
+      return { value: null, observedOnly: false };
+    }
     if (finite(month.monthlyYieldPct)) {
       return { value: Number(month.monthlyYieldPct), observedOnly: false };
     }
@@ -120,6 +147,21 @@
       return { value: Number(month.observedPeriodYieldPct), observedOnly: true };
     }
     return { value: null, observedOnly: false };
+  }
+
+  function displayEstimate(month) {
+    const view = validIncomeView(month);
+    const estimated = view?.estimated;
+    if (!estimated || estimated.available !== true) return { available: false, usd: null, yieldPct: null };
+    if (estimated.basis !== 'existing-reference-model') return { available: false, usd: null, yieldPct: null };
+    if (estimated.earnedIncomeAuthority !== false || estimated.factualIncomeAuthority !== false) return { available: false, usd: null, yieldPct: null };
+    if (estimated.canCloseAccountingCoverage !== false || estimated.canReplaceUnknown !== false) return { available: false, usd: null, yieldPct: null };
+    if (!finite(estimated.usd)) return { available: false, usd: null, yieldPct: null };
+    return {
+      available: true,
+      usd: Number(estimated.usd),
+      yieldPct: finite(estimated.yieldPct) ? Number(estimated.yieldPct) : null
+    };
   }
 
   function formatPeriod(month) {
@@ -138,12 +180,11 @@
 
   function copy() {
     return lang() === 'ru' ? {
-      generated: 'Доход',
-      observed: 'Подтверждённый доход',
-      observedShort: 'подтверждено',
-      monthShort: 'за месяц',
-      monthYield: 'Доходность месяца',
-      observedYield: 'Подтверждённая доходность',
+      confirmed: 'Подтверждённый доход',
+      confirmedShort: 'подтверждено',
+      confirmedYield: 'Подтверждённая доходность',
+      estimated: 'Оценка по модели',
+      estimatedNote: 'Оценка — альтернативная модель за тот же период. Она не прибавляется к подтверждённому доходу.',
       period: 'Период наблюдения',
       partial: 'Показан только подтверждённый доход. Неподтверждённые части в сумму не подставляются.',
       awaiting: 'Трекинг активен; подтверждённых событий дохода за этот период пока нет.',
@@ -155,12 +196,11 @@
       unresolvedGeneric: 'Часть событий дохода пока не включена: требуется дополнительное подтверждение.',
       more: count => `Ещё ${count} ${count === 1 ? 'позиция' : count < 5 ? 'позиции' : 'позиций'} пока не включено.`
     } : {
-      generated: 'Generated',
-      observed: 'Observed earned income',
-      observedShort: 'observed',
-      monthShort: 'this month',
-      monthYield: 'Month Yield',
-      observedYield: 'Observed period yield',
+      confirmed: 'Confirmed income',
+      confirmedShort: 'confirmed',
+      confirmedYield: 'Confirmed yield',
+      estimated: 'Estimated',
+      estimatedNote: 'Estimate is an alternative model view for the same period. It is not added to confirmed income.',
       period: 'Observation period',
       partial: 'Only confirmed income is shown. Unconfirmed components are never substituted into the total.',
       awaiting: 'Tracking is active; there are no confirmed income events for this period yet.',
@@ -192,16 +232,62 @@
     return row;
   }
 
+  function ensureEstimateRow(panel) {
+    let row = panel.querySelector('.th-mr-estimated-view');
+    if (row) return row;
+    row = document.createElement('div');
+    row.className = 'th-mr-estimated-view';
+    row.hidden = true;
+
+    const head = document.createElement('div');
+    head.className = 'th-mr-estimated-head';
+    const label = document.createElement('div');
+    label.className = 'th-mr-estimated-label';
+    label.dataset.thEstimatedLabel = 'true';
+    const values = document.createElement('div');
+    values.className = 'th-mr-estimated-values';
+    const amount = document.createElement('span');
+    amount.className = 'th-mr-estimated-amount';
+    amount.dataset.thEstimatedAmount = 'true';
+    const yieldValue = document.createElement('span');
+    yieldValue.className = 'th-mr-estimated-yield';
+    yieldValue.dataset.thEstimatedYield = 'true';
+    values.append(amount, yieldValue);
+    head.append(label, values);
+
+    const note = document.createElement('div');
+    note.className = 'th-mr-estimated-note';
+    note.dataset.thEstimatedNote = 'true';
+    row.append(head, note);
+
+    const period = panel.querySelector('.th-mr-observed-period') || ensurePeriodRow(panel);
+    if (period) period.insertAdjacentElement('afterend', row);
+    else {
+      const context = panel.querySelector('.th-mr-context');
+      if (context) context.insertAdjacentElement('afterend', row);
+      else panel.appendChild(row);
+    }
+    return row;
+  }
+
   function ensureTransparencyStyle() {
     if (document.getElementById('th-accounting-transparency-style')) return;
     const style = document.createElement('style');
     style.id = 'th-accounting-transparency-style';
     style.textContent = `
+      .th-mr-estimated-view{display:grid;gap:.2rem;margin:.14rem .18rem .42rem;padding:.48rem .58rem;border:1px solid var(--line);border-radius:.65rem;background:color-mix(in srgb,var(--panel) 78%,transparent)}
+      .th-mr-estimated-view[hidden]{display:none}
+      .th-mr-estimated-head{display:flex;align-items:baseline;justify-content:space-between;gap:.8rem}
+      .th-mr-estimated-label{color:var(--text-2);font-size:.57rem;font-weight:650;letter-spacing:.015em}
+      .th-mr-estimated-values{display:flex;align-items:baseline;justify-content:flex-end;gap:.45rem;font-variant-numeric:tabular-nums}
+      .th-mr-estimated-amount{color:var(--text-1);font-size:.7rem;font-weight:700}
+      .th-mr-estimated-yield{color:var(--text-3);font-size:.55rem;font-weight:600}
+      .th-mr-estimated-note{color:var(--text-3);font-size:.48rem;font-weight:520;line-height:1.42;text-transform:none}
       .th-mr-accounting-notices{display:grid;gap:.24rem;margin:.02rem .18rem .42rem;padding-top:.34rem;border-top:1px solid var(--line)}
       .th-mr-accounting-notices[hidden]{display:none}
       .th-mr-accounting-notice{position:relative;padding-left:.68rem;color:var(--text-3);font-size:.5rem;font-weight:550;line-height:1.42;letter-spacing:.005em;text-transform:none}
       .th-mr-accounting-notice::before{content:'·';position:absolute;left:.08rem;top:-.01em;color:var(--gold);font-size:.72rem;line-height:1}
-      @media(max-width:760.98px){.th-mr-accounting-notices{margin-left:.12rem;margin-right:.12rem}.th-mr-accounting-notice{font-size:.49rem}}
+      @media(max-width:760.98px){.th-mr-estimated-view{margin-left:.12rem;margin-right:.12rem}.th-mr-accounting-notices{margin-left:.12rem;margin-right:.12rem}.th-mr-accounting-notice{font-size:.49rem}}
     `;
     document.head.appendChild(style);
   }
@@ -313,6 +399,25 @@
     host.hidden = notices.length === 0;
   }
 
+  function renderEstimate(panel, estimate) {
+    ensureTransparencyStyle();
+    const row = ensureEstimateRow(panel);
+    const c = copy();
+    if (!row) return;
+    if (!estimate.available) {
+      row.hidden = true;
+      row.dataset.thEstimateAuthority = 'none';
+      return;
+    }
+    setText(row.querySelector('[data-th-estimated-label]'), c.estimated);
+    setText(row.querySelector('[data-th-estimated-amount]'), money(estimate.usd));
+    setText(row.querySelector('[data-th-estimated-yield]'), pct(estimate.yieldPct));
+    setText(row.querySelector('[data-th-estimated-note]'), c.estimatedNote);
+    row.hidden = false;
+    row.dataset.thEstimateAuthority = 'reference-model-non-factual';
+    row.dataset.thEstimateAdditive = 'false';
+  }
+
   function patchDisclosure(disclosure, companyName, company) {
     const keys = orderedMonths(company);
     if (!keys.length) return;
@@ -326,10 +431,10 @@
     const triggerLabel = disclosure.querySelector('.th-mr-trigger .th-mr-value-label');
     const triggerYield = disclosure.querySelector('.th-mr-trigger .th-mr-meta span');
     setText(triggerValue, money(currentIncome.usd));
-    setText(triggerLabel, currentIncome.observedOnly ? c.observedShort : c.monthShort);
+    setText(triggerLabel, c.confirmedShort);
     setText(triggerYield, pct(currentYield.value));
-    disclosure.dataset.thIncomeDisplay = currentIncome.observedOnly ? 'observed-canonical' : 'complete-or-empty';
-    disclosure.dataset.thYieldDisplay = currentYield.observedOnly ? 'observed-period-canonical' : 'complete-or-empty';
+    disclosure.dataset.thIncomeDisplay = currentIncome.observedOnly ? 'confirmed-partial-canonical' : 'confirmed-complete-or-empty';
+    disclosure.dataset.thYieldDisplay = currentYield.observedOnly ? 'confirmed-period-canonical' : 'confirmed-complete-or-empty';
 
     const panel = disclosure.querySelector('.th-monthly-report-panel') ||
       document.querySelector(`.th-monthly-report-panel.th-mr-portal-open[data-company="${CSS.escape(companyName)}"]`);
@@ -342,27 +447,30 @@
     const selected = company.months[selectedKey];
     const selectedIncome = displayIncome(selected);
     const selectedYield = displayYield(selected);
+    const selectedEstimate = displayEstimate(selected);
 
     const generatedValue = panel.querySelector('[data-th-mr-generated]');
     const generatedLabel = generatedValue?.closest('.th-mr-core-card')?.querySelector('.th-mr-core-label');
     setText(generatedValue, money(selectedIncome.usd));
-    setText(generatedLabel, selectedIncome.observedOnly ? c.observed : c.generated);
+    setText(generatedLabel, c.confirmed);
 
     const yieldValue = panel.querySelector('[data-th-mr-yield]');
     const yieldLabel = yieldValue?.closest('.th-mr-core-card')?.querySelector('.th-mr-core-label');
     setText(yieldValue, pct(selectedYield.value));
-    setText(yieldLabel, selectedYield.observedOnly ? c.observedYield : c.monthYield);
+    setText(yieldLabel, c.confirmedYield);
 
     const periodRow = ensurePeriodRow(panel);
     if (periodRow) {
       setText(periodRow.querySelector('[data-th-observed-period-label]'), c.period);
       setText(periodRow.querySelector('[data-th-observed-period-value]'), formatPeriod(selected));
-      periodRow.hidden = !(selectedIncome.observedOnly || selectedYield.observedOnly);
+      periodRow.hidden = !(selectedIncome.observedOnly || selectedYield.observedOnly || selectedEstimate.available);
     }
 
+    renderEstimate(panel, selectedEstimate);
     renderAccountingNotices(panel, companyName, selectedKey, selected, selectedIncome);
-    panel.dataset.thIncomeDisplay = selectedIncome.observedOnly ? 'observed-canonical' : 'complete-or-empty';
-    panel.dataset.thYieldDisplay = selectedYield.observedOnly ? 'observed-period-canonical' : 'complete-or-empty';
+    panel.dataset.thIncomeDisplay = selectedIncome.observedOnly ? 'confirmed-partial-canonical' : 'confirmed-complete-or-empty';
+    panel.dataset.thYieldDisplay = selectedYield.observedOnly ? 'confirmed-period-canonical' : 'confirmed-complete-or-empty';
+    panel.dataset.thEstimatedDisplay = selectedEstimate.available ? 'reference-model-non-factual' : 'unavailable';
   }
 
   function patchMonthlyReports() {
@@ -392,7 +500,7 @@
     promoteApr();
     Promise.all([loadMonthlySnapshot(), loadCoverageSnapshot()])
       .then(() => patchMonthlyReports())
-      .catch(err => console.warn('[Company Passport observed income]', err?.message || err));
+      .catch(err => console.warn('[Company Passport confirmed/estimated income]', err?.message || err));
 
     const observer = new MutationObserver(queueRefresh);
     observer.observe(document.documentElement, {
@@ -403,12 +511,17 @@
     });
 
     window.__TH_COMPANY_PASSPORT_PRIORITY_ADAPTER__ = {
-      version: '0.4.0-accounting-transparency',
+      version: '0.5.0-confirmed-estimated',
       promoteApr,
       patchMonthlyReports,
-      incomeDisplayPolicy: 'complete-generated-income-or-partial-observed-canonical-income-with-evidence',
-      yieldDisplayPolicy: 'complete-month-yield-or-partial-observed-period-yield-with-canonical-income-evidence',
+      incomeDisplayPolicy: 'confirmed-canonical-income-only-main-lane',
+      yieldDisplayPolicy: 'confirmed-canonical-yield-only-main-lane',
+      estimatedDisplayPolicy: 'backend-incomeView-estimated-only-non-additive-alternative-view',
       transparencyPolicy: 'diagnostic-accounting-coverage-notices-never-income-authority',
+      browserCalculatesEstimatedIncome: false,
+      confirmedPlusEstimatedIsValidTotal: false,
+      estimatedIncomeAuthority: false,
+      estimatedCanCloseAccountingCoverage: false,
       noticesCreateIncome: false,
       coverageHasCompletionAuthority: false,
       referenceIncomeAuthority: false,
