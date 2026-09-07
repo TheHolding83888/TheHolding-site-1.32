@@ -127,9 +127,9 @@ jobs:
           if(!(Number(e.diagnostics?.laneCount)>0)) throw new Error('live ve33 discovered no accounting lanes');
           const runtimeMs=Number(e.diagnostics?.runtimeMs);
           if(!Number.isFinite(runtimeMs)||runtimeMs<=0) throw new Error('live ve33 runtime diagnostic missing');
-          // Public RPC timing is network-sensitive. Keep a bounded 6.5 minute canary budget
+          // Public RPC timing is network-sensitive. Keep a bounded 7.5 minute canary budget
           // while preserving the strict accounting/reconciliation invariants below.
-          if(runtimeMs>390000) throw new Error(`live ve33 runtime budget exceeded: ${runtimeMs}ms > 390000ms`);
+          if(runtimeMs>450000) throw new Error(`live ve33 runtime budget exceeded: ${runtimeMs}ms > 450000ms`);
           let totalCurrentCheckpoints=0;
           let totalIntervals=0;
           for(const p of ['aerodrome','velodrome']){
