@@ -76,7 +76,7 @@ function historicalValuationSourceValid(event, resolution, boundaryMs, observedM
       !/^\d+$/.test(String(resolution?.quoteAnsweredInRound || '')) ||
       !Number.isSafeInteger(Number(resolution?.twapGranularity)) || Number(resolution.twapGranularity) <= 0 ||
       !Number.isSafeInteger(Number(resolution?.observationLength)) || Number(resolution.observationLength) <= Number(resolution.twapGranularity) ||
-      resolution?.poolStable !== true ||
+      typeof resolution?.poolStable !== 'boolean' ||
       resolution?.stablecoinPegAssumptionUsed !== false ||
       !finite(resolution?.quoteTokenAmount) || Number(resolution.quoteTokenAmount) <= 0 ||
       !finite(resolution?.quotePriceUsd) || Number(resolution.quotePriceUsd) <= 0
