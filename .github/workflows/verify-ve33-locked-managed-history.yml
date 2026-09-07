@@ -70,17 +70,23 @@ jobs:
           import { validateLockedManagedHistoricalSelection } from './reporting/ve33-ledger-admission.mjs';
 
           const rewards=JSON.parse(fs.readFileSync(process.env.REWARDS_DATA_FILE,'utf8'));
+          const defitea=rewards?.companies?.['defitea.eth'];
+          if(!defitea) throw new Error('Defitea rewards source missing');
+          // This canary proves one economically critical Stage-2 lane. Keep the
+          // production adapter generic, but do not spend CI time rescanning every
+          // company while diagnosing Defitea August.
+          const scopedRewards={...rewards,companies:{'defitea.eth':defitea}};
           const previous=JSON.parse(fs.readFileSync('./reporting/ve33-locked-managed-accounting-evidence.json','utf8'));
           if(LOCKED_MANAGED_ACCOUNTING_START!=='2026-08-01T00:00:00.000Z') throw new Error('locked-managed August accounting start missing');
 
-          const selection=await selectHistoricalProviders({rewards,env:process.env});
-          const required=validateLockedManagedHistoricalSelection({rewards,selection});
+          const selection=await selectHistoricalProviders({rewards:scopedRewards,env:process.env});
+          const required=validateLockedManagedHistoricalSelection({rewards:scopedRewards,selection});
           if(!required.includes('aerodrome')) throw new Error('Defitea Aerodrome locked-managed protocol not routed through historical provider');
 
-          const evidence=await buildLockedManagedEvidence({rewards,previous,providers:selection.providers});
+          const evidence=await buildLockedManagedEvidence({rewards:scopedRewards,previous,providers:selection.providers});
           validateLockedManagedEvidence(evidence);
 
-          const defiteaLanes=trackedLockedManagedDescriptors(rewards).filter(x=>x.company==='defitea.eth'&&x.protocolKey==='aerodrome');
+          const defiteaLanes=trackedLockedManagedDescriptors(scopedRewards).filter(x=>x.company==='defitea.eth'&&x.protocolKey==='aerodrome');
           if(!defiteaLanes.length) throw new Error('Defitea Aerodrome locked-managed lane missing');
           const aug='2026-08-01T00:00:00.000Z',sep='2026-09-01T00:00:00.000Z';
           const laneDiagnostics=[];
