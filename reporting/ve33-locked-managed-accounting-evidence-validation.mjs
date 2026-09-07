@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
 import { Interface } from 'ethers';
-import { LOCKED_MANAGED_VERSION, trackedLockedManagedDescriptors, decodeWithdrawManagedTokenId } from './ve33-locked-managed-accounting-evidence.mjs';
+import { LOCKED_MANAGED_VERSION, LOCKED_MANAGED_ACCOUNTING_START, trackedLockedManagedDescriptors, decodeWithdrawManagedTokenId } from './ve33-locked-managed-accounting-evidence.mjs';
 
-assert.equal(LOCKED_MANAGED_VERSION,'0.1-ve33-locked-managed-factual-accrual');
+assert.equal(LOCKED_MANAGED_VERSION,'0.2-ve33-locked-managed-historical-factual-accrual');
+assert.equal(LOCKED_MANAGED_ACCOUNTING_START,'2026-08-01T00:00:00.000Z');
 
 const synthetic={
   generatedAt:'2026-09-02T12:00:00.000Z',
