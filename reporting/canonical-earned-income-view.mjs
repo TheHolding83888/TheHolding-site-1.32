@@ -7,6 +7,10 @@
  * wallet deltas, or generic receipts. A raw event is allowed into owner-facing
  * earned-income totals only when its recognition semantics are non-overlapping.
  */
+import {
+  ve33EventIdentity,
+  historicalValuationSourceMatchesVe33Identity
+} from './ve33-historical-valuation-identity.mjs';
 
 const VERSION = '0.1-canonical-earned-income-view';
 const HISTORICAL_VALUATION_RESOLUTION_VERSION = '0.1-canonical-historical-valuation-resolution';
@@ -31,15 +35,20 @@ function eventMonth(event) {
   return monthKey(event?.economicDate || event?.periodEnd);
 }
 
-function historicalValuationSourceValid(resolution, boundaryMs, observedMs) {
+function historicalValuationSourceValid(event, resolution, boundaryMs, observedMs) {
   const family = resolution?.sourceFamily;
   if (!HISTORICAL_VALUATION_SOURCE_FAMILIES.has(family)) return false;
+  if (!historicalValuationSourceMatchesVe33Identity(event, resolution)) return false;
+  const identity = ve33EventIdentity(event);
+  if (!identity.ok) return false;
+  if (resolution?.identityBound === true && String(resolution?.identityToken || '').toLowerCase() !== identity.token) return false;
   if (family === 'canonical-market-data-git-history') return true;
 
   if (
     resolution?.sourceStatus !== 'historical-onchain-chainlink-price' ||
     Number(resolution?.sourceChainId) !== 10 ||
     !Number.isSafeInteger(Number(resolution?.sourceBlockNumber)) || Number(resolution.sourceBlockNumber) <= 0 ||
+    Number(resolution.sourceBlockNumber) !== Number(identity.closeBlock) ||
     resolution?.exactHistoricalBlock !== true ||
     !/^0x[0-9a-f]{40}$/i.test(String(resolution?.sourceContract || '')) ||
     !/^\d+$/.test(String(resolution?.sourceRoundId || '')) ||
@@ -73,7 +82,7 @@ function resolvedUsdValue(event) {
   const observedMs = Date.parse(r.observedAt || '');
   const boundaryMs = Date.parse(r.boundaryAt || '');
   if (!Number.isFinite(observedMs) || !Number.isFinite(boundaryMs) || observedMs > boundaryMs) return null;
-  if (!historicalValuationSourceValid(r, boundaryMs, observedMs)) return null;
+  if (!historicalValuationSourceValid(event, r, boundaryMs, observedMs)) return null;
   const expected = round(Number(event.amount) * Number(r.valuationUnitUsd), 8);
   const actual = round(r.resolvedUsdValue, 8);
   if (!finite(expected) || !finite(actual) || Math.abs(Number(expected) - Number(actual)) > 0.00000002) return null;
@@ -155,6 +164,7 @@ function buildCanonicalEarnedIncomeView(ledger) {
   for (const event of ledger.events || []) {
     const decision = recognitionDecision(event);
     const effectiveUsdValue = resolvedUsdValue(event);
+    const identity = event?.sourceFile === 'reporting/ve33-accounting-evidence.json' ? ve33EventIdentity(event) : null;
     const base = {
       eventKey: event.eventKey,
       company: event.company,
@@ -170,6 +180,7 @@ function buildCanonicalEarnedIncomeView(ledger) {
       sourceIdentity: event.sourceIdentity || null,
       immutableEconomicFieldsHash: event.immutableEconomicFieldsHash || null,
       valuationResolutionVersion: event?.valuationResolution?.version || null,
+      valuationIdentityToken: identity?.ok ? identity.token : null,
       executionAuthority: 'none'
     };
 
@@ -238,7 +249,8 @@ function buildCanonicalEarnedIncomeView(ledger) {
       embeddedCompoundingRecognizedAsEarnedIncome: true,
       settlementDoesNotReRecognizeIncome: true,
       historicalValuationResolutionMayCompleteUnknownUsdWithoutMutatingEconomicEvent: true,
-      exactHistoricalOnchainChainlinkResolutionAllowed:true,
+      historicalValuationMustMatchImmutableVe33TokenIdentity: true,
+      exactHistoricalOnchainChainlinkResolutionAllowed: true,
       unknownIsNotZero: true
     },
     recognized,
