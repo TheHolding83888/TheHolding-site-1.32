@@ -6,6 +6,8 @@ on:
       - 'intelligence/icp-nns/company-005-006-neuron-pool.json'
       - 'rewards/icp-nns-rewards-overlay.mjs'
       - 'rewards/icp-nns-factual-evidence-probe.mjs'
+      - 'rewards/icp-nns-governance-direct-probe.mjs'
+      - '.github/workflows/update-icp-nns-rewards.yml'
   push:
     branches: [main]
     paths:
@@ -56,6 +58,14 @@ jobs:
           set -euo pipefail
           node --check rewards/icp-nns-factual-evidence-probe.mjs
           node rewards/icp-nns-factual-evidence-probe.mjs
+
+      - name: Probe direct NNS Governance neuron info
+        if: github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+          npm install --no-save --package-lock=false --ignore-scripts @icp-sdk/core@6.1.0
+          node --check rewards/icp-nns-governance-direct-probe.mjs
+          node rewards/icp-nns-governance-direct-probe.mjs
 
       - name: Verify ICP NNS accounting boundary
         run: |
