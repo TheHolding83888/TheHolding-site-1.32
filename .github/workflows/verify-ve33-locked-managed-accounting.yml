@@ -10,6 +10,7 @@ on:
       - 'reporting/ve33-locked-managed-income-candidates-validation.mjs'
       - 'reporting/ve33-locked-managed-ledger-admission-validation.mjs'
       - 'reporting/ve33-ledger-admission.mjs'
+      - 'reporting/ve33-accounting-runner.mjs'
       - '.github/workflows/verify-ve33-locked-managed-accounting.yml'
 
 permissions:
@@ -18,10 +19,12 @@ permissions:
 jobs:
   verify-locked-managed-accounting:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
@@ -43,29 +46,42 @@ jobs:
           node - <<'NODE'
           const fs=require('fs');
           const e=JSON.parse(fs.readFileSync('reporting/ve33-locked-managed-accounting-evidence.json','utf8'));
-          if(e.version!=='0.1-ve33-locked-managed-factual-accrual') throw new Error('locked-managed evidence version drift');
+          // Generated artifacts can legitimately still be the last main snapshot
+          // while a PR changes the builder. Runtime validation below proves the
+          // candidate output; publication upgrades the artifact after merge.
+          if(!['0.1-ve33-locked-managed-factual-accrual','0.2-ve33-locked-managed-historical-factual-accrual'].includes(e.version)) throw new Error('locked-managed evidence publication version drift');
           if(e.semantics?.openingBalanceCreatesIncome!==false) throw new Error('opening balance recognition drift');
           if(e.semantics?.earnedIndependentOfWithdrawal!==true) throw new Error('earned-before-withdrawal semantic drift');
           if(e.semantics?.withdrawalIsSettlementNotSecondIncome!==true) throw new Error('withdrawal double-count guard missing');
           if(e.semantics?.grossVeNftPrincipalDeltaIsIncomeAuthority!==false) throw new Error('gross veNFT principal leaked into income authority');
           if(e.semantics?.referenceAprUsed!==false) throw new Error('Reference APR leaked into factual accounting');
           if(e.authority?.executionAuthority!=='none'||e.authority?.walletAuthority!=='none'||e.authority?.claimingAuthority!=='none'||e.authority?.capitalExecution!==false) throw new Error('locked-managed authority expansion');
-          console.log('LockedManagedReward evidence policy validation OK');
+          console.log('LockedManagedReward published evidence policy validation OK');
           NODE
 
       - name: Read-only live managed-reward accounting canary
         env:
           REWARDS_DATA_FILE: ./companies/rewards-data.json
-          VE33_LOCKED_MANAGED_EVIDENCE_FILE: /tmp/ve33-locked-managed-accounting-evidence.json
           BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
-          OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
+          OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL || 'https://gateway.tenderly.co/public/optimism' }}
+          VE33_STATE_READ_CONCURRENCY: '2'
+          VE33_SETTLEMENT_CONCURRENCY: '2'
         run: |
           set -euo pipefail
-          node reporting/ve33-locked-managed-accounting-evidence.mjs
-          node - <<'NODE'
-          const fs=require('fs');
-          const e=JSON.parse(fs.readFileSync('/tmp/ve33-locked-managed-accounting-evidence.json','utf8'));
-          if(e.version!=='0.1-ve33-locked-managed-factual-accrual') throw new Error('live locked-managed version drift');
+          node --input-type=module - <<'NODE'
+          import fs from 'node:fs';
+          import { selectHistoricalProviders } from './reporting/ve33-accounting-runner.mjs';
+          import { buildLockedManagedEvidence, LOCKED_MANAGED_VERSION } from './reporting/ve33-locked-managed-accounting-evidence.mjs';
+          import { validateLockedManagedEvidence } from './reporting/ve33-locked-managed-income-candidates.mjs';
+          import { validateLockedManagedHistoricalSelection } from './reporting/ve33-ledger-admission.mjs';
+
+          const rewards=JSON.parse(fs.readFileSync(process.env.REWARDS_DATA_FILE,'utf8'));
+          const previous=JSON.parse(fs.readFileSync('./reporting/ve33-locked-managed-accounting-evidence.json','utf8'));
+          const selection=await selectHistoricalProviders({rewards,env:process.env});
+          validateLockedManagedHistoricalSelection({rewards,selection});
+          const e=await buildLockedManagedEvidence({rewards,previous,providers:selection.providers});
+          if(e.version!==LOCKED_MANAGED_VERSION||e.version!=='0.2-ve33-locked-managed-historical-factual-accrual') throw new Error('live locked-managed version drift');
+          validateLockedManagedEvidence(e);
           if(!(Number(e.diagnostics?.laneCount)>0)) throw new Error('live LockedManagedReward discovered no accounting lanes');
           const aero=e.diagnostics?.protocols?.aerodrome;
           if(!aero||!(Number(aero.latestBlockNumber)>0)||!(Number(aero.laneCount)>0)) throw new Error('live Aerodrome LockedManagedReward discovery missing');
@@ -74,6 +90,6 @@ jobs:
           if(new Set(events.map(x=>x.eventKey)).size!==events.length) throw new Error('live locked-managed duplicate event identity');
           if(events.some(x=>x.mechanismKind!=='locked-managed-reward'||x.recognitionState!=='compounded-locked'||x.openingBalanceCreatesIncome!==false||x.withdrawalIsSettlementNotSecondIncome!==true||x.grossVeNftPrincipalDeltaIsIncomeAuthority!==false||x.referenceAprUsed!==false||x.claimIsSecondIncomeEvent!==false||x.laterClaimOrPriceMoveDoesNotRewriteIncome!==true||x.executionAuthority!=='none')) throw new Error('live locked-managed accounting semantic drift');
           if(e.authority?.executionAuthority!=='none'||e.authority?.walletAuthority!=='none'||e.authority?.claimingAuthority!=='none'||e.authority?.capitalExecution!==false) throw new Error('live locked-managed authority expansion');
-          console.log('Read-only live LockedManagedReward canary PASS',{status:e.status,lanes:e.diagnostics.laneCount,checkpoints:e.checkpoints.length,events:events.length,accepted:e.diagnostics.acceptedPositiveIntervalCount,reconciliations:e.diagnostics.reconciliationCount,boundaryFailures:Object.values(e.diagnostics.protocols||{}).reduce((s,x)=>s+(x.boundaryFailures||[]).length,0)});
+          console.log('Read-only live LockedManagedReward canary PASS',{status:e.status,lanes:e.diagnostics.laneCount,checkpoints:e.checkpoints.length,events:events.length,accepted:e.diagnostics.acceptedPositiveIntervalCount,reconciliations:e.diagnostics.reconciliationCount,boundaryFailures:Object.values(e.diagnostics.protocols||{}).reduce((s,x)=>s+(x.boundaryFailures||[]).length,0),historicalPriceResolved:e.diagnostics.historicalPriceResolvedIntervalCount});
           NODE
           git diff --exit-code
