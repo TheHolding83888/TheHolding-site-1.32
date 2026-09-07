@@ -8,7 +8,13 @@ const baseEvidence={
   authority:{executionAuthority:'none',walletAuthority:'none',claimingAuthority:'none',capitalExecution:false,methodologyMutationAuthority:'none'},
   checkpoints:[],events:[]
 };
-const event={eventKey:'ve33:test:1',company:'Alpha',family:'accrued-entitlement',economicDate:'2026-09-02',periodStart:'2026-09-01T00:00:00.000Z',periodEnd:'2026-09-02T00:00:00.000Z',route:'aerodrome-ve',protocol:'Aerodrome',asset:'USDC',token:'0x1111111111111111111111111111111111111111',amount:1,amountRaw:'1000000',usdValue:1,mechanismKind:'voting-reward',holder:'0x2222222222222222222222222222222222222222',tokenId:'7',rewardContract:'0x3333333333333333333333333333333333333333',distributor:null,referenceAprUsed:false,currentClaimableBalanceIsPeriodIncome:false,claimIsSecondIncomeEvent:false,laterClaimOrPriceMoveDoesNotRewriteIncome:true,unknownIsNotZero:true};
+const holder='0x2222222222222222222222222222222222222222';
+const token='0x1111111111111111111111111111111111111111';
+const rewardContract='0x3333333333333333333333333333333333333333';
+const lane=`aerodrome|Alpha|${holder}|7|voting-reward|${rewardContract}|${token}`;
+const event={
+  eventKey:`ve33:${lane}:100:200`,company:'Alpha',family:'accrued-entitlement',economicDate:'2026-09-02',periodStart:'2026-09-01T00:00:00.000Z',periodEnd:'2026-09-02T00:00:00.000Z',route:'aerodrome-ve',protocol:'Aerodrome',asset:'USDC',token,amount:1,amountRaw:'1000000',usdValue:1,mechanismKind:'voting-reward',holder,tokenId:'7',rewardContract,distributor:null,sourceIdentity:`${lane}|100->${lane}|200`,referenceAprUsed:false,currentClaimableBalanceIsPeriodIncome:false,claimIsSecondIncomeEvent:false,laterClaimOrPriceMoveDoesNotRewriteIncome:true,unknownIsNotZero:true
+};
 const ledger={version:'0.1-canonical-income-ledger',events:[]};
 const first=admitVe33IntoLedgerState({ledger,evidence:{...baseEvidence,events:[event]},generatedAt:'2026-09-02T12:00:00.000Z'});
 assert.equal(first.candidateEventCount,1);
