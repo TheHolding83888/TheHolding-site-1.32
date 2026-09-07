@@ -4,6 +4,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { Interface } from 'ethers';
 import { decodeChainlinkRoundData, decodeUint256 } from '../intelligence/market-data/onchain-price-resolver-core.mjs';
 
 const __filename=fileURLToPath(import.meta.url);
@@ -48,6 +49,30 @@ export const HISTORICAL_OPTIMISM_CHAINLINK_TOKEN_FEEDS=Object.freeze({
   })
 });
 
+// A reusable exact-block route for assets without a direct USD oracle. The
+// token is first quoted through a proven historical Velodrome V2 pool and that
+// quote token is then valued by its exact-block Chainlink feed. This is not a
+// stablecoin peg assumption: both legs are observed onchain at the same proven
+// ve33 closing block. The msUSD route is intentionally explicit because msUSD
+// has traded away from $1 and therefore must never be valued at a fixed peg.
+export const HISTORICAL_OPTIMISM_VELODROME_TWAP_TOKEN_ROUTES=Object.freeze({
+  '0x9dabae7274d28a45f0b65bf8ed201a5731492ca0':Object.freeze({
+    assetId:'metronome-synth-usd',symbol:'msUSD',chainId:10,
+    token:'0x9dAbAE7274D28A45F0B65Bf8ED201A5731492ca0',tokenDecimals:18,
+    pool:'0xe07388b2a7bb29d3Ad8989e1074Bd00Bd0d3C43d',poolStable:true,
+    quoteToken:'0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',quoteTokenSymbol:'USDC',quoteTokenDecimals:6,
+    quoteChainlinkFeed:'0x16a9FA2FDa030272Ce99B29CF780dFA30361E0f3',
+    twapGranularity:48
+  })
+});
+
+const VELODROME_POOL_IFACE=new Interface([
+  'function token0() view returns (address)',
+  'function token1() view returns (address)',
+  'function stable() view returns (bool)',
+  'function observationLength() view returns (uint256)',
+  'function quote(address tokenIn,uint256 amountIn,uint256 granularity) view returns (uint256 amountOut)'
+]);
 const lower=v=>String(v||'').toLowerCase();
 const finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v));
 const RPC_TIMEOUT_MS=10_000;
@@ -59,6 +84,10 @@ export function canonicalAssetIdForHistoricalToken(token){
 
 export function historicalOptimismChainlinkRouteForToken(token){
   return HISTORICAL_OPTIMISM_CHAINLINK_TOKEN_FEEDS[lower(token)]||null;
+}
+
+export function historicalOptimismVelodromeTwapRouteForToken(token){
+  return HISTORICAL_OPTIMISM_VELODROME_TWAP_TOKEN_ROUTES[lower(token)]||null;
 }
 
 export function closingBlockFromVe33Identity({eventKey,sourceIdentity}={}){
@@ -220,6 +249,110 @@ export async function historicalOptimismChainlinkPriceAtBoundary({
   return{ok:false,status:'historical-onchain-chainlink-rpc-unavailable',assetId:route.assetId,sourceBlockNumber,attempts};
 }
 
+export async function historicalOptimismVelodromeTwapPriceAtBoundary({
+  token,boundaryAt,eventKey=null,sourceIdentity=null,root=ROOT,onchainRegistry=null,
+  rpcCall=defaultHistoricalRpcCall,fetchImpl=fetch
+}={}){
+  const route=historicalOptimismVelodromeTwapRouteForToken(token);
+  if(!route)return{ok:false,status:'token-not-historical-velodrome-twap-mapped',assetId:null};
+  const boundaryMs=Date.parse(boundaryAt||'');
+  if(!Number.isFinite(boundaryMs))return{ok:false,status:'invalid-accounting-boundary',assetId:route.assetId};
+  const sourceBlockNumber=closingBlockFromVe33Identity({eventKey,sourceIdentity});
+  if(!sourceBlockNumber)return{ok:false,status:'ve33-closing-block-proof-missing',assetId:route.assetId};
+
+  let registry=onchainRegistry;
+  try{if(!registry)registry=await readOnchainPriceRegistry(root);}catch(error){
+    return{ok:false,status:'onchain-price-registry-unavailable',assetId:route.assetId,error:error?.message||String(error)};
+  }
+  const network=registry?.networks?.optimism;
+  if(Number(network?.chainId)!==route.chainId||!Array.isArray(network?.rpcFailover)||!network.rpcFailover.length){
+    return{ok:false,status:'optimism-historical-rpc-fabric-unavailable',assetId:route.assetId};
+  }
+
+  const blockTag=hexQuantity(sourceBlockNumber),attempts=[];
+  const amountIn=10n**BigInt(route.tokenDecimals);
+  const callData={
+    token0:VELODROME_POOL_IFACE.encodeFunctionData('token0'),
+    token1:VELODROME_POOL_IFACE.encodeFunctionData('token1'),
+    stable:VELODROME_POOL_IFACE.encodeFunctionData('stable'),
+    observationLength:VELODROME_POOL_IFACE.encodeFunctionData('observationLength'),
+    quote:VELODROME_POOL_IFACE.encodeFunctionData('quote',[route.token,amountIn,route.twapGranularity])
+  };
+
+  for(const endpoint of network.rpcFailover){
+    try{
+      const block=await rpcCall({endpoint,method:'eth_getBlockByNumber',params:[blockTag,false],fetchImpl});
+      if(lower(block?.number)!==lower(blockTag))return{ok:false,status:'ve33-closing-block-rpc-mismatch',assetId:route.assetId,sourceBlockNumber};
+      const blockTimestampSeconds=Number(BigInt(block?.timestamp||'0x0'));
+      const blockTimestampMs=blockTimestampSeconds*1000;
+      if(!(Number.isFinite(blockTimestampMs)&&blockTimestampMs>0))return{ok:false,status:'historical-velodrome-block-time-invalid',assetId:route.assetId,sourceBlockNumber};
+      if(blockTimestampMs>boundaryMs)return{ok:false,status:'historical-velodrome-block-after-accounting-boundary',assetId:route.assetId,sourceBlockNumber};
+      const boundaryLagSeconds=(boundaryMs-blockTimestampMs)/1000;
+      if(boundaryLagSeconds>MAX_BOUNDARY_BLOCK_LAG_SECONDS)return{
+        ok:false,status:'historical-velodrome-block-too-far-from-accounting-boundary',assetId:route.assetId,
+        sourceBlockNumber,boundaryLagSeconds:Number(boundaryLagSeconds.toFixed(3))
+      };
+
+      const[token0Hex,token1Hex,stableHex,observationLengthHex,quoteHex]=await Promise.all([
+        rpcCall({endpoint,method:'eth_call',params:[{to:route.pool,data:callData.token0},blockTag],fetchImpl}),
+        rpcCall({endpoint,method:'eth_call',params:[{to:route.pool,data:callData.token1},blockTag],fetchImpl}),
+        rpcCall({endpoint,method:'eth_call',params:[{to:route.pool,data:callData.stable},blockTag],fetchImpl}),
+        rpcCall({endpoint,method:'eth_call',params:[{to:route.pool,data:callData.observationLength},blockTag],fetchImpl}),
+        rpcCall({endpoint,method:'eth_call',params:[{to:route.pool,data:callData.quote},blockTag],fetchImpl})
+      ]);
+      const token0=String(VELODROME_POOL_IFACE.decodeFunctionResult('token0',token0Hex)[0]);
+      const token1=String(VELODROME_POOL_IFACE.decodeFunctionResult('token1',token1Hex)[0]);
+      const stable=Boolean(VELODROME_POOL_IFACE.decodeFunctionResult('stable',stableHex)[0]);
+      const observationLength=Number(VELODROME_POOL_IFACE.decodeFunctionResult('observationLength',observationLengthHex)[0]);
+      const quoteAmountOutRaw=BigInt(VELODROME_POOL_IFACE.decodeFunctionResult('quote',quoteHex)[0]);
+      const pair=new Set([lower(token0),lower(token1)]);
+      if(pair.size!==2||!pair.has(lower(route.token))||!pair.has(lower(route.quoteToken))){
+        return{ok:false,status:'historical-velodrome-pool-token-identity-mismatch',assetId:route.assetId,sourceBlockNumber};
+      }
+      if(stable!==route.poolStable)return{ok:false,status:'historical-velodrome-pool-stable-identity-mismatch',assetId:route.assetId,sourceBlockNumber};
+      if(!Number.isSafeInteger(observationLength)||observationLength<=Number(route.twapGranularity)){
+        return{ok:false,status:'historical-velodrome-observation-history-insufficient',assetId:route.assetId,sourceBlockNumber,observationLength,twapGranularity:route.twapGranularity};
+      }
+      if(quoteAmountOutRaw<=0n)return{ok:false,status:'historical-velodrome-twap-quote-not-positive',assetId:route.assetId,sourceBlockNumber};
+
+      const quoteUsd=await historicalOptimismChainlinkPriceAtBoundary({
+        token:route.quoteToken,boundaryAt,eventKey,sourceIdentity,root,onchainRegistry:registry,rpcCall,fetchImpl
+      });
+      if(quoteUsd?.ok!==true)return{
+        ok:false,status:'historical-velodrome-quote-token-usd-unavailable',assetId:route.assetId,sourceBlockNumber,
+        quoteStatus:quoteUsd?.status||null,quoteAssetId:quoteUsd?.assetId||null
+      };
+      if(lower(quoteUsd.sourceContract)!==lower(route.quoteChainlinkFeed)||Number(quoteUsd.sourceBlockNumber)!==sourceBlockNumber){
+        return{ok:false,status:'historical-velodrome-quote-token-proof-mismatch',assetId:route.assetId,sourceBlockNumber};
+      }
+      const quoteTokenAmount=Number(quoteAmountOutRaw)/10**Number(route.quoteTokenDecimals);
+      const priceUsd=quoteTokenAmount*Number(quoteUsd.priceUsd);
+      if(!(Number.isFinite(priceUsd)&&priceUsd>0))return{ok:false,status:'historical-velodrome-derived-price-not-finite-positive',assetId:route.assetId,sourceBlockNumber};
+
+      return{
+        ok:true,status:'historical-onchain-velodrome-twap-chainlink-price',
+        sourceFamily:'historical-onchain-velodrome-twap-chainlink-at-boundary',
+        assetId:route.assetId,symbol:route.symbol,priceUsd,
+        observedAt:quoteUsd.observedAt,ageMinutes:quoteUsd.ageMinutes,maxAgeMinutes:quoteUsd.maxAgeMinutes,
+        chainId:route.chainId,sourceBlockNumber,sourceBlockTimestamp:new Date(blockTimestampMs).toISOString(),
+        sourceContract:route.pool,rpcEndpointId:endpoint?.id||null,exactHistoricalBlock:true,
+        quoteToken:route.quoteToken,quoteTokenSymbol:route.quoteTokenSymbol,
+        quoteAmountOutRaw:quoteAmountOutRaw.toString(),quoteTokenAmount,
+        twapGranularity:route.twapGranularity,observationLength,poolStable:stable,
+        quoteChainlinkContract:quoteUsd.sourceContract,quoteRoundId:quoteUsd.roundId,
+        quoteAnsweredInRound:quoteUsd.answeredInRound,quoteObservedAt:quoteUsd.observedAt,
+        quotePriceUsd:quoteUsd.priceUsd,
+        sourceFile:'reporting/historical-canonical-price.mjs#HISTORICAL_OPTIMISM_VELODROME_TWAP_TOKEN_ROUTES',
+        priceSource:'onchain-velodrome-v2-twap-plus-chainlink-quote-exact-historical-block',
+        stablecoinPegAssumptionUsed:false,currentPriceUsed:false,referenceAprUsed:false,executionAuthority:'none'
+      };
+    }catch(error){
+      attempts.push({endpointId:endpoint?.id||null,error:error?.message||String(error)});
+    }
+  }
+  return{ok:false,status:'historical-onchain-velodrome-twap-rpc-unavailable',assetId:route.assetId,sourceBlockNumber,attempts};
+}
+
 export async function historicalCanonicalPriceAtBoundary({
   token,boundaryAt,eventKey=null,sourceIdentity=null,root=ROOT,gitRun=defaultGitRun,schedulerContract=null,maxHistoryCommits=96,
   onchainRegistry=null,rpcCall=defaultHistoricalRpcCall,fetchImpl=fetch
@@ -227,6 +360,9 @@ export async function historicalCanonicalPriceAtBoundary({
   const assetId=canonicalAssetIdForHistoricalToken(token);
   if(!assetId){
     if(historicalOptimismChainlinkRouteForToken(token))return historicalOptimismChainlinkPriceAtBoundary({
+      token,boundaryAt,eventKey,sourceIdentity,root,onchainRegistry,rpcCall,fetchImpl
+    });
+    if(historicalOptimismVelodromeTwapRouteForToken(token))return historicalOptimismVelodromeTwapPriceAtBoundary({
       token,boundaryAt,eventKey,sourceIdentity,root,onchainRegistry,rpcCall,fetchImpl
     });
     return{ok:false,status:'token-not-canonical-market-data-mapped',assetId:null};
