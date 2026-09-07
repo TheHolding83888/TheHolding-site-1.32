@@ -13,7 +13,7 @@ import { ve33EventIdentity, historicalValuationSourceMatchesVe33Identity } from 
 assert.equal(VERSION,'0.2-historical-canonical-market-or-exact-chainlink-price');
 assert.equal(Object.keys(HISTORICAL_TOKEN_ASSET_IDS).length,4);
 assert.equal(Object.keys(HISTORICAL_OPTIMISM_CHAINLINK_TOKEN_FEEDS).length,4);
-assert.equal(Object.keys(HISTORICAL_OPTIMISM_VELODROME_TWAP_TOKEN_ROUTES).length,1);
+assert.equal(Object.keys(HISTORICAL_OPTIMISM_VELODROME_TWAP_TOKEN_ROUTES).length,3);
 assert.equal(canonicalAssetIdForHistoricalToken('0x940181a94A35A4569E4529A3CDfB74e38FD98631'),'aerodrome-finance');
 assert.equal(canonicalAssetIdForHistoricalToken('0x9560e827aF36c94D2Ac33a39bCE1Fe78631088Db'),'velodrome-finance');
 assert.equal(canonicalAssetIdForHistoricalToken('0x4200000000000000000000000000000000000006'),'ethereum');
@@ -24,12 +24,28 @@ assert.equal(historicalOptimismChainlinkRouteForToken('0x42000000000000000000000
 assert.equal(historicalOptimismChainlinkRouteForToken('0x94b008aa00579c1307B0ef2c499ad98a8ce58e58')?.assetId,'tether');
 assert.equal(historicalOptimismChainlinkRouteForToken('0x1F32b1c2345538c0c6f582fCB022739c4A194Ebb')?.assetId,'wrapped-steth');
 const msUsdToken='0x9dAbAE7274D28A45F0B65Bf8ED201A5731492ca0';
+const alUsdToken='0xCB8FA9a76b8e203D8C3797bF438d8FB81Ea3326A';
+const tarotToken='0x1F514A61bcde34F94Bc39731235690ab9da737F7';
 const usdcToken='0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85';
 const msUsdRoute=historicalOptimismVelodromeTwapRouteForToken(msUsdToken);
+const alUsdRoute=historicalOptimismVelodromeTwapRouteForToken(alUsdToken);
+const tarotRoute=historicalOptimismVelodromeTwapRouteForToken(tarotToken);
 assert.equal(historicalOptimismChainlinkRouteForToken(msUsdToken),null,'msUSD must not masquerade as a direct Chainlink-priced token');
+assert.equal(historicalOptimismChainlinkRouteForToken(alUsdToken),null,'alUSD must use exact-block Velodrome quote proof');
+assert.equal(historicalOptimismChainlinkRouteForToken(tarotToken),null,'TAROT must use exact-block Velodrome quote proof');
 assert.equal(msUsdRoute?.assetId,'metronome-synth-usd');
 assert.equal(msUsdRoute?.quoteToken.toLowerCase(),usdcToken.toLowerCase());
 assert.equal(msUsdRoute?.twapGranularity,48);
+assert.equal(alUsdRoute?.assetId,'alchemix-usd');
+assert.equal(alUsdRoute?.pool.toLowerCase(),'0x124d69daeda338b1b31ffc8e429e39c9a991164e');
+assert.equal(alUsdRoute?.quoteToken.toLowerCase(),usdcToken.toLowerCase());
+assert.equal(alUsdRoute?.poolStable,true);
+assert.equal(alUsdRoute?.twapGranularity,48);
+assert.equal(tarotRoute?.assetId,'tarot');
+assert.equal(tarotRoute?.pool.toLowerCase(),'0x707ba27189e8bf89e43b2198e6b88aac4720124f');
+assert.equal(tarotRoute?.quoteToken.toLowerCase(),usdcToken.toLowerCase());
+assert.equal(tarotRoute?.poolStable,false);
+assert.equal(tarotRoute?.twapGranularity,48);
 assert.equal(closingBlockFromVe33Identity({eventKey:'ve33:synthetic:154971811:156311011'}),156311011);
 assert.equal(closingBlockFromVe33Identity({sourceIdentity:'lane|154971811->lane|156311011'}),156311011);
 assert.equal(closingBlockFromVe33Identity({eventKey:'ve33:synthetic:no-block'}),null);
@@ -117,4 +133,4 @@ assert.equal(ve33EventIdentity(staleMutableUsdc).eventTokenMatchesIdentity,false
 const identityBoundRepair=await annotateHistoricalValuationResolution({version:'0.1-canonical-income-ledger',events:[staleMutableUsdc]},{resolver:async({token})=>{assert.equal(token.toLowerCase(),usdcToken.toLowerCase());return historicalUsdc;}});
 assert.equal(identityBoundRepair.resolvedEventCount,1);assert.equal(identityBoundRepair.identityMismatchEventCount,1);assert.equal(identityBoundRepair.ledger.events[0].token,msUsdToken);assert.equal(identityBoundRepair.ledger.events[0].valuationResolution.identityToken,usdcToken.toLowerCase());assert.equal(recognitionDecision(identityBoundRepair.ledger.events[0]).status,'recognized');
 
-console.log('Historical canonical + exact-block Chainlink + msUSD Velodrome TWAP identity binding validation OK');
+console.log('Historical canonical + exact-block Chainlink + Velodrome TWAP route identity binding validation OK');
