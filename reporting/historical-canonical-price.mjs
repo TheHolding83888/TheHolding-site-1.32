@@ -35,6 +35,20 @@ export const HISTORICAL_OPTIMISM_VELODROME_TWAP_TOKEN_ROUTES=Object.freeze({
     pool:'0xe07388b2a7bb29d3Ad8989e1074Bd00Bd0d3C43d',poolStable:true,
     quoteToken:'0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',quoteTokenSymbol:'USDC',quoteTokenDecimals:6,
     quoteChainlinkFeed:'0x16a9FA2FDa030272Ce99B29CF780dFA30361E0f3',twapGranularity:48
+  }),
+  '0xcb8fa9a76b8e203d8c3797bf438d8fb81ea3326a':Object.freeze({
+    assetId:'alchemix-usd',symbol:'alUSD',chainId:10,
+    token:'0xCB8FA9a76b8e203D8C3797bF438d8FB81Ea3326A',tokenDecimals:18,
+    pool:'0x124D69DaeDA338b1b31fFC8e429e39c9A991164e',poolStable:true,
+    quoteToken:'0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',quoteTokenSymbol:'USDC',quoteTokenDecimals:6,
+    quoteChainlinkFeed:'0x16a9FA2FDa030272Ce99B29CF780dFA30361E0f3',twapGranularity:48
+  }),
+  '0x1f514a61bcde34f94bc39731235690ab9da737f7':Object.freeze({
+    assetId:'tarot',symbol:'TAROT',chainId:10,
+    token:'0x1F514A61bcde34F94Bc39731235690ab9da737F7',tokenDecimals:18,
+    pool:'0x707ba27189e8Bf89e43b2198E6b88AAC4720124f',poolStable:false,
+    quoteToken:'0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',quoteTokenSymbol:'USDC',quoteTokenDecimals:6,
+    quoteChainlinkFeed:'0x16a9FA2FDa030272Ce99B29CF780dFA30361E0f3',twapGranularity:48
   })
 });
 
