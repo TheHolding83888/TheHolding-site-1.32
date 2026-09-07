@@ -44,8 +44,69 @@ function yieldPct(incomeUsd, averageCapitalUsd) {
     : null;
 }
 
-report.version = '0.4-company-monthly-earned-income-accounting';
+function attachConfirmedEstimatedView(row) {
+  const complete = row.accountingCoverageComplete === true;
+  const partialObserved = row.accountingStatus === 'partial-observed' && Number(row.accountingEvidenceCount || 0) > 0;
+  const confirmedUsd = complete && finite(row.generatedIncomeUsd)
+    ? round(row.generatedIncomeUsd, 8)
+    : partialObserved && finite(row.observedEarnedIncomeUsd)
+      ? round(row.observedEarnedIncomeUsd, 8)
+      : null;
+  const confirmedYieldPct = complete && finite(row.monthlyYieldPct)
+    ? round(row.monthlyYieldPct, 6)
+    : partialObserved && finite(row.observedPeriodYieldPct)
+      ? round(row.observedPeriodYieldPct, 6)
+      : null;
+  const confirmedStatus = complete ? 'complete' : partialObserved ? 'partial-observed' : 'unknown';
+
+  const referenceUsd = row.referenceAnalytics?.generatedIncomeUsd;
+  const referenceYieldPct = row.referenceAnalytics?.monthlyYieldPct;
+  const referenceMode = String(row.mode || '');
+  const estimatedAvailable = referenceMode !== 'reported-realised' && finite(referenceUsd);
+
+  row.incomeView = {
+    version: '0.1-confirmed-estimated-non-additive',
+    confirmed: {
+      usd: confirmedUsd,
+      yieldPct: confirmedYieldPct,
+      status: confirmedStatus,
+      amountRecognitionAuthority: confirmedUsd !== null ? 'canonical-earned-income-view' : 'none',
+      factualRecognizedAmount: confirmedUsd !== null,
+      fullPeriodComplete: complete,
+      fullPeriodTotalAuthority: complete,
+      periodStart: row.periodStart || null,
+      periodEnd: row.periodEnd || null,
+      evidenceCount: Number(row.accountingEvidenceCount || 0),
+      unknownIsNotZero: true
+    },
+    estimated: {
+      available: estimatedAvailable,
+      usd: estimatedAvailable ? round(referenceUsd, 8) : null,
+      yieldPct: estimatedAvailable && finite(referenceYieldPct) ? round(referenceYieldPct, 6) : null,
+      basis: estimatedAvailable ? 'existing-reference-model' : null,
+      sourceFamily: estimatedAvailable ? (row.referenceAnalytics?.sourceFamily || null) : null,
+      semantic: estimatedAvailable ? (row.referenceAnalytics?.semantic || null) : null,
+      earnedIncomeAuthority: false,
+      factualIncomeAuthority: false,
+      canCloseAccountingCoverage: false,
+      canReplaceUnknown: false,
+      periodStart: row.periodStart || null,
+      periodEnd: row.periodEnd || null
+    },
+    relationship: {
+      additive: false,
+      confirmedPlusEstimatedIsValidTotal: false,
+      estimatedMayOverlapConfirmedEconomics: true,
+      estimatedIsAlternativeAnalyticView: true
+    },
+    unknownIsNotZero: true,
+    executionAuthority: 'none'
+  };
+}
+
+report.version = '0.5-company-monthly-confirmed-estimated-view';
 report.methodologyVersion = '0.4-canonical-ledger-sole-income-recognition-authority';
+report.presentationModelVersion = '0.1-confirmed-estimated-non-additive';
 report.generatedAt = new Date().toISOString();
 report.accountingPolicy = {
   recognitionBasis: 'canonical-ledger-admitted-events-with-explicit-non-overlap-recognition',
@@ -68,6 +129,10 @@ report.accountingPolicy = {
   incompleteCoverageMayMasqueradeAsCompleteIncome: false,
   observedPeriodYieldUsesCanonicalEarnedIncomeOnly: true,
   observedPeriodYieldDoesNotImplyFullMonthCoverage: true,
+  confirmedAndEstimatedAreNonAdditive: true,
+  estimatedIncomeIsAlternativeAnalyticView: true,
+  estimatedIncomeCanCloseAccountingCoverage: false,
+  estimatedIncomeCanReplaceUnknown: false,
   executionAuthority: 'none'
 };
 report.accountingEvidence = {
@@ -130,6 +195,7 @@ for (const [companyName, company] of Object.entries(report.companies || {})) {
         unknownIsNotZero: true,
         executionAuthority: 'none'
       };
+      attachConfirmedEstimatedView(row);
       continue;
     }
 
@@ -186,6 +252,7 @@ for (const [companyName, company] of Object.entries(report.companies || {})) {
       unknownIsNotZero: true,
       executionAuthority: 'none'
     };
+    attachConfirmedEstimatedView(row);
   }
 }
 
@@ -200,5 +267,6 @@ console.log('Company Monthly Reports canonical-ledger projection applied', {
   completeMonths: Object.values(report.companies || {}).flatMap(c => Object.values(c.months || {})).filter(m => m.accountingCoverageComplete === true).length,
   partialObservedMonths: Object.values(report.companies || {}).flatMap(c => Object.values(c.months || {})).filter(m => m.accountingStatus === 'partial-observed').length,
   partialObservedYieldMonths: Object.values(report.companies || {}).flatMap(c => Object.values(c.months || {})).filter(m => m.accountingStatus === 'partial-observed' && finite(m.observedPeriodYieldPct)).length,
+  estimatedMonths: Object.values(report.companies || {}).flatMap(c => Object.values(c.months || {})).filter(m => m.incomeView?.estimated?.available === true).length,
   partialOrUnknownMonths: Object.values(report.companies || {}).flatMap(c => Object.values(c.months || {})).filter(m => m.accountingCoverageComplete !== true).length
 });
