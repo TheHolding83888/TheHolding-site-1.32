@@ -399,8 +399,8 @@ export function concentratorAsdCrvObservationProofs(state={}){
   if(!productivity||productivity?.incomeMode!=='auto-compounded'||productivity?.claimableApplicable!==false||!approx(productivity?.quantity,principal.asdCRVShares,1e-9)||!approx(productivity?.valueUsd,principal.navUsd,0.01))return out;
   const embedded=(state?.rewards?.embeddedIncomeMechanisms||[]).filter(x=>x?.id===strategyId);
   if(embedded.length!==1)return out;
-  const embeddedRow=embedded[0];
-  if(embeddedRow?.protocol!=='Concentrator'||embeddedRow?.chain!=='Ethereum'||embeddedRow?.incomeMode!=='auto-compounded'||embeddedRow?.claimableApplicable!==false||embeddedRow?.status!=='measured'||!lower(embeddedRow?.source).includes('converttoassets'))return out;
+  const embeddedRow=embedded[0],measuredStatuses=new Set(['measured','measured-mechanism-rate-pending']);
+  if(embeddedRow?.protocol!=='Concentrator'||embeddedRow?.chain!=='Ethereum'||embeddedRow?.incomeMode!=='auto-compounded'||embeddedRow?.claimableApplicable!==false||!measuredStatuses.has(embeddedRow?.status)||!lower(embeddedRow?.source).includes('converttoassets'))return out;
   if(provenance?.version!=='0.1-company-010-crv-strategy-intelligence'||provenance?.concentratorResolverVersion!=='0.2-company-010-new-mechanism-measured-stakedao-asdcrv')return out;
   const observedAt=provenance?.generatedAt||crv?.generatedAt||state?.generatedAt;
   if(!monthKey(observedAt))return out;
