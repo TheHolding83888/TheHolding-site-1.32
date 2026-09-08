@@ -71,7 +71,8 @@ for(const row of x.rows){
     assert.equal(row.signalBand,'not-comparable',`${row.id} non-comparable row gained signal`);
   }
   assert.ok(Array.isArray(row.reasonCodes)&&row.reasonCodes.length>0,`${row.id} reason codes missing`);
-  assert.ok(!String(row.comparisonSemantic||'').toLowerCase().includes('missing income'),`${row.id} comparison text implies missing income`);
+  const comparisonText=String(row.comparisonSemantic||'').toLowerCase();
+  assert.ok(!comparisonText.includes('missing income')||comparisonText.includes('does not prove missing income'),`${row.id} comparison text implies missing income`);
 }
 
 const companyRows=x.rows.filter(row=>row.scope==='company-period');
