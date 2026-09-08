@@ -12,6 +12,8 @@ on:
       - 'reporting/reference-apr-weighting-validation.mjs'
       - 'reporting/accounting-coverage.mjs'
       - 'reporting/accounting-coverage-validation.mjs'
+      - 'reporting/accounting-notice-queue.mjs'
+      - 'reporting/accounting-notice-queue-validation.mjs'
       - 'reporting/icp-nns-factual-snapshots.json'
       - 'reporting/icp-nns-factual-intervals.mjs'
       - 'reporting/icp-nns-factual-intervals-validation.mjs'
@@ -52,6 +54,8 @@ jobs:
           node --check reporting/reference-apr-weighting-validation.mjs
           node --check reporting/accounting-coverage.mjs
           node --check reporting/accounting-coverage-validation.mjs
+          node --check reporting/accounting-notice-queue.mjs
+          node --check reporting/accounting-notice-queue-validation.mjs
           node --check reporting/icp-nns-factual-intervals.mjs
           node --check reporting/icp-nns-factual-intervals-validation.mjs
           node --check companies/company-monthly-report-adapter.js
@@ -117,7 +121,7 @@ jobs:
           }
           NODE
 
-      - name: Exercise diagnostic mechanism coverage registry
+      - name: Exercise diagnostic mechanism coverage registry + notice queue
         shell: bash
         run: |
           set -euo pipefail
@@ -130,6 +134,16 @@ jobs:
 
           ACCOUNTING_COVERAGE_FILE=/tmp/accounting-coverage.json \
           node reporting/accounting-coverage-validation.mjs
+
+          ACCOUNTING_COVERAGE_FILE=/tmp/accounting-coverage.json \
+          COMPANY_MONTHLY_REPORTS_FILE=/tmp/company-monthly-reports.json \
+          ICP_NNS_FACTUAL_SNAPSHOTS_FILE=./reporting/icp-nns-factual-snapshots.json \
+          ACCOUNTING_NOTICE_QUEUE_FILE=/tmp/accounting-notice-queue.json \
+          node reporting/accounting-notice-queue.mjs
+
+          ACCOUNTING_NOTICE_QUEUE_FILE=/tmp/accounting-notice-queue.json \
+          ICP_NNS_FACTUAL_SNAPSHOTS_FILE=./reporting/icp-nns-factual-snapshots.json \
+          node reporting/accounting-notice-queue-validation.mjs
 
           node - <<'NODE'
           const fs=require('fs');
@@ -146,6 +160,8 @@ jobs:
               waitingForEventMechanisms:states.filter(s=>s.status==='factual-tracking-no-period-event').length
             });
           }
+          const q=JSON.parse(fs.readFileSync('/tmp/accounting-notice-queue.json','utf8'));
+          console.log('Accounting notice queue',q.summary);
           NODE
 
       - name: Exercise ICP NNS factual snapshot evidence
@@ -167,7 +183,7 @@ jobs:
           set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');
-          const files=['reporting/company-income-scope.mjs','reporting/company-monthly-reports.mjs','reporting/canonical-earned-income-view.mjs','reporting/company-monthly-earned-income.mjs','reporting/accounting-coverage.mjs','reporting/icp-nns-factual-intervals.mjs','companies/company-monthly-report-adapter.js','companies/company-passport-priority-adapter.js'];
+          const files=['reporting/company-income-scope.mjs','reporting/company-monthly-reports.mjs','reporting/canonical-earned-income-view.mjs','reporting/company-monthly-earned-income.mjs','reporting/accounting-coverage.mjs','reporting/accounting-notice-queue.mjs','reporting/icp-nns-factual-intervals.mjs','companies/company-monthly-report-adapter.js','companies/company-passport-priority-adapter.js'];
           const text=files.map(f=>fs.readFileSync(f,'utf8')).join('\n');
           for(const bad of ['api.coingecko.com','COINGECKO_API_KEY','new Wallet(','sendTransaction(','executionAuthority: write','registryHasMonthClosingAuthority:true','monthClosingAuthority:true']){
             if(text.includes(bad)) throw new Error('unexpected monthly reporting authority/data discovery: '+bad);
@@ -206,6 +222,10 @@ jobs:
             if(!incomeView||incomeView.relationship?.additive!==false||incomeView.relationship?.confirmedPlusEstimatedIsValidTotal!==false) throw new Error(`${name} ${month} confirmed/estimated relationship drift`);
             if(incomeView.estimated?.earnedIncomeAuthority!==false||incomeView.estimated?.factualIncomeAuthority!==false||incomeView.estimated?.canCloseAccountingCoverage!==false||incomeView.estimated?.canReplaceUnknown!==false) throw new Error(`${name} ${month} estimated authority expanded`);
           }
+          const queue=JSON.parse(fs.readFileSync('/tmp/accounting-notice-queue.json','utf8'));
+          if(queue.status!=='diagnostic-no-completion-authority'||queue.authority?.sourceOfTruth!==false||queue.authority?.incomeCreationAuthority!==false||queue.authority?.monthClosingAuthority!==false||queue.authority?.executionAuthority!=='none') throw new Error('Accounting notice queue gained canonical/authority status');
+          if((queue.rows||[]).some(x=>x.category==='tracking-no-period-event'&&x.engineeringActionable!==false)) throw new Error('Normal no-event cadence leaked into engineering backlog');
+          if((queue.rows||[]).some(x=>x.blocker==='owner-data-pending'&&(x.mechanism!=='icp_nns'||x.engineeringActionable!==false||x.parked!==true))) throw new Error('ICP owner-data-pending classification drift');
           const icp=JSON.parse(fs.readFileSync('/tmp/icp-nns-factual-intervals.json','utf8'));
           if(icp.referenceAprUsed!==false||icp.accountingAuthority!==false||icp.admissionCandidateCount!==0) throw new Error('ICP NNS baseline crossed factual accounting boundary');
           console.log('Company Monthly Reports authority/accounting boundary PASS');
