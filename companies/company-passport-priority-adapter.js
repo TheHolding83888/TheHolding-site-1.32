@@ -1,10 +1,10 @@
-/* The Holding · Company Passport priority adapter · v0.7.1
+/* The Holding · Company Passport priority adapter · v0.7.2
  * Presentation only.
  *
  * Confirmed remains the factual accounting lane. Estimated remains a separate,
  * non-additive backend reference lane. Accounting Coverage is diagnostic only.
- * This adapter only translates canonical machine state into compact owner-facing
- * language; it never creates income, changes ownership, or closes accounting.
+ * Current visible rewards may explain why a tracked mechanism has no period
+ * event yet, but they never become period income through this adapter.
  */
 (() => {
   'use strict';
@@ -86,6 +86,7 @@
         if (data?.authority?.monthClosingAuthority !== false || data?.authority?.executionAuthority !== 'none') {
           throw new Error('Accounting Coverage authority expanded');
         }
+        if (data?.semantics?.currentRewardStateIsNotPeriodIncome !== true) throw new Error('Current reward-state boundary missing');
         coverageSnapshot = data;
         coverageLoadedAt = Date.now();
         return data;
@@ -196,6 +197,7 @@
       partial: 'В сумму входит только подтверждённый доход. Всё, что ещё не подтверждено, остаётся за её пределами.',
       awaiting: 'Трекинг работает. Подтверждённых событий дохода за этот период пока нет.',
       trackingNoEvent: label => `${label} — трекинг работает; события дохода за этот период пока нет.`,
+      currentRewardPending: label => `${label} — награда уже видна; подтверждённая сумма за этот период ещё проверяется.`,
       stateOnly: label => `${label} — пока не включено: позиция видна, но трекинг дохода ещё не подтверждён.`,
       referenceOnly: label => `${label} — пока не включено: трекинг фактического дохода ещё не подтверждён.`,
       boundary: label => `${label} — часть периода пока не включена: нужно подтвердить границу периода.`,
@@ -213,6 +215,7 @@
       partial: 'Only confirmed income is included. Anything not yet confirmed stays out.',
       awaiting: 'Tracking is active. No confirmed income event has appeared for this period yet.',
       trackingNoEvent: label => `${label} — tracking is active; no income event has appeared for this period yet.`,
+      currentRewardPending: label => `${label} — rewards are visible now; this period’s confirmed amount is still being verified.`,
       stateOnly: label => `${label} — not included yet: the position is visible, but income tracking is not confirmed.`,
       referenceOnly: label => `${label} — not included yet: factual income tracking is not confirmed.`,
       boundary: label => `${label} — part of this period is not included yet: the boundary still needs confirmation.`,
@@ -400,7 +403,11 @@
         continue;
       }
       if (state.status === 'factual-tracking-no-period-event' || (state.factualTrackingActive === true && Number(state.factualEventCount || 0) === 0)) {
-        notices.push({ key: `tracking-no-event:${mechanism.engineId}`, text: c.trackingNoEvent(label) });
+        const positiveRewardVisible = Number(state.currentPositiveRewardStateCount || 0) > 0 && state.currentRewardStatePeriodIncomeAuthority === false;
+        notices.push({
+          key: `${positiveRewardVisible ? 'current-reward-pending' : 'tracking-no-event'}:${mechanism.engineId}`,
+          text: positiveRewardVisible ? c.currentRewardPending(label) : c.trackingNoEvent(label)
+        });
       } else if (state.status === 'state-observed-not-factual-tracking') {
         notices.push({ key: `state:${mechanism.engineId}`, text: c.stateOnly(label) });
       } else if (state.status === 'reference-only-no-factual-tracking') {
@@ -550,17 +557,19 @@
     observer.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['class', 'aria-pressed', 'lang'] });
 
     window.__TH_COMPANY_PASSPORT_PRIORITY_ADAPTER__ = {
-      version: '0.7.1-human-accounting-notices',
+      version: '0.7.2-current-reward-period-status',
       promoteApr, patchMonthlyReports, refreshSnapshots, snapshotTtlMs: SNAPSHOT_TTL_MS,
       incomeDisplayPolicy: 'confirmed-canonical-events-explicit-reporting-scope',
       yieldDisplayPolicy: 'confirmed-canonical-yield-explicit-reporting-scope',
       estimatedDisplayPolicy: 'backend-incomeView-estimated-only-non-additive-apr-reference-view',
       transparencyPolicy: 'diagnostic-accounting-coverage-notices-never-income-authority',
       noticeGroupingPolicy: 'income-channel-reason-not-raw-event',
+      currentRewardStatusPolicy: 'visible-current-reward-state-never-period-income',
       trackingNoEventVisible: true, trackingPresentedWithConfirmed: true,
       associatedCompanyScopeVisible: false, associatedCompanyCapitalIncluded: false,
       browserCalculatesEstimatedIncome: false, confirmedPlusEstimatedIsValidTotal: false,
       estimatedIncomeAuthority: false, estimatedCanCloseAccountingCoverage: false,
+      currentRewardStateIncomeAuthority: false,
       noticesCreateIncome: false, coverageHasCompletionAuthority: false,
       referenceIncomeAuthority: false, executionAuthority: 'none'
     };
