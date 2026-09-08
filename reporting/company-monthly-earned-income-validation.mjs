@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { COMPANY_INCOME_SCOPE_VERSION, incomeScopeFor } from './company-income-scope.mjs';
 
 const FILE = process.env.COMPANY_MONTHLY_REPORTS_FILE || './reporting/company-monthly-reports.json';
 const LEDGER_FILE = process.env.INCOME_LEDGER_FILE || './reporting/income-ledger.json';
@@ -11,7 +12,15 @@ const closeEnough = (a, b, epsilon = 1e-9) => finite(a) && finite(b) && Math.abs
 if (data.version !== '0.5-company-monthly-confirmed-estimated-view') fail('earned-income version drift');
 if (data.methodologyVersion !== '0.4-canonical-ledger-sole-income-recognition-authority') fail('earned-income methodology drift');
 if (data.presentationModelVersion !== '0.1-confirmed-estimated-non-additive') fail('confirmed/estimated presentation model drift');
+if (data.economicReportingScopeVersion !== COMPANY_INCOME_SCOPE_VERSION) fail('economic reporting scope version drift');
 if (data.accountingPolicy?.canonicalLedgerIsSoleMonthlyIncomeEventSource !== true) fail('Canonical Ledger lost sole monthly income-event authority');
+if (data.accountingPolicy?.canonicalCompanyOwnsIncomeExclusively !== true) fail('canonical company ownership drift');
+if (data.accountingPolicy?.crossCompanyEarnedIncomeReattributionForbidden !== true) fail('cross-company reattribution became possible');
+if (data.accountingPolicy?.explicitEconomicReportingScopeMayAggregateCanonicalOwnersForPresentation !== true) fail('explicit reporting scope contract missing');
+if (data.accountingPolicy?.holdingWideAggregationMustUseCanonicalOwners !== true) fail('Holding-wide canonical-owner aggregation guard missing');
+if (data.accountingPolicy?.companyReportTotalsWithAssociatedCompaniesAreNotAdditive !== true) fail('scoped company report non-additivity guard missing');
+if (data.accountingPolicy?.implicitForeignCompanyReferenceIncomeInclusion !== false) fail('implicit foreign-company reference inclusion enabled');
+if (data.accountingPolicy?.explicitForeignCompanyReferenceIncomeRequiresEconomicScope !== true) fail('explicit foreign-company reference scope guard missing');
 if (data.accountingPolicy?.monthlyLayerCreatesIncomeEvents !== false) fail('monthly layer regained income-event creation authority');
 if (data.accountingPolicy?.claimableSnapshotDeltaCreatesIncome !== false) fail('claimable snapshot delta became income authority');
 if (data.accountingPolicy?.genericReceiptCreatesIncome !== false) fail('generic receipt became income authority');
@@ -39,22 +48,51 @@ if (Object.keys(companies).length !== 10) fail(`expected 10 companies, got ${Obj
 
 for (const [name, company] of Object.entries(companies)) {
   if (company.sourceFamily !== 'canonical-earned-income-accounting') fail(`${name} source family is not accounting`);
+  const expectedScope = incomeScopeFor(name);
+  const companyScope = company.incomeReportingScope;
+  if (!companyScope || companyScope.version !== COMPANY_INCOME_SCOPE_VERSION) fail(`${name} missing company income reporting scope`);
+  if (JSON.stringify(companyScope.confirmedOwners) !== JSON.stringify(expectedScope.confirmedOwners)) fail(`${name} confirmed owner scope drift`);
+  if (JSON.stringify(companyScope.estimatedContributors) !== JSON.stringify(expectedScope.estimatedContributors)) fail(`${name} estimated contributor scope drift`);
+  if (JSON.stringify(companyScope.capitalOwners) !== JSON.stringify(expectedScope.capitalOwners)) fail(`${name} capital owner scope drift`);
+  if (companyScope.canonicalOwnershipPreserved !== true || companyScope.crossCompanyReattributionAllowed !== false) fail(`${name} company scope ownership drift`);
+
   for (const [month, row] of Object.entries(company.months || {})) {
     if (!row.referenceAnalytics) fail(`${name} ${month} missing retained reference analytics`);
     if (row.referenceAnalytics.earnedIncomeAuthority !== false) fail(`${name} ${month} reference analytics became accounting authority`);
+    if (row.referenceAnalytics.reportingScopeVersion !== COMPANY_INCOME_SCOPE_VERSION) fail(`${name} ${month} reference scope version missing`);
+    if (JSON.stringify(row.referenceAnalytics.scopeContributors) !== JSON.stringify(expectedScope.estimatedContributors)) fail(`${name} ${month} reference contributors drift`);
+    if (row.referenceAnalytics.canonicalOwnershipPreserved !== true) fail(`${name} ${month} reference scope mutated canonical ownership`);
     if (!row.incomeAccounting || row.incomeAccounting.version !== '0.3-ledger-sole-recognition-authority') fail(`${name} ${month} missing ledger-only earned-income view`);
     if (row.incomeAccounting.unknownIsNotZero !== true || row.incomeAccounting.executionAuthority !== 'none') fail(`${name} ${month} epistemic/authority drift`);
     if (row.incomeAccounting.monthlyLayerCreatesIncomeEvents === true) fail(`${name} ${month} monthly layer creates income events`);
     if (row.incomeAccounting.claimableSnapshotDeltaCreatesIncome === true) fail(`${name} ${month} claimable snapshots create income`);
     if (row.incomeAccounting.primaryMetric?.observedPeriodYieldPct !== row.observedPeriodYieldPct) fail(`${name} ${month} observed-period yield projection drift`);
+    if (row.incomeAccounting.canonicalCompanyOwnsIncomeExclusively !== true || row.incomeAccounting.crossCompanyReattributionAllowed !== false) fail(`${name} ${month} canonical ownership drift`);
+    if (row.incomeAccounting.holdingWideAggregationMustUseCanonicalOwners !== true) fail(`${name} ${month} Holding aggregation guard missing`);
+
+    const scope = row.incomeReportingScope;
+    if (!scope || scope.version !== COMPANY_INCOME_SCOPE_VERSION) fail(`${name} ${month} reporting scope missing`);
+    if (scope.targetCompany !== name) fail(`${name} ${month} reporting target drift`);
+    if (scope.canonicalOwnershipPreserved !== true || scope.crossCompanyReattributionAllowed !== false) fail(`${name} ${month} reporting scope ownership drift`);
+    if (scope.holdingWideAggregationMustUseCanonicalOwners !== true) fail(`${name} ${month} reporting scope aggregation guard missing`);
+    if (JSON.stringify(scope.confirmedOwners) !== JSON.stringify(expectedScope.confirmedOwners)) fail(`${name} ${month} confirmed scope drift`);
+    if (JSON.stringify(scope.estimatedContributors) !== JSON.stringify(expectedScope.estimatedContributors)) fail(`${name} ${month} estimated scope drift`);
+    if (JSON.stringify(scope.capitalOwners) !== JSON.stringify(expectedScope.capitalOwners)) fail(`${name} ${month} capital scope drift`);
 
     const view = row.incomeView;
     if (!view || view.version !== '0.1-confirmed-estimated-non-additive') fail(`${name} ${month} missing confirmed/estimated view`);
     if (view.unknownIsNotZero !== true || view.executionAuthority !== 'none') fail(`${name} ${month} confirmed/estimated epistemic or authority drift`);
     if (view.relationship?.additive !== false || view.relationship?.confirmedPlusEstimatedIsValidTotal !== false) fail(`${name} ${month} confirmed + estimated became a valid sum`);
     if (view.relationship?.estimatedMayOverlapConfirmedEconomics !== true || view.relationship?.estimatedIsAlternativeAnalyticView !== true) fail(`${name} ${month} estimated overlap/alternative semantics missing`);
+    if (!view.scope || view.scope.version !== COMPANY_INCOME_SCOPE_VERSION) fail(`${name} ${month} incomeView scope missing`);
+    if (view.scope.canonicalOwnershipPreserved !== true || view.scope.crossCompanyReattributionAllowed !== false || view.scope.holdingWideAggregationMustUseCanonicalOwners !== true) fail(`${name} ${month} incomeView scope authority drift`);
+    if (JSON.stringify(view.scope.confirmedOwners) !== JSON.stringify(expectedScope.confirmedOwners)) fail(`${name} ${month} incomeView confirmed scope drift`);
+    if (JSON.stringify(view.scope.estimatedContributors) !== JSON.stringify(expectedScope.estimatedContributors)) fail(`${name} ${month} incomeView estimated scope drift`);
+    if (JSON.stringify(view.scope.capitalOwners) !== JSON.stringify(expectedScope.capitalOwners)) fail(`${name} ${month} incomeView capital scope drift`);
     if (view.estimated?.earnedIncomeAuthority !== false || view.estimated?.factualIncomeAuthority !== false) fail(`${name} ${month} estimated lane became factual income authority`);
     if (view.estimated?.canCloseAccountingCoverage !== false || view.estimated?.canReplaceUnknown !== false) fail(`${name} ${month} estimated lane can close/replace accounting truth`);
+    if (JSON.stringify(view.estimated?.scopeContributors) !== JSON.stringify(expectedScope.estimatedContributors)) fail(`${name} ${month} estimated lane contributor scope drift`);
+    if (JSON.stringify(view.estimated?.capitalOwners) !== JSON.stringify(expectedScope.capitalOwners)) fail(`${name} ${month} estimated lane capital scope drift`);
     if (view.confirmed?.periodStart !== (row.periodStart || null) || view.confirmed?.periodEnd !== (row.periodEnd || null)) fail(`${name} ${month} confirmed period drift`);
     if (view.estimated?.periodStart !== (row.periodStart || null) || view.estimated?.periodEnd !== (row.periodEnd || null)) fail(`${name} ${month} estimated period drift`);
 
@@ -112,6 +150,7 @@ for (const month of ['2026-01','2026-02','2026-03','2026-04','2026-05','2026-06'
   const row = companies['defitea.eth']?.months?.[month];
   if (!row || row.accountingCoverageComplete !== true || !finite(row.generatedIncomeUsd)) fail(`Defitea verified archive lost ${month}`);
   if (row.incomeView?.estimated?.available !== false) fail(`Defitea verified realised archive incorrectly exposes estimate ${month}`);
+  if (row.incomeReportingScope?.associatedCompaniesAppliedToLegacyArchive !== false) fail(`Defitea legacy archive unexpectedly re-scoped ${month}`);
 }
 
 for (const [name, month] of [['YieldRing.eth','2026-08'], ['defitea.eth','2026-08'], ['Monetra.eth','2026-08']]) {
@@ -125,8 +164,23 @@ for (const [name, month] of [['YieldRing.eth','2026-08'], ['defitea.eth','2026-0
   }
 }
 
+const defiteaScope = incomeScopeFor('defitea.eth');
+for (const month of ['2026-08','2026-09']) {
+  const row = companies['defitea.eth']?.months?.[month];
+  if (!row) fail(`Defitea ${month} missing for economic scope validation`);
+  if (JSON.stringify(row.incomeReportingScope?.associatedCompanies) !== JSON.stringify(['YieldRing.eth','05081966.eth'])) fail(`Defitea ${month} associated company scope missing`);
+  if (JSON.stringify(row.incomeView?.scope?.confirmedOwners) !== JSON.stringify(defiteaScope.confirmedOwners)) fail(`Defitea ${month} confirmed associated scope missing`);
+  if (JSON.stringify(row.incomeView?.estimated?.scopeContributors) !== JSON.stringify(defiteaScope.estimatedContributors)) fail(`Defitea ${month} estimated associated scope missing`);
+  if (JSON.stringify(row.incomeView?.estimated?.associatedCompaniesIncluded) !== JSON.stringify(['YieldRing.eth','05081966.eth'])) fail(`Defitea ${month} estimated associated company list missing`);
+  if (JSON.stringify(row.incomeView?.scope?.capitalOwners) !== JSON.stringify(['defitea.eth'])) fail(`Defitea ${month} associated capital leaked into TVL scope`);
+  if (row.incomeView?.scope?.companyReportTotalsAreNotAdditiveAcrossCompanies !== true) fail(`Defitea ${month} scoped report additivity guard missing`);
+  if (row.incomeAccounting?.holdingWideAggregationMustUseCanonicalOwners !== true) fail(`Defitea ${month} Holding aggregation guard missing`);
+}
+
 console.log('Company Monthly Reports confirmed/estimated earned-income validation PASS', {
   companyCount: Object.keys(companies).length,
+  economicReportingScopeVersion: data.economicReportingScopeVersion,
+  defiteaAssociatedCompanies: defiteaScope.associatedCompanies,
   completeMonths: Object.values(companies).flatMap(c => Object.values(c.months || {})).filter(m => m.accountingCoverageComplete === true).length,
   partialObservedMonths: Object.values(companies).flatMap(c => Object.values(c.months || {})).filter(m => m.accountingStatus === 'partial-observed').length,
   partialObservedYieldMonths: Object.values(companies).flatMap(c => Object.values(c.months || {})).filter(m => m.accountingStatus === 'partial-observed' && finite(m.observedPeriodYieldPct)).length,
