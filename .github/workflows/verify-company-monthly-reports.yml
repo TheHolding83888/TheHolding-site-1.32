@@ -9,12 +9,14 @@ on:
       - 'reporting/canonical-earned-income-view.mjs'
       - 'reporting/company-monthly-earned-income.mjs'
       - 'reporting/company-monthly-earned-income-validation.mjs'
+      - 'reporting/reference-apr-weighting-validation.mjs'
       - 'reporting/accounting-coverage.mjs'
       - 'reporting/accounting-coverage-validation.mjs'
       - 'reporting/icp-nns-factual-snapshots.json'
       - 'reporting/icp-nns-factual-intervals.mjs'
       - 'reporting/icp-nns-factual-intervals-validation.mjs'
       - 'intelligence/icp-nns/company-005-006-neuron-pool.json'
+      - 'companies/productivity-data.json'
       - 'companies/company-monthly-report-adapter.js'
       - 'companies/company-passport-priority-adapter.js'
       - '.github/workflows/update-company-monthly-reports.yml'
@@ -47,6 +49,7 @@ jobs:
           node --check reporting/canonical-earned-income-view.mjs
           node --check reporting/company-monthly-earned-income.mjs
           node --check reporting/company-monthly-earned-income-validation.mjs
+          node --check reporting/reference-apr-weighting-validation.mjs
           node --check reporting/accounting-coverage.mjs
           node --check reporting/accounting-coverage-validation.mjs
           node --check reporting/icp-nns-factual-intervals.mjs
@@ -55,6 +58,13 @@ jobs:
           node --check companies/company-passport-priority-adapter.js
           node reporting/company-income-scope.mjs
           git diff --check
+
+      - name: Guard capital-weighted Reference APR
+        shell: bash
+        run: |
+          set -euo pipefail
+          PRODUCTIVITY_DATA_FILE=./companies/productivity-data.json \
+          node reporting/reference-apr-weighting-validation.mjs
 
       - name: Exercise exact monthly accounting candidate
         shell: bash
@@ -178,7 +188,7 @@ jobs:
             if(!view.includes(required)) throw new Error('canonical earned-income view invariant missing: '+required);
           }
           const priority=fs.readFileSync('companies/company-passport-priority-adapter.js','utf8');
-          for(const required of ["const COVERAGE_URL = '/reporting/accounting-coverage.json'","const INCOME_VIEW_VERSION = '0.1-confirmed-estimated-non-additive'",'const SNAPSHOT_TTL_MS = 5 * 60 * 1000','estimated.earnedIncomeAuthority !== false','estimated.factualIncomeAuthority !== false','estimated.canCloseAccountingCoverage !== false','estimated.canReplaceUnknown !== false',"estimated.basis !== 'existing-reference-model'",'trackingNoEventVisible: true','associatedCompanyCapitalIncluded: false','browserCalculatesEstimatedIncome: false','confirmedPlusEstimatedIsValidTotal: false','estimatedIncomeAuthority: false','estimatedCanCloseAccountingCoverage: false','noticesCreateIncome: false','coverageHasCompletionAuthority: false','referenceIncomeAuthority: false',"data?.status !== 'diagnostic-no-completion-authority'","state.status === 'factual-tracking-no-period-event'"]){
+          for(const required of ["const COVERAGE_URL = '/reporting/accounting-coverage.json'","const INCOME_VIEW_VERSION = '0.1-confirmed-estimated-non-additive'",'const SNAPSHOT_TTL_MS = 5 * 60 * 1000','estimated.earnedIncomeAuthority !== false','estimated.factualIncomeAuthority !== false','estimated.canCloseAccountingCoverage !== false','estimated.canReplaceUnknown !== false',"estimated.basis !== 'existing-reference-model'",'trackingNoEventVisible: true','associatedCompanyCapitalIncluded: false','browserCalculatesEstimatedIncome: false','confirmedPlusEstimatedIsValidTotal: false','estimatedIncomeAuthority: false','estimatedCanCloseAccountingCoverage: false','noticesCreateIncome: false','coverageHasCompletionAuthority: false','referenceIncomeAuthority: false',"data?.status !== 'diagnostic-no-completion-authority'","state.status === 'factual-tracking-no-period-event'",'noticeGroupingPolicy:', 'groupedUnmatched', 'incomeChannelLabel']){
             if(!priority.includes(required)) throw new Error('accounting transparency boundary missing: '+required);
           }
           if(priority.includes('referenceAnalytics?.generatedIncomeUsd')) throw new Error('Passport UI bypasses incomeView and reads reference analytics directly');
