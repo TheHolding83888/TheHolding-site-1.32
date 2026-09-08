@@ -23,6 +23,10 @@ assert.equal(x.semantics?.signalBandIsAccountingStatus,false);
 assert.equal(x.semantics?.broadParityDoesNotCloseMonth,true);
 assert.equal(x.semantics?.modelVariancePossibleDoesNotProveModelVariance,true);
 assert.equal(x.semantics?.mechanismRowsDoNotNecessarilySumToCompanyEstimated,true);
+assert.equal(x.semantics?.mechanismReferenceAprMayIncludeSupplementaryOverlay,true);
+assert.equal(x.semantics?.supplementaryReferenceDoubleAddForbidden,true);
+assert.equal(x.semantics?.principalCapitalCountedOnce,true);
+assert.equal(x.semantics?.historicalReferenceChannelDecompositionIsNotInferred,true);
 assert.equal(x.semantics?.unknownIsNotZero,true);
 assert.equal(x.diagnosticBands?.accountingAuthority,false);
 assert.equal(x.diagnosticBands?.monthClosingAuthority,false);
@@ -67,7 +71,8 @@ for(const row of x.rows){
     assert.equal(row.signalBand,'not-comparable',`${row.id} non-comparable row gained signal`);
   }
   assert.ok(Array.isArray(row.reasonCodes)&&row.reasonCodes.length>0,`${row.id} reason codes missing`);
-  assert.ok(!String(row.comparisonSemantic||'').toLowerCase().includes('missing income'),`${row.id} comparison text implies missing income`);
+  const comparisonText=String(row.comparisonSemantic||'').toLowerCase();
+  assert.ok(!comparisonText.includes('missing income')||comparisonText.includes('does not prove missing income'),`${row.id} comparison text implies missing income`);
 }
 
 const companyRows=x.rows.filter(row=>row.scope==='company-period');
@@ -85,8 +90,16 @@ assert.ok(mechanismRows.some(row=>row.company==='defitea.eth'&&row.month==='2026
 for(const row of mechanismRows){
   assert.equal(row.company,'defitea.eth','v0.1 mechanism reference scope must remain bounded to Defitea');
   assert.equal(row.companyEstimatedReconciliationAuthority,false,`${row.id} mechanism row gained company-total authority`);
-  assert.equal(row.referenceScope,'Defitea base productive positions only');
+  assert.equal(row.referenceScope,'Defitea principal productive position with one admitted effective Reference APR');
   assert.ok(Array.isArray(row.referenceScopeExcludes)&&row.referenceScopeExcludes.includes('associated-company-reference-contributors'));
+  assert.ok(row.referenceScopeExcludes.includes('separate-supplementary-reference-double-add'));
+  assert.equal(row.principalCapitalCountedOnce,true,`${row.id} principal capital duplication guard missing`);
+  assert.equal(row.referenceAprMayIncludeSupplementaryChannelOverlay,true,`${row.id} supplementary overlay possibility missing`);
+  assert.equal(row.supplementaryReferenceMustNotBeAddedAgain,true,`${row.id} supplementary Reference double-add guard missing`);
+  assert.equal(row.referenceRateComposition,'published-effective-rate-as-observed',`${row.id} historical effective-rate semantics missing`);
+  assert.equal(row.referenceRateChannelDecompositionAuthority,false,`${row.id} inferred historical channel decomposition`);
+  assert.ok(row.reasonCodes.includes('principal-position-reference-comparator-is-non-factual'),`${row.id} principal comparator reason missing`);
+  assert.ok(!row.reasonCodes.includes('base-position-reference-comparator-is-non-factual'),`${row.id} retained misleading base-only semantics`);
   assert.ok(Number(row.referenceSampleDays)>0);
   assert.ok(Array.isArray(row.referencePositionIds)&&row.referencePositionIds.length>0);
 }

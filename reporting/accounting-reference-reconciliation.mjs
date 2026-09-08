@@ -154,7 +154,7 @@ function defiteaMechanismRows(reporting,coverage){
     const eventCount=Number(state?.factualEventCount||0);
     const partialPeriod=dates[0]!==`${ref.month}-01`||ref.month===coverage?.currentMonth;
     const reasonCodes=unique([
-      'base-position-reference-comparator-is-non-factual',
+      'principal-position-reference-comparator-is-non-factual',
       partialPeriod?'partial-reference-window':null,
       tracking?'factual-tracking-active':'missing-factual-tracking-capability',
       tracking&&eventCount===0?'tracking-no-period-event':null,
@@ -192,14 +192,19 @@ function defiteaMechanismRows(reporting,coverage){
       referencePeriodEnd:dates.at(-1)||null,
       referencePositionIds:[...ref.positionIds].sort(),
       referenceRateStatuses:[...ref.rateStatuses].sort(),
-      referenceBasis:'canonical Reporting daily position valueUsd × admitted Reference APR / 365',
-      referenceScope:'Defitea base productive positions only',
-      referenceScopeExcludes:['associated-company-reference-contributors','supplementary-income-channel-reference-not-represented-in-the-daily-position-row'],
+      referenceBasis:'canonical Reporting daily principal-position valueUsd × admitted effective Reference APR / 365',
+      referenceScope:'Defitea principal productive position with one admitted effective Reference APR',
+      referenceScopeExcludes:['associated-company-reference-contributors','separate-supplementary-reference-double-add'],
+      principalCapitalCountedOnce:true,
+      referenceAprMayIncludeSupplementaryChannelOverlay:true,
+      supplementaryReferenceMustNotBeAddedAgain:true,
+      referenceRateComposition:'published-effective-rate-as-observed',
+      referenceRateChannelDecompositionAuthority:false,
       companyEstimatedReconciliationAuthority:false,
       reconciliationStatus,
       reasonCodes,
       completionBlockers:Array.isArray(state?.completionBlockers)?state.completionBlockers:[],
-      comparisonSemantic:'Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.',
+      comparisonSemantic:'Mechanism row compares one principal position\'s observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.',
       sourceOfTruth:false,
       incomeCreationAuthority:false,
       monthClosingAuthority:false,
@@ -242,6 +247,10 @@ const output={
     modelVariancePossibleDoesNotProveModelVariance:true,
     companyAndMechanismRowsHaveDifferentReferenceScopes:true,
     mechanismRowsDoNotNecessarilySumToCompanyEstimated:true,
+    mechanismReferenceAprMayIncludeSupplementaryOverlay:true,
+    supplementaryReferenceDoubleAddForbidden:true,
+    principalCapitalCountedOnce:true,
+    historicalReferenceChannelDecompositionIsNotInferred:true,
     unknownIsNotZero:true
   },
   diagnosticBands:{
