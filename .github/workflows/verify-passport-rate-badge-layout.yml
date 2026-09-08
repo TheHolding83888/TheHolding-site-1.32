@@ -59,13 +59,24 @@ jobs:
         run: |
           set -euo pipefail
           f='companies/company-passport-priority-adapter.js'
-          grep -Fq "0.9.0-universal-responsive-strategy-surface" "$f"
+          grep -Fq "0.9.1-universal-responsive-strategy-surface" "$f"
           grep -Fq "function patchPositionMetadata()" "$f"
           grep -Fq "th-position-qty-note" "$f"
           grep -Fq "th-strategy-channel-rail" "$f"
           grep -Fq "principal-once-effective-rate-plus-supplementary-channel-rail" "$f"
           grep -Fq "semantic-note-separated-from-quantity" "$f"
-          grep -Fq "universal-two-column-mobile-two-or-three-row-card" "$f"
+          grep -Fq "universal-responsive-two-or-three-row-card" "$f"
+
+      - name: Verify supplementary channel desktop and laptop geometry
+        run: |
+          set -euo pipefail
+          f='companies/company-passport-priority-adapter.js'
+          grep -Fq "@media(min-width:761px)" "$f"
+          grep -Fq "th-vm-income-channel-pill.has-strategy-rate{display:grid" "$f"
+          grep -Fq "min-height:66px!important" "$f"
+          grep -Fq "grid-column:1 / -1;grid-row:3" "$f"
+          grep -Fq "position:static;grid-column:2;grid-row:2" "$f"
+          ! grep -Eq '\.ipx-defitea-balance[[:space:]]+\.th-vm-' "$f"
 
       - name: Verify universal surface mobile geometry
         run: |
@@ -94,7 +105,8 @@ jobs:
           const must=[
             'title on row one','value bottom-left','APR/APY capsule bottom-right','Desktop / laptop','Reserve / non-productive',
             'Supplementary income channels + position metadata','one capital / TVL contribution','effective total Reference rate',
-            'supplementary channel rail','two-column position book','position != supplementary income channel != period income event != presentation metadata'
+            'supplementary channel rail','two-column position book','desktop/laptop three-row containment',
+            'position != supplementary income channel != period income event != presentation metadata'
           ];
           for(const x of must) if(!canon.includes(x)) throw new Error('responsive Passport canon missing: '+x);
           NODE
