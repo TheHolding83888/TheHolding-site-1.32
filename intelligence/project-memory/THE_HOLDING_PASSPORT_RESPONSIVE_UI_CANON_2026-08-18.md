@@ -17,12 +17,14 @@ A productive Balance Sheet position may show its canonical Reference APR / APY a
 
 ## 2. Desktop / laptop canon
 
-The accepted desktop / laptop geometry from PR #132 remains unchanged:
+The accepted desktop / laptop geometry from PR #132 remains the default for **standard one-rate productive cards**:
 
 - productive title and value remain in the existing asset card layout;
 - APR/APY capsule is right-aligned and vertically centered inside the card;
 - the capsule must not be moved down selectively based on individual asset names;
 - existing laptop/desktop Passport spacing and geometry must not be altered by mobile fixes.
+
+A card that carries a real supplementary income-channel rail is a different semantic composition, not a mobile exception. It may use the shared three-row responsive contract defined in §7 on desktop/laptop as well, so channel text never occupies the value/APR row. This exception is capability-based and must never be keyed to a company, token, or protocol name.
 
 ## 3. Mobile canon
 
@@ -50,11 +52,15 @@ Preferred pattern:
 
 `productive classification → canonical APR/APY binding → shared desktop badge layout → shared mobile two-row layout`
 
+When a supplementary income channel exists, the shared three-row capability contract in §7 overrides the standard two-row/centered-rate geometry on that card only.
+
 ## 5. Regression guard
 
 A Passport rate-badge change is not complete until it preserves:
-- desktop right-centered capsule geometry;
-- mobile two-row title / value + capsule geometry;
+- desktop right-centered capsule geometry for standard one-rate cards;
+- desktop/laptop three-row containment for cards with supplementary income channels;
+- mobile two-row title / value + capsule geometry for standard cards;
+- mobile three-row containment for cards with supplementary income channels;
 - reserve assets without synthetic yield badges;
 - `Pending != 0%` semantics;
 - GMX no-duplicate APY behavior;
@@ -74,7 +80,7 @@ Reserve assets remain concise (`BTC`, `ETH`, etc.). Unknown or ambiguous mechani
 
 ## 7. Supplementary income channels + position metadata · 2026-09-08
 
-Live mobile review established a broader card contract: **position principal, productive rate, supplementary income channel and position metadata are different presentation concepts and must not compete for the same line.**
+Live responsive review established a broader card contract: **position principal, productive rate, supplementary income channel and position metadata are different presentation concepts and must not compete for the same line.**
 
 ### Principal and TVL
 
@@ -93,18 +99,18 @@ When a principal has multiple measured Reference income channels:
 
 This generalizes beyond VoteMarket: future supplementary channels should use the same hierarchy rather than inventing another card geometry.
 
-### Mobile geometry
+### Responsive geometry
 
-The universal mobile Balance Sheet uses a readable two-column position book. Dense three-column desktop variants may remain on larger screens, but they must collapse to the shared mobile two-column book.
+The universal mobile Balance Sheet uses a readable two-column position book. Dense three-column desktop variants may remain on larger screens.
 
-A standard productive card remains two rows:
-1. title across the full card width;
-2. quantity/value left + APR/APY capsule right.
+A standard productive card remains the accepted standard composition for its breakpoint.
 
-A productive card with supplementary income channels becomes three rows:
+A productive card with supplementary income channels uses the same semantic three-row composition on **desktop, laptop, and mobile**:
 1. title across the full card width;
 2. quantity/value left + effective APR/APY capsule right;
 3. supplementary channel rail across the full card width.
+
+On desktop/laptop, only cards that actually carry supplementary channels may grow vertically enough to reserve the third row. Standard cards retain their accepted geometry. The rail may wrap inside its own third row when space is tight, but it may never overlap the title, quantity, or APR/APY capsule.
 
 No company-specific or asset-specific CSS exception should be required for that composition.
 
