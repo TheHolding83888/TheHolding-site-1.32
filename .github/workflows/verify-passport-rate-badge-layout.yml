@@ -24,27 +24,25 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
-      - name: Verify shared desktop/mobile strategy surface contract
+
+      - name: Verify adapter syntax
         run: |
           set -euo pipefail
           node --check companies/company-010-public-adapter.js
           node --check companies/company-passport-priority-adapter.js
+
+      - name: Verify legacy shared rate badge contract
+        run: |
+          set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');
           const badge=fs.readFileSync('companies/company-010-public-adapter.js','utf8');
-          const surface=fs.readFileSync('companies/company-passport-priority-adapter.js','utf8');
-          const canon=fs.readFileSync('intelligence/project-memory/THE_HOLDING_PASSPORT_RESPONSIVE_UI_CANON_2026-08-18.md','utf8');
-
-          const desktopMust=[
+          const must=[
             'v0.9.1-right-centered-strategy-rate-badges',
             '.ipx-position-pill.has-strategy-rate{position:relative;padding-right:5.45rem}',
             'right:.58rem;top:50%;transform:translateY(-50%)',
             'min-height:23px',
-            'border-radius:999px'
-          ];
-          for(const x of desktopMust) if(!badge.includes(x)) throw new Error('desktop rate badge contract drift: '+x);
-
-          const mobileBadgeMust=[
+            'border-radius:999px',
             'v0.9.2-mobile-two-row-strategy-rate-badges',
             'grid-template-columns:minmax(0,1fr) auto',
             'grid-template-rows:auto auto',
@@ -58,10 +56,18 @@ jobs:
             "pill.classList.remove('has-strategy-rate')",
             "rate.pending?' pending':''"
           ];
-          for(const x of mobileBadgeMust) if(!badge.includes(x)) throw new Error('mobile rate badge contract drift: '+x);
+          for(const x of must) if(!badge.includes(x)) throw new Error('shared rate badge contract drift: '+x);
           if(badge.includes('@media(max-width:760px){.ipx-position-pill.has-strategy-rate{padding-right:4.9rem}')) throw new Error('legacy mobile absolute-only collision layout remains');
+          console.log('shared rate badge contract PASS');
+          NODE
 
-          const surfaceMust=[
+      - name: Verify universal supplementary-channel surface
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const surface=fs.readFileSync('companies/company-passport-priority-adapter.js','utf8');
+          const must=[
             'v0.9.0-universal-responsive-strategy-surface',
             'function patchPositionMetadata()',
             "className = 'th-position-qty-note'",
@@ -75,19 +81,27 @@ jobs:
             "strip.dataset.thVmCapitalDoubleCount = 'false'",
             'browserCalculatesVoteMarketApr: false'
           ];
-          for(const x of surfaceMust) if(!surface.includes(x)) throw new Error('universal strategy surface contract drift: '+x);
+          for(const x of must) if(!surface.includes(x)) throw new Error('universal strategy surface contract drift: '+x);
           if(/\.ipx-defitea-balance\s+\.th-vm-/.test(surface)) throw new Error('company-specific VoteMarket layout override returned');
           if(/\btotal:\s*`(?:Total|Итого)/.test(surface)) throw new Error('supplementary channel rail duplicates the effective APR headline');
+          console.log('universal supplementary-channel surface PASS');
+          NODE
 
-          const canonMust=[
+      - name: Verify responsive Passport canon
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const canon=fs.readFileSync('intelligence/project-memory/THE_HOLDING_PASSPORT_RESPONSIVE_UI_CANON_2026-08-18.md','utf8');
+          const must=[
             'title on row one','value bottom-left','APR/APY capsule bottom-right','Desktop / laptop','Reserve / non-productive',
             'Supplementary income channels + position metadata','one capital / TVL contribution','effective total Reference rate',
             'supplementary channel rail','two-column position book','position != supplementary income channel != period income event != presentation metadata'
           ];
-          for(const x of canonMust) if(!canon.includes(x)) throw new Error('responsive Passport canon missing: '+x);
-
-          console.log('Passport strategy surface desktop + mobile + supplementary-channel contract PASS');
+          for(const x of must) if(!canon.includes(x)) throw new Error('responsive Passport canon missing: '+x);
+          console.log('responsive Passport canon PASS');
           NODE
+
       - name: Verify no execution authority
         run: |
           set -euo pipefail
