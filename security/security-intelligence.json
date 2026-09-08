@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-08T18:20:42.153Z",
+  "generatedAt": "2026-09-08T18:40:02.069Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 2,
-    "medium": 53,
+    "medium": 51,
     "low": 0,
     "info": 0
   },
   "source": {
-    "filesScanned": 1111,
-    "bytesScanned": 29797376,
+    "filesScanned": 1112,
+    "bytesScanned": 29799604,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -57,6 +57,22 @@
   "whatChanged": {
     "newFindings": [
       {
+        "id": "6fd1b6afb546f2f957b41cf98716fdc031d921e70214d5e977bffc79dbbbc3f1",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/update-company-monthly-reports.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/update-company-monthly-reports.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "1ab2d4d7fafda743e85cce6c5f229b04d8c8c02c4e3258a167ff92c98639638f",
+          "currentSha256": "9ad3aaffed62a94204550d22eff661dda27575bfd4479e60acbe12d71ade6e94"
+        }
+      }
+    ],
+    "resolvedFindings": [
+      {
         "id": "e5b83781aa0264f4a3761c879b827c40f098f41bc44aa779f50b414ce20619f3",
         "severity": "medium",
         "category": "critical-surface-change",
@@ -98,8 +114,7 @@
           "currentSha256": "dfbbafa2affc556a03a7eb725cbe99ff2d339b92f79580b3c0ce82a01be7d560"
         }
       }
-    ],
-    "resolvedFindings": []
+    ]
   },
   "currentFindings": [
     {
@@ -125,45 +140,17 @@
       "evidence": null
     },
     {
-      "id": "e5b83781aa0264f4a3761c879b827c40f098f41bc44aa779f50b414ce20619f3",
+      "id": "6fd1b6afb546f2f957b41cf98716fdc031d921e70214d5e977bffc79dbbbc3f1",
       "severity": "medium",
       "category": "critical-surface-change",
-      "file": ".github/workflows/verify-curve-fee-accounting.yml",
+      "file": ".github/workflows/update-company-monthly-reports.yml",
       "line": null,
       "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/verify-curve-fee-accounting.yml.",
+      "summary": "Security-sensitive surface changed: .github/workflows/update-company-monthly-reports.yml.",
       "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
       "evidence": {
-        "previousSha256": "a9d43e54b0b43d94ecc7dea92d4803c4d369e9be93cf5928d67b4890189ac881",
-        "currentSha256": "07f306d5adb1e6e3ca856cc56503b89fae6a8e9696fbf71b3ef4d0d718a5031e"
-      }
-    },
-    {
-      "id": "199c9e8a9e6d2ed22938213614addfd48f28f39554aec905cd03b789efa1b3f1",
-      "severity": "medium",
-      "category": "critical-surface-change",
-      "file": ".github/workflows/verify-settlement-accounting-links.yml",
-      "line": null,
-      "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/verify-settlement-accounting-links.yml.",
-      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-      "evidence": {
-        "previousSha256": "3894b6d585e5e042f17ab9b6a4c7d843e780c36902def93124e7926011979e21",
-        "currentSha256": "bf701ff6459048609eefd722cedabe71a1c5baf9b3c84a2a0951e35c971d50b6"
-      }
-    },
-    {
-      "id": "74d9d7ea5579dbd2231c35584b7156bdab463e2954bc407a47ec60ef69002b28",
-      "severity": "medium",
-      "category": "critical-surface-change",
-      "file": ".github/workflows/verify-vlcvx-convex-team-settlement.yml",
-      "line": null,
-      "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/verify-vlcvx-convex-team-settlement.yml.",
-      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-      "evidence": {
-        "previousSha256": "27f9856e5ff30195a66d44342add14cdea7e4e94e738d50be382d24d358fe07a",
-        "currentSha256": "dfbbafa2affc556a03a7eb725cbe99ff2d339b92f79580b3c0ce82a01be7d560"
+        "previousSha256": "1ab2d4d7fafda743e85cce6c5f229b04d8c8c02c4e3258a167ff92c98639638f",
+        "currentSha256": "9ad3aaffed62a94204550d22eff661dda27575bfd4479e60acbe12d71ade6e94"
       }
     },
     {
@@ -801,12 +788,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "f07675888f1e777ce2bb8ed20bb681d33fa6876a62c061b10e731c10b4517649",
+    "snapshotHash": "ad2f3cfea99adef735761eee25fe5d85c4d567b4185aeeeb763c0505a1acaa93",
     "securityVault": {
-      "runCount": 930,
+      "runCount": 931,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/09/2026-09-08T18-20-42-153Z-f07675888f.json",
-      "latestRecordHash": "a4e34a98873096cf6147eab8204e316973113a70f2f471102dfa7bdd01e8fec0",
+      "latestRecordPath": "security/security-vault/2026/09/2026-09-08T18-40-02-069Z-ad2f3cfea9.json",
+      "latestRecordHash": "6a267bd86e3c62f61e22fdde8c11cc83ced0bddc9a9d6d65922c40a800d15f35",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
