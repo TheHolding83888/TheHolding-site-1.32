@@ -1,16 +1,17 @@
-/* The Holding · Company Passport priority adapter · v0.6.0
+/* The Holding · Company Passport priority adapter · v0.7.0
  * Presentation only.
  * 1) Promotes the existing APR field to the first metadata row in every
  *    standard Company Passport.
  * 2) Makes Canonical Income Ledger income visible as Confirmed even while
  *    full-period accounting coverage is still incomplete.
  * 3) Shows the backend-provided Estimated lane as a separate, non-additive
- *    alternative model view for the same period.
- * 4) Shows compact live tracking coverage plus per-mechanism diagnostic rows.
+ *    APR-based reference view for the same period.
+ * 4) Keeps accounting tracking coverage next to Confirmed, before the
+ *    secondary Estimated reference view.
  * 5) Refreshes reporting/coverage on report interaction with a bounded TTL so
  *    an already-open page can converge to newly materialized backend truth.
- * 6) Makes explicit associated-company reporting scopes visible without ever
- *    adding their capital to the target company's TVL.
+ * 6) Preserves technical associated-company scope contracts in backend data
+ *    without surfacing implementation-scope copy in the owner-facing report.
  *
  * This adapter never creates income, calculates factual income, estimates
  * missing days in the browser, adds Confirmed + Estimated, changes accounting
@@ -204,8 +205,7 @@
       confirmedShort: 'подтверждено',
       confirmedYield: 'Подтверждённая доходность',
       estimated: 'Оценка по модели',
-      estimatedNote: 'Динамическая оценка за тот же период. Она не прибавляется к подтверждённому доходу.',
-      scopeNote: names => `В обе метрики включён доход ${names.join(' и ')}; их капитал не входит в TVL этой компании.`,
+      estimatedNote: 'Оценка по APR за тот же период — ориентир, а не подтверждённый доход.',
       period: 'Период наблюдения',
       trackingSummary: (tracking, total, events) => `Трекинг ${tracking}/${total} · События ${events}/${total}`,
       partial: 'Показан только подтверждённый доход. Неподтверждённые части в сумму не подставляются.',
@@ -223,8 +223,7 @@
       confirmedShort: 'confirmed',
       confirmedYield: 'Confirmed yield',
       estimated: 'Estimated',
-      estimatedNote: 'Dynamic estimate for the same period. It is not added to confirmed income.',
-      scopeNote: names => `Both metrics include income from ${names.join(' and ')}; their capital is not included in this company’s TVL.`,
+      estimatedNote: 'APR-based estimate for the same period — a reference, not confirmed income.',
       period: 'Observation period',
       trackingSummary: (tracking, total, events) => `Tracking ${tracking}/${total} · Events ${events}/${total}`,
       partial: 'Only confirmed income is shown. Unconfirmed components are never substituted into the total.',
@@ -260,32 +259,33 @@
 
   function ensureEstimateRow(panel) {
     let row = panel.querySelector('.th-mr-estimated-view');
-    if (row) return row;
-    row = document.createElement('div');
-    row.className = 'th-mr-estimated-view';
-    row.hidden = true;
-    const head = document.createElement('div');
-    head.className = 'th-mr-estimated-head';
-    const label = document.createElement('div');
-    label.className = 'th-mr-estimated-label';
-    label.dataset.thEstimatedLabel = 'true';
-    const values = document.createElement('div');
-    values.className = 'th-mr-estimated-values';
-    const amount = document.createElement('span');
-    amount.className = 'th-mr-estimated-amount';
-    amount.dataset.thEstimatedAmount = 'true';
-    const yieldValue = document.createElement('span');
-    yieldValue.className = 'th-mr-estimated-yield';
-    yieldValue.dataset.thEstimatedYield = 'true';
-    values.append(amount, yieldValue);
-    head.append(label, values);
-    const note = document.createElement('div');
-    note.className = 'th-mr-estimated-note';
-    note.dataset.thEstimatedNote = 'true';
-    row.append(head, note);
+    if (!row) {
+      row = document.createElement('div');
+      row.className = 'th-mr-estimated-view';
+      row.hidden = true;
+      const head = document.createElement('div');
+      head.className = 'th-mr-estimated-head';
+      const label = document.createElement('div');
+      label.className = 'th-mr-estimated-label';
+      label.dataset.thEstimatedLabel = 'true';
+      const values = document.createElement('div');
+      values.className = 'th-mr-estimated-values';
+      const amount = document.createElement('span');
+      amount.className = 'th-mr-estimated-amount';
+      amount.dataset.thEstimatedAmount = 'true';
+      const yieldValue = document.createElement('span');
+      yieldValue.className = 'th-mr-estimated-yield';
+      yieldValue.dataset.thEstimatedYield = 'true';
+      values.append(amount, yieldValue);
+      head.append(label, values);
+      const note = document.createElement('div');
+      note.className = 'th-mr-estimated-note';
+      note.dataset.thEstimatedNote = 'true';
+      row.append(head, note);
+    }
     const period = panel.querySelector('.th-mr-observed-period') || ensurePeriodRow(panel);
-    if (period) period.insertAdjacentElement('afterend', row);
-    else {
+    if (period && row.previousElementSibling !== period) period.insertAdjacentElement('afterend', row);
+    else if (!period && !row.isConnected) {
       const context = panel.querySelector('.th-mr-context');
       if (context) context.insertAdjacentElement('afterend', row);
       else panel.appendChild(row);
@@ -293,27 +293,16 @@
     return row;
   }
 
-  function ensureScopeNote(panel) {
-    let row = panel.querySelector('.th-mr-income-scope-note');
-    if (row) return row;
-    row = document.createElement('div');
-    row.className = 'th-mr-income-scope-note';
-    row.hidden = true;
-    const estimate = panel.querySelector('.th-mr-estimated-view') || ensureEstimateRow(panel);
-    if (estimate) estimate.insertAdjacentElement('afterend', row);
-    else panel.appendChild(row);
-    return row;
-  }
-
   function ensureTrackingSummary(panel) {
     let row = panel.querySelector('.th-mr-tracking-summary');
-    if (row) return row;
-    row = document.createElement('div');
-    row.className = 'th-mr-tracking-summary';
-    row.hidden = true;
-    const scopeNote = panel.querySelector('.th-mr-income-scope-note') || ensureScopeNote(panel);
-    if (scopeNote) scopeNote.insertAdjacentElement('afterend', row);
-    else panel.appendChild(row);
+    if (!row) {
+      row = document.createElement('div');
+      row.className = 'th-mr-tracking-summary';
+      row.hidden = true;
+    }
+    const anchor = panel.querySelector('[data-th-mr-accounting-note]') || panel.querySelector('.th-mr-core');
+    if (anchor && row.previousElementSibling !== anchor) anchor.insertAdjacentElement('afterend', row);
+    else if (!anchor && !row.isConnected) panel.appendChild(row);
     return row;
   }
 
@@ -323,14 +312,13 @@
     style.id = 'th-accounting-transparency-style';
     style.textContent = `
       .th-mr-estimated-view{display:grid;gap:.2rem;margin:.14rem .18rem .28rem;padding:.48rem .58rem;border:1px solid var(--line);border-radius:.65rem;background:color-mix(in srgb,var(--panel) 78%,transparent);min-width:0}
-      .th-mr-estimated-view[hidden],.th-mr-income-scope-note[hidden],.th-mr-tracking-summary[hidden],.th-mr-accounting-notices[hidden]{display:none}
+      .th-mr-estimated-view[hidden],.th-mr-tracking-summary[hidden],.th-mr-accounting-notices[hidden]{display:none}
       .th-mr-estimated-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:.55rem;min-width:0}
       .th-mr-estimated-label{color:var(--text-2);font-size:.57rem;font-weight:650;letter-spacing:.015em;min-width:0}
       .th-mr-estimated-values{display:flex;align-items:baseline;justify-content:flex-end;gap:.45rem;font-variant-numeric:tabular-nums;white-space:nowrap;min-width:0}
       .th-mr-estimated-amount{color:var(--text-1);font-size:.7rem;font-weight:700}
       .th-mr-estimated-yield{color:var(--text-3);font-size:.55rem;font-weight:600}
       .th-mr-estimated-note{color:var(--text-3);font-size:.48rem;font-weight:520;line-height:1.42;text-transform:none;overflow-wrap:anywhere}
-      .th-mr-income-scope-note{margin:.02rem .24rem .28rem;color:var(--text-3);font-size:.47rem;font-weight:520;line-height:1.42;text-transform:none;overflow-wrap:anywhere}
       .th-mr-tracking-summary{margin:.02rem .18rem .3rem;padding:.35rem .52rem;border-radius:.52rem;background:color-mix(in srgb,var(--panel) 62%,transparent);color:var(--text-2);font-size:.5rem;font-weight:650;letter-spacing:.01em;font-variant-numeric:tabular-nums}
       .th-mr-accounting-notices{display:grid;gap:.24rem;margin:.02rem .18rem .42rem;padding-top:.34rem;border-top:1px solid var(--line)}
       .th-mr-accounting-notice{position:relative;padding-left:.68rem;color:var(--text-3);font-size:.5rem;font-weight:550;line-height:1.42;letter-spacing:.005em;text-transform:none;overflow-wrap:anywhere}
@@ -341,7 +329,7 @@
         .th-mr-estimated-label{font-size:.54rem}
         .th-mr-estimated-amount{font-size:.66rem}
         .th-mr-estimated-yield{font-size:.51rem}
-        .th-mr-income-scope-note,.th-mr-tracking-summary,.th-mr-accounting-notices{margin-left:.12rem;margin-right:.12rem}
+        .th-mr-tracking-summary,.th-mr-accounting-notices{margin-left:.12rem;margin-right:.12rem}
         .th-mr-accounting-notice{font-size:.49rem}
       }
       @media(max-width:390px){
@@ -354,15 +342,16 @@
 
   function ensureNoticeHost(panel) {
     let host = panel.querySelector('.th-mr-accounting-notices');
-    if (host) return host;
-    host = document.createElement('div');
-    host.className = 'th-mr-accounting-notices';
-    host.hidden = true;
-    const status = panel.querySelector('[data-th-mr-accounting-note]');
+    if (!host) {
+      host = document.createElement('div');
+      host.className = 'th-mr-accounting-notices';
+      host.hidden = true;
+    }
     const tracking = panel.querySelector('.th-mr-tracking-summary') || ensureTrackingSummary(panel);
-    if (status) status.insertAdjacentElement('afterend', host);
-    else if (tracking) tracking.insertAdjacentElement('afterend', host);
-    else panel.appendChild(host);
+    const status = panel.querySelector('[data-th-mr-accounting-note]');
+    const anchor = tracking || status;
+    if (anchor && host.previousElementSibling !== anchor) anchor.insertAdjacentElement('afterend', host);
+    else if (!anchor && !host.isConnected) panel.appendChild(host);
     return host;
   }
 
@@ -420,24 +409,8 @@
     row.hidden = false;
   }
 
-  function renderScopeNote(panel, month) {
-    ensureTransparencyStyle();
-    const row = ensureScopeNote(panel);
-    if (!row) return;
-    const view = validIncomeView(month);
-    const associated = Array.isArray(view?.scope?.associatedCompanies) ? view.scope.associatedCompanies.filter(Boolean) : [];
-    const capitalOwners = Array.isArray(view?.scope?.capitalOwners) ? view.scope.capitalOwners : [];
-    const target = view?.scope?.targetCompany;
-    const safe = associated.length > 0 && view?.scope?.canonicalOwnershipPreserved === true && view?.scope?.crossCompanyReattributionAllowed === false && view?.scope?.holdingWideAggregationMustUseCanonicalOwners === true && target && capitalOwners.length === 1 && capitalOwners[0] === target;
-    if (!safe) {
-      row.hidden = true;
-      row.textContent = '';
-      return;
-    }
-    setText(row, copy().scopeNote(associated));
-    row.dataset.thAssociatedCompanyCount = String(associated.length);
-    row.dataset.thAssociatedCapitalIncluded = 'false';
-    row.hidden = false;
+  function removeLegacyScopeNote(panel) {
+    panel.querySelectorAll('.th-mr-income-scope-note').forEach(row => row.remove());
   }
 
   function accountingNotices(companyName, selectedMonth, month, incomeView) {
@@ -574,10 +547,10 @@
       periodRow.hidden = !(selectedIncome.observedOnly || selectedYield.observedOnly || selectedEstimate.available);
     }
 
-    renderEstimate(panel, selectedEstimate);
-    renderScopeNote(panel, selected);
+    removeLegacyScopeNote(panel);
     renderTrackingSummary(panel, companyName, selectedKey);
     renderAccountingNotices(panel, companyName, selectedKey, selected, selectedIncome);
+    renderEstimate(panel, selectedEstimate);
     panel.dataset.thIncomeDisplay = selectedIncome.observedOnly ? 'confirmed-partial-canonical' : 'confirmed-complete-or-empty';
     panel.dataset.thYieldDisplay = selectedYield.observedOnly ? 'confirmed-period-canonical' : 'confirmed-complete-or-empty';
     panel.dataset.thEstimatedDisplay = selectedEstimate.available ? 'reference-model-non-factual' : 'unavailable';
@@ -629,16 +602,18 @@
     });
 
     window.__TH_COMPANY_PASSPORT_PRIORITY_ADAPTER__ = {
-      version: '0.6.0-confirmed-estimated-live-scope',
+      version: '0.7.0-confirmed-first-estimated-reference',
       promoteApr,
       patchMonthlyReports,
       refreshSnapshots,
       snapshotTtlMs: SNAPSHOT_TTL_MS,
       incomeDisplayPolicy: 'confirmed-canonical-events-explicit-reporting-scope',
       yieldDisplayPolicy: 'confirmed-canonical-yield-explicit-reporting-scope',
-      estimatedDisplayPolicy: 'backend-incomeView-estimated-only-non-additive-alternative-view',
+      estimatedDisplayPolicy: 'backend-incomeView-estimated-only-non-additive-apr-reference-view',
       transparencyPolicy: 'diagnostic-accounting-coverage-notices-never-income-authority',
       trackingNoEventVisible: true,
+      trackingPresentedWithConfirmed: true,
+      associatedCompanyScopeVisible: false,
       associatedCompanyCapitalIncluded: false,
       browserCalculatesEstimatedIncome: false,
       confirmedPlusEstimatedIsValidTotal: false,
