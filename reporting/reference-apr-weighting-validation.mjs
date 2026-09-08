@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { eventMonth, recognitionDecision, buildCanonicalEarnedIncomeView } from './canonical-earned-income-view.mjs';
 
 const FILE = process.env.PRODUCTIVITY_DATA_FILE || './companies/productivity-data.json';
 const data = JSON.parse(fs.readFileSync(FILE, 'utf8'));
@@ -57,11 +58,73 @@ const defiteaCapital = defiteaCovered.reduce((sum, row) => sum + Number(row.valu
 const defiteaWeighted = defiteaCovered.reduce((sum, row) => sum + Number(row.value) * Number(row.apr), 0) / defiteaCapital;
 if (!nearlyEqual(defiteaWeighted, defitea.aprLatest)) throw new Error('Defitea capital-weighted Reference APR regression');
 
-console.log('Reference APR capital-weighting PASS', {
+const exactBoundaryEvent = {
+  eventKey: 'fixture:exact-calendar-month',
+  company: 'fixture.eth',
+  family: 'embedded-income',
+  economicDate: '2026-08-31',
+  periodStart: '2026-08-01T00:00:00.000Z',
+  periodEnd: '2026-09-01T00:00:00.000Z',
+  usdValue: 10,
+  sourceFile: 'reporting/ve33-locked-managed-accounting-evidence.json',
+  sourceEvidenceFamily: 'embedded-compounded-income',
+  sourceFamily: 've(3,3) LockedManagedReward factual accrual',
+  referenceAprUsed: false,
+  openingBalanceCreatesIncome: false,
+  earnedIndependentOfWithdrawal: true,
+  withdrawalIsSettlementNotSecondIncome: true,
+  grossVeNftPrincipalDeltaIsIncomeAuthority: false,
+  claimIsSecondIncomeEvent: false,
+  laterClaimOrPriceMoveDoesNotRewriteIncome: true,
+  unknownIsNotZero: true
+};
+if (eventMonth(exactBoundaryEvent) !== '2026-08') throw new Error('Exact closed calendar-month embedded interval was not attributed to August');
+const exactDecision = recognitionDecision(exactBoundaryEvent);
+if (exactDecision.status !== 'recognized' || exactDecision.month !== '2026-08') throw new Error('Exact closed calendar-month embedded interval was not recognized once in August');
+
+const view = buildCanonicalEarnedIncomeView({
+  version: '0.1-canonical-income-ledger',
+  generatedAt: '2026-09-08T00:00:00.000Z',
+  semantics: { unknownIsNotZero: true, referenceAprCanBackfillEarnedIncome: false },
+  events: [exactBoundaryEvent]
+});
+if (view.summary.recognizedEventCount !== 1) throw new Error('Exact calendar-month fixture was recognized more or less than once');
+if (view.byCompanyMonth?.['fixture.eth']?.['2026-08']?.recognizedIncomeUsd !== 10) throw new Error('Exact calendar-month fixture did not land in August');
+if (view.byCompanyMonth?.['fixture.eth']?.['2026-09']) throw new Error('Exact August calendar-month fixture leaked into September');
+
+const arbitraryCrossMonth = { ...exactBoundaryEvent, eventKey: 'fixture:arbitrary-cross-month', periodStart: '2026-08-15T00:00:00.000Z', periodEnd: '2026-09-15T00:00:00.000Z' };
+if (eventMonth(arbitraryCrossMonth) !== null) throw new Error('Arbitrary cross-month embedded interval gained month attribution');
+
+const missingProof = { ...exactBoundaryEvent, eventKey: 'fixture:missing-proof', sourceEvidenceFamily: null };
+if (eventMonth(missingProof) !== null) throw new Error('Exact month boundary without canonical mechanism proof gained attribution');
+
+const aprContaminated = { ...exactBoundaryEvent, eventKey: 'fixture:apr-contaminated', referenceAprUsed: true };
+if (eventMonth(aprContaminated) !== null) throw new Error('Reference APR contaminated exact-month attribution');
+
+const wrongEconomicMonth = { ...exactBoundaryEvent, eventKey: 'fixture:wrong-economic-month', economicDate: '2026-09-01' };
+if (eventMonth(wrongEconomicMonth) !== null) throw new Error('Exact boundary with economicDate outside prior month gained attribution');
+
+const settlement = {
+  eventKey: 'fixture:settlement',
+  company: 'fixture.eth',
+  family: 'realised-cash-flow',
+  economicDate: '2026-09-02',
+  periodStart: '2026-09-02',
+  periodEnd: '2026-09-02',
+  usdValue: 10,
+  incomeRecognition: { recognizesEarnedIncome: false, settlementOf: 'earned:fixture:exact-calendar-month' }
+};
+const settlementDecision = recognitionDecision(settlement);
+if (settlementDecision.status !== 'settlement-only') throw new Error('Settlement re-recognized prior embedded income');
+
+console.log('Reference APR capital-weighting + exact month-boundary accounting PASS', {
   checkedCompanies: checked,
   multiPositionCompanies: multiPositionChecked,
   unknownAprPositionsExcluded: unknownAprExcluded,
   defiteaCoveredCapitalUsd: Number(defiteaCapital.toFixed(2)),
   defiteaWeightedAprPct: Number(defiteaWeighted.toFixed(6)),
-  defiteaPublishedAprPct: Number(defitea.aprLatest)
+  defiteaPublishedAprPct: Number(defitea.aprLatest),
+  exactBoundaryMonth: exactDecision.month,
+  arbitraryCrossMonthRemainsUnresolved: true,
+  settlementRemainsSettlementOnly: true
 });
