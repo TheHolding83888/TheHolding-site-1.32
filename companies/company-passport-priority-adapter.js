@@ -1,8 +1,10 @@
-/* The Holding · Company Passport priority adapter · v0.7.1
+/* The Holding · Company Passport priority adapter · v0.8.0
  * Presentation only.
  *
  * Confirmed remains the factual accounting lane. Estimated remains a separate,
  * non-additive backend reference lane. Accounting Coverage is diagnostic only.
+ * VoteMarket is presented as a supplementary income channel on the existing
+ * veCRV / veFXN principal; capital is never duplicated in the Passport.
  * This adapter only translates canonical machine state into compact owner-facing
  * language; it never creates income, changes ownership, or closes accounting.
  */
@@ -28,6 +30,7 @@
     ? '$' + Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
     : '—';
   const pct = value => finite(value) ? Number(value).toFixed(2) + '%' : '—';
+  const signedPct = value => finite(value) ? (Number(value) >= 0 ? '+' : '') + Number(value).toFixed(2) + '%' : '—';
   const stale = loadedAt => !loadedAt || Date.now() - loadedAt >= SNAPSHOT_TTL_MS;
 
   const TOKEN_CASE = Object.freeze({
@@ -54,6 +57,137 @@
       apr.dataset.thPassportPriority = 'primary-rate';
     });
     return moved;
+  }
+
+  function liveProductivitySnapshot() {
+    try {
+      if (typeof PRODUCTIVITY_SNAPSHOT !== 'undefined' && PRODUCTIVITY_SNAPSHOT?.companies) return PRODUCTIVITY_SNAPSHOT;
+    } catch (_) {}
+    return null;
+  }
+
+  function normalizedPrincipal(value) {
+    return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+  }
+
+  function validVoteMarketIncomeChannels(row) {
+    const channels = row?.incomeChannels;
+    const vm = channels?.votemarket;
+    const native = channels?.native;
+    if (!channels || !vm || !native) return null;
+    if (channels.capitalAccounting !== 'principal-counted-once' || channels.capitalDoubleCount !== false) return null;
+    if (channels.estimatedIncomeEligible !== true || channels.earnedIncomeAuthority !== false || channels.factualIncomeAuthority !== false) return null;
+    if (channels.unknownIsNotZero !== true || channels.executionAuthority !== 'none') return null;
+    if (vm.status !== 'measured-reference' || vm.earnedIncomeAuthority !== false || vm.factualIncomeAuthority !== false) return null;
+    if (vm.canCloseAccountingCoverage !== false || vm.canReplaceUnknown !== false || vm.executionAuthority !== 'none') return null;
+    if (!finite(native.aprPct) || !finite(vm.aprPct) || !finite(channels.effectiveAprPct)) return null;
+    return {
+      principal: channels.principal || row?.principalSymbol || row?.engineId || '',
+      principalEngineId: channels.principalEngineId || row?.engineId || '',
+      nativeLabel: String(native.label || (lang() === 'ru' ? 'Базовый доход' : 'Base yield')),
+      nativeAprPct: Number(native.aprPct),
+      voteMarketAprPct: Number(vm.aprPct),
+      effectiveAprPct: Number(channels.effectiveAprPct),
+      epochDate: vm.epochDate || null,
+      marketCount: Number(vm.marketCount || 0),
+      sourceGeneratedAt: vm.sourceGeneratedAt || null
+    };
+  }
+
+  function ensureVoteMarketStrategyStyle() {
+    ensureTransparencyStyle();
+  }
+
+  function findPrincipalPill(companyRoot, principal) {
+    const key = normalizedPrincipal(principal);
+    if (!key) return null;
+    return [...companyRoot.querySelectorAll('.ipx-balance-card .ipx-position-pill')].find(pill => {
+      const label = normalizedPrincipal(pill.querySelector('.ipx-position-symbol')?.textContent);
+      return label === key || label.includes(key);
+    }) || null;
+  }
+
+  function voteMarketPresentationCopy(meta) {
+    if (lang() === 'ru') {
+      return {
+        native: `${meta.nativeLabel} ${pct(meta.nativeAprPct)}`,
+        voteMarket: `VoteMarket ${signedPct(meta.voteMarketAprPct)}`,
+        total: `Итого ${pct(meta.effectiveAprPct)}`,
+        title: `${meta.nativeLabel}: ${pct(meta.nativeAprPct)}. VoteMarket: ${signedPct(meta.voteMarketAprPct)}. Итого: ${pct(meta.effectiveAprPct)}. Капитал позиции учитывается один раз.`
+      };
+    }
+    return {
+      native: `${meta.nativeLabel} ${pct(meta.nativeAprPct)}`,
+      voteMarket: `VoteMarket ${signedPct(meta.voteMarketAprPct)}`,
+      total: `Total ${pct(meta.effectiveAprPct)}`,
+      title: `${meta.nativeLabel}: ${pct(meta.nativeAprPct)}. VoteMarket: ${signedPct(meta.voteMarketAprPct)}. Total: ${pct(meta.effectiveAprPct)}. Position capital is counted once.`
+    };
+  }
+
+  function patchVoteMarketStrategyChannels() {
+    const productivity = liveProductivitySnapshot();
+    if (!productivity?.companies) return 0;
+    ensureVoteMarketStrategyStyle();
+    let patched = 0;
+
+    document.querySelectorAll('.ib-item[data-nm]').forEach(companyRoot => {
+      const companyName = companyRoot.dataset.nm;
+      const breakdown = productivity.companies?.[companyName]?.breakdown;
+      if (!Array.isArray(breakdown)) return;
+
+      const activeKeys = new Set();
+      for (const row of breakdown) {
+        const meta = validVoteMarketIncomeChannels(row);
+        if (!meta) continue;
+        const pill = findPrincipalPill(companyRoot, meta.principal);
+        if (!pill) continue;
+
+        const key = `${companyName}|${meta.principalEngineId || normalizedPrincipal(meta.principal)}`;
+        activeKeys.add(key);
+        const text = voteMarketPresentationCopy(meta);
+        const fingerprint = JSON.stringify([
+          lang(), meta.principal, meta.principalEngineId, meta.nativeLabel,
+          meta.nativeAprPct, meta.voteMarketAprPct, meta.effectiveAprPct,
+          meta.epochDate, meta.marketCount, meta.sourceGeneratedAt
+        ]);
+        let strip = pill.querySelector(`.th-vm-apr-breakdown[data-th-vm-key="${CSS.escape(key)}"]`);
+        if (strip?.dataset.thVmFingerprint === fingerprint) continue;
+        if (!strip) {
+          strip = document.createElement('span');
+          strip.className = 'th-vm-apr-breakdown';
+          strip.dataset.thVmKey = key;
+          pill.appendChild(strip);
+        }
+        strip.dataset.thVmFingerprint = fingerprint;
+        strip.dataset.thVmAuthority = 'reference-only';
+        strip.dataset.thVmCapitalDoubleCount = 'false';
+        strip.dataset.thVmPrincipal = meta.principal;
+        strip.title = text.title;
+        strip.setAttribute('aria-label', text.title);
+        strip.replaceChildren();
+
+        const components = document.createElement('span');
+        components.className = 'th-vm-apr-components';
+        const native = document.createElement('span'); native.className = 'th-vm-apr-native'; native.textContent = text.native;
+        const vm = document.createElement('span'); vm.className = 'th-vm-apr-votemarket'; vm.textContent = text.voteMarket;
+        components.append(native, vm);
+        const total = document.createElement('span'); total.className = 'th-vm-apr-total'; total.textContent = text.total;
+        strip.append(components, total);
+
+        pill.classList.add('th-vm-income-channel-pill');
+        pill.dataset.thVmIncomeChannel = key;
+        patched += 1;
+      }
+
+      companyRoot.querySelectorAll('.th-vm-income-channel-pill[data-th-vm-income-channel]').forEach(pill => {
+        const key = pill.dataset.thVmIncomeChannel;
+        if (activeKeys.has(key)) return;
+        pill.querySelectorAll('.th-vm-apr-breakdown').forEach(node => node.remove());
+        pill.classList.remove('th-vm-income-channel-pill');
+        delete pill.dataset.thVmIncomeChannel;
+      });
+    });
+    return patched;
   }
 
   function loadMonthlySnapshot({ force = false } = {}) {
@@ -102,6 +236,7 @@
 
   function refreshSnapshots({ force = false } = {}) {
     return Promise.all([loadMonthlySnapshot({ force }), loadCoverageSnapshot({ force })]).then(() => {
+      patchVoteMarketStrategyChannels();
       patchMonthlyReports();
       return { monthlySnapshot, coverageSnapshot };
     });
@@ -286,8 +421,15 @@
       .th-mr-accounting-notices{display:grid;gap:.24rem;margin:.02rem .18rem .42rem;padding-top:.34rem;border-top:1px solid var(--line)}
       .th-mr-accounting-notice{position:relative;padding-left:.68rem;color:var(--text-3);font-size:.5rem;font-weight:550;line-height:1.42;letter-spacing:.005em;text-transform:none;overflow-wrap:anywhere}
       .th-mr-accounting-notice::before{content:'·';position:absolute;left:.08rem;top:-.01em;color:var(--gold);font-size:.72rem;line-height:1}
-      @media(max-width:760.98px){.th-mr-estimated-view{margin-left:.12rem;margin-right:.12rem;padding:.45rem .5rem}.th-mr-estimated-head{gap:.38rem}.th-mr-estimated-label{font-size:.54rem}.th-mr-estimated-amount{font-size:.66rem}.th-mr-estimated-yield{font-size:.51rem}.th-mr-tracking-summary,.th-mr-accounting-notices{margin-left:.12rem;margin-right:.12rem}.th-mr-accounting-notice{font-size:.49rem}}
-      @media(max-width:390px){.th-mr-estimated-head{grid-template-columns:1fr}.th-mr-estimated-values{justify-content:flex-start}}
+      .th-vm-income-channel-pill{min-height:58px!important;justify-content:flex-start!important}
+      .th-vm-apr-breakdown{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.08rem;width:100%;margin-top:.03rem;min-width:0;font-variant-numeric:tabular-nums;text-align:center}
+      .th-vm-apr-components{display:flex;align-items:center;justify-content:center;gap:.18rem .26rem;flex-wrap:wrap;color:var(--text-3);font-size:.46rem;font-weight:600;line-height:1.16;min-width:0}
+      .th-vm-apr-native,.th-vm-apr-votemarket{white-space:nowrap}.th-vm-apr-votemarket{color:var(--text-2)}
+      .th-vm-apr-total{color:var(--green);font-size:.49rem;font-weight:750;line-height:1.12;white-space:nowrap}
+      .ipx-defitea-balance .th-vm-income-channel-pill{min-height:54px!important;padding-top:.3rem!important;padding-bottom:.28rem!important}
+      .ipx-defitea-balance .th-vm-apr-components{font-size:.41rem;gap:.12rem .18rem}.ipx-defitea-balance .th-vm-apr-total{font-size:.44rem}
+      @media(max-width:760.98px){.th-mr-estimated-view{margin-left:.12rem;margin-right:.12rem;padding:.45rem .5rem}.th-mr-estimated-head{gap:.38rem}.th-mr-estimated-label{font-size:.54rem}.th-mr-estimated-amount{font-size:.66rem}.th-mr-estimated-yield{font-size:.51rem}.th-mr-tracking-summary,.th-mr-accounting-notices{margin-left:.12rem;margin-right:.12rem}.th-mr-accounting-notice{font-size:.49rem}.th-vm-income-channel-pill{min-height:56px!important}.th-vm-apr-components{font-size:.43rem;gap:.1rem .17rem}.th-vm-apr-total{font-size:.46rem}.ipx-defitea-balance .th-vm-income-channel-pill{min-height:52px!important}.ipx-defitea-balance .th-vm-apr-components{font-size:.39rem}.ipx-defitea-balance .th-vm-apr-total{font-size:.42rem}}
+      @media(max-width:390px){.th-mr-estimated-head{grid-template-columns:1fr}.th-mr-estimated-values{justify-content:flex-start}.th-vm-apr-components{gap:.07rem .13rem}}
     `;
     document.head.appendChild(style);
   }
@@ -533,7 +675,12 @@
   function queueRefresh() {
     if (queued) return;
     queued = true;
-    requestAnimationFrame(() => { queued = false; promoteApr(); patchMonthlyReports(); });
+    requestAnimationFrame(() => {
+      queued = false;
+      promoteApr();
+      patchVoteMarketStrategyChannels();
+      patchMonthlyReports();
+    });
   }
 
   function refreshOnReportInteraction(event) {
@@ -544,21 +691,25 @@
 
   function start() {
     promoteApr();
+    patchVoteMarketStrategyChannels();
     refreshSnapshots({ force: true }).catch(err => console.warn('[Company Passport confirmed/estimated income]', err?.message || err));
     document.addEventListener('click', refreshOnReportInteraction, { capture: true });
     const observer = new MutationObserver(queueRefresh);
     observer.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['class', 'aria-pressed', 'lang'] });
 
     window.__TH_COMPANY_PASSPORT_PRIORITY_ADAPTER__ = {
-      version: '0.7.1-human-accounting-notices',
-      promoteApr, patchMonthlyReports, refreshSnapshots, snapshotTtlMs: SNAPSHOT_TTL_MS,
+      version: '0.8.0-votemarket-strategy-breakdown',
+      promoteApr, patchVoteMarketStrategyChannels, patchMonthlyReports, refreshSnapshots, snapshotTtlMs: SNAPSHOT_TTL_MS,
       incomeDisplayPolicy: 'confirmed-canonical-events-explicit-reporting-scope',
       yieldDisplayPolicy: 'confirmed-canonical-yield-explicit-reporting-scope',
       estimatedDisplayPolicy: 'backend-incomeView-estimated-only-non-additive-apr-reference-view',
+      voteMarketStrategyPresentationPolicy: 'principal-one-card-native-plus-votemarket-plus-effective-reference-apr',
+      voteMarketStrategyDataSource: 'backend-productivity-incomeChannels-only',
       transparencyPolicy: 'diagnostic-accounting-coverage-notices-never-income-authority',
       noticeGroupingPolicy: 'income-channel-reason-not-raw-event',
       trackingNoEventVisible: true, trackingPresentedWithConfirmed: true,
       associatedCompanyScopeVisible: false, associatedCompanyCapitalIncluded: false,
+      voteMarketCapitalCountedOnce: true, browserCalculatesVoteMarketApr: false,
       browserCalculatesEstimatedIncome: false, confirmedPlusEstimatedIsValidTotal: false,
       estimatedIncomeAuthority: false, estimatedCanCloseAccountingCoverage: false,
       noticesCreateIncome: false, coverageHasCompletionAuthority: false,
