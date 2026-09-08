@@ -17,6 +17,7 @@ assert.equal(data.semantics?.canonicalLedgerIsSoleFactualIncomeAuthority,true);
 assert.equal(data.semantics?.productivityCoverageIsNotAccountingCoverage,true);
 assert.equal(data.semantics?.referenceMetricIsNotEarnedIncome,true);
 assert.equal(data.semantics?.currentRewardStateIsNotPeriodIncome,true);
+assert.equal(data.semantics?.currentPositiveRewardStateDoesNotProvePeriodIncome,true);
 assert.equal(data.semantics?.factualTrackingProofIsNotPeriodIncome,true);
 assert.equal(data.semantics?.zeroPeriodEventDoesNotImplyCoverageGap,true);
 assert.equal(data.semantics?.coverageGapMeansMissingFactualTrackingCapability,true);
@@ -64,6 +65,7 @@ for(const [name,c] of Object.entries(companies)){
   assert.ok(Array.isArray(c.sourceAliases)&&c.sourceAliases.length>0,`${name} source aliases missing`);
   assert.equal(c.executionAuthority,'none');
   assert.ok(Array.isArray(c.mechanismInventorySource));
+  assert.ok(Number(c.currentMonthPositiveRewardStateMechanismCount)>=0,`${name} positive current-reward diagnostic missing`);
   const mechanisms=Object.values(c.mechanisms||{});
   mechanismInstances+=mechanisms.length;
   assert.equal(mechanisms.length,c.mechanismCount,`${name} mechanism count drift`);
@@ -76,6 +78,12 @@ for(const [name,c] of Object.entries(companies)){
     for(const [month,row] of Object.entries(m.months||{})){
       assert.ok(/^\d{4}-\d{2}$/.test(month),`${name}/${m.engineId} invalid month key`);
       assert.equal(row.mechanismCompleteForMonth,false,`${name}/${m.engineId}/${month} diagnostic registry falsely completed mechanism`);
+      assert.equal(row.currentRewardStatePeriodIncomeAuthority,false,`${name}/${m.engineId}/${month} current reward state gained period-income authority`);
+      assert.ok(Number(row.currentPositiveRewardStateCount)>=0,`${name}/${m.engineId}/${month} positive current-state count missing`);
+      assert.ok(Number(row.currentPositiveRewardStateValuedCount)>=0,`${name}/${m.engineId}/${month} valued current-state count missing`);
+      assert.ok(row.currentPositiveRewardStateValuedCount<=row.currentPositiveRewardStateCount,`${name}/${m.engineId}/${month} valued current-state count exceeds positive state count`);
+      if(row.currentPositiveRewardStateCount===0)assert.equal(row.currentPositiveRewardStateUsdSubtotal,null,`${name}/${m.engineId}/${month} zero positive state gained USD subtotal`);
+      if(row.currentPositiveRewardStateCount>0&&row.currentPositiveRewardStateValuedCount===row.currentPositiveRewardStateCount)assert.ok(Number(row.currentPositiveRewardStateUsdSubtotal)>=0,`${name}/${m.engineId}/${month} fully valued positive state lacks subtotal`);
       assert.ok(Array.isArray(row.completionBlockers));
       assert.ok(Array.isArray(row.factualTrackingProofSources));
       assert.ok(['factual-period-evidence','factual-tracking-no-period-event','state-observed-not-factual-tracking','reference-only-no-factual-tracking'].includes(row.status));
@@ -83,6 +91,7 @@ for(const [name,c] of Object.entries(companies)){
       if(row.factualTrackingActive===true)assert.ok(!row.completionBlockers.includes('no-factual-engine-tracking-proof'),`${name}/${m.engineId}/${month} tracked mechanism incorrectly marked uncovered`);
       if(row.factualTrackingActive!==true)assert.ok(row.completionBlockers.includes('no-factual-engine-tracking-proof'),`${name}/${m.engineId}/${month} missing factual-tracking blocker`);
       if(row.status==='state-observed-not-factual-tracking')assert.ok(row.completionBlockers.includes('current-state-is-not-period-income'));
+      if(row.currentPositiveRewardStateCount>0&&row.factualEventCount===0)assert.ok(row.completionBlockers.includes('current-positive-reward-state-period-attribution-unresolved'),`${name}/${m.engineId}/${month} positive current state hidden from period-attribution diagnostics`);
       if(row.factualEventCount>0){assert.equal(row.status,'factual-period-evidence');assert.equal(row.factualTrackingActive,true);}
       if(row.status==='factual-tracking-no-period-event'){assert.equal(row.factualTrackingActive,true);assert.equal(row.factualEventCount,0);assert.ok(row.factualTrackingProofCount>0);}
       if(m.classified!==true)assert.ok(row.completionBlockers.includes('unclassified-income-mechanism'),`${name}/${m.engineId}/${month} unclassified mechanism hidden`);
@@ -94,6 +103,7 @@ assert.equal(mechanismInstances,data.summary.mechanismInstanceCount,'mechanism i
 for(const [engineId,m] of Object.entries(data.mechanisms||{})){
   assert.equal(m.engineId,engineId);
   assert.equal(m.referenceMetricIsAccountingAuthority,false);
+  assert.equal(m.currentRewardStatePeriodIncomeAuthority,false);
   assert.equal(m.completionAuthority,false);
   assert.equal(m.activeCompanyCount,(m.companies||[]).length,`${engineId} active company count drift`);
   assert.equal(m.factualTrackingCompanyCount,(m.factualTrackingCompanies||[]).length,`${engineId} factual-tracking company count drift`);
@@ -102,6 +112,7 @@ for(const [engineId,m] of Object.entries(data.mechanisms||{})){
   assert.deepEqual(m.factualCompanies,m.factualTrackingCompanies,`${engineId} compatibility factual companies drift`);
   assert.equal(m.stateOnlyCompanyCount,(m.stateOnlyCompanies||[]).length,`${engineId} state-only company count drift`);
   assert.equal(m.referenceOnlyCompanyCount,(m.referenceOnlyCompanies||[]).length,`${engineId} reference-only company count drift`);
+  assert.equal(m.positiveCurrentRewardStateCompanyCount,(m.positiveCurrentRewardStateCompanies||[]).length,`${engineId} positive current reward company count drift`);
   assert.equal(m.reusableCoverageGap,m.factualTrackingCompanyCount<m.activeCompanyCount,`${engineId} gap flag must follow factual tracking, not event incidence`);
 }
 
@@ -119,20 +130,31 @@ for(let i=0;i<ranking.length;i++){
 const emptyLedger={generatedAt:'2026-09-03T00:00:00.000Z',semantics:{referenceAprCanBackfillEarnedIncome:false,unknownIsNotZero:true},authority:{executionAuthority:'none',capitalExecution:false},events:[],companies:{}};
 
 // A factual checkpoint proves engine coverage without inventing period income.
+// A positive current reward state is visible diagnostically but still cannot become period income.
 const trackingProductivity={generatedAt:'2026-09-03T00:00:00.000Z',engines:{aerodrome_veaero:{protocol:'Aerodrome'}},companies:{'FutureCo.eth':{trackingStartedAt:'2026-09-01T00:00:00.000Z',breakdown:[{engineId:'aerodrome_veaero',value:100,engineStatus:'ok'}]}}};
-const trackingLedger={...emptyLedger,companies:{'FutureCo.eth':{currentClaimableState:{rows:[{route:'aerodrome-ve',protocol:'Aerodrome · veAERO'}]}}}};
+const trackingLedger={...emptyLedger,companies:{'FutureCo.eth':{currentClaimableState:{rows:[{route:'aerodrome-ve',protocol:'Aerodrome · veAERO',amount:2.5,usdValue:1.75}]}}}};
 const trackingSynthetic=buildAccountingCoverage({productivity:trackingProductivity,ledger:trackingLedger,embedded:{},factualEvidence:{ve33:{generatedAt:'2026-09-03T00:00:00.000Z',checkpoints:[{ok:true,company:'FutureCo.eth',protocolKey:'aerodrome',observedAt:'2026-09-03T00:00:00.000Z',checkpointKey:'future:aero:1'}]}},generatedAt:'2026-09-03T00:00:00.000Z'});
 const trackedRow=trackingSynthetic.companies['FutureCo.eth'].mechanisms.aerodrome_veaero.months['2026-09'];
 assert.equal(trackedRow.status,'factual-tracking-no-period-event');
 assert.equal(trackedRow.factualTrackingActive,true);
 assert.equal(trackedRow.factualEventCount,0);
+assert.equal(trackedRow.currentPositiveRewardStateCount,1);
+assert.equal(trackedRow.currentPositiveRewardStateValuedCount,1);
+assert.equal(trackedRow.currentPositiveRewardStateUsdSubtotal,1.75);
+assert.equal(trackedRow.currentRewardStatePeriodIncomeAuthority,false);
+assert.ok(trackedRow.completionBlockers.includes('current-positive-reward-state-period-attribution-unresolved'));
+assert.equal(trackingSynthetic.companies['FutureCo.eth'].currentMonthPositiveRewardStateMechanismCount,1);
+assert.equal(trackingSynthetic.mechanisms.aerodrome_veaero.positiveCurrentRewardStateCompanyCount,1);
 assert.equal(trackingSynthetic.mechanisms.aerodrome_veaero.factualTrackingCompanyCount,1);
 assert.equal(trackingSynthetic.mechanisms.aerodrome_veaero.factualEventCompanyCount,0);
 assert.equal(trackingSynthetic.mechanisms.aerodrome_veaero.reusableCoverageGap,false,'zero-event tracked company became a false protocol gap');
 
 // Same state without mechanism-specific factual checkpoint stays a real gap.
 const stateOnlySynthetic=buildAccountingCoverage({productivity:trackingProductivity,ledger:trackingLedger,embedded:{},generatedAt:'2026-09-03T00:00:00.000Z'});
-assert.equal(stateOnlySynthetic.companies['FutureCo.eth'].mechanisms.aerodrome_veaero.months['2026-09'].status,'state-observed-not-factual-tracking');
+const stateOnlyRow=stateOnlySynthetic.companies['FutureCo.eth'].mechanisms.aerodrome_veaero.months['2026-09'];
+assert.equal(stateOnlyRow.status,'state-observed-not-factual-tracking');
+assert.equal(stateOnlyRow.currentPositiveRewardStateCount,1);
+assert.equal(stateOnlyRow.currentRewardStatePeriodIncomeAuthority,false);
 assert.equal(stateOnlySynthetic.mechanisms.aerodrome_veaero.reusableCoverageGap,true);
 
 // Canonical staked-cvxCRV source identity must prove tracking, while malformed identity must fail closed.
@@ -176,6 +198,6 @@ for(const engineId of ['aerodrome_veaero','velodrome_vevelo','yieldbasis_veyb','
   assert.ok(m.factualTrackingCompanyCount>=m.factualEventCompanyCount,`${engineId} tracking coverage fell below event coverage`);
 }
 
-console.log('Accounting Coverage Registry v0.3 validation PASS',{
-  companyCount:data.summary.companyCount,mechanismInstances:data.summary.mechanismInstanceCount,uniqueMechanisms:data.summary.uniqueMechanismCount,reusableCoverageGaps:data.summary.reusableCoverageGapCount,unclassified:data.summary.unclassifiedMechanismInstanceCount,unmatchedLedgerEvents:data.summary.unmatchedCanonicalEventCount,canonicalizedAliasCompanies:data.summary.canonicalizedAliasCompanyCount,factualTrackingProofs:data.summary.factualTrackingProofCount,currentMonth:data.currentMonth,futureCompanyAutoDiscovery:true,zeroEventTrackingDoesNotCreateFalseGap:true,stakedCvxCrvCanonicalIdentityProof:true,historicalAliasCannotCreatePhantomCompany:true,monthClosingAuthority:false
+console.log('Accounting Coverage Registry v0.11 validation PASS',{
+  companyCount:data.summary.companyCount,mechanismInstances:data.summary.mechanismInstanceCount,uniqueMechanisms:data.summary.uniqueMechanismCount,reusableCoverageGaps:data.summary.reusableCoverageGapCount,unclassified:data.summary.unclassifiedMechanismInstanceCount,unmatchedLedgerEvents:data.summary.unmatchedCanonicalEventCount,canonicalizedAliasCompanies:data.summary.canonicalizedAliasCompanyCount,factualTrackingProofs:data.summary.factualTrackingProofCount,currentMonth:data.currentMonth,futureCompanyAutoDiscovery:true,zeroEventTrackingDoesNotCreateFalseGap:true,currentPositiveRewardStateDoesNotCreatePeriodIncome:true,stakedCvxCrvCanonicalIdentityProof:true,historicalAliasCannotCreatePhantomCompany:true,monthClosingAuthority:false
 });
