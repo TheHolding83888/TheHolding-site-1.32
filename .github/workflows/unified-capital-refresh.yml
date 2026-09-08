@@ -7,6 +7,7 @@ on:
   workflow_run:
     workflows:
       - "Update Stable Capital"
+      - "Update Company Rewards"
       - "Update Company #010 · Cypher Production State"
       - "Update Company #010 · Project X Reference APR"
     types: [completed]
@@ -21,6 +22,8 @@ on:
       - 'productivity/productivity-engine.mjs'
       - 'productivity/company-010-productivity-overlay.mjs'
       - 'productivity/yieldring-productivity-overlay.mjs'
+      - 'productivity/votemarket-productivity-overlay.mjs'
+      - 'productivity/votemarket-productivity-overlay-validation.mjs'
       - 'productivity/fxn-locker-apr-guard.mjs'
       - 'intelligence/capital-state/capital-state.mjs'
       - 'intelligence/capital-state/unified-capital-refresh.mjs'
@@ -75,10 +78,17 @@ jobs:
           node --check productivity/productivity-engine.mjs
           node --check productivity/company-010-productivity-overlay.mjs
           node --check productivity/yieldring-productivity-overlay.mjs
+          node --check productivity/votemarket-productivity-overlay.mjs
+          node --check productivity/votemarket-productivity-overlay-validation.mjs
           node --check intelligence/capital-state/general-company-balance-sheet.mjs
           node --check intelligence/capital-state/capital-state.mjs
           node --check intelligence/market-data/coingecko-fetch-shim.mjs
           node --check intelligence/market-data/public-capital-engine.mjs
+
+      - name: Prove VoteMarket overlay safety deterministically
+        run: |
+          set -euo pipefail
+          node productivity/votemarket-productivity-overlay-validation.mjs
 
       - name: Require canonical per-asset Market Data
         run: |
@@ -108,12 +118,19 @@ jobs:
           const pub=JSON.parse(fs.readFileSync('intelligence/market-data/public-capital-state.json','utf8'));
           const d=p.companies?.['defitea.eth'];
           const da=(d?.breakdown||[]).find(x=>x.engineId==='aerodrome_veaero'||x.principalId==='aerodrome-finance');
+          const dcrow=(d?.breakdown||[]).find(x=>x.engineId==='curve_vecrv'||x.principalId==='curve-dao-token');
           const df=(d?.breakdown||[]).find(x=>x.engineId==='fx_vefxn'||x.principalId==='fxn-token');
+          const vm=p.diagnostics?.voteMarketIncomeChannels;
           const dc=(c.companies||[]).find(x=>x.registry==='004');
           const dca=(dc?.measuredPositions||[]).find(x=>x.assetId==='aerodrome-finance');
           const dcf=(dc?.measuredPositions||[]).find(x=>x.assetId==='fxn-token');
           if(!d||Number(da?.units)!==2632||Number(df?.units)!==64.81)throw new Error('Defitea Productivity coherence missing');
           if(!dc||Number(dca?.units)!==2632||Number(dcf?.units)!==64.81)throw new Error('Defitea Capital State coherence missing');
+          if(vm?.capitalDoubleCount!==false||vm?.idempotent!==true||vm?.factualIncomeAuthority!==false||vm?.executionAuthority!=='none')throw new Error('VoteMarket safety contract missing from coherent snapshot');
+          if(vm?.claimedPeriodPersistencePending!==true)throw new Error('VoteMarket claimed-period persistence boundary must remain explicit until closed');
+          for(const [label,row] of [['veCRV',dcrow],['veFXN',df]]){
+            if(!row?.incomeChannels||row.incomeChannels.capitalAccounting!=='principal-counted-once'||row.incomeChannels.capitalDoubleCount!==false)throw new Error(label+' VoteMarket principal hierarchy missing');
+          }
           const y=p.companies?.['YieldRing.eth'];
           const a=(y?.breakdown||[]).find(x=>x.engineId==='aerodrome_veaero'||x.principalId==='aerodrome-finance');
           const yc=(c.companies||[]).find(x=>x.registry==='002');
@@ -137,7 +154,7 @@ jobs:
           if(Number(m.authority?.unknownCount)!==0)throw new Error('Canonical Market Data contains UNKNOWN assets');
           if(Number(m.authority?.onchainSelectedAssetCount)+Number(m.authority?.coingeckoSelectedAssetCount)!==26)throw new Error('Canonical Market Data selected-lane coverage drift');
           if(!Number.isFinite(Number(pub.funds?.defitea?.tvlUsd))||!Number.isFinite(Number(pub.funds?.defitea?.referenceAprPct)))throw new Error('Defitea Public Capital incomplete');
-          console.log('Unified Capital Refresh final validation PASS',{generatedAt:p.generatedAt,defiteaApr:d.aprLatest,defiteaAero:dca.units,defiteaFxn:dcf.units,yieldRingApr:y.aprLatest,networkTvl:c.network.networkTvlUsd,marketObservedAt:m.observedAt,onchainSelectedAssetCount:m.authority.onchainSelectedAssetCount,coingeckoFallbackAssetCount:m.authority.coingeckoSelectedAssetCount,icpUsd:icp.usd,icpSource:icp.source,company005Icp:icp5.units,company006Icp:icp6.units,publicDefiteaTvl:pub.funds.defitea.tvlUsd});
+          console.log('Unified Capital Refresh final validation PASS',{generatedAt:p.generatedAt,defiteaApr:d.aprLatest,defiteaAero:dca.units,defiteaFxn:dcf.units,voteMarketMeasuredReferenceCompanyCount:vm.measuredReferenceCompanyCount,veCrvVoteMarketStatus:dcrow?.incomeChannels?.votemarket?.status||null,veFxnVoteMarketStatus:df?.incomeChannels?.votemarket?.status||null,yieldRingApr:y.aprLatest,networkTvl:c.network.networkTvlUsd,marketObservedAt:m.observedAt,onchainSelectedAssetCount:m.authority.onchainSelectedAssetCount,coingeckoFallbackAssetCount:m.authority.coingeckoSelectedAssetCount,icpUsd:icp.usd,icpSource:icp.source,company005Icp:icp5.units,company006Icp:icp6.units,publicDefiteaTvl:pub.funds.defitea.tvlUsd});
           NODE
           git diff --check
 
