@@ -17,6 +17,10 @@ on:
       - 'reporting/canonical-earned-income-view.mjs'
       - 'reporting/company-monthly-earned-income.mjs'
       - 'reporting/company-monthly-earned-income-validation.mjs'
+      - 'reporting/accounting-coverage.json'
+      - 'reporting/accounting-notice-queue.mjs'
+      - 'reporting/accounting-notice-queue-validation.mjs'
+      - 'reporting/icp-nns-factual-snapshots.json'
       - 'reporting/income-ledger.json'
       - 'companies/company-monthly-report-adapter.js'
       - 'companies/company-passport-priority-adapter.js'
@@ -66,11 +70,15 @@ jobs:
           node --check reporting/canonical-earned-income-view.mjs
           node --check reporting/company-monthly-earned-income.mjs
           node --check reporting/company-monthly-earned-income-validation.mjs
+          node --check reporting/accounting-notice-queue.mjs
+          node --check reporting/accounting-notice-queue-validation.mjs
           node --check companies/company-monthly-report-adapter.js
           node --check companies/company-passport-priority-adapter.js
           test -s companies/productivity-data.json
           test -s reporting/reporting-data.json
           test -s reporting/income-ledger.json
+          test -s reporting/accounting-coverage.json
+          test -s reporting/icp-nns-factual-snapshots.json
           test -d intelligence/memory-vault
           node - <<'NODE'
           const fs=require('fs');
@@ -107,6 +115,16 @@ jobs:
           INCOME_LEDGER_FILE: ./reporting/income-ledger.json
         run: node reporting/company-monthly-earned-income-validation.mjs
 
+      - name: Build + validate accounting notice queue
+        env:
+          ACCOUNTING_COVERAGE_FILE: ./reporting/accounting-coverage.json
+          COMPANY_MONTHLY_REPORTS_FILE: ./reporting/company-monthly-reports.json
+          ICP_NNS_FACTUAL_SNAPSHOTS_FILE: ./reporting/icp-nns-factual-snapshots.json
+          ACCOUNTING_NOTICE_QUEUE_FILE: ./reporting/accounting-notice-queue.json
+        run: |
+          node reporting/accounting-notice-queue.mjs
+          node reporting/accounting-notice-queue-validation.mjs
+
       - name: Commit monthly reporting snapshot
         shell: bash
         run: |
@@ -122,14 +140,16 @@ jobs:
               reporting/canonical-earned-income-view.mjs \
               reporting/company-monthly-earned-income.mjs \
               reporting/company-monthly-earned-income-validation.mjs \
+              reporting/accounting-notice-queue.mjs \
+              reporting/accounting-notice-queue-validation.mjs \
               companies/company-passport-priority-adapter.js \
               .github/workflows/update-company-monthly-reports.yml
           }
           critical_before="$(critical_fingerprint)"
 
-          git add reporting/company-monthly-reports.json
+          git add reporting/company-monthly-reports.json reporting/accounting-notice-queue.json
           if git diff --cached --quiet; then
-            echo "No company monthly reporting changes."
+            echo "No company monthly reporting or accounting notice queue changes."
             exit 0
           fi
           git commit -m "data: update company monthly earned-income reports"
@@ -163,15 +183,25 @@ jobs:
             COMPANY_MONTHLY_REPORTS_FILE=./reporting/company-monthly-reports.json \
             INCOME_LEDGER_FILE=./reporting/income-ledger.json \
             node reporting/company-monthly-earned-income-validation.mjs
+            ACCOUNTING_COVERAGE_FILE=./reporting/accounting-coverage.json \
+            COMPANY_MONTHLY_REPORTS_FILE=./reporting/company-monthly-reports.json \
+            ICP_NNS_FACTUAL_SNAPSHOTS_FILE=./reporting/icp-nns-factual-snapshots.json \
+            ACCOUNTING_NOTICE_QUEUE_FILE=./reporting/accounting-notice-queue.json \
+            node reporting/accounting-notice-queue.mjs
+            ACCOUNTING_NOTICE_QUEUE_FILE=./reporting/accounting-notice-queue.json \
+            ICP_NNS_FACTUAL_SNAPSHOTS_FILE=./reporting/icp-nns-factual-snapshots.json \
+            node reporting/accounting-notice-queue-validation.mjs
 
-            git add reporting/company-monthly-reports.json
+            git add reporting/company-monthly-reports.json reporting/accounting-notice-queue.json
             git commit --amend --no-edit
 
             mapfile -t ahead < <(git diff --name-only origin/main...HEAD)
-            if [ "${#ahead[@]}" -ne 1 ] || [ "${ahead[0]}" != "reporting/company-monthly-reports.json" ]; then
-              echo "Unexpected Company Monthly Reports publish delta after rebase: ${ahead[*]}"
-              exit 1
-            fi
+            for f in "${ahead[@]}"; do
+              case "$f" in
+                reporting/company-monthly-reports.json|reporting/accounting-notice-queue.json) ;;
+                *) echo "Unexpected Company Monthly Reports publish delta after rebase: $f"; exit 1 ;;
+              esac
+            done
 
             if git push origin HEAD:main; then
               exit 0
