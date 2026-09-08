@@ -5,6 +5,7 @@ on:
     paths:
       - 'reporting/accounting-coverage.mjs'
       - 'reporting/accounting-coverage-validation.mjs'
+      - 'reporting/accounting-coverage-locked-managed-validation.mjs'
       - 'reporting/accounting-coverage-gap-diagnostic.mjs'
       - 'reporting/accounting-coverage-company-diagnostic.mjs'
       - 'reporting/icp-nns-tracking-proof-validation.mjs'
@@ -60,6 +61,7 @@ jobs:
           set -euo pipefail
           node --check reporting/accounting-coverage.mjs
           node --check reporting/accounting-coverage-validation.mjs
+          node --check reporting/accounting-coverage-locked-managed-validation.mjs
           node --check reporting/accounting-coverage-gap-diagnostic.mjs
           node --check reporting/accounting-coverage-company-diagnostic.mjs
           node --check reporting/icp-nns-tracking-proof-validation.mjs
@@ -153,6 +155,7 @@ jobs:
           console.log('Liquity production-shaped coverage PASS',{tracking:`${engine.factualTrackingCompanyCount}/${engine.activeCompanyCount}`,factualEventCompanies:engine.factualEventCompanyCount,reusableCoverageGap:engine.reusableCoverageGap,periodIncomeAuthority:false});
           NODE
           node reporting/accounting-coverage-validation.mjs
+          node reporting/accounting-coverage-locked-managed-validation.mjs
           node reporting/accounting-coverage-gap-diagnostic.mjs
           node reporting/accounting-coverage-company-diagnostic.mjs
           git diff --check
