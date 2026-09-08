@@ -158,13 +158,14 @@ export async function runVe33LedgerAdmission({generatedAt=new Date().toISOString
       ve33EvidenceInputFingerprint:evidence?.runner?.safeWriterInputFingerprint||null
     }
   });
-  const reuseLocked=canReuseEvidence({
+  const reuseCandidate=canReuseEvidence({
     previous:previousLocked,
     fingerprint:lockedFingerprint,
     root:ROOT,
     env:process.env,
     previousFingerprint:previousLocked?.provenance?.safeWriterInputFingerprint||null
   });
+  const reuseLocked=reuseCandidate&&lockedManagedHistoricalBoundaryFailures(previousLocked).length===0;
 
   let lockedEvidence;
   if(reuseLocked){
