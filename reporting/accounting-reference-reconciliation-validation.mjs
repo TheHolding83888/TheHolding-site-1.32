@@ -10,7 +10,7 @@ const allowedScopes=new Set(['company-period','mechanism-base-reference']);
 const allowedBands=new Set(['not-comparable','wide-divergence','material-divergence','review-band','broad-parity-band','above-reference']);
 const allowedAttention=new Set(['context','high','moderate','review','low']);
 
-assert.equal(x.version,'0.1-accounting-reference-reconciliation');
+assert.equal(x.version,'0.2-accounting-reference-reconciliation-cross-month-attribution');
 assert.equal(x.status,'diagnostic-no-completion-authority');
 assert.equal(x.periodStart,'2026-08');
 assert.equal(x.semantics?.sourceOfTruth,false);
@@ -22,11 +22,14 @@ assert.equal(x.semantics?.captureRatioIsAccountingCompleteness,false);
 assert.equal(x.semantics?.signalBandIsAccountingStatus,false);
 assert.equal(x.semantics?.broadParityDoesNotCloseMonth,true);
 assert.equal(x.semantics?.modelVariancePossibleDoesNotProveModelVariance,true);
+assert.equal(x.semantics?.companyAndMechanismRowsHaveDifferentReferenceScopes,true);
 assert.equal(x.semantics?.mechanismRowsDoNotNecessarilySumToCompanyEstimated,true);
 assert.equal(x.semantics?.mechanismReferenceAprMayIncludeSupplementaryOverlay,true);
 assert.equal(x.semantics?.supplementaryReferenceDoubleAddForbidden,true);
 assert.equal(x.semantics?.principalCapitalCountedOnce,true);
 assert.equal(x.semantics?.historicalReferenceChannelDecompositionIsNotInferred,true);
+assert.equal(x.semantics?.explicitCanonicalPeriodAttributionCanResolveDiagnosticBoundary,true);
+assert.equal(x.semantics?.explicitCanonicalPeriodAttributionCannotCreateOrReallocateIncome,true);
 assert.equal(x.semantics?.unknownIsNotZero,true);
 assert.equal(x.diagnosticBands?.accountingAuthority,false);
 assert.equal(x.diagnosticBands?.monthClosingAuthority,false);
@@ -88,7 +91,7 @@ const mechanismRows=x.rows.filter(row=>row.scope==='mechanism-base-reference');
 assert.ok(mechanismRows.length>0,'Defitea mechanism reconciliation rows missing');
 assert.ok(mechanismRows.some(row=>row.company==='defitea.eth'&&row.month==='2026-08'&&row.mechanism==='aerodrome_veaero'),'Defitea August veAERO mechanism row missing');
 for(const row of mechanismRows){
-  assert.equal(row.company,'defitea.eth','v0.1 mechanism reference scope must remain bounded to Defitea');
+  assert.equal(row.company,'defitea.eth','v0.2 mechanism reference scope must remain bounded to Defitea');
   assert.equal(row.companyEstimatedReconciliationAuthority,false,`${row.id} mechanism row gained company-total authority`);
   assert.equal(row.referenceScope,'Defitea principal productive position with one admitted effective Reference APR');
   assert.ok(Array.isArray(row.referenceScopeExcludes)&&row.referenceScopeExcludes.includes('associated-company-reference-contributors'));
@@ -102,6 +105,22 @@ for(const row of mechanismRows){
   assert.ok(!row.reasonCodes.includes('base-position-reference-comparator-is-non-factual'),`${row.id} retained misleading base-only semantics`);
   assert.ok(Number(row.referenceSampleDays)>0);
   assert.ok(Array.isArray(row.referencePositionIds)&&row.referencePositionIds.length>0);
+
+  const cross=Number(row.crossMonthEvidenceCount||0);
+  const attributed=Number(row.crossMonthExplicitlyAttributedCount||0);
+  const unresolved=Number(row.crossMonthUnresolvedCount||0);
+  assert.ok(Number.isInteger(cross)&&cross>=0,`${row.id} invalid cross-month evidence count`);
+  assert.ok(Number.isInteger(attributed)&&attributed>=0&&attributed<=cross,`${row.id} invalid explicitly-attributed cross-month count`);
+  assert.ok(Number.isInteger(unresolved)&&unresolved>=0&&unresolved<=cross,`${row.id} invalid unresolved cross-month count`);
+  assert.equal(attributed+unresolved,cross,`${row.id} cross-month diagnostic partition drift`);
+  assert.equal(row.periodBoundaryIssue,unresolved>0,`${row.id} period boundary must depend only on unresolved cross-month evidence`);
+  if(cross>0&&unresolved===0){
+    assert.ok(attributed>0,`${row.id} resolved cross-month evidence lacks explicit canonical attribution`);
+    assert.ok(row.reasonCodes.includes('canonical-cross-month-attribution-resolved'),`${row.id} resolved attribution reason missing`);
+  }
+  if(unresolved>0){
+    assert.ok(row.reasonCodes.includes('unresolved-cross-month-evidence'),`${row.id} unresolved cross-month reason missing`);
+  }
 }
 
 const summary=x.summary||{};
