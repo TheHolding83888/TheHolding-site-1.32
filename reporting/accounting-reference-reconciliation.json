@@ -1,6 +1,6 @@
 {
-  "version": "0.1-accounting-reference-reconciliation",
-  "generatedAt": "2026-09-08T17:11:08.312Z",
+  "version": "0.2-accounting-reference-reconciliation-cross-month-attribution",
+  "generatedAt": "2026-09-08T18:39:50.613Z",
   "status": "diagnostic-no-completion-authority",
   "periodStart": "2026-08",
   "purpose": "Continuously compare independent Reference/Estimated and factual Confirmed accounting so economically meaningful spread is detected and explained rather than discovered manually.",
@@ -20,6 +20,8 @@
     "supplementaryReferenceDoubleAddForbidden": true,
     "principalCapitalCountedOnce": true,
     "historicalReferenceChannelDecompositionIsNotInferred": true,
+    "explicitCanonicalPeriodAttributionCanResolveDiagnosticBoundary": true,
+    "explicitCanonicalPeriodAttributionCannotCreateOrReallocateIncome": true,
     "unknownIsNotZero": true
   },
   "diagnosticBands": {
@@ -36,12 +38,12 @@
     "companyMonthlyReports": {
       "file": "reporting/company-monthly-reports.json",
       "version": "0.5-company-monthly-confirmed-estimated-view",
-      "generatedAt": "2026-09-08T17:11:08.114Z"
+      "generatedAt": "2026-09-08T18:39:50.170Z"
     },
     "accountingCoverage": {
       "file": "reporting/accounting-coverage.json",
-      "version": "0.10-explicit-settlement-link-accounting-mechanism-coverage-registry",
-      "generatedAt": "2026-09-08T12:28:44.298Z"
+      "version": "0.12-partial-observation-capability-accounting-mechanism-coverage-registry",
+      "generatedAt": "2026-09-08T13:26:27.502Z"
     },
     "reporting": {
       "file": "reporting/reporting-data.json",
@@ -51,7 +53,7 @@
     "accountingNoticeQueue": {
       "file": "reporting/accounting-notice-queue.json",
       "version": "0.1-accounting-notice-queue",
-      "generatedAt": "2026-09-08T17:11:08.236Z"
+      "generatedAt": "2026-09-08T18:39:50.538Z"
     }
   },
   "summary": {
@@ -1541,6 +1543,8 @@
       "trackingStatus": "factual-tracking-no-period-event",
       "periodBoundaryIssue": false,
       "crossMonthEvidenceCount": 0,
+      "crossMonthExplicitlyAttributedCount": 0,
+      "crossMonthUnresolvedCount": 0,
       "modelVariancePossible": true,
       "modelVarianceIsProven": false,
       "partialPeriod": true,
@@ -1575,7 +1579,7 @@
       "completionBlockers": [
         "no-canonical-period-income-evidence"
       ],
-      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. Explicit canonical period attribution may resolve a diagnostic cross-month boundary without creating or reallocating income. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -1602,6 +1606,8 @@
       "trackingStatus": "state-observed-not-factual-tracking",
       "periodBoundaryIssue": false,
       "crossMonthEvidenceCount": 0,
+      "crossMonthExplicitlyAttributedCount": 0,
+      "crossMonthUnresolvedCount": 0,
       "modelVariancePossible": true,
       "modelVarianceIsProven": false,
       "partialPeriod": true,
@@ -1637,7 +1643,7 @@
         "no-factual-engine-tracking-proof",
         "current-state-is-not-period-income"
       ],
-      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. Explicit canonical period attribution may resolve a diagnostic cross-month boundary without creating or reallocating income. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -1664,6 +1670,8 @@
       "trackingStatus": "factual-period-evidence",
       "periodBoundaryIssue": false,
       "crossMonthEvidenceCount": 0,
+      "crossMonthExplicitlyAttributedCount": 0,
+      "crossMonthUnresolvedCount": 0,
       "modelVariancePossible": true,
       "modelVarianceIsProven": false,
       "partialPeriod": true,
@@ -1696,7 +1704,7 @@
         "factual-period-events-observed"
       ],
       "completionBlockers": [],
-      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. Explicit canonical period attribution may resolve a diagnostic cross-month boundary without creating or reallocating income. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -1721,8 +1729,10 @@
       "factualTrackingActive": true,
       "eventCount": 15,
       "trackingStatus": "factual-period-evidence",
-      "periodBoundaryIssue": true,
+      "periodBoundaryIssue": false,
       "crossMonthEvidenceCount": 2,
+      "crossMonthExplicitlyAttributedCount": 2,
+      "crossMonthUnresolvedCount": 0,
       "modelVariancePossible": true,
       "modelVarianceIsProven": false,
       "partialPeriod": true,
@@ -1747,18 +1757,16 @@
       "referenceRateComposition": "published-effective-rate-as-observed",
       "referenceRateChannelDecompositionAuthority": false,
       "companyEstimatedReconciliationAuthority": false,
-      "reconciliationStatus": "boundary-review",
+      "reconciliationStatus": "review-band",
       "reasonCodes": [
         "principal-position-reference-comparator-is-non-factual",
         "partial-reference-window",
         "factual-tracking-active",
         "factual-period-events-observed",
-        "period-boundary-evidence"
+        "canonical-cross-month-attribution-resolved"
       ],
-      "completionBlockers": [
-        "cross-month-boundary-requires-explicit-allocation"
-      ],
-      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
+      "completionBlockers": [],
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. Explicit canonical period attribution may resolve a diagnostic cross-month boundary without creating or reallocating income. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -1785,6 +1793,8 @@
       "trackingStatus": "factual-period-evidence",
       "periodBoundaryIssue": false,
       "crossMonthEvidenceCount": 0,
+      "crossMonthExplicitlyAttributedCount": 0,
+      "crossMonthUnresolvedCount": 0,
       "modelVariancePossible": true,
       "modelVarianceIsProven": false,
       "partialPeriod": true,
@@ -1818,7 +1828,7 @@
         "factual-period-events-observed"
       ],
       "completionBlockers": [],
-      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. Explicit canonical period attribution may resolve a diagnostic cross-month boundary without creating or reallocating income. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -1845,6 +1855,8 @@
       "trackingStatus": "state-observed-not-factual-tracking",
       "periodBoundaryIssue": false,
       "crossMonthEvidenceCount": 0,
+      "crossMonthExplicitlyAttributedCount": 0,
+      "crossMonthUnresolvedCount": 0,
       "modelVariancePossible": true,
       "modelVarianceIsProven": false,
       "partialPeriod": true,
@@ -1880,7 +1892,7 @@
         "no-factual-engine-tracking-proof",
         "current-state-is-not-period-income"
       ],
-      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. Explicit canonical period attribution may resolve a diagnostic cross-month boundary without creating or reallocating income. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -1907,6 +1919,8 @@
       "trackingStatus": "reference-only-no-factual-tracking",
       "periodBoundaryIssue": false,
       "crossMonthEvidenceCount": 0,
+      "crossMonthExplicitlyAttributedCount": 0,
+      "crossMonthUnresolvedCount": 0,
       "modelVariancePossible": true,
       "modelVarianceIsProven": false,
       "partialPeriod": true,
@@ -1941,7 +1955,7 @@
         "no-canonical-period-income-evidence",
         "no-factual-engine-tracking-proof"
       ],
-      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. Explicit canonical period attribution may resolve a diagnostic cross-month boundary without creating or reallocating income. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -1968,6 +1982,8 @@
       "trackingStatus": "state-observed-not-factual-tracking",
       "periodBoundaryIssue": false,
       "crossMonthEvidenceCount": 0,
+      "crossMonthExplicitlyAttributedCount": 0,
+      "crossMonthUnresolvedCount": 0,
       "modelVariancePossible": true,
       "modelVarianceIsProven": false,
       "partialPeriod": true,
@@ -2003,7 +2019,7 @@
         "no-factual-engine-tracking-proof",
         "current-state-is-not-period-income"
       ],
-      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. Explicit canonical period attribution may resolve a diagnostic cross-month boundary without creating or reallocating income. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -2028,8 +2044,10 @@
       "factualTrackingActive": true,
       "eventCount": 19,
       "trackingStatus": "factual-period-evidence",
-      "periodBoundaryIssue": true,
+      "periodBoundaryIssue": false,
       "crossMonthEvidenceCount": 19,
+      "crossMonthExplicitlyAttributedCount": 19,
+      "crossMonthUnresolvedCount": 0,
       "modelVariancePossible": true,
       "modelVarianceIsProven": false,
       "partialPeriod": true,
@@ -2054,18 +2072,16 @@
       "referenceRateComposition": "published-effective-rate-as-observed",
       "referenceRateChannelDecompositionAuthority": false,
       "companyEstimatedReconciliationAuthority": false,
-      "reconciliationStatus": "boundary-review",
+      "reconciliationStatus": "not-comparable",
       "reasonCodes": [
         "principal-position-reference-comparator-is-non-factual",
         "partial-reference-window",
         "factual-tracking-active",
         "factual-period-events-observed",
-        "period-boundary-evidence"
+        "canonical-cross-month-attribution-resolved"
       ],
-      "completionBlockers": [
-        "cross-month-boundary-requires-explicit-allocation"
-      ],
-      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
+      "completionBlockers": [],
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. Explicit canonical period attribution may resolve a diagnostic cross-month boundary without creating or reallocating income. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -2092,6 +2108,8 @@
       "trackingStatus": "state-observed-not-factual-tracking",
       "periodBoundaryIssue": false,
       "crossMonthEvidenceCount": 0,
+      "crossMonthExplicitlyAttributedCount": 0,
+      "crossMonthUnresolvedCount": 0,
       "modelVariancePossible": true,
       "modelVarianceIsProven": false,
       "partialPeriod": true,
@@ -2127,7 +2145,7 @@
         "no-factual-engine-tracking-proof",
         "current-state-is-not-period-income"
       ],
-      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. Explicit canonical period attribution may resolve a diagnostic cross-month boundary without creating or reallocating income. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -2154,6 +2172,8 @@
       "trackingStatus": "state-observed-not-factual-tracking",
       "periodBoundaryIssue": false,
       "crossMonthEvidenceCount": 0,
+      "crossMonthExplicitlyAttributedCount": 0,
+      "crossMonthUnresolvedCount": 0,
       "modelVariancePossible": true,
       "modelVarianceIsProven": false,
       "partialPeriod": true,
@@ -2189,7 +2209,7 @@
         "no-factual-engine-tracking-proof",
         "current-state-is-not-period-income"
       ],
-      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. Explicit canonical period attribution may resolve a diagnostic cross-month boundary without creating or reallocating income. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -2216,6 +2236,8 @@
       "trackingStatus": "factual-tracking-no-period-event",
       "periodBoundaryIssue": false,
       "crossMonthEvidenceCount": 0,
+      "crossMonthExplicitlyAttributedCount": 0,
+      "crossMonthUnresolvedCount": 0,
       "modelVariancePossible": true,
       "modelVarianceIsProven": false,
       "partialPeriod": true,
@@ -2250,7 +2272,7 @@
       "completionBlockers": [
         "no-canonical-period-income-evidence"
       ],
-      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. Explicit canonical period attribution may resolve a diagnostic cross-month boundary without creating or reallocating income. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -2277,6 +2299,8 @@
       "trackingStatus": "factual-period-evidence",
       "periodBoundaryIssue": false,
       "crossMonthEvidenceCount": 0,
+      "crossMonthExplicitlyAttributedCount": 0,
+      "crossMonthUnresolvedCount": 0,
       "modelVariancePossible": true,
       "modelVarianceIsProven": false,
       "partialPeriod": true,
@@ -2309,7 +2333,7 @@
         "factual-period-events-observed"
       ],
       "completionBlockers": [],
-      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. Explicit canonical period attribution may resolve a diagnostic cross-month boundary without creating or reallocating income. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -2336,6 +2360,8 @@
       "trackingStatus": "factual-period-evidence",
       "periodBoundaryIssue": false,
       "crossMonthEvidenceCount": 0,
+      "crossMonthExplicitlyAttributedCount": 0,
+      "crossMonthUnresolvedCount": 0,
       "modelVariancePossible": true,
       "modelVarianceIsProven": false,
       "partialPeriod": true,
@@ -2368,7 +2394,7 @@
         "factual-period-events-observed"
       ],
       "completionBlockers": [],
-      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. Explicit canonical period attribution may resolve a diagnostic cross-month boundary without creating or reallocating income. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -2395,6 +2421,8 @@
       "trackingStatus": "factual-period-evidence",
       "periodBoundaryIssue": false,
       "crossMonthEvidenceCount": 0,
+      "crossMonthExplicitlyAttributedCount": 0,
+      "crossMonthUnresolvedCount": 0,
       "modelVariancePossible": true,
       "modelVarianceIsProven": false,
       "partialPeriod": true,
@@ -2427,7 +2455,7 @@
         "factual-period-events-observed"
       ],
       "completionBlockers": [],
-      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. Explicit canonical period attribution may resolve a diagnostic cross-month boundary without creating or reallocating income. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -2454,6 +2482,8 @@
       "trackingStatus": "factual-period-evidence",
       "periodBoundaryIssue": false,
       "crossMonthEvidenceCount": 0,
+      "crossMonthExplicitlyAttributedCount": 0,
+      "crossMonthUnresolvedCount": 0,
       "modelVariancePossible": true,
       "modelVarianceIsProven": false,
       "partialPeriod": true,
@@ -2486,7 +2516,7 @@
         "factual-period-events-observed"
       ],
       "completionBlockers": [],
-      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. Explicit canonical period attribution may resolve a diagnostic cross-month boundary without creating or reallocating income. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -2513,6 +2543,8 @@
       "trackingStatus": "factual-tracking-no-period-event",
       "periodBoundaryIssue": false,
       "crossMonthEvidenceCount": 0,
+      "crossMonthExplicitlyAttributedCount": 0,
+      "crossMonthUnresolvedCount": 0,
       "modelVariancePossible": true,
       "modelVarianceIsProven": false,
       "partialPeriod": true,
@@ -2547,7 +2579,7 @@
       "completionBlockers": [
         "no-canonical-period-income-evidence"
       ],
-      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. Explicit canonical period attribution may resolve a diagnostic cross-month boundary without creating or reallocating income. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -2574,6 +2606,8 @@
       "trackingStatus": "factual-tracking-no-period-event",
       "periodBoundaryIssue": false,
       "crossMonthEvidenceCount": 0,
+      "crossMonthExplicitlyAttributedCount": 0,
+      "crossMonthUnresolvedCount": 0,
       "modelVariancePossible": true,
       "modelVarianceIsProven": false,
       "partialPeriod": true,
@@ -2608,7 +2642,7 @@
       "completionBlockers": [
         "no-canonical-period-income-evidence"
       ],
-      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. Explicit canonical period attribution may resolve a diagnostic cross-month boundary without creating or reallocating income. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -2635,6 +2669,8 @@
       "trackingStatus": "factual-tracking-no-period-event",
       "periodBoundaryIssue": false,
       "crossMonthEvidenceCount": 0,
+      "crossMonthExplicitlyAttributedCount": 0,
+      "crossMonthUnresolvedCount": 0,
       "modelVariancePossible": true,
       "modelVarianceIsProven": false,
       "partialPeriod": true,
@@ -2669,7 +2705,7 @@
       "completionBlockers": [
         "no-canonical-period-income-evidence"
       ],
-      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. Explicit canonical period attribution may resolve a diagnostic cross-month boundary without creating or reallocating income. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -2696,6 +2732,8 @@
       "trackingStatus": "factual-period-evidence",
       "periodBoundaryIssue": false,
       "crossMonthEvidenceCount": 0,
+      "crossMonthExplicitlyAttributedCount": 0,
+      "crossMonthUnresolvedCount": 0,
       "modelVariancePossible": true,
       "modelVarianceIsProven": false,
       "partialPeriod": true,
@@ -2728,7 +2766,7 @@
         "factual-period-events-observed"
       ],
       "completionBlockers": [],
-      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. Explicit canonical period attribution may resolve a diagnostic cross-month boundary without creating or reallocating income. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -2755,6 +2793,8 @@
       "trackingStatus": "factual-tracking-no-period-event",
       "periodBoundaryIssue": false,
       "crossMonthEvidenceCount": 0,
+      "crossMonthExplicitlyAttributedCount": 0,
+      "crossMonthUnresolvedCount": 0,
       "modelVariancePossible": true,
       "modelVarianceIsProven": false,
       "partialPeriod": true,
@@ -2789,7 +2829,7 @@
       "completionBlockers": [
         "no-canonical-period-income-evidence"
       ],
-      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. Explicit canonical period attribution may resolve a diagnostic cross-month boundary without creating or reallocating income. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -2816,6 +2856,8 @@
       "trackingStatus": "factual-period-evidence",
       "periodBoundaryIssue": false,
       "crossMonthEvidenceCount": 0,
+      "crossMonthExplicitlyAttributedCount": 0,
+      "crossMonthUnresolvedCount": 0,
       "modelVariancePossible": true,
       "modelVarianceIsProven": false,
       "partialPeriod": true,
@@ -2848,7 +2890,7 @@
         "factual-period-events-observed"
       ],
       "completionBlockers": [],
-      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. Explicit canonical period attribution may resolve a diagnostic cross-month boundary without creating or reallocating income. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
