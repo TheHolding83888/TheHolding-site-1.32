@@ -1,10 +1,11 @@
-/* The Holding · Company Passport priority adapter · v0.8.0
+/* The Holding · Company Passport priority adapter · v0.9.0
  * Presentation only.
  *
  * Confirmed remains the factual accounting lane. Estimated remains a separate,
  * non-additive backend reference lane. Accounting Coverage is diagnostic only.
  * VoteMarket is presented as a supplementary income channel on the existing
  * veCRV / veFXN principal; capital is never duplicated in the Passport.
+ * Position annotations such as Airdrop are presentation metadata, not quantity.
  * This adapter only translates canonical machine state into compact owner-facing
  * language; it never creates income, changes ownership, or closes accounting.
  */
@@ -70,6 +71,50 @@
     return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
   }
 
+  /* Generic Passport position metadata normalization.
+   * The core Balance Sheet renderer historically appended acquisition notes to
+   * the serif quantity string (`5,000 · Airdrop`). On a narrow card that made
+   * metadata compete with the APR capsule for the same row. Split only clear
+   * human annotations into their own semantic element; never infer or change the
+   * underlying quantity and never special-case a company or asset. */
+  function patchPositionMetadata() {
+    let patched = 0;
+    document.querySelectorAll('.ipx-balance-card .ipx-position-pill').forEach(pill => {
+      const qty = pill.querySelector('.ipx-position-qty');
+      if (!qty) return;
+
+      if (qty.querySelector('[data-th-position-qty-main]')) {
+        pill.classList.add('th-position-has-note');
+        return;
+      }
+
+      const raw = String(qty.textContent || '').trim();
+      const parts = raw.split(/\s+·\s+/);
+      if (parts.length < 2) {
+        pill.classList.remove('th-position-has-note');
+        return;
+      }
+      const main = String(parts.shift() || '').trim();
+      const note = parts.join(' · ').trim();
+      if (!main || !note || !/[A-Za-zА-Яа-яЁё]/.test(note) || /%/.test(note)) return;
+
+      const mainEl = document.createElement('span');
+      mainEl.className = 'th-position-qty-main';
+      mainEl.dataset.thPositionQtyMain = 'true';
+      mainEl.textContent = main;
+      const noteEl = document.createElement('span');
+      noteEl.className = 'th-position-qty-note';
+      noteEl.dataset.thPositionQtyNote = 'true';
+      noteEl.textContent = note;
+      qty.dataset.thPositionRaw = raw;
+      qty.setAttribute('aria-label', raw);
+      qty.replaceChildren(mainEl, noteEl);
+      pill.classList.add('th-position-has-note');
+      patched += 1;
+    });
+    return patched;
+  }
+
   function validVoteMarketIncomeChannels(row) {
     const channels = row?.incomeChannels;
     const vm = channels?.votemarket;
@@ -112,15 +157,13 @@
       return {
         native: `${meta.nativeLabel} ${pct(meta.nativeAprPct)}`,
         voteMarket: `VoteMarket ${signedPct(meta.voteMarketAprPct)}`,
-        total: `Итого ${pct(meta.effectiveAprPct)}`,
-        title: `${meta.nativeLabel}: ${pct(meta.nativeAprPct)}. VoteMarket: ${signedPct(meta.voteMarketAprPct)}. Итого: ${pct(meta.effectiveAprPct)}. Капитал позиции учитывается один раз.`
+        title: `${meta.nativeLabel}: ${pct(meta.nativeAprPct)}. VoteMarket: ${signedPct(meta.voteMarketAprPct)}. Итоговый APR: ${pct(meta.effectiveAprPct)}. Капитал позиции учитывается один раз.`
       };
     }
     return {
       native: `${meta.nativeLabel} ${pct(meta.nativeAprPct)}`,
       voteMarket: `VoteMarket ${signedPct(meta.voteMarketAprPct)}`,
-      total: `Total ${pct(meta.effectiveAprPct)}`,
-      title: `${meta.nativeLabel}: ${pct(meta.nativeAprPct)}. VoteMarket: ${signedPct(meta.voteMarketAprPct)}. Total: ${pct(meta.effectiveAprPct)}. Position capital is counted once.`
+      title: `${meta.nativeLabel}: ${pct(meta.nativeAprPct)}. VoteMarket: ${signedPct(meta.voteMarketAprPct)}. Effective APR: ${pct(meta.effectiveAprPct)}. Position capital is counted once.`
     };
   }
 
@@ -150,14 +193,15 @@
           meta.nativeAprPct, meta.voteMarketAprPct, meta.effectiveAprPct,
           meta.epochDate, meta.marketCount, meta.sourceGeneratedAt
         ]);
-        let strip = pill.querySelector(`.th-vm-apr-breakdown[data-th-vm-key="${CSS.escape(key)}"]`);
-        if (strip?.dataset.thVmFingerprint === fingerprint) continue;
+        let strip = pill.querySelector(`.th-strategy-channel-rail[data-th-vm-key="${CSS.escape(key)}"]`)
+          || pill.querySelector(`.th-vm-apr-breakdown[data-th-vm-key="${CSS.escape(key)}"]`);
+        if (strip?.dataset.thVmFingerprint === fingerprint && strip.classList.contains('th-strategy-channel-rail')) continue;
         if (!strip) {
           strip = document.createElement('span');
-          strip.className = 'th-vm-apr-breakdown';
           strip.dataset.thVmKey = key;
           pill.appendChild(strip);
         }
+        strip.className = 'th-vm-apr-breakdown th-strategy-channel-rail';
         strip.dataset.thVmFingerprint = fingerprint;
         strip.dataset.thVmAuthority = 'reference-only';
         strip.dataset.thVmCapitalDoubleCount = 'false';
@@ -166,13 +210,17 @@
         strip.setAttribute('aria-label', text.title);
         strip.replaceChildren();
 
-        const components = document.createElement('span');
-        components.className = 'th-vm-apr-components';
-        const native = document.createElement('span'); native.className = 'th-vm-apr-native'; native.textContent = text.native;
-        const vm = document.createElement('span'); vm.className = 'th-vm-apr-votemarket'; vm.textContent = text.voteMarket;
-        components.append(native, vm);
-        const total = document.createElement('span'); total.className = 'th-vm-apr-total'; total.textContent = text.total;
-        strip.append(components, total);
+        const native = document.createElement('span');
+        native.className = 'th-vm-apr-native';
+        native.textContent = text.native;
+        const separator = document.createElement('span');
+        separator.className = 'th-strategy-channel-separator';
+        separator.setAttribute('aria-hidden', 'true');
+        separator.textContent = '·';
+        const vm = document.createElement('span');
+        vm.className = 'th-vm-apr-votemarket';
+        vm.textContent = text.voteMarket;
+        strip.append(native, separator, vm);
 
         pill.classList.add('th-vm-income-channel-pill');
         pill.dataset.thVmIncomeChannel = key;
@@ -182,7 +230,7 @@
       companyRoot.querySelectorAll('.th-vm-income-channel-pill[data-th-vm-income-channel]').forEach(pill => {
         const key = pill.dataset.thVmIncomeChannel;
         if (activeKeys.has(key)) return;
-        pill.querySelectorAll('.th-vm-apr-breakdown').forEach(node => node.remove());
+        pill.querySelectorAll('.th-vm-apr-breakdown,.th-strategy-channel-rail').forEach(node => node.remove());
         pill.classList.remove('th-vm-income-channel-pill');
         delete pill.dataset.thVmIncomeChannel;
       });
@@ -236,6 +284,7 @@
 
   function refreshSnapshots({ force = false } = {}) {
     return Promise.all([loadMonthlySnapshot({ force }), loadCoverageSnapshot({ force })]).then(() => {
+      patchPositionMetadata();
       patchVoteMarketStrategyChannels();
       patchMonthlyReports();
       return { monthlySnapshot, coverageSnapshot };
@@ -421,15 +470,47 @@
       .th-mr-accounting-notices{display:grid;gap:.24rem;margin:.02rem .18rem .42rem;padding-top:.34rem;border-top:1px solid var(--line)}
       .th-mr-accounting-notice{position:relative;padding-left:.68rem;color:var(--text-3);font-size:.5rem;font-weight:550;line-height:1.42;letter-spacing:.005em;text-transform:none;overflow-wrap:anywhere}
       .th-mr-accounting-notice::before{content:'·';position:absolute;left:.08rem;top:-.01em;color:var(--gold);font-size:.72rem;line-height:1}
-      .th-vm-income-channel-pill{min-height:58px!important;justify-content:flex-start!important}
-      .th-vm-apr-breakdown{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.08rem;width:100%;margin-top:.03rem;min-width:0;font-variant-numeric:tabular-nums;text-align:center}
-      .th-vm-apr-components{display:flex;align-items:center;justify-content:center;gap:.18rem .26rem;flex-wrap:wrap;color:var(--text-3);font-size:.46rem;font-weight:600;line-height:1.16;min-width:0}
-      .th-vm-apr-native,.th-vm-apr-votemarket{white-space:nowrap}.th-vm-apr-votemarket{color:var(--text-2)}
-      .th-vm-apr-total{color:var(--green);font-size:.49rem;font-weight:750;line-height:1.12;white-space:nowrap}
-      .ipx-defitea-balance .th-vm-income-channel-pill{min-height:54px!important;padding-top:.3rem!important;padding-bottom:.28rem!important}
-      .ipx-defitea-balance .th-vm-apr-components{font-size:.41rem;gap:.12rem .18rem}.ipx-defitea-balance .th-vm-apr-total{font-size:.44rem}
-      @media(max-width:760.98px){.th-mr-estimated-view{margin-left:.12rem;margin-right:.12rem;padding:.45rem .5rem}.th-mr-estimated-head{gap:.38rem}.th-mr-estimated-label{font-size:.54rem}.th-mr-estimated-amount{font-size:.66rem}.th-mr-estimated-yield{font-size:.51rem}.th-mr-tracking-summary,.th-mr-accounting-notices{margin-left:.12rem;margin-right:.12rem}.th-mr-accounting-notice{font-size:.49rem}.th-vm-income-channel-pill{min-height:56px!important}.th-vm-apr-components{font-size:.43rem;gap:.1rem .17rem}.th-vm-apr-total{font-size:.46rem}.ipx-defitea-balance .th-vm-income-channel-pill{min-height:52px!important}.ipx-defitea-balance .th-vm-apr-components{font-size:.39rem}.ipx-defitea-balance .th-vm-apr-total{font-size:.42rem}}
-      @media(max-width:390px){.th-mr-estimated-head{grid-template-columns:1fr}.th-mr-estimated-values{justify-content:flex-start}.th-vm-apr-components{gap:.07rem .13rem}}
+
+      /* Universal Balance Sheet strategy surface.
+       * One card always owns one principal. The primary APR/APY capsule remains
+       * the effective rate; supplementary income channels and position notes are
+       * subordinate semantic rows and never create a second capital tile. */
+      .th-position-has-note .ipx-position-qty{display:flex;align-items:baseline;gap:.22rem;min-width:0;max-width:100%;white-space:normal;flex-wrap:wrap}
+      .th-position-qty-main{font:inherit;color:inherit;white-space:nowrap}
+      .th-position-qty-note{display:inline-flex;align-items:center;min-height:16px;padding:.08rem .28rem;border:1px solid var(--line);border-radius:999px;background:rgba(22,21,15,.025);color:var(--text-3);font-family:'Space Grotesk',sans-serif;font-size:.42rem;font-weight:600;line-height:1;letter-spacing:.015em;white-space:nowrap}
+
+      .th-vm-income-channel-pill{min-height:60px!important}
+      .th-strategy-channel-rail{display:flex;align-items:center;justify-content:flex-start;gap:.16rem;width:100%;min-width:0;margin-top:.08rem;padding-top:.16rem;border-top:1px solid rgba(22,21,15,.07);color:var(--text-3);font-size:.42rem;font-weight:600;line-height:1.2;font-variant-numeric:tabular-nums;overflow:hidden}
+      .th-strategy-channel-rail .th-vm-apr-native,.th-strategy-channel-rail .th-vm-apr-votemarket{min-width:0;white-space:nowrap}
+      .th-strategy-channel-rail .th-vm-apr-votemarket{color:var(--text-2)}
+      .th-strategy-channel-separator{color:var(--gold);opacity:.58;flex:0 0 auto}
+
+      @media(max-width:760.98px){
+        .th-mr-estimated-view{margin-left:.12rem;margin-right:.12rem;padding:.45rem .5rem}.th-mr-estimated-head{gap:.38rem}.th-mr-estimated-label{font-size:.54rem}.th-mr-estimated-amount{font-size:.66rem}.th-mr-estimated-yield{font-size:.51rem}.th-mr-tracking-summary,.th-mr-accounting-notices{margin-left:.12rem;margin-right:.12rem}.th-mr-accounting-notice{font-size:.49rem}
+
+        /* Every General Company Passport uses the same two-column mobile book.
+         * Dense desktop variants (Defitea, Cypher) may stay dense on larger
+         * screens, but mobile readability wins over per-company column count. */
+        .ipx-balance-card .ipx-position-list{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+        .ipx-balance-card .ipx-position-pill{min-width:0;overflow:hidden}
+        .ipx-balance-card .ipx-position-symbol{min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere}
+        .ipx-balance-card .ipx-position-qty{min-width:0;max-width:100%}
+
+        .ipx-balance-card .ipx-position-pill.th-vm-income-channel-pill.has-strategy-rate{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto auto;column-gap:.34rem;row-gap:.14rem;align-items:end;min-height:70px!important;padding:.4rem .44rem .36rem}
+        .ipx-balance-card .ipx-position-pill.th-vm-income-channel-pill.has-strategy-rate .ipx-position-symbol{grid-column:1 / -1;grid-row:1;padding:0}
+        .ipx-balance-card .ipx-position-pill.th-vm-income-channel-pill.has-strategy-rate .ipx-position-qty{grid-column:1;grid-row:2;align-self:end;padding:0}
+        .ipx-balance-card .ipx-position-pill.th-vm-income-channel-pill.has-strategy-rate .ipx-strategy-rate-badge{position:static;grid-column:2;grid-row:2;justify-self:end;align-self:end;right:auto;top:auto;transform:none;margin:0}
+        .ipx-balance-card .ipx-position-pill.th-vm-income-channel-pill.has-strategy-rate .th-strategy-channel-rail{grid-column:1 / -1;grid-row:3;margin-top:.02rem;padding-top:.16rem;justify-content:flex-start;overflow:visible;flex-wrap:wrap;font-size:.39rem;gap:.08rem .14rem}
+        .ipx-balance-card .ipx-position-pill.th-vm-income-channel-pill.has-strategy-rate .th-strategy-channel-rail .th-vm-apr-native,.ipx-balance-card .ipx-position-pill.th-vm-income-channel-pill.has-strategy-rate .th-strategy-channel-rail .th-vm-apr-votemarket{white-space:normal}
+
+        .ipx-position-pill.th-position-has-note.has-strategy-rate .ipx-position-qty{display:flex;align-items:baseline;gap:.16rem;white-space:normal;flex-wrap:wrap}
+        .ipx-position-pill.th-position-has-note.has-strategy-rate .th-position-qty-note{font-size:.39rem;padding:.07rem .24rem}
+      }
+      @media(max-width:390px){
+        .th-mr-estimated-head{grid-template-columns:1fr}.th-mr-estimated-values{justify-content:flex-start}
+        .ipx-balance-card .ipx-position-pill.th-vm-income-channel-pill.has-strategy-rate{column-gap:.24rem;padding-left:.38rem;padding-right:.38rem}
+        .ipx-balance-card .ipx-position-pill.th-vm-income-channel-pill.has-strategy-rate .th-strategy-channel-rail{font-size:.37rem}
+      }
     `;
     document.head.appendChild(style);
   }
@@ -678,6 +759,7 @@
     requestAnimationFrame(() => {
       queued = false;
       promoteApr();
+      patchPositionMetadata();
       patchVoteMarketStrategyChannels();
       patchMonthlyReports();
     });
@@ -691,6 +773,7 @@
 
   function start() {
     promoteApr();
+    patchPositionMetadata();
     patchVoteMarketStrategyChannels();
     refreshSnapshots({ force: true }).catch(err => console.warn('[Company Passport confirmed/estimated income]', err?.message || err));
     document.addEventListener('click', refreshOnReportInteraction, { capture: true });
@@ -698,12 +781,15 @@
     observer.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['class', 'aria-pressed', 'lang'] });
 
     window.__TH_COMPANY_PASSPORT_PRIORITY_ADAPTER__ = {
-      version: '0.8.0-votemarket-strategy-breakdown',
-      promoteApr, patchVoteMarketStrategyChannels, patchMonthlyReports, refreshSnapshots, snapshotTtlMs: SNAPSHOT_TTL_MS,
+      version: '0.9.0-universal-responsive-strategy-surface',
+      promoteApr, patchPositionMetadata, patchVoteMarketStrategyChannels, patchMonthlyReports, refreshSnapshots, snapshotTtlMs: SNAPSHOT_TTL_MS,
       incomeDisplayPolicy: 'confirmed-canonical-events-explicit-reporting-scope',
       yieldDisplayPolicy: 'confirmed-canonical-yield-explicit-reporting-scope',
       estimatedDisplayPolicy: 'backend-incomeView-estimated-only-non-additive-apr-reference-view',
-      voteMarketStrategyPresentationPolicy: 'principal-one-card-native-plus-votemarket-plus-effective-reference-apr',
+      strategySurfacePolicy: 'principal-once-effective-rate-plus-supplementary-channel-rail',
+      responsiveStrategySurface: 'universal-two-column-mobile-two-or-three-row-card',
+      positionMetadataPolicy: 'semantic-note-separated-from-quantity',
+      voteMarketStrategyPresentationPolicy: 'principal-one-card-effective-rate-plus-component-rail',
       voteMarketStrategyDataSource: 'backend-productivity-incomeChannels-only',
       transparencyPolicy: 'diagnostic-accounting-coverage-notices-never-income-authority',
       noticeGroupingPolicy: 'income-channel-reason-not-raw-event',
