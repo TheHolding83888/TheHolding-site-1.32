@@ -19,7 +19,12 @@ assert.match(orchestrator,/run\('6\/9 Apply VoteMarket supplementary income chan
 assert.match(orchestrator,/capitalDoubleCount === false/,'VoteMarket no-double-count assertion missing');
 assert.match(orchestrator,/idempotent === true/,'VoteMarket idempotency assertion missing');
 assert.match(orchestrator,/earnedIncomeAuthority === false && voteMarketDiag\?\.factualIncomeAuthority === false/,'VoteMarket factual authority separation missing');
-assert.match(orchestrator,/claimedPeriodPersistencePending === true/,'VoteMarket claimed-period persistence boundary missing');
+assert.match(orchestrator,/claimedPeriodPersistencePending === false/,'VoteMarket claimed-period persistence closure missing');
+assert.match(orchestrator,/observationPersistence === 'claimed-aware-derived-cache'/,'VoteMarket claimed-aware persistence mode missing');
+assert.match(orchestrator,/voteMarketState\?\.semantics\?\.sourceOfTruth === false/,'VoteMarket derived cache source-of-truth guard missing');
+assert.match(orchestrator,/voteMarketState\?\.semantics\?\.executionAuthority === 'none'/,'VoteMarket derived cache execution boundary missing');
+assert.match(workflow,/companies\/votemarket-reference-state\.json/,'VoteMarket persistence cache is not published by the coherent writer');
+assert.match(workflow,/vmState\?\.semantics\?\.sourceOfTruth!==false/,'VoteMarket persistence cache runtime source-of-truth guard missing');
 
 assert.match(workflow,/node intelligence\/capital-state\/unified-capital-market-data-guard\.mjs/,'canonical Market Data consumer guard missing');
 assert.doesNotMatch(workflow,/node intelligence\/market-data\/market-data-engine\.mjs/,'Unified Capital must not become a Market Data writer');
@@ -45,6 +50,8 @@ assert.ok(order.every(x=>x>=0)&&order.every((x,i)=>i===0||x>order[i-1]),'canonic
 console.log('Unified Capital refresh workflow definition proof PASS',{
   rewardsFreshnessCoupling:true,
   voteMarketAfterCanonicalProductivityOverlays:true,
+  voteMarketClaimedAwarePersistence:true,
+  persistenceStateSourceOfTruth:false,
   capitalDoubleCount:false,
   factualIncomeAuthority:false,
   executionAuthority:'none'
