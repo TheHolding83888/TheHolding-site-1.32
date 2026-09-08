@@ -1,7 +1,7 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-08T11:00:30.788Z",
+  "generatedAt": "2026-09-08T11:15:49.109Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
@@ -12,8 +12,8 @@
     "info": 0
   },
   "source": {
-    "filesScanned": 1092,
-    "bytesScanned": 29102254,
+    "filesScanned": 1093,
+    "bytesScanned": 29111315,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -57,6 +57,22 @@
   "whatChanged": {
     "newFindings": [
       {
+        "id": "6995f203a8ba1794333ba8884ad7e8076df23098428cfd2cc434df6ec2024266",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/verify-passport-rate-badge-layout.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/verify-passport-rate-badge-layout.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "aa14adc184bfc0525308a3bf4ee2afd9157519d2449b2f3b8e490c9b9c6cc060",
+          "currentSha256": "569f70bf895ef4de6e727d75a16b4f93f30274a770d311c77d06ebdd51f9c033"
+        }
+      }
+    ],
+    "resolvedFindings": [
+      {
         "id": "b42790ce3aa90408c3b9426649af5f05cb6addaba5eb3690b2868c58791a9b56",
         "severity": "medium",
         "category": "critical-surface-change",
@@ -70,8 +86,7 @@
           "currentSha256": "aa14adc184bfc0525308a3bf4ee2afd9157519d2449b2f3b8e490c9b9c6cc060"
         }
       }
-    ],
-    "resolvedFindings": []
+    ]
   },
   "currentFindings": [
     {
@@ -97,7 +112,7 @@
       "evidence": null
     },
     {
-      "id": "b42790ce3aa90408c3b9426649af5f05cb6addaba5eb3690b2868c58791a9b56",
+      "id": "6995f203a8ba1794333ba8884ad7e8076df23098428cfd2cc434df6ec2024266",
       "severity": "medium",
       "category": "critical-surface-change",
       "file": ".github/workflows/verify-passport-rate-badge-layout.yml",
@@ -106,8 +121,8 @@
       "summary": "Security-sensitive surface changed: .github/workflows/verify-passport-rate-badge-layout.yml.",
       "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
       "evidence": {
-        "previousSha256": "3a8effa7031468dca2970eeddb2f6db18fc3c21d91d7344e3c0deaa75724bb5d",
-        "currentSha256": "aa14adc184bfc0525308a3bf4ee2afd9157519d2449b2f3b8e490c9b9c6cc060"
+        "previousSha256": "aa14adc184bfc0525308a3bf4ee2afd9157519d2449b2f3b8e490c9b9c6cc060",
+        "currentSha256": "569f70bf895ef4de6e727d75a16b4f93f30274a770d311c77d06ebdd51f9c033"
       }
     },
     {
@@ -745,12 +760,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "9c9449b699cd160ce9ecc8458eab18a9a603a84a8f0a722e1c3e7cf3d0f4e3c9",
+    "snapshotHash": "4a2b5750e1a7967b06aaab9a5f4c6783304393c441ba0c9082b81994f7c14310",
     "securityVault": {
-      "runCount": 920,
+      "runCount": 921,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/09/2026-09-08T11-00-30-788Z-9c9449b699.json",
-      "latestRecordHash": "c2dc73bf74aa143b71777a2951d5ebe465e001e4c7a0e6a739326d2a122c0253",
+      "latestRecordPath": "security/security-vault/2026/09/2026-09-08T11-15-49-109Z-4a2b5750e1.json",
+      "latestRecordHash": "3a95be0433787fda085ca7e089eb3beb88d6bfe904113b4b5e4f49beceead5c0",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
