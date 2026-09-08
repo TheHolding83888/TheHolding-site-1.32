@@ -19,7 +19,6 @@ on:
       - 'reporting/company-monthly-earned-income-validation.mjs'
       - 'reporting/accounting-coverage.mjs'
       - 'reporting/accounting-coverage-validation.mjs'
-      - 'reporting/accounting-coverage.json'
       - 'reporting/accounting-notice-queue.mjs'
       - 'reporting/accounting-notice-queue-validation.mjs'
       - 'reporting/accounting-reference-reconciliation.mjs'
@@ -86,7 +85,6 @@ jobs:
           test -s companies/productivity-data.json
           test -s reporting/reporting-data.json
           test -s reporting/income-ledger.json
-          test -s reporting/accounting-coverage.json
           test -s reporting/icp-nns-factual-snapshots.json
           test -d intelligence/memory-vault
           node - <<'NODE'
@@ -128,16 +126,16 @@ jobs:
         env:
           PRODUCTIVITY_DATA_FILE: ./companies/productivity-data.json
           INCOME_LEDGER_FILE: ./reporting/income-ledger.json
-          ACCOUNTING_COVERAGE_FILE: ./reporting/accounting-coverage.json
+          ACCOUNTING_COVERAGE_FILE: /tmp/accounting-coverage.json
           COMPANY_MONTHLY_REPORTS_FILE: ./reporting/company-monthly-reports.json
           ICP_NNS_FACTUAL_SNAPSHOTS_FILE: ./reporting/icp-nns-factual-snapshots.json
           ACCOUNTING_NOTICE_QUEUE_FILE: ./reporting/accounting-notice-queue.json
           REPORTING_DATA_FILE: ./reporting/reporting-data.json
           ACCOUNTING_REFERENCE_RECONCILIATION_FILE: ./reporting/accounting-reference-reconciliation.json
         run: |
-          # Diagnostics are one dependency chain. Coverage must be rebuilt from
-          # the current code + canonical ledger before Notice/Reconciliation are
-          # projected; a stale persisted registry may never drive a new schema.
+          # Diagnostics are one dependency chain. Coverage is rebuilt ephemerally
+          # from current code + canonical ledger before Notice/Reconciliation.
+          # Canonical persisted accounting-coverage.json remains owned by Reporting.
           node reporting/accounting-coverage.mjs
           node reporting/accounting-coverage-validation.mjs
           node reporting/accounting-notice-queue.mjs
@@ -171,7 +169,7 @@ jobs:
           }
           critical_before="$(critical_fingerprint)"
 
-          git add reporting/company-monthly-reports.json reporting/accounting-coverage.json reporting/accounting-notice-queue.json reporting/accounting-reference-reconciliation.json
+          git add reporting/company-monthly-reports.json reporting/accounting-notice-queue.json reporting/accounting-reference-reconciliation.json
           if git diff --cached --quiet; then
             echo "No company monthly reporting or accounting diagnostic changes."
             exit 0
@@ -209,11 +207,11 @@ jobs:
             node reporting/company-monthly-earned-income-validation.mjs
             PRODUCTIVITY_DATA_FILE=./companies/productivity-data.json \
             INCOME_LEDGER_FILE=./reporting/income-ledger.json \
-            ACCOUNTING_COVERAGE_FILE=./reporting/accounting-coverage.json \
+            ACCOUNTING_COVERAGE_FILE=/tmp/accounting-coverage.json \
             node reporting/accounting-coverage.mjs
-            ACCOUNTING_COVERAGE_FILE=./reporting/accounting-coverage.json \
+            ACCOUNTING_COVERAGE_FILE=/tmp/accounting-coverage.json \
             node reporting/accounting-coverage-validation.mjs
-            ACCOUNTING_COVERAGE_FILE=./reporting/accounting-coverage.json \
+            ACCOUNTING_COVERAGE_FILE=/tmp/accounting-coverage.json \
             COMPANY_MONTHLY_REPORTS_FILE=./reporting/company-monthly-reports.json \
             ICP_NNS_FACTUAL_SNAPSHOTS_FILE=./reporting/icp-nns-factual-snapshots.json \
             ACCOUNTING_NOTICE_QUEUE_FILE=./reporting/accounting-notice-queue.json \
@@ -222,7 +220,7 @@ jobs:
             ICP_NNS_FACTUAL_SNAPSHOTS_FILE=./reporting/icp-nns-factual-snapshots.json \
             node reporting/accounting-notice-queue-validation.mjs
             COMPANY_MONTHLY_REPORTS_FILE=./reporting/company-monthly-reports.json \
-            ACCOUNTING_COVERAGE_FILE=./reporting/accounting-coverage.json \
+            ACCOUNTING_COVERAGE_FILE=/tmp/accounting-coverage.json \
             REPORTING_DATA_FILE=./reporting/reporting-data.json \
             ACCOUNTING_NOTICE_QUEUE_FILE=./reporting/accounting-notice-queue.json \
             ACCOUNTING_REFERENCE_RECONCILIATION_FILE=./reporting/accounting-reference-reconciliation.json \
@@ -230,13 +228,13 @@ jobs:
             ACCOUNTING_REFERENCE_RECONCILIATION_FILE=./reporting/accounting-reference-reconciliation.json \
             node reporting/accounting-reference-reconciliation-validation.mjs
 
-            git add reporting/company-monthly-reports.json reporting/accounting-coverage.json reporting/accounting-notice-queue.json reporting/accounting-reference-reconciliation.json
+            git add reporting/company-monthly-reports.json reporting/accounting-notice-queue.json reporting/accounting-reference-reconciliation.json
             git commit --amend --no-edit
 
             mapfile -t ahead < <(git diff --name-only origin/main...HEAD)
             for f in "${ahead[@]}"; do
               case "$f" in
-                reporting/company-monthly-reports.json|reporting/accounting-coverage.json|reporting/accounting-notice-queue.json|reporting/accounting-reference-reconciliation.json) ;;
+                reporting/company-monthly-reports.json|reporting/accounting-notice-queue.json|reporting/accounting-reference-reconciliation.json) ;;
                 *) echo "Unexpected Company Monthly Reports publish delta after rebase: $f"; exit 1 ;;
               esac
             done
