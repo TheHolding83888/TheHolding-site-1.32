@@ -20,8 +20,11 @@ on:
       - 'reporting/accounting-coverage.json'
       - 'reporting/accounting-notice-queue.mjs'
       - 'reporting/accounting-notice-queue-validation.mjs'
+      - 'reporting/accounting-reference-reconciliation.mjs'
+      - 'reporting/accounting-reference-reconciliation-validation.mjs'
       - 'reporting/icp-nns-factual-snapshots.json'
       - 'reporting/income-ledger.json'
+      - 'reporting/reporting-data.json'
       - 'companies/company-monthly-report-adapter.js'
       - 'companies/company-passport-priority-adapter.js'
       - '.github/workflows/update-company-monthly-reports.yml'
@@ -29,7 +32,7 @@ on:
   schedule:
     # Fallback heartbeat. Primary freshness comes from canonical Reporting completion.
     # Mechanism evidence may arrive at protocol-specific cadence; this daily heartbeat
-    # only republishes the canonical monthly projection and never creates income.
+    # only republishes canonical monthly/diagnostic projections and never creates income.
     - cron: '37 7 * * *'
 
 permissions:
@@ -72,6 +75,8 @@ jobs:
           node --check reporting/company-monthly-earned-income-validation.mjs
           node --check reporting/accounting-notice-queue.mjs
           node --check reporting/accounting-notice-queue-validation.mjs
+          node --check reporting/accounting-reference-reconciliation.mjs
+          node --check reporting/accounting-reference-reconciliation-validation.mjs
           node --check companies/company-monthly-report-adapter.js
           node --check companies/company-passport-priority-adapter.js
           test -s companies/productivity-data.json
@@ -115,15 +120,19 @@ jobs:
           INCOME_LEDGER_FILE: ./reporting/income-ledger.json
         run: node reporting/company-monthly-earned-income-validation.mjs
 
-      - name: Build + validate accounting notice queue
+      - name: Build + validate accounting diagnostics
         env:
           ACCOUNTING_COVERAGE_FILE: ./reporting/accounting-coverage.json
           COMPANY_MONTHLY_REPORTS_FILE: ./reporting/company-monthly-reports.json
           ICP_NNS_FACTUAL_SNAPSHOTS_FILE: ./reporting/icp-nns-factual-snapshots.json
           ACCOUNTING_NOTICE_QUEUE_FILE: ./reporting/accounting-notice-queue.json
+          REPORTING_DATA_FILE: ./reporting/reporting-data.json
+          ACCOUNTING_REFERENCE_RECONCILIATION_FILE: ./reporting/accounting-reference-reconciliation.json
         run: |
           node reporting/accounting-notice-queue.mjs
           node reporting/accounting-notice-queue-validation.mjs
+          node reporting/accounting-reference-reconciliation.mjs
+          node reporting/accounting-reference-reconciliation-validation.mjs
 
       - name: Commit monthly reporting snapshot
         shell: bash
@@ -142,14 +151,16 @@ jobs:
               reporting/company-monthly-earned-income-validation.mjs \
               reporting/accounting-notice-queue.mjs \
               reporting/accounting-notice-queue-validation.mjs \
+              reporting/accounting-reference-reconciliation.mjs \
+              reporting/accounting-reference-reconciliation-validation.mjs \
               companies/company-passport-priority-adapter.js \
               .github/workflows/update-company-monthly-reports.yml
           }
           critical_before="$(critical_fingerprint)"
 
-          git add reporting/company-monthly-reports.json reporting/accounting-notice-queue.json
+          git add reporting/company-monthly-reports.json reporting/accounting-notice-queue.json reporting/accounting-reference-reconciliation.json
           if git diff --cached --quiet; then
-            echo "No company monthly reporting or accounting notice queue changes."
+            echo "No company monthly reporting or accounting diagnostic changes."
             exit 0
           fi
           git commit -m "data: update company monthly earned-income reports"
@@ -191,14 +202,22 @@ jobs:
             ACCOUNTING_NOTICE_QUEUE_FILE=./reporting/accounting-notice-queue.json \
             ICP_NNS_FACTUAL_SNAPSHOTS_FILE=./reporting/icp-nns-factual-snapshots.json \
             node reporting/accounting-notice-queue-validation.mjs
+            COMPANY_MONTHLY_REPORTS_FILE=./reporting/company-monthly-reports.json \
+            ACCOUNTING_COVERAGE_FILE=./reporting/accounting-coverage.json \
+            REPORTING_DATA_FILE=./reporting/reporting-data.json \
+            ACCOUNTING_NOTICE_QUEUE_FILE=./reporting/accounting-notice-queue.json \
+            ACCOUNTING_REFERENCE_RECONCILIATION_FILE=./reporting/accounting-reference-reconciliation.json \
+            node reporting/accounting-reference-reconciliation.mjs
+            ACCOUNTING_REFERENCE_RECONCILIATION_FILE=./reporting/accounting-reference-reconciliation.json \
+            node reporting/accounting-reference-reconciliation-validation.mjs
 
-            git add reporting/company-monthly-reports.json reporting/accounting-notice-queue.json
+            git add reporting/company-monthly-reports.json reporting/accounting-notice-queue.json reporting/accounting-reference-reconciliation.json
             git commit --amend --no-edit
 
             mapfile -t ahead < <(git diff --name-only origin/main...HEAD)
             for f in "${ahead[@]}"; do
               case "$f" in
-                reporting/company-monthly-reports.json|reporting/accounting-notice-queue.json) ;;
+                reporting/company-monthly-reports.json|reporting/accounting-notice-queue.json|reporting/accounting-reference-reconciliation.json) ;;
                 *) echo "Unexpected Company Monthly Reports publish delta after rebase: $f"; exit 1 ;;
               esac
             done

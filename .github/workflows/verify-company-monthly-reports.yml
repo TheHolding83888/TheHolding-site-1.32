@@ -14,6 +14,9 @@ on:
       - 'reporting/accounting-coverage-validation.mjs'
       - 'reporting/accounting-notice-queue.mjs'
       - 'reporting/accounting-notice-queue-validation.mjs'
+      - 'reporting/accounting-reference-reconciliation.mjs'
+      - 'reporting/accounting-reference-reconciliation-validation.mjs'
+      - 'reporting/reporting-data.json'
       - 'reporting/icp-nns-factual-snapshots.json'
       - 'reporting/icp-nns-factual-intervals.mjs'
       - 'reporting/icp-nns-factual-intervals-validation.mjs'
@@ -56,6 +59,8 @@ jobs:
           node --check reporting/accounting-coverage-validation.mjs
           node --check reporting/accounting-notice-queue.mjs
           node --check reporting/accounting-notice-queue-validation.mjs
+          node --check reporting/accounting-reference-reconciliation.mjs
+          node --check reporting/accounting-reference-reconciliation-validation.mjs
           node --check reporting/icp-nns-factual-intervals.mjs
           node --check reporting/icp-nns-factual-intervals-validation.mjs
           node --check companies/company-monthly-report-adapter.js
@@ -121,7 +126,7 @@ jobs:
           }
           NODE
 
-      - name: Exercise diagnostic mechanism coverage registry + notice queue
+      - name: Exercise accounting diagnostics
         shell: bash
         run: |
           set -euo pipefail
@@ -145,6 +150,16 @@ jobs:
           ICP_NNS_FACTUAL_SNAPSHOTS_FILE=./reporting/icp-nns-factual-snapshots.json \
           node reporting/accounting-notice-queue-validation.mjs
 
+          COMPANY_MONTHLY_REPORTS_FILE=/tmp/company-monthly-reports.json \
+          ACCOUNTING_COVERAGE_FILE=/tmp/accounting-coverage.json \
+          REPORTING_DATA_FILE=./reporting/reporting-data.json \
+          ACCOUNTING_NOTICE_QUEUE_FILE=/tmp/accounting-notice-queue.json \
+          ACCOUNTING_REFERENCE_RECONCILIATION_FILE=/tmp/accounting-reference-reconciliation.json \
+          node reporting/accounting-reference-reconciliation.mjs
+
+          ACCOUNTING_REFERENCE_RECONCILIATION_FILE=/tmp/accounting-reference-reconciliation.json \
+          node reporting/accounting-reference-reconciliation-validation.mjs
+
           node - <<'NODE'
           const fs=require('fs');
           const x=JSON.parse(fs.readFileSync('/tmp/accounting-coverage.json','utf8'));
@@ -161,7 +176,9 @@ jobs:
             });
           }
           const q=JSON.parse(fs.readFileSync('/tmp/accounting-notice-queue.json','utf8'));
+          const r=JSON.parse(fs.readFileSync('/tmp/accounting-reference-reconciliation.json','utf8'));
           console.log('Accounting notice queue',q.summary);
+          console.log('Accounting reference reconciliation',r.summary);
           NODE
 
       - name: Exercise ICP NNS factual snapshot evidence
@@ -183,7 +200,7 @@ jobs:
           set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');
-          const files=['reporting/company-income-scope.mjs','reporting/company-monthly-reports.mjs','reporting/canonical-earned-income-view.mjs','reporting/company-monthly-earned-income.mjs','reporting/accounting-coverage.mjs','reporting/accounting-notice-queue.mjs','reporting/icp-nns-factual-intervals.mjs','companies/company-monthly-report-adapter.js','companies/company-passport-priority-adapter.js'];
+          const files=['reporting/company-income-scope.mjs','reporting/company-monthly-reports.mjs','reporting/canonical-earned-income-view.mjs','reporting/company-monthly-earned-income.mjs','reporting/accounting-coverage.mjs','reporting/accounting-notice-queue.mjs','reporting/accounting-reference-reconciliation.mjs','reporting/icp-nns-factual-intervals.mjs','companies/company-monthly-report-adapter.js','companies/company-passport-priority-adapter.js'];
           const text=files.map(f=>fs.readFileSync(f,'utf8')).join('\n');
           for(const bad of ['api.coingecko.com','COINGECKO_API_KEY','new Wallet(','sendTransaction(','executionAuthority: write','registryHasMonthClosingAuthority:true','monthClosingAuthority:true']){
             if(text.includes(bad)) throw new Error('unexpected monthly reporting authority/data discovery: '+bad);
@@ -226,6 +243,9 @@ jobs:
           if(queue.status!=='diagnostic-no-completion-authority'||queue.authority?.sourceOfTruth!==false||queue.authority?.incomeCreationAuthority!==false||queue.authority?.monthClosingAuthority!==false||queue.authority?.executionAuthority!=='none') throw new Error('Accounting notice queue gained canonical/authority status');
           if((queue.rows||[]).some(x=>x.category==='tracking-no-period-event'&&x.engineeringActionable!==false)) throw new Error('Normal no-event cadence leaked into engineering backlog');
           if((queue.rows||[]).some(x=>x.blocker==='owner-data-pending'&&(x.mechanism!=='icp_nns'||x.engineeringActionable!==false||x.parked!==true))) throw new Error('ICP owner-data-pending classification drift');
+          const reconciliation=JSON.parse(fs.readFileSync('/tmp/accounting-reference-reconciliation.json','utf8'));
+          if(reconciliation.status!=='diagnostic-no-completion-authority'||reconciliation.authority?.sourceOfTruth!==false||reconciliation.authority?.incomeCreationAuthority!==false||reconciliation.authority?.factualIncomeAuthority!==false||reconciliation.authority?.referenceIncomeAuthority!==false||reconciliation.authority?.accountingCompletionAuthority!==false||reconciliation.authority?.monthClosingAuthority!==false||reconciliation.authority?.executionAuthority!=='none') throw new Error('Reference reconciliation gained accounting authority');
+          if(reconciliation.semantics?.deltaIsMissingIncome!==false||reconciliation.semantics?.captureRatioIsAccountingCompleteness!==false||reconciliation.semantics?.broadParityDoesNotCloseMonth!==true) throw new Error('Reference reconciliation semantic boundary drift');
           const icp=JSON.parse(fs.readFileSync('/tmp/icp-nns-factual-intervals.json','utf8'));
           if(icp.referenceAprUsed!==false||icp.accountingAuthority!==false||icp.admissionCandidateCount!==0) throw new Error('ICP NNS baseline crossed factual accounting boundary');
           console.log('Company Monthly Reports authority/accounting boundary PASS');

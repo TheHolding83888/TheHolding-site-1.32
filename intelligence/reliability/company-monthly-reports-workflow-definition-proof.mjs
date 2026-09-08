@@ -6,11 +6,15 @@ const WORKFLOW_PATH='.github/workflows/update-company-monthly-reports.yml';
 const SCOPE_PATH='reporting/company-income-scope.mjs';
 const RECOGNITION_VIEW_PATH='reporting/canonical-earned-income-view.mjs';
 const MONTHLY_ACCOUNTING_PATH='reporting/company-monthly-earned-income.mjs';
+const NOTICE_PATH='reporting/accounting-notice-queue.mjs';
+const RECONCILIATION_PATH='reporting/accounting-reference-reconciliation.mjs';
 const PASSPORT_PATH='companies/company-passport-priority-adapter.js';
 const workflow=fs.readFileSync(WORKFLOW_PATH,'utf8');
 const scope=fs.readFileSync(SCOPE_PATH,'utf8');
 const recognitionView=fs.readFileSync(RECOGNITION_VIEW_PATH,'utf8');
 const monthlyAccounting=fs.readFileSync(MONTHLY_ACCOUNTING_PATH,'utf8');
+const notice=fs.readFileSync(NOTICE_PATH,'utf8');
+const reconciliation=fs.readFileSync(RECONCILIATION_PATH,'utf8');
 const passport=fs.readFileSync(PASSPORT_PATH,'utf8');
 
 assert.match(workflow,/^name: Update Company Monthly Reports/m,'monthly reports workflow identity drift');
@@ -25,17 +29,24 @@ assert.match(workflow,/github\.event\.workflow_run\.head_branch == 'main'/,'mont
 assert.match(workflow,/ref: main/,'monthly reports must consume canonical main');
 assert.ok(workflow.includes("- 'companies/productivity-data.json'"),'monthly reports Productivity materialization wake missing');
 assert.ok(workflow.includes("- 'reporting/income-ledger.json'"),'monthly reports Income Ledger materialization wake missing');
+assert.ok(workflow.includes("- 'reporting/reporting-data.json'"),'monthly reports Reporting materialization wake missing');
 assert.ok(workflow.includes("- 'reporting/company-income-scope.mjs'"),'monthly reports economic scope code wake missing');
 assert.ok(workflow.includes("- 'reporting/canonical-earned-income-view.mjs'"),'monthly reports canonical recognition-view code wake missing');
+assert.ok(workflow.includes("- 'reporting/accounting-reference-reconciliation.mjs'"),'monthly reports reconciliation code wake missing');
 assert.ok(workflow.includes("- cron: '37 7 * * *'"),'monthly reports fallback heartbeat missing');
 assert.match(workflow,/test -s reporting\/income-ledger\.json/,'monthly reports canonical income ledger preflight missing');
+assert.match(workflow,/test -s reporting\/reporting-data\.json/,'monthly reports Reporting preflight missing');
 assert.match(workflow,/node --check reporting\/company-income-scope\.mjs/,'monthly reports economic scope preflight missing');
 assert.match(workflow,/node --check reporting\/canonical-earned-income-view\.mjs/,'monthly reports canonical recognition-view preflight missing');
+assert.match(workflow,/node --check reporting\/accounting-reference-reconciliation\.mjs/,'monthly reports reconciliation preflight missing');
 assert.match(workflow,/INCOME_LEDGER_FILE:\s*\.\/reporting\/income-ledger\.json/,'monthly reports canonical income ledger runtime binding missing');
 assert.match(workflow,/run: node reporting\/company-monthly-reports\.mjs/,'monthly reference scaffold builder missing');
 assert.match(workflow,/run: node reporting\/company-monthly-reports-validation\.mjs/,'monthly reference scaffold validator missing');
 assert.match(workflow,/run: node reporting\/company-monthly-earned-income\.mjs/,'monthly earned-income accounting projection missing');
 assert.match(workflow,/run: node reporting\/company-monthly-earned-income-validation\.mjs/,'monthly earned-income accounting validation missing');
+assert.match(workflow,/node reporting\/accounting-notice-queue\.mjs/,'monthly accounting notice projection missing');
+assert.match(workflow,/node reporting\/accounting-reference-reconciliation\.mjs/,'monthly reconciliation projection missing');
+assert.match(workflow,/node reporting\/accounting-reference-reconciliation-validation\.mjs/,'monthly reconciliation validation missing');
 assert.doesNotMatch(workflow,/gh workflow run|workflow_dispatch\s*\(/,'monthly reports workflow gained dispatch behavior');
 
 assert.match(workflow,/critical_fingerprint\(\)/,'monthly writer critical fingerprint missing');
@@ -45,16 +56,19 @@ assert.match(workflow,/reporting\/company-monthly-reports-validation\.mjs/,'mont
 assert.match(workflow,/reporting\/canonical-earned-income-view\.mjs/,'monthly writer canonical recognition-view fingerprint missing');
 assert.match(workflow,/reporting\/company-monthly-earned-income\.mjs/,'monthly writer earned-income fingerprint missing');
 assert.match(workflow,/reporting\/company-monthly-earned-income-validation\.mjs/,'monthly writer earned-income validator fingerprint missing');
+assert.match(workflow,/reporting\/accounting-notice-queue\.mjs/,'monthly writer notice queue fingerprint missing');
+assert.match(workflow,/reporting\/accounting-reference-reconciliation\.mjs/,'monthly writer reconciliation fingerprint missing');
+assert.match(workflow,/reporting\/accounting-reference-reconciliation-validation\.mjs/,'monthly writer reconciliation validator fingerprint missing');
 assert.match(workflow,/companies\/company-passport-priority-adapter\.js/,'monthly writer Passport presentation fingerprint missing');
 assert.match(workflow,/Critical Company Monthly Reports code changed during publish rebase; fail closed/,'monthly writer code-race fail-closed guard missing');
 assert.match(workflow,/PRODUCTIVITY_DATA_FILE=\.\/companies\/productivity-data\.json[\s\S]*INCOME_LEDGER_FILE=\.\/reporting\/income-ledger\.json[\s\S]*node reporting\/company-monthly-reports\.mjs/,'monthly writer post-rebase canonical scaffold rebuild missing');
 assert.match(workflow,/COMPANY_MONTHLY_REPORTS_FILE=\.\/reporting\/company-monthly-reports\.json[\s\S]*INCOME_LEDGER_FILE=\.\/reporting\/income-ledger\.json[\s\S]*node reporting\/company-monthly-earned-income\.mjs/,'monthly writer post-rebase earned-income rebuild missing');
+assert.match(workflow,/ACCOUNTING_REFERENCE_RECONCILIATION_FILE=\.\/reporting\/accounting-reference-reconciliation\.json[\s\S]*node reporting\/accounting-reference-reconciliation\.mjs/,'monthly writer post-rebase reconciliation rebuild missing');
 assert.match(workflow,/git diff --name-only origin\/main\.\.\.HEAD/,'monthly writer post-rebase delta guard missing');
-assert.match(workflow,/reporting\/company-monthly-reports\.json/,'monthly writer generated output allowlist missing');
+assert.match(workflow,/reporting\/company-monthly-reports\.json/,'monthly writer generated monthly output allowlist missing');
+assert.match(workflow,/reporting\/accounting-notice-queue\.json/,'monthly writer generated notice output allowlist missing');
+assert.match(workflow,/reporting\/accounting-reference-reconciliation\.json/,'monthly writer generated reconciliation output allowlist missing');
 
-// Explicit economic reporting scope is presentation/reporting composition only.
-// Canonical event ownership remains with the source company and associated TVL
-// can never leak into the target company capital denominator.
 for(const required of [
   "'YieldRing.eth'",
   "'05081966.eth'",
@@ -68,9 +82,6 @@ for(const required of [
   assert.ok(scope.includes(required),`economic reporting scope invariant missing: ${required}`);
 }
 
-// The recognition layer may classify already-admitted canonical evidence, but
-// neither it nor the monthly projection may discover income from generic state,
-// current prices, APRs, or wallet receipts.
 for(const required of [
   'canonicalLedgerIsSoleMonthlyIncomeEventSource: true',
   'canonicalCompanyOwnsIncomeExclusively: true',
@@ -100,7 +111,34 @@ assert.ok(recognitionView.includes("status: 'recognized'"),'canonical recognitio
 assert.ok(recognitionView.includes("status: 'settlement-only'"),'canonical recognition view settlement lifecycle missing');
 assert.ok(recognitionView.includes("status: 'unresolved'"),'canonical recognition view unresolved lifecycle missing');
 
-// Browser reads the backend dual-view contract; it never calculates income.
+for(const required of [
+  'sourceOfTruth:false',
+  'incomeCreationAuthority:false',
+  'monthClosingAuthority:false',
+  'canReplaceUnknown:false',
+  "executionAuthority:'none'"
+]){
+  assert.ok(notice.includes(required),`accounting notice diagnostic boundary missing: ${required}`);
+}
+for(const required of [
+  'canonicalIncomeLedgerRemainsSoleFactualIncomeAuthority:true',
+  'referenceEstimateIsFactualIncome:false',
+  'referenceEstimateCanBackfillIncome:false',
+  'deltaIsMissingIncome:false',
+  'captureRatioIsAccountingCompleteness:false',
+  'signalBandIsAccountingStatus:false',
+  'broadParityDoesNotCloseMonth:true',
+  'modelVariancePossibleDoesNotProveModelVariance:true',
+  'mechanismRowsDoNotNecessarilySumToCompanyEstimated:true',
+  'numericalConvergenceTarget:false',
+  "executionAuthority:'none'"
+]){
+  assert.ok(reconciliation.includes(required),`reference reconciliation boundary missing: ${required}`);
+}
+assert.ok(reconciliation.includes("referenceBasis:'canonical Reporting daily position valueUsd × admitted Reference APR / 365'"),'Defitea daily mechanism reference basis missing');
+assert.ok(reconciliation.includes("referenceScope:'Defitea base productive positions only'"),'Defitea mechanism reference scope guard missing');
+assert.ok(reconciliation.includes("companyEstimatedReconciliationAuthority:false"),'mechanism-to-company Estimated scope guard missing');
+
 for(const required of [
   "const INCOME_VIEW_VERSION = '0.1-confirmed-estimated-non-additive'",
   'browserCalculatesEstimatedIncome: false',
@@ -115,10 +153,7 @@ for(const required of [
   assert.ok(passport.includes(required),`Passport dual-income boundary missing: ${required}`);
 }
 
-// The output remains reporting data only. The workflow has no wallet,
-// capital execution, methodology mutation, arbitrary Actions dispatch, or
-// independent price-discovery authority.
-const combined=[workflow,scope,recognitionView,monthlyAccounting,passport].join('\n');
+const combined=[workflow,scope,recognitionView,monthlyAccounting,notice,reconciliation,passport].join('\n');
 for(const forbidden of ['sendTransaction(', 'new Wallet(', 'workflow_dispatch(', 'actions: write', 'write-all', 'api.coingecko.com', 'COINGECKO_API_KEY']){
   assert.equal(combined.includes(forbidden),false,`monthly reports authority expansion: ${forbidden}`);
 }
@@ -130,6 +165,8 @@ console.log('Company Monthly Reports workflow definition paired proof PASS',{
   canonicalIncomeLedger:'reporting/income-ledger.json',
   recognitionView:RECOGNITION_VIEW_PATH,
   monthlyProjection:MONTHLY_ACCOUNTING_PATH,
+  noticeProjection:NOTICE_PATH,
+  reconciliationProjection:RECONCILIATION_PATH,
   passportPresentation:PASSPORT_PATH,
   canonicalLedgerSoleMonthlyIncomeAuthority:true,
   canonicalCompanyOwnershipPreserved:true,
@@ -137,6 +174,8 @@ console.log('Company Monthly Reports workflow definition paired proof PASS',{
   associatedCompanyTvlIncluded:false,
   holdingWideAggregationUsesCanonicalOwners:true,
   confirmedEstimatedNonAdditive:true,
+  reconciliationDiagnosticOnly:true,
+  reconciliationNumericalConvergenceTarget:false,
   claimableSnapshotIncomeDiscovery:false,
   genericReceiptIncomeDiscovery:false,
   settlementReRecognition:false,
@@ -144,6 +183,7 @@ console.log('Company Monthly Reports workflow definition paired proof PASS',{
   incompleteCoverageFailClosed:true,
   productivityMaterializationWake:true,
   incomeLedgerMaterializationWake:true,
+  reportingMaterializationWake:true,
   economicScopeMaterializationWake:true,
   fallbackCron:'37 7 * * *',
   movingMainRebuild:true,
