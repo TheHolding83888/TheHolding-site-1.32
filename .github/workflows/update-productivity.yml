@@ -107,16 +107,18 @@ jobs:
           node - <<'NODE'
           const fs=require('fs');
           const d=JSON.parse(fs.readFileSync('companies/productivity-data.json','utf8'));
+          const state=JSON.parse(fs.readFileSync('companies/votemarket-reference-state.json','utf8'));
           const diag=d.diagnostics?.voteMarketIncomeChannels;
           if(diag?.capitalDoubleCount!==false||diag?.idempotent!==true)throw new Error('VoteMarket capital/idempotency guard missing');
           if(diag?.earnedIncomeAuthority!==false||diag?.factualIncomeAuthority!==false||diag?.executionAuthority!=='none')throw new Error('VoteMarket authority boundary drift');
-          if(diag?.claimedPeriodPersistencePending!==true)throw new Error('VoteMarket claimed-period persistence boundary must remain explicit until closed');
+          if(diag?.claimedPeriodPersistencePending!==false||diag?.observationPersistence!=='claimed-aware-derived-cache')throw new Error('VoteMarket claimed-period persistence contract missing');
+          if(state?.semantics?.sourceOfTruth!==false||state?.semantics?.factualIncomeAuthority!==false||state?.semantics?.executionAuthority!=='none')throw new Error('VoteMarket derived persistence cache authority drift');
           const c=d.companies?.['defitea.eth'];
           for(const id of ['curve_vecrv','fx_vefxn']){
             const row=(c?.breakdown||[]).find(x=>x.engineId===id);
             if(!row?.incomeChannels||row.incomeChannels.capitalAccounting!=='principal-counted-once'||row.incomeChannels.capitalDoubleCount!==false)throw new Error('Defitea VoteMarket hierarchy missing: '+id);
           }
-          console.log('VoteMarket recovery overlay PASS',{measuredReferenceCompanyCount:diag.measuredReferenceCompanyCount,claimedPeriodPersistencePending:diag.claimedPeriodPersistencePending});
+          console.log('VoteMarket recovery overlay PASS',{measuredReferenceCompanyCount:diag.measuredReferenceCompanyCount,claimedPeriodPersistence:true,persistenceStateSourceOfTruth:false});
           NODE
 
       - name: Rebuild public capital projection from shared prices
@@ -133,6 +135,7 @@ jobs:
           git add \
             companies/productivity-data.json \
             companies/productivity-source-report.json \
+            companies/votemarket-reference-state.json \
             intelligence/market-data/public-capital-state.json
           if git diff --cached --quiet; then echo "No data changes."; exit 0; fi
           git commit -m "data: update weekly productivity snapshot"
@@ -162,6 +165,7 @@ jobs:
             git add \
               companies/productivity-data.json \
               companies/productivity-source-report.json \
+              companies/votemarket-reference-state.json \
               intelligence/market-data/public-capital-state.json
             git commit --amend --no-edit
             if git push origin HEAD:main; then exit 0; fi

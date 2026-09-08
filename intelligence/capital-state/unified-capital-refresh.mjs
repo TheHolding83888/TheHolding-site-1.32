@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 /**
- * The Holding · Unified Capital Refresh v0.2.3
+ * The Holding · Unified Capital Refresh v0.2.4
  *
  * Orchestration only. Reuses existing canonical projectors/collectors/builders:
  * Defitea projection -> YieldRing projection -> Productivity collector
  * -> Company #010 compatibility -> YieldRing overlay -> VoteMarket income channels
  * -> General Balance -> Company #007 current-state downstream binding -> Capital State.
  *
- * v0.2.3 admits VoteMarket veCRV/veFXN as supplementary Reference APR channels
- * over already-counted principal. Capital remains counted once and the channel
- * never becomes factual earned-income authority.
+ * v0.2.4 keeps VoteMarket veCRV/veFXN as supplementary Reference APR channels
+ * over already-counted principal and persists previously measured finalized
+ * observations across a later claim through a bounded derived cache.
  *
  * No execution authority. No wallet action. No factual-income methodology mutation.
  */
@@ -54,6 +54,7 @@ const defitea = readJson('companies/defitea-canonical-state.json');
 const canonical = readJson('companies/yieldring-canonical-state.json');
 const productivity = readJson('companies/productivity-data.json');
 const productivitySource = readJson('companies/productivity-source-report.json');
+const voteMarketState = readJson('companies/votemarket-reference-state.json');
 const general = readJson('intelligence/capital-state/general-company-balance-sheet.json');
 const capital = readJson('intelligence/capital-state/capital-state.json');
 const company007Discovery = readJson('companies/company-007-discovery.json');
@@ -87,7 +88,11 @@ assert(voteMarketDiag?.capitalDoubleCount === false, 'VoteMarket capital double-
 assert(voteMarketDiag?.idempotent === true, 'VoteMarket idempotency contract missing');
 assert(voteMarketDiag?.earnedIncomeAuthority === false && voteMarketDiag?.factualIncomeAuthority === false, 'VoteMarket authority separation drift');
 assert(voteMarketDiag?.executionAuthority === 'none', 'VoteMarket execution authority drift');
-assert(voteMarketDiag?.claimedPeriodPersistencePending === true, 'VoteMarket claimed-period persistence boundary must remain explicit until closed');
+assert(voteMarketDiag?.claimedPeriodPersistencePending === false, 'VoteMarket claimed-period reference persistence missing');
+assert(voteMarketDiag?.observationPersistence === 'claimed-aware-derived-cache', 'VoteMarket persistence mode drift');
+assert(voteMarketState?.semantics?.sourceOfTruth === false, 'VoteMarket persistence cache became a source of truth');
+assert(voteMarketState?.semantics?.factualIncomeAuthority === false && voteMarketState?.semantics?.earnedIncomeAuthority === false, 'VoteMarket persistence cache factual authority drift');
+assert(voteMarketState?.semantics?.executionAuthority === 'none', 'VoteMarket persistence cache execution authority drift');
 for (const [label,row,engineId] of [['veCRV',dpc,'curve_vecrv'],['veFXN',dpf,'fx_vefxn']]) {
   assert(row?.incomeChannels?.principalEngineId === engineId, `${label} VoteMarket income-channel hierarchy missing`);
   assert(row?.incomeChannels?.capitalAccounting === 'principal-counted-once' && row?.incomeChannels?.capitalDoubleCount === false, `${label} principal double-count guard missing`);
@@ -183,6 +188,7 @@ console.log('\nUNIFIED CAPITAL REFRESH PASS', {
   veFxnNativeAprSurfaces: fxnAprSurfaces,
   voteMarketMeasuredReferenceCompanyCount: voteMarketDiag.measuredReferenceCompanyCount,
   voteMarketClaimedPeriodPersistencePending: voteMarketDiag.claimedPeriodPersistencePending,
+  voteMarketPersistenceMode: voteMarketDiag.observationPersistence,
   defiteaVeCrvVoteMarketStatus: dpc?.incomeChannels?.votemarket?.status || null,
   defiteaVeFxnVoteMarketStatus: dpf?.incomeChannels?.votemarket?.status || null,
   defiteaProductiveValue: dpProd.productiveValue,
