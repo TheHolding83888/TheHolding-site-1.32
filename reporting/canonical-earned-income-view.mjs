@@ -27,11 +27,54 @@ function monthKey(v) {
   return Number.isFinite(t) ? new Date(t).toISOString().slice(0, 7) : null;
 }
 
+function exactUtcMonthStartMs(v) {
+  const t = Date.parse(v || '');
+  if (!Number.isFinite(t)) return null;
+  const d = new Date(t);
+  if (
+    d.getUTCDate() !== 1 ||
+    d.getUTCHours() !== 0 ||
+    d.getUTCMinutes() !== 0 ||
+    d.getUTCSeconds() !== 0 ||
+    d.getUTCMilliseconds() !== 0
+  ) return null;
+  return t;
+}
+
+function provenExactClosedCalendarMonth(event) {
+  if (event?.family !== 'embedded-income') return null;
+  if (event?.sourceFile !== 'reporting/ve33-locked-managed-accounting-evidence.json') return null;
+  if (event?.sourceEvidenceFamily !== 'embedded-compounded-income') return null;
+  if (event?.sourceFamily !== 've(3,3) LockedManagedReward factual accrual') return null;
+  if (event?.referenceAprUsed !== false) return null;
+  if (event?.openingBalanceCreatesIncome !== false) return null;
+  if (event?.earnedIndependentOfWithdrawal !== true) return null;
+  if (event?.withdrawalIsSettlementNotSecondIncome !== true) return null;
+  if (event?.grossVeNftPrincipalDeltaIsIncomeAuthority !== false) return null;
+  if (event?.claimIsSecondIncomeEvent !== false) return null;
+  if (event?.laterClaimOrPriceMoveDoesNotRewriteIncome !== true) return null;
+  if (event?.unknownIsNotZero !== true) return null;
+
+  const startMs = exactUtcMonthStartMs(event?.periodStart);
+  const endMs = exactUtcMonthStartMs(event?.periodEnd);
+  if (!Number.isFinite(startMs) || !Number.isFinite(endMs)) return null;
+
+  const start = new Date(startMs);
+  const expectedEndMs = Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 1, 1, 0, 0, 0, 0);
+  if (endMs !== expectedEndMs) return null;
+
+  const startMonth = monthKey(event.periodStart);
+  const economicMonth = monthKey(event.economicDate);
+  if (!startMonth || economicMonth !== startMonth) return null;
+  return startMonth;
+}
+
 function eventMonth(event) {
   if (event?.family === 'embedded-income') {
     const start = monthKey(event.periodStart);
     const end = monthKey(event.periodEnd);
-    return start && start === end ? end : null;
+    if (start && start === end) return end;
+    return provenExactClosedCalendarMonth(event);
   }
   return monthKey(event?.economicDate || event?.periodEnd);
 }
@@ -279,6 +322,8 @@ function buildCanonicalEarnedIncomeView(ledger) {
       genericReceiptCreatesIncome: false,
       accruedIncomeRecognizedBeforeClaim: true,
       embeddedCompoundingRecognizedAsEarnedIncome: true,
+      exactClosedCalendarMonthRequiresExistingMechanismProof: true,
+      arbitraryCrossMonthEmbeddedIncomeRemainsUnresolved: true,
       settlementDoesNotReRecognizeIncome: true,
       historicalValuationResolutionMayCompleteUnknownUsdWithoutMutatingEconomicEvent: true,
       historicalValuationMustMatchImmutableVe33TokenIdentity: true,
@@ -300,4 +345,4 @@ function buildCanonicalEarnedIncomeView(ledger) {
   };
 }
 
-export { VERSION, monthKey, eventMonth, historicalValuationSourceValid, resolvedUsdValue, recognitionDecision, buildCanonicalEarnedIncomeView };
+export { VERSION, monthKey, exactUtcMonthStartMs, provenExactClosedCalendarMonth, eventMonth, historicalValuationSourceValid, resolvedUsdValue, recognitionDecision, buildCanonicalEarnedIncomeView };
