@@ -1,0 +1,2779 @@
+{
+  "version": "0.1-accounting-reference-reconciliation",
+  "generatedAt": "2026-09-08T12:48:53.906Z",
+  "status": "diagnostic-no-completion-authority",
+  "periodStart": "2026-08",
+  "purpose": "Continuously compare independent Reference/Estimated and factual Confirmed accounting so economically meaningful spread is detected and explained rather than discovered manually.",
+  "semantics": {
+    "sourceOfTruth": false,
+    "canonicalIncomeLedgerRemainsSoleFactualIncomeAuthority": true,
+    "referenceEstimateIsFactualIncome": false,
+    "referenceEstimateCanBackfillIncome": false,
+    "deltaIsMissingIncome": false,
+    "captureRatioIsAccountingCompleteness": false,
+    "signalBandIsAccountingStatus": false,
+    "broadParityDoesNotCloseMonth": true,
+    "modelVariancePossibleDoesNotProveModelVariance": true,
+    "companyAndMechanismRowsHaveDifferentReferenceScopes": true,
+    "mechanismRowsDoNotNecessarilySumToCompanyEstimated": true,
+    "unknownIsNotZero": true
+  },
+  "diagnosticBands": {
+    "basis": "confirmedUsd / referenceUsd; comparator only",
+    "wideDivergence": "ratio < 0.30",
+    "materialDivergence": "0.30 <= ratio < 0.70",
+    "reviewBand": "0.70 <= ratio < 0.90",
+    "broadParityBand": "0.90 <= ratio <= 1.10",
+    "aboveReference": "ratio > 1.10",
+    "accountingAuthority": false,
+    "monthClosingAuthority": false
+  },
+  "sourceState": {
+    "companyMonthlyReports": {
+      "file": "reporting/company-monthly-reports.json",
+      "version": "0.5-company-monthly-confirmed-estimated-view",
+      "generatedAt": "2026-09-08T12:48:53.676Z"
+    },
+    "accountingCoverage": {
+      "file": "reporting/accounting-coverage.json",
+      "version": "0.10-explicit-settlement-link-accounting-mechanism-coverage-registry",
+      "generatedAt": "2026-09-08T12:28:44.298Z"
+    },
+    "reporting": {
+      "file": "reporting/reporting-data.json",
+      "version": "1.2.1-resilient-rate-coverage",
+      "generatedAt": "2026-09-08T12:25:33.488Z"
+    },
+    "accountingNoticeQueue": {
+      "file": "reporting/accounting-notice-queue.json",
+      "version": "0.1-accounting-notice-queue",
+      "generatedAt": "2026-09-08T12:48:53.815Z"
+    }
+  },
+  "summary": {
+    "rowCount": 42,
+    "companyPeriodRowCount": 20,
+    "mechanismBaseReferenceRowCount": 22,
+    "comparableRowCount": 27,
+    "highAttentionCount": 9,
+    "moderateAttentionCount": 8,
+    "reviewAttentionCount": 9,
+    "lowAttentionCount": 1,
+    "parkedCount": 2,
+    "engineeringActionableCompanyPeriodCount": 2
+  },
+  "prioritizationPolicy": {
+    "order": [
+      "engineering-actionable",
+      "absolute-dollar-delta",
+      "productive-capital/reusable-mechanism-context",
+      "small-dollar-tail"
+    ],
+    "numericalConvergenceTarget": false,
+    "target": "100% of economically meaningful divergence should become evidence-explained, explicitly model-variance, explicitly pending, or permanently UNKNOWN/partial where proof is unavailable."
+  },
+  "rows": [
+    {
+      "id": "company-period:05081966.eth:2026-08",
+      "scope": "company-period",
+      "company": "05081966.eth",
+      "registry": "001",
+      "month": "2026-08",
+      "referenceUsd": 2.145073,
+      "confirmedUsd": 0.07293433,
+      "deltaUsd": 2.07213867,
+      "captureRatio": 0.034001,
+      "signalBand": "wide-divergence",
+      "attention": "high",
+      "referenceAvailable": true,
+      "confirmedAvailable": true,
+      "factualTrackingActive": null,
+      "eventCount": 5,
+      "accountingStatus": "partial-observed",
+      "factualPeriodComplete": false,
+      "periodBoundaryIssue": true,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "periodStart": "2026-08-09",
+      "periodEnd": "2026-08-31",
+      "referenceScopeContributors": [
+        "05081966.eth"
+      ],
+      "referenceScopeComponents": [
+        {
+          "company": "05081966.eth",
+          "generatedIncomeUsd": 2.145073,
+          "available": true,
+          "canonicalOwnershipPreserved": true,
+          "sourceMode": "observed-reference-model",
+          "sourceSemantic": "reference-generated-income-not-realised-cash-flow"
+        }
+      ],
+      "confirmedOwnerBreakdown": [
+        {
+          "canonicalOwner": "05081966.eth",
+          "eventCount": 5,
+          "usd": 0.07293433,
+          "canonicalOwnershipPreserved": true
+        }
+      ],
+      "unresolvedLifecycleEventCount": 1,
+      "unresolvedLifecycleReasons": [
+        "period-boundary-not-single-month"
+      ],
+      "noticeCategories": [],
+      "noticeBlockers": [],
+      "noticeActions": [],
+      "engineeringActionable": false,
+      "parked": false,
+      "reconciliationStatus": "lifecycle-review",
+      "reasonCodes": [
+        "reference-comparator-is-non-factual",
+        "factual-period-coverage-incomplete",
+        "partial-observation-window",
+        "lifecycle-events-unresolved",
+        "period-boundary-evidence"
+      ],
+      "comparisonSemantic": "Reference/Estimated and Confirmed are independent non-additive views. Delta and captureRatio are diagnostics, not missing-income or completeness authority.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "company-period:05081966.eth:2026-09",
+      "scope": "company-period",
+      "company": "05081966.eth",
+      "registry": "001",
+      "month": "2026-09",
+      "referenceUsd": 0.828351,
+      "confirmedUsd": 0.53421973,
+      "deltaUsd": 0.29413127,
+      "captureRatio": 0.64492,
+      "signalBand": "material-divergence",
+      "attention": "moderate",
+      "referenceAvailable": true,
+      "confirmedAvailable": true,
+      "factualTrackingActive": null,
+      "eventCount": 110,
+      "accountingStatus": "partial-observed",
+      "factualPeriodComplete": false,
+      "periodBoundaryIssue": false,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "periodStart": "2026-09-01",
+      "periodEnd": "2026-09-08",
+      "referenceScopeContributors": [
+        "05081966.eth"
+      ],
+      "referenceScopeComponents": [
+        {
+          "company": "05081966.eth",
+          "generatedIncomeUsd": 0.828351,
+          "available": true,
+          "canonicalOwnershipPreserved": true,
+          "sourceMode": "observed-reference-model",
+          "sourceSemantic": "reference-generated-income-not-realised-cash-flow"
+        }
+      ],
+      "confirmedOwnerBreakdown": [
+        {
+          "canonicalOwner": "05081966.eth",
+          "eventCount": 110,
+          "usd": 0.53421973,
+          "canonicalOwnershipPreserved": true
+        }
+      ],
+      "unresolvedLifecycleEventCount": 0,
+      "unresolvedLifecycleReasons": [],
+      "noticeCategories": [
+        "reference-vs-factual-divergence",
+        "tracking-no-period-event"
+      ],
+      "noticeBlockers": [],
+      "noticeActions": [
+        "diagnostic-comparison-only; investigate only when evidence makes divergence material",
+        "observe-normal-cadence; no-engineering-action-unless-evidence-boundary-breaks"
+      ],
+      "engineeringActionable": false,
+      "parked": false,
+      "reconciliationStatus": "material-divergence",
+      "reasonCodes": [
+        "reference-comparator-is-non-factual",
+        "factual-period-coverage-incomplete",
+        "partial-observation-window"
+      ],
+      "comparisonSemantic": "Reference/Estimated and Confirmed are independent non-additive views. Delta and captureRatio are diagnostics, not missing-income or completeness authority.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "company-period:YieldRing.eth:2026-08",
+      "scope": "company-period",
+      "company": "YieldRing.eth",
+      "registry": "002",
+      "month": "2026-08",
+      "referenceUsd": 8.979506,
+      "confirmedUsd": 0.14901848,
+      "deltaUsd": 8.83048752,
+      "captureRatio": 0.016595,
+      "signalBand": "wide-divergence",
+      "attention": "high",
+      "referenceAvailable": true,
+      "confirmedAvailable": true,
+      "factualTrackingActive": null,
+      "eventCount": 5,
+      "accountingStatus": "partial-observed",
+      "factualPeriodComplete": false,
+      "periodBoundaryIssue": false,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "periodStart": "2026-08-09",
+      "periodEnd": "2026-08-31",
+      "referenceScopeContributors": [
+        "YieldRing.eth"
+      ],
+      "referenceScopeComponents": [
+        {
+          "company": "YieldRing.eth",
+          "generatedIncomeUsd": 8.979506,
+          "available": true,
+          "canonicalOwnershipPreserved": true,
+          "sourceMode": "observed-reference-model",
+          "sourceSemantic": "reference-generated-income-not-realised-cash-flow"
+        }
+      ],
+      "confirmedOwnerBreakdown": [
+        {
+          "canonicalOwner": "YieldRing.eth",
+          "eventCount": 5,
+          "usd": 0.14901848,
+          "canonicalOwnershipPreserved": true
+        }
+      ],
+      "unresolvedLifecycleEventCount": 0,
+      "unresolvedLifecycleReasons": [],
+      "noticeCategories": [],
+      "noticeBlockers": [],
+      "noticeActions": [],
+      "engineeringActionable": false,
+      "parked": false,
+      "reconciliationStatus": "wide-divergence",
+      "reasonCodes": [
+        "reference-comparator-is-non-factual",
+        "factual-period-coverage-incomplete",
+        "partial-observation-window"
+      ],
+      "comparisonSemantic": "Reference/Estimated and Confirmed are independent non-additive views. Delta and captureRatio are diagnostics, not missing-income or completeness authority.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "company-period:YieldRing.eth:2026-09",
+      "scope": "company-period",
+      "company": "YieldRing.eth",
+      "registry": "002",
+      "month": "2026-09",
+      "referenceUsd": 3.763963,
+      "confirmedUsd": 3.8113032,
+      "deltaUsd": -0.0473402,
+      "captureRatio": 1.012577,
+      "signalBand": "broad-parity-band",
+      "attention": "low",
+      "referenceAvailable": true,
+      "confirmedAvailable": true,
+      "factualTrackingActive": null,
+      "eventCount": 112,
+      "accountingStatus": "partial-observed",
+      "factualPeriodComplete": false,
+      "periodBoundaryIssue": false,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "periodStart": "2026-09-01",
+      "periodEnd": "2026-09-08",
+      "referenceScopeContributors": [
+        "YieldRing.eth"
+      ],
+      "referenceScopeComponents": [
+        {
+          "company": "YieldRing.eth",
+          "generatedIncomeUsd": 3.763963,
+          "available": true,
+          "canonicalOwnershipPreserved": true,
+          "sourceMode": "observed-reference-model",
+          "sourceSemantic": "reference-generated-income-not-realised-cash-flow"
+        }
+      ],
+      "confirmedOwnerBreakdown": [
+        {
+          "canonicalOwner": "YieldRing.eth",
+          "eventCount": 112,
+          "usd": 3.8113032,
+          "canonicalOwnershipPreserved": true
+        }
+      ],
+      "unresolvedLifecycleEventCount": 0,
+      "unresolvedLifecycleReasons": [],
+      "noticeCategories": [
+        "reference-vs-factual-divergence",
+        "tracking-no-period-event"
+      ],
+      "noticeBlockers": [],
+      "noticeActions": [
+        "diagnostic-comparison-only; investigate only when evidence makes divergence material",
+        "observe-normal-cadence; no-engineering-action-unless-evidence-boundary-breaks"
+      ],
+      "engineeringActionable": false,
+      "parked": false,
+      "reconciliationStatus": "broad-parity-band",
+      "reasonCodes": [
+        "reference-comparator-is-non-factual",
+        "factual-period-coverage-incomplete",
+        "partial-observation-window"
+      ],
+      "comparisonSemantic": "Reference/Estimated and Confirmed are independent non-additive views. Delta and captureRatio are diagnostics, not missing-income or completeness authority.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "company-period:dinaz.eth:2026-08",
+      "scope": "company-period",
+      "company": "dinaz.eth",
+      "registry": "003",
+      "month": "2026-08",
+      "referenceUsd": 2.425624,
+      "confirmedUsd": null,
+      "deltaUsd": null,
+      "captureRatio": null,
+      "signalBand": "not-comparable",
+      "attention": "context",
+      "referenceAvailable": true,
+      "confirmedAvailable": false,
+      "factualTrackingActive": null,
+      "eventCount": 0,
+      "accountingStatus": "unknown-incomplete-coverage",
+      "factualPeriodComplete": false,
+      "periodBoundaryIssue": false,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "periodStart": "2026-08-09",
+      "periodEnd": "2026-08-31",
+      "referenceScopeContributors": [
+        "dinaz.eth"
+      ],
+      "referenceScopeComponents": [
+        {
+          "company": "dinaz.eth",
+          "generatedIncomeUsd": 2.425624,
+          "available": true,
+          "canonicalOwnershipPreserved": true,
+          "sourceMode": "observed-reference-model",
+          "sourceSemantic": "reference-generated-income-not-realised-cash-flow"
+        }
+      ],
+      "confirmedOwnerBreakdown": [
+        {
+          "canonicalOwner": "dinaz.eth",
+          "eventCount": 0,
+          "usd": 0,
+          "canonicalOwnershipPreserved": true
+        }
+      ],
+      "unresolvedLifecycleEventCount": 0,
+      "unresolvedLifecycleReasons": [],
+      "noticeCategories": [],
+      "noticeBlockers": [],
+      "noticeActions": [],
+      "engineeringActionable": false,
+      "parked": false,
+      "reconciliationStatus": "not-comparable",
+      "reasonCodes": [
+        "reference-comparator-is-non-factual",
+        "factual-period-coverage-incomplete",
+        "partial-observation-window"
+      ],
+      "comparisonSemantic": "Reference/Estimated and Confirmed are independent non-additive views. Delta and captureRatio are diagnostics, not missing-income or completeness authority.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "company-period:dinaz.eth:2026-09",
+      "scope": "company-period",
+      "company": "dinaz.eth",
+      "registry": "003",
+      "month": "2026-09",
+      "referenceUsd": 1.312325,
+      "confirmedUsd": 1.1467112,
+      "deltaUsd": 0.1656138,
+      "captureRatio": 0.873801,
+      "signalBand": "review-band",
+      "attention": "review",
+      "referenceAvailable": true,
+      "confirmedAvailable": true,
+      "factualTrackingActive": null,
+      "eventCount": 3,
+      "accountingStatus": "partial-observed",
+      "factualPeriodComplete": false,
+      "periodBoundaryIssue": false,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "periodStart": "2026-09-01",
+      "periodEnd": "2026-09-08",
+      "referenceScopeContributors": [
+        "dinaz.eth"
+      ],
+      "referenceScopeComponents": [
+        {
+          "company": "dinaz.eth",
+          "generatedIncomeUsd": 1.312325,
+          "available": true,
+          "canonicalOwnershipPreserved": true,
+          "sourceMode": "observed-reference-model",
+          "sourceSemantic": "reference-generated-income-not-realised-cash-flow"
+        }
+      ],
+      "confirmedOwnerBreakdown": [
+        {
+          "canonicalOwner": "dinaz.eth",
+          "eventCount": 3,
+          "usd": 1.1467112,
+          "canonicalOwnershipPreserved": true
+        }
+      ],
+      "unresolvedLifecycleEventCount": 0,
+      "unresolvedLifecycleReasons": [],
+      "noticeCategories": [
+        "reference-vs-factual-divergence"
+      ],
+      "noticeBlockers": [],
+      "noticeActions": [
+        "diagnostic-comparison-only; investigate only when evidence makes divergence material"
+      ],
+      "engineeringActionable": false,
+      "parked": false,
+      "reconciliationStatus": "review-band",
+      "reasonCodes": [
+        "reference-comparator-is-non-factual",
+        "factual-period-coverage-incomplete",
+        "partial-observation-window"
+      ],
+      "comparisonSemantic": "Reference/Estimated and Confirmed are independent non-additive views. Delta and captureRatio are diagnostics, not missing-income or completeness authority.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "company-period:defitea.eth:2026-08",
+      "scope": "company-period",
+      "company": "defitea.eth",
+      "registry": "004",
+      "month": "2026-08",
+      "referenceUsd": 98.864579,
+      "confirmedUsd": 13.46690579,
+      "deltaUsd": 85.39767321,
+      "captureRatio": 0.136216,
+      "signalBand": "wide-divergence",
+      "attention": "high",
+      "referenceAvailable": true,
+      "confirmedAvailable": true,
+      "factualTrackingActive": null,
+      "eventCount": 53,
+      "accountingStatus": "partial-observed",
+      "factualPeriodComplete": false,
+      "periodBoundaryIssue": true,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "periodStart": "2026-08-09",
+      "periodEnd": "2026-08-31",
+      "referenceScopeContributors": [
+        "defitea.eth",
+        "YieldRing.eth",
+        "05081966.eth"
+      ],
+      "referenceScopeComponents": [
+        {
+          "company": "defitea.eth",
+          "generatedIncomeUsd": 87.74,
+          "available": true,
+          "canonicalOwnershipPreserved": true,
+          "sourceMode": "reference-model",
+          "sourceSemantic": "canonical-fund-reporting"
+        },
+        {
+          "company": "YieldRing.eth",
+          "generatedIncomeUsd": 8.979506,
+          "available": true,
+          "canonicalOwnershipPreserved": true,
+          "sourceMode": "observed-reference-model",
+          "sourceSemantic": "reference-generated-income-not-realised-cash-flow"
+        },
+        {
+          "company": "05081966.eth",
+          "generatedIncomeUsd": 2.145073,
+          "available": true,
+          "canonicalOwnershipPreserved": true,
+          "sourceMode": "observed-reference-model",
+          "sourceSemantic": "reference-generated-income-not-realised-cash-flow"
+        }
+      ],
+      "confirmedOwnerBreakdown": [
+        {
+          "canonicalOwner": "defitea.eth",
+          "eventCount": 43,
+          "usd": 13.24495298,
+          "canonicalOwnershipPreserved": true
+        },
+        {
+          "canonicalOwner": "YieldRing.eth",
+          "eventCount": 5,
+          "usd": 0.14901848,
+          "canonicalOwnershipPreserved": true
+        },
+        {
+          "canonicalOwner": "05081966.eth",
+          "eventCount": 5,
+          "usd": 0.07293433,
+          "canonicalOwnershipPreserved": true
+        }
+      ],
+      "unresolvedLifecycleEventCount": 2,
+      "unresolvedLifecycleReasons": [
+        "period-boundary-not-single-month"
+      ],
+      "noticeCategories": [],
+      "noticeBlockers": [],
+      "noticeActions": [],
+      "engineeringActionable": false,
+      "parked": false,
+      "reconciliationStatus": "lifecycle-review",
+      "reasonCodes": [
+        "reference-comparator-is-non-factual",
+        "factual-period-coverage-incomplete",
+        "partial-observation-window",
+        "lifecycle-events-unresolved",
+        "period-boundary-evidence"
+      ],
+      "comparisonSemantic": "Reference/Estimated and Confirmed are independent non-additive views. Delta and captureRatio are diagnostics, not missing-income or completeness authority.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "company-period:defitea.eth:2026-09",
+      "scope": "company-period",
+      "company": "defitea.eth",
+      "registry": "004",
+      "month": "2026-09",
+      "referenceUsd": 41.572314,
+      "confirmedUsd": 21.92824922,
+      "deltaUsd": 19.64406478,
+      "captureRatio": 0.527472,
+      "signalBand": "material-divergence",
+      "attention": "moderate",
+      "referenceAvailable": true,
+      "confirmedAvailable": true,
+      "factualTrackingActive": null,
+      "eventCount": 456,
+      "accountingStatus": "partial-observed",
+      "factualPeriodComplete": false,
+      "periodBoundaryIssue": false,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "periodStart": "2026-09-01",
+      "periodEnd": "2026-09-08",
+      "referenceScopeContributors": [
+        "defitea.eth",
+        "YieldRing.eth",
+        "05081966.eth"
+      ],
+      "referenceScopeComponents": [
+        {
+          "company": "defitea.eth",
+          "generatedIncomeUsd": 36.98,
+          "available": true,
+          "canonicalOwnershipPreserved": true,
+          "sourceMode": "reference-model",
+          "sourceSemantic": "canonical-fund-reporting"
+        },
+        {
+          "company": "YieldRing.eth",
+          "generatedIncomeUsd": 3.763963,
+          "available": true,
+          "canonicalOwnershipPreserved": true,
+          "sourceMode": "observed-reference-model",
+          "sourceSemantic": "reference-generated-income-not-realised-cash-flow"
+        },
+        {
+          "company": "05081966.eth",
+          "generatedIncomeUsd": 0.828351,
+          "available": true,
+          "canonicalOwnershipPreserved": true,
+          "sourceMode": "observed-reference-model",
+          "sourceSemantic": "reference-generated-income-not-realised-cash-flow"
+        }
+      ],
+      "confirmedOwnerBreakdown": [
+        {
+          "canonicalOwner": "defitea.eth",
+          "eventCount": 234,
+          "usd": 17.58272629,
+          "canonicalOwnershipPreserved": true
+        },
+        {
+          "canonicalOwner": "YieldRing.eth",
+          "eventCount": 112,
+          "usd": 3.8113032,
+          "canonicalOwnershipPreserved": true
+        },
+        {
+          "canonicalOwner": "05081966.eth",
+          "eventCount": 110,
+          "usd": 0.53421973,
+          "canonicalOwnershipPreserved": true
+        }
+      ],
+      "unresolvedLifecycleEventCount": 0,
+      "unresolvedLifecycleReasons": [],
+      "noticeCategories": [
+        "reference-vs-factual-divergence",
+        "tracking-no-period-event"
+      ],
+      "noticeBlockers": [],
+      "noticeActions": [
+        "diagnostic-comparison-only; investigate only when evidence makes divergence material",
+        "observe-normal-cadence; no-engineering-action-unless-evidence-boundary-breaks"
+      ],
+      "engineeringActionable": false,
+      "parked": false,
+      "reconciliationStatus": "material-divergence",
+      "reasonCodes": [
+        "reference-comparator-is-non-factual",
+        "factual-period-coverage-incomplete",
+        "partial-observation-window"
+      ],
+      "comparisonSemantic": "Reference/Estimated and Confirmed are independent non-additive views. Delta and captureRatio are diagnostics, not missing-income or completeness authority.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "company-period:0x5860...83CA8.eth:2026-08",
+      "scope": "company-period",
+      "company": "0x5860...83CA8.eth",
+      "registry": "005",
+      "month": "2026-08",
+      "referenceUsd": 50.972811,
+      "confirmedUsd": 1.04398616,
+      "deltaUsd": 49.92882484,
+      "captureRatio": 0.020481,
+      "signalBand": "wide-divergence",
+      "attention": "high",
+      "referenceAvailable": true,
+      "confirmedAvailable": true,
+      "factualTrackingActive": null,
+      "eventCount": 3,
+      "accountingStatus": "partial-observed",
+      "factualPeriodComplete": false,
+      "periodBoundaryIssue": false,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "periodStart": "2026-08-13",
+      "periodEnd": "2026-08-31",
+      "referenceScopeContributors": [
+        "0x5860...83CA8.eth"
+      ],
+      "referenceScopeComponents": [
+        {
+          "company": "0x5860...83CA8.eth",
+          "generatedIncomeUsd": 50.972811,
+          "available": true,
+          "canonicalOwnershipPreserved": true,
+          "sourceMode": "observed-reference-model",
+          "sourceSemantic": "reference-generated-income-not-realised-cash-flow"
+        }
+      ],
+      "confirmedOwnerBreakdown": [
+        {
+          "canonicalOwner": "0x5860...83CA8.eth",
+          "eventCount": 3,
+          "usd": 1.04398616,
+          "canonicalOwnershipPreserved": true
+        }
+      ],
+      "unresolvedLifecycleEventCount": 9,
+      "unresolvedLifecycleReasons": [
+        "canonical-event-usd-valuation-incomplete"
+      ],
+      "noticeCategories": [],
+      "noticeBlockers": [],
+      "noticeActions": [],
+      "engineeringActionable": false,
+      "parked": false,
+      "reconciliationStatus": "lifecycle-review",
+      "reasonCodes": [
+        "reference-comparator-is-non-factual",
+        "factual-period-coverage-incomplete",
+        "partial-observation-window",
+        "lifecycle-events-unresolved"
+      ],
+      "comparisonSemantic": "Reference/Estimated and Confirmed are independent non-additive views. Delta and captureRatio are diagnostics, not missing-income or completeness authority.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "company-period:0x5860...83CA8.eth:2026-09",
+      "scope": "company-period",
+      "company": "0x5860...83CA8.eth",
+      "registry": "005",
+      "month": "2026-09",
+      "referenceUsd": 24.371398,
+      "confirmedUsd": 10.09483891,
+      "deltaUsd": 14.27655909,
+      "captureRatio": 0.414208,
+      "signalBand": "material-divergence",
+      "attention": "moderate",
+      "referenceAvailable": true,
+      "confirmedAvailable": true,
+      "factualTrackingActive": null,
+      "eventCount": 4,
+      "accountingStatus": "partial-observed",
+      "factualPeriodComplete": false,
+      "periodBoundaryIssue": false,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "periodStart": "2026-09-01",
+      "periodEnd": "2026-09-08",
+      "referenceScopeContributors": [
+        "0x5860...83CA8.eth"
+      ],
+      "referenceScopeComponents": [
+        {
+          "company": "0x5860...83CA8.eth",
+          "generatedIncomeUsd": 24.371398,
+          "available": true,
+          "canonicalOwnershipPreserved": true,
+          "sourceMode": "observed-reference-model",
+          "sourceSemantic": "reference-generated-income-not-realised-cash-flow"
+        }
+      ],
+      "confirmedOwnerBreakdown": [
+        {
+          "canonicalOwner": "0x5860...83CA8.eth",
+          "eventCount": 4,
+          "usd": 10.09483891,
+          "canonicalOwnershipPreserved": true
+        }
+      ],
+      "unresolvedLifecycleEventCount": 0,
+      "unresolvedLifecycleReasons": [],
+      "noticeCategories": [
+        "period-lifecycle-reconciliation",
+        "reference-vs-factual-divergence"
+      ],
+      "noticeBlockers": [
+        "owner-data-pending"
+      ],
+      "noticeActions": [
+        "await-owner-factual-snapshot",
+        "diagnostic-comparison-only; investigate only when evidence makes divergence material"
+      ],
+      "engineeringActionable": false,
+      "parked": true,
+      "reconciliationStatus": "parked-owner-data-pending",
+      "reasonCodes": [
+        "reference-comparator-is-non-factual",
+        "factual-period-coverage-incomplete",
+        "partial-observation-window",
+        "owner-data-pending"
+      ],
+      "comparisonSemantic": "Reference/Estimated and Confirmed are independent non-additive views. Delta and captureRatio are diagnostics, not missing-income or completeness authority.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "company-period:aerocvxyb.eth:2026-08",
+      "scope": "company-period",
+      "company": "aerocvxyb.eth",
+      "registry": "006",
+      "month": "2026-08",
+      "referenceUsd": 74.868592,
+      "confirmedUsd": 15.58629566,
+      "deltaUsd": 59.28229634,
+      "captureRatio": 0.208182,
+      "signalBand": "wide-divergence",
+      "attention": "high",
+      "referenceAvailable": true,
+      "confirmedAvailable": true,
+      "factualTrackingActive": null,
+      "eventCount": 4,
+      "accountingStatus": "partial-observed",
+      "factualPeriodComplete": false,
+      "periodBoundaryIssue": false,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "periodStart": "2026-08-13",
+      "periodEnd": "2026-08-31",
+      "referenceScopeContributors": [
+        "aerocvxyb.eth"
+      ],
+      "referenceScopeComponents": [
+        {
+          "company": "aerocvxyb.eth",
+          "generatedIncomeUsd": 74.868592,
+          "available": true,
+          "canonicalOwnershipPreserved": true,
+          "sourceMode": "observed-reference-model",
+          "sourceSemantic": "reference-generated-income-not-realised-cash-flow"
+        }
+      ],
+      "confirmedOwnerBreakdown": [
+        {
+          "canonicalOwner": "aerocvxyb.eth",
+          "eventCount": 4,
+          "usd": 15.58629566,
+          "canonicalOwnershipPreserved": true
+        }
+      ],
+      "unresolvedLifecycleEventCount": 9,
+      "unresolvedLifecycleReasons": [
+        "canonical-event-usd-valuation-incomplete"
+      ],
+      "noticeCategories": [],
+      "noticeBlockers": [],
+      "noticeActions": [],
+      "engineeringActionable": false,
+      "parked": false,
+      "reconciliationStatus": "lifecycle-review",
+      "reasonCodes": [
+        "reference-comparator-is-non-factual",
+        "factual-period-coverage-incomplete",
+        "partial-observation-window",
+        "lifecycle-events-unresolved"
+      ],
+      "comparisonSemantic": "Reference/Estimated and Confirmed are independent non-additive views. Delta and captureRatio are diagnostics, not missing-income or completeness authority.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "company-period:aerocvxyb.eth:2026-09",
+      "scope": "company-period",
+      "company": "aerocvxyb.eth",
+      "registry": "006",
+      "month": "2026-09",
+      "referenceUsd": 35.767403,
+      "confirmedUsd": 10.46199715,
+      "deltaUsd": 25.30540585,
+      "captureRatio": 0.292501,
+      "signalBand": "wide-divergence",
+      "attention": "high",
+      "referenceAvailable": true,
+      "confirmedAvailable": true,
+      "factualTrackingActive": null,
+      "eventCount": 9,
+      "accountingStatus": "partial-observed",
+      "factualPeriodComplete": false,
+      "periodBoundaryIssue": false,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "periodStart": "2026-09-01",
+      "periodEnd": "2026-09-08",
+      "referenceScopeContributors": [
+        "aerocvxyb.eth"
+      ],
+      "referenceScopeComponents": [
+        {
+          "company": "aerocvxyb.eth",
+          "generatedIncomeUsd": 35.767403,
+          "available": true,
+          "canonicalOwnershipPreserved": true,
+          "sourceMode": "observed-reference-model",
+          "sourceSemantic": "reference-generated-income-not-realised-cash-flow"
+        }
+      ],
+      "confirmedOwnerBreakdown": [
+        {
+          "canonicalOwner": "aerocvxyb.eth",
+          "eventCount": 9,
+          "usd": 10.46199715,
+          "canonicalOwnershipPreserved": true
+        }
+      ],
+      "unresolvedLifecycleEventCount": 0,
+      "unresolvedLifecycleReasons": [],
+      "noticeCategories": [
+        "period-lifecycle-reconciliation",
+        "reference-vs-factual-divergence"
+      ],
+      "noticeBlockers": [
+        "owner-data-pending"
+      ],
+      "noticeActions": [
+        "await-owner-factual-snapshot",
+        "diagnostic-comparison-only; investigate only when evidence makes divergence material"
+      ],
+      "engineeringActionable": false,
+      "parked": true,
+      "reconciliationStatus": "parked-owner-data-pending",
+      "reasonCodes": [
+        "reference-comparator-is-non-factual",
+        "factual-period-coverage-incomplete",
+        "partial-observation-window",
+        "owner-data-pending"
+      ],
+      "comparisonSemantic": "Reference/Estimated and Confirmed are independent non-additive views. Delta and captureRatio are diagnostics, not missing-income or completeness authority.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "company-period:Rook's portfolio:2026-08",
+      "scope": "company-period",
+      "company": "Rook's portfolio",
+      "registry": "007",
+      "month": "2026-08",
+      "referenceUsd": 32.256148,
+      "confirmedUsd": null,
+      "deltaUsd": null,
+      "captureRatio": null,
+      "signalBand": "not-comparable",
+      "attention": "context",
+      "referenceAvailable": true,
+      "confirmedAvailable": false,
+      "factualTrackingActive": null,
+      "eventCount": 0,
+      "accountingStatus": "unknown-incomplete-coverage",
+      "factualPeriodComplete": false,
+      "periodBoundaryIssue": true,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "periodStart": "2026-08-13",
+      "periodEnd": "2026-08-31",
+      "referenceScopeContributors": [
+        "Rook's portfolio"
+      ],
+      "referenceScopeComponents": [
+        {
+          "company": "Rook's portfolio",
+          "generatedIncomeUsd": 32.256148,
+          "available": true,
+          "canonicalOwnershipPreserved": true,
+          "sourceMode": "observed-reference-model",
+          "sourceSemantic": "reference-generated-income-not-realised-cash-flow"
+        }
+      ],
+      "confirmedOwnerBreakdown": [
+        {
+          "canonicalOwner": "Rook's portfolio",
+          "eventCount": 0,
+          "usd": 0,
+          "canonicalOwnershipPreserved": true
+        }
+      ],
+      "unresolvedLifecycleEventCount": 6,
+      "unresolvedLifecycleReasons": [
+        "period-boundary-not-single-month"
+      ],
+      "noticeCategories": [],
+      "noticeBlockers": [],
+      "noticeActions": [],
+      "engineeringActionable": false,
+      "parked": false,
+      "reconciliationStatus": "not-comparable",
+      "reasonCodes": [
+        "reference-comparator-is-non-factual",
+        "factual-period-coverage-incomplete",
+        "partial-observation-window",
+        "lifecycle-events-unresolved",
+        "period-boundary-evidence"
+      ],
+      "comparisonSemantic": "Reference/Estimated and Confirmed are independent non-additive views. Delta and captureRatio are diagnostics, not missing-income or completeness authority.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "company-period:Rook's portfolio:2026-09",
+      "scope": "company-period",
+      "company": "Rook's portfolio",
+      "registry": "007",
+      "month": "2026-09",
+      "referenceUsd": 15.350479,
+      "confirmedUsd": 8.67039098,
+      "deltaUsd": 6.68008802,
+      "captureRatio": 0.564829,
+      "signalBand": "material-divergence",
+      "attention": "moderate",
+      "referenceAvailable": true,
+      "confirmedAvailable": true,
+      "factualTrackingActive": null,
+      "eventCount": 6,
+      "accountingStatus": "partial-observed",
+      "factualPeriodComplete": false,
+      "periodBoundaryIssue": false,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "periodStart": "2026-09-01",
+      "periodEnd": "2026-09-08",
+      "referenceScopeContributors": [
+        "Rook's portfolio"
+      ],
+      "referenceScopeComponents": [
+        {
+          "company": "Rook's portfolio",
+          "generatedIncomeUsd": 15.350479,
+          "available": true,
+          "canonicalOwnershipPreserved": true,
+          "sourceMode": "observed-reference-model",
+          "sourceSemantic": "reference-generated-income-not-realised-cash-flow"
+        }
+      ],
+      "confirmedOwnerBreakdown": [
+        {
+          "canonicalOwner": "Rook's portfolio",
+          "eventCount": 6,
+          "usd": 8.67039098,
+          "canonicalOwnershipPreserved": true
+        }
+      ],
+      "unresolvedLifecycleEventCount": 0,
+      "unresolvedLifecycleReasons": [],
+      "noticeCategories": [
+        "reference-vs-factual-divergence",
+        "tracking-no-period-event"
+      ],
+      "noticeBlockers": [],
+      "noticeActions": [
+        "diagnostic-comparison-only; investigate only when evidence makes divergence material",
+        "observe-normal-cadence; no-engineering-action-unless-evidence-boundary-breaks"
+      ],
+      "engineeringActionable": false,
+      "parked": false,
+      "reconciliationStatus": "material-divergence",
+      "reasonCodes": [
+        "reference-comparator-is-non-factual",
+        "factual-period-coverage-incomplete",
+        "partial-observation-window"
+      ],
+      "comparisonSemantic": "Reference/Estimated and Confirmed are independent non-additive views. Delta and captureRatio are diagnostics, not missing-income or completeness authority.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "company-period:Monetra.eth:2026-08",
+      "scope": "company-period",
+      "company": "Monetra.eth",
+      "registry": "008",
+      "month": "2026-08",
+      "referenceUsd": 0.2099,
+      "confirmedUsd": 0.17847795,
+      "deltaUsd": 0.03142205,
+      "captureRatio": 0.8503,
+      "signalBand": "review-band",
+      "attention": "review",
+      "referenceAvailable": true,
+      "confirmedAvailable": true,
+      "factualTrackingActive": null,
+      "eventCount": 152,
+      "accountingStatus": "partial-observed",
+      "factualPeriodComplete": false,
+      "periodBoundaryIssue": false,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "periodStart": "2026-08-13",
+      "periodEnd": "2026-08-31",
+      "referenceScopeContributors": [
+        "Monetra.eth"
+      ],
+      "referenceScopeComponents": [
+        {
+          "company": "Monetra.eth",
+          "generatedIncomeUsd": 0.2099,
+          "available": true,
+          "canonicalOwnershipPreserved": true,
+          "sourceMode": "stable-reference-income",
+          "sourceSemantic": "reference-generated-income-not-realised-cash-flow"
+        }
+      ],
+      "confirmedOwnerBreakdown": [
+        {
+          "canonicalOwner": "Monetra.eth",
+          "eventCount": 152,
+          "usd": 0.17847795,
+          "canonicalOwnershipPreserved": true
+        }
+      ],
+      "unresolvedLifecycleEventCount": 0,
+      "unresolvedLifecycleReasons": [],
+      "noticeCategories": [],
+      "noticeBlockers": [],
+      "noticeActions": [],
+      "engineeringActionable": false,
+      "parked": false,
+      "reconciliationStatus": "review-band",
+      "reasonCodes": [
+        "reference-comparator-is-non-factual",
+        "factual-period-coverage-incomplete",
+        "partial-observation-window"
+      ],
+      "comparisonSemantic": "Reference/Estimated and Confirmed are independent non-additive views. Delta and captureRatio are diagnostics, not missing-income or completeness authority.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "company-period:Monetra.eth:2026-09",
+      "scope": "company-period",
+      "company": "Monetra.eth",
+      "registry": "008",
+      "month": "2026-09",
+      "referenceUsd": 0.1212,
+      "confirmedUsd": 0.05314667,
+      "deltaUsd": 0.06805333,
+      "captureRatio": 0.438504,
+      "signalBand": "material-divergence",
+      "attention": "moderate",
+      "referenceAvailable": true,
+      "confirmedAvailable": true,
+      "factualTrackingActive": null,
+      "eventCount": 40,
+      "accountingStatus": "partial-observed",
+      "factualPeriodComplete": false,
+      "periodBoundaryIssue": true,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "periodStart": "2026-09-01",
+      "periodEnd": "2026-09-08",
+      "referenceScopeContributors": [
+        "Monetra.eth"
+      ],
+      "referenceScopeComponents": [
+        {
+          "company": "Monetra.eth",
+          "generatedIncomeUsd": 0.1212,
+          "available": true,
+          "canonicalOwnershipPreserved": true,
+          "sourceMode": "stable-reference-income",
+          "sourceSemantic": "reference-generated-income-not-realised-cash-flow"
+        }
+      ],
+      "confirmedOwnerBreakdown": [
+        {
+          "canonicalOwner": "Monetra.eth",
+          "eventCount": 40,
+          "usd": 0.05314667,
+          "canonicalOwnershipPreserved": true
+        }
+      ],
+      "unresolvedLifecycleEventCount": 8,
+      "unresolvedLifecycleReasons": [
+        "period-boundary-not-single-month"
+      ],
+      "noticeCategories": [
+        "period-lifecycle-reconciliation",
+        "reference-vs-factual-divergence"
+      ],
+      "noticeBlockers": [
+        "unresolved-period-lifecycle-events"
+      ],
+      "noticeActions": [
+        "diagnostic-comparison-only; investigate only when evidence makes divergence material",
+        "reconcile-period-boundary-settlement-or-lifecycle-semantics"
+      ],
+      "engineeringActionable": true,
+      "parked": false,
+      "reconciliationStatus": "lifecycle-review",
+      "reasonCodes": [
+        "reference-comparator-is-non-factual",
+        "factual-period-coverage-incomplete",
+        "partial-observation-window",
+        "lifecycle-events-unresolved",
+        "period-boundary-evidence"
+      ],
+      "comparisonSemantic": "Reference/Estimated and Confirmed are independent non-additive views. Delta and captureRatio are diagnostics, not missing-income or completeness authority.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "company-period:1milliondollar.eth:2026-08",
+      "scope": "company-period",
+      "company": "1milliondollar.eth",
+      "registry": "009",
+      "month": "2026-08",
+      "referenceUsd": 2.467383,
+      "confirmedUsd": 0.28722368,
+      "deltaUsd": 2.18015932,
+      "captureRatio": 0.116408,
+      "signalBand": "wide-divergence",
+      "attention": "high",
+      "referenceAvailable": true,
+      "confirmedAvailable": true,
+      "factualTrackingActive": null,
+      "eventCount": 9,
+      "accountingStatus": "partial-observed",
+      "factualPeriodComplete": false,
+      "periodBoundaryIssue": true,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "periodStart": "2026-08-13",
+      "periodEnd": "2026-08-31",
+      "referenceScopeContributors": [
+        "1milliondollar.eth"
+      ],
+      "referenceScopeComponents": [
+        {
+          "company": "1milliondollar.eth",
+          "generatedIncomeUsd": 2.467383,
+          "available": true,
+          "canonicalOwnershipPreserved": true,
+          "sourceMode": "observed-reference-model",
+          "sourceSemantic": "reference-generated-income-not-realised-cash-flow"
+        }
+      ],
+      "confirmedOwnerBreakdown": [
+        {
+          "canonicalOwner": "1milliondollar.eth",
+          "eventCount": 9,
+          "usd": 0.28722368,
+          "canonicalOwnershipPreserved": true
+        }
+      ],
+      "unresolvedLifecycleEventCount": 6,
+      "unresolvedLifecycleReasons": [
+        "period-boundary-not-single-month"
+      ],
+      "noticeCategories": [],
+      "noticeBlockers": [],
+      "noticeActions": [],
+      "engineeringActionable": false,
+      "parked": false,
+      "reconciliationStatus": "lifecycle-review",
+      "reasonCodes": [
+        "reference-comparator-is-non-factual",
+        "factual-period-coverage-incomplete",
+        "partial-observation-window",
+        "lifecycle-events-unresolved",
+        "period-boundary-evidence"
+      ],
+      "comparisonSemantic": "Reference/Estimated and Confirmed are independent non-additive views. Delta and captureRatio are diagnostics, not missing-income or completeness authority.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "company-period:1milliondollar.eth:2026-09",
+      "scope": "company-period",
+      "company": "1milliondollar.eth",
+      "registry": "009",
+      "month": "2026-09",
+      "referenceUsd": 1.227937,
+      "confirmedUsd": 0.85594196,
+      "deltaUsd": 0.37199504,
+      "captureRatio": 0.697057,
+      "signalBand": "material-divergence",
+      "attention": "moderate",
+      "referenceAvailable": true,
+      "confirmedAvailable": true,
+      "factualTrackingActive": null,
+      "eventCount": 13,
+      "accountingStatus": "partial-observed",
+      "factualPeriodComplete": false,
+      "periodBoundaryIssue": true,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "periodStart": "2026-09-01",
+      "periodEnd": "2026-09-08",
+      "referenceScopeContributors": [
+        "1milliondollar.eth"
+      ],
+      "referenceScopeComponents": [
+        {
+          "company": "1milliondollar.eth",
+          "generatedIncomeUsd": 1.227937,
+          "available": true,
+          "canonicalOwnershipPreserved": true,
+          "sourceMode": "observed-reference-model",
+          "sourceSemantic": "reference-generated-income-not-realised-cash-flow"
+        }
+      ],
+      "confirmedOwnerBreakdown": [
+        {
+          "canonicalOwner": "1milliondollar.eth",
+          "eventCount": 13,
+          "usd": 0.85594196,
+          "canonicalOwnershipPreserved": true
+        }
+      ],
+      "unresolvedLifecycleEventCount": 1,
+      "unresolvedLifecycleReasons": [
+        "period-boundary-not-single-month"
+      ],
+      "noticeCategories": [
+        "period-lifecycle-reconciliation",
+        "reference-vs-factual-divergence",
+        "tracking-no-period-event"
+      ],
+      "noticeBlockers": [
+        "unresolved-period-lifecycle-events"
+      ],
+      "noticeActions": [
+        "diagnostic-comparison-only; investigate only when evidence makes divergence material",
+        "observe-normal-cadence; no-engineering-action-unless-evidence-boundary-breaks",
+        "reconcile-period-boundary-settlement-or-lifecycle-semantics"
+      ],
+      "engineeringActionable": true,
+      "parked": false,
+      "reconciliationStatus": "lifecycle-review",
+      "reasonCodes": [
+        "reference-comparator-is-non-factual",
+        "factual-period-coverage-incomplete",
+        "partial-observation-window",
+        "lifecycle-events-unresolved",
+        "period-boundary-evidence"
+      ],
+      "comparisonSemantic": "Reference/Estimated and Confirmed are independent non-additive views. Delta and captureRatio are diagnostics, not missing-income or completeness authority.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "company-period:Cypher:2026-08",
+      "scope": "company-period",
+      "company": "Cypher",
+      "registry": "010",
+      "month": "2026-08",
+      "referenceUsd": 22.028361,
+      "confirmedUsd": 2.36620624,
+      "deltaUsd": 19.66215476,
+      "captureRatio": 0.107416,
+      "signalBand": "wide-divergence",
+      "attention": "high",
+      "referenceAvailable": true,
+      "confirmedAvailable": true,
+      "factualTrackingActive": null,
+      "eventCount": 11,
+      "accountingStatus": "partial-observed",
+      "factualPeriodComplete": false,
+      "periodBoundaryIssue": true,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "periodStart": "2026-08-18",
+      "periodEnd": "2026-08-31",
+      "referenceScopeContributors": [
+        "Cypher"
+      ],
+      "referenceScopeComponents": [
+        {
+          "company": "Cypher",
+          "generatedIncomeUsd": 22.028361,
+          "available": true,
+          "canonicalOwnershipPreserved": true,
+          "sourceMode": "observed-reference-model",
+          "sourceSemantic": "reference-generated-income-not-realised-cash-flow"
+        }
+      ],
+      "confirmedOwnerBreakdown": [
+        {
+          "canonicalOwner": "Cypher",
+          "eventCount": 11,
+          "usd": 2.36620624,
+          "canonicalOwnershipPreserved": true
+        }
+      ],
+      "unresolvedLifecycleEventCount": 1,
+      "unresolvedLifecycleReasons": [
+        "period-boundary-not-single-month"
+      ],
+      "noticeCategories": [],
+      "noticeBlockers": [],
+      "noticeActions": [],
+      "engineeringActionable": false,
+      "parked": false,
+      "reconciliationStatus": "lifecycle-review",
+      "reasonCodes": [
+        "reference-comparator-is-non-factual",
+        "factual-period-coverage-incomplete",
+        "partial-observation-window",
+        "lifecycle-events-unresolved",
+        "period-boundary-evidence"
+      ],
+      "comparisonSemantic": "Reference/Estimated and Confirmed are independent non-additive views. Delta and captureRatio are diagnostics, not missing-income or completeness authority.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "company-period:Cypher:2026-09",
+      "scope": "company-period",
+      "company": "Cypher",
+      "registry": "010",
+      "month": "2026-09",
+      "referenceUsd": 12.09632,
+      "confirmedUsd": 3.45960614,
+      "deltaUsd": 8.63671386,
+      "captureRatio": 0.286005,
+      "signalBand": "wide-divergence",
+      "attention": "high",
+      "referenceAvailable": true,
+      "confirmedAvailable": true,
+      "factualTrackingActive": null,
+      "eventCount": 14,
+      "accountingStatus": "partial-observed",
+      "factualPeriodComplete": false,
+      "periodBoundaryIssue": false,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "periodStart": "2026-09-01",
+      "periodEnd": "2026-09-08",
+      "referenceScopeContributors": [
+        "Cypher"
+      ],
+      "referenceScopeComponents": [
+        {
+          "company": "Cypher",
+          "generatedIncomeUsd": 12.09632,
+          "available": true,
+          "canonicalOwnershipPreserved": true,
+          "sourceMode": "observed-reference-model",
+          "sourceSemantic": "reference-generated-income-not-realised-cash-flow"
+        }
+      ],
+      "confirmedOwnerBreakdown": [
+        {
+          "canonicalOwner": "Cypher",
+          "eventCount": 14,
+          "usd": 3.45960614,
+          "canonicalOwnershipPreserved": true
+        }
+      ],
+      "unresolvedLifecycleEventCount": 0,
+      "unresolvedLifecycleReasons": [],
+      "noticeCategories": [
+        "reference-vs-factual-divergence",
+        "tracking-no-period-event"
+      ],
+      "noticeBlockers": [],
+      "noticeActions": [
+        "diagnostic-comparison-only; investigate only when evidence makes divergence material",
+        "observe-normal-cadence; no-engineering-action-unless-evidence-boundary-breaks"
+      ],
+      "engineeringActionable": false,
+      "parked": false,
+      "reconciliationStatus": "wide-divergence",
+      "reasonCodes": [
+        "reference-comparator-is-non-factual",
+        "factual-period-coverage-incomplete",
+        "partial-observation-window"
+      ],
+      "comparisonSemantic": "Reference/Estimated and Confirmed are independent non-additive views. Delta and captureRatio are diagnostics, not missing-income or completeness authority.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "mechanism-base-reference:defitea.eth:2026-08:aerodrome_veaero",
+      "scope": "mechanism-base-reference",
+      "company": "defitea.eth",
+      "registry": "004",
+      "month": "2026-08",
+      "mechanism": "aerodrome_veaero",
+      "referenceUsd": 17.56128728,
+      "confirmedUsd": null,
+      "deltaUsd": null,
+      "captureRatio": null,
+      "signalBand": "not-comparable",
+      "attention": "context",
+      "referenceAvailable": true,
+      "confirmedAvailable": false,
+      "factualTrackingActive": true,
+      "eventCount": 0,
+      "trackingStatus": "factual-tracking-no-period-event",
+      "periodBoundaryIssue": false,
+      "crossMonthEvidenceCount": 0,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "referenceSampleDays": 21,
+      "referencePeriodStart": "2026-08-09",
+      "referencePeriodEnd": "2026-08-31",
+      "referencePositionIds": [
+        "aerodrome-finance"
+      ],
+      "referenceRateStatuses": [
+        "current"
+      ],
+      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
+      "referenceScope": "Defitea base productive positions only",
+      "referenceScopeExcludes": [
+        "associated-company-reference-contributors",
+        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+      ],
+      "companyEstimatedReconciliationAuthority": false,
+      "reconciliationStatus": "tracking-no-period-event",
+      "reasonCodes": [
+        "base-position-reference-comparator-is-non-factual",
+        "partial-reference-window",
+        "factual-tracking-active",
+        "tracking-no-period-event"
+      ],
+      "completionBlockers": [
+        "no-canonical-period-income-evidence"
+      ],
+      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "mechanism-base-reference:defitea.eth:2026-08:convex_vlcvx",
+      "scope": "mechanism-base-reference",
+      "company": "defitea.eth",
+      "registry": "004",
+      "month": "2026-08",
+      "mechanism": "convex_vlcvx",
+      "referenceUsd": 17.75471773,
+      "confirmedUsd": null,
+      "deltaUsd": null,
+      "captureRatio": null,
+      "signalBand": "not-comparable",
+      "attention": "context",
+      "referenceAvailable": true,
+      "confirmedAvailable": false,
+      "factualTrackingActive": false,
+      "eventCount": 0,
+      "trackingStatus": "state-observed-not-factual-tracking",
+      "periodBoundaryIssue": false,
+      "crossMonthEvidenceCount": 0,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "referenceSampleDays": 21,
+      "referencePeriodStart": "2026-08-09",
+      "referencePeriodEnd": "2026-08-31",
+      "referencePositionIds": [
+        "convex-finance"
+      ],
+      "referenceRateStatuses": [
+        "current"
+      ],
+      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
+      "referenceScope": "Defitea base productive positions only",
+      "referenceScopeExcludes": [
+        "associated-company-reference-contributors",
+        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+      ],
+      "companyEstimatedReconciliationAuthority": false,
+      "reconciliationStatus": "missing-capability",
+      "reasonCodes": [
+        "base-position-reference-comparator-is-non-factual",
+        "partial-reference-window",
+        "missing-factual-tracking-capability"
+      ],
+      "completionBlockers": [
+        "no-canonical-period-income-evidence",
+        "no-factual-engine-tracking-proof",
+        "current-state-is-not-period-income"
+      ],
+      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "mechanism-base-reference:defitea.eth:2026-08:curve_vecrv",
+      "scope": "mechanism-base-reference",
+      "company": "defitea.eth",
+      "registry": "004",
+      "month": "2026-08",
+      "mechanism": "curve_vecrv",
+      "referenceUsd": 1.2621648,
+      "confirmedUsd": 3.982408,
+      "deltaUsd": -2.7202432,
+      "captureRatio": 3.15522,
+      "signalBand": "above-reference",
+      "attention": "review",
+      "referenceAvailable": true,
+      "confirmedAvailable": true,
+      "factualTrackingActive": true,
+      "eventCount": 8,
+      "trackingStatus": "factual-period-evidence",
+      "periodBoundaryIssue": false,
+      "crossMonthEvidenceCount": 0,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "referenceSampleDays": 21,
+      "referencePeriodStart": "2026-08-09",
+      "referencePeriodEnd": "2026-08-31",
+      "referencePositionIds": [
+        "curve-dao-token"
+      ],
+      "referenceRateStatuses": [
+        "current"
+      ],
+      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
+      "referenceScope": "Defitea base productive positions only",
+      "referenceScopeExcludes": [
+        "associated-company-reference-contributors",
+        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+      ],
+      "companyEstimatedReconciliationAuthority": false,
+      "reconciliationStatus": "above-reference",
+      "reasonCodes": [
+        "base-position-reference-comparator-is-non-factual",
+        "partial-reference-window",
+        "factual-tracking-active",
+        "factual-period-events-observed"
+      ],
+      "completionBlockers": [],
+      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "mechanism-base-reference:defitea.eth:2026-08:frax_vefrax",
+      "scope": "mechanism-base-reference",
+      "company": "defitea.eth",
+      "registry": "004",
+      "month": "2026-08",
+      "mechanism": "frax_vefrax",
+      "referenceUsd": 3.90015267,
+      "confirmedUsd": 3.1074002,
+      "deltaUsd": 0.79275247,
+      "captureRatio": 0.796738,
+      "signalBand": "review-band",
+      "attention": "review",
+      "referenceAvailable": true,
+      "confirmedAvailable": true,
+      "factualTrackingActive": true,
+      "eventCount": 15,
+      "trackingStatus": "factual-period-evidence",
+      "periodBoundaryIssue": true,
+      "crossMonthEvidenceCount": 2,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "referenceSampleDays": 21,
+      "referencePeriodStart": "2026-08-09",
+      "referencePeriodEnd": "2026-08-31",
+      "referencePositionIds": [
+        "frax-share"
+      ],
+      "referenceRateStatuses": [
+        "current"
+      ],
+      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
+      "referenceScope": "Defitea base productive positions only",
+      "referenceScopeExcludes": [
+        "associated-company-reference-contributors",
+        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+      ],
+      "companyEstimatedReconciliationAuthority": false,
+      "reconciliationStatus": "boundary-review",
+      "reasonCodes": [
+        "base-position-reference-comparator-is-non-factual",
+        "partial-reference-window",
+        "factual-tracking-active",
+        "factual-period-events-observed",
+        "period-boundary-evidence"
+      ],
+      "completionBlockers": [
+        "cross-month-boundary-requires-explicit-allocation"
+      ],
+      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "mechanism-base-reference:defitea.eth:2026-08:fx_vefxn",
+      "scope": "mechanism-base-reference",
+      "company": "defitea.eth",
+      "registry": "004",
+      "month": "2026-08",
+      "mechanism": "fx_vefxn",
+      "referenceUsd": 22.99201557,
+      "confirmedUsd": 10.759724,
+      "deltaUsd": 12.23229157,
+      "captureRatio": 0.467977,
+      "signalBand": "material-divergence",
+      "attention": "moderate",
+      "referenceAvailable": true,
+      "confirmedAvailable": true,
+      "factualTrackingActive": true,
+      "eventCount": 14,
+      "trackingStatus": "factual-period-evidence",
+      "periodBoundaryIssue": false,
+      "crossMonthEvidenceCount": 0,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "referenceSampleDays": 21,
+      "referencePeriodStart": "2026-08-09",
+      "referencePeriodEnd": "2026-08-31",
+      "referencePositionIds": [
+        "fxn",
+        "fxn-token"
+      ],
+      "referenceRateStatuses": [
+        "current"
+      ],
+      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
+      "referenceScope": "Defitea base productive positions only",
+      "referenceScopeExcludes": [
+        "associated-company-reference-contributors",
+        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+      ],
+      "companyEstimatedReconciliationAuthority": false,
+      "reconciliationStatus": "material-divergence",
+      "reasonCodes": [
+        "base-position-reference-comparator-is-non-factual",
+        "partial-reference-window",
+        "factual-tracking-active",
+        "factual-period-events-observed"
+      ],
+      "completionBlockers": [],
+      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "mechanism-base-reference:defitea.eth:2026-08:liquity_lqty",
+      "scope": "mechanism-base-reference",
+      "company": "defitea.eth",
+      "registry": "004",
+      "month": "2026-08",
+      "mechanism": "liquity_lqty",
+      "referenceUsd": 0.39593256,
+      "confirmedUsd": null,
+      "deltaUsd": null,
+      "captureRatio": null,
+      "signalBand": "not-comparable",
+      "attention": "context",
+      "referenceAvailable": true,
+      "confirmedAvailable": false,
+      "factualTrackingActive": false,
+      "eventCount": 0,
+      "trackingStatus": "state-observed-not-factual-tracking",
+      "periodBoundaryIssue": false,
+      "crossMonthEvidenceCount": 0,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "referenceSampleDays": 14,
+      "referencePeriodStart": "2026-08-16",
+      "referencePeriodEnd": "2026-08-31",
+      "referencePositionIds": [
+        "liquity"
+      ],
+      "referenceRateStatuses": [
+        "current"
+      ],
+      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
+      "referenceScope": "Defitea base productive positions only",
+      "referenceScopeExcludes": [
+        "associated-company-reference-contributors",
+        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+      ],
+      "companyEstimatedReconciliationAuthority": false,
+      "reconciliationStatus": "missing-capability",
+      "reasonCodes": [
+        "base-position-reference-comparator-is-non-factual",
+        "partial-reference-window",
+        "missing-factual-tracking-capability"
+      ],
+      "completionBlockers": [
+        "no-canonical-period-income-evidence",
+        "no-factual-engine-tracking-proof",
+        "current-state-is-not-period-income"
+      ],
+      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "mechanism-base-reference:defitea.eth:2026-08:pendle_spendle",
+      "scope": "mechanism-base-reference",
+      "company": "defitea.eth",
+      "registry": "004",
+      "month": "2026-08",
+      "mechanism": "pendle_spendle",
+      "referenceUsd": 0.80079873,
+      "confirmedUsd": null,
+      "deltaUsd": null,
+      "captureRatio": null,
+      "signalBand": "not-comparable",
+      "attention": "context",
+      "referenceAvailable": true,
+      "confirmedAvailable": false,
+      "factualTrackingActive": false,
+      "eventCount": 0,
+      "trackingStatus": "reference-only-no-factual-tracking",
+      "periodBoundaryIssue": false,
+      "crossMonthEvidenceCount": 0,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "referenceSampleDays": 17,
+      "referencePeriodStart": "2026-08-09",
+      "referencePeriodEnd": "2026-08-31",
+      "referencePositionIds": [
+        "pendle"
+      ],
+      "referenceRateStatuses": [
+        "carried-forward"
+      ],
+      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
+      "referenceScope": "Defitea base productive positions only",
+      "referenceScopeExcludes": [
+        "associated-company-reference-contributors",
+        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+      ],
+      "companyEstimatedReconciliationAuthority": false,
+      "reconciliationStatus": "missing-capability",
+      "reasonCodes": [
+        "base-position-reference-comparator-is-non-factual",
+        "partial-reference-window",
+        "missing-factual-tracking-capability"
+      ],
+      "completionBlockers": [
+        "no-canonical-period-income-evidence",
+        "no-factual-engine-tracking-proof"
+      ],
+      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "mechanism-base-reference:defitea.eth:2026-08:resupply_rsup",
+      "scope": "mechanism-base-reference",
+      "company": "defitea.eth",
+      "registry": "004",
+      "month": "2026-08",
+      "mechanism": "resupply_rsup",
+      "referenceUsd": 3.83776704,
+      "confirmedUsd": null,
+      "deltaUsd": null,
+      "captureRatio": null,
+      "signalBand": "not-comparable",
+      "attention": "context",
+      "referenceAvailable": true,
+      "confirmedAvailable": false,
+      "factualTrackingActive": false,
+      "eventCount": 0,
+      "trackingStatus": "state-observed-not-factual-tracking",
+      "periodBoundaryIssue": false,
+      "crossMonthEvidenceCount": 0,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "referenceSampleDays": 21,
+      "referencePeriodStart": "2026-08-09",
+      "referencePeriodEnd": "2026-08-31",
+      "referencePositionIds": [
+        "resupply"
+      ],
+      "referenceRateStatuses": [
+        "current"
+      ],
+      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
+      "referenceScope": "Defitea base productive positions only",
+      "referenceScopeExcludes": [
+        "associated-company-reference-contributors",
+        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+      ],
+      "companyEstimatedReconciliationAuthority": false,
+      "reconciliationStatus": "missing-capability",
+      "reasonCodes": [
+        "base-position-reference-comparator-is-non-factual",
+        "partial-reference-window",
+        "missing-factual-tracking-capability"
+      ],
+      "completionBlockers": [
+        "no-canonical-period-income-evidence",
+        "no-factual-engine-tracking-proof",
+        "current-state-is-not-period-income"
+      ],
+      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "mechanism-base-reference:defitea.eth:2026-08:velodrome_vevelo",
+      "scope": "mechanism-base-reference",
+      "company": "defitea.eth",
+      "registry": "004",
+      "month": "2026-08",
+      "mechanism": "velodrome_vevelo",
+      "referenceUsd": 3.30088136,
+      "confirmedUsd": null,
+      "deltaUsd": null,
+      "captureRatio": null,
+      "signalBand": "not-comparable",
+      "attention": "context",
+      "referenceAvailable": true,
+      "confirmedAvailable": false,
+      "factualTrackingActive": true,
+      "eventCount": 19,
+      "trackingStatus": "factual-period-evidence",
+      "periodBoundaryIssue": true,
+      "crossMonthEvidenceCount": 19,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "referenceSampleDays": 21,
+      "referencePeriodStart": "2026-08-09",
+      "referencePeriodEnd": "2026-08-31",
+      "referencePositionIds": [
+        "velodrome-finance"
+      ],
+      "referenceRateStatuses": [
+        "current"
+      ],
+      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
+      "referenceScope": "Defitea base productive positions only",
+      "referenceScopeExcludes": [
+        "associated-company-reference-contributors",
+        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+      ],
+      "companyEstimatedReconciliationAuthority": false,
+      "reconciliationStatus": "boundary-review",
+      "reasonCodes": [
+        "base-position-reference-comparator-is-non-factual",
+        "partial-reference-window",
+        "factual-tracking-active",
+        "factual-period-events-observed",
+        "period-boundary-evidence"
+      ],
+      "completionBlockers": [
+        "cross-month-boundary-requires-explicit-allocation"
+      ],
+      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "mechanism-base-reference:defitea.eth:2026-08:venice_svvv",
+      "scope": "mechanism-base-reference",
+      "company": "defitea.eth",
+      "registry": "004",
+      "month": "2026-08",
+      "mechanism": "venice_svvv",
+      "referenceUsd": 3.61970579,
+      "confirmedUsd": null,
+      "deltaUsd": null,
+      "captureRatio": null,
+      "signalBand": "not-comparable",
+      "attention": "context",
+      "referenceAvailable": true,
+      "confirmedAvailable": false,
+      "factualTrackingActive": false,
+      "eventCount": 0,
+      "trackingStatus": "state-observed-not-factual-tracking",
+      "periodBoundaryIssue": false,
+      "crossMonthEvidenceCount": 0,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "referenceSampleDays": 21,
+      "referencePeriodStart": "2026-08-09",
+      "referencePeriodEnd": "2026-08-31",
+      "referencePositionIds": [
+        "venice-token"
+      ],
+      "referenceRateStatuses": [
+        "current"
+      ],
+      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
+      "referenceScope": "Defitea base productive positions only",
+      "referenceScopeExcludes": [
+        "associated-company-reference-contributors",
+        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+      ],
+      "companyEstimatedReconciliationAuthority": false,
+      "reconciliationStatus": "missing-capability",
+      "reasonCodes": [
+        "base-position-reference-comparator-is-non-factual",
+        "partial-reference-window",
+        "missing-factual-tracking-capability"
+      ],
+      "completionBlockers": [
+        "no-canonical-period-income-evidence",
+        "no-factual-engine-tracking-proof",
+        "current-state-is-not-period-income"
+      ],
+      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "mechanism-base-reference:defitea.eth:2026-08:yieldbasis_veyb",
+      "scope": "mechanism-base-reference",
+      "company": "defitea.eth",
+      "registry": "004",
+      "month": "2026-08",
+      "mechanism": "yieldbasis_veyb",
+      "referenceUsd": 1.89789026,
+      "confirmedUsd": null,
+      "deltaUsd": null,
+      "captureRatio": null,
+      "signalBand": "not-comparable",
+      "attention": "context",
+      "referenceAvailable": true,
+      "confirmedAvailable": false,
+      "factualTrackingActive": false,
+      "eventCount": 0,
+      "trackingStatus": "state-observed-not-factual-tracking",
+      "periodBoundaryIssue": false,
+      "crossMonthEvidenceCount": 0,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "referenceSampleDays": 21,
+      "referencePeriodStart": "2026-08-09",
+      "referencePeriodEnd": "2026-08-31",
+      "referencePositionIds": [
+        "yield-basis"
+      ],
+      "referenceRateStatuses": [
+        "current"
+      ],
+      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
+      "referenceScope": "Defitea base productive positions only",
+      "referenceScopeExcludes": [
+        "associated-company-reference-contributors",
+        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+      ],
+      "companyEstimatedReconciliationAuthority": false,
+      "reconciliationStatus": "missing-capability",
+      "reasonCodes": [
+        "base-position-reference-comparator-is-non-factual",
+        "partial-reference-window",
+        "missing-factual-tracking-capability"
+      ],
+      "completionBlockers": [
+        "no-canonical-period-income-evidence",
+        "no-factual-engine-tracking-proof",
+        "current-state-is-not-period-income"
+      ],
+      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "mechanism-base-reference:defitea.eth:2026-09:aerodrome_veaero",
+      "scope": "mechanism-base-reference",
+      "company": "defitea.eth",
+      "registry": "004",
+      "month": "2026-09",
+      "mechanism": "aerodrome_veaero",
+      "referenceUsd": 8.28506341,
+      "confirmedUsd": null,
+      "deltaUsd": null,
+      "captureRatio": null,
+      "signalBand": "not-comparable",
+      "attention": "context",
+      "referenceAvailable": true,
+      "confirmedAvailable": false,
+      "factualTrackingActive": true,
+      "eventCount": 0,
+      "trackingStatus": "factual-tracking-no-period-event",
+      "periodBoundaryIssue": false,
+      "crossMonthEvidenceCount": 0,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "referenceSampleDays": 8,
+      "referencePeriodStart": "2026-09-01",
+      "referencePeriodEnd": "2026-09-08",
+      "referencePositionIds": [
+        "aerodrome-finance"
+      ],
+      "referenceRateStatuses": [
+        "current"
+      ],
+      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
+      "referenceScope": "Defitea base productive positions only",
+      "referenceScopeExcludes": [
+        "associated-company-reference-contributors",
+        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+      ],
+      "companyEstimatedReconciliationAuthority": false,
+      "reconciliationStatus": "tracking-no-period-event",
+      "reasonCodes": [
+        "base-position-reference-comparator-is-non-factual",
+        "partial-reference-window",
+        "factual-tracking-active",
+        "tracking-no-period-event"
+      ],
+      "completionBlockers": [
+        "no-canonical-period-income-evidence"
+      ],
+      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "mechanism-base-reference:defitea.eth:2026-09:convex_vlcvx",
+      "scope": "mechanism-base-reference",
+      "company": "defitea.eth",
+      "registry": "004",
+      "month": "2026-09",
+      "mechanism": "convex_vlcvx",
+      "referenceUsd": 7.63678388,
+      "confirmedUsd": 6.3228441,
+      "deltaUsd": 1.31393978,
+      "captureRatio": 0.827946,
+      "signalBand": "review-band",
+      "attention": "review",
+      "referenceAvailable": true,
+      "confirmedAvailable": true,
+      "factualTrackingActive": true,
+      "eventCount": 1,
+      "trackingStatus": "factual-period-evidence",
+      "periodBoundaryIssue": false,
+      "crossMonthEvidenceCount": 0,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "referenceSampleDays": 8,
+      "referencePeriodStart": "2026-09-01",
+      "referencePeriodEnd": "2026-09-08",
+      "referencePositionIds": [
+        "convex-finance"
+      ],
+      "referenceRateStatuses": [
+        "current"
+      ],
+      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
+      "referenceScope": "Defitea base productive positions only",
+      "referenceScopeExcludes": [
+        "associated-company-reference-contributors",
+        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+      ],
+      "companyEstimatedReconciliationAuthority": false,
+      "reconciliationStatus": "review-band",
+      "reasonCodes": [
+        "base-position-reference-comparator-is-non-factual",
+        "partial-reference-window",
+        "factual-tracking-active",
+        "factual-period-events-observed"
+      ],
+      "completionBlockers": [],
+      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "mechanism-base-reference:defitea.eth:2026-09:curve_vecrv",
+      "scope": "mechanism-base-reference",
+      "company": "defitea.eth",
+      "registry": "004",
+      "month": "2026-09",
+      "mechanism": "curve_vecrv",
+      "referenceUsd": 0.77742103,
+      "confirmedUsd": 7.6855811,
+      "deltaUsd": -6.90816007,
+      "captureRatio": 9.885996,
+      "signalBand": "above-reference",
+      "attention": "review",
+      "referenceAvailable": true,
+      "confirmedAvailable": true,
+      "factualTrackingActive": true,
+      "eventCount": 4,
+      "trackingStatus": "factual-period-evidence",
+      "periodBoundaryIssue": false,
+      "crossMonthEvidenceCount": 0,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "referenceSampleDays": 8,
+      "referencePeriodStart": "2026-09-01",
+      "referencePeriodEnd": "2026-09-08",
+      "referencePositionIds": [
+        "curve-dao-token"
+      ],
+      "referenceRateStatuses": [
+        "current"
+      ],
+      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
+      "referenceScope": "Defitea base productive positions only",
+      "referenceScopeExcludes": [
+        "associated-company-reference-contributors",
+        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+      ],
+      "companyEstimatedReconciliationAuthority": false,
+      "reconciliationStatus": "above-reference",
+      "reasonCodes": [
+        "base-position-reference-comparator-is-non-factual",
+        "partial-reference-window",
+        "factual-tracking-active",
+        "factual-period-events-observed"
+      ],
+      "completionBlockers": [],
+      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "mechanism-base-reference:defitea.eth:2026-09:frax_vefrax",
+      "scope": "mechanism-base-reference",
+      "company": "defitea.eth",
+      "registry": "004",
+      "month": "2026-09",
+      "mechanism": "frax_vefrax",
+      "referenceUsd": 1.45045861,
+      "confirmedUsd": 1.73694632,
+      "deltaUsd": -0.28648771,
+      "captureRatio": 1.197515,
+      "signalBand": "above-reference",
+      "attention": "review",
+      "referenceAvailable": true,
+      "confirmedAvailable": true,
+      "factualTrackingActive": true,
+      "eventCount": 220,
+      "trackingStatus": "factual-period-evidence",
+      "periodBoundaryIssue": false,
+      "crossMonthEvidenceCount": 0,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "referenceSampleDays": 8,
+      "referencePeriodStart": "2026-09-01",
+      "referencePeriodEnd": "2026-09-08",
+      "referencePositionIds": [
+        "frax-share"
+      ],
+      "referenceRateStatuses": [
+        "current"
+      ],
+      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
+      "referenceScope": "Defitea base productive positions only",
+      "referenceScopeExcludes": [
+        "associated-company-reference-contributors",
+        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+      ],
+      "companyEstimatedReconciliationAuthority": false,
+      "reconciliationStatus": "above-reference",
+      "reasonCodes": [
+        "base-position-reference-comparator-is-non-factual",
+        "partial-reference-window",
+        "factual-tracking-active",
+        "factual-period-events-observed"
+      ],
+      "completionBlockers": [],
+      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "mechanism-base-reference:defitea.eth:2026-09:fx_vefxn",
+      "scope": "mechanism-base-reference",
+      "company": "defitea.eth",
+      "registry": "004",
+      "month": "2026-09",
+      "mechanism": "fx_vefxn",
+      "referenceUsd": 8.11809995,
+      "confirmedUsd": 4.566646,
+      "deltaUsd": 3.55145395,
+      "captureRatio": 0.562526,
+      "signalBand": "material-divergence",
+      "attention": "moderate",
+      "referenceAvailable": true,
+      "confirmedAvailable": true,
+      "factualTrackingActive": true,
+      "eventCount": 5,
+      "trackingStatus": "factual-period-evidence",
+      "periodBoundaryIssue": false,
+      "crossMonthEvidenceCount": 0,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "referenceSampleDays": 8,
+      "referencePeriodStart": "2026-09-01",
+      "referencePeriodEnd": "2026-09-08",
+      "referencePositionIds": [
+        "fxn-token"
+      ],
+      "referenceRateStatuses": [
+        "current"
+      ],
+      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
+      "referenceScope": "Defitea base productive positions only",
+      "referenceScopeExcludes": [
+        "associated-company-reference-contributors",
+        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+      ],
+      "companyEstimatedReconciliationAuthority": false,
+      "reconciliationStatus": "material-divergence",
+      "reasonCodes": [
+        "base-position-reference-comparator-is-non-factual",
+        "partial-reference-window",
+        "factual-tracking-active",
+        "factual-period-events-observed"
+      ],
+      "completionBlockers": [],
+      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "mechanism-base-reference:defitea.eth:2026-09:liquity_lqty",
+      "scope": "mechanism-base-reference",
+      "company": "defitea.eth",
+      "registry": "004",
+      "month": "2026-09",
+      "mechanism": "liquity_lqty",
+      "referenceUsd": 0.01687536,
+      "confirmedUsd": null,
+      "deltaUsd": null,
+      "captureRatio": null,
+      "signalBand": "not-comparable",
+      "attention": "context",
+      "referenceAvailable": true,
+      "confirmedAvailable": false,
+      "factualTrackingActive": true,
+      "eventCount": 0,
+      "trackingStatus": "factual-tracking-no-period-event",
+      "periodBoundaryIssue": false,
+      "crossMonthEvidenceCount": 0,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "referenceSampleDays": 8,
+      "referencePeriodStart": "2026-09-01",
+      "referencePeriodEnd": "2026-09-08",
+      "referencePositionIds": [
+        "liquity"
+      ],
+      "referenceRateStatuses": [
+        "current"
+      ],
+      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
+      "referenceScope": "Defitea base productive positions only",
+      "referenceScopeExcludes": [
+        "associated-company-reference-contributors",
+        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+      ],
+      "companyEstimatedReconciliationAuthority": false,
+      "reconciliationStatus": "tracking-no-period-event",
+      "reasonCodes": [
+        "base-position-reference-comparator-is-non-factual",
+        "partial-reference-window",
+        "factual-tracking-active",
+        "tracking-no-period-event"
+      ],
+      "completionBlockers": [
+        "no-canonical-period-income-evidence"
+      ],
+      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "mechanism-base-reference:defitea.eth:2026-09:pendle_spendle",
+      "scope": "mechanism-base-reference",
+      "company": "defitea.eth",
+      "registry": "004",
+      "month": "2026-09",
+      "mechanism": "pendle_spendle",
+      "referenceUsd": 0.51252952,
+      "confirmedUsd": null,
+      "deltaUsd": null,
+      "captureRatio": null,
+      "signalBand": "not-comparable",
+      "attention": "context",
+      "referenceAvailable": true,
+      "confirmedAvailable": false,
+      "factualTrackingActive": true,
+      "eventCount": 0,
+      "trackingStatus": "factual-tracking-no-period-event",
+      "periodBoundaryIssue": false,
+      "crossMonthEvidenceCount": 0,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "referenceSampleDays": 8,
+      "referencePeriodStart": "2026-09-01",
+      "referencePeriodEnd": "2026-09-08",
+      "referencePositionIds": [
+        "pendle"
+      ],
+      "referenceRateStatuses": [
+        "carried-forward"
+      ],
+      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
+      "referenceScope": "Defitea base productive positions only",
+      "referenceScopeExcludes": [
+        "associated-company-reference-contributors",
+        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+      ],
+      "companyEstimatedReconciliationAuthority": false,
+      "reconciliationStatus": "tracking-no-period-event",
+      "reasonCodes": [
+        "base-position-reference-comparator-is-non-factual",
+        "partial-reference-window",
+        "factual-tracking-active",
+        "tracking-no-period-event"
+      ],
+      "completionBlockers": [
+        "no-canonical-period-income-evidence"
+      ],
+      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "mechanism-base-reference:defitea.eth:2026-09:resupply_rsup",
+      "scope": "mechanism-base-reference",
+      "company": "defitea.eth",
+      "registry": "004",
+      "month": "2026-09",
+      "mechanism": "resupply_rsup",
+      "referenceUsd": 1.85531653,
+      "confirmedUsd": null,
+      "deltaUsd": null,
+      "captureRatio": null,
+      "signalBand": "not-comparable",
+      "attention": "context",
+      "referenceAvailable": true,
+      "confirmedAvailable": false,
+      "factualTrackingActive": true,
+      "eventCount": 0,
+      "trackingStatus": "factual-tracking-no-period-event",
+      "periodBoundaryIssue": false,
+      "crossMonthEvidenceCount": 0,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "referenceSampleDays": 8,
+      "referencePeriodStart": "2026-09-01",
+      "referencePeriodEnd": "2026-09-08",
+      "referencePositionIds": [
+        "resupply"
+      ],
+      "referenceRateStatuses": [
+        "current"
+      ],
+      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
+      "referenceScope": "Defitea base productive positions only",
+      "referenceScopeExcludes": [
+        "associated-company-reference-contributors",
+        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+      ],
+      "companyEstimatedReconciliationAuthority": false,
+      "reconciliationStatus": "tracking-no-period-event",
+      "reasonCodes": [
+        "base-position-reference-comparator-is-non-factual",
+        "partial-reference-window",
+        "factual-tracking-active",
+        "tracking-no-period-event"
+      ],
+      "completionBlockers": [
+        "no-canonical-period-income-evidence"
+      ],
+      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "mechanism-base-reference:defitea.eth:2026-09:velodrome_vevelo",
+      "scope": "mechanism-base-reference",
+      "company": "defitea.eth",
+      "registry": "004",
+      "month": "2026-09",
+      "mechanism": "velodrome_vevelo",
+      "referenceUsd": 1.6140025,
+      "confirmedUsd": 1.39483227,
+      "deltaUsd": 0.21917023,
+      "captureRatio": 0.864207,
+      "signalBand": "review-band",
+      "attention": "review",
+      "referenceAvailable": true,
+      "confirmedAvailable": true,
+      "factualTrackingActive": true,
+      "eventCount": 3,
+      "trackingStatus": "factual-period-evidence",
+      "periodBoundaryIssue": false,
+      "crossMonthEvidenceCount": 0,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "referenceSampleDays": 8,
+      "referencePeriodStart": "2026-09-01",
+      "referencePeriodEnd": "2026-09-08",
+      "referencePositionIds": [
+        "velodrome-finance"
+      ],
+      "referenceRateStatuses": [
+        "current"
+      ],
+      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
+      "referenceScope": "Defitea base productive positions only",
+      "referenceScopeExcludes": [
+        "associated-company-reference-contributors",
+        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+      ],
+      "companyEstimatedReconciliationAuthority": false,
+      "reconciliationStatus": "review-band",
+      "reasonCodes": [
+        "base-position-reference-comparator-is-non-factual",
+        "partial-reference-window",
+        "factual-tracking-active",
+        "factual-period-events-observed"
+      ],
+      "completionBlockers": [],
+      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "mechanism-base-reference:defitea.eth:2026-09:venice_svvv",
+      "scope": "mechanism-base-reference",
+      "company": "defitea.eth",
+      "registry": "004",
+      "month": "2026-09",
+      "mechanism": "venice_svvv",
+      "referenceUsd": 1.39025469,
+      "confirmedUsd": null,
+      "deltaUsd": null,
+      "captureRatio": null,
+      "signalBand": "not-comparable",
+      "attention": "context",
+      "referenceAvailable": true,
+      "confirmedAvailable": false,
+      "factualTrackingActive": true,
+      "eventCount": 0,
+      "trackingStatus": "factual-tracking-no-period-event",
+      "periodBoundaryIssue": false,
+      "crossMonthEvidenceCount": 0,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "referenceSampleDays": 8,
+      "referencePeriodStart": "2026-09-01",
+      "referencePeriodEnd": "2026-09-08",
+      "referencePositionIds": [
+        "venice-token"
+      ],
+      "referenceRateStatuses": [
+        "current"
+      ],
+      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
+      "referenceScope": "Defitea base productive positions only",
+      "referenceScopeExcludes": [
+        "associated-company-reference-contributors",
+        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+      ],
+      "companyEstimatedReconciliationAuthority": false,
+      "reconciliationStatus": "tracking-no-period-event",
+      "reasonCodes": [
+        "base-position-reference-comparator-is-non-factual",
+        "partial-reference-window",
+        "factual-tracking-active",
+        "tracking-no-period-event"
+      ],
+      "completionBlockers": [
+        "no-canonical-period-income-evidence"
+      ],
+      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    },
+    {
+      "id": "mechanism-base-reference:defitea.eth:2026-09:yieldbasis_veyb",
+      "scope": "mechanism-base-reference",
+      "company": "defitea.eth",
+      "registry": "004",
+      "month": "2026-09",
+      "mechanism": "yieldbasis_veyb",
+      "referenceUsd": 1.20297626,
+      "confirmedUsd": 0.98700809,
+      "deltaUsd": 0.21596817,
+      "captureRatio": 0.820472,
+      "signalBand": "review-band",
+      "attention": "review",
+      "referenceAvailable": true,
+      "confirmedAvailable": true,
+      "factualTrackingActive": true,
+      "eventCount": 6,
+      "trackingStatus": "factual-period-evidence",
+      "periodBoundaryIssue": false,
+      "crossMonthEvidenceCount": 0,
+      "modelVariancePossible": true,
+      "modelVarianceIsProven": false,
+      "partialPeriod": true,
+      "referenceSampleDays": 8,
+      "referencePeriodStart": "2026-09-01",
+      "referencePeriodEnd": "2026-09-08",
+      "referencePositionIds": [
+        "yield-basis"
+      ],
+      "referenceRateStatuses": [
+        "current"
+      ],
+      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
+      "referenceScope": "Defitea base productive positions only",
+      "referenceScopeExcludes": [
+        "associated-company-reference-contributors",
+        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+      ],
+      "companyEstimatedReconciliationAuthority": false,
+      "reconciliationStatus": "review-band",
+      "reasonCodes": [
+        "base-position-reference-comparator-is-non-factual",
+        "partial-reference-window",
+        "factual-tracking-active",
+        "factual-period-events-observed"
+      ],
+      "completionBlockers": [],
+      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none"
+    }
+  ],
+  "authority": {
+    "readOnly": true,
+    "sourceOfTruth": false,
+    "incomeCreationAuthority": false,
+    "factualIncomeAuthority": false,
+    "referenceIncomeAuthority": false,
+    "accountingCompletionAuthority": false,
+    "monthClosingAuthority": false,
+    "canReplaceUnknown": false,
+    "methodologyMutationAuthority": "none",
+    "walletAuthority": "none",
+    "capitalExecution": false,
+    "executionAuthority": "none"
+  }
+}
