@@ -3,11 +3,24 @@
   "asset": "ICP",
   "network": "Internet Computer",
   "positionType": "NNS Governance Neurons",
-  "trackingMethod": "public-neuron-ids-with-bounded-reward-estimate-fallback",
+  "trackingMethod": "41-known-neuron-ids-public-read-only-with-private-maturity-boundary",
   "controllerPrincipal": "e4hsg-rur7f-jh4mo-x2obk-axb7u-7ep53-hm6a2-qysjy-fbthr-7sbeu-bqe",
   "liquidIcpAccountId": "c222d5dd723e0a555df495fc036cf1ea1585a042db71c6c275f1234e288c0839",
+  "canonicalOwnerDecision": {
+    "date": "2026-09-08",
+    "status": "current-canonical-position",
+    "publicStateTracking": "complete-for-current-anonymous-nns-surface",
+    "exactEarnedIncomeVisibility": "partial-externally-blocked-private-nns-neuron",
+    "collectorBroken": false,
+    "publicNeuronRoute": "parked-owner-action-unavailable-not-requested",
+    "hotkeyRoute": "prohibited-current-stage-authority-expansion",
+    "manualRecurringMaturitySnapshots": "not-required-not-requested",
+    "mustNotBlockGeneralAccountingRoadmap": true,
+    "resumeExactRewardResearchOnlyOnNewTechnicalEvidence": true
+  },
   "allocation": {
     "policy": "owner-declared-equal-economic-allocation",
+    "positionEngineRule": "Compute one shared position-level capital/reward state first, then allocate 50/50. Never run two independent ICP accounting engines.",
     "companies": {
       "0x5860...83CA8.eth": 0.5,
       "aerocvxyb.eth": 0.5
@@ -18,12 +31,20 @@
     "snapshotDate": "2026-07-04",
     "visibleNeuronCount": 41,
     "activeStakedNeuronCount": 38,
+    "activeStakedNeuronCountSemantic": "historical owner label only; do not reuse ambiguous 'active' as a normalized lifecycle state",
     "activeStakedIcp": 2332.7346939,
     "manualUnstakedMaturityIcp": 21.48,
+    "manualUnstakedMaturityEvidenceClass": "factual-maturity-state-snapshot-not-period-income",
+    "manualUnstakedMaturityAllocationIcp": {
+      "0x5860...83CA8.eth": 10.74,
+      "aerocvxyb.eth": 10.74
+    },
+    "baselineCreatesPeriodIncome": false,
     "firstUnlock": {
       "dateUtc": "2026-08-03T03:10:54Z",
       "amountIcp": 61.3877551,
-      "neuronId": "7305384784698965212"
+      "neuronId": "7305384784698965212",
+      "economicClass": "principal-lifecycle-not-income"
     }
   },
   "neuronIds": [
@@ -69,26 +90,111 @@
     "9312462835669707953",
     "9571697732744610063"
   ],
+  "publicObservationPolicy": {
+    "expectedNeuronCount": 41,
+    "anonymousReadOnly": true,
+    "persistImmutableTimestampedHistory": true,
+    "fields": [
+      "neuronId",
+      "stake",
+      "state",
+      "dissolveState",
+      "dissolveDelay",
+      "unlockOrDissolveTimestamp",
+      "votingPower",
+      "decidingVotingPower",
+      "potentialVotingPower",
+      "productiveStatus",
+      "publicLifecycleChanges"
+    ],
+    "normalizedLifecycleStates": [
+      "non-zero-stake",
+      "dissolving",
+      "dissolved",
+      "economically-productive",
+      "principal-lifecycle-ready"
+    ],
+    "ambiguousActiveLabelAllowedAsCanonicalState": false,
+    "missingMaturityMeansZero": false
+  },
   "rewardPolicy": {
     "referenceAprEngine": "icp_nns",
+    "confirmedLayer": "factual-evidence-only",
+    "estimatedLayer": "analytics-only-independent-of-canonical-ledger",
     "exactUnstakedMaturityPreference": "Use public exact maturity only when coverage is complete enough to prove the aggregate.",
-    "fallback": "Owner-confirmed 2026-07-04 maturity snapshot plus simple accrual at the canonical NNS Reference APR over a bounded productive principal.",
-    "fallbackPrincipalRule": "If every neuron detail is live, use the lesser of the owner baseline active stake and current non-dissolved live stake; otherwise retain the owner baseline and mark the estimate partial.",
+    "fallback": "Owner-confirmed 2026-07-04 maturity snapshot plus bounded Reference analytics until a dynamic public per-neuron estimate is available.",
+    "fallbackPrincipalRule": "If every neuron detail is live, use the lesser of the owner baseline active stake and current economically productive live stake; otherwise retain the owner baseline and mark the estimate partial.",
+    "dynamicEstimatedTarget": "Estimate expected reward per neuron from public stake, dissolve lifecycle, voting power, deciding/potential voting power, productive status and current public NNS reward mechanics; aggregate once, then allocate 50/50.",
+    "dynamicEstimatedRemainsFactual": false,
     "fallbackAccountingTreatment": "analytics-state-estimate-only-never-earned-income",
     "referenceAprAccountingAuthority": false,
+    "estimatedCanBackfillConfirmed": false,
+    "stakeDeltaIsEarnedIncomeAuthority": false,
+    "principalUnlockIsIncome": false,
+    "principalWithdrawalIsIncome": false,
+    "principalReductionIsNegativeIncome": false,
     "factualSnapshotEvidenceFile": "reporting/icp-nns-factual-snapshots.json",
     "factualIntervalEvaluator": "reporting/icp-nns-factual-intervals.mjs",
     "factualAdmissionPolicy": "Only comparable factual maturity snapshots with reconciled reward-state lifecycle, canonical USD valuation, and explicit period attribution may become Canonical Income Ledger candidates.",
-    "publicProbeConclusion": "Public read-only NNS data does not currently expose exact per-neuron maturity or enough per-neuron reward-allocation data for automatic factual reward reconstruction.",
+    "publicProbeConclusion": "All 41 known neurons are readable through the anonymous Governance information surface, but current private-neuron NNS privacy does not expose exact ordinary or staked maturity or enough reward-allocation state for automatic factual reward reconstruction.",
+    "exactRewardVisibilityLimitation": "externally-blocked-private-nns-neuron",
     "classification": "unclaimed",
     "claimAuthority": "none",
     "executionAuthority": "none",
     "unknownIsNotZero": true
   },
+  "principalLifecyclePolicy": {
+    "unlockIsIncome": false,
+    "disbursementIsIncome": false,
+    "principalRelocationIsIncome": false,
+    "productiveCapitalMustAdaptToLifecycle": true,
+    "futureEstimatedRewardMustAdaptToLifecycle": true,
+    "crossStateChangesRequireEconomicClassificationBeforeLedgerAdmission": true
+  },
+  "monitorPolicy": {
+    "telegramRole": "operational-monitoring-not-accounting-authority",
+    "nextUnlockRule": "earliest-future-unlock-relative-to-observation-timestamp",
+    "pastUnlockCanBeNextUnlock": false,
+    "exactRewardsMessage": "Exact rewards unavailable automatically under current NNS privacy.",
+    "manualRefreshExpectation": false
+  },
+  "passportPolicy": {
+    "showSharedPositionAllocation": true,
+    "showConfirmedSeparately": true,
+    "showEstimatedSeparately": true,
+    "confirmedUnavailableMustNotRenderAsZero": true,
+    "confirmedUnavailableSemantic": "pending-or-exact-reward-state-unavailable",
+    "showNeuronIdsInPrimaryPassport": false,
+    "showFullUnlockCalendarInPrimaryPassport": false,
+    "showPerNeuronVotingPowerInPrimaryPassport": false,
+    "showPrivacyOrCredentialInternalsInPrimaryPassport": false
+  },
+  "coveragePolicy": {
+    "publicStateTrackingCapability": "complete",
+    "capitalTracking": "complete-subject-to-observed-lifecycle-state",
+    "exactEarnedIncomeVisibility": "partial-externally-blocked",
+    "referenceAnalytics": "active",
+    "reusableEngineeringGap": false,
+    "externalEvidenceLimitationMustNotBecomeZero": true
+  },
+  "ownerActionPolicy": {
+    "publicVisibilityChangeRequested": false,
+    "hotkeySetupRequested": false,
+    "credentialsRequested": false,
+    "recurringManualSnapshotsRequested": false,
+    "requireOwnerActionForCurrentRoadmap": false
+  },
   "security": {
     "readOnly": true,
     "seedPhraseRequired": false,
     "identityPemRequired": false,
-    "privateKeyRequired": false
+    "privateKeyRequired": false,
+    "controllerCredentialsRequired": false,
+    "hotkeyRequired": false,
+    "signingCredentialsAllowedInGithub": false,
+    "signingCredentialsAllowedInActions": false,
+    "signingCredentialsAllowedInRuntime": false,
+    "signingCredentialsAllowedInLogs": false,
+    "signingCredentialsAllowedInAgentRuntime": false
   }
 }
