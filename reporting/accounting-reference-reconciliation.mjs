@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Accounting Reference Reconciliation v0.1
+ * The Holding · Accounting Reference Reconciliation v0.2
  *
  * Diagnostic comparison only. This layer explains where Reference/Estimated and
  * factual Confirmed accounting differ; it never creates income, closes a month,
@@ -16,7 +16,7 @@ const COVERAGE_FILE=process.env.ACCOUNTING_COVERAGE_FILE||path.join(ROOT,'report
 const REPORTING_FILE=process.env.REPORTING_DATA_FILE||path.join(ROOT,'reporting','reporting-data.json');
 const NOTICE_FILE=process.env.ACCOUNTING_NOTICE_QUEUE_FILE||path.join(ROOT,'reporting','accounting-notice-queue.json');
 const OUTPUT_FILE=process.env.ACCOUNTING_REFERENCE_RECONCILIATION_FILE||path.join(ROOT,'reporting','accounting-reference-reconciliation.json');
-const VERSION='0.1-accounting-reference-reconciliation';
+const VERSION='0.2-accounting-reference-reconciliation-cross-month-attribution';
 const START_MONTH='2026-08';
 
 const finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v));
@@ -149,7 +149,10 @@ function defiteaMechanismRows(reporting,coverage){
     const deltaUsd=finite(referenceUsd)&&finite(confirmedUsd)?round(referenceUsd-confirmedUsd):null;
     const ratio=ratioBand(referenceUsd,confirmedUsd);
     const dates=[...ref.dates].sort();
-    const periodBoundaryIssue=Number(state?.crossMonthEvidenceCount||0)>0||(state?.completionBlockers||[]).includes('cross-month-boundary-requires-explicit-allocation');
+    const crossMonthEvidenceCount=Number(state?.crossMonthEvidenceCount||0);
+    const crossMonthExplicitlyAttributedCount=Number(state?.crossMonthExplicitlyAttributedCount||0);
+    const crossMonthUnresolvedCount=finite(state?.crossMonthUnresolvedCount)?Number(state.crossMonthUnresolvedCount):crossMonthEvidenceCount;
+    const periodBoundaryIssue=crossMonthUnresolvedCount>0||(state?.completionBlockers||[]).includes('cross-month-boundary-requires-explicit-allocation');
     const tracking=state?.factualTrackingActive===true;
     const eventCount=Number(state?.factualEventCount||0);
     const partialPeriod=dates[0]!==`${ref.month}-01`||ref.month===coverage?.currentMonth;
@@ -159,7 +162,8 @@ function defiteaMechanismRows(reporting,coverage){
       tracking?'factual-tracking-active':'missing-factual-tracking-capability',
       tracking&&eventCount===0?'tracking-no-period-event':null,
       eventCount>0?'factual-period-events-observed':null,
-      periodBoundaryIssue?'period-boundary-evidence':null
+      periodBoundaryIssue?'period-boundary-evidence':null,
+      crossMonthEvidenceCount>0&&crossMonthUnresolvedCount===0?'canonical-cross-month-attribution-resolved':null
     ]);
     let reconciliationStatus='not-comparable';
     if(!tracking)reconciliationStatus='missing-capability';
@@ -183,7 +187,9 @@ function defiteaMechanismRows(reporting,coverage){
       eventCount,
       trackingStatus:state?.status||null,
       periodBoundaryIssue,
-      crossMonthEvidenceCount:Number(state?.crossMonthEvidenceCount||0),
+      crossMonthEvidenceCount,
+      crossMonthExplicitlyAttributedCount,
+      crossMonthUnresolvedCount,
       modelVariancePossible:true,
       modelVarianceIsProven:false,
       partialPeriod,
@@ -204,7 +210,7 @@ function defiteaMechanismRows(reporting,coverage){
       reconciliationStatus,
       reasonCodes,
       completionBlockers:Array.isArray(state?.completionBlockers)?state.completionBlockers:[],
-      comparisonSemantic:'Mechanism row compares one principal position\'s observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.',
+      comparisonSemantic:'Mechanism row compares one principal position\'s observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. Explicit canonical period attribution may resolve a diagnostic cross-month boundary without creating or reallocating income. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.',
       sourceOfTruth:false,
       incomeCreationAuthority:false,
       monthClosingAuthority:false,
@@ -251,6 +257,8 @@ const output={
     supplementaryReferenceDoubleAddForbidden:true,
     principalCapitalCountedOnce:true,
     historicalReferenceChannelDecompositionIsNotInferred:true,
+    explicitCanonicalPeriodAttributionCanResolveDiagnosticBoundary:true,
+    explicitCanonicalPeriodAttributionCannotCreateOrReallocateIncome:true,
     unknownIsNotZero:true
   },
   diagnosticBands:{
@@ -303,4 +311,4 @@ const output={
   }
 };
 write(OUTPUT_FILE,output);
-console.log('Accounting Reference Reconciliation v0.1 built',output.summary);
+console.log('Accounting Reference Reconciliation v0.2 built',output.summary);
