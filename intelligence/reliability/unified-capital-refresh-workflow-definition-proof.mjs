@@ -33,12 +33,12 @@ assert.doesNotMatch(workflow,/sendTransaction|eth_sendRawTransaction|eth_sendTra
 assert.doesNotMatch(orchestrator,/sendTransaction|eth_sendRawTransaction|eth_sendTransaction|\.transfer\(|\.approve\(|\.claim\(|\.vote\(/,'Unified Capital orchestrator contains wallet/capital transaction behavior');
 
 const order=[
-  orchestrator.indexOf("productivity/productivity-engine.mjs"),
-  orchestrator.indexOf("productivity/company-010-productivity-overlay.mjs"),
-  orchestrator.indexOf("productivity/yieldring-productivity-overlay.mjs"),
-  orchestrator.indexOf("productivity/votemarket-productivity-overlay.mjs"),
-  orchestrator.indexOf("intelligence/capital-state/general-company-balance-sheet.mjs"),
-  orchestrator.indexOf("intelligence/capital-state/capital-state.mjs")
+  orchestrator.indexOf("run('3/9 Refresh protocol APRs and established Productivity'"),
+  orchestrator.indexOf("run('4/9 Admit Company #010 compatibility layer'"),
+  orchestrator.indexOf("run('5/9 Apply canonical YieldRing Productivity overlay'"),
+  orchestrator.indexOf("run('6/9 Apply VoteMarket supplementary income channels'"),
+  orchestrator.indexOf("run('7/9 Rebuild General Company Balance Sheet'"),
+  orchestrator.indexOf("run('9/9 Build Capital State'")
 ];
 assert.ok(order.every(x=>x>=0)&&order.every((x,i)=>i===0||x>order[i-1]),'canonical orchestrator order drift');
 
