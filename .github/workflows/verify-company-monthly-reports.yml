@@ -3,6 +3,7 @@ name: Verify Company Monthly Reports
 on:
   pull_request:
     paths:
+      - 'reporting/company-income-scope.mjs'
       - 'reporting/company-monthly-reports.mjs'
       - 'reporting/company-monthly-reports-validation.mjs'
       - 'reporting/canonical-earned-income-view.mjs'
@@ -40,6 +41,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          node --check reporting/company-income-scope.mjs
           node --check reporting/company-monthly-reports.mjs
           node --check reporting/company-monthly-reports-validation.mjs
           node --check reporting/canonical-earned-income-view.mjs
@@ -51,6 +53,7 @@ jobs:
           node --check reporting/icp-nns-factual-intervals-validation.mjs
           node --check companies/company-monthly-report-adapter.js
           node --check companies/company-passport-priority-adapter.js
+          node reporting/company-income-scope.mjs
           git diff --check
 
       - name: Exercise exact monthly accounting candidate
@@ -91,6 +94,10 @@ jobs:
               confirmedUsd:latest?.incomeView?.confirmed?.usd,
               estimatedUsd:latest?.incomeView?.estimated?.usd,
               estimatedAvailable:latest?.incomeView?.estimated?.available,
+              associatedCompanies:latest?.incomeView?.scope?.associatedCompanies,
+              confirmedOwners:latest?.incomeView?.scope?.confirmedOwners,
+              estimatedContributors:latest?.incomeView?.scope?.estimatedContributors,
+              capitalOwners:latest?.incomeView?.scope?.capitalOwners,
               accountingStatus:latest?.accountingStatus,
               coverageComplete:latest?.accountingCoverageComplete,
               unresolvedLifecycleEvents:latest?.incomeAccounting?.lifecycle?.unresolvedEventCount,
@@ -118,16 +125,15 @@ jobs:
           const fs=require('fs');
           const x=JSON.parse(fs.readFileSync('/tmp/accounting-coverage.json','utf8'));
           for(const [name,c] of Object.entries(x.companies||{})){
-            const latest=Object.keys(c.months||{}).sort().at(-1);
-            const row=c.months?.[latest];
+            const latest=c.currentMonth||x.currentMonth;
+            const states=Object.values(c.mechanisms||{}).map(m=>m.months?.[latest]).filter(Boolean);
             console.log(name,{
               registry:c.registry,
               mechanismCount:c.mechanismCount,
               latestMonth:latest,
-              factualMechanisms:row?.mechanismsWithFactualPeriodEvidence,
-              missingMechanisms:row?.mechanismsWithoutFactualPeriodEvidence,
-              readyToClose:row?.registryReadyToCloseMonth,
-              blockers:row?.blockers
+              factualTrackingMechanisms:states.filter(s=>s.factualTrackingActive===true).length,
+              factualEventMechanisms:states.filter(s=>Number(s.factualEventCount||0)>0).length,
+              waitingForEventMechanisms:states.filter(s=>s.status==='factual-tracking-no-period-event').length
             });
           }
           NODE
@@ -151,13 +157,17 @@ jobs:
           set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');
-          const files=['reporting/company-monthly-reports.mjs','reporting/canonical-earned-income-view.mjs','reporting/company-monthly-earned-income.mjs','reporting/accounting-coverage.mjs','reporting/icp-nns-factual-intervals.mjs','companies/company-monthly-report-adapter.js','companies/company-passport-priority-adapter.js'];
+          const files=['reporting/company-income-scope.mjs','reporting/company-monthly-reports.mjs','reporting/canonical-earned-income-view.mjs','reporting/company-monthly-earned-income.mjs','reporting/accounting-coverage.mjs','reporting/icp-nns-factual-intervals.mjs','companies/company-monthly-report-adapter.js','companies/company-passport-priority-adapter.js'];
           const text=files.map(f=>fs.readFileSync(f,'utf8')).join('\n');
           for(const bad of ['api.coingecko.com','COINGECKO_API_KEY','new Wallet(','sendTransaction(','executionAuthority: write','registryHasMonthClosingAuthority:true','monthClosingAuthority:true']){
             if(text.includes(bad)) throw new Error('unexpected monthly reporting authority/data discovery: '+bad);
           }
+          const scope=fs.readFileSync('reporting/company-income-scope.mjs','utf8');
+          for(const required of ["'YieldRing.eth'", "'05081966.eth'",'includeAssociatedConfirmed: true','includeAssociatedEstimated: true','includeAssociatedCapital: false','canonicalOwnershipPreserved: true','crossCompanyReattributionAllowed: false','holdingWideAggregationMustUseCanonicalOwners: true']){
+            if(!scope.includes(required)) throw new Error('company income scope invariant missing: '+required);
+          }
           const accounting=fs.readFileSync('reporting/company-monthly-earned-income.mjs','utf8');
-          for(const required of ['canonicalLedgerIsSoleMonthlyIncomeEventSource: true','monthlyLayerCreatesIncomeEvents: false','claimableSnapshotDeltaCreatesIncome: false','genericReceiptCreatesIncome: false','referenceIncomeIsPrimaryMetric: false','currentRewardBalanceIsPeriodIncome: false','incompleteCoverageMayMasqueradeAsCompleteIncome: false','confirmedAndEstimatedAreNonAdditive: true','estimatedIncomeCanCloseAccountingCoverage: false','estimatedIncomeCanReplaceUnknown: false']){
+          for(const required of ['canonicalLedgerIsSoleMonthlyIncomeEventSource: true','canonicalCompanyOwnsIncomeExclusively: true','crossCompanyEarnedIncomeReattributionForbidden: true','explicitEconomicReportingScopeMayAggregateCanonicalOwnersForPresentation: true','holdingWideAggregationMustUseCanonicalOwners: true','monthlyLayerCreatesIncomeEvents: false','claimableSnapshotDeltaCreatesIncome: false','genericReceiptCreatesIncome: false','referenceIncomeIsPrimaryMetric: false','currentRewardBalanceIsPeriodIncome: false','incompleteCoverageMayMasqueradeAsCompleteIncome: false','confirmedAndEstimatedAreNonAdditive: true','estimatedIncomeCanCloseAccountingCoverage: false','estimatedIncomeCanReplaceUnknown: false']){
             if(!accounting.includes(required)) throw new Error('accounting fail-closed invariant missing: '+required);
           }
           for(const forbidden of ['buildObservedRewardAccruals','observed-native-reward-delta','reward-accrual:']){
@@ -168,7 +178,7 @@ jobs:
             if(!view.includes(required)) throw new Error('canonical earned-income view invariant missing: '+required);
           }
           const priority=fs.readFileSync('companies/company-passport-priority-adapter.js','utf8');
-          for(const required of ["const COVERAGE_URL = '/reporting/accounting-coverage.json'","const INCOME_VIEW_VERSION = '0.1-confirmed-estimated-non-additive'",'estimated.earnedIncomeAuthority !== false','estimated.factualIncomeAuthority !== false','estimated.canCloseAccountingCoverage !== false','estimated.canReplaceUnknown !== false',"estimated.basis !== 'existing-reference-model'",'browserCalculatesEstimatedIncome: false','confirmedPlusEstimatedIsValidTotal: false','estimatedIncomeAuthority: false','estimatedCanCloseAccountingCoverage: false','noticesCreateIncome: false','coverageHasCompletionAuthority: false','referenceIncomeAuthority: false',"data?.status !== 'diagnostic-no-completion-authority'"]){
+          for(const required of ["const COVERAGE_URL = '/reporting/accounting-coverage.json'","const INCOME_VIEW_VERSION = '0.1-confirmed-estimated-non-additive'",'const SNAPSHOT_TTL_MS = 5 * 60 * 1000','estimated.earnedIncomeAuthority !== false','estimated.factualIncomeAuthority !== false','estimated.canCloseAccountingCoverage !== false','estimated.canReplaceUnknown !== false',"estimated.basis !== 'existing-reference-model'",'trackingNoEventVisible: true','associatedCompanyCapitalIncluded: false','browserCalculatesEstimatedIncome: false','confirmedPlusEstimatedIsValidTotal: false','estimatedIncomeAuthority: false','estimatedCanCloseAccountingCoverage: false','noticesCreateIncome: false','coverageHasCompletionAuthority: false','referenceIncomeAuthority: false',"data?.status !== 'diagnostic-no-completion-authority'","state.status === 'factual-tracking-no-period-event'"]){
             if(!priority.includes(required)) throw new Error('accounting transparency boundary missing: '+required);
           }
           if(priority.includes('referenceAnalytics?.generatedIncomeUsd')) throw new Error('Passport UI bypasses incomeView and reads reference analytics directly');
@@ -176,6 +186,11 @@ jobs:
           if(coverage.status!=='diagnostic-no-completion-authority'||coverage.authority?.monthClosingAuthority!==false) throw new Error('Accounting coverage diagnostic gained completion authority');
           const monthly=JSON.parse(fs.readFileSync('/tmp/company-monthly-reports.json','utf8'));
           if(monthly.presentationModelVersion!=='0.1-confirmed-estimated-non-additive') throw new Error('monthly confirmed/estimated contract missing');
+          const defitea=monthly.companies?.['defitea.eth'];
+          const latestDefitea=Object.values(defitea?.months||{}).sort((a,b)=>String(a.month).localeCompare(String(b.month))).at(-1);
+          if(JSON.stringify(latestDefitea?.incomeView?.scope?.associatedCompanies)!==JSON.stringify(['YieldRing.eth','05081966.eth'])) throw new Error('Defitea associated scope missing');
+          if(JSON.stringify(latestDefitea?.incomeView?.scope?.capitalOwners)!==JSON.stringify(['defitea.eth'])) throw new Error('Defitea associated capital leaked into TVL scope');
+          if(latestDefitea?.incomeView?.scope?.holdingWideAggregationMustUseCanonicalOwners!==true) throw new Error('Defitea Holding-wide canonical-owner guard missing');
           for(const [name,company] of Object.entries(monthly.companies||{})) for(const [month,row] of Object.entries(company.months||{})) {
             const incomeView=row.incomeView;
             if(!incomeView||incomeView.relationship?.additive!==false||incomeView.relationship?.confirmedPlusEstimatedIsValidTotal!==false) throw new Error(`${name} ${month} confirmed/estimated relationship drift`);

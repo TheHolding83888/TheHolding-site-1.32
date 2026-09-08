@@ -1,4 +1,4 @@
-/* The Holding · Company Passport priority adapter · v0.5.0
+/* The Holding · Company Passport priority adapter · v0.6.0
  * Presentation only.
  * 1) Promotes the existing APR field to the first metadata row in every
  *    standard Company Passport.
@@ -6,11 +6,11 @@
  *    full-period accounting coverage is still incomplete.
  * 3) Shows the backend-provided Estimated lane as a separate, non-additive
  *    alternative model view for the same period.
- * 4) Shows the matching confirmed-period yield when factual income exists but
- *    full-month coverage is incomplete.
- * 5) Projects live diagnostic Accounting Coverage into subtle per-period
- *    notices. Missing/uncertain mechanisms remain visible without blocking
- *    already-confirmed income from being shown.
+ * 4) Shows compact live tracking coverage plus per-mechanism diagnostic rows.
+ * 5) Refreshes reporting/coverage on report interaction with a bounded TTL so
+ *    an already-open page can converge to newly materialized backend truth.
+ * 6) Makes explicit associated-company reporting scopes visible without ever
+ *    adding their capital to the target company's TVL.
  *
  * This adapter never creates income, calculates factual income, estimates
  * missing days in the browser, adds Confirmed + Estimated, changes accounting
@@ -24,11 +24,14 @@
   const REPORT_URL = '/reporting/company-monthly-reports.json';
   const COVERAGE_URL = '/reporting/accounting-coverage.json';
   const INCOME_VIEW_VERSION = '0.1-confirmed-estimated-non-additive';
+  const SNAPSHOT_TTL_MS = 5 * 60 * 1000;
   let queued = false;
   let monthlySnapshot = null;
   let monthlyLoading = null;
+  let monthlyLoadedAt = 0;
   let coverageSnapshot = null;
   let coverageLoading = null;
+  let coverageLoadedAt = 0;
 
   const lang = () => (document.documentElement.lang || 'en').toLowerCase().startsWith('ru') ? 'ru' : 'en';
   const finite = value => value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value));
@@ -36,6 +39,7 @@
     ? '$' + Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
     : '—';
   const pct = value => finite(value) ? Number(value).toFixed(2) + '%' : '—';
+  const stale = loadedAt => !loadedAt || Date.now() - loadedAt >= SNAPSHOT_TTL_MS;
 
   function setText(el, text) {
     if (el && el.textContent !== text) el.textContent = text;
@@ -55,8 +59,8 @@
     return moved;
   }
 
-  function loadMonthlySnapshot() {
-    if (monthlySnapshot) return Promise.resolve(monthlySnapshot);
+  function loadMonthlySnapshot({ force = false } = {}) {
+    if (!force && monthlySnapshot && !stale(monthlyLoadedAt)) return Promise.resolve(monthlySnapshot);
     if (monthlyLoading) return monthlyLoading;
     monthlyLoading = fetch(REPORT_URL + '?t=' + Date.now(), { cache: 'no-store' })
       .then(response => {
@@ -65,14 +69,15 @@
       })
       .then(data => {
         monthlySnapshot = data;
+        monthlyLoadedAt = Date.now();
         return data;
       })
       .finally(() => { monthlyLoading = null; });
     return monthlyLoading;
   }
 
-  function loadCoverageSnapshot() {
-    if (coverageSnapshot) return Promise.resolve(coverageSnapshot);
+  function loadCoverageSnapshot({ force = false } = {}) {
+    if (!force && coverageSnapshot && !stale(coverageLoadedAt)) return Promise.resolve(coverageSnapshot);
     if (coverageLoading) return coverageLoading;
     coverageLoading = fetch(COVERAGE_URL + '?t=' + Date.now(), { cache: 'no-store' })
       .then(response => {
@@ -85,15 +90,27 @@
           throw new Error('Accounting Coverage authority expanded');
         }
         coverageSnapshot = data;
+        coverageLoadedAt = Date.now();
         return data;
       })
       .catch(err => {
         coverageSnapshot = null;
+        coverageLoadedAt = 0;
         console.warn('[Company Passport accounting transparency]', err?.message || err);
         return null;
       })
       .finally(() => { coverageLoading = null; });
     return coverageLoading;
+  }
+
+  function refreshSnapshots({ force = false } = {}) {
+    return Promise.all([
+      loadMonthlySnapshot({ force }),
+      loadCoverageSnapshot({ force })
+    ]).then(() => {
+      patchMonthlyReports();
+      return { monthlySnapshot, coverageSnapshot };
+    });
   }
 
   function orderedMonths(company) {
@@ -106,6 +123,10 @@
     if (view?.unknownIsNotZero !== true || view?.executionAuthority !== 'none') return null;
     if (view?.relationship?.additive !== false || view?.relationship?.confirmedPlusEstimatedIsValidTotal !== false) return null;
     if (view?.relationship?.estimatedMayOverlapConfirmedEconomics !== true || view?.relationship?.estimatedIsAlternativeAnalyticView !== true) return null;
+    if (view?.scope) {
+      if (view.scope.canonicalOwnershipPreserved !== true || view.scope.crossCompanyReattributionAllowed !== false) return null;
+      if (view.scope.holdingWideAggregationMustUseCanonicalOwners !== true || view.scope.executionAuthority !== 'none') return null;
+    }
     return view;
   }
 
@@ -119,9 +140,7 @@
       }
       return { usd: null, observedOnly: false };
     }
-    if (finite(month.generatedIncomeUsd)) {
-      return { usd: Number(month.generatedIncomeUsd), observedOnly: false };
-    }
+    if (finite(month.generatedIncomeUsd)) return { usd: Number(month.generatedIncomeUsd), observedOnly: false };
     const hasObservedEvidence = month.accountingStatus === 'partial-observed' && Number(month.accountingEvidenceCount || 0) > 0;
     if (hasObservedEvidence && finite(month.observedEarnedIncomeUsd)) {
       return { usd: Number(month.observedEarnedIncomeUsd), observedOnly: true };
@@ -139,9 +158,7 @@
       }
       return { value: null, observedOnly: false };
     }
-    if (finite(month.monthlyYieldPct)) {
-      return { value: Number(month.monthlyYieldPct), observedOnly: false };
-    }
+    if (finite(month.monthlyYieldPct)) return { value: Number(month.monthlyYieldPct), observedOnly: false };
     const hasObservedEvidence = month.accountingStatus === 'partial-observed' && Number(month.accountingEvidenceCount || 0) > 0;
     if (hasObservedEvidence && finite(month.observedPeriodYieldPct)) {
       return { value: Number(month.observedPeriodYieldPct), observedOnly: true };
@@ -152,15 +169,18 @@
   function displayEstimate(month) {
     const view = validIncomeView(month);
     const estimated = view?.estimated;
-    if (!estimated || estimated.available !== true) return { available: false, usd: null, yieldPct: null };
-    if (estimated.basis !== 'existing-reference-model') return { available: false, usd: null, yieldPct: null };
-    if (estimated.earnedIncomeAuthority !== false || estimated.factualIncomeAuthority !== false) return { available: false, usd: null, yieldPct: null };
-    if (estimated.canCloseAccountingCoverage !== false || estimated.canReplaceUnknown !== false) return { available: false, usd: null, yieldPct: null };
-    if (!finite(estimated.usd)) return { available: false, usd: null, yieldPct: null };
+    if (!estimated || estimated.available !== true) return { available: false, usd: null, yieldPct: null, associatedCompanies: [] };
+    if (estimated.basis !== 'existing-reference-model') return { available: false, usd: null, yieldPct: null, associatedCompanies: [] };
+    if (estimated.earnedIncomeAuthority !== false || estimated.factualIncomeAuthority !== false) return { available: false, usd: null, yieldPct: null, associatedCompanies: [] };
+    if (estimated.canCloseAccountingCoverage !== false || estimated.canReplaceUnknown !== false) return { available: false, usd: null, yieldPct: null, associatedCompanies: [] };
+    if (!finite(estimated.usd)) return { available: false, usd: null, yieldPct: null, associatedCompanies: [] };
     return {
       available: true,
       usd: Number(estimated.usd),
-      yieldPct: finite(estimated.yieldPct) ? Number(estimated.yieldPct) : null
+      yieldPct: finite(estimated.yieldPct) ? Number(estimated.yieldPct) : null,
+      associatedCompanies: Array.isArray(estimated.associatedCompaniesIncluded)
+        ? estimated.associatedCompaniesIncluded.filter(Boolean)
+        : []
     };
   }
 
@@ -184,33 +204,39 @@
       confirmedShort: 'подтверждено',
       confirmedYield: 'Подтверждённая доходность',
       estimated: 'Оценка по модели',
-      estimatedNote: 'Оценка — альтернативная модель за тот же период. Она не прибавляется к подтверждённому доходу.',
+      estimatedNote: 'Динамическая оценка за тот же период. Она не прибавляется к подтверждённому доходу.',
+      scopeNote: names => `В обе метрики включён доход ${names.join(' и ')}; их капитал не входит в TVL этой компании.`,
       period: 'Период наблюдения',
+      trackingSummary: (tracking, total, events) => `Трекинг ${tracking}/${total} · События ${events}/${total}`,
       partial: 'Показан только подтверждённый доход. Неподтверждённые части в сумму не подставляются.',
       awaiting: 'Трекинг активен; подтверждённых событий дохода за этот период пока нет.',
+      trackingNoEvent: label => `${label} — трекинг активен; подтверждённого события за этот период пока нет.`,
       stateOnly: label => `${label} — пока не включено: состояние позиции видно, но фактический трекинг дохода не подтверждён.`,
       referenceOnly: label => `${label} — пока не включено: фактический трекинг дохода ещё не подтверждён.`,
       boundary: label => `${label} — часть периода пока не включена: требуется подтверждение границы периода.`,
       unclassified: label => `${label} — пока не включено: механизм дохода ещё не классифицирован.`,
       unresolved: label => `${label} — событие дохода пока не включено: требуется дополнительное подтверждение.`,
       unresolvedGeneric: 'Часть событий дохода пока не включена: требуется дополнительное подтверждение.',
-      more: count => `Ещё ${count} ${count === 1 ? 'позиция' : count < 5 ? 'позиции' : 'позиций'} пока не включено.`
+      more: count => `Ещё ${count} ${count === 1 ? 'позиция' : count < 5 ? 'позиции' : 'позиций'} требуют внимания.`
     } : {
       confirmed: 'Confirmed income',
       confirmedShort: 'confirmed',
       confirmedYield: 'Confirmed yield',
       estimated: 'Estimated',
-      estimatedNote: 'Estimate is an alternative model view for the same period. It is not added to confirmed income.',
+      estimatedNote: 'Dynamic estimate for the same period. It is not added to confirmed income.',
+      scopeNote: names => `Both metrics include income from ${names.join(' and ')}; their capital is not included in this company’s TVL.`,
       period: 'Observation period',
+      trackingSummary: (tracking, total, events) => `Tracking ${tracking}/${total} · Events ${events}/${total}`,
       partial: 'Only confirmed income is shown. Unconfirmed components are never substituted into the total.',
       awaiting: 'Tracking is active; there are no confirmed income events for this period yet.',
+      trackingNoEvent: label => `${label} — tracking is active; there is no confirmed income event for this period yet.`,
       stateOnly: label => `${label} — not counted yet: position state is visible, but factual income tracking is not proven.`,
       referenceOnly: label => `${label} — not counted yet: factual income tracking is not proven.`,
       boundary: label => `${label} — part of the period is not counted yet: the period boundary still needs proof.`,
       unclassified: label => `${label} — not counted yet: the income mechanism is not classified.`,
       unresolved: label => `${label} — income event is not counted yet: additional evidence is required.`,
       unresolvedGeneric: 'Some income events are not counted yet because additional evidence is required.',
-      more: count => `${count} more ${count === 1 ? 'position is' : 'positions are'} not counted yet.`
+      more: count => `${count} more ${count === 1 ? 'position requires' : 'positions require'} attention.`
     };
   }
 
@@ -238,7 +264,6 @@
     row = document.createElement('div');
     row.className = 'th-mr-estimated-view';
     row.hidden = true;
-
     const head = document.createElement('div');
     head.className = 'th-mr-estimated-head';
     const label = document.createElement('div');
@@ -254,12 +279,10 @@
     yieldValue.dataset.thEstimatedYield = 'true';
     values.append(amount, yieldValue);
     head.append(label, values);
-
     const note = document.createElement('div');
     note.className = 'th-mr-estimated-note';
     note.dataset.thEstimatedNote = 'true';
     row.append(head, note);
-
     const period = panel.querySelector('.th-mr-observed-period') || ensurePeriodRow(panel);
     if (period) period.insertAdjacentElement('afterend', row);
     else {
@@ -270,24 +293,61 @@
     return row;
   }
 
+  function ensureScopeNote(panel) {
+    let row = panel.querySelector('.th-mr-income-scope-note');
+    if (row) return row;
+    row = document.createElement('div');
+    row.className = 'th-mr-income-scope-note';
+    row.hidden = true;
+    const estimate = panel.querySelector('.th-mr-estimated-view') || ensureEstimateRow(panel);
+    if (estimate) estimate.insertAdjacentElement('afterend', row);
+    else panel.appendChild(row);
+    return row;
+  }
+
+  function ensureTrackingSummary(panel) {
+    let row = panel.querySelector('.th-mr-tracking-summary');
+    if (row) return row;
+    row = document.createElement('div');
+    row.className = 'th-mr-tracking-summary';
+    row.hidden = true;
+    const scopeNote = panel.querySelector('.th-mr-income-scope-note') || ensureScopeNote(panel);
+    if (scopeNote) scopeNote.insertAdjacentElement('afterend', row);
+    else panel.appendChild(row);
+    return row;
+  }
+
   function ensureTransparencyStyle() {
     if (document.getElementById('th-accounting-transparency-style')) return;
     const style = document.createElement('style');
     style.id = 'th-accounting-transparency-style';
     style.textContent = `
-      .th-mr-estimated-view{display:grid;gap:.2rem;margin:.14rem .18rem .42rem;padding:.48rem .58rem;border:1px solid var(--line);border-radius:.65rem;background:color-mix(in srgb,var(--panel) 78%,transparent)}
-      .th-mr-estimated-view[hidden]{display:none}
-      .th-mr-estimated-head{display:flex;align-items:baseline;justify-content:space-between;gap:.8rem}
-      .th-mr-estimated-label{color:var(--text-2);font-size:.57rem;font-weight:650;letter-spacing:.015em}
-      .th-mr-estimated-values{display:flex;align-items:baseline;justify-content:flex-end;gap:.45rem;font-variant-numeric:tabular-nums}
+      .th-mr-estimated-view{display:grid;gap:.2rem;margin:.14rem .18rem .28rem;padding:.48rem .58rem;border:1px solid var(--line);border-radius:.65rem;background:color-mix(in srgb,var(--panel) 78%,transparent);min-width:0}
+      .th-mr-estimated-view[hidden],.th-mr-income-scope-note[hidden],.th-mr-tracking-summary[hidden],.th-mr-accounting-notices[hidden]{display:none}
+      .th-mr-estimated-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:.55rem;min-width:0}
+      .th-mr-estimated-label{color:var(--text-2);font-size:.57rem;font-weight:650;letter-spacing:.015em;min-width:0}
+      .th-mr-estimated-values{display:flex;align-items:baseline;justify-content:flex-end;gap:.45rem;font-variant-numeric:tabular-nums;white-space:nowrap;min-width:0}
       .th-mr-estimated-amount{color:var(--text-1);font-size:.7rem;font-weight:700}
       .th-mr-estimated-yield{color:var(--text-3);font-size:.55rem;font-weight:600}
-      .th-mr-estimated-note{color:var(--text-3);font-size:.48rem;font-weight:520;line-height:1.42;text-transform:none}
+      .th-mr-estimated-note{color:var(--text-3);font-size:.48rem;font-weight:520;line-height:1.42;text-transform:none;overflow-wrap:anywhere}
+      .th-mr-income-scope-note{margin:.02rem .24rem .28rem;color:var(--text-3);font-size:.47rem;font-weight:520;line-height:1.42;text-transform:none;overflow-wrap:anywhere}
+      .th-mr-tracking-summary{margin:.02rem .18rem .3rem;padding:.35rem .52rem;border-radius:.52rem;background:color-mix(in srgb,var(--panel) 62%,transparent);color:var(--text-2);font-size:.5rem;font-weight:650;letter-spacing:.01em;font-variant-numeric:tabular-nums}
       .th-mr-accounting-notices{display:grid;gap:.24rem;margin:.02rem .18rem .42rem;padding-top:.34rem;border-top:1px solid var(--line)}
-      .th-mr-accounting-notices[hidden]{display:none}
-      .th-mr-accounting-notice{position:relative;padding-left:.68rem;color:var(--text-3);font-size:.5rem;font-weight:550;line-height:1.42;letter-spacing:.005em;text-transform:none}
+      .th-mr-accounting-notice{position:relative;padding-left:.68rem;color:var(--text-3);font-size:.5rem;font-weight:550;line-height:1.42;letter-spacing:.005em;text-transform:none;overflow-wrap:anywhere}
       .th-mr-accounting-notice::before{content:'·';position:absolute;left:.08rem;top:-.01em;color:var(--gold);font-size:.72rem;line-height:1}
-      @media(max-width:760.98px){.th-mr-estimated-view{margin-left:.12rem;margin-right:.12rem}.th-mr-accounting-notices{margin-left:.12rem;margin-right:.12rem}.th-mr-accounting-notice{font-size:.49rem}}
+      @media(max-width:760.98px){
+        .th-mr-estimated-view{margin-left:.12rem;margin-right:.12rem;padding:.45rem .5rem}
+        .th-mr-estimated-head{gap:.38rem}
+        .th-mr-estimated-label{font-size:.54rem}
+        .th-mr-estimated-amount{font-size:.66rem}
+        .th-mr-estimated-yield{font-size:.51rem}
+        .th-mr-income-scope-note,.th-mr-tracking-summary,.th-mr-accounting-notices{margin-left:.12rem;margin-right:.12rem}
+        .th-mr-accounting-notice{font-size:.49rem}
+      }
+      @media(max-width:390px){
+        .th-mr-estimated-head{grid-template-columns:1fr}
+        .th-mr-estimated-values{justify-content:flex-start}
+      }
     `;
     document.head.appendChild(style);
   }
@@ -299,9 +359,9 @@
     host.className = 'th-mr-accounting-notices';
     host.hidden = true;
     const status = panel.querySelector('[data-th-mr-accounting-note]');
-    const context = panel.querySelector('.th-mr-context');
+    const tracking = panel.querySelector('.th-mr-tracking-summary') || ensureTrackingSummary(panel);
     if (status) status.insertAdjacentElement('afterend', host);
-    else if (context) context.insertAdjacentElement('beforebegin', host);
+    else if (tracking) tracking.insertAdjacentElement('afterend', host);
     else panel.appendChild(host);
     return host;
   }
@@ -329,22 +389,72 @@
     return String(raw).replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim();
   }
 
-  function accountingNotices(companyName, monthKey, month, incomeView) {
+  function monthMechanismStates(companyName, selectedMonth) {
+    const company = coverageCompany(companyName);
+    return Object.values(company?.mechanisms || {})
+      .map(mechanism => ({ mechanism, state: mechanism?.months?.[selectedMonth] }))
+      .filter(row => row.state);
+  }
+
+  function trackingSummary(companyName, selectedMonth) {
+    const rows = monthMechanismStates(companyName, selectedMonth);
+    if (!rows.length) return null;
+    const total = rows.length;
+    const tracking = rows.filter(({ state }) => state?.factualTrackingActive === true || ['factual-period-evidence', 'factual-tracking-no-period-event'].includes(state?.status)).length;
+    const withEvents = rows.filter(({ state }) => Number(state?.factualEventCount || 0) > 0).length;
+    return { total, tracking, withEvents };
+  }
+
+  function renderTrackingSummary(panel, companyName, selectedMonth) {
+    ensureTransparencyStyle();
+    const row = ensureTrackingSummary(panel);
+    if (!row) return;
+    const summary = trackingSummary(companyName, selectedMonth);
+    if (!summary) {
+      row.hidden = true;
+      return;
+    }
+    setText(row, copy().trackingSummary(summary.tracking, summary.total, summary.withEvents));
+    row.dataset.thTracking = `${summary.tracking}/${summary.total}`;
+    row.dataset.thEventMechanisms = `${summary.withEvents}/${summary.total}`;
+    row.hidden = false;
+  }
+
+  function renderScopeNote(panel, month) {
+    ensureTransparencyStyle();
+    const row = ensureScopeNote(panel);
+    if (!row) return;
+    const view = validIncomeView(month);
+    const associated = Array.isArray(view?.scope?.associatedCompanies) ? view.scope.associatedCompanies.filter(Boolean) : [];
+    const capitalOwners = Array.isArray(view?.scope?.capitalOwners) ? view.scope.capitalOwners : [];
+    const target = view?.scope?.targetCompany;
+    const safe = associated.length > 0 && view?.scope?.canonicalOwnershipPreserved === true && view?.scope?.crossCompanyReattributionAllowed === false && view?.scope?.holdingWideAggregationMustUseCanonicalOwners === true && target && capitalOwners.length === 1 && capitalOwners[0] === target;
+    if (!safe) {
+      row.hidden = true;
+      row.textContent = '';
+      return;
+    }
+    setText(row, copy().scopeNote(associated));
+    row.dataset.thAssociatedCompanyCount = String(associated.length);
+    row.dataset.thAssociatedCapitalIncluded = 'false';
+    row.hidden = false;
+  }
+
+  function accountingNotices(companyName, selectedMonth, month, incomeView) {
     if (month?.accountingCoverageComplete === true) return [];
     const c = copy();
     const notices = [];
-    const company = coverageCompany(companyName);
 
-    for (const mechanism of Object.values(company?.mechanisms || {})) {
-      const state = mechanism?.months?.[monthKey];
-      if (!state) continue;
+    for (const { mechanism, state } of monthMechanismStates(companyName, selectedMonth)) {
       const label = mechanismLabel(mechanism);
       const blockers = Array.isArray(state.completionBlockers) ? state.completionBlockers : [];
       if (mechanism?.classified !== true || blockers.includes('unclassified-income-mechanism')) {
         notices.push({ key: `unclassified:${mechanism.engineId}`, text: c.unclassified(label) });
         continue;
       }
-      if (state.status === 'state-observed-not-factual-tracking') {
+      if (state.status === 'factual-tracking-no-period-event' || (state.factualTrackingActive === true && Number(state.factualEventCount || 0) === 0)) {
+        notices.push({ key: `tracking-no-event:${mechanism.engineId}`, text: c.trackingNoEvent(label) });
+      } else if (state.status === 'state-observed-not-factual-tracking') {
         notices.push({ key: `state:${mechanism.engineId}`, text: c.stateOnly(label) });
       } else if (state.status === 'reference-only-no-factual-tracking') {
         notices.push({ key: `reference:${mechanism.engineId}`, text: c.referenceOnly(label) });
@@ -356,7 +466,7 @@
 
     const unmatched = (coverageSnapshot?.unmatchedCanonicalEvents || []).filter(event => {
       const m = eventMonth(event);
-      return sameCoverageCompany(event?.company, companyName) && (!m || m === monthKey);
+      return sameCoverageCompany(event?.company, companyName) && (!m || m === selectedMonth);
     });
     for (const event of unmatched) {
       const label = String(event?.protocol || event?.route || event?.asset || '').trim();
@@ -364,9 +474,7 @@
     }
 
     const unresolvedReasons = month?.incomeAccounting?.lifecycle?.unresolvedReasons || [];
-    if (unresolvedReasons.length && !unmatched.length) {
-      notices.push({ key: 'unresolved-ledger', text: c.unresolvedGeneric });
-    }
+    if (unresolvedReasons.length && !unmatched.length) notices.push({ key: 'unresolved-ledger', text: c.unresolvedGeneric });
 
     const deduped = [...new Map(notices.map(item => [item.key, item])).values()];
     if (!deduped.length) {
@@ -375,17 +483,17 @@
     }
 
     if (incomeView.observedOnly) deduped.unshift({ key: 'partial-confirmed-only', text: c.partial });
-    const maxDetailed = 6;
+    const maxDetailed = 5;
     if (deduped.length <= maxDetailed) return deduped;
     const hidden = deduped.length - maxDetailed;
     return [...deduped.slice(0, maxDetailed), { key: `more:${hidden}`, text: c.more(hidden) }];
   }
 
-  function renderAccountingNotices(panel, companyName, monthKey, month, incomeView) {
+  function renderAccountingNotices(panel, companyName, selectedMonth, month, incomeView) {
     ensureTransparencyStyle();
     const host = ensureNoticeHost(panel);
-    const notices = accountingNotices(companyName, monthKey, month, incomeView);
-    const fingerprint = JSON.stringify([lang(), coverageSnapshot?.generatedAt || null, monthKey, notices]);
+    const notices = accountingNotices(companyName, selectedMonth, month, incomeView);
+    const fingerprint = JSON.stringify([lang(), coverageSnapshot?.generatedAt || null, selectedMonth, notices]);
     if (host.dataset.thNoticeFingerprint === fingerprint) return;
     host.dataset.thNoticeFingerprint = fingerprint;
     host.replaceChildren();
@@ -467,6 +575,8 @@
     }
 
     renderEstimate(panel, selectedEstimate);
+    renderScopeNote(panel, selected);
+    renderTrackingSummary(panel, companyName, selectedKey);
     renderAccountingNotices(panel, companyName, selectedKey, selected, selectedIncome);
     panel.dataset.thIncomeDisplay = selectedIncome.observedOnly ? 'confirmed-partial-canonical' : 'confirmed-complete-or-empty';
     panel.dataset.thYieldDisplay = selectedYield.observedOnly ? 'confirmed-period-canonical' : 'confirmed-complete-or-empty';
@@ -496,11 +606,19 @@
     });
   }
 
+  function refreshOnReportInteraction(event) {
+    const trigger = event.target?.closest?.('.th-monthly-report-disclosure .th-mr-trigger, .th-monthly-report-panel .th-mr-month');
+    if (!trigger) return;
+    refreshSnapshots({ force: false })
+      .catch(err => console.warn('[Company Passport live reporting refresh]', err?.message || err));
+  }
+
   function start() {
     promoteApr();
-    Promise.all([loadMonthlySnapshot(), loadCoverageSnapshot()])
-      .then(() => patchMonthlyReports())
+    refreshSnapshots({ force: true })
       .catch(err => console.warn('[Company Passport confirmed/estimated income]', err?.message || err));
+
+    document.addEventListener('click', refreshOnReportInteraction, { capture: true });
 
     const observer = new MutationObserver(queueRefresh);
     observer.observe(document.documentElement, {
@@ -511,13 +629,17 @@
     });
 
     window.__TH_COMPANY_PASSPORT_PRIORITY_ADAPTER__ = {
-      version: '0.5.0-confirmed-estimated',
+      version: '0.6.0-confirmed-estimated-live-scope',
       promoteApr,
       patchMonthlyReports,
-      incomeDisplayPolicy: 'confirmed-canonical-income-only-main-lane',
-      yieldDisplayPolicy: 'confirmed-canonical-yield-only-main-lane',
+      refreshSnapshots,
+      snapshotTtlMs: SNAPSHOT_TTL_MS,
+      incomeDisplayPolicy: 'confirmed-canonical-events-explicit-reporting-scope',
+      yieldDisplayPolicy: 'confirmed-canonical-yield-explicit-reporting-scope',
       estimatedDisplayPolicy: 'backend-incomeView-estimated-only-non-additive-alternative-view',
       transparencyPolicy: 'diagnostic-accounting-coverage-notices-never-income-authority',
+      trackingNoEventVisible: true,
+      associatedCompanyCapitalIncluded: false,
       browserCalculatesEstimatedIncome: false,
       confirmedPlusEstimatedIsValidTotal: false,
       estimatedIncomeAuthority: false,

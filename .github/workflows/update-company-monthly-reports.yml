@@ -11,6 +11,7 @@ on:
     branches: [main]
     paths:
       - 'companies/productivity-data.json'
+      - 'reporting/company-income-scope.mjs'
       - 'reporting/company-monthly-reports.mjs'
       - 'reporting/company-monthly-reports-validation.mjs'
       - 'reporting/canonical-earned-income-view.mjs'
@@ -18,6 +19,7 @@ on:
       - 'reporting/company-monthly-earned-income-validation.mjs'
       - 'reporting/income-ledger.json'
       - 'companies/company-monthly-report-adapter.js'
+      - 'companies/company-passport-priority-adapter.js'
       - '.github/workflows/update-company-monthly-reports.yml'
       - '.github/workflows/verify-company-monthly-reports.yml'
   schedule:
@@ -58,12 +60,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          node --check reporting/company-income-scope.mjs
           node --check reporting/company-monthly-reports.mjs
           node --check reporting/company-monthly-reports-validation.mjs
           node --check reporting/canonical-earned-income-view.mjs
           node --check reporting/company-monthly-earned-income.mjs
           node --check reporting/company-monthly-earned-income-validation.mjs
           node --check companies/company-monthly-report-adapter.js
+          node --check companies/company-passport-priority-adapter.js
           test -s companies/productivity-data.json
           test -s reporting/reporting-data.json
           test -s reporting/income-ledger.json
@@ -112,11 +116,13 @@ jobs:
 
           critical_fingerprint() {
             sha256sum \
+              reporting/company-income-scope.mjs \
               reporting/company-monthly-reports.mjs \
               reporting/company-monthly-reports-validation.mjs \
               reporting/canonical-earned-income-view.mjs \
               reporting/company-monthly-earned-income.mjs \
               reporting/company-monthly-earned-income-validation.mjs \
+              companies/company-passport-priority-adapter.js \
               .github/workflows/update-company-monthly-reports.yml
           }
           critical_before="$(critical_fingerprint)"
