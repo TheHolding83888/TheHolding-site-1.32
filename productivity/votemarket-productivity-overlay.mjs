@@ -7,10 +7,11 @@ const DATA=process.env.PRODUCTIVITY_DATA||path.join(ROOT,'companies/productivity
 const REWARDS=process.env.REWARDS_DATA||path.join(ROOT,'companies/rewards-data.json');
 const REPORT=process.env.PRODUCTIVITY_REPORT||path.join(ROOT,'companies/productivity-source-report.json');
 const MAX_PERIOD_AGE_DAYS=Number(process.env.VOTEMARKET_MAX_PERIOD_AGE_DAYS||21);
-const VERSION='0.1-votemarket-income-channel-overlay';
+const VERSION='0.2-votemarket-income-channel-overlay-idempotent';
 const DAYS_PER_PERIOD=7;
 const DAYS_PER_YEAR=365;
 const MAX_REASONABLE_APR=500;
+const OVERLAY_NOTE='VoteMarket veCRV/veFXN rewards are modeled as supplementary income channels on the existing principal: capital is counted once, verified latest finalized company-specific markets may add Reference APR, and the overlay never grants factual earned-income authority.';
 
 const ROUTES=Object.freeze({
   'votemarket-vecrv':{
@@ -33,7 +34,6 @@ const read=p=>JSON.parse(fs.readFileSync(p,'utf8'));
 const finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v));
 const round=(v,d=6)=>finite(v)?Number(Number(v).toFixed(d)):null;
 const fail=m=>{throw new Error(m);};
-const isoDay=v=>{const t=Date.parse(v||'');return Number.isFinite(t)?new Date(t).toISOString().slice(0,10):null;};
 const shortAddress=v=>{const s=String(v||'');return /^0x[a-fA-F0-9]{40}$/.test(s)?`${s.slice(0,6)}…${s.slice(-4)}`:s||null;};
 
 function rowKey(r){
@@ -64,7 +64,11 @@ function latestFinalizedEpoch(rows){
 function buildVoteMarketChannel(companyRewards,route,principalValueUsd,rewardsGeneratedAt){
   const rows=routeRows(companyRewards,route);
   const epoch=latestFinalizedEpoch(rows);
-  if(epoch===null)return {status:'unavailable',reason:'no-finalized-unclaimed-votemarket-period',aprPct:null,rewardUsd:null,markets:[]};
+  if(epoch===null)return {
+    status:'unavailable',reason:'no-finalized-unclaimed-votemarket-period',aprPct:null,rewardUsd:null,markets:[],
+    observationPersistence:'current-unclaimed-period-only',claimedPeriodPersistencePending:true,
+    earnedIncomeAuthority:false,factualIncomeAuthority:false,canCloseAccountingCoverage:false,canReplaceUnknown:false,executionAuthority:'none'
+  };
   const periodRows=rows.filter(r=>Number(r?.details?.epoch)===epoch);
   const epochDate=periodRows.map(r=>r?.details?.epochDate).find(Boolean)||new Date(epoch*1000).toISOString();
   const generatedMs=Date.parse(rewardsGeneratedAt||'');
@@ -119,6 +123,8 @@ function buildVoteMarketChannel(companyRewards,route,principalValueUsd,rewardsGe
     source:'companies/rewards-data.json',
     sourceGeneratedAt:rewardsGeneratedAt||null,
     sourceSemantics:'verified-company-specific-votemarket-period-net-reward-over-existing-principal-value',
+    observationPersistence:'current-unclaimed-period-only',
+    claimedPeriodPersistencePending:true,
     earnedIncomeAuthority:false,
     factualIncomeAuthority:false,
     canCloseAccountingCoverage:false,
@@ -129,6 +135,15 @@ function buildVoteMarketChannel(companyRewards,route,principalValueUsd,rewardsGe
 
 function principalRow(company,meta){
   return (company?.breakdown||[]).find(x=>x?.engineId===meta.principalEngineId||x?.principalId===meta.principalFallbackId)||null;
+}
+
+function nativeAprForRow(data,row,meta){
+  const canonical=Number(data?.engines?.[meta.principalEngineId]?.aprLatest);
+  if(Number.isFinite(canonical))return canonical;
+  const prior=row?.incomeChannels;
+  if(prior?.principalEngineId===meta.principalEngineId&&finite(prior?.native?.aprPct))return Number(prior.native.aprPct);
+  const current=Number(row?.apr);
+  return Number.isFinite(current)?current:null;
 }
 
 function recomputeCompany(company){
@@ -156,18 +171,31 @@ const rewards=read(REWARDS);
 if(String(data?.version)!=='1.16')fail(`Productivity v1.16 required, got ${data?.version}`);
 if(rewards?.authority?.executionAuthority&&rewards.authority.executionAuthority!=='none')fail('Rewards authority expansion detected');
 
-const diagnostics={version:VERSION,source:'companies/rewards-data.json',sourceGeneratedAt:rewards.generatedAt||null,companies:{},capitalDoubleCount:false,unknownIsNotZero:true,earnedIncomeAuthority:false,factualIncomeAuthority:false,executionAuthority:'none'};
-let affected=0;
+const diagnostics={
+  version:VERSION,
+  source:'companies/rewards-data.json',
+  sourceGeneratedAt:rewards.generatedAt||null,
+  companies:{},
+  capitalDoubleCount:false,
+  unknownIsNotZero:true,
+  idempotent:true,
+  observationPersistence:'current-unclaimed-period-only',
+  claimedPeriodPersistencePending:true,
+  earnedIncomeAuthority:false,
+  factualIncomeAuthority:false,
+  executionAuthority:'none'
+};
+let measuredReferenceCompanyCount=0;
 
 for(const [companyName,companyRewards] of Object.entries(rewards?.companies||{})){
   const company=data?.companies?.[companyName];
   if(!company||!Array.isArray(company.breakdown))continue;
   const companyDiag={routes:{}};
-  let changed=false;
+  let hasMeasuredReference=false;
   for(const [route,meta] of Object.entries(ROUTES)){
     const row=principalRow(company,meta);
     if(!row)continue;
-    const nativeApr=finite(row.apr)?Number(row.apr):null;
+    const nativeApr=nativeAprForRow(data,row,meta);
     const principalValue=finite(row.value)?Number(row.value):null;
     const channel=buildVoteMarketChannel(companyRewards,route,principalValue,rewards.generatedAt);
     const effectiveApr=nativeApr!==null&&channel.status==='measured-reference'&&finite(channel.aprPct)
@@ -188,25 +216,45 @@ for(const [companyName,companyRewards] of Object.entries(rewards?.companies||{})
       earnedIncomeAuthority:false,
       factualIncomeAuthority:false,
       unknownIsNotZero:true,
+      idempotent:true,
       executionAuthority:'none'
     };
-    if(nativeApr!==null&&channel.status==='measured-reference'){
-      row.apr=round(effectiveApr,6);
-      changed=true;
-    }
-    companyDiag.routes[route]={principalEngineId:meta.principalEngineId,nativeAprPct:nativeApr===null?null:round(nativeApr,6),voteMarketAprPct:channel.aprPct,effectiveAprPct:row.incomeChannels.effectiveAprPct,status:channel.status,marketCount:channel.marketCount||0,capitalValueUsd:principalValue===null?null:round(principalValue,2),capitalCountedOnce:true};
+    if(effectiveApr!==null)row.apr=round(effectiveApr,6);
+    if(channel.status==='measured-reference')hasMeasuredReference=true;
+    companyDiag.routes[route]={
+      principalEngineId:meta.principalEngineId,
+      nativeAprPct:nativeApr===null?null:round(nativeApr,6),
+      voteMarketAprPct:channel.aprPct,
+      effectiveAprPct:row.incomeChannels.effectiveAprPct,
+      status:channel.status,
+      marketCount:channel.marketCount||0,
+      capitalValueUsd:principalValue===null?null:round(principalValue,2),
+      capitalCountedOnce:true,
+      observationPersistence:channel.observationPersistence,
+      claimedPeriodPersistencePending:channel.claimedPeriodPersistencePending===true
+    };
   }
   if(Object.keys(companyDiag.routes).length){
     recomputeCompany(company);
-    company.voteMarketIncomeChannels={version:VERSION,routes:companyDiag.routes,capitalDoubleCount:false,estimatedIncomeAuthority:'reference-only',executionAuthority:'none'};
+    company.voteMarketIncomeChannels={
+      version:VERSION,
+      routes:companyDiag.routes,
+      capitalDoubleCount:false,
+      estimatedIncomeAuthority:'reference-only',
+      observationPersistence:'current-unclaimed-period-only',
+      claimedPeriodPersistencePending:true,
+      idempotent:true,
+      executionAuthority:'none'
+    };
     diagnostics.companies[companyName]=companyDiag;
-    if(changed)affected+=1;
+    if(hasMeasuredReference)measuredReferenceCompanyCount+=1;
   }
 }
 
 data.diagnostics=data.diagnostics||{};
-data.diagnostics.voteMarketIncomeChannels={...diagnostics,affectedCompanyCount:affected};
-data.note=[String(data.note||'').replace(/\s+$/,''),'VoteMarket veCRV/veFXN rewards are modeled as supplementary income channels on the existing principal: capital is counted once, verified latest finalized company-specific markets may add Reference APR, and the overlay never grants factual earned-income authority.'].filter(Boolean).join(' ');
+data.diagnostics.voteMarketIncomeChannels={...diagnostics,measuredReferenceCompanyCount,affectedCompanyCount:measuredReferenceCompanyCount};
+const existingNote=String(data.note||'').replace(/\s+$/,'');
+data.note=existingNote.includes(OVERLAY_NOTE)?existingNote:[existingNote,OVERLAY_NOTE].filter(Boolean).join(' ');
 fs.writeFileSync(DATA,JSON.stringify(data,null,2)+'\n');
 
 if(fs.existsSync(REPORT)){
@@ -215,4 +263,16 @@ if(fs.existsSync(REPORT)){
   fs.writeFileSync(REPORT,JSON.stringify(report,null,2)+'\n');
 }
 
-console.log(JSON.stringify({status:'PASS',version:VERSION,affectedCompanyCount:affected,companies:Object.keys(diagnostics.companies),capitalDoubleCount:false,earnedIncomeAuthority:false,factualIncomeAuthority:false,executionAuthority:'none'},null,2));
+console.log(JSON.stringify({
+  status:'PASS',
+  version:VERSION,
+  measuredReferenceCompanyCount,
+  companies:Object.keys(diagnostics.companies),
+  capitalDoubleCount:false,
+  idempotent:true,
+  observationPersistence:'current-unclaimed-period-only',
+  claimedPeriodPersistencePending:true,
+  earnedIncomeAuthority:false,
+  factualIncomeAuthority:false,
+  executionAuthority:'none'
+},null,2));
