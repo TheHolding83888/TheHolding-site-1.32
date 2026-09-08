@@ -14,7 +14,7 @@ const token='0x1111111111111111111111111111111111111111';
 const rewardContract='0x3333333333333333333333333333333333333333';
 const lane=`aerodrome|Alpha|${holder}|7|voting-reward|${rewardContract}|${token}`;
 const event={
-  eventKey:`ve33:${lane}:100:200`,company:'Alpha',family:'accrued-entitlement',economicDate:'2026-09-02',periodStart:'2026-09-01T00:00:00.000Z',periodEnd:'2026-09-02T00:00:00.000Z',route:'aerodrome-ve',protocol:'Aerodrome',asset:'USDC',token,amount:1,amountRaw:'1000000',usdValue:1,mechanismKind:'voting-reward',holder,tokenId:'7',rewardContract,distributor:null,sourceIdentity:`${lane}|100->${lane}|200`,referenceAprUsed:false,currentClaimableBalanceIsPeriodIncome:false,claimIsSecondIncomeEvent:false,laterPriceMoveDoesNotRewriteIncome:true,unknownIsNotZero:true
+  eventKey:`ve33:${lane}:100:200`,company:'Alpha',family:'accrued-entitlement',economicDate:'2026-09-02',periodStart:'2026-09-01T00:00:00.000Z',periodEnd:'2026-09-02T00:00:00.000Z',route:'aerodrome-ve',protocol:'Aerodrome',asset:'USDC',token,amount:1,amountRaw:'1000000',usdValue:1,mechanismKind:'voting-reward',holder,tokenId:'7',rewardContract,distributor:null,sourceIdentity:`${lane}|100->${lane}|200`,referenceAprUsed:false,currentClaimableBalanceIsPeriodIncome:false,claimIsSecondIncomeEvent:false,laterClaimOrPriceMoveDoesNotRewriteIncome:true,unknownIsNotZero:true
 };
 const ledger={version:'0.1-canonical-income-ledger',events:[]};
 const first=admitVe33IntoLedgerState({ledger,evidence:{...baseEvidence,events:[event]},generatedAt:'2026-09-02T12:00:00.000Z'});
