@@ -17,7 +17,8 @@ on:
       - 'reporting/canonical-earned-income-view.mjs'
       - 'reporting/company-monthly-earned-income.mjs'
       - 'reporting/company-monthly-earned-income-validation.mjs'
-      - 'reporting/accounting-coverage.json'
+      - 'reporting/accounting-coverage.mjs'
+      - 'reporting/accounting-coverage-validation.mjs'
       - 'reporting/accounting-notice-queue.mjs'
       - 'reporting/accounting-notice-queue-validation.mjs'
       - 'reporting/accounting-reference-reconciliation.mjs'
@@ -73,6 +74,8 @@ jobs:
           node --check reporting/canonical-earned-income-view.mjs
           node --check reporting/company-monthly-earned-income.mjs
           node --check reporting/company-monthly-earned-income-validation.mjs
+          node --check reporting/accounting-coverage.mjs
+          node --check reporting/accounting-coverage-validation.mjs
           node --check reporting/accounting-notice-queue.mjs
           node --check reporting/accounting-notice-queue-validation.mjs
           node --check reporting/accounting-reference-reconciliation.mjs
@@ -82,7 +85,6 @@ jobs:
           test -s companies/productivity-data.json
           test -s reporting/reporting-data.json
           test -s reporting/income-ledger.json
-          test -s reporting/accounting-coverage.json
           test -s reporting/icp-nns-factual-snapshots.json
           test -d intelligence/memory-vault
           node - <<'NODE'
@@ -122,13 +124,20 @@ jobs:
 
       - name: Build + validate accounting diagnostics
         env:
-          ACCOUNTING_COVERAGE_FILE: ./reporting/accounting-coverage.json
+          PRODUCTIVITY_DATA_FILE: ./companies/productivity-data.json
+          INCOME_LEDGER_FILE: ./reporting/income-ledger.json
+          ACCOUNTING_COVERAGE_FILE: /tmp/accounting-coverage.json
           COMPANY_MONTHLY_REPORTS_FILE: ./reporting/company-monthly-reports.json
           ICP_NNS_FACTUAL_SNAPSHOTS_FILE: ./reporting/icp-nns-factual-snapshots.json
           ACCOUNTING_NOTICE_QUEUE_FILE: ./reporting/accounting-notice-queue.json
           REPORTING_DATA_FILE: ./reporting/reporting-data.json
           ACCOUNTING_REFERENCE_RECONCILIATION_FILE: ./reporting/accounting-reference-reconciliation.json
         run: |
+          # Diagnostics are one dependency chain. Coverage is rebuilt ephemerally
+          # from current code + canonical ledger before Notice/Reconciliation.
+          # Canonical persisted accounting-coverage.json remains owned by Reporting.
+          node reporting/accounting-coverage.mjs
+          node reporting/accounting-coverage-validation.mjs
           node reporting/accounting-notice-queue.mjs
           node reporting/accounting-notice-queue-validation.mjs
           node reporting/accounting-reference-reconciliation.mjs
@@ -149,6 +158,8 @@ jobs:
               reporting/canonical-earned-income-view.mjs \
               reporting/company-monthly-earned-income.mjs \
               reporting/company-monthly-earned-income-validation.mjs \
+              reporting/accounting-coverage.mjs \
+              reporting/accounting-coverage-validation.mjs \
               reporting/accounting-notice-queue.mjs \
               reporting/accounting-notice-queue-validation.mjs \
               reporting/accounting-reference-reconciliation.mjs \
@@ -194,7 +205,13 @@ jobs:
             COMPANY_MONTHLY_REPORTS_FILE=./reporting/company-monthly-reports.json \
             INCOME_LEDGER_FILE=./reporting/income-ledger.json \
             node reporting/company-monthly-earned-income-validation.mjs
-            ACCOUNTING_COVERAGE_FILE=./reporting/accounting-coverage.json \
+            PRODUCTIVITY_DATA_FILE=./companies/productivity-data.json \
+            INCOME_LEDGER_FILE=./reporting/income-ledger.json \
+            ACCOUNTING_COVERAGE_FILE=/tmp/accounting-coverage.json \
+            node reporting/accounting-coverage.mjs
+            ACCOUNTING_COVERAGE_FILE=/tmp/accounting-coverage.json \
+            node reporting/accounting-coverage-validation.mjs
+            ACCOUNTING_COVERAGE_FILE=/tmp/accounting-coverage.json \
             COMPANY_MONTHLY_REPORTS_FILE=./reporting/company-monthly-reports.json \
             ICP_NNS_FACTUAL_SNAPSHOTS_FILE=./reporting/icp-nns-factual-snapshots.json \
             ACCOUNTING_NOTICE_QUEUE_FILE=./reporting/accounting-notice-queue.json \
@@ -203,7 +220,7 @@ jobs:
             ICP_NNS_FACTUAL_SNAPSHOTS_FILE=./reporting/icp-nns-factual-snapshots.json \
             node reporting/accounting-notice-queue-validation.mjs
             COMPANY_MONTHLY_REPORTS_FILE=./reporting/company-monthly-reports.json \
-            ACCOUNTING_COVERAGE_FILE=./reporting/accounting-coverage.json \
+            ACCOUNTING_COVERAGE_FILE=/tmp/accounting-coverage.json \
             REPORTING_DATA_FILE=./reporting/reporting-data.json \
             ACCOUNTING_NOTICE_QUEUE_FILE=./reporting/accounting-notice-queue.json \
             ACCOUNTING_REFERENCE_RECONCILIATION_FILE=./reporting/accounting-reference-reconciliation.json \
