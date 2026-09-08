@@ -14,6 +14,8 @@ on:
       - 'productivity/productivity-engine.mjs'
       - 'productivity/company-010-productivity-overlay.mjs'
       - 'productivity/yieldring-productivity-overlay.mjs'
+      - 'productivity/votemarket-productivity-overlay.mjs'
+      - 'productivity/votemarket-productivity-overlay-validation.mjs'
       - 'intelligence/capital-state/general-company-balance-sheet.mjs'
       - 'intelligence/capital-state/capital-state.mjs'
   workflow_dispatch:
@@ -46,6 +48,7 @@ jobs:
           if(!wf.includes('Require canonical per-asset Market Data')||!wf.includes('unified-capital-market-data-guard.mjs'))throw new Error('canonical Market Data admission guard missing');
           if(!guard.includes("prices['internet-computer']")||!guard.includes("selectedLane === 'onchain'"))throw new Error('ICP onchain consumer proof missing');
           if(!wf.includes("registry==='005'")||!wf.includes("registry==='006'"))throw new Error('Company #005/#006 ICP parity proof missing');
+          if(!wf.includes('Update Company Rewards')||!wf.includes('votemarket-productivity-overlay.mjs'))throw new Error('VoteMarket/Rewards refresh coupling missing');
           console.log('Market Data writer ownership boundary PASS');
           NODE
 
@@ -56,6 +59,13 @@ jobs:
       - name: Install Chromium without apt mutation
         working-directory: productivity
         run: npx playwright install chromium
+
+      - name: Prove VoteMarket overlay safety deterministically
+        run: |
+          set -euo pipefail
+          node --check productivity/votemarket-productivity-overlay.mjs
+          node --check productivity/votemarket-productivity-overlay-validation.mjs
+          node productivity/votemarket-productivity-overlay-validation.mjs
 
       - name: Build zero-request deterministic Market Data fixture
         run: |
@@ -84,7 +94,7 @@ jobs:
       - name: Rebuild Public Capital from coherent validation state
         run: node intelligence/market-data/public-capital-engine.mjs
 
-      - name: Prove coherent Defitea, YieldRing, Market Data and Network output
+      - name: Prove coherent Defitea, VoteMarket, YieldRing, Market Data and Network output
         run: |
           set -euo pipefail
           node - <<'NODE'
@@ -96,12 +106,20 @@ jobs:
           const html=fs.readFileSync('companies/index.html','utf8');
           const d=p.companies?.['defitea.eth'];
           const da=(d?.breakdown||[]).find(x=>x.engineId==='aerodrome_veaero'||x.principalId==='aerodrome-finance');
+          const dcrv=(d?.breakdown||[]).find(x=>x.engineId==='curve_vecrv'||x.principalId==='curve-dao-token');
           const df=(d?.breakdown||[]).find(x=>x.engineId==='fx_vefxn'||x.principalId==='fxn-token');
+          const vm=p.diagnostics?.voteMarketIncomeChannels;
           const dc=(c.companies||[]).find(x=>x.registry==='004');
           const dca=(dc?.measuredPositions||[]).find(x=>x.assetId==='aerodrome-finance');
           const dcf=(dc?.measuredPositions||[]).find(x=>x.assetId==='fxn-token');
           if(!d||Number(da?.units)!==2632||Number(df?.units)!==64.81)throw new Error('Defitea Productivity mismatch');
           if(!dc||Number(dca?.units)!==2632||Number(dcf?.units)!==64.81)throw new Error('Defitea Capital State mismatch');
+          if(vm?.capitalDoubleCount!==false||vm?.idempotent!==true||vm?.earnedIncomeAuthority!==false||vm?.factualIncomeAuthority!==false||vm?.executionAuthority!=='none')throw new Error('VoteMarket safety boundary missing');
+          if(vm?.claimedPeriodPersistencePending!==true)throw new Error('VoteMarket claimed-period persistence boundary must remain explicit until closed');
+          for(const [label,row] of [['veCRV',dcrv],['veFXN',df]]){
+            if(!row?.incomeChannels||row.incomeChannels.capitalAccounting!=='principal-counted-once'||row.incomeChannels.capitalDoubleCount!==false)throw new Error(label+' VoteMarket hierarchy missing');
+            if(row.incomeChannels.factualIncomeAuthority!==false||row.incomeChannels.earnedIncomeAuthority!==false)throw new Error(label+' VoteMarket factual authority drift');
+          }
           if(!html.includes('costBasisUsd: 1121.3')||!html.includes('qty: 192, entry: 0.42'))throw new Error('Defitea AERO lot basis missing');
           if(!html.includes('costBasisUsd: 983.2386')||!html.includes('qty: 5, entry: 16.5'))throw new Error('Defitea FXN lot basis missing');
           if(!html.includes('const publicCompanyTvl = (key, fallback) =>')||!html.includes('canonicalNetworkTvl'))throw new Error('Companies Public Capital binding missing');
@@ -118,6 +136,6 @@ jobs:
           if(m.validationFixture!==true||m.semantics?.externalRequestCount!==0||m.semantics?.browserExternalPriceRequestsAllowed!==false)throw new Error('Zero-request CI Market Data contract drift');
           if(!Number.isFinite(Number(pub.funds?.defitea?.tvlUsd))||!Number.isFinite(Number(pub.funds?.defitea?.referenceAprPct)))throw new Error('Defitea Public Capital unavailable');
           if(!Number.isFinite(Number(pub.totals?.fundEcosystemTvlUsd))||!Number.isFinite(Number(pub.totals?.companyNetworkTvlUsd)))throw new Error('Public Capital totals unavailable');
-          console.log('Unified Capital Refresh E2E PASS',{generatedAt:p.generatedAt,marketFixture:true,externalPriceRequests:0,defiteaApr:d.aprLatest,defiteaTvl:pub.funds.defitea.tvlUsd,defiteaAero:dca.units,defiteaFxn:dcf.units,yieldRingApr:y.aprLatest,networkTvlUsd:pub.totals.companyNetworkTvlUsd,fundEcosystemTvlUsd:pub.totals.fundEcosystemTvlUsd});
+          console.log('Unified Capital Refresh E2E PASS',{generatedAt:p.generatedAt,marketFixture:true,externalPriceRequests:0,defiteaApr:d.aprLatest,defiteaTvl:pub.funds.defitea.tvlUsd,defiteaAero:dca.units,defiteaFxn:dcf.units,voteMarketMeasuredReferenceCompanyCount:vm.measuredReferenceCompanyCount,veCrvVoteMarketStatus:dcrv?.incomeChannels?.votemarket?.status||null,veFxnVoteMarketStatus:df?.incomeChannels?.votemarket?.status||null,yieldRingApr:y.aprLatest,networkTvlUsd:pub.totals.companyNetworkTvlUsd,fundEcosystemTvlUsd:pub.totals.fundEcosystemTvlUsd});
           NODE
           git diff --check
