@@ -56,7 +56,7 @@ jobs:
           node rewards/vlcvx-registry-route-audit.mjs
           node rewards/union-vlcvx-allocation-audit.mjs
 
-      - name: Materialize candidate Rewards in isolation
+      - name: Validate current settlement boundary against materialized Rewards
         env:
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
           REWARDS_OUTPUT: /tmp/vlcvx-rewards-candidate.json
@@ -65,8 +65,14 @@ jobs:
         run: |
           set -euo pipefail
           cp companies/rewards-data.json "$REWARDS_OUTPUT"
-          node rewards/vlcvx-route-rewards-overlay.mjs
-          node rewards/vlcvx-route-rewards-finalize.mjs
+
+          # Settlement eligibility is a current-route proof. Re-running the full
+          # historical RewardAdded inventory here couples an unrelated Coverage
+          # schema change to archive-provider availability. Historical extra
+          # reward discovery has its own dedicated verifier. Here we require the
+          # live settlement eligibility proof plus the already materialized,
+          # separately tracked extra-reward component in canonical Rewards.
+          node rewards/vlcvx-convex-team-settlement-proof.mjs
           node rewards/vlcvx-route-rewards-guard.mjs
           node - <<'NODE'
           const fs=require('fs');
@@ -74,12 +80,16 @@ jobs:
           const c=d.companies?.["Rook's portfolio"];
           const s=(c?.sources||[]).find(x=>x.route==='vlcvx-current-route');
           const p=s?.details?.settlement||{};
-          if(s?.status!=='ok'||s?.protocol!=='Convex Finance · vlCVX')throw new Error('Rook current route not promoted');
+          const extra=(c?.sources||[]).find(x=>x.route==='vlcvx-extra-reward-distribution');
+          const platform=(c?.sources||[]).find(x=>x.route==='vlcvx-locker-platform-rewards');
+          if(s?.status!=='ok'||s?.protocol!=='Convex Finance · vlCVX')throw new Error('Rook current route not materialized');
           if(s?.details?.currentRewardSettlement!=='no-votium-incentive-eligibility-observed-current-route')throw new Error('Rook settlement boundary missing');
           if(p.trackingBoundaryComplete!==true||p.periodIncomeAuthority!==false||p.universalExternalRewardZeroAsserted!==false||p.unknownIsNotZero!==true)throw new Error('Rook settlement epistemics drift');
           if(p.allWeightedProposalsConvexTeam!==true||p.noManualOrSurrogateOverrideOnWeightedProposals!==true||Number(p.manualOrSurrogateOverrideCount)!==0)throw new Error('Rook participation proof incomplete');
+          if(platform?.status!=='ok'||platform?.details?.periodIncomeAuthority!==false)throw new Error('materialized locker platform component proof missing');
+          if(extra?.status!=='ok'||extra?.details?.periodIncomeAuthority!==false)throw new Error('materialized extra-reward component proof missing');
           if(d.diagnostics?.vlCvxConvexTeamSettlement?.rewardRowsCreated!==false||d.diagnostics?.vlCvxConvexTeamSettlement?.periodIncomeAuthority!==false)throw new Error('tracking proof gained income authority');
-          console.log('ROOK CURRENT VLCVX TRACKING BOUNDARY PASS',{status:s.status,settlement:s.details.currentRewardSettlement,observedBlock:s.details.settlementObservedBlock});
+          console.log('ROOK CURRENT VLCVX TRACKING BOUNDARY PASS',{status:s.status,settlement:s.details.currentRewardSettlement,observedBlock:s.details.settlementObservedBlock,extraRewardMaterialized:true,platformMaterialized:true});
           NODE
 
       - name: Prove Accounting Coverage reaches factual vlCVX 4 of 4 without income creation
