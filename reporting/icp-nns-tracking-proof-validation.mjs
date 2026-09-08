@@ -18,7 +18,7 @@ const state={
   publicNeuronObservation:{requestedNeuronCount:41,detailOkCount:41,fullDetailCoverage:true},
   rewards:{mode:'owner-baseline-plus-canonical-reference-apr-estimate',estimated:true,aggregateUnclaimedIcp:999,referenceAprPct:99},
   authority:{readOnly:true,claimTransactionAuthority:'none',executionAuthority:'none'},unknownIsNotZero:true,
-  neurons:ids.map(neuronId=>({neuronId,detailStatus:'ok',stakeIcp:61.3877551,state:'Dissolving'}))
+  neurons:ids.map(neuronId=>({neuronId,detailStatus:'ok',stakeIcp:61.3877551,state:'Dissolving',errors:[]}))
 };
 
 const proofs=icpNnsObservationProofs(state,config);
@@ -27,25 +27,42 @@ assert.deepEqual(new Set(proofs.map(x=>x.company)),new Set(Object.keys(companies
 assert.ok(proofs.every(x=>x.engineId==='icp_nns'));
 assert.ok(proofs.every(x=>x.sourceFile==='companies/icp-nns-rewards-state.json'));
 assert.ok(proofs.every(x=>x.observedAt===generatedAt));
+assert.ok(proofs.every(x=>x.observationComplete===true));
+assert.ok(proofs.every(x=>x.observationCoverage?.detailOkCount===41&&x.observationCoverage?.unavailableDetailCount===0));
+
+// A bounded partial public read still proves the collector/capability when the
+// complete configured neuron identity set is preserved and missing details are
+// explicitly UNKNOWN. It does NOT prove complete state or period income.
+const partial=structuredClone(state);
+partial.publicNeuronObservation.detailOkCount=39;
+partial.publicNeuronObservation.fullDetailCoverage=false;
+for(const index of [39,40])partial.neurons[index]={neuronId:ids[index],detailStatus:'unavailable',stakeIcp:null,state:'Unknown',errors:['detail:HTTP 429']};
+const partialProofs=icpNnsObservationProofs(partial,config);
+assert.equal(partialProofs.length,2,'bounded 39/41 observation lost factual tracking capability');
+assert.ok(partialProofs.every(x=>x.observationComplete===false));
+assert.ok(partialProofs.every(x=>x.observationCoverage?.detailOkCount===39&&x.observationCoverage?.unavailableDetailCount===2));
+assert.ok(partialProofs.every(x=>String(x.proofKey).includes('39/41')));
 
 // Estimated rewards and Reference APR are deliberately irrelevant to tracking proof.
-const extremeEstimate=structuredClone(state);
+const extremeEstimate=structuredClone(partial);
 extremeEstimate.rewards.aggregateUnclaimedIcp=123456789;
 extremeEstimate.rewards.referenceAprPct=0.000001;
-assert.deepEqual(icpNnsObservationProofs(extremeEstimate,config),proofs,'analytics estimate leaked into factual tracking authority');
+assert.deepEqual(icpNnsObservationProofs(extremeEstimate,config),partialProofs,'analytics estimate leaked into factual tracking authority');
 
 for(const mutate of [
-  s=>{s.publicNeuronObservation.detailOkCount=40;},
-  s=>{s.publicNeuronObservation.fullDetailCoverage=false;},
+  s=>{s.publicNeuronObservation.detailOkCount=38;},
+  s=>{s.publicNeuronObservation.fullDetailCoverage=true;},
   s=>{s.neurons.pop();},
-  s=>{s.neurons[0].detailStatus='unavailable';},
+  s=>{s.neurons[39].state='Dissolving';},
+  s=>{s.neurons[39].stakeIcp=61.3877551;},
+  s=>{s.neurons[39].errors=[];},
   s=>{s.neurons[0].neuronId='999';},
   s=>{s.authority.executionAuthority='write';},
   s=>{s.authority.claimTransactionAuthority='write';},
   s=>{s.unknownIsNotZero=false;}
 ]){
-  const candidate=structuredClone(state); mutate(candidate);
-  assert.deepEqual(icpNnsObservationProofs(candidate,config),[],'malformed/incomplete NNS observation failed open');
+  const candidate=structuredClone(partial); mutate(candidate);
+  assert.deepEqual(icpNnsObservationProofs(candidate,config),[],'malformed/unsafe partial NNS observation failed open');
 }
 for(const mutate of [
   c=>{c.neuronIds.pop();},
@@ -57,7 +74,7 @@ for(const mutate of [
   c=>{c.allocation.companies['aerocvxyb.eth']=0.4;}
 ]){
   const candidate=structuredClone(config); mutate(candidate);
-  assert.deepEqual(icpNnsObservationProofs(state,candidate),[],'unsafe/drifted NNS config failed open');
+  assert.deepEqual(icpNnsObservationProofs(partial,candidate),[],'unsafe/drifted NNS config failed open');
 }
 
-console.log('ICP NNS factual tracking proof validation PASS',{proofs:proofs.length,neurons:41,estimatedRewardIncomeAuthority:false,executionAuthority:'none'});
+console.log('ICP NNS factual tracking proof validation PASS',{fullProofs:proofs.length,partialProofs:partialProofs.length,neurons:41,partialObservationDoesNotCreateIncome:true,estimatedRewardIncomeAuthority:false,executionAuthority:'none'});
