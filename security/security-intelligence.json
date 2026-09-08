@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-08T11:15:49.109Z",
+  "generatedAt": "2026-09-08T11:45:52.133Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 2,
-    "medium": 51,
+    "medium": 50,
     "low": 0,
     "info": 0
   },
   "source": {
-    "filesScanned": 1093,
-    "bytesScanned": 29111315,
+    "filesScanned": 1095,
+    "bytesScanned": 29168899,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Fri, 04 Sep 2026 06:02:25 GMT",
+        "lastModified": "Mon, 07 Sep 2026 15:22:06 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -55,7 +55,8 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [
+    "newFindings": [],
+    "resolvedFindings": [
       {
         "id": "6995f203a8ba1794333ba8884ad7e8076df23098428cfd2cc434df6ec2024266",
         "severity": "medium",
@@ -68,22 +69,6 @@
         "evidence": {
           "previousSha256": "aa14adc184bfc0525308a3bf4ee2afd9157519d2449b2f3b8e490c9b9c6cc060",
           "currentSha256": "569f70bf895ef4de6e727d75a16b4f93f30274a770d311c77d06ebdd51f9c033"
-        }
-      }
-    ],
-    "resolvedFindings": [
-      {
-        "id": "b42790ce3aa90408c3b9426649af5f05cb6addaba5eb3690b2868c58791a9b56",
-        "severity": "medium",
-        "category": "critical-surface-change",
-        "file": ".github/workflows/verify-passport-rate-badge-layout.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/verify-passport-rate-badge-layout.yml.",
-        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-        "evidence": {
-          "previousSha256": "3a8effa7031468dca2970eeddb2f6db18fc3c21d91d7344e3c0deaa75724bb5d",
-          "currentSha256": "aa14adc184bfc0525308a3bf4ee2afd9157519d2449b2f3b8e490c9b9c6cc060"
         }
       }
     ]
@@ -110,20 +95,6 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
-    },
-    {
-      "id": "6995f203a8ba1794333ba8884ad7e8076df23098428cfd2cc434df6ec2024266",
-      "severity": "medium",
-      "category": "critical-surface-change",
-      "file": ".github/workflows/verify-passport-rate-badge-layout.yml",
-      "line": null,
-      "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/verify-passport-rate-badge-layout.yml.",
-      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-      "evidence": {
-        "previousSha256": "aa14adc184bfc0525308a3bf4ee2afd9157519d2449b2f3b8e490c9b9c6cc060",
-        "currentSha256": "569f70bf895ef4de6e727d75a16b4f93f30274a770d311c77d06ebdd51f9c033"
-      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -760,12 +731,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "4a2b5750e1a7967b06aaab9a5f4c6783304393c441ba0c9082b81994f7c14310",
+    "snapshotHash": "5dfee458fbb385862debe772900ea9db8781c4bde657c5a2bbf38756f18eb957",
     "securityVault": {
-      "runCount": 921,
+      "runCount": 922,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/09/2026-09-08T11-15-49-109Z-4a2b5750e1.json",
-      "latestRecordHash": "3a95be0433787fda085ca7e089eb3beb88d6bfe904113b4b5e4f49beceead5c0",
+      "latestRecordPath": "security/security-vault/2026/09/2026-09-08T11-45-52-133Z-5dfee458fb.json",
+      "latestRecordHash": "6ee22104f1787a53c6befff824e06d47d2319d424e797928536adaf16c315bcd",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
