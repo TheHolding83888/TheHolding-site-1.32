@@ -19,6 +19,27 @@ const monthKey = v => {
   return Number.isFinite(t) ? new Date(t).toISOString().slice(0, 7) : null;
 };
 
+// Freeze the reference scaffold before this projection mutates any monthly row.
+// Every scoped estimate is therefore the sum of already-built daily reference
+// histories for its declared contributor companies, never a browser formula and
+// never a second discovery path.
+const referenceScaffold = Object.fromEntries(
+  Object.entries(report.companies || {}).map(([name, company]) => [
+    name,
+    Object.fromEntries(Object.entries(company?.months || {}).map(([month, row]) => [
+      month,
+      {
+        generatedIncomeUsd: finite(row?.generatedIncomeUsd) ? Number(row.generatedIncomeUsd) : null,
+        monthlyYieldPct: finite(row?.monthlyYieldPct) ? Number(row.monthlyYieldPct) : null,
+        averageCapitalUsd: finite(row?.averageCapitalUsd) ? Number(row.averageCapitalUsd) : null,
+        mode: row?.mode || null,
+        semantic: row?.semantic || null,
+        sourceFamily: row?.incomeAccounting?.primaryMetric?.sourceFamily || company?.sourceFamily || null
+      }
+    ]))
+  ])
+);
+
 function legacyDefiteaActual(month, row) {
   const source = reporting?.funds?.['defitea.eth']?.months?.[month];
   return Boolean(source && source.mode === 'reported-realised' && finite(source.cashFlowUsd) && month <= '2026-07' && finite(row.generatedIncomeUsd));
@@ -26,10 +47,6 @@ function legacyDefiteaActual(month, row) {
 
 function eventBelongsToMonth(row, month) {
   return (row.month || monthKey(row.economicDate || row.periodEnd)) === month;
-}
-
-function rowsOwnedByCompany(rows, company, month) {
-  return rows.filter(row => incomeOwnedByCompany(row, company) && eventBelongsToMonth(row, month));
 }
 
 function rowsForReportingScope(rows, targetCompany, month) {
@@ -52,6 +69,52 @@ function yieldPct(incomeUsd, averageCapitalUsd) {
   return finite(incomeUsd) && finite(averageCapitalUsd) && Number(averageCapitalUsd) > 0
     ? round(Number(incomeUsd) / Number(averageCapitalUsd) * 100, 6)
     : null;
+}
+
+function scopedReferenceAnalytics(targetCompany, month, targetRow) {
+  const scope = incomeScopeFor(targetCompany);
+  const components = scope.estimatedContributors.map(company => {
+    const source = referenceScaffold?.[company]?.[month] || null;
+    return {
+      company,
+      generatedIncomeUsd: finite(source?.generatedIncomeUsd) ? round(source.generatedIncomeUsd, 8) : null,
+      available: finite(source?.generatedIncomeUsd),
+      canonicalOwnershipPreserved: true,
+      sourceMode: source?.mode || null,
+      sourceSemantic: source?.semantic || null
+    };
+  });
+  const complete = components.length > 0 && components.every(component => component.available === true);
+  const generatedIncomeUsd = complete
+    ? round(components.reduce((sum, component) => sum + Number(component.generatedIncomeUsd), 0), 8)
+    : null;
+  const associated = components.filter(component => component.company !== targetCompany);
+  const associatedUsd = complete
+    ? round(associated.reduce((sum, component) => sum + Number(component.generatedIncomeUsd || 0), 0), 8)
+    : null;
+  const averageCapitalUsd = finite(targetRow?.averageCapitalUsd) ? Number(targetRow.averageCapitalUsd) : null;
+
+  return {
+    generatedIncomeUsd,
+    monthlyYieldPct: yieldPct(generatedIncomeUsd, averageCapitalUsd),
+    semantic: associated.length
+      ? 'explicit-economic-scope-daily-reference-income-not-earned-income'
+      : (referenceScaffold?.[targetCompany]?.[month]?.semantic || targetRow?.semantic || null),
+    sourceFamily: associated.length
+      ? 'scoped-existing-daily-reference-model'
+      : (referenceScaffold?.[targetCompany]?.[month]?.sourceFamily || null),
+    earnedIncomeAuthority: false,
+    reportingScopeVersion: COMPANY_INCOME_SCOPE_VERSION,
+    scopeContributors: [...scope.estimatedContributors],
+    scopeComponents: components,
+    associatedCompanies: [...scope.associatedCompanies],
+    associatedCompanyReferenceIncomeUsd: associated.length ? associatedUsd : 0,
+    targetCompanyCapitalUsd: averageCapitalUsd,
+    associatedCompanyCapitalIncluded: false,
+    canonicalOwnershipPreserved: true,
+    completeReferenceScope: complete,
+    unknownIsNotZero: true
+  };
 }
 
 function ownerBreakdown(rows, owners) {
@@ -116,7 +179,7 @@ function attachConfirmedEstimatedView(row, scopeView) {
   const referenceUsd = row.referenceAnalytics?.generatedIncomeUsd;
   const referenceYieldPct = row.referenceAnalytics?.monthlyYieldPct;
   const referenceMode = String(row.mode || '');
-  const estimatedAvailable = referenceMode !== 'reported-realised' && finite(referenceUsd);
+  const estimatedAvailable = referenceMode !== 'reported-realised' && row.referenceAnalytics?.completeReferenceScope === true && finite(referenceUsd);
 
   row.incomeView = {
     version: '0.1-confirmed-estimated-non-additive',
@@ -158,8 +221,11 @@ function attachConfirmedEstimatedView(row, scopeView) {
       sourceFamily: estimatedAvailable ? (row.referenceAnalytics?.sourceFamily || null) : null,
       semantic: estimatedAvailable ? (row.referenceAnalytics?.semantic || null) : null,
       scopeContributors: scopeView.estimatedContributors,
+      scopeComponents: estimatedAvailable ? row.referenceAnalytics?.scopeComponents || [] : [],
       associatedCompaniesIncluded: scopeView.associatedCompanies.filter(name => scopeView.estimatedContributors.includes(name)),
+      associatedCompanyReferenceIncomeUsd: estimatedAvailable ? row.referenceAnalytics?.associatedCompanyReferenceIncomeUsd ?? 0 : null,
       capitalOwners: scopeView.capitalOwners,
+      associatedCompanyCapitalIncluded: false,
       earnedIncomeAuthority: false,
       factualIncomeAuthority: false,
       canCloseAccountingCoverage: false,
@@ -234,22 +300,12 @@ for (const [companyName, company] of Object.entries(report.companies || {})) {
   company.incomeReportingScope = incomeScopeFor(companyName);
 
   for (const [month, row] of Object.entries(company.months || {})) {
-    const oldReferenceUsd = finite(row.generatedIncomeUsd) ? Number(row.generatedIncomeUsd) : null;
-    const oldReferenceYield = finite(row.monthlyYieldPct) ? Number(row.monthlyYieldPct) : null;
-    row.referenceAnalytics = {
-      generatedIncomeUsd: oldReferenceUsd,
-      monthlyYieldPct: oldReferenceYield,
-      semantic: row.semantic || row.incomeAccounting?.primaryMetric?.semantic || null,
-      sourceFamily: row.incomeAccounting?.primaryMetric?.sourceFamily || company.sourceFamilyPrevious || null,
-      earnedIncomeAuthority: false,
-      reportingScopeVersion: COMPANY_INCOME_SCOPE_VERSION,
-      scopeContributors: [...incomeScopeFor(companyName).estimatedContributors],
-      canonicalOwnershipPreserved: true
-    };
+    row.referenceAnalytics = scopedReferenceAnalytics(companyName, month, row);
 
     if (legacyDefiteaActual(month, row)) {
+      const directLegacyUsd = referenceScaffold?.[companyName]?.[month]?.generatedIncomeUsd;
       const scopeView = reportingScopeView(companyName, []);
-      row.generatedIncomeUsd = round(oldReferenceUsd, 8);
+      row.generatedIncomeUsd = round(directLegacyUsd, 8);
       row.monthlyYieldPct = yieldPct(row.generatedIncomeUsd, row.averageCapitalUsd);
       row.observedEarnedIncomeUsd = row.generatedIncomeUsd;
       row.observedPeriodYieldPct = row.monthlyYieldPct;
