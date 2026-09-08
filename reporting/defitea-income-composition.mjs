@@ -3,34 +3,35 @@
  * The Holding · Defitea Income Composition v0.2
  *
  * Post-processes the canonical Reporting Layer without creating a second TVL,
- * market-price authority, or cross-company canonical income attribution path.
+ * market-price authority, or cross-company income attribution path.
  *
- * Defitea Estimated report view =
+ * Defitea report cash flow =
  *   Defitea-native 11-position base reference income
- *   + explicitly configured associated-company reference income
  *   + observed Defitea VoteMarket veCRV / veFXN entitlement events.
  *
- * Canonical ownership boundary:
- *   Every factual income row keeps its original canonical company owner.
- *   Associated-company inclusion is an explicit economic REPORTING scope only;
- *   it never re-attributes those events to Defitea and must never be used for
- *   Holding-wide aggregation.
+ * Ownership boundary:
+ *   Income is attributable to a target company only when the canonical owner
+ *   row.company equals that target company. Associated-company Productivity
+ *   reference income is retained as context only and never enters Defitea cash
+ *   flow or Generated.
  *
  * Capital boundary:
  *   Defitea TVL remains Defitea-only. Associated-company capital is never added
- *   to Defitea TVL even when their income is visible in Defitea's economic view.
+ *   to Defitea TVL.
+ *
+ * VoteMarket boundary:
+ *   Current claimable balance is NOT summed every day. Each proven entitlement
+ *   is admitted once into a persistent append-only event ledger, keyed by its
+ *   exact epoch/campaign/gauge/wallet/reward-token identity. Later claiming or
+ *   disappearance from current Rewards does not erase previously observed
+ *   income. Weeks with no eligible vote produce no event and therefore zero
+ *   VoteMarket income.
  */
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { incomeAttribution, incomeOwnedByCompany } from './income-ownership.mjs';
-import {
-  COMPANY_INCOME_SCOPE_VERSION,
-  associatedCompaniesFor,
-  incomeScopeFor,
-  scopeIncludesCanonicalOwner
-} from './company-income-scope.mjs';
 
 const __filename=fileURLToPath(import.meta.url);
 const __dirname=path.dirname(__filename);
@@ -42,7 +43,7 @@ const PRODUCTIVITY_DATA_FILE=process.env.PRODUCTIVITY_DATA_FILE||path.join(ROOT,
 const REWARDS_DATA_FILE=process.env.REWARDS_DATA_FILE||path.join(ROOT,'companies','rewards-data.json');
 
 const DEFITEA='defitea.eth';
-const CONTRIBUTORS=associatedCompaniesFor(DEFITEA,'estimated');
+const CONTRIBUTORS=['YieldRing.eth','05081966.eth'];
 const VOTEMARKET_ROUTES=new Set(['votemarket-vecrv','votemarket-vefxn']);
 const LEDGER_VERSION='0.2-defitea-income-composition';
 const COMPOSITION_VERSION='0.2-defitea-native-income-owner-isolation';
@@ -124,7 +125,6 @@ function contributorRow(productivity,company,date){
   }
   const daily=value*(apr/100)/365;
   const attribution=incomeAttribution({company},DEFITEA);
-  const includedInEstimatedView=scopeIncludesCanonicalOwner(DEFITEA,company,'estimated');
   return {
     entryKey:`${date}:${company}`,
     date,
@@ -138,14 +138,11 @@ function contributorRow(productivity,company,date){
     productivityGeneratedAt:productivity.generatedAt||null,
     productivityCoverage:coverage,
     productivityStatus:c.status,
-    // Kept false: this flag means canonical Defitea ownership, not economic-view inclusion.
     incomeIncludedInDefiteaCashFlow:attribution.attributableToTarget,
-    referenceIncomeIncludedInDefiteaEstimatedView:includedInEstimatedView,
-    economicReportingScopeVersion:COMPANY_INCOME_SCOPE_VERSION,
     crossCompanyReattributionAllowed:false,
     foreignCompanyContextOnly:attribution.foreignCompanyContextOnly,
     includedInDefiteaTvl:false,
-    semantic:'associated-company-reference-income-explicit-economic-scope-estimate-not-canonical-defitea-income'
+    semantic:'associated-company-reference-income-context-only-not-defitea-generated'
   };
 }
 
@@ -172,10 +169,6 @@ function sumByMonth(rows,valueField){
 function rebuildDefiteaMonths(fund,ledger){
   const months={...(fund?.months||{})};
   const contributorContextByMonth=sumByMonth(ledger.contributorDaily,'referenceIncomeUsd');
-  const contributorEstimatedByMonth=sumByMonth(
-    (ledger.contributorDaily||[]).filter(row=>scopeIncludesCanonicalOwner(DEFITEA,row?.company,'estimated')),
-    'referenceIncomeUsd'
-  );
   const contributorOwnedByMonth=sumByMonth(
     (ledger.contributorDaily||[]).filter(row=>incomeOwnedByCompany(row,DEFITEA)),
     'referenceIncomeUsd'
@@ -188,11 +181,10 @@ function rebuildDefiteaMonths(fund,ledger){
     if(m?.mode!=='reference-model') continue;
     const base=finite(m.baseDefiteaReferenceCashFlowUsd??m.referenceCashFlowUsd??m.cashFlowUsd);
     const contributorContext=contributorContextByMonth.get(key)||0;
-    const contributorEstimated=contributorEstimatedByMonth.get(key)||0;
     const contributorOwned=contributorOwnedByMonth.get(key)||0;
     const vote=voteByMonth.get(key)||0;
     if(!Number.isFinite(base)) throw new Error(`${key}: base Defitea reference cash flow missing`);
-    const unified=base+contributorEstimated+vote;
+    const unified=base+contributorOwned+vote;
     const avgTvl=finite(m.averageTvlUsd);
     const yld=avgTvl>0?unified/avgTvl*100:NaN;
     const sampleDays=Number(m.sampleDays||0);
@@ -202,23 +194,20 @@ function rebuildDefiteaMonths(fund,ledger){
     months[key]={
       ...m,
       baseDefiteaReferenceCashFlowUsd:round(base,2),
-      associatedCompanyReferenceCashFlowUsd:round(contributorEstimated,2),
+      associatedCompanyReferenceCashFlowUsd:round(contributorOwned,2),
       associatedCompanyReferenceContextUsd:round(contributorContext,2),
-      associatedCompanyCanonicalOwnershipAttributedUsd:round(contributorOwned,2),
-      crossCompanyReferenceIncomeExcludedUsd:round(contributorContext-contributorEstimated,2),
+      crossCompanyReferenceIncomeExcludedUsd:round(contributorContext-contributorOwned,2),
       voteMarketObservedIncomeUsd:round(vote,2),
       cashFlowUsd:round(unified,2),
       monthlyYieldPct:Number.isFinite(yld)?round(yld,4):null,
       annualizedAprPct:Number.isFinite(annualized)?round(annualized,4):null,
       incomeCompositionVersion:COMPOSITION_VERSION,
-      economicReportingScopeVersion:COMPANY_INCOME_SCOPE_VERSION,
-      associatedCompanyEstimatedViewIncluded:true,
-      incomeOwnershipRule:'row.company === canonical owner; reporting scope does not mutate owner',
+      incomeOwnershipRule:'row.company === target company',
       crossCompanyReattributionAllowed:false,
       tvlSemantic:'defitea-only',
       associatedCompanyTvlIncluded:false,
       voteMarketAccounting:'deduplicated-observed-entitlement-events',
-      note:[m.note,'Defitea Estimated includes daily reference income from YieldRing.eth and 05081966.eth through an explicit economic reporting scope. Their canonical income ownership and TVL remain separate; the scoped report total must not be summed again across company reports.'].filter(Boolean).join(' ')
+      note:[m.note,'Defitea cash flow includes Defitea-native reference income plus deduplicated observed Defitea VoteMarket veCRV/veFXN entitlement events. Associated-company reference income is context-only and excluded from Defitea cash flow and TVL.'].filter(Boolean).join(' ')
     };
   }
   return months;
@@ -264,7 +253,6 @@ function compose({reporting,productivity,rewards,ledger}){
   const date=dayKey(fund.latestSnapshot.date||reporting.generatedAt);
   const trackingStartedAt=dayKey(fund.trackingStartedAt);
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error('Defitea reporting date unavailable');
-  const scope=incomeScopeFor(DEFITEA);
 
   const prior={
     version:LEDGER_VERSION,
@@ -281,14 +269,11 @@ function compose({reporting,productivity,rewards,ledger}){
     version:LEDGER_VERSION,
     updatedAt:reporting.generatedAt||new Date().toISOString(),
     compositionVersion:COMPOSITION_VERSION,
-    economicReportingScope:{...scope},
     contributors:CONTRIBUTORS.map(company=>({
       company,
       canonicalIncomeOwner:company,
       attributionTarget:DEFITEA,
-      // Canonical ownership remains false by design.
       incomeIncludedInDefiteaCashFlow:incomeOwnedByCompany({company},DEFITEA),
-      referenceIncomeIncludedInDefiteaEstimatedView:scopeIncludesCanonicalOwner(DEFITEA,company,'estimated'),
       crossCompanyReattributionAllowed:false,
       contextOnly:true,
       includedInDefiteaTvl:false
@@ -299,12 +284,10 @@ function compose({reporting,productivity,rewards,ledger}){
     accounting:{
       defiteaTvlAuthority:'Defitea canonical 11-position Reporting snapshot only',
       canonicalIncomeOwnerField:'company',
-      targetAttributionRule:'canonical owner never changes; explicit reporting scope may present multiple owners together',
+      targetAttributionRule:'row.company === target company',
       crossCompanyReattributionAllowed:false,
       associatedCompanyTvlIncluded:false,
-      contributorIncomeMethod:'daily productiveValue × Reference APR / 365 included only in Defitea Estimated economic view; never canonical Defitea earned-income ownership',
-      holdingWideAggregationMustUseCanonicalOwners:true,
-      companyReportTotalsAreNotAdditiveAcrossCompanies:true,
+      contributorIncomeMethod:'context-only productiveValue × Reference APR / 365; never Defitea cash flow or Generated',
       voteMarketMethod:'one frozen USD Defitea income event per exact proven entitlement identity',
       currentClaimableBalanceSummedDaily:false,
       claimedEventRetention:'indefinite',
@@ -319,9 +302,6 @@ function compose({reporting,productivity,rewards,ledger}){
   const contributorAttributedToday=contributorDaily
     .filter(x=>x.date===date&&incomeOwnedByCompany(x,DEFITEA))
     .reduce((s,x)=>s+finite(x.referenceIncomeUsd),0);
-  const contributorEstimatedToday=contributorDaily
-    .filter(x=>x.date===date&&scopeIncludesCanonicalOwner(DEFITEA,x.company,'estimated'))
-    .reduce((s,x)=>s+finite(x.referenceIncomeUsd),0);
   const voteToday=vote.events
     .filter(x=>x.eventDate===date&&(!x.company||incomeOwnedByCompany(x,DEFITEA)))
     .reduce((s,x)=>s+finite(x.usdValue),0);
@@ -335,17 +315,9 @@ function compose({reporting,productivity,rewards,ledger}){
       version:COMPOSITION_VERSION,
       ledger:'reporting/defitea-income-ledger.json',
       contributors:CONTRIBUTORS,
-      incomeOwnershipRule:'canonical owner preserved; explicit economic reporting scope is presentation-only',
+      incomeOwnershipRule:'row.company === target company',
       crossCompanyReattributionAllowed:false,
-      // Retained for compatibility: foreign rows are context-only for canonical ownership.
       associatedCompanyReferenceIncomeSemantic:'context-only',
-      associatedCompanyEstimatedViewSemantic:'explicit-economic-scope-non-factual-non-additive',
-      associatedCompanyEstimatedViewIncluded:true,
-      economicReportingScopeVersion:COMPANY_INCOME_SCOPE_VERSION,
-      confirmedOwners:scope.confirmedOwners,
-      estimatedContributors:scope.estimatedContributors,
-      holdingWideAggregationMustUseCanonicalOwners:true,
-      companyReportTotalsAreNotAdditiveAcrossCompanies:true,
       associatedCompanyTvlIncluded:false,
       voteMarketRoutes:[...VOTEMARKET_ROUTES],
       voteMarketEventsRecorded:vote.events.length,
@@ -353,13 +325,12 @@ function compose({reporting,productivity,rewards,ledger}){
       contributorDailyEntries:contributorDaily.length,
       currentDayAssociatedCompanyReferenceContextUsd:round(contributorToday,6),
       currentDayAssociatedCompanyAttributedIncomeUsd:round(contributorAttributedToday,6),
-      currentDayAssociatedCompanyEstimatedViewUsd:round(contributorEstimatedToday,6),
       currentDayVoteMarketEventIncomeUsd:round(voteToday,6),
       defiteaTvlUsd:fund.latestSnapshot.totalValueUsd,
       tvlSemantic:'defitea-only'
     }
   };
-  nextReporting.note=`${reporting.note||''} Defitea keeps exclusive canonical income ownership per source company, while its explicit economic reporting scope includes YieldRing.eth and 05081966.eth in the Estimated view only; associated TVL remains excluded and Holding-wide totals must aggregate canonical owners, not scoped company-report totals.`.trim();
+  nextReporting.note=`${reporting.note||''} Defitea cash-flow composition now enforces exclusive canonical company ownership: YieldRing.eth and 05081966.eth reference income remains context-only and is excluded from Defitea cash flow and TVL; deduplicated observed Defitea VoteMarket veCRV/veFXN entitlement events remain Defitea-native income.`.trim();
   return {reporting:nextReporting,ledger:nextLedger};
 }
 
@@ -381,8 +352,7 @@ async function main(){
     associatedCompanyReferenceContextUsd:current?.associatedCompanyReferenceContextUsd,
     crossCompanyReferenceIncomeExcludedUsd:current?.crossCompanyReferenceIncomeExcludedUsd,
     voteMarketObservedIncomeUsd:current?.voteMarketObservedIncomeUsd,
-    voteMarketEventsRecorded:out.ledger.voteMarketEvents.length,
-    economicReportingScopeVersion:COMPANY_INCOME_SCOPE_VERSION
+    voteMarketEventsRecorded:out.ledger.voteMarketEvents.length
   });
 }
 
