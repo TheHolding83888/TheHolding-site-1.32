@@ -1,7 +1,7 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-07T18:09:17.671Z",
+  "generatedAt": "2026-09-08T01:31:28.135Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
@@ -12,8 +12,8 @@
     "info": 0
   },
   "source": {
-    "filesScanned": 1073,
-    "bytesScanned": 29766613,
+    "filesScanned": 1078,
+    "bytesScanned": 29982209,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -57,6 +57,22 @@
   "whatChanged": {
     "newFindings": [
       {
+        "id": "aadbcf0649f2e05375493953668e581b82f16c79e6661373f39786b6fc1ef55a",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/verify-ve33-locked-managed-accounting.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/verify-ve33-locked-managed-accounting.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "deb96c39ffbf38944bf182f49e3f0820cc4f854e41e3e2f068d7f07762705884",
+          "currentSha256": "891d001a298a6a9231cf1d8f11a36ee323c461a983aab4f51e2fec5b050517a6"
+        }
+      }
+    ],
+    "resolvedFindings": [
+      {
         "id": "d192aaf8794cac2f3b0d041b68dd753d83f6be938710bdba1c4df2b08b5f36fa",
         "severity": "medium",
         "category": "critical-surface-change",
@@ -70,8 +86,7 @@
           "currentSha256": "b234767fa0d895bcbf62b215e46bba2b557bf331bb0e16880fa59188ed9c41ee"
         }
       }
-    ],
-    "resolvedFindings": []
+    ]
   },
   "currentFindings": [
     {
@@ -97,17 +112,17 @@
       "evidence": null
     },
     {
-      "id": "d192aaf8794cac2f3b0d041b68dd753d83f6be938710bdba1c4df2b08b5f36fa",
+      "id": "aadbcf0649f2e05375493953668e581b82f16c79e6661373f39786b6fc1ef55a",
       "severity": "medium",
       "category": "critical-surface-change",
-      "file": ".github/workflows/verify-company-monthly-reports.yml",
+      "file": ".github/workflows/verify-ve33-locked-managed-accounting.yml",
       "line": null,
       "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/verify-company-monthly-reports.yml.",
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-ve33-locked-managed-accounting.yml.",
       "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
       "evidence": {
-        "previousSha256": "24db6481a587b4d5a54a16dfc683ae672171e359ad6391a5a94a4c43ccd99aed",
-        "currentSha256": "b234767fa0d895bcbf62b215e46bba2b557bf331bb0e16880fa59188ed9c41ee"
+        "previousSha256": "deb96c39ffbf38944bf182f49e3f0820cc4f854e41e3e2f068d7f07762705884",
+        "currentSha256": "891d001a298a6a9231cf1d8f11a36ee323c461a983aab4f51e2fec5b050517a6"
       }
     },
     {
@@ -745,12 +760,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "301bc58613d504bb803190ed5033c4cd5acc92d1022a4be4e59044198078c11c",
+    "snapshotHash": "92c51d2cedadad097d54560a9d9f33638cb73d66056994b17a631abfb051a92e",
     "securityVault": {
-      "runCount": 909,
+      "runCount": 910,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/09/2026-09-07T18-09-17-671Z-301bc58613.json",
-      "latestRecordHash": "d4ca8c9c424b78f8e407d2c9121937a87b6d6a17e4e298902031e84a0bee90fb",
+      "latestRecordPath": "security/security-vault/2026/09/2026-09-08T01-31-28-135Z-92c51d2ced.json",
+      "latestRecordHash": "459dba72d0c7ac347aff725794850e11a1f1edf5d7673de4e815fc95749ff0fc",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
