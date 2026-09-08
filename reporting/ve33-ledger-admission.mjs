@@ -26,6 +26,7 @@ const EVIDENCE_FILE=process.env.VE33_EVIDENCE_FILE||path.join(ROOT,'reporting','
 const LOCKED_EVIDENCE_FILE=process.env.VE33_LOCKED_MANAGED_EVIDENCE_FILE||path.join(ROOT,'reporting','ve33-locked-managed-accounting-evidence.json');
 const REWARDS_FILE=process.env.REWARDS_DATA_FILE||path.join(ROOT,'companies','rewards-data.json');
 const LEDGER_FILE=process.env.INCOME_LEDGER_FILE||path.join(ROOT,'reporting','income-ledger.json');
+const LOCKED_MANAGED_MATERIALIZATION_ATTEMPTS=Math.max(1,Math.min(3,Number(process.env.VE33_LOCKED_MANAGED_MATERIALIZATION_ATTEMPTS||2)));
 
 async function readJson(file,fallback={}){try{return JSON.parse(await fs.readFile(file,'utf8'));}catch{return fallback;}}
 async function writeJson(file,data){await fs.mkdir(path.dirname(file),{recursive:true});await fs.writeFile(file,JSON.stringify(data,null,2)+'\n');}
@@ -60,6 +61,18 @@ export function validateLockedManagedHistoricalSelection({rewards,selection}={})
   }
   if(missing.length)throw new Error(`locked-managed historical RPC capability missing for: ${missing.join(', ')}`);
   return required;
+}
+
+function isExactMonthBoundary(value){
+  const text=String(value||'');
+  if(!/^\d{4}-\d{2}-01T00:00:00\.000Z$/.test(text))return false;
+  return Number.isFinite(Date.parse(text));
+}
+
+export function lockedManagedHistoricalBoundaryFailures(evidence={}){
+  return Object.values(evidence?.diagnostics?.protocols||{})
+    .flatMap(row=>row?.boundaryFailures||[])
+    .filter(row=>isExactMonthBoundary(row?.boundaryAt)&&['archive-state-unavailable','boundary-block-unavailable'].includes(row?.status));
 }
 
 function compactHistoricalSelection(selection,required=[]){
@@ -97,6 +110,7 @@ function annotate(rebuilt,evidence,admission,lockedEvidence,lockedAdmission,gene
         fullAccountingStart:lockedEvidence?.fullAccountingStart||null,checkpointCount:lockedCheckpointCount,candidateEventCount:lockedEventCount,
         includedMechanisms:lockedEvidence?.scope?.included||[],excludedMechanisms:lockedEvidence?.scope?.excluded||[],
         historicalRpcSelection:lockedEvidence?.provenance?.historicalRpcSelection||null,
+        materializationAttempts:lockedEvidence?.provenance?.materializationAttempts||[],
         lastEarnNoSettlementProofCount:lockedEvidence?.diagnostics?.lastEarnNoSettlementProofCount||0,
         referenceAprUsed:false,grossVeNftPrincipalDeltaIsIncomeAuthority:false,laterPriceMovementRewritesClosedIncome:false
       }
@@ -140,24 +154,42 @@ export async function runVe33LedgerAdmission({generatedAt=new Date().toISOString
       accountingStart:LOCKED_MANAGED_ACCOUNTING_START,
       historicalCanonicalPriceRequiredForClosedMonth:true,
       exactLastEarnSettlementContinuityProof:true,
+      boundedHistoricalMaterializationRetry:true,
       ve33EvidenceInputFingerprint:evidence?.runner?.safeWriterInputFingerprint||null
     }
   });
-  const reuseLocked=canReuseEvidence({
+  const reuseCandidate=canReuseEvidence({
     previous:previousLocked,
     fingerprint:lockedFingerprint,
     root:ROOT,
     env:process.env,
     previousFingerprint:previousLocked?.provenance?.safeWriterInputFingerprint||null
   });
+  const reuseLocked=reuseCandidate&&lockedManagedHistoricalBoundaryFailures(previousLocked).length===0;
 
   let lockedEvidence;
   if(reuseLocked){
     lockedEvidence=previousLocked;
   }else{
-    const selection=await selectHistoricalProviders({rewards,env:process.env});
-    const requiredHistoricalProtocols=validateLockedManagedHistoricalSelection({rewards,selection});
-    lockedEvidence=await buildLockedManagedEvidence({rewards,previous:previousLocked,generatedAt,providers:selection.providers});
+    let seed=previousLocked,selection=null,requiredHistoricalProtocols=[],materializationAttempts=[];
+    for(let attempt=1;attempt<=LOCKED_MANAGED_MATERIALIZATION_ATTEMPTS;attempt++){
+      selection=await selectHistoricalProviders({rewards,env:process.env});
+      requiredHistoricalProtocols=validateLockedManagedHistoricalSelection({rewards,selection});
+      lockedEvidence=await buildLockedManagedEvidence({rewards,previous:seed,generatedAt,providers:selection.providers});
+      const historicalFailures=lockedManagedHistoricalBoundaryFailures(lockedEvidence);
+      materializationAttempts.push({
+        attempt,
+        historicalBoundaryFailureCount:historicalFailures.length,
+        historicalBoundaryFailures:historicalFailures.slice(0,20).map(row=>({
+          laneKey:row.laneKey||null,boundaryAt:row.boundaryAt||null,status:row.status||null,error:row.error||null
+        })),
+        checkpointCount:Array.isArray(lockedEvidence?.checkpoints)?lockedEvidence.checkpoints.length:0,
+        eventCount:Array.isArray(lockedEvidence?.events)?lockedEvidence.events.length:0,
+        selectedProviders:Object.fromEntries(requiredHistoricalProtocols.map(protocolKey=>[protocolKey,selection?.diagnostics?.[protocolKey]?.selectedProvider||null]))
+      });
+      seed=lockedEvidence;
+      if(historicalFailures.length===0)break;
+    }
     lockedEvidence.provenance={
       ...(lockedEvidence.provenance||{}),
       safeWriterInputFingerprint:lockedFingerprint,
@@ -165,6 +197,10 @@ export async function runVe33LedgerAdmission({generatedAt=new Date().toISOString
       safeWriterEvidenceReuseMaxAgeMinutes:SAFE_WRITER_EVIDENCE_REUSE.maxAgeMinutes,
       historicalRpcRequired:true,
       historicalRpcSelection:compactHistoricalSelection(selection,requiredHistoricalProtocols),
+      materializationRetryPolicy:'retry only when exact month-boundary archive state remains unavailable; each attempt uses fresh proven historical providers and the prior attempt as append-only evidence seed',
+      materializationAttemptLimit:LOCKED_MANAGED_MATERIALIZATION_ATTEMPTS,
+      materializationAttempts,
+      historicalBoundaryFailureCountAfterRetry:lockedManagedHistoricalBoundaryFailures(lockedEvidence).length,
       exactLastEarnSettlementContinuityProof:true,
       executionAuthority:'none'
     };

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
-import { admitVe33IntoLedgerState } from './ve33-ledger-admission.mjs';
+import { admitVe33IntoLedgerState, lockedManagedHistoricalBoundaryFailures } from './ve33-ledger-admission.mjs';
 import { historicalOptimismVelodromeTwapRouteForToken } from './historical-canonical-price.mjs';
 
 const baseEvidence={
@@ -32,6 +32,20 @@ const absent=admitVe33IntoLedgerState({ledger,evidence:{},generatedAt:'2026-09-0
 assert.equal(absent.newEventsAdmitted,0);
 assert.equal(absent.ledger.events.length,0);
 
+// Materialization retry must be narrowly scoped to exact historical month
+// boundaries. Current-state failures and semantic inactive boundaries must not
+// trigger an expensive historical rebuild.
+const retryProbe={diagnostics:{protocols:{aerodrome:{boundaryFailures:[
+  {laneKey:'aerodrome|defitea.eth|lane',boundaryAt:'2026-08-01T00:00:00.000Z',status:'archive-state-unavailable',error:'transient archive read'},
+  {laneKey:null,boundaryAt:'2026-09-01T00:00:00.000Z',status:'boundary-block-unavailable',error:'transient block lookup'},
+  {laneKey:'aerodrome|defitea.eth|lane',boundaryAt:'2026-09-08T01:00:00.000Z',status:'archive-state-unavailable',error:'current read'},
+  {laneKey:'aerodrome|other|lane',boundaryAt:'2026-08-01T00:00:00.000Z',status:'managed-token-mismatch',error:null}
+]}}}};
+const retryFailures=lockedManagedHistoricalBoundaryFailures(retryProbe);
+assert.equal(retryFailures.length,2);
+assert.deepEqual(retryFailures.map(x=>x.boundaryAt),['2026-08-01T00:00:00.000Z','2026-09-01T00:00:00.000Z']);
+assert.equal(lockedManagedHistoricalBoundaryFailures({diagnostics:{protocols:{aerodrome:{boundaryFailures:[]}}}}).length,0);
+
 // Defitea August historical-valuation tail regression: these two immutable
 // reward-token identities must remain bound to exact Optimism Velodrome V2
 // pools and native USDC quote proof. This validation grants no price or income
@@ -50,4 +64,4 @@ assert.equal(tarot?.quoteToken.toLowerCase(),usdc);
 assert.equal(tarot?.poolStable,false);
 assert.equal(tarot?.twapGranularity,48);
 
-console.log('ve(3,3) Canonical Ledger admission + Defitea August historical route validation OK');
+console.log('ve(3,3) Canonical Ledger admission + locked-managed retry + Defitea August historical route validation OK');
