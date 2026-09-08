@@ -1,6 +1,6 @@
 {
   "version": "0.1-accounting-reference-reconciliation",
-  "generatedAt": "2026-09-08T16:26:13.909Z",
+  "generatedAt": "2026-09-08T17:11:08.312Z",
   "status": "diagnostic-no-completion-authority",
   "periodStart": "2026-08",
   "purpose": "Continuously compare independent Reference/Estimated and factual Confirmed accounting so economically meaningful spread is detected and explained rather than discovered manually.",
@@ -16,6 +16,10 @@
     "modelVariancePossibleDoesNotProveModelVariance": true,
     "companyAndMechanismRowsHaveDifferentReferenceScopes": true,
     "mechanismRowsDoNotNecessarilySumToCompanyEstimated": true,
+    "mechanismReferenceAprMayIncludeSupplementaryOverlay": true,
+    "supplementaryReferenceDoubleAddForbidden": true,
+    "principalCapitalCountedOnce": true,
+    "historicalReferenceChannelDecompositionIsNotInferred": true,
     "unknownIsNotZero": true
   },
   "diagnosticBands": {
@@ -32,7 +36,7 @@
     "companyMonthlyReports": {
       "file": "reporting/company-monthly-reports.json",
       "version": "0.5-company-monthly-confirmed-estimated-view",
-      "generatedAt": "2026-09-08T16:26:13.766Z"
+      "generatedAt": "2026-09-08T17:11:08.114Z"
     },
     "accountingCoverage": {
       "file": "reporting/accounting-coverage.json",
@@ -47,7 +51,7 @@
     "accountingNoticeQueue": {
       "file": "reporting/accounting-notice-queue.json",
       "version": "0.1-accounting-notice-queue",
-      "generatedAt": "2026-09-08T16:26:13.851Z"
+      "generatedAt": "2026-09-08T17:11:08.236Z"
     }
   },
   "summary": {
@@ -1549,16 +1553,21 @@
       "referenceRateStatuses": [
         "current"
       ],
-      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
-      "referenceScope": "Defitea base productive positions only",
+      "referenceBasis": "canonical Reporting daily principal-position valueUsd × admitted effective Reference APR / 365",
+      "referenceScope": "Defitea principal productive position with one admitted effective Reference APR",
       "referenceScopeExcludes": [
         "associated-company-reference-contributors",
-        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+        "separate-supplementary-reference-double-add"
       ],
+      "principalCapitalCountedOnce": true,
+      "referenceAprMayIncludeSupplementaryChannelOverlay": true,
+      "supplementaryReferenceMustNotBeAddedAgain": true,
+      "referenceRateComposition": "published-effective-rate-as-observed",
+      "referenceRateChannelDecompositionAuthority": false,
       "companyEstimatedReconciliationAuthority": false,
       "reconciliationStatus": "tracking-no-period-event",
       "reasonCodes": [
-        "base-position-reference-comparator-is-non-factual",
+        "principal-position-reference-comparator-is-non-factual",
         "partial-reference-window",
         "factual-tracking-active",
         "tracking-no-period-event"
@@ -1566,7 +1575,7 @@
       "completionBlockers": [
         "no-canonical-period-income-evidence"
       ],
-      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -1605,16 +1614,21 @@
       "referenceRateStatuses": [
         "current"
       ],
-      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
-      "referenceScope": "Defitea base productive positions only",
+      "referenceBasis": "canonical Reporting daily principal-position valueUsd × admitted effective Reference APR / 365",
+      "referenceScope": "Defitea principal productive position with one admitted effective Reference APR",
       "referenceScopeExcludes": [
         "associated-company-reference-contributors",
-        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+        "separate-supplementary-reference-double-add"
       ],
+      "principalCapitalCountedOnce": true,
+      "referenceAprMayIncludeSupplementaryChannelOverlay": true,
+      "supplementaryReferenceMustNotBeAddedAgain": true,
+      "referenceRateComposition": "published-effective-rate-as-observed",
+      "referenceRateChannelDecompositionAuthority": false,
       "companyEstimatedReconciliationAuthority": false,
       "reconciliationStatus": "missing-capability",
       "reasonCodes": [
-        "base-position-reference-comparator-is-non-factual",
+        "principal-position-reference-comparator-is-non-factual",
         "partial-reference-window",
         "missing-factual-tracking-capability"
       ],
@@ -1623,7 +1637,7 @@
         "no-factual-engine-tracking-proof",
         "current-state-is-not-period-income"
       ],
-      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -1662,22 +1676,27 @@
       "referenceRateStatuses": [
         "current"
       ],
-      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
-      "referenceScope": "Defitea base productive positions only",
+      "referenceBasis": "canonical Reporting daily principal-position valueUsd × admitted effective Reference APR / 365",
+      "referenceScope": "Defitea principal productive position with one admitted effective Reference APR",
       "referenceScopeExcludes": [
         "associated-company-reference-contributors",
-        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+        "separate-supplementary-reference-double-add"
       ],
+      "principalCapitalCountedOnce": true,
+      "referenceAprMayIncludeSupplementaryChannelOverlay": true,
+      "supplementaryReferenceMustNotBeAddedAgain": true,
+      "referenceRateComposition": "published-effective-rate-as-observed",
+      "referenceRateChannelDecompositionAuthority": false,
       "companyEstimatedReconciliationAuthority": false,
       "reconciliationStatus": "above-reference",
       "reasonCodes": [
-        "base-position-reference-comparator-is-non-factual",
+        "principal-position-reference-comparator-is-non-factual",
         "partial-reference-window",
         "factual-tracking-active",
         "factual-period-events-observed"
       ],
       "completionBlockers": [],
-      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -1716,16 +1735,21 @@
       "referenceRateStatuses": [
         "current"
       ],
-      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
-      "referenceScope": "Defitea base productive positions only",
+      "referenceBasis": "canonical Reporting daily principal-position valueUsd × admitted effective Reference APR / 365",
+      "referenceScope": "Defitea principal productive position with one admitted effective Reference APR",
       "referenceScopeExcludes": [
         "associated-company-reference-contributors",
-        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+        "separate-supplementary-reference-double-add"
       ],
+      "principalCapitalCountedOnce": true,
+      "referenceAprMayIncludeSupplementaryChannelOverlay": true,
+      "supplementaryReferenceMustNotBeAddedAgain": true,
+      "referenceRateComposition": "published-effective-rate-as-observed",
+      "referenceRateChannelDecompositionAuthority": false,
       "companyEstimatedReconciliationAuthority": false,
       "reconciliationStatus": "boundary-review",
       "reasonCodes": [
-        "base-position-reference-comparator-is-non-factual",
+        "principal-position-reference-comparator-is-non-factual",
         "partial-reference-window",
         "factual-tracking-active",
         "factual-period-events-observed",
@@ -1734,7 +1758,7 @@
       "completionBlockers": [
         "cross-month-boundary-requires-explicit-allocation"
       ],
-      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -1774,22 +1798,27 @@
       "referenceRateStatuses": [
         "current"
       ],
-      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
-      "referenceScope": "Defitea base productive positions only",
+      "referenceBasis": "canonical Reporting daily principal-position valueUsd × admitted effective Reference APR / 365",
+      "referenceScope": "Defitea principal productive position with one admitted effective Reference APR",
       "referenceScopeExcludes": [
         "associated-company-reference-contributors",
-        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+        "separate-supplementary-reference-double-add"
       ],
+      "principalCapitalCountedOnce": true,
+      "referenceAprMayIncludeSupplementaryChannelOverlay": true,
+      "supplementaryReferenceMustNotBeAddedAgain": true,
+      "referenceRateComposition": "published-effective-rate-as-observed",
+      "referenceRateChannelDecompositionAuthority": false,
       "companyEstimatedReconciliationAuthority": false,
       "reconciliationStatus": "material-divergence",
       "reasonCodes": [
-        "base-position-reference-comparator-is-non-factual",
+        "principal-position-reference-comparator-is-non-factual",
         "partial-reference-window",
         "factual-tracking-active",
         "factual-period-events-observed"
       ],
       "completionBlockers": [],
-      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -1828,16 +1857,21 @@
       "referenceRateStatuses": [
         "current"
       ],
-      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
-      "referenceScope": "Defitea base productive positions only",
+      "referenceBasis": "canonical Reporting daily principal-position valueUsd × admitted effective Reference APR / 365",
+      "referenceScope": "Defitea principal productive position with one admitted effective Reference APR",
       "referenceScopeExcludes": [
         "associated-company-reference-contributors",
-        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+        "separate-supplementary-reference-double-add"
       ],
+      "principalCapitalCountedOnce": true,
+      "referenceAprMayIncludeSupplementaryChannelOverlay": true,
+      "supplementaryReferenceMustNotBeAddedAgain": true,
+      "referenceRateComposition": "published-effective-rate-as-observed",
+      "referenceRateChannelDecompositionAuthority": false,
       "companyEstimatedReconciliationAuthority": false,
       "reconciliationStatus": "missing-capability",
       "reasonCodes": [
-        "base-position-reference-comparator-is-non-factual",
+        "principal-position-reference-comparator-is-non-factual",
         "partial-reference-window",
         "missing-factual-tracking-capability"
       ],
@@ -1846,7 +1880,7 @@
         "no-factual-engine-tracking-proof",
         "current-state-is-not-period-income"
       ],
-      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -1885,16 +1919,21 @@
       "referenceRateStatuses": [
         "carried-forward"
       ],
-      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
-      "referenceScope": "Defitea base productive positions only",
+      "referenceBasis": "canonical Reporting daily principal-position valueUsd × admitted effective Reference APR / 365",
+      "referenceScope": "Defitea principal productive position with one admitted effective Reference APR",
       "referenceScopeExcludes": [
         "associated-company-reference-contributors",
-        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+        "separate-supplementary-reference-double-add"
       ],
+      "principalCapitalCountedOnce": true,
+      "referenceAprMayIncludeSupplementaryChannelOverlay": true,
+      "supplementaryReferenceMustNotBeAddedAgain": true,
+      "referenceRateComposition": "published-effective-rate-as-observed",
+      "referenceRateChannelDecompositionAuthority": false,
       "companyEstimatedReconciliationAuthority": false,
       "reconciliationStatus": "missing-capability",
       "reasonCodes": [
-        "base-position-reference-comparator-is-non-factual",
+        "principal-position-reference-comparator-is-non-factual",
         "partial-reference-window",
         "missing-factual-tracking-capability"
       ],
@@ -1902,7 +1941,7 @@
         "no-canonical-period-income-evidence",
         "no-factual-engine-tracking-proof"
       ],
-      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -1941,16 +1980,21 @@
       "referenceRateStatuses": [
         "current"
       ],
-      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
-      "referenceScope": "Defitea base productive positions only",
+      "referenceBasis": "canonical Reporting daily principal-position valueUsd × admitted effective Reference APR / 365",
+      "referenceScope": "Defitea principal productive position with one admitted effective Reference APR",
       "referenceScopeExcludes": [
         "associated-company-reference-contributors",
-        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+        "separate-supplementary-reference-double-add"
       ],
+      "principalCapitalCountedOnce": true,
+      "referenceAprMayIncludeSupplementaryChannelOverlay": true,
+      "supplementaryReferenceMustNotBeAddedAgain": true,
+      "referenceRateComposition": "published-effective-rate-as-observed",
+      "referenceRateChannelDecompositionAuthority": false,
       "companyEstimatedReconciliationAuthority": false,
       "reconciliationStatus": "missing-capability",
       "reasonCodes": [
-        "base-position-reference-comparator-is-non-factual",
+        "principal-position-reference-comparator-is-non-factual",
         "partial-reference-window",
         "missing-factual-tracking-capability"
       ],
@@ -1959,7 +2003,7 @@
         "no-factual-engine-tracking-proof",
         "current-state-is-not-period-income"
       ],
-      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -1998,16 +2042,21 @@
       "referenceRateStatuses": [
         "current"
       ],
-      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
-      "referenceScope": "Defitea base productive positions only",
+      "referenceBasis": "canonical Reporting daily principal-position valueUsd × admitted effective Reference APR / 365",
+      "referenceScope": "Defitea principal productive position with one admitted effective Reference APR",
       "referenceScopeExcludes": [
         "associated-company-reference-contributors",
-        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+        "separate-supplementary-reference-double-add"
       ],
+      "principalCapitalCountedOnce": true,
+      "referenceAprMayIncludeSupplementaryChannelOverlay": true,
+      "supplementaryReferenceMustNotBeAddedAgain": true,
+      "referenceRateComposition": "published-effective-rate-as-observed",
+      "referenceRateChannelDecompositionAuthority": false,
       "companyEstimatedReconciliationAuthority": false,
       "reconciliationStatus": "boundary-review",
       "reasonCodes": [
-        "base-position-reference-comparator-is-non-factual",
+        "principal-position-reference-comparator-is-non-factual",
         "partial-reference-window",
         "factual-tracking-active",
         "factual-period-events-observed",
@@ -2016,7 +2065,7 @@
       "completionBlockers": [
         "cross-month-boundary-requires-explicit-allocation"
       ],
-      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -2055,16 +2104,21 @@
       "referenceRateStatuses": [
         "current"
       ],
-      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
-      "referenceScope": "Defitea base productive positions only",
+      "referenceBasis": "canonical Reporting daily principal-position valueUsd × admitted effective Reference APR / 365",
+      "referenceScope": "Defitea principal productive position with one admitted effective Reference APR",
       "referenceScopeExcludes": [
         "associated-company-reference-contributors",
-        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+        "separate-supplementary-reference-double-add"
       ],
+      "principalCapitalCountedOnce": true,
+      "referenceAprMayIncludeSupplementaryChannelOverlay": true,
+      "supplementaryReferenceMustNotBeAddedAgain": true,
+      "referenceRateComposition": "published-effective-rate-as-observed",
+      "referenceRateChannelDecompositionAuthority": false,
       "companyEstimatedReconciliationAuthority": false,
       "reconciliationStatus": "missing-capability",
       "reasonCodes": [
-        "base-position-reference-comparator-is-non-factual",
+        "principal-position-reference-comparator-is-non-factual",
         "partial-reference-window",
         "missing-factual-tracking-capability"
       ],
@@ -2073,7 +2127,7 @@
         "no-factual-engine-tracking-proof",
         "current-state-is-not-period-income"
       ],
-      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -2112,16 +2166,21 @@
       "referenceRateStatuses": [
         "current"
       ],
-      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
-      "referenceScope": "Defitea base productive positions only",
+      "referenceBasis": "canonical Reporting daily principal-position valueUsd × admitted effective Reference APR / 365",
+      "referenceScope": "Defitea principal productive position with one admitted effective Reference APR",
       "referenceScopeExcludes": [
         "associated-company-reference-contributors",
-        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+        "separate-supplementary-reference-double-add"
       ],
+      "principalCapitalCountedOnce": true,
+      "referenceAprMayIncludeSupplementaryChannelOverlay": true,
+      "supplementaryReferenceMustNotBeAddedAgain": true,
+      "referenceRateComposition": "published-effective-rate-as-observed",
+      "referenceRateChannelDecompositionAuthority": false,
       "companyEstimatedReconciliationAuthority": false,
       "reconciliationStatus": "missing-capability",
       "reasonCodes": [
-        "base-position-reference-comparator-is-non-factual",
+        "principal-position-reference-comparator-is-non-factual",
         "partial-reference-window",
         "missing-factual-tracking-capability"
       ],
@@ -2130,7 +2189,7 @@
         "no-factual-engine-tracking-proof",
         "current-state-is-not-period-income"
       ],
-      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -2169,16 +2228,21 @@
       "referenceRateStatuses": [
         "current"
       ],
-      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
-      "referenceScope": "Defitea base productive positions only",
+      "referenceBasis": "canonical Reporting daily principal-position valueUsd × admitted effective Reference APR / 365",
+      "referenceScope": "Defitea principal productive position with one admitted effective Reference APR",
       "referenceScopeExcludes": [
         "associated-company-reference-contributors",
-        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+        "separate-supplementary-reference-double-add"
       ],
+      "principalCapitalCountedOnce": true,
+      "referenceAprMayIncludeSupplementaryChannelOverlay": true,
+      "supplementaryReferenceMustNotBeAddedAgain": true,
+      "referenceRateComposition": "published-effective-rate-as-observed",
+      "referenceRateChannelDecompositionAuthority": false,
       "companyEstimatedReconciliationAuthority": false,
       "reconciliationStatus": "tracking-no-period-event",
       "reasonCodes": [
-        "base-position-reference-comparator-is-non-factual",
+        "principal-position-reference-comparator-is-non-factual",
         "partial-reference-window",
         "factual-tracking-active",
         "tracking-no-period-event"
@@ -2186,7 +2250,7 @@
       "completionBlockers": [
         "no-canonical-period-income-evidence"
       ],
-      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -2225,22 +2289,27 @@
       "referenceRateStatuses": [
         "current"
       ],
-      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
-      "referenceScope": "Defitea base productive positions only",
+      "referenceBasis": "canonical Reporting daily principal-position valueUsd × admitted effective Reference APR / 365",
+      "referenceScope": "Defitea principal productive position with one admitted effective Reference APR",
       "referenceScopeExcludes": [
         "associated-company-reference-contributors",
-        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+        "separate-supplementary-reference-double-add"
       ],
+      "principalCapitalCountedOnce": true,
+      "referenceAprMayIncludeSupplementaryChannelOverlay": true,
+      "supplementaryReferenceMustNotBeAddedAgain": true,
+      "referenceRateComposition": "published-effective-rate-as-observed",
+      "referenceRateChannelDecompositionAuthority": false,
       "companyEstimatedReconciliationAuthority": false,
       "reconciliationStatus": "review-band",
       "reasonCodes": [
-        "base-position-reference-comparator-is-non-factual",
+        "principal-position-reference-comparator-is-non-factual",
         "partial-reference-window",
         "factual-tracking-active",
         "factual-period-events-observed"
       ],
       "completionBlockers": [],
-      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -2279,22 +2348,27 @@
       "referenceRateStatuses": [
         "current"
       ],
-      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
-      "referenceScope": "Defitea base productive positions only",
+      "referenceBasis": "canonical Reporting daily principal-position valueUsd × admitted effective Reference APR / 365",
+      "referenceScope": "Defitea principal productive position with one admitted effective Reference APR",
       "referenceScopeExcludes": [
         "associated-company-reference-contributors",
-        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+        "separate-supplementary-reference-double-add"
       ],
+      "principalCapitalCountedOnce": true,
+      "referenceAprMayIncludeSupplementaryChannelOverlay": true,
+      "supplementaryReferenceMustNotBeAddedAgain": true,
+      "referenceRateComposition": "published-effective-rate-as-observed",
+      "referenceRateChannelDecompositionAuthority": false,
       "companyEstimatedReconciliationAuthority": false,
       "reconciliationStatus": "above-reference",
       "reasonCodes": [
-        "base-position-reference-comparator-is-non-factual",
+        "principal-position-reference-comparator-is-non-factual",
         "partial-reference-window",
         "factual-tracking-active",
         "factual-period-events-observed"
       ],
       "completionBlockers": [],
-      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -2333,22 +2407,27 @@
       "referenceRateStatuses": [
         "current"
       ],
-      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
-      "referenceScope": "Defitea base productive positions only",
+      "referenceBasis": "canonical Reporting daily principal-position valueUsd × admitted effective Reference APR / 365",
+      "referenceScope": "Defitea principal productive position with one admitted effective Reference APR",
       "referenceScopeExcludes": [
         "associated-company-reference-contributors",
-        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+        "separate-supplementary-reference-double-add"
       ],
+      "principalCapitalCountedOnce": true,
+      "referenceAprMayIncludeSupplementaryChannelOverlay": true,
+      "supplementaryReferenceMustNotBeAddedAgain": true,
+      "referenceRateComposition": "published-effective-rate-as-observed",
+      "referenceRateChannelDecompositionAuthority": false,
       "companyEstimatedReconciliationAuthority": false,
       "reconciliationStatus": "above-reference",
       "reasonCodes": [
-        "base-position-reference-comparator-is-non-factual",
+        "principal-position-reference-comparator-is-non-factual",
         "partial-reference-window",
         "factual-tracking-active",
         "factual-period-events-observed"
       ],
       "completionBlockers": [],
-      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -2387,22 +2466,27 @@
       "referenceRateStatuses": [
         "current"
       ],
-      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
-      "referenceScope": "Defitea base productive positions only",
+      "referenceBasis": "canonical Reporting daily principal-position valueUsd × admitted effective Reference APR / 365",
+      "referenceScope": "Defitea principal productive position with one admitted effective Reference APR",
       "referenceScopeExcludes": [
         "associated-company-reference-contributors",
-        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+        "separate-supplementary-reference-double-add"
       ],
+      "principalCapitalCountedOnce": true,
+      "referenceAprMayIncludeSupplementaryChannelOverlay": true,
+      "supplementaryReferenceMustNotBeAddedAgain": true,
+      "referenceRateComposition": "published-effective-rate-as-observed",
+      "referenceRateChannelDecompositionAuthority": false,
       "companyEstimatedReconciliationAuthority": false,
       "reconciliationStatus": "material-divergence",
       "reasonCodes": [
-        "base-position-reference-comparator-is-non-factual",
+        "principal-position-reference-comparator-is-non-factual",
         "partial-reference-window",
         "factual-tracking-active",
         "factual-period-events-observed"
       ],
       "completionBlockers": [],
-      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -2441,16 +2525,21 @@
       "referenceRateStatuses": [
         "current"
       ],
-      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
-      "referenceScope": "Defitea base productive positions only",
+      "referenceBasis": "canonical Reporting daily principal-position valueUsd × admitted effective Reference APR / 365",
+      "referenceScope": "Defitea principal productive position with one admitted effective Reference APR",
       "referenceScopeExcludes": [
         "associated-company-reference-contributors",
-        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+        "separate-supplementary-reference-double-add"
       ],
+      "principalCapitalCountedOnce": true,
+      "referenceAprMayIncludeSupplementaryChannelOverlay": true,
+      "supplementaryReferenceMustNotBeAddedAgain": true,
+      "referenceRateComposition": "published-effective-rate-as-observed",
+      "referenceRateChannelDecompositionAuthority": false,
       "companyEstimatedReconciliationAuthority": false,
       "reconciliationStatus": "tracking-no-period-event",
       "reasonCodes": [
-        "base-position-reference-comparator-is-non-factual",
+        "principal-position-reference-comparator-is-non-factual",
         "partial-reference-window",
         "factual-tracking-active",
         "tracking-no-period-event"
@@ -2458,7 +2547,7 @@
       "completionBlockers": [
         "no-canonical-period-income-evidence"
       ],
-      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -2497,16 +2586,21 @@
       "referenceRateStatuses": [
         "carried-forward"
       ],
-      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
-      "referenceScope": "Defitea base productive positions only",
+      "referenceBasis": "canonical Reporting daily principal-position valueUsd × admitted effective Reference APR / 365",
+      "referenceScope": "Defitea principal productive position with one admitted effective Reference APR",
       "referenceScopeExcludes": [
         "associated-company-reference-contributors",
-        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+        "separate-supplementary-reference-double-add"
       ],
+      "principalCapitalCountedOnce": true,
+      "referenceAprMayIncludeSupplementaryChannelOverlay": true,
+      "supplementaryReferenceMustNotBeAddedAgain": true,
+      "referenceRateComposition": "published-effective-rate-as-observed",
+      "referenceRateChannelDecompositionAuthority": false,
       "companyEstimatedReconciliationAuthority": false,
       "reconciliationStatus": "tracking-no-period-event",
       "reasonCodes": [
-        "base-position-reference-comparator-is-non-factual",
+        "principal-position-reference-comparator-is-non-factual",
         "partial-reference-window",
         "factual-tracking-active",
         "tracking-no-period-event"
@@ -2514,7 +2608,7 @@
       "completionBlockers": [
         "no-canonical-period-income-evidence"
       ],
-      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -2553,16 +2647,21 @@
       "referenceRateStatuses": [
         "current"
       ],
-      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
-      "referenceScope": "Defitea base productive positions only",
+      "referenceBasis": "canonical Reporting daily principal-position valueUsd × admitted effective Reference APR / 365",
+      "referenceScope": "Defitea principal productive position with one admitted effective Reference APR",
       "referenceScopeExcludes": [
         "associated-company-reference-contributors",
-        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+        "separate-supplementary-reference-double-add"
       ],
+      "principalCapitalCountedOnce": true,
+      "referenceAprMayIncludeSupplementaryChannelOverlay": true,
+      "supplementaryReferenceMustNotBeAddedAgain": true,
+      "referenceRateComposition": "published-effective-rate-as-observed",
+      "referenceRateChannelDecompositionAuthority": false,
       "companyEstimatedReconciliationAuthority": false,
       "reconciliationStatus": "tracking-no-period-event",
       "reasonCodes": [
-        "base-position-reference-comparator-is-non-factual",
+        "principal-position-reference-comparator-is-non-factual",
         "partial-reference-window",
         "factual-tracking-active",
         "tracking-no-period-event"
@@ -2570,7 +2669,7 @@
       "completionBlockers": [
         "no-canonical-period-income-evidence"
       ],
-      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -2609,22 +2708,27 @@
       "referenceRateStatuses": [
         "current"
       ],
-      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
-      "referenceScope": "Defitea base productive positions only",
+      "referenceBasis": "canonical Reporting daily principal-position valueUsd × admitted effective Reference APR / 365",
+      "referenceScope": "Defitea principal productive position with one admitted effective Reference APR",
       "referenceScopeExcludes": [
         "associated-company-reference-contributors",
-        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+        "separate-supplementary-reference-double-add"
       ],
+      "principalCapitalCountedOnce": true,
+      "referenceAprMayIncludeSupplementaryChannelOverlay": true,
+      "supplementaryReferenceMustNotBeAddedAgain": true,
+      "referenceRateComposition": "published-effective-rate-as-observed",
+      "referenceRateChannelDecompositionAuthority": false,
       "companyEstimatedReconciliationAuthority": false,
       "reconciliationStatus": "review-band",
       "reasonCodes": [
-        "base-position-reference-comparator-is-non-factual",
+        "principal-position-reference-comparator-is-non-factual",
         "partial-reference-window",
         "factual-tracking-active",
         "factual-period-events-observed"
       ],
       "completionBlockers": [],
-      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -2663,16 +2767,21 @@
       "referenceRateStatuses": [
         "current"
       ],
-      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
-      "referenceScope": "Defitea base productive positions only",
+      "referenceBasis": "canonical Reporting daily principal-position valueUsd × admitted effective Reference APR / 365",
+      "referenceScope": "Defitea principal productive position with one admitted effective Reference APR",
       "referenceScopeExcludes": [
         "associated-company-reference-contributors",
-        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+        "separate-supplementary-reference-double-add"
       ],
+      "principalCapitalCountedOnce": true,
+      "referenceAprMayIncludeSupplementaryChannelOverlay": true,
+      "supplementaryReferenceMustNotBeAddedAgain": true,
+      "referenceRateComposition": "published-effective-rate-as-observed",
+      "referenceRateChannelDecompositionAuthority": false,
       "companyEstimatedReconciliationAuthority": false,
       "reconciliationStatus": "tracking-no-period-event",
       "reasonCodes": [
-        "base-position-reference-comparator-is-non-factual",
+        "principal-position-reference-comparator-is-non-factual",
         "partial-reference-window",
         "factual-tracking-active",
         "tracking-no-period-event"
@@ -2680,7 +2789,7 @@
       "completionBlockers": [
         "no-canonical-period-income-evidence"
       ],
-      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
@@ -2719,22 +2828,27 @@
       "referenceRateStatuses": [
         "current"
       ],
-      "referenceBasis": "canonical Reporting daily position valueUsd × admitted Reference APR / 365",
-      "referenceScope": "Defitea base productive positions only",
+      "referenceBasis": "canonical Reporting daily principal-position valueUsd × admitted effective Reference APR / 365",
+      "referenceScope": "Defitea principal productive position with one admitted effective Reference APR",
       "referenceScopeExcludes": [
         "associated-company-reference-contributors",
-        "supplementary-income-channel-reference-not-represented-in-the-daily-position-row"
+        "separate-supplementary-reference-double-add"
       ],
+      "principalCapitalCountedOnce": true,
+      "referenceAprMayIncludeSupplementaryChannelOverlay": true,
+      "supplementaryReferenceMustNotBeAddedAgain": true,
+      "referenceRateComposition": "published-effective-rate-as-observed",
+      "referenceRateChannelDecompositionAuthority": false,
       "companyEstimatedReconciliationAuthority": false,
       "reconciliationStatus": "review-band",
       "reasonCodes": [
-        "base-position-reference-comparator-is-non-factual",
+        "principal-position-reference-comparator-is-non-factual",
         "partial-reference-window",
         "factual-tracking-active",
         "factual-period-events-observed"
       ],
       "completionBlockers": [],
-      "comparisonSemantic": "Mechanism row compares observed base-position Reference economics with canonical factual events matched to the mechanism. It does not claim to decompose the entire company Estimated total.",
+      "comparisonSemantic": "Mechanism row compares one principal position's observed effective Reference economics with canonical factual events matched to the mechanism. The admitted position Reference APR may already include supplementary channel overlays; those overlays must not be added a second time. The row is diagnostic, does not decompose the full company Estimated total, and does not prove missing income.",
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
       "monthClosingAuthority": false,
