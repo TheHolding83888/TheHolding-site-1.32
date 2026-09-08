@@ -37,6 +37,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          node --check rewards/vlcvx-route-rewards-overlay.mjs
           node --check rewards/vlcvx-convex-team-settlement-proof.mjs
           node --check rewards/vlcvx-route-rewards-finalize.mjs
           node --check rewards/vlcvx-route-rewards-guard.mjs
@@ -56,7 +57,7 @@ jobs:
           node rewards/vlcvx-registry-route-audit.mjs
           node rewards/union-vlcvx-allocation-audit.mjs
 
-      - name: Validate current settlement boundary against materialized Rewards
+      - name: Refresh current routes and validate settlement boundary
         env:
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
           REWARDS_OUTPUT: /tmp/vlcvx-rewards-candidate.json
@@ -66,13 +67,27 @@ jobs:
           set -euo pipefail
           cp companies/rewards-data.json "$REWARDS_OUTPUT"
 
-          # Settlement eligibility is a current-route proof. Re-running the full
-          # historical RewardAdded inventory here couples an unrelated Coverage
-          # schema change to archive-provider availability. Historical extra
-          # reward discovery has its own dedicated verifier. Here we require the
-          # live settlement eligibility proof plus the already materialized,
-          # separately tracked extra-reward component in canonical Rewards.
-          node rewards/vlcvx-convex-team-settlement-proof.mjs
+          # Refresh only current-route member state (Union / Stake DAO / current
+          # delegate graph). This intentionally does NOT run the full historical
+          # RewardAdded inventory, whose archive-provider discovery is validated
+          # by its own specialized workflow.
+          node rewards/vlcvx-route-rewards-overlay.mjs
+
+          # The overlay correctly leaves the Convex-Team Rook route unresolved.
+          # Apply the separate factual eligibility-boundary proof in-memory. This
+          # changes only tracking status/diagnostics and is guarded from creating
+          # reward rows or changing claimable aggregates.
+          node --input-type=module - <<'NODE'
+          import fs from 'node:fs';
+          import {collectVlCvxConvexTeamSettlementProof,applyVlCvxConvexTeamSettlementProof} from './rewards/vlcvx-convex-team-settlement-proof.mjs';
+          const file=process.env.REWARDS_OUTPUT;
+          const data=JSON.parse(fs.readFileSync(file,'utf8'));
+          const proof=await collectVlCvxConvexTeamSettlementProof();
+          applyVlCvxConvexTeamSettlementProof(data,proof);
+          fs.writeFileSync(file,JSON.stringify(data,null,2)+'\n');
+          console.log('vlCVX current Convex-Team settlement proof applied',{observedBlock:proof.observedBlock,periodIncomeAuthority:proof.settlement.periodIncomeAuthority,executionAuthority:proof.executionAuthority});
+          NODE
+
           node rewards/vlcvx-route-rewards-guard.mjs
           node - <<'NODE'
           const fs=require('fs');
@@ -82,14 +97,18 @@ jobs:
           const p=s?.details?.settlement||{};
           const extra=(c?.sources||[]).find(x=>x.route==='vlcvx-extra-reward-distribution');
           const platform=(c?.sources||[]).find(x=>x.route==='vlcvx-locker-platform-rewards');
+          const cypher=d.companies?.Cypher;
+          const stake=(cypher?.sources||[]).find(x=>x.route==='vlcvx-current-route');
           if(s?.status!=='ok'||s?.protocol!=='Convex Finance · vlCVX')throw new Error('Rook current route not materialized');
           if(s?.details?.currentRewardSettlement!=='no-votium-incentive-eligibility-observed-current-route')throw new Error('Rook settlement boundary missing');
           if(p.trackingBoundaryComplete!==true||p.periodIncomeAuthority!==false||p.universalExternalRewardZeroAsserted!==false||p.unknownIsNotZero!==true)throw new Error('Rook settlement epistemics drift');
           if(p.allWeightedProposalsConvexTeam!==true||p.noManualOrSurrogateOverrideOnWeightedProposals!==true||Number(p.manualOrSurrogateOverrideCount)!==0)throw new Error('Rook participation proof incomplete');
           if(platform?.status!=='ok'||platform?.details?.periodIncomeAuthority!==false)throw new Error('materialized locker platform component proof missing');
           if(extra?.status!=='ok'||extra?.details?.periodIncomeAuthority!==false)throw new Error('materialized extra-reward component proof missing');
+          if(stake?.protocol!=='Stake DAO · vlCVX'||!['ok','warming','partial'].includes(stake?.status))throw new Error('Cypher Stake DAO current route not refreshed');
+          if(stake?.status!=='ok'&&stake?.details?.unknownIsNotZero!==true)throw new Error('Stake DAO incomplete observation lost UNKNOWN semantics');
           if(d.diagnostics?.vlCvxConvexTeamSettlement?.rewardRowsCreated!==false||d.diagnostics?.vlCvxConvexTeamSettlement?.periodIncomeAuthority!==false)throw new Error('tracking proof gained income authority');
-          console.log('ROOK CURRENT VLCVX TRACKING BOUNDARY PASS',{status:s.status,settlement:s.details.currentRewardSettlement,observedBlock:s.details.settlementObservedBlock,extraRewardMaterialized:true,platformMaterialized:true});
+          console.log('CURRENT VLCVX TRACKING BOUNDARY PASS',{rookStatus:s.status,rookSettlement:s.details.currentRewardSettlement,observedBlock:s.details.settlementObservedBlock,stakeDaoStatus:stake.status,extraRewardMaterialized:true,platformMaterialized:true});
           NODE
 
       - name: Prove Accounting Coverage reaches factual vlCVX 4 of 4 without income creation
