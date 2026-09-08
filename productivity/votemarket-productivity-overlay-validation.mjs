@@ -36,7 +36,12 @@ function reward(route,epoch,usd,campaign,token='TOKEN'){
   };
 }
 
-function runCase(name,rewards,assertion){
+function executeOverlay(dataPath,rewardsPath,reportPath){
+  const result=spawnSync(process.execPath,[OVERLAY],{cwd:ROOT,env:{...process.env,PRODUCTIVITY_DATA:dataPath,REWARDS_DATA:rewardsPath,PRODUCTIVITY_REPORT:reportPath},encoding:'utf8'});
+  if(result.status!==0)fail(`overlay failed: ${result.stderr||result.stdout}`);
+}
+
+function runCase(name,rewards,assertion,{runs=1}={}){
   const dir=fs.mkdtempSync(path.join(os.tmpdir(),`th-vm-${name}-`));
   const dataPath=path.join(dir,'productivity.json');
   const rewardsPath=path.join(dir,'rewards.json');
@@ -44,18 +49,19 @@ function runCase(name,rewards,assertion){
   write(dataPath,baseProductivity());
   write(rewardsPath,rewards);
   write(reportPath,{engines:{}});
-  const result=spawnSync(process.execPath,[OVERLAY],{cwd:ROOT,env:{...process.env,PRODUCTIVITY_DATA:dataPath,REWARDS_DATA:rewardsPath,PRODUCTIVITY_REPORT:reportPath},encoding:'utf8'});
-  if(result.status!==0)fail(`${name} overlay failed: ${result.stderr||result.stdout}`);
+  for(let i=0;i<runs;i++)executeOverlay(dataPath,rewardsPath,reportPath);
   assertion(read(dataPath),read(reportPath));
   fs.rmSync(dir,{recursive:true,force:true});
 }
 
 const epoch=Math.floor(Date.parse('2026-09-03T00:00:00.000Z')/1000);
-runCase('happy',{
+const happyRewards={
   version:'fixture',generatedAt:'2026-09-08T12:00:00.000Z',companies:{'fixture.eth':{rewards:[
     reward('votemarket-vecrv',epoch,10,1,'A'),reward('votemarket-vecrv',epoch,5,2,'B'),reward('votemarket-vefxn',epoch,2,3,'C')
   ]}}
-},(data,report)=>{
+};
+
+function assertHappy(data,report){
   const c=data.companies['fixture.eth'];
   const crv=c.breakdown.find(x=>x.engineId==='curve_vecrv');
   const fxn=c.breakdown.find(x=>x.engineId==='fx_vefxn');
@@ -70,8 +76,18 @@ runCase('happy',{
   const expected=(1000*(5+crvApr)+500*(4+fxnApr)+500*10)/2000;
   if(!near(c.aprLatest,expected,1e-4))fail('company blended APR recomputation failed');
   if(crv.incomeChannels.capitalDoubleCount!==false||crv.incomeChannels.factualIncomeAuthority!==false||crv.incomeChannels.earnedIncomeAuthority!==false)fail('epistemic/capital contract drift');
+  if(crv.incomeChannels.idempotent!==true||data.diagnostics?.voteMarketIncomeChannels?.idempotent!==true)fail('idempotency contract missing');
+  if(vmCrv?.claimedPeriodPersistencePending!==true||data.diagnostics?.voteMarketIncomeChannels?.claimedPeriodPersistencePending!==true)fail('claimed-period persistence boundary not explicit');
   if(report?.voteMarketIncomeChannels?.capitalDoubleCount!==false)fail('source report diagnostic missing');
-});
+}
+
+runCase('happy',happyRewards,assertHappy);
+runCase('idempotent',happyRewards,(data,report)=>{
+  assertHappy(data,report);
+  const note='VoteMarket veCRV/veFXN rewards are modeled as supplementary income channels on the existing principal: capital is counted once, verified latest finalized company-specific markets may add Reference APR, and the overlay never grants factual earned-income authority.';
+  const occurrences=String(data.note||'').split(note).length-1;
+  if(occurrences!==1)fail(`overlay note duplicated across rerun: ${occurrences}`);
+},{runs:2});
 
 runCase('unpriced',{
   version:'fixture',generatedAt:'2026-09-08T12:00:00.000Z',companies:{'fixture.eth':{rewards:[
@@ -92,4 +108,4 @@ runCase('stale',{
   if(Number(row.apr)!==4)fail('stale VoteMarket period changed APR');
 });
 
-console.log('VoteMarket Productivity overlay validation PASS',{multiMarketAggregation:true,capitalCountedOnce:true,partialUsdFailsClosed:true,stalePeriodFailsClosed:true,factualIncomeAuthority:false,executionAuthority:'none'});
+console.log('VoteMarket Productivity overlay validation PASS',{multiMarketAggregation:true,capitalCountedOnce:true,idempotent:true,partialUsdFailsClosed:true,stalePeriodFailsClosed:true,claimedPeriodPersistencePending:true,factualIncomeAuthority:false,executionAuthority:'none'});
