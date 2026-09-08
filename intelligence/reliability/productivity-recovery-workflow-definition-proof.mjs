@@ -12,6 +12,18 @@ assert.match(workflow, /permissions:\s*\n\s*contents:\s*write/, 'Productivity wr
 assert.doesNotMatch(workflow, /permissions:\s*write-all|actions:\s*write|pull-requests:\s*write/, 'Productivity recovery permissions widened');
 assert.match(workflow, /concurrency:\s*\n\s*group:\s*productivity-weekly\s*\n\s*cancel-in-progress:\s*false/, 'Productivity concurrency contract drift');
 assert.match(workflow, /onchainSelectedAssetCount\)!==26/, '26\/26 canonical Market Data guard missing');
+assert.match(workflow, /node --check productivity\/votemarket-productivity-overlay\.mjs/, 'VoteMarket overlay syntax preflight missing');
+assert.match(workflow, /node --check productivity\/votemarket-productivity-overlay-validation\.mjs/, 'VoteMarket deterministic validator syntax preflight missing');
+assert.match(workflow, /node productivity\/votemarket-productivity-overlay-validation\.mjs/, 'VoteMarket deterministic validator execution missing');
+assert.match(workflow, /capitalDoubleCount!==false\|\|diag\?\.idempotent!==true/, 'VoteMarket capital/idempotency runtime guard missing');
+assert.match(workflow, /diag\?\.earnedIncomeAuthority!==false\|\|diag\?\.factualIncomeAuthority!==false\|\|diag\?\.executionAuthority!=='none'/, 'VoteMarket authority-separation runtime guard missing');
+assert.match(workflow, /claimedPeriodPersistencePending!==true/, 'VoteMarket claimed-period persistence boundary guard missing');
+
+const company010 = workflow.indexOf('node productivity/company-010-productivity-overlay.mjs');
+const yieldring = workflow.indexOf('node productivity/yieldring-productivity-overlay.mjs');
+const votemarket = workflow.indexOf('node productivity/votemarket-productivity-overlay.mjs');
+assert.ok(company010 >= 0 && yieldring > company010 && votemarket > yieldring, 'Productivity overlay order must remain Company #010 -> YieldRing -> VoteMarket');
+
 assert.match(workflow, /for attempt in 1 2 3/, 'bounded safe-writer retry contract missing');
 assert.match(workflow, /git fetch origin main/, 'fresh-main reconciliation missing');
 assert.match(workflow, /git rebase origin\/main/, 'safe-writer rebase missing');
@@ -25,7 +37,15 @@ assert.match(retry, /node -e '/, 'retry loop must use indentation-safe inline ca
 assert.match(retry, /npm --prefix productivity run update/, 'fresh-main Productivity recompute missing');
 assert.match(retry, /node productivity\/company-010-productivity-overlay\.mjs/, 'Company #010 overlay recompute missing');
 assert.match(retry, /node productivity\/yieldring-productivity-overlay\.mjs/, 'YieldRing overlay recompute missing');
+assert.match(retry, /node productivity\/votemarket-productivity-overlay\.mjs/, 'VoteMarket overlay recompute missing');
 assert.match(retry, /node intelligence\/market-data\/public-capital-engine\.mjs/, 'public capital recompute missing');
-assert.doesNotMatch(workflow, /sendTransaction|eth_sendRawTransaction|eth_sendTransaction|\.transfer\(|\.approve\(/, 'Productivity workflow contains wallet/capital transaction behavior');
 
-console.log('Productivity recovery safe-writer workflow definition proof PASS');
+assert.doesNotMatch(workflow, /sendTransaction|eth_sendRawTransaction|eth_sendTransaction|\.transfer\(|\.approve\(|\.claim\(|\.vote\(/, 'Productivity workflow contains wallet/capital transaction behavior');
+
+console.log('Productivity recovery safe-writer workflow definition proof PASS', {
+  overlayOrder: 'Company #010 -> YieldRing -> VoteMarket',
+  voteMarketIdempotencyGuard: true,
+  voteMarketCapitalCountedOnce: true,
+  factualIncomeAuthority: false,
+  executionAuthority: 'none'
+});
