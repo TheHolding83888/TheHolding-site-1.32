@@ -22,6 +22,8 @@ assert.equal(data.semantics?.zeroPeriodEventDoesNotImplyCoverageGap,true);
 assert.equal(data.semantics?.coverageGapMeansMissingFactualTrackingCapability,true);
 assert.equal(data.semantics?.factualEvidenceDoesNotImplyFullMechanismCoverage,true);
 assert.equal(data.semantics?.partialEvidenceDoesNotCloseMonth,true);
+assert.equal(data.semantics?.explicitCanonicalPeriodAttributionResolvesDiagnosticCrossMonthBoundary,true);
+assert.equal(data.semantics?.crossMonthWithoutExplicitCanonicalAttributionRemainsUnresolved,true);
 assert.equal(data.semantics?.unknownIsNotZero,true);
 assert.equal(data.semantics?.newCompanyDoesNotRequireNewAccountingEngineWhenMechanismAlreadySupported,true);
 assert.equal(data.semantics?.unclassifiedMechanismIsVisibleGapNotZero,true);
@@ -79,6 +81,8 @@ for(const [name,c] of Object.entries(companies)){
       assert.ok(Array.isArray(row.completionBlockers));
       assert.ok(Array.isArray(row.factualTrackingProofSources));
       assert.ok(['factual-period-evidence','factual-tracking-no-period-event','state-observed-not-factual-tracking','reference-only-no-factual-tracking'].includes(row.status));
+      assert.equal(Number(row.crossMonthEvidenceCount||0),Number(row.crossMonthExplicitlyAttributedCount||0)+Number(row.crossMonthUnresolvedCount||0),`${name}/${m.engineId}/${month} cross-month accounting drift`);
+      assert.equal(row.completionBlockers.includes('cross-month-boundary-requires-explicit-allocation'),Number(row.crossMonthUnresolvedCount||0)>0,`${name}/${m.engineId}/${month} cross-month blocker drift`);
       if(row.factualEventCount===0)assert.ok(row.completionBlockers.includes('no-canonical-period-income-evidence'),`${name}/${m.engineId}/${month} eventless period lacks blocker`);
       if(row.factualTrackingActive===true)assert.ok(!row.completionBlockers.includes('no-factual-engine-tracking-proof'),`${name}/${m.engineId}/${month} tracked mechanism incorrectly marked uncovered`);
       if(row.factualTrackingActive!==true)assert.ok(row.completionBlockers.includes('no-factual-engine-tracking-proof'),`${name}/${m.engineId}/${month} missing factual-tracking blocker`);
@@ -160,6 +164,25 @@ assert.equal(synthetic.companies['FutureCo.eth'].mechanisms.future_unknown.class
 assert.ok(synthetic.companies['FutureCo.eth'].mechanisms.future_unknown.months['2026-09'].completionBlockers.includes('unclassified-income-mechanism'));
 assert.equal(synthetic.summary.unclassifiedMechanismInstanceCount,1);
 
+// Cross-month evidence is resolved only by an explicit canonical attribution to the same accounting month.
+const boundaryProductivity={generatedAt:'2026-09-03T00:00:00.000Z',engines:{frax_vefrax:{protocol:'Frax'}},companies:{'BoundaryCo.eth':{trackingStartedAt:'2026-08-01T00:00:00.000Z',breakdown:[{engineId:'frax_vefrax',value:100,engineStatus:'ok'}]}}};
+const boundaryEvent={eventKey:'boundary:frax:1',company:'BoundaryCo.eth',family:'accrued-entitlement',economicDate:'2026-08-31',periodStart:'2026-08-31T11:38:06.060Z',periodEnd:'2026-09-01T00:00:00.000Z',periodAttributionMonth:'2026-08',protocol:'Frax · veFRAX',route:'frax-yield',asset:'WFRAX',sourceFamily:'Frax YieldDistributor factual accrual evidence',usdValue:1};
+const boundaryLedger={...emptyLedger,events:[boundaryEvent],companies:{'BoundaryCo.eth':{currentClaimableState:{rows:[]}}}};
+const boundarySynthetic=buildAccountingCoverage({productivity:boundaryProductivity,ledger:boundaryLedger,embedded:{},generatedAt:'2026-09-03T00:00:00.000Z'});
+const boundaryAug=boundarySynthetic.companies['BoundaryCo.eth'].mechanisms.frax_vefrax.months['2026-08'];
+assert.equal(boundaryAug.crossMonthEvidenceCount,1);
+assert.equal(boundaryAug.crossMonthExplicitlyAttributedCount,1);
+assert.equal(boundaryAug.crossMonthUnresolvedCount,0);
+assert.equal(boundaryAug.completionBlockers.includes('cross-month-boundary-requires-explicit-allocation'),false,'explicit canonical month attribution stayed falsely blocked');
+const unresolvedBoundaryLedger=structuredClone(boundaryLedger);
+delete unresolvedBoundaryLedger.events[0].periodAttributionMonth;
+const unresolvedBoundarySynthetic=buildAccountingCoverage({productivity:boundaryProductivity,ledger:unresolvedBoundaryLedger,embedded:{},generatedAt:'2026-09-03T00:00:00.000Z'});
+const unresolvedBoundaryAug=unresolvedBoundarySynthetic.companies['BoundaryCo.eth'].mechanisms.frax_vefrax.months['2026-08'];
+assert.equal(unresolvedBoundaryAug.crossMonthEvidenceCount,1);
+assert.equal(unresolvedBoundaryAug.crossMonthExplicitlyAttributedCount,0);
+assert.equal(unresolvedBoundaryAug.crossMonthUnresolvedCount,1);
+assert.equal(unresolvedBoundaryAug.completionBlockers.includes('cross-month-boundary-requires-explicit-allocation'),true,'unattributed cross-month evidence failed open');
+
 // Historical-alias regression.
 const aliasLedger={generatedAt:'2026-09-03T00:00:00.000Z',semantics:{referenceAprCanBackfillEarnedIncome:false,unknownIsNotZero:true},authority:{executionAuthority:'none',capitalExecution:false},events:[{eventKey:'alias:curve:1',company:'aerocrvyb.eth',family:'accrued-entitlement',economicDate:'2026-09-03',periodStart:'2026-09-01T00:00:00.000Z',periodEnd:'2026-09-03T00:00:00.000Z',protocol:'Curve',route:'veCRV fees',asset:'crvUSD',usdValue:1}],companies:{'aerocrvyb.eth':{currentClaimableState:{rows:[]}}}};
 const aliasProductivity={generatedAt:'2026-09-03T00:00:00.000Z',engines:{curve_vecrv:{protocol:'Curve'}},companies:{'aerocvxyb.eth':{trackingStartedAt:'2026-09-01T00:00:00.000Z',breakdown:[{engineId:'curve_vecrv',value:100,engineStatus:'ok'}]}}};
@@ -176,6 +199,6 @@ for(const engineId of ['aerodrome_veaero','velodrome_vevelo','yieldbasis_veyb','
   assert.ok(m.factualTrackingCompanyCount>=m.factualEventCompanyCount,`${engineId} tracking coverage fell below event coverage`);
 }
 
-console.log('Accounting Coverage Registry v0.3 validation PASS',{
-  companyCount:data.summary.companyCount,mechanismInstances:data.summary.mechanismInstanceCount,uniqueMechanisms:data.summary.uniqueMechanismCount,reusableCoverageGaps:data.summary.reusableCoverageGapCount,unclassified:data.summary.unclassifiedMechanismInstanceCount,unmatchedLedgerEvents:data.summary.unmatchedCanonicalEventCount,canonicalizedAliasCompanies:data.summary.canonicalizedAliasCompanyCount,factualTrackingProofs:data.summary.factualTrackingProofCount,currentMonth:data.currentMonth,futureCompanyAutoDiscovery:true,zeroEventTrackingDoesNotCreateFalseGap:true,stakedCvxCrvCanonicalIdentityProof:true,historicalAliasCannotCreatePhantomCompany:true,monthClosingAuthority:false
+console.log('Accounting Coverage Registry v0.11 validation PASS',{
+  companyCount:data.summary.companyCount,mechanismInstances:data.summary.mechanismInstanceCount,uniqueMechanisms:data.summary.uniqueMechanismCount,reusableCoverageGaps:data.summary.reusableCoverageGapCount,unclassified:data.summary.unclassifiedMechanismInstanceCount,unmatchedLedgerEvents:data.summary.unmatchedCanonicalEventCount,canonicalizedAliasCompanies:data.summary.canonicalizedAliasCompanyCount,factualTrackingProofs:data.summary.factualTrackingProofCount,currentMonth:data.currentMonth,futureCompanyAutoDiscovery:true,zeroEventTrackingDoesNotCreateFalseGap:true,stakedCvxCrvCanonicalIdentityProof:true,explicitCrossMonthAttributionResolvesDiagnosticBoundary:true,unattributedCrossMonthFailsClosed:true,historicalAliasCannotCreatePhantomCompany:true,monthClosingAuthority:false
 });
