@@ -1,4 +1,4 @@
-/* The Holding · Company Passport priority adapter · v0.9.0
+/* The Holding · Company Passport priority adapter · v0.9.1
  * Presentation only.
  *
  * Confirmed remains the factual accounting lane. Estimated remains a separate,
@@ -485,6 +485,20 @@
       .th-strategy-channel-rail .th-vm-apr-votemarket{color:var(--text-2)}
       .th-strategy-channel-separator{color:var(--gold);opacity:.58;flex:0 0 auto}
 
+      @media(min-width:761px){
+        /* Standard productive cards keep the accepted desktop geometry. Only a
+         * card that actually carries supplementary income channels gets a third
+         * semantic row, so the rail can never share physical space with value or
+         * the effective APR/APY capsule. This is capability-based, never asset- or
+         * company-specific. */
+        .ipx-balance-card .ipx-position-pill.th-vm-income-channel-pill.has-strategy-rate{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto auto;column-gap:.3rem;row-gap:.08rem;align-items:end;min-height:66px!important;padding:.36rem .42rem .3rem}
+        .ipx-balance-card .ipx-position-pill.th-vm-income-channel-pill.has-strategy-rate .ipx-position-symbol{grid-column:1 / -1;grid-row:1;padding:0;min-width:0}
+        .ipx-balance-card .ipx-position-pill.th-vm-income-channel-pill.has-strategy-rate .ipx-position-qty{grid-column:1;grid-row:2;align-self:end;padding:0;min-width:0}
+        .ipx-balance-card .ipx-position-pill.th-vm-income-channel-pill.has-strategy-rate .ipx-strategy-rate-badge{position:static;grid-column:2;grid-row:2;justify-self:end;align-self:end;right:auto;top:auto;transform:none;margin:0}
+        .ipx-balance-card .ipx-position-pill.th-vm-income-channel-pill.has-strategy-rate .th-strategy-channel-rail{grid-column:1 / -1;grid-row:3;margin-top:.01rem;padding-top:.12rem;justify-content:flex-start;overflow:visible;flex-wrap:wrap;font-size:.36rem;line-height:1.15;gap:.05rem .12rem}
+        .ipx-balance-card .ipx-position-pill.th-vm-income-channel-pill.has-strategy-rate .th-strategy-channel-rail .th-vm-apr-native,.ipx-balance-card .ipx-position-pill.th-vm-income-channel-pill.has-strategy-rate .th-strategy-channel-rail .th-vm-apr-votemarket{white-space:normal}
+      }
+
       @media(max-width:760.98px){
         .th-mr-estimated-view{margin-left:.12rem;margin-right:.12rem;padding:.45rem .5rem}.th-mr-estimated-head{gap:.38rem}.th-mr-estimated-label{font-size:.54rem}.th-mr-estimated-amount{font-size:.66rem}.th-mr-estimated-yield{font-size:.51rem}.th-mr-tracking-summary,.th-mr-accounting-notices{margin-left:.12rem;margin-right:.12rem}.th-mr-accounting-notice{font-size:.49rem}
 
@@ -781,13 +795,13 @@
     observer.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['class', 'aria-pressed', 'lang'] });
 
     window.__TH_COMPANY_PASSPORT_PRIORITY_ADAPTER__ = {
-      version: '0.9.0-universal-responsive-strategy-surface',
+      version: '0.9.1-universal-responsive-strategy-surface',
       promoteApr, patchPositionMetadata, patchVoteMarketStrategyChannels, patchMonthlyReports, refreshSnapshots, snapshotTtlMs: SNAPSHOT_TTL_MS,
       incomeDisplayPolicy: 'confirmed-canonical-events-explicit-reporting-scope',
       yieldDisplayPolicy: 'confirmed-canonical-yield-explicit-reporting-scope',
       estimatedDisplayPolicy: 'backend-incomeView-estimated-only-non-additive-apr-reference-view',
       strategySurfacePolicy: 'principal-once-effective-rate-plus-supplementary-channel-rail',
-      responsiveStrategySurface: 'universal-two-column-mobile-two-or-three-row-card',
+      responsiveStrategySurface: 'universal-responsive-two-or-three-row-card',
       positionMetadataPolicy: 'semantic-note-separated-from-quantity',
       voteMarketStrategyPresentationPolicy: 'principal-one-card-effective-rate-plus-component-rail',
       voteMarketStrategyDataSource: 'backend-productivity-incomeChannels-only',
