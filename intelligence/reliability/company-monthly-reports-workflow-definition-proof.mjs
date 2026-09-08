@@ -122,12 +122,8 @@ for(const path of [
 // Generated publication boundary is explicit and finite.
 const addSet='git add reporting/company-monthly-reports.json reporting/accounting-coverage.json reporting/accounting-notice-queue.json reporting/accounting-reference-reconciliation.json';
 requireText(addSet,'atomic generated diagnostic add-set missing');
-for(const output of [
-  'reporting/company-monthly-reports.json',
-  'reporting/accounting-coverage.json',
-  'reporting/accounting-notice-queue.json',
-  'reporting/accounting-reference-reconciliation.json'
-]) requireText(`${output}) ;;`,`generated output allowlist missing: ${output}`);
+const outputAllowlist='reporting/company-monthly-reports.json|reporting/accounting-coverage.json|reporting/accounting-notice-queue.json|reporting/accounting-reference-reconciliation.json) ;;';
+requireText(outputAllowlist,'generated output allowlist drift');
 requireText('Unexpected Company Monthly Reports publish delta after rebase','unexpected publish delta fail-closed guard missing');
 
 // This proof is definition-only. Deep accounting semantics remain exercised by Verify Company Monthly Reports.
