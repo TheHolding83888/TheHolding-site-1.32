@@ -38,19 +38,19 @@ requireText('cancel-in-progress: false','writer must remain non-cancellable');
 requireText("- cron: '37 7 * * *'",'fallback heartbeat drift');
 requireText('timeout-minutes: 5','bounded writer runtime missing');
 
-// The writer must wake when any code/data dependency in the diagnostic chain changes.
+// Code/data dependencies that alter the projection must wake this writer.
 for(const path of [
   "- 'companies/productivity-data.json'",
   "- 'reporting/income-ledger.json'",
   "- 'reporting/reporting-data.json'",
   "- 'reporting/accounting-coverage.mjs'",
   "- 'reporting/accounting-coverage-validation.mjs'",
-  "- 'reporting/accounting-coverage.json'",
   "- 'reporting/accounting-notice-queue.mjs'",
   "- 'reporting/accounting-notice-queue-validation.mjs'",
   "- 'reporting/accounting-reference-reconciliation.mjs'",
   "- 'reporting/accounting-reference-reconciliation-validation.mjs'"
 ]) requireText(path,`monthly writer dependency wake missing: ${path}`);
+assert.equal(workflow.includes("- 'reporting/accounting-coverage.json'"),false,'Monthly Reports must not self-wake from canonical persisted Coverage; Reporting workflow_run is the owner handoff');
 
 // Static preflight must fail closed before projection.
 for(const path of [
@@ -62,11 +62,13 @@ for(const path of [
   'reporting/accounting-reference-reconciliation-validation.mjs'
 ]) requireText(`node --check ${path}`,`monthly writer static preflight missing: ${path}`);
 requireText('test -s reporting/income-ledger.json','canonical Income Ledger dependency preflight missing');
+assert.equal(workflow.includes('test -s reporting/accounting-coverage.json'),false,'Monthly Reports must not depend on stale persisted Coverage preflight');
 requireText("referenceAprCanBackfillEarnedIncome!==false",'Income Ledger Reference APR authority guard missing');
 requireText("x.authority?.executionAuthority!=='none'",'Income Ledger execution-authority guard missing');
 
-// Initial production-shaped diagnostic projection: Coverage must be fresh before downstream consumers.
+// Initial production-shaped diagnostic projection: fresh ephemeral Coverage before downstream consumers.
 const diagnostic=section('- name: Build + validate accounting diagnostics','- name: Commit monthly reporting snapshot');
+requireText('ACCOUNTING_COVERAGE_FILE: /tmp/accounting-coverage.json','ephemeral Coverage output binding missing');
 ordered(diagnostic,[
   'node reporting/accounting-coverage.mjs',
   'node reporting/accounting-coverage-validation.mjs',
@@ -77,7 +79,7 @@ ordered(diagnostic,[
 ],'monthly diagnostic dependency order drift');
 requireText('PRODUCTIVITY_DATA_FILE: ./companies/productivity-data.json','Coverage productivity binding missing');
 requireText('INCOME_LEDGER_FILE: ./reporting/income-ledger.json','Coverage canonical ledger binding missing');
-requireText('ACCOUNTING_COVERAGE_FILE: ./reporting/accounting-coverage.json','Coverage output binding missing');
+requireText('Canonical persisted accounting-coverage.json remains owned by Reporting.','single-writer Coverage ownership comment missing');
 
 // Moving-main publication must rebuild the same dependency chain after every safe rebase.
 const publish=section('for attempt in 1 2 3; do');
@@ -89,13 +91,14 @@ ordered(publish,[
   'node reporting/company-monthly-reports-validation.mjs',
   'node reporting/company-monthly-earned-income.mjs',
   'node reporting/company-monthly-earned-income-validation.mjs',
+  'ACCOUNTING_COVERAGE_FILE=/tmp/accounting-coverage.json',
   'node reporting/accounting-coverage.mjs',
   'node reporting/accounting-coverage-validation.mjs',
   'node reporting/accounting-notice-queue.mjs',
   'node reporting/accounting-notice-queue-validation.mjs',
   'node reporting/accounting-reference-reconciliation.mjs',
   'node reporting/accounting-reference-reconciliation-validation.mjs',
-  'git add reporting/company-monthly-reports.json reporting/accounting-coverage.json reporting/accounting-notice-queue.json reporting/accounting-reference-reconciliation.json',
+  'git add reporting/company-monthly-reports.json reporting/accounting-notice-queue.json reporting/accounting-reference-reconciliation.json',
   'git commit --amend --no-edit',
   'git diff --name-only origin/main...HEAD',
   'git push origin HEAD:main'
@@ -105,7 +108,7 @@ requireText('Critical Company Monthly Reports code changed during publish rebase
 requireText('Safe writer guard: main moved during push; rebuilding on the next rebased canonical state','moving-main retry guard missing');
 requireText('Safe writer guard: push failed after 3 attempts.','bounded publish retry guard missing');
 
-// Any code that can change the generated interpretation must be in the critical fingerprint.
+// Any code that can change downstream interpretation must be in the critical fingerprint.
 for(const path of [
   'reporting/company-monthly-reports.mjs',
   'reporting/canonical-earned-income-view.mjs',
@@ -119,14 +122,16 @@ for(const path of [
   '.github/workflows/update-company-monthly-reports.yml'
 ]) requireText(path,`critical writer dependency missing: ${path}`);
 
-// Generated publication boundary is explicit and finite.
-const addSet='git add reporting/company-monthly-reports.json reporting/accounting-coverage.json reporting/accounting-notice-queue.json reporting/accounting-reference-reconciliation.json';
-requireText(addSet,'atomic generated diagnostic add-set missing');
-const outputAllowlist='reporting/company-monthly-reports.json|reporting/accounting-coverage.json|reporting/accounting-notice-queue.json|reporting/accounting-reference-reconciliation.json) ;;';
+// Publication boundary: Monthly Reports publishes only its three canonical outputs.
+const addSet='git add reporting/company-monthly-reports.json reporting/accounting-notice-queue.json reporting/accounting-reference-reconciliation.json';
+requireText(addSet,'generated monthly diagnostic add-set missing');
+const outputAllowlist='reporting/company-monthly-reports.json|reporting/accounting-notice-queue.json|reporting/accounting-reference-reconciliation.json) ;;';
 requireText(outputAllowlist,'generated output allowlist drift');
+assert.equal(workflow.includes('git add reporting/company-monthly-reports.json reporting/accounting-coverage.json'),false,'Monthly Reports must not publish canonical Coverage');
+assert.equal(workflow.includes('reporting/company-monthly-reports.json|reporting/accounting-coverage.json|'),false,'Monthly Reports allowlist must not include canonical Coverage');
 requireText('Unexpected Company Monthly Reports publish delta after rebase','unexpected publish delta fail-closed guard missing');
 
-// This proof is definition-only. Deep accounting semantics remain exercised by Verify Company Monthly Reports.
+// Definition proof only; accounting semantics remain independently exercised by Verify Company Monthly Reports.
 for(const forbidden of ['sendTransaction(', 'new Wallet(', 'gh workflow run', 'actions: write', 'write-all', 'COINGECKO_API_KEY']){
   assert.equal(workflow.includes(forbidden),false,`monthly writer authority expansion: ${forbidden}`);
 }
@@ -135,8 +140,10 @@ console.log('Company Monthly Reports workflow definition paired proof PASS',{
   workflow:WORKFLOW_PATH,
   proofScope:'workflow-definition-and-safe-writer-contract',
   canonicalUpstream:'Update The Holding Reporting Data',
-  diagnosticDependencyOrder:['accounting-coverage','accounting-notice-queue','accounting-reference-reconciliation'],
-  coveragePublishedAtomically:true,
+  diagnosticDependencyOrder:['ephemeral-accounting-coverage','accounting-notice-queue','accounting-reference-reconciliation'],
+  coverageEphemeralBeforeDiagnostics:true,
+  canonicalPersistedCoverageOwner:'Update The Holding Reporting Data',
+  duplicateCoverageWriterIntroduced:false,
   movingMainRebuild:true,
   criticalCodeRaceFailClosed:true,
   generatedOutputAllowlistBounded:true,
