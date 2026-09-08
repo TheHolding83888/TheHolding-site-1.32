@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
-import { admitVe33IntoLedgerState } from './ve33-ledger-admission.mjs';
+import { admitVe33IntoLedgerState, lockedManagedHistoricalBoundaryFailures } from './ve33-ledger-admission.mjs';
 import { historicalOptimismVelodromeTwapRouteForToken } from './historical-canonical-price.mjs';
 
 const baseEvidence={
@@ -14,7 +14,7 @@ const token='0x1111111111111111111111111111111111111111';
 const rewardContract='0x3333333333333333333333333333333333333333';
 const lane=`aerodrome|Alpha|${holder}|7|voting-reward|${rewardContract}|${token}`;
 const event={
-  eventKey:`ve33:${lane}:100:200`,company:'Alpha',family:'accrued-entitlement',economicDate:'2026-09-02',periodStart:'2026-09-01T00:00:00.000Z',periodEnd:'2026-09-02T00:00:00.000Z',route:'aerodrome-ve',protocol:'Aerodrome',asset:'USDC',token,amount:1,amountRaw:'1000000',usdValue:1,mechanismKind:'voting-reward',holder,tokenId:'7',rewardContract,distributor:null,sourceIdentity:`${lane}|100->${lane}|200`,referenceAprUsed:false,currentClaimableBalanceIsPeriodIncome:false,claimIsSecondIncomeEvent:false,laterClaimOrPriceMoveDoesNotRewriteIncome:true,unknownIsNotZero:true
+  eventKey:`ve33:${lane}:100:200`,company:'Alpha',family:'accrued-entitlement',economicDate:'2026-09-02',periodStart:'2026-09-01T00:00:00.000Z',periodEnd:'2026-09-02T00:00:00.000Z',route:'aerodrome-ve',protocol:'Aerodrome',asset:'USDC',token,amount:1,amountRaw:'1000000',usdValue:1,mechanismKind:'voting-reward',holder,tokenId:'7',rewardContract,distributor:null,sourceIdentity:`${lane}|100->${lane}|200`,referenceAprUsed:false,currentClaimableBalanceIsPeriodIncome:false,claimIsSecondIncomeEvent:false,laterPriceMoveDoesNotRewriteIncome:true,unknownIsNotZero:true
 };
 const ledger={version:'0.1-canonical-income-ledger',events:[]};
 const first=admitVe33IntoLedgerState({ledger,evidence:{...baseEvidence,events:[event]},generatedAt:'2026-09-02T12:00:00.000Z'});
@@ -31,6 +31,20 @@ assert.throws(()=>admitVe33IntoLedgerState({ledger:first.ledger,evidence:{...bas
 const absent=admitVe33IntoLedgerState({ledger,evidence:{},generatedAt:'2026-09-02T13:00:00.000Z'});
 assert.equal(absent.newEventsAdmitted,0);
 assert.equal(absent.ledger.events.length,0);
+
+// Materialization retry must be narrowly scoped to exact historical month
+// boundaries. Current-state failures and semantic inactive boundaries must not
+// trigger an expensive historical rebuild.
+const retryProbe={diagnostics:{protocols:{aerodrome:{boundaryFailures:[
+  {laneKey:'aerodrome|defitea.eth|lane',boundaryAt:'2026-08-01T00:00:00.000Z',status:'archive-state-unavailable',error:'transient archive read'},
+  {laneKey:null,boundaryAt:'2026-09-01T00:00:00.000Z',status:'boundary-block-unavailable',error:'transient block lookup'},
+  {laneKey:'aerodrome|defitea.eth|lane',boundaryAt:'2026-09-08T01:00:00.000Z',status:'archive-state-unavailable',error:'current read'},
+  {laneKey:'aerodrome|other|lane',boundaryAt:'2026-08-01T00:00:00.000Z',status:'managed-token-mismatch',error:null}
+]}}}};
+const retryFailures=lockedManagedHistoricalBoundaryFailures(retryProbe);
+assert.equal(retryFailures.length,2);
+assert.deepEqual(retryFailures.map(x=>x.boundaryAt),['2026-08-01T00:00:00.000Z','2026-09-01T00:00:00.000Z']);
+assert.equal(lockedManagedHistoricalBoundaryFailures({diagnostics:{protocols:{aerodrome:{boundaryFailures:[]}}}}).length,0);
 
 // Defitea August historical-valuation tail regression: these two immutable
 // reward-token identities must remain bound to exact Optimism Velodrome V2
@@ -50,4 +64,4 @@ assert.equal(tarot?.quoteToken.toLowerCase(),usdc);
 assert.equal(tarot?.poolStable,false);
 assert.equal(tarot?.twapGranularity,48);
 
-console.log('ve(3,3) Canonical Ledger admission + Defitea August historical route validation OK');
+console.log('ve(3,3) Canonical Ledger admission + locked-managed retry + Defitea August historical route validation OK');
