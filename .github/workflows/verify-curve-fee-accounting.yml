@@ -82,17 +82,24 @@ jobs:
           const before=JSON.parse(fs.readFileSync('/tmp/accounting-coverage.before.json','utf8'));
           const after=JSON.parse(fs.readFileSync('reporting/accounting-coverage.json','utf8'));
 
-          // Coverage Registry may gain additive cross-mechanism diagnostics. This
-          // Curve guard intentionally removes only the known generic additive
-          // observation counter before requiring exact Curve semantic equality.
-          // Factual values, route identity, month states and authority fields
-          // remain byte-for-byte guarded.
+          // v0.12 intentionally adds these cross-mechanism diagnostic fields.
+          // Normalize only this explicit allow-list before exact Curve equality;
+          // all factual values, routes, month states, blockers and authorities
+          // remain guarded byte-for-byte.
+          const additiveDiagnostics=new Set([
+            'currentMonthPartialObservationCompanyCount',
+            'crossMonthExplicitlyAttributedCount',
+            'crossMonthUnresolvedCount',
+            'factualTrackingPartialObservationCount',
+            'factualTrackingObservationComplete',
+            'factualTrackingObservationCoverage'
+          ]);
           const stableCurve=row=>{
             if(row==null)return row;
             const copy=structuredClone(row);
             const scrub=value=>{
               if(!value||typeof value!=='object')return;
-              if(!Array.isArray(value))delete value.currentMonthPartialObservationCompanyCount;
+              if(!Array.isArray(value))for(const key of additiveDiagnostics)delete value[key];
               for(const child of Object.values(value))scrub(child);
             };
             scrub(copy);
@@ -103,7 +110,14 @@ jobs:
           for(const [company,row] of Object.entries(before.companies||{})){
             const prior=row?.mechanisms?.curve_vecrv;
             if(!prior) continue;
-            assert.deepEqual(stableCurve(after.companies?.[company]?.mechanisms?.curve_vecrv),stableCurve(prior),`${company} curve_vecrv accounting semantics changed`);
+            const current=after.companies?.[company]?.mechanisms?.curve_vecrv;
+            assert.deepEqual(stableCurve(current),stableCurve(prior),`${company} curve_vecrv accounting semantics changed`);
+            for(const month of Object.values(current?.months||{})){
+              assert.equal(Number(month.crossMonthExplicitlyAttributedCount||0),0,`${company} Curve unexpectedly gained attributed cross-month evidence`);
+              assert.equal(Number(month.crossMonthUnresolvedCount||0),0,`${company} Curve unexpectedly gained unresolved cross-month evidence`);
+              assert.equal(Number(month.factualTrackingPartialObservationCount||0),0,`${company} Curve unexpectedly became partial-observation`);
+              if(month.factualTrackingActive===true)assert.equal(month.factualTrackingObservationComplete,true,`${company} active Curve tracking observation is incomplete`);
+            }
           }
           assert.equal(after.mechanisms?.curve_vecrv?.currentMonthPartialObservationCompanyCount,0,'Curve unexpectedly became partial-observation');
           console.log('Curve-scoped Accounting Coverage semantic regression guard PASS');
