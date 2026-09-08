@@ -85,7 +85,9 @@ jobs:
           // v0.12 intentionally adds these cross-mechanism diagnostic fields.
           // Normalize only this explicit allow-list before exact Curve equality;
           // all factual values, routes, month states, blockers and authorities
-          // remain guarded byte-for-byte.
+          // remain guarded byte-for-byte. Observation-completeness provenance is
+          // required for the current period only; historical months predate this
+          // diagnostic and remain null rather than being rewritten retroactively.
           const additiveDiagnostics=new Set([
             'currentMonthPartialObservationCompanyCount',
             'crossMonthExplicitlyAttributedCount',
@@ -116,7 +118,11 @@ jobs:
               assert.equal(Number(month.crossMonthExplicitlyAttributedCount||0),0,`${company} Curve unexpectedly gained attributed cross-month evidence`);
               assert.equal(Number(month.crossMonthUnresolvedCount||0),0,`${company} Curve unexpectedly gained unresolved cross-month evidence`);
               assert.equal(Number(month.factualTrackingPartialObservationCount||0),0,`${company} Curve unexpectedly became partial-observation`);
-              if(month.factualTrackingActive===true)assert.equal(month.factualTrackingObservationComplete,true,`${company} active Curve tracking observation is incomplete`);
+            }
+            const currentMonth=current?.months?.[after.currentMonth];
+            if(currentMonth?.factualTrackingActive===true){
+              assert.equal(currentMonth.factualTrackingObservationComplete,true,`${company} current Curve tracking observation is incomplete`);
+              assert.equal(Number(currentMonth.factualTrackingPartialObservationCount||0),0,`${company} current Curve tracking became partial-observation`);
             }
           }
           assert.equal(after.mechanisms?.curve_vecrv?.currentMonthPartialObservationCompanyCount,0,'Curve unexpectedly became partial-observation');
