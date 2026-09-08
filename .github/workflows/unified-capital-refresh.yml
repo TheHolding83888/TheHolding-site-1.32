@@ -113,6 +113,7 @@ jobs:
           node - <<'NODE'
           const fs=require('fs');
           const p=JSON.parse(fs.readFileSync('companies/productivity-data.json','utf8'));
+          const vmState=JSON.parse(fs.readFileSync('companies/votemarket-reference-state.json','utf8'));
           const g=JSON.parse(fs.readFileSync('intelligence/capital-state/general-company-balance-sheet.json','utf8'));
           const c=JSON.parse(fs.readFileSync('intelligence/capital-state/capital-state.json','utf8'));
           const m=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
@@ -128,7 +129,8 @@ jobs:
           if(!d||Number(da?.units)!==2632||Number(df?.units)!==64.81)throw new Error('Defitea Productivity coherence missing');
           if(!dc||Number(dca?.units)!==2632||Number(dcf?.units)!==64.81)throw new Error('Defitea Capital State coherence missing');
           if(vm?.capitalDoubleCount!==false||vm?.idempotent!==true||vm?.factualIncomeAuthority!==false||vm?.executionAuthority!=='none')throw new Error('VoteMarket safety contract missing from coherent snapshot');
-          if(vm?.claimedPeriodPersistencePending!==true)throw new Error('VoteMarket claimed-period persistence boundary must remain explicit until closed');
+          if(vm?.claimedPeriodPersistencePending!==false||vm?.observationPersistence!=='claimed-aware-derived-cache')throw new Error('VoteMarket claimed-period persistence contract missing');
+          if(vmState?.semantics?.sourceOfTruth!==false||vmState?.semantics?.factualIncomeAuthority!==false||vmState?.semantics?.executionAuthority!=='none')throw new Error('VoteMarket derived persistence authority drift');
           for(const [label,row] of [['veCRV',dcrow],['veFXN',df]]){
             if(!row?.incomeChannels||row.incomeChannels.capitalAccounting!=='principal-counted-once'||row.incomeChannels.capitalDoubleCount!==false)throw new Error(label+' VoteMarket principal hierarchy missing');
           }
@@ -155,7 +157,7 @@ jobs:
           if(Number(m.authority?.unknownCount)!==0)throw new Error('Canonical Market Data contains UNKNOWN assets');
           if(Number(m.authority?.onchainSelectedAssetCount)+Number(m.authority?.coingeckoSelectedAssetCount)!==26)throw new Error('Canonical Market Data selected-lane coverage drift');
           if(!Number.isFinite(Number(pub.funds?.defitea?.tvlUsd))||!Number.isFinite(Number(pub.funds?.defitea?.referenceAprPct)))throw new Error('Defitea Public Capital incomplete');
-          console.log('Unified Capital Refresh final validation PASS',{generatedAt:p.generatedAt,defiteaApr:d.aprLatest,defiteaAero:dca.units,defiteaFxn:dcf.units,voteMarketMeasuredReferenceCompanyCount:vm.measuredReferenceCompanyCount,veCrvVoteMarketStatus:dcrow?.incomeChannels?.votemarket?.status||null,veFxnVoteMarketStatus:df?.incomeChannels?.votemarket?.status||null,yieldRingApr:y.aprLatest,networkTvl:c.network.networkTvlUsd,marketObservedAt:m.observedAt,onchainSelectedAssetCount:m.authority.onchainSelectedAssetCount,coingeckoFallbackAssetCount:m.authority.coingeckoSelectedAssetCount,icpUsd:icp.usd,icpSource:icp.source,company005Icp:icp5.units,company006Icp:icp6.units,publicDefiteaTvl:pub.funds.defitea.tvlUsd});
+          console.log('Unified Capital Refresh final validation PASS',{generatedAt:p.generatedAt,defiteaApr:d.aprLatest,defiteaAero:dca.units,defiteaFxn:dcf.units,voteMarketMeasuredReferenceCompanyCount:vm.measuredReferenceCompanyCount,voteMarketClaimPersistence:true,veCrvVoteMarketStatus:dcrow?.incomeChannels?.votemarket?.status||null,veFxnVoteMarketStatus:df?.incomeChannels?.votemarket?.status||null,yieldRingApr:y.aprLatest,networkTvl:c.network.networkTvlUsd,marketObservedAt:m.observedAt,onchainSelectedAssetCount:m.authority.onchainSelectedAssetCount,coingeckoFallbackAssetCount:m.authority.coingeckoSelectedAssetCount,icpUsd:icp.usd,icpSource:icp.source,company005Icp:icp5.units,company006Icp:icp6.units,publicDefiteaTvl:pub.funds.defitea.tvlUsd});
           NODE
           git diff --check
 
@@ -169,6 +171,7 @@ jobs:
             yieldring/index.html \
             companies/productivity-data.json \
             companies/productivity-source-report.json \
+            companies/votemarket-reference-state.json \
             intelligence/capital-state/general-company-balance-sheet.mjs \
             intelligence/capital-state/general-company-balance-sheet.json \
             intelligence/capital-state/capital-state.json \
@@ -197,6 +200,7 @@ jobs:
               yieldring/index.html \
               companies/productivity-data.json \
               companies/productivity-source-report.json \
+              companies/votemarket-reference-state.json \
               intelligence/capital-state/general-company-balance-sheet.mjs \
               intelligence/capital-state/general-company-balance-sheet.json \
               intelligence/capital-state/capital-state.json \
