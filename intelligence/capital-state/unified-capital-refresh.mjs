@@ -1,17 +1,17 @@
 #!/usr/bin/env node
 /**
- * The Holding · Unified Capital Refresh v0.2.2
+ * The Holding · Unified Capital Refresh v0.2.3
  *
  * Orchestration only. Reuses existing canonical projectors/collectors/builders:
  * Defitea projection -> YieldRing projection -> Productivity collector
- * -> Company #010 compatibility -> YieldRing overlay -> General Balance
- * -> Company #007 current-state downstream binding -> Capital State.
+ * -> Company #010 compatibility -> YieldRing overlay -> VoteMarket income channels
+ * -> General Balance -> Company #007 current-state downstream binding -> Capital State.
  *
- * v0.2.2 binds Company #007 current Productivity/Capital to fresh discovery +
- * targeted resolver evidence. Redeemed YBLP mechanisms leave CURRENT inventory
- * without rewriting their historical observations.
+ * v0.2.3 admits VoteMarket veCRV/veFXN as supplementary Reference APR channels
+ * over already-counted principal. Capital remains counted once and the channel
+ * never becomes factual earned-income authority.
  *
- * No execution authority. No wallet action. No methodology mutation.
+ * No execution authority. No wallet action. No factual-income methodology mutation.
  */
 
 import fs from 'node:fs';
@@ -36,18 +36,19 @@ function run(label, cwd, script, env = {}) {
 function readJson(rel) { return JSON.parse(fs.readFileSync(path.join(ROOT, rel), 'utf8')); }
 function assert(ok, message) { if (!ok) throw new Error(message); }
 
-run('1/8 Project canonical Defitea state', ROOT, 'companies/defitea-public-capital-projection.mjs');
-run('2/8 Project canonical YieldRing state', ROOT, 'companies/yieldring-public-capital-projection.mjs');
-run('3/8 Refresh protocol APRs and established Productivity', path.join(ROOT, 'productivity'), 'productivity-engine.mjs', {
+run('1/9 Project canonical Defitea state', ROOT, 'companies/defitea-public-capital-projection.mjs');
+run('2/9 Project canonical YieldRing state', ROOT, 'companies/yieldring-public-capital-projection.mjs');
+run('3/9 Refresh protocol APRs and established Productivity', path.join(ROOT, 'productivity'), 'productivity-engine.mjs', {
   PAGE_FILE: '../companies/index.html',
   DATA_FILE: '../companies/productivity-data.json',
   REPORT_FILE: '../companies/productivity-source-report.json'
 });
-run('4/8 Admit Company #010 compatibility layer', ROOT, 'productivity/company-010-productivity-overlay.mjs');
-run('5/8 Apply canonical YieldRing Productivity overlay', ROOT, 'productivity/yieldring-productivity-overlay.mjs');
-run('6/8 Rebuild General Company Balance Sheet', ROOT, 'intelligence/capital-state/general-company-balance-sheet.mjs');
-run('7/8 Bind Company #007 current state downstream', ROOT, 'intelligence/capital-state/company-007-current-state-downstream.mjs');
-run('8/8 Build Capital State', ROOT, 'intelligence/capital-state/capital-state.mjs');
+run('4/9 Admit Company #010 compatibility layer', ROOT, 'productivity/company-010-productivity-overlay.mjs');
+run('5/9 Apply canonical YieldRing Productivity overlay', ROOT, 'productivity/yieldring-productivity-overlay.mjs');
+run('6/9 Apply VoteMarket supplementary income channels', ROOT, 'productivity/votemarket-productivity-overlay.mjs');
+run('7/9 Rebuild General Company Balance Sheet', ROOT, 'intelligence/capital-state/general-company-balance-sheet.mjs');
+run('8/9 Bind Company #007 current state downstream', ROOT, 'intelligence/capital-state/company-007-current-state-downstream.mjs');
+run('9/9 Build Capital State', ROOT, 'intelligence/capital-state/capital-state.mjs');
 
 const defitea = readJson('companies/defitea-canonical-state.json');
 const canonical = readJson('companies/yieldring-canonical-state.json');
@@ -76,9 +77,23 @@ assert(Number(canonical?.capital?.aerodrome?.quantity) === 678, 'YieldRing canon
 assert(productivity?.version === '1.16', `Productivity v1.16 required, got ${productivity?.version}`);
 const dpProd = productivity?.companies?.['defitea.eth'];
 const dpa = (dpProd?.breakdown || []).find(x => x.engineId === 'aerodrome_veaero' || x.principalId === 'aerodrome-finance');
+const dpc = (dpProd?.breakdown || []).find(x => x.engineId === 'curve_vecrv' || x.principalId === 'curve-dao-token');
 const dpf = (dpProd?.breakdown || []).find(x => x.engineId === 'fx_vefxn' || x.principalId === 'fxn-token');
 assert(dpProd && Number(dpa?.units) === 2632 && Number(dpf?.units) === 64.81, 'Defitea canonical quantities missing from Productivity');
 assert(Number(dpProd?.coverage) > 0 && Number(dpProd?.coverage) <= 1, 'Defitea Productivity coverage invalid');
+
+const voteMarketDiag = productivity?.diagnostics?.voteMarketIncomeChannels;
+assert(voteMarketDiag?.capitalDoubleCount === false, 'VoteMarket capital double-count guard missing');
+assert(voteMarketDiag?.idempotent === true, 'VoteMarket idempotency contract missing');
+assert(voteMarketDiag?.earnedIncomeAuthority === false && voteMarketDiag?.factualIncomeAuthority === false, 'VoteMarket authority separation drift');
+assert(voteMarketDiag?.executionAuthority === 'none', 'VoteMarket execution authority drift');
+assert(voteMarketDiag?.claimedPeriodPersistencePending === true, 'VoteMarket claimed-period persistence boundary must remain explicit until closed');
+for (const [label,row,engineId] of [['veCRV',dpc,'curve_vecrv'],['veFXN',dpf,'fx_vefxn']]) {
+  assert(row?.incomeChannels?.principalEngineId === engineId, `${label} VoteMarket income-channel hierarchy missing`);
+  assert(row?.incomeChannels?.capitalAccounting === 'principal-counted-once' && row?.incomeChannels?.capitalDoubleCount === false, `${label} principal double-count guard missing`);
+  assert(row?.incomeChannels?.factualIncomeAuthority === false && row?.incomeChannels?.earnedIncomeAuthority === false, `${label} VoteMarket factual authority drift`);
+  assert(Array.isArray(row?.incomeChannels?.displayHierarchy) && row.incomeChannels.displayHierarchy.length === 3, `${label} display hierarchy missing`);
+}
 
 const fxnSource = productivitySource?.engines?.fx_vefxn;
 const fxnEngine = productivity?.engines?.fx_vefxn;
@@ -86,18 +101,19 @@ const fxnEngineHistory = productivity?.history?.engines?.fx_vefxn || [];
 const fxnCurrentHistory = fxnEngineHistory.at(-1);
 const fxnAuthority = productivity?.diagnostics?.fxnLockerAprAuthority;
 const fxnExactApr = Number(fxnAuthority?.exactApr);
+const dpfNativeApr = Number(dpf?.incomeChannels?.native?.aprPct ?? dpf?.apr);
 const fxnAprSurfaces = {
   sourceReport: Number(fxnSource?.apr),
   canonicalEngine: Number(fxnEngine?.aprLatest),
   currentEngineHistory: Number(fxnCurrentHistory?.apr),
-  defiteaPosition: Number(dpf?.apr)
+  defiteaNativePosition: dpfNativeApr
 };
 assert(fxnSource?.status === 'ok' && fxnSource?.sourceType === 'official-frontend-exact-block' && fxnSource?.sourceMetric === 'veFXN Locker APR', 'veFXN exact source-report authority drift');
 assert(fxnEngine?.status === 'ok' && fxnEngine?.sourceType === 'official-frontend-exact-block' && fxnEngine?.sourceMetric === 'veFXN Locker APR', 'veFXN canonical engine authority drift');
 assert(fxnCurrentHistory?.snapshotKey === productivity?.snapshotKey, 'veFXN current engine-history observation missing');
 assert(Number.isFinite(fxnExactApr), 'veFXN exact APR diagnostic missing');
-assert(Object.values(fxnAprSurfaces).every(Number.isFinite), 'veFXN canonical APR surface unavailable');
-assert(Object.values(fxnAprSurfaces).every(v => Math.abs(v - fxnExactApr) <= 0.01), `veFXN canonical APR parity drift: exact=${fxnExactApr} surfaces=${JSON.stringify(fxnAprSurfaces)}`);
+assert(Object.values(fxnAprSurfaces).every(Number.isFinite), 'veFXN canonical native APR surface unavailable');
+assert(Object.values(fxnAprSurfaces).every(v => Math.abs(v - fxnExactApr) <= 0.01), `veFXN canonical native APR parity drift: exact=${fxnExactApr} surfaces=${JSON.stringify(fxnAprSurfaces)}`);
 assert(fxnAuthority?.canonicalEngineSynchronized === true && fxnAuthority?.currentEngineHistorySynchronized === true && fxnAuthority?.nearbyCirculatingSupplyPctCannotBecomeApr === true, 'veFXN semantic parity authority contract missing');
 
 const yp = productivity?.companies?.['YieldRing.eth'];
@@ -163,8 +179,12 @@ assert(yieldRingPage.includes('qty: 0.0334') && yieldRingPage.includes('qty: 678
 console.log('\nUNIFIED CAPITAL REFRESH PASS', {
   productivityGeneratedAt: productivity.generatedAt,
   defiteaAprLatest: dpProd.aprLatest,
-  veFxnExactApr: fxnExactApr,
-  veFxnAprSurfaces: fxnAprSurfaces,
+  veFxnExactNativeApr: fxnExactApr,
+  veFxnNativeAprSurfaces: fxnAprSurfaces,
+  voteMarketMeasuredReferenceCompanyCount: voteMarketDiag.measuredReferenceCompanyCount,
+  voteMarketClaimedPeriodPersistencePending: voteMarketDiag.claimedPeriodPersistencePending,
+  defiteaVeCrvVoteMarketStatus: dpc?.incomeChannels?.votemarket?.status || null,
+  defiteaVeFxnVoteMarketStatus: dpf?.incomeChannels?.votemarket?.status || null,
   defiteaProductiveValue: dpProd.productiveValue,
   defiteaAero: dca.units,
   defiteaAeroCostBasisUsd: defitea.costBasis.aerodrome.costBasisUsd,

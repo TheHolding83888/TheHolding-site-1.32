@@ -6,6 +6,8 @@ on:
       - '.github/workflows/update-productivity.yml'
       - 'productivity/company-010-productivity-overlay.mjs'
       - 'productivity/yieldring-productivity-overlay.mjs'
+      - 'productivity/votemarket-productivity-overlay.mjs'
+      - 'productivity/votemarket-productivity-overlay-validation.mjs'
 
 permissions:
   contents: read
@@ -31,13 +33,23 @@ jobs:
           const wf=fs.readFileSync('.github/workflows/update-productivity.yml','utf8');
           const first=wf.indexOf('node productivity/company-010-productivity-overlay.mjs');
           const second=wf.indexOf('node productivity/yieldring-productivity-overlay.mjs');
-          if(first<0||second<0||first>=second) throw new Error('production overlay order must be Company #010 -> YieldRing');
+          const third=wf.indexOf('node productivity/votemarket-productivity-overlay.mjs');
+          if(first<0||second<0||third<0||first>=second||second>=third) throw new Error('production overlay order must be Company #010 -> YieldRing -> VoteMarket');
           const y=fs.readFileSync('productivity/yieldring-productivity-overlay.mjs','utf8');
           if(!y.includes("data.version!=='1.16'")) throw new Error('YieldRing v1.16 input guard missing');
           const c=fs.readFileSync('productivity/company-010-productivity-overlay.mjs','utf8');
           if(!c.includes("['1.15','1.16'].includes(String(data.version))")) throw new Error('Company #010 v1.15/v1.16 compatibility guard missing');
+          const v=fs.readFileSync('productivity/votemarket-productivity-overlay.mjs','utf8');
+          if(!v.includes("capitalAccounting:'principal-counted-once'")||!v.includes('idempotent:true')||!v.includes('factualIncomeAuthority:false'))throw new Error('VoteMarket overlay epistemic/idempotency guard missing');
           console.log('Static overlay order contract PASS');
           NODE
+
+      - name: Prove VoteMarket deterministic safety contract
+        run: |
+          set -euo pipefail
+          node --check productivity/votemarket-productivity-overlay.mjs
+          node --check productivity/votemarket-productivity-overlay-validation.mjs
+          node productivity/votemarket-productivity-overlay-validation.mjs
 
       - name: Simulate collector v1.15 to final v1.16 chain
         env:
@@ -54,21 +66,31 @@ jobs:
           d.collectorVersion='1.15-company-009-beefy-cvxcrv';
           delete d.diagnostics?.company010;
           delete d.diagnostics?.yieldRing;
+          delete d.diagnostics?.voteMarketIncomeChannels;
           fs.writeFileSync(p,JSON.stringify(d,null,2)+'\n');
           NODE
           node productivity/company-010-productivity-overlay.mjs
           node productivity/yieldring-productivity-overlay.mjs
+          node productivity/votemarket-productivity-overlay.mjs
           node - <<'NODE'
           const fs=require('fs');
           const d=JSON.parse(fs.readFileSync('companies/productivity-data.json','utf8'));
           const y=d.companies?.['YieldRing.eth'];
           const a=(y?.breakdown||[]).find(x=>x.engineId==='aerodrome_veaero'||x.principalId==='aerodrome-finance');
+          const vm=d.diagnostics?.voteMarketIncomeChannels;
+          const def=d.companies?.['defitea.eth'];
+          const crv=(def?.breakdown||[]).find(x=>x.engineId==='curve_vecrv');
+          const fxn=(def?.breakdown||[]).find(x=>x.engineId==='fx_vefxn');
           if(d.version!=='1.16') throw new Error('final Productivity version is not 1.16');
           if(d.diagnostics?.company010?.executionAuthority!=='none') throw new Error('Company #010 overlay missing');
           if(d.diagnostics?.yieldRing?.executionAuthority!=='none') throw new Error('YieldRing overlay missing');
+          if(vm?.executionAuthority!=='none'||vm?.capitalDoubleCount!==false||vm?.idempotent!==true)throw new Error('VoteMarket overlay missing');
           if(Number(a?.units)!==678) throw new Error('YieldRing AERO principal != 678');
           if(!Number.isFinite(Number(y?.aprLatest))) throw new Error('YieldRing APR unavailable');
-          console.log('Overlay compatibility simulation PASS',{version:d.version,aeroUnits:a.units,aprLatest:y.aprLatest,coverage:y.coverage});
+          for(const [label,row] of [['veCRV',crv],['veFXN',fxn]]){
+            if(!row?.incomeChannels||row.incomeChannels.capitalAccounting!=='principal-counted-once'||row.incomeChannels.factualIncomeAuthority!==false)throw new Error(label+' VoteMarket hierarchy missing');
+          }
+          console.log('Overlay compatibility simulation PASS',{version:d.version,aeroUnits:a.units,aprLatest:y.aprLatest,coverage:y.coverage,voteMarketMeasuredCompanies:vm.measuredReferenceCompanyCount});
           NODE
           mv /tmp/productivity-data.original.json companies/productivity-data.json
           mv /tmp/productivity-source-report.original.json companies/productivity-source-report.json

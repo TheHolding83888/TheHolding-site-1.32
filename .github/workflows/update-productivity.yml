@@ -97,6 +97,28 @@ jobs:
           if(d.diagnostics?.yieldRing?.executionAuthority!=='none')throw new Error('YieldRing authority drift');
           NODE
 
+      - name: Apply VoteMarket supplementary income channels
+        run: |
+          set -euo pipefail
+          node --check productivity/votemarket-productivity-overlay.mjs
+          node --check productivity/votemarket-productivity-overlay-validation.mjs
+          node productivity/votemarket-productivity-overlay-validation.mjs
+          node productivity/votemarket-productivity-overlay.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('companies/productivity-data.json','utf8'));
+          const diag=d.diagnostics?.voteMarketIncomeChannels;
+          if(diag?.capitalDoubleCount!==false||diag?.idempotent!==true)throw new Error('VoteMarket capital/idempotency guard missing');
+          if(diag?.earnedIncomeAuthority!==false||diag?.factualIncomeAuthority!==false||diag?.executionAuthority!=='none')throw new Error('VoteMarket authority boundary drift');
+          if(diag?.claimedPeriodPersistencePending!==true)throw new Error('VoteMarket claimed-period persistence boundary must remain explicit until closed');
+          const c=d.companies?.['defitea.eth'];
+          for(const id of ['curve_vecrv','fx_vefxn']){
+            const row=(c?.breakdown||[]).find(x=>x.engineId===id);
+            if(!row?.incomeChannels||row.incomeChannels.capitalAccounting!=='principal-counted-once'||row.incomeChannels.capitalDoubleCount!==false)throw new Error('Defitea VoteMarket hierarchy missing: '+id);
+          }
+          console.log('VoteMarket recovery overlay PASS',{measuredReferenceCompanyCount:diag.measuredReferenceCompanyCount,claimedPeriodPersistencePending:diag.claimedPeriodPersistencePending});
+          NODE
+
       - name: Rebuild public capital projection from shared prices
         run: |
           set -euo pipefail
@@ -135,6 +157,7 @@ jobs:
               npm --prefix productivity run update
             node productivity/company-010-productivity-overlay.mjs
             node productivity/yieldring-productivity-overlay.mjs
+            node productivity/votemarket-productivity-overlay.mjs
             node intelligence/market-data/public-capital-engine.mjs
             git add \
               companies/productivity-data.json \
