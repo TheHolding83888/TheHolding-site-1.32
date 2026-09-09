@@ -129,6 +129,7 @@ jobs:
           const home=fs.readFileSync('index.html','utf8');
           const company001Page=fs.readFileSync('05081966/index.html','utf8');
           const singulPage=fs.readFileSync('singul/index.html','utf8');
+          const yieldReportsPage=fs.readFileSync('yield-reports/index.html','utf8');
           const d=p.companies?.['defitea.eth'];
           const da=(d?.breakdown||[]).find(x=>x.engineId==='aerodrome_veaero'||x.principalId==='aerodrome-finance');
           const dcrow=(d?.breakdown||[]).find(x=>x.engineId==='curve_vecrv'||x.principalId==='curve-dao-token');
@@ -171,7 +172,8 @@ jobs:
           if(!home.includes('href="/companies"')||!home.includes('href="/realty"')||!home.includes('data-th-fund-pyramid-links')||!home.includes('Funds · Index · Onchain Companies · Real Estate'))throw new Error('Homepage public polish projection missing');
           if(company001Page.includes('api.coingecko.com')||!company001Page.includes('canonical onchain-first snapshot'))throw new Error('Company #001 canonical page runtime missing');
           if(singulPage.includes('/intelligence/market-data/simple-price')||singulPage.includes('setInterval(updateTVL, 300000)')||!singulPage.includes('public-capital-client.js'))throw new Error('Singul canonical page runtime missing');
-          console.log('Unified Capital Refresh final validation PASS',{generatedAt:p.generatedAt,defiteaApr:d.aprLatest,defiteaAero:dca.units,defiteaFxn:dcf.units,voteMarketMeasuredReferenceCompanyCount:vm.measuredReferenceCompanyCount,voteMarketClaimPersistence:true,veCrvVoteMarketStatus:dcrow?.incomeChannels?.votemarket?.status||null,veFxnVoteMarketStatus:df?.incomeChannels?.votemarket?.status||null,yieldRingApr:y.aprLatest,networkTvl:c.network.networkTvlUsd,marketObservedAt:m.observedAt,onchainSelectedAssetCount:m.authority.onchainSelectedAssetCount,coingeckoFallbackAssetCount:m.authority.coingeckoSelectedAssetCount,icpUsd:icp.usd,icpSource:icp.source,company005Icp:icp5.units,company006Icp:icp6.units,publicDefiteaTvl:pub.funds.defitea.tvlUsd,homepagePublicPolish:true});
+          if(!yieldReportsPage.includes('The Holding · Defitea mobile cash-flow polish')||!yieldReportsPage.includes('.defitea-reports .report-table td:nth-child(2) { display: table-cell; }'))throw new Error('Defitea mobile Yield Reports cash-flow visibility missing');
+          console.log('Unified Capital Refresh final validation PASS',{generatedAt:p.generatedAt,defiteaApr:d.aprLatest,defiteaAero:dca.units,defiteaFxn:dcf.units,voteMarketMeasuredReferenceCompanyCount:vm.measuredReferenceCompanyCount,voteMarketClaimPersistence:true,veCrvVoteMarketStatus:dcrow?.incomeChannels?.votemarket?.status||null,veFxnVoteMarketStatus:df?.incomeChannels?.votemarket?.status||null,yieldRingApr:y.aprLatest,networkTvl:c.network.networkTvlUsd,marketObservedAt:m.observedAt,onchainSelectedAssetCount:m.authority.onchainSelectedAssetCount,coingeckoFallbackAssetCount:m.authority.coingeckoSelectedAssetCount,icpUsd:icp.usd,icpSource:icp.source,company005Icp:icp5.units,company006Icp:icp6.units,publicDefiteaTvl:pub.funds.defitea.tvlUsd,homepagePublicPolish:true,defiteaMobileReportPolish:true});
           NODE
           git diff --check
 
@@ -186,6 +188,7 @@ jobs:
             05081966/index.html \
             yieldring/index.html \
             singul/index.html \
+            yield-reports/index.html \
             companies/productivity-data.json \
             companies/productivity-source-report.json \
             companies/votemarket-reference-state.json \
@@ -218,6 +221,7 @@ jobs:
               05081966/index.html \
               yieldring/index.html \
               singul/index.html \
+              yield-reports/index.html \
               companies/productivity-data.json \
               companies/productivity-source-report.json \
               companies/votemarket-reference-state.json \
