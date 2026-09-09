@@ -34,6 +34,13 @@ function replaceOnce(text,oldText,newText,label){
   if(count!==1)fail(`${label}: expected exactly one old projection, found ${count}`);
   return text.replace(oldText,newText);
 }
+function replaceExactCount(text,oldText,newText,label,expectedCount){
+  const oldCount=text.split(oldText).length-1;
+  const newCount=text.split(newText).length-1;
+  if(oldCount===0 && newCount===expectedCount)return text;
+  if(oldCount!==expectedCount||newCount!==0)fail(`${label}: expected ${expectedCount} old and 0 new projections, found old=${oldCount} new=${newCount}`);
+  return text.split(oldText).join(newText);
+}
 function gitBlobSha(text){
   const b=Buffer.from(text);
   return crypto.createHash('sha1').update(Buffer.from(`blob ${b.length}\0`)).update(b).digest('hex');
@@ -51,7 +58,9 @@ html=replaceOnce(html,
 /* Public company values may be canonicalized beyond the local browser Company
    Book. Preserve nullable performance semantics and keep a distinct unique
    network/index contribution so Defitea can display consolidated TVL without
-   re-counting its independently registered nested companies. */
+   re-counting its independently registered nested companies. The legacy page
+   contains this initializer three times in separate historical boot paths; all
+   three must be updated together or a stale path can overwrite the canonical one. */
 const oldPublicBind=`    const publicCompanyTvl = (key, fallback) => {
         const row = publicCapitalSnapshot && Array.isArray(publicCapitalSnapshot.companies)
             ? publicCapitalSnapshot.companies.find(x => x && (x.registry === key || x.name === key))
@@ -111,7 +120,7 @@ const newPublicBind=`    const publicCompanyRow = key => publicCapitalSnapshot &
             f.pct = null;
         }
     });`;
-html=replaceOnce(html,oldPublicBind,newPublicBind,'companies/index.html canonical TVL/performance/network contribution binding');
+html=replaceExactCount(html,oldPublicBind,newPublicBind,'companies/index.html canonical TVL/performance/network contribution binding',3);
 
 html=replaceOnce(html,
 `    { key: 'capital',      weight: 0.35, raw: c => Math.sqrt(Math.max(c.val, 0)) },`,
@@ -183,6 +192,7 @@ console.log('Owner balance site projection PASS',{
   singulCurrentPositionCount:singulPositions.length,
   singulBeamExcluded:true,
   expectedIndexBlob:indexBlob,
+  legacyTvlBindCopiesUpdated:3,
   defiteaConsolidatedDisplayUsesUniqueIndexContribution:true,
   partialCostBasisPerformanceRemainsUnknown:true,
   manualSnapshotIsNotOnchainObservation:true,
