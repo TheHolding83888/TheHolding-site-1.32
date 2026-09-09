@@ -15,7 +15,21 @@ assert.doesNotMatch(workflow,/permissions:\s*write-all|actions:\s*write|pull-req
 assert.match(workflow,/concurrency:\s*\n\s*group:\s*unified-capital-refresh\s*\n\s*cancel-in-progress:\s*false/,'Unified Capital concurrency contract drift');
 assert.match(workflow,/schedule:\s*\n\s*- cron: '17 4 \* \* 0'/,'bounded weekly fallback schedule drift');
 assert.match(workflow,/- "Update Company Rewards"/,'Rewards -> Unified Capital freshness coupling missing');
+assert.match(workflow,/- "The Holding Market Data · Shared Refresh"/,'Market Data -> Unified Capital workflow_run handoff missing');
 assert.match(workflow,/github\.event\.workflow_run\.conclusion == 'success' && github\.event\.workflow_run\.head_branch == 'main'/,'workflow_run success/main gate missing');
+
+// Market Data handoff must be explicit and cheap. GITHUB_TOKEN-authored pushes are
+// not treated as a reliable downstream wake. A Market Data workflow completion is
+// observed instead, then generation parity suppresses scheduled/no-op completions.
+assert.match(workflow,/^  admission:\s*$/m,'Unified Capital lightweight admission job missing');
+assert.match(workflow,/Checkout canonical main for handoff admission/,'handoff admission does not inspect canonical main');
+assert.match(workflow,/UPSTREAM_WORKFLOW: \$\{\{ github\.event\.workflow_run\.name \}\}/,'upstream workflow identity not bound into admission');
+assert.match(workflow,/upstream == 'The Holding Market Data · Shared Refresh'/,'Market Data-specific handoff admission missing');
+assert.match(workflow,/market_generation = str\(market\.get\('generatedAt'\) or ''\)/,'canonical Market Data generation admission input missing');
+assert.match(workflow,/materialized_generation = str\(\(public\.get\('sourceState'\) or \{\}\)\.get\('marketDataGeneratedAt'\) or ''\)/,'Public Capital materialized Market Data generation input missing');
+assert.match(workflow,/due = market_generation != materialized_generation/,'Market Data generation parity admission missing');
+assert.match(workflow,/market-data-noop-already-materialized/,'Market Data no-op suppression reason missing');
+assert.match(workflow,/needs\.admission\.outputs\.due == 'true'/,'heavy Unified Capital refresh is not gated by lightweight admission');
 
 assert.match(workflow,/node productivity\/votemarket-productivity-overlay-validation\.mjs/,'VoteMarket deterministic validation missing');
 assert.match(orchestrator,/run\('7\/10 Apply VoteMarket supplementary income channels', ROOT, 'productivity\/votemarket-productivity-overlay\.mjs'\)/,'VoteMarket overlay missing from canonical orchestrator');
@@ -32,6 +46,7 @@ assert.match(workflow,/vmState\?\.semantics\?\.sourceOfTruth!==false/,'VoteMarke
 assert.match(workflow,/node intelligence\/capital-state\/unified-capital-market-data-guard\.mjs/,'canonical Market Data consumer guard missing');
 assert.doesNotMatch(workflow,/node intelligence\/market-data\/market-data-engine\.mjs/,'Unified Capital must not become a Market Data writer');
 assert.doesNotMatch(workflow,/git add[\s\\\n\r\t\w./-]*intelligence\/market-data\/market-data\.json/,'Unified Capital must not stage canonical Market Data');
+assert.match(workflow,/pub\.sourceState\?\.marketDataGeneratedAt!==m\.generatedAt/,'same-generation Public Capital validation missing');
 
 for (const script of [
   'companies/owner-balance-site-projection.mjs',
@@ -40,10 +55,11 @@ for (const script of [
 ]) {
   assert.match(workflow,new RegExp(script.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')),'public surface projector is not syntax-checked by Unified Capital: '+script);
 }
-for (const surface of ['index.html','companies/index.html','05081966/index.html','yieldring/index.html','singul/index.html','yield-reports/index.html']) {
+const generatedSurfaces=['index.html','companies/index.html','05081966/index.html','yieldring/index.html','singul/index.html','yield-reports/index.html'];
+for (const surface of generatedSurfaces) {
   const escaped=surface.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
   const occurrences=(workflow.match(new RegExp(escaped,'g'))||[]).length;
-  assert.ok(occurrences>=2,`generated public surface must be staged in both initial and retry publish paths: ${surface}`);
+  assert.ok(occurrences>=3,`generated public surface must be initial-staged, fresh-main-reset and retry-staged: ${surface}`);
 }
 assert.match(ownerProjection,/await import\('\.\/public-page-market-runtime-projection\.mjs'\)/,'owner projection no longer chains canonical page runtime projection');
 assert.match(ownerProjection,/await import\('\.\/public-site-polish-projection\.mjs'\)/,'owner projection no longer chains bounded site polish');
@@ -62,7 +78,17 @@ assert.doesNotMatch(sitePolishProjection,/sendTransaction|eth_sendRawTransaction
 assert.match(workflow,/for attempt in 1 2 3/,'bounded safe-writer retry contract missing');
 assert.match(workflow,/git fetch origin main/,'fresh-main reconciliation missing');
 assert.match(workflow,/git rebase origin\/main/,'safe-writer rebase missing');
+assert.match(workflow,/git checkout origin\/main --/,'fresh-main generated-surface reset missing');
 assert.match(workflow,/git push origin HEAD:main/,'canonical main writer target drift');
+const rebasePos=workflow.indexOf('git rebase origin/main');
+const resetPos=workflow.indexOf('git checkout origin/main --',rebasePos);
+const retryGuardPos=workflow.indexOf('node intelligence/capital-state/unified-capital-market-data-guard.mjs',resetPos);
+const retryRefreshPos=workflow.indexOf('node intelligence/capital-state/unified-capital-refresh.mjs',resetPos);
+assert.ok(rebasePos>=0&&resetPos>rebasePos&&retryGuardPos>resetPos&&retryRefreshPos>retryGuardPos,'fresh-main reset must occur after rebase and before retry guard/recompute');
+for(const surface of [...generatedSurfaces,'companies/productivity-data.json','companies/productivity-source-report.json','companies/votemarket-reference-state.json','intelligence/capital-state/general-company-balance-sheet.mjs','intelligence/capital-state/general-company-balance-sheet.json','intelligence/capital-state/capital-state.json','intelligence/market-data/public-capital-state.json']){
+  const resetBlock=workflow.slice(resetPos,retryGuardPos);
+  assert.ok(resetBlock.includes(surface),`fresh-main retry reset missing generated surface: ${surface}`);
+}
 assert.doesNotMatch(workflow,/sendTransaction|eth_sendRawTransaction|eth_sendTransaction|\.transfer\(|\.approve\(|\.claim\(|\.vote\(/,'Unified Capital workflow contains wallet/capital transaction behavior');
 assert.doesNotMatch(orchestrator,/sendTransaction|eth_sendRawTransaction|eth_sendTransaction|\.transfer\(|\.approve\(|\.claim\(|\.vote\(/,'Unified Capital orchestrator contains wallet/capital transaction behavior');
 
@@ -82,6 +108,10 @@ assert.ok(order.every(x=>x>=0)&&order.every((x,i)=>i===0||x>order[i-1]),'canonic
 
 console.log('Unified Capital refresh workflow definition proof PASS',{
   orchestratorSteps:10,
+  marketDataWorkflowRunHandoff:true,
+  marketDataNoopSuppression:true,
+  marketGenerationParity:true,
+  freshMainRetryReset:true,
   rewardsFreshnessCoupling:true,
   voteMarketAfterCanonicalProductivityOverlays:true,
   voteMarketClaimedAwarePersistence:true,
