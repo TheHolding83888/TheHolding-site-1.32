@@ -126,20 +126,20 @@ html=replaceExactCount(html,
 `    { key: 'capital',      weight: 0.35, raw: c => Math.sqrt(Math.max(c.val, 0)) },`,
 `    { key: 'capital',      weight: 0.35, raw: c => Math.sqrt(Math.max(c.indexCapitalValue ?? c.val, 0)) },`,
 'companies/index.html Composite unique Capital factor',3);
-html=replaceOnce(html,
+html=replaceExactCount(html,
 `    const totalVal = eligible.reduce((s, c) => s + Math.max(c.val, 0), 0);`,
 `    const totalVal = eligible.reduce((s, c) => s + Math.max(c.indexCapitalValue ?? c.val, 0), 0);`,
-'companies/index.html TVL lens unique denominator');
-html=replaceOnce(html,
+'companies/index.html TVL lens unique denominator',3);
+html=replaceExactCount(html,
 `        c.tvlWeight = totalVal > 0 ? Math.max(c.val, 0) / totalVal : (eligible.length ? 1 / eligible.length : 0);`,
 `        c.tvlWeight = totalVal > 0 ? Math.max(c.indexCapitalValue ?? c.val, 0) / totalVal : (eligible.length ? 1 / eligible.length : 0);`,
-'companies/index.html TVL lens unique company weight');
-html=replaceOnce(html,
+'companies/index.html TVL lens unique company weight',3);
+html=replaceExactCount(html,
 `    const measuredTotal = list.reduce((s, c) => s + (c.val > 0 ? c.val : 0), 0);`,
 `    const measuredTotal = list.reduce((s, c) => s + ((c.indexCapitalValue ?? c.val) > 0 ? (c.indexCapitalValue ?? c.val) : 0), 0);`,
-'companies/index.html Index unique network value');
+'companies/index.html Index unique network value',3);
 
-html=replaceOnce(html,
+html=replaceExactCount(html,
 `    ];
     syncCompanyAprDisplays(idxLang());`,
 `    ];
@@ -148,7 +148,7 @@ html=replaceOnce(html,
         c.indexCapitalValue = publicCompanyNetworkContribution(c.reg, fallback);
     });
     syncCompanyAprDisplays(idxLang());`,
-'companies/index.html Index unique network-contribution binding');
+'companies/index.html Index unique network-contribution binding',3);
 
 fs.writeFileSync(INDEX,html);
 const indexBlob=gitBlobSha(html);
@@ -194,6 +194,8 @@ console.log('Owner balance site projection PASS',{
   expectedIndexBlob:indexBlob,
   legacyTvlBindCopiesUpdated:3,
   legacyCompositeCapitalCopiesUpdated:3,
+  legacyTvlLensCopiesUpdated:3,
+  legacyIndexNetworkCopiesUpdated:3,
   defiteaConsolidatedDisplayUsesUniqueIndexContribution:true,
   partialCostBasisPerformanceRemainsUnknown:true,
   manualSnapshotIsNotOnchainObservation:true,
