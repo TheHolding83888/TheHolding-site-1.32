@@ -1,0 +1,79 @@
+{
+  "version": "0.1-accounting-income-lifecycle-contract",
+  "status": "canonical-semantics-no-execution-authority",
+  "purpose": "Reusable accounting lifecycle contract for one-time economic income recognition and later settlement/reinvestment states. It formalizes existing Canonical Earned Income View semantics without creating a second income source of truth.",
+  "lifecycle": [
+    "earned",
+    "accrued",
+    "claimable",
+    "claimed",
+    "received",
+    "reinvested"
+  ],
+  "stageSemantics": {
+    "earned": "Economic earning event. Recognition requires canonical mechanism evidence and can occur before claim or receipt.",
+    "accrued": "Earned amount accumulated as entitlement or inside a productive position. Accrual may be the first factual recognition point when mechanism evidence proves it.",
+    "claimable": "Current claimable state. A balance or first observation is state/baseline and does not itself prove period income.",
+    "claimed": "Settlement action. If the same economic income was already recognized when earned/accrued, claim does not recognize it again.",
+    "received": "Settlement receipt. If linked to prior earned recognition, receipt preserves provenance and does not recognize a second income event.",
+    "reinvested": "Capital-state transition after settlement. Reinvestment can change productive principal/state but cannot rewrite or re-recognize the original earned income."
+  },
+  "recognitionContract": {
+    "canonicalIncomeLedgerIsSoleFactualIncomeAuthority": true,
+    "economicIncomeRecognizedAtMostOnce": true,
+    "accruedEntitlementMayBeFirstRecognition": true,
+    "embeddedIncomeMayBeFirstRecognition": true,
+    "mechanismSpecificSettlementMayBeFirstRecognitionOnlyWithExplicitNonOverlapProof": true,
+    "claimableBalanceAloneCreatesIncome": false,
+    "openingBalanceCreatesIncome": false,
+    "genericReceiptCreatesIncome": false,
+    "claimAfterPriorEarnedRecognitionCreatesSecondIncome": false,
+    "receiptAfterPriorEarnedRecognitionCreatesSecondIncome": false,
+    "settlementRequiresProvenanceLinkage": true,
+    "laterClaimOrReceiptCanRewriteEarnedMonth": false,
+    "reinvestmentCanRewriteOriginalIncomeRecognition": false,
+    "reinvestmentCreatesIncomeFromPrincipalMovement": false,
+    "referenceAprCreatesFactualIncome": false,
+    "referenceDeltaIsMissingIncome": false,
+    "crossMonthTimeProrationCreatesIncome": false,
+    "unknownIsNotZero": true
+  },
+  "canonicalMappings": {
+    "accrued-entitlement": {
+      "firstRecognitionStage": "accrued",
+      "laterClaimOrReceipt": "settlement-only"
+    },
+    "embedded-income": {
+      "firstRecognitionStage": "earned-inside-position",
+      "laterWithdrawalOrReceipt": "settlement-or-capital-state-transition"
+    },
+    "realised-cash-flow": {
+      "default": "unresolved-unless-non-overlap-proof-exists",
+      "explicitPriorRecognitionLink": "settlement-only",
+      "explicitFirstRecognitionId": "recognized-once-at-settlement"
+    }
+  },
+  "periodContract": {
+    "laterSettlementCannotReallocateOriginalEarnedMonth": true,
+    "exactClosedCalendarMonthRequiresMechanismProof": true,
+    "arbitraryCrossMonthIntervalsRemainUnresolved": true,
+    "boundaryEvidencePendingRemainsPartialOrUnknown": true,
+    "crossMonthProrationAllowed": false
+  },
+  "authority": {
+    "sourceOfTruth": false,
+    "incomeCreationAuthority": false,
+    "accountingCompletionAuthority": false,
+    "monthClosingAuthority": false,
+    "canReplaceUnknown": false,
+    "executionAuthority": "none",
+    "capitalExecution": false,
+    "walletAuthority": false
+  },
+  "implementation": {
+    "canonicalIncomeLedger": "reporting/income-ledger.json",
+    "canonicalRecognitionView": "reporting/canonical-earned-income-view.mjs",
+    "settlementExample": "40 Acres veVELO receipts are settlement-only when linked to canonical accrued veVELO income",
+    "scope": "Accounting/Historical Truth Foundation v1 prerequisite only; not the later Capital Flow Semantics roadmap layer"
+  }
+}
