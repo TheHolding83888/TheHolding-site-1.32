@@ -7,6 +7,8 @@ const OUT = path.join(ROOT, 'intelligence/capital-state/general-company-balance-
 const PRODUCTIVITY = 'companies/productivity-data.json';
 const MARKET_DATA = 'intelligence/market-data/market-data.json';
 const UI_BOOK_SOURCE = 'companies/index.html';
+const YIELD_RING_STATE = 'companies/yieldring-canonical-state.json';
+const COMPANY001_OWNER_SNAPSHOT = 'companies/company-001-owner-capital-snapshot.json';
 
 const EXPECTED_UI_BLOB_SHA = 'def951f9432bfe600f29bdbbf1c26dbd58655b0d';
 
@@ -112,9 +114,24 @@ function canonicalMarketPrices() {
 }
 
 const productivity=readJson(PRODUCTIVITY);
+const yieldRingState=readJson(YIELD_RING_STATE);
+const company001OwnerSnapshot=readJson(COMPANY001_OWNER_SNAPSHOT);
 if (!['1.15','1.16'].includes(productivity.version)) throw new Error(`unexpected Productivity version ${productivity.version}`);
 if (gitBlobSha(UI_BOOK_SOURCE) !== EXPECTED_UI_BLOB_SHA) {
   throw new Error('companies/index.html changed since Company Book normalization; review browser Company Book before publishing balance sheet');
+}
+if(yieldRingState?.company!=='YieldRing.eth'||yieldRingState?.authority?.executionAuthority!=='none')throw new Error('YieldRing canonical state invalid');
+if(company001OwnerSnapshot?.company!=='05081966.eth'||company001OwnerSnapshot?.authority?.executionAuthority!=='none')throw new Error('Company #001 owner snapshot invalid');
+
+BOOK['YieldRing.eth']=[
+  {id:'bitcoin',qty:Number(yieldRingState.capital?.bitcoin?.quantity),layer:'foundation',priceSource:'shared-market-data',evidenceStatus:'canonical-company-state'},
+  {id:'aerodrome-finance',qty:Number(yieldRingState.capital?.aerodrome?.quantity),layer:'productive-dividend',evidenceStatus:'canonical-company-state'},
+  {id:'convex-finance',qty:Number(yieldRingState.capital?.convex?.quantity),layer:'productive-dividend',evidenceStatus:'canonical-company-state'},
+  {id:'frax-share',qty:Number(yieldRingState.capital?.frax?.quantity),layer:'productive-dividend',evidenceStatus:yieldRingState.capital?.frax?.evidenceStatus||'owner-provided-current',note:'Current FRAX principal is canonical; cost basis is partial/UNKNOWN for the added 232 FRAX and is not required for current-capital valuation.'}
+];
+for(const p of company001OwnerSnapshot.positions||[]){
+  if(p?.assetId!=='bitcoin'||Number(p?.quantity)<=0||p?.primaryCapitalLayer!=='foundation')throw new Error('Company #001 owner snapshot contains unsupported position');
+  BOOK['05081966.eth'].push({id:p.assetId,qty:Number(p.quantity),layer:p.primaryCapitalLayer,priceSource:'shared-market-data',evidenceStatus:p.evidenceStatus||'owner-provided-current',note:p.note||null,entryPriceUsd:Number(p.entryPriceUsd),costBasisUsd:Number(p.costBasisUsd),sourceType:p.sourceType||'owner-confirmed-manual-current-snapshot'});
 }
 
 const market=canonicalMarketPrices();
@@ -176,6 +193,9 @@ for (const [registry,name] of REGISTRY) {
       assetId:row.id, units:round(row.qty,12), priceUsd:round(price,12), valueUsd:round(value),
       primaryCapitalLayer:row.layer, productiveAttribute, priceProvenance,
       evidenceStatus:row.evidenceStatus||'established', note:row.note||null,
+      ...(Number.isFinite(row.entryPriceUsd)?{entryPriceUsd:round(row.entryPriceUsd,6)}:{}),
+      ...(Number.isFinite(row.costBasisUsd)?{costBasisUsd:round(row.costBasisUsd,6)}:{}),
+      ...(row.sourceType?{sourceType:row.sourceType}:{}),
       inclusion:'included-once-in-company-total', productivityOnly:false
     });
   }
@@ -192,12 +212,12 @@ for (const [registry,name] of REGISTRY) {
   networkProductiveExposure+=productiveExpected;
   companies.push({
     registry,name,status:'total-capital-complete',totalCapitalUsd:round(total),totalCapitalComplete:true,
-    sourceScope:'browser-company-book-normalized-to-machine-readable-balance-sheet',
+    sourceScope:(name==='05081966.eth'||name==='YieldRing.eth')?'browser-company-book-baseline-plus-canonical-owner-state':'browser-company-book-normalized-to-machine-readable-balance-sheet',
     productiveMeasuredExposureUsd:round(productiveExpected),
     primaryProductiveDividendCapitalUsd:round(layers.productiveDividendUsd),
     productiveExposureOutsidePrimaryProductiveLayerUsd:round(Math.max(0,productiveExpected-layers.productiveDividendUsd)),
     layerValues:layers,
-    epistemicNote:name==='1milliondollar.eth'?'Total includes an explicitly disclosed owner-observed WETH component; provenance is preserved rather than silently upgraded to independently reproduced onchain evidence.':null,
+    epistemicNote:name==='1milliondollar.eth'?'Total includes an explicitly disclosed owner-observed WETH component; provenance is preserved rather than silently upgraded to independently reproduced onchain evidence.':name==='YieldRing.eth'?'Current FRAX quantity is owner-confirmed; added-lot cost basis remains UNKNOWN/partial and is not silently treated as zero.':name==='05081966.eth'?'Current BTC position is owner-confirmed manual evidence pending unified blockchain-native balance discovery.':null,
     positions
   });
 }
@@ -205,12 +225,14 @@ for (const [registry,name] of REGISTRY) {
 for (const k of Object.keys(layerTotals)) layerTotals[k]=round(layerTotals[k]);
 const output={
   version:'0.1-general-company-balance-sheet',
-  engineVersion:'0.2-canonical-market-data-bound-balance-sheet-normalizer',
+  engineVersion:'0.2.1-owner-snapshot-capital-bridge',
   generatedAt:new Date().toISOString(),status:'ok',
-  purpose:'Machine-readable total-capital binding for the eight general Registry companies, normalized from the existing browser Company Book and reconciled against canonical Productivity without conflating productive exposure with primary capital layer.',
+  purpose:'Machine-readable total-capital binding for the eight general Registry companies. Browser Company Book remains a reviewed baseline; provenance-explicit canonical owner snapshots may bridge current capital until unified blockchain-native discovery covers those positions. Productive exposure is reconciled without conflating Productivity with primary capital layer.',
   authority:{readOnly:true,executionAuthority:'none',capitalExecution:false,allocationAuthority:false,policyMutationAuthority:false,methodologyMutationAuthority:false},
   semantics:{
     unknownPolicy:'unknown != zero',
+    partialCostBasisIsNotTotal:true,
+    ownerConfirmedManualSnapshotIsNotOnchainObservation:true,
     marketPriceAuthority:market.deterministicFixture?'deterministic zero-request CI fixture':'canonical per-asset onchain-selected Market Data; no direct external price request',
     deterministicValidationFixture:market.deterministicFixture,
     doubleCountPolicy:'productivityOnly rows never add a second copy of parent BTC/ETH economic exposure',
@@ -218,7 +240,9 @@ const output={
     layerTaxonomy:['foundation','productive-dividend','stable-reserve','rwa','venture','unclassified']
   },
   sourceState:{
-    browserCompanyBook:{file:UI_BOOK_SOURCE,gitBlobSha:EXPECTED_UI_BLOB_SHA,sha256:sha256File(UI_BOOK_SOURCE),role:'existing UI Company Book quantities and inclusion semantics'},
+    browserCompanyBook:{file:UI_BOOK_SOURCE,gitBlobSha:EXPECTED_UI_BLOB_SHA,sha256:sha256File(UI_BOOK_SOURCE),role:'reviewed browser Company Book baseline; current canonical owner-state overlays are explicit and independently identified'},
+    yieldRingCanonicalState:{file:YIELD_RING_STATE,version:yieldRingState.version||null,effectiveAt:yieldRingState.effectiveAt||null,sha256:sha256File(YIELD_RING_STATE),role:'current canonical YieldRing quantities and provenance'},
+    company001OwnerSnapshot:{file:COMPANY001_OWNER_SNAPSHOT,version:company001OwnerSnapshot.version||null,asOf:company001OwnerSnapshot.asOf||null,sha256:sha256File(COMPANY001_OWNER_SNAPSHOT),role:'provenance-explicit temporary current-capital bridge; not independently reproduced onchain'},
     productivity:{file:PRODUCTIVITY,version:productivity.version,generatedAt:productivity.generatedAt||null,sha256:sha256File(PRODUCTIVITY),role:'productive quantity/exposure reconciliation and productive-asset current prices'},
     marketData:{file:market.sourceFile,generatedAt:market.generatedAt,observedAt:market.observedAt,sha256:market.sha256,assetIds:SHARED_MARKET_IDS,role:market.deterministicFixture?'deterministic zero-request validation prices; never production authority':'canonical onchain-selected BTC/ETH/ZK prices; no direct CoinGecko request'}
   },
@@ -233,6 +257,8 @@ const output={
   companies,
   gaps:[
     {id:'company-009-owner-observed-weth-proof',severity:'evidence-quality',affects:['company-009-foundation-provenance'],detail:'0.1606 WETH remains owner-observed and is not silently represented as independently reproduced onchain evidence.'},
+    {id:'company-002-frax-cost-basis-partial',severity:'evidence-quality',affects:['company-002-performance-cost-basis'],detail:'YieldRing current FRAX principal is 1,032; cost basis for the additional 232 FRAX remains UNKNOWN and is not treated as zero.'},
+    {id:'company-001-btc-manual-current-snapshot',severity:'evidence-quality',affects:['company-001-current-capital-provenance'],detail:'0.00126 BTC is owner-confirmed current capital and explicitly remains manual evidence until blockchain-native discovery reproduces it.'},
     {id:'unclassified-zk-layer',severity:'classification',affects:['registry-007-layer-allocation'],detail:'ZK is included in total capital but remains unclassified rather than being promoted into Foundation/Productive/RWA/Venture without a proven economic-layer rule.'}
   ]
 };
