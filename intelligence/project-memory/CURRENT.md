@@ -8,7 +8,7 @@ Canonical source state represented here: **2026-09-09T12:53:07.625Z**
 
 ## Minimum recovery packet
 
-1. [THE_HOLDING_MASTER_CONTINUITY_2026-09-09_125027_AUTO_8b3c7e0b.md](./THE_HOLDING_MASTER_CONTINUITY_2026-09-09_125027_AUTO_8b3c7e0b.md)
+1. [THE_HOLDING_MASTER_CONTINUITY_2026-09-09_125314_AUTO_16384be9.md](./THE_HOLDING_MASTER_CONTINUITY_2026-09-09_125314_AUTO_16384be9.md)
 2. [Memory Routing Index v2](./THE_HOLDING_MEMORY_ROUTING_INDEX_v2_2026-08-26.md)
 3. Follow the router: load only the task-specific durable canon/context and live machine-readable evidence needed for the current objective.
 
