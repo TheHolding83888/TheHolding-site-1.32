@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-09T11:54:47.592Z",
+  "generatedAt": "2026-09-09T12:50:26.133Z",
   "status": "watch",
-  "snapshotHash": "aa5849d3f548b02ea793ceb3dafdd7fee87f9c543e3ba0c8f72e7469d0a44fa7",
+  "snapshotHash": "64a4f9bdba29232b09a1282169b93c41ee60a7e8537d6073d157eb271a76eb66",
   "repository": {
-    "filesScanned": 1148,
-    "bytesScanned": 30601857,
+    "filesScanned": 1147,
+    "bytesScanned": 30689088,
     "criticalHashes": {
       ".github/workflows/admit-company-010-public.yml": "5feffbf58388675952487c3462d2f9149eecec6f3795483087010dd0d3b19cfb",
       ".github/workflows/ask-experience.yml": "deb9c4e1025390563f8a866f6ddf1c7870e748cbd6aba13fdbd6da2d38e983d4",
@@ -109,7 +109,7 @@
       ".github/workflows/validate-yieldring-production-cascade.yml": "2e4d0b65e8b6e4608587e6c85f843d59e17832838af241fcb9d95b9d122c5e13",
       ".github/workflows/value-company-010-gmx-reader.yml": "eacf1a60777e9758fe48fcdc21d57796174fe6dac0a73fa0dbbb4d1606dc6ad1",
       ".github/workflows/verify-accounting-coverage.yml": "65bcbf480feac24eef2cac72f848a586d353fa38989282796e1cf7e4211513c8",
-      ".github/workflows/verify-accounting-income-lifecycle-contract.yml": "154abb2db94681046851dc93c328a7009c5dc9ddb1cfa384bc33fc7f5bf7dd98",
+      ".github/workflows/verify-accounting-income-lifecycle-contract.yml": "ca3a6cdcbeee382dcbbc33cfef1b1118c7d9924b3c42da37685d5ba5b1ab91db",
       ".github/workflows/verify-accounting-reconciliation-watch.yml": "3094acf741a177ba18df3276d66278c5ee4af338d80f1d4c4bb071f5ec1a8080",
       ".github/workflows/verify-aerodrome-economic-candidate.yml": "9ff993e99d253b47e29e2a63115b138cf729cbbddec015d6d0aec33ca0669763",
       ".github/workflows/verify-ask-conversation-gauntlet.yml": "cc5410dd7b90a8041200d6d6f04bd64696c4ccbd51f248f16d3146432b571858",
@@ -459,7 +459,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Fri, 04 Sep 2026 07:32:28 GMT",
+        "lastModified": "Fri, 04 Sep 2026 06:02:25 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -495,6 +495,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "d7c2948daea7dede9ad6a55fe1c94d059291b6befaa01f27c1d1464ce4808035",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/verify-accounting-income-lifecycle-contract.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-accounting-income-lifecycle-contract.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "154abb2db94681046851dc93c328a7009c5dc9ddb1cfa384bc33fc7f5bf7dd98",
+        "currentSha256": "ca3a6cdcbeee382dcbbc33cfef1b1118c7d9924b3c42da37685d5ba5b1ab91db"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -1121,10 +1135,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 942,
+    "runCount": 943,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/09/2026-09-09T11-54-47-592Z-aa5849d3f5.json",
-    "latestRecordHash": "35dc6b4473bdd88ea9248882a00243b98a362d5de9c7fec241ccf69631804364",
+    "latestRecordPath": "security/security-vault/2026/09/2026-09-09T12-50-26-133Z-64a4f9bdba.json",
+    "latestRecordHash": "be32c17a90fab1d87183a6dc961f793f5615394db535dcfa27cd25ba94e66bfe",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }

@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-09T11:54:47.592Z",
+  "generatedAt": "2026-09-09T12:50:26.133Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 2,
-    "medium": 50,
+    "medium": 51,
     "low": 0,
     "info": 0
   },
   "source": {
-    "filesScanned": 1148,
-    "bytesScanned": 30601857,
+    "filesScanned": 1147,
+    "bytesScanned": 30689088,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Fri, 04 Sep 2026 07:32:28 GMT",
+        "lastModified": "Fri, 04 Sep 2026 06:02:25 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -55,7 +55,22 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [],
+    "newFindings": [
+      {
+        "id": "d7c2948daea7dede9ad6a55fe1c94d059291b6befaa01f27c1d1464ce4808035",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/verify-accounting-income-lifecycle-contract.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/verify-accounting-income-lifecycle-contract.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "154abb2db94681046851dc93c328a7009c5dc9ddb1cfa384bc33fc7f5bf7dd98",
+          "currentSha256": "ca3a6cdcbeee382dcbbc33cfef1b1118c7d9924b3c42da37685d5ba5b1ab91db"
+        }
+      }
+    ],
     "resolvedFindings": []
   },
   "currentFindings": [
@@ -80,6 +95,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "d7c2948daea7dede9ad6a55fe1c94d059291b6befaa01f27c1d1464ce4808035",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/verify-accounting-income-lifecycle-contract.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-accounting-income-lifecycle-contract.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "154abb2db94681046851dc93c328a7009c5dc9ddb1cfa384bc33fc7f5bf7dd98",
+        "currentSha256": "ca3a6cdcbeee382dcbbc33cfef1b1118c7d9924b3c42da37685d5ba5b1ab91db"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -716,12 +745,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "aa5849d3f548b02ea793ceb3dafdd7fee87f9c543e3ba0c8f72e7469d0a44fa7",
+    "snapshotHash": "64a4f9bdba29232b09a1282169b93c41ee60a7e8537d6073d157eb271a76eb66",
     "securityVault": {
-      "runCount": 942,
+      "runCount": 943,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/09/2026-09-09T11-54-47-592Z-aa5849d3f5.json",
-      "latestRecordHash": "35dc6b4473bdd88ea9248882a00243b98a362d5de9c7fec241ccf69631804364",
+      "latestRecordPath": "security/security-vault/2026/09/2026-09-09T12-50-26-133Z-64a4f9bdba.json",
+      "latestRecordHash": "be32c17a90fab1d87183a6dc961f793f5615394db535dcfa27cd25ba94e66bfe",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
