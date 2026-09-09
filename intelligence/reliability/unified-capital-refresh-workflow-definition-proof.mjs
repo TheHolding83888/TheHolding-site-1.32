@@ -5,6 +5,9 @@ import fs from 'node:fs';
 const WORKFLOW_PATH='.github/workflows/unified-capital-refresh.yml';
 const workflow=fs.readFileSync(WORKFLOW_PATH,'utf8');
 const orchestrator=fs.readFileSync('intelligence/capital-state/unified-capital-refresh.mjs','utf8');
+const ownerProjection=fs.readFileSync('companies/owner-balance-site-projection.mjs','utf8');
+const marketRuntimeProjection=fs.readFileSync('companies/public-page-market-runtime-projection.mjs','utf8');
+const sitePolishProjection=fs.readFileSync('companies/public-site-polish-projection.mjs','utf8');
 
 assert.match(workflow,/^# holding-workflow-definition-proof: intelligence\/reliability\/unified-capital-refresh-workflow-definition-proof\.mjs$/m,'paired workflow proof marker missing');
 assert.match(workflow,/permissions:\s*\n\s*contents:\s*write/,'Unified Capital writer permission missing');
@@ -30,6 +33,31 @@ assert.match(workflow,/node intelligence\/capital-state\/unified-capital-market-
 assert.doesNotMatch(workflow,/node intelligence\/market-data\/market-data-engine\.mjs/,'Unified Capital must not become a Market Data writer');
 assert.doesNotMatch(workflow,/git add[\s\\\n\r\t\w./-]*intelligence\/market-data\/market-data\.json/,'Unified Capital must not stage canonical Market Data');
 
+// Public-surface materialization contract. The owner/current-state projector may
+// update these generated pages, therefore the canonical writer must validate and
+// publish the same bounded surface set rather than leaving CI-green bytes local.
+for (const script of [
+  'companies/owner-balance-site-projection.mjs',
+  'companies/public-page-market-runtime-projection.mjs',
+  'companies/public-site-polish-projection.mjs'
+]) {
+  assert.match(workflow,new RegExp(script.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')),'public surface projector is not syntax-checked by Unified Capital: '+script);
+}
+for (const surface of ['index.html','companies/index.html','05081966/index.html','yieldring/index.html','singul/index.html']) {
+  const escaped=surface.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  const occurrences=(workflow.match(new RegExp(escaped,'g'))||[]).length;
+  assert.ok(occurrences>=2,`generated public surface must be staged in both initial and retry publish paths: ${surface}`);
+}
+assert.match(ownerProjection,/await import\('\.\/public-page-market-runtime-projection\.mjs'\)/,'owner projection no longer chains canonical page runtime projection');
+assert.match(ownerProjection,/await import\('\.\/public-site-polish-projection\.mjs'\)/,'owner projection no longer chains bounded site polish');
+assert.match(marketRuntimeProjection,/company001DirectBrowserCoinGecko:false/,'Company #001 direct-browser external pricing guard missing');
+assert.match(marketRuntimeProjection,/singulDuplicateRuntime:false/,'Singul duplicate price runtime retirement proof missing');
+assert.match(sitePolishProjection,/executionAuthority:'none'/,'site polish authority boundary missing');
+assert.match(sitePolishProjection,/href=\"\/companies\"/,'homepage Companies navigation projection missing');
+assert.match(sitePolishProjection,/href=\"\/realty\"/,'homepage Real Estate navigation projection missing');
+assert.match(sitePolishProjection,/data-th-fund-pyramid-links/,'fund pyramid navigation marker missing');
+assert.doesNotMatch(sitePolishProjection,/sendTransaction|eth_sendRawTransaction|eth_sendTransaction|\.transfer\(|\.approve\(|\.claim\(|\.vote\(/,'site polish projector contains wallet/capital transaction behavior');
+
 assert.match(workflow,/for attempt in 1 2 3/,'bounded safe-writer retry contract missing');
 assert.match(workflow,/git fetch origin main/,'fresh-main reconciliation missing');
 assert.match(workflow,/git rebase origin\/main/,'safe-writer rebase missing');
@@ -53,6 +81,10 @@ console.log('Unified Capital refresh workflow definition proof PASS',{
   voteMarketClaimedAwarePersistence:true,
   persistenceStateSourceOfTruth:false,
   capitalDoubleCount:false,
+  publicSurfaceMaterialization:true,
+  homepagePublicPolishBounded:true,
+  company001CanonicalRuntime:true,
+  singulDuplicateRuntime:false,
   factualIncomeAuthority:false,
   executionAuthority:'none'
 });
