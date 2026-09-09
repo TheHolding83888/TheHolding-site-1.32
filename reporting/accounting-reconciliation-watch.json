@@ -1,6 +1,6 @@
 {
   "version": "0.1.1-accounting-reconciliation-watch-null-preserving",
-  "generatedAt": "2026-09-09T10:38:33.811Z",
+  "generatedAt": "2026-09-09T12:29:04.740Z",
   "status": "diagnostic-watch-no-accounting-authority",
   "currentMonth": "2026-09",
   "purpose": "Derived change watch across canonical accounting notices, historical evidence completeness, and non-factual reference reconciliation. It surfaces changes for review without creating income, closing periods, converting UNKNOWN to zero, or treating ordinary tracking-no-event as failure.",
@@ -35,25 +35,28 @@
     "accountingNoticeQueue": {
       "file": "reporting/accounting-notice-queue.json",
       "version": "0.2-accounting-notice-queue-boundary-evidence-pending",
-      "generatedAt": "2026-09-09T09:15:36.859Z",
+      "generatedAt": "2026-09-09T12:28:07.465Z",
       "status": "diagnostic-no-completion-authority"
     },
     "accountingReferenceReconciliation": {
       "file": "reporting/accounting-reference-reconciliation.json",
       "version": "0.2-accounting-reference-reconciliation-cross-month-attribution",
-      "generatedAt": "2026-09-09T09:15:36.929Z",
+      "generatedAt": "2026-09-09T12:28:07.553Z",
       "status": "diagnostic-no-completion-authority"
     },
     "historicalAccountingCompleteness": {
       "file": "reporting/historical-accounting-completeness-map.json",
       "version": "0.1-historical-accounting-completeness-map",
-      "generatedAt": "2026-09-09T10:23:47.407Z",
+      "generatedAt": "2026-09-09T12:28:35.966Z",
       "status": "diagnostic-no-completion-authority"
     }
   },
-  "baseline": true,
-  "previousSnapshot": null,
-  "semanticFingerprint": "2ad5291e63bc07d191d00610e0b12d8447228b77f5733d4cce60c5fb1ed0a253",
+  "baseline": false,
+  "previousSnapshot": {
+    "generatedAt": "2026-09-09T10:38:33.811Z",
+    "semanticFingerprint": "2ad5291e63bc07d191d00610e0b12d8447228b77f5733d4cce60c5fb1ed0a253"
+  },
+  "semanticFingerprint": "ec2e7303e94141a56fa2112328948aad3bf0087a1b0d71d78312f55dd825d630",
   "summary": {
     "watchItemCount": 36,
     "engineeringActionRequiredCount": 0,
@@ -65,17 +68,21 @@
     "closedPeriodTrackingNoEventCount": 6,
     "highAttentionReferenceRowCount": 8,
     "newCount": 0,
-    "changedCount": 0,
-    "unchangedCount": 0,
-    "baselineCount": 36,
+    "changedCount": 2,
+    "unchangedCount": 34,
+    "baselineCount": 0,
     "resolvedCount": 0,
     "alertCount": 0,
-    "evidenceUpdateCount": 0,
-    "diagnosticUpdateCount": 0
+    "evidenceUpdateCount": 1,
+    "diagnosticUpdateCount": 1
   },
   "alerts": [],
-  "evidenceUpdates": [],
-  "diagnosticUpdates": [],
+  "evidenceUpdates": [
+    "notice:period-lifecycle-reconciliation:1milliondollar.eth:2026-09:__company_period__"
+  ],
+  "diagnosticUpdates": [
+    "reconciliation:company-period:Cypher:2026-09"
+  ],
   "resolved": [],
   "items": [
     {
@@ -127,7 +134,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "b02730718f95e97dd9ef8753d07b34e68c4bc0ba0b9eb72c60ffed00463ee1e3",
-      "transition": "baseline"
+      "transition": "unchanged"
     },
     {
       "id": "historical:0x5860...83CA8.eth:2026-08:aerodrome_veaero",
@@ -166,7 +173,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "9fbf49a380c0e664ca2fe04bf92e7cd52bc66b5bd93b5f93143c7f07496d907a",
-      "transition": "baseline"
+      "transition": "unchanged"
     },
     {
       "id": "historical:0x5860...83CA8.eth:2026-08:icp_nns",
@@ -217,7 +224,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "3ae19ec4287106f3072ea886d191e514d388af8a7f492a3f9e6c5ddfeb62304c",
-      "transition": "baseline"
+      "transition": "unchanged"
     },
     {
       "id": "historical:1milliondollar.eth:2026-08:yieldbasis_veyb",
@@ -268,7 +275,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "c5422f4064f4c982c5df08ba885d22f4da4eaea801d899b5d9adb6d41a1931f6",
-      "transition": "baseline"
+      "transition": "unchanged"
     },
     {
       "id": "historical:aerocvxyb.eth:2026-08:aerodrome_veaero",
@@ -307,7 +314,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "853529c036c8ab8b22e2b72140c8e7511c343cc25e0efcd61e9ac56a4d7c1d58",
-      "transition": "baseline"
+      "transition": "unchanged"
     },
     {
       "id": "historical:aerocvxyb.eth:2026-08:icp_nns",
@@ -358,7 +365,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "b284127f3c4a73a68b75e143c4c8a77c5dee6a8609fe6c09d5c3a24eb463f78a",
-      "transition": "baseline"
+      "transition": "unchanged"
     },
     {
       "id": "historical:aerocvxyb.eth:2026-08:velodrome_vevelo",
@@ -397,7 +404,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "e0b34a4d67f6288a9b97697c18a14cc42a9855df4962b2a9927cbf41ca9b7cfc",
-      "transition": "baseline"
+      "transition": "unchanged"
     },
     {
       "id": "historical:aerocvxyb.eth:2026-08:yieldbasis_veyb",
@@ -448,7 +455,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "495ce193474d5e6785b4f3e0d44b7b54c22dec1f68e2aa3cd11c2e0a6f95f0b8",
-      "transition": "baseline"
+      "transition": "unchanged"
     },
     {
       "id": "historical:Cypher:2026-08:concentrator_asdcrv",
@@ -496,7 +503,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "ed8c1d93caa6a68dd971cbc6464e61f4cd0a60ba7b112a0f552aa22fe0753836",
-      "transition": "baseline"
+      "transition": "unchanged"
     },
     {
       "id": "historical:Cypher:2026-08:convex_staked_cvxcrv",
@@ -547,7 +554,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "4959cca8677c7784ee70f75f8ca9ccf6ef60243ec85c227f1373953404718654",
-      "transition": "baseline"
+      "transition": "unchanged"
     },
     {
       "id": "historical:Cypher:2026-08:convex_vlcvx",
@@ -598,7 +605,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "73a3c38287250b018401832d55dee45cb47b720cd347eb53c48827baea2005e8",
-      "transition": "baseline"
+      "transition": "unchanged"
     },
     {
       "id": "historical:Cypher:2026-08:gmx-gm-btc-usdc",
@@ -646,7 +653,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "8276d603b165a08b95540f3d61c4b70a6d003bd0e556f27d18830dc7f1fdc1ba",
-      "transition": "baseline"
+      "transition": "unchanged"
     },
     {
       "id": "historical:Cypher:2026-08:gmx-gm-eth-usdc",
@@ -694,7 +701,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "531a4df22eaa5794498c30b76c71b74690d9f590c7eb73936984702d399665a3",
-      "transition": "baseline"
+      "transition": "unchanged"
     },
     {
       "id": "historical:Cypher:2026-08:hyperlend-0xfd739d4e423301ce9385c1fb8850539d657c296d",
@@ -742,7 +749,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "7dfa32eac8c05416f668f02d7b1d2a20af8c151778f0bc30c37110a5e6c8c25c",
-      "transition": "baseline"
+      "transition": "unchanged"
     },
     {
       "id": "historical:defitea.eth:2026-08:convex_vlcvx",
@@ -793,7 +800,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "f7a0508ff4c9a182a9c3bb90c2faad2f2baf0838d7b7007cf837bedd2af36545",
-      "transition": "baseline"
+      "transition": "unchanged"
     },
     {
       "id": "historical:defitea.eth:2026-08:liquity_lqty",
@@ -844,7 +851,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "d1267df5ab7d716741535dfc56a240a74334d1ad203c2467b3c7920572d0b21c",
-      "transition": "baseline"
+      "transition": "unchanged"
     },
     {
       "id": "historical:defitea.eth:2026-08:pendle_spendle",
@@ -892,7 +899,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "f7f4a913aa2a3631427e1df3a24c1815ba389c0b8c46bf144d997f24f0b0bf2a",
-      "transition": "baseline"
+      "transition": "unchanged"
     },
     {
       "id": "historical:defitea.eth:2026-08:resupply_rsup",
@@ -943,7 +950,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "7d8c67b76afcd87eaa2b4009f1d818ca664e5418db324f113884c6ab2800f67c",
-      "transition": "baseline"
+      "transition": "unchanged"
     },
     {
       "id": "historical:defitea.eth:2026-08:venice_svvv",
@@ -994,7 +1001,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "256d36429289e92adc3c49727d4e7c25532987158d8be402b7eb21b807d37782",
-      "transition": "baseline"
+      "transition": "unchanged"
     },
     {
       "id": "historical:defitea.eth:2026-08:yieldbasis_veyb",
@@ -1045,7 +1052,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "c982a68c93b91bc7547c8810887d1e981239e48862c84db37725d38bc3a0e3cf",
-      "transition": "baseline"
+      "transition": "unchanged"
     },
     {
       "id": "historical:dinaz.eth:2026-08:yieldbasis_veyb",
@@ -1096,7 +1103,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "0c278798f73c681632e199d51f44b458f2d92992b7faffe63228a0c38d185603",
-      "transition": "baseline"
+      "transition": "unchanged"
     },
     {
       "id": "historical:Rook's portfolio:2026-08:convex_vlcvx",
@@ -1147,7 +1154,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "ee927d15323c6c818a8ca39e6157349926f7f01b7d9e7c1467fba18a9f80717f",
-      "transition": "baseline"
+      "transition": "unchanged"
     },
     {
       "id": "historical:Rook's portfolio:2026-08:curve_vecrv",
@@ -1198,7 +1205,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "b2266e37a3348f33d4dbb7152ff8532d1aa85bb266cd88ad07207035e93f01d0",
-      "transition": "baseline"
+      "transition": "unchanged"
     },
     {
       "id": "historical:YieldRing.eth:2026-08:convex_vlcvx",
@@ -1249,7 +1256,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "0206b197cd09facb34a70958760cab652c5302ce72863587167681696af8a2e3",
-      "transition": "baseline"
+      "transition": "unchanged"
     },
     {
       "id": "notice:period-lifecycle-reconciliation:0x5860...83CA8.eth:2026-09:icp_nns",
@@ -1290,7 +1297,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "bcc63142528e706176669a7e5025f867c7ff3e0dcf8064880552d64a1ba8aaaa",
-      "transition": "baseline"
+      "transition": "unchanged"
     },
     {
       "id": "notice:period-lifecycle-reconciliation:1milliondollar.eth:2026-09:__company_period__",
@@ -1314,8 +1321,8 @@
         "engineeringActionable": false,
         "parked": true,
         "confirmedUsd": 0.85594196,
-        "estimatedUsd": 1.227937,
-        "deltaUsd": 0.37199504,
+        "estimatedUsd": 1.399673,
+        "deltaUsd": 0.54373104,
         "unresolvedEventCount": 1,
         "unresolvedReasons": [
           "period-boundary-evidence-pending-no-exact-month-cut"
@@ -1332,8 +1339,8 @@
       "executionAuthority": "none",
       "capitalExecution": false,
       "walletAuthority": false,
-      "fingerprint": "e79d2d13d2b4b216430059ce44f6332fcb78bcbe5dc64666df2d26bd8e566f37",
-      "transition": "baseline"
+      "fingerprint": "222077404ca1b2e6076230c4c3f381d9a27fc34b32c9448c728dbdf5776bdecb",
+      "transition": "changed"
     },
     {
       "id": "notice:period-lifecycle-reconciliation:aerocvxyb.eth:2026-09:icp_nns",
@@ -1374,7 +1381,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "d196bd342fa8c1176cf70b5eaf8583d7230992df8ed8b8072bf84f71192ab251",
-      "transition": "baseline"
+      "transition": "unchanged"
     },
     {
       "id": "notice:period-lifecycle-reconciliation:Monetra.eth:2026-09:__company_period__",
@@ -1417,7 +1424,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "85b33aeb5ca4cd97f220b843707dc62ec151bcee8a2d74008e9cf15511e2be3b",
-      "transition": "baseline"
+      "transition": "unchanged"
     },
     {
       "id": "reconciliation:company-period:0x5860...83CA8.eth:2026-08",
@@ -1465,7 +1472,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "484385104ce620cec62e0b5363f18e813386d6506e1c29967e1204aae14520da",
-      "transition": "baseline"
+      "transition": "unchanged"
     },
     {
       "id": "reconciliation:company-period:aerocvxyb.eth:2026-08",
@@ -1513,7 +1520,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "dfcb07f33984b3ccf09d3488f800907ce82fe1ff0d270a6564f9bb1f0bf0449d",
-      "transition": "baseline"
+      "transition": "unchanged"
     },
     {
       "id": "reconciliation:company-period:Cypher:2026-08",
@@ -1559,7 +1566,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "a654d22c4446c6d22d2280e837eede2bb043c1c206a5c669c7399b7832c215cd",
-      "transition": "baseline"
+      "transition": "unchanged"
     },
     {
       "id": "reconciliation:company-period:Cypher:2026-09",
@@ -1579,10 +1586,10 @@
         "signalBand": "wide-divergence",
         "attention": "high",
         "reconciliationStatus": "wide-divergence",
-        "referenceUsd": 12.09632,
+        "referenceUsd": 13.598493,
         "confirmedUsd": 3.45960614,
-        "deltaUsd": 8.63671386,
-        "captureRatio": 0.286005,
+        "deltaUsd": 10.13888686,
+        "captureRatio": 0.254411,
         "modelVariancePossible": true,
         "modelVarianceIsProven": false,
         "factualPeriodComplete": false,
@@ -1604,8 +1611,8 @@
       "executionAuthority": "none",
       "capitalExecution": false,
       "walletAuthority": false,
-      "fingerprint": "0fad8dc2ee72b8e621f71265d17419ab039a2b96b7835a890cedb92de094f7af",
-      "transition": "baseline"
+      "fingerprint": "a32631e61564750569b1ad92286732ea451a37d03d90d8639ae085b9b9775644",
+      "transition": "changed"
     },
     {
       "id": "reconciliation:company-period:defitea.eth:2026-08",
@@ -1651,7 +1658,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "5cb674c93ef51e2190afef30c1462e707020d9916cea41043e72e2e3d182f1a4",
-      "transition": "baseline"
+      "transition": "unchanged"
     },
     {
       "id": "reconciliation:company-period:YieldRing.eth:2026-08",
@@ -1697,7 +1704,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "d2a0f782f207f905c294470cd640272fd31e64a2d2e789ed2f14ef0904593fea",
-      "transition": "baseline"
+      "transition": "unchanged"
     },
     {
       "id": "reconciliation:mechanism-base-reference:defitea.eth:2026-08:frax_vefrax",
@@ -1745,7 +1752,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "d7704eddcc304beab9696f4f7225c216263e0799858d6b718766169f089fd730",
-      "transition": "baseline"
+      "transition": "unchanged"
     },
     {
       "id": "reconciliation:mechanism-base-reference:defitea.eth:2026-08:fx_vefxn",
@@ -1792,7 +1799,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "a4aa44cfed01479ffe0a32e6c968a8ff3438e004edc5114a5f7428d6a3fb3c49",
-      "transition": "baseline"
+      "transition": "unchanged"
     }
   ]
 }
