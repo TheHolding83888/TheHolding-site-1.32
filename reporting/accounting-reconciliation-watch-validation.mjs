@@ -13,12 +13,18 @@ function read(file) {
   return JSON.parse(fs.readFileSync(path.resolve(ROOT, file), 'utf8'));
 }
 
+function expectedNumber(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? Number(numeric.toFixed(8)) : null;
+}
+
 const notice = read(NOTICE_FILE);
 const reconciliation = read(RECONCILIATION_FILE);
 const completeness = read(COMPLETENESS_FILE);
 const watch = read(WATCH_FILE);
 
-assert.equal(watch.version, '0.1-accounting-reconciliation-watch');
+assert.equal(watch.version, '0.1.1-accounting-reconciliation-watch-null-preserving');
 assert.equal(watch.status, 'diagnostic-watch-no-accounting-authority');
 assert.equal(watch.currentMonth, completeness.currentMonth || notice.currentMonth);
 assert.equal(watch.semantics?.sourceOfTruth, false);
@@ -31,6 +37,7 @@ assert.equal(watch.semantics?.evidencePendingIsEngineeringFailure, false);
 assert.equal(watch.semantics?.resolvedWatchItemClosesAccounting, false);
 assert.equal(watch.semantics?.baselineCreatesAlerts, false);
 assert.equal(watch.semantics?.crossMonthProrationAllowed, false);
+assert.equal(watch.semantics?.nullAmountsRemainUnknown, true);
 assert.equal(watch.semantics?.unknownIsNotZero, true);
 
 for (const [key, expected] of Object.entries({
@@ -81,6 +88,7 @@ for (const item of watch.items) {
   assert.equal(item.walletAuthority, false, `${item.id} gained wallet authority`);
   assert.match(String(item.fingerprint || ''), /^[a-f0-9]{64}$/);
   assert.ok(['baseline', 'new', 'changed', 'unchanged'].includes(item.transition), `${item.id} invalid transition`);
+
   if (item.watchClass === 'historical-forensic-review') {
     assert.ok(item.month < currentMonth, `${item.id} open month promoted to historical failure`);
     assert.ok(item.detail?.sourceState === 'unknown' || item.detail?.sourceState === 'partial', `${item.id} historical watch class without Unknown/Partial`);
@@ -92,6 +100,28 @@ for (const item of watch.items) {
   if (item.watchClass === 'reference-diagnostic-review') {
     assert.equal(item.actionability, 'diagnostic-only');
     assert.ok((item.reasonCodes || []).includes('reference-comparator-is-non-factual'));
+  }
+
+  // Numeric projection must preserve source null/UNKNOWN. null must never silently become zero.
+  if (item.source === 'accounting-notice-queue') {
+    const sourceId = item.id.slice('notice:'.length);
+    const row = (notice.rows || []).find(x => x.id === sourceId);
+    assert.ok(row, `${item.id} notice source row missing`);
+    for (const key of ['confirmedUsd', 'estimatedUsd', 'deltaUsd']) {
+      assert.equal(item.detail?.[key], expectedNumber(row[key]), `${item.id} null/value projection drift: ${key}`);
+    }
+  } else if (item.source === 'historical-accounting-completeness-map') {
+    const sourceId = item.id.slice('historical:'.length);
+    const row = (completeness.rows || []).find(x => x.id === sourceId);
+    assert.ok(row, `${item.id} completeness source row missing`);
+    assert.equal(item.detail?.factualUsdSubtotal, expectedNumber(row.factualUsdSubtotal), `${item.id} factualUsdSubtotal null/value projection drift`);
+  } else if (item.source === 'accounting-reference-reconciliation') {
+    const sourceId = item.id.slice('reconciliation:'.length);
+    const row = (reconciliation.rows || []).find(x => x.id === sourceId);
+    assert.ok(row, `${item.id} reconciliation source row missing`);
+    for (const key of ['referenceUsd', 'confirmedUsd', 'deltaUsd', 'captureRatio']) {
+      assert.equal(item.detail?.[key], expectedNumber(row[key]), `${item.id} null/value projection drift: ${key}`);
+    }
   }
 }
 
@@ -118,10 +148,18 @@ assert.equal(monetraBoundary.detail?.engineeringActionable, false);
 assert.equal(monetraBoundary.detail?.parked, true);
 assert.equal(monetraBoundary.detail?.prorationAllowed, false);
 
+const ownerPending = item('notice:period-lifecycle-reconciliation:0x5860...83CA8.eth:2026-09:icp_nns');
+assert.ok(ownerPending, 'ICP owner-data-pending watch missing');
+assert.equal(ownerPending.watchClass, 'evidence-pending');
+assert.equal(ownerPending.detail?.estimatedUsd, null, 'owner-data-pending estimated UNKNOWN became zero');
+assert.equal(ownerPending.detail?.confirmedUsd, null, 'owner-data-pending confirmed UNKNOWN became zero');
+assert.equal(ownerPending.detail?.deltaUsd, null, 'owner-data-pending delta UNKNOWN became zero');
+
 const historicalCurve = item('historical:05081966.eth:2026-08:curve_vecrv');
 assert.ok(historicalCurve, 'closed-period veCRV Unknown forensic watch missing');
 assert.equal(historicalCurve.watchClass, 'historical-forensic-review');
 assert.equal(historicalCurve.detail?.sourceState, 'unknown');
+assert.equal(historicalCurve.detail?.factualUsdSubtotal, null, 'veCRV historical UNKNOWN USD became zero');
 
 assert.equal(item('historical:05081966.eth:2026-08:aerodrome_veaero'), undefined, 'tracking-no-event veAERO must not become forensic backlog');
 assert.equal(item('historical:defitea.eth:2026-08:velodrome_vevelo'), undefined, 'Complete Defitea veVELO must not remain forensic backlog');
@@ -141,6 +179,7 @@ if (watch.baseline === true) {
 }
 
 console.log('Accounting Reconciliation Watch validation PASS', {
+  version: watch.version,
   baseline: watch.baseline,
   semanticFingerprint: watch.semanticFingerprint,
   ...watch.summary
