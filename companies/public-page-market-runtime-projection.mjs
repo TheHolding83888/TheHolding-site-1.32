@@ -103,15 +103,18 @@ if(page001.includes('api.coingecko.com'))fail('05081966 still performs direct br
 fs.writeFileSync(COMPANY001_PAGE,page001);
 
 let singul=fs.readFileSync(SINGUL_PAGE,'utf8');
-const startMarker='        // Singul token holdings';
-const endMarker='        // ============================================\n        // SCROLL ANIMATIONS';
-const start=singul.indexOf(startMarker);
-const end=singul.indexOf(endMarker,start);
-if(start<0||end<0||end<=start)fail('Singul legacy TVL runtime markers missing');
-const legacy=singul.slice(start,end);
-if(!legacy.includes('/intelligence/market-data/simple-price')||!legacy.includes('setInterval(updateTVL, 300000)'))fail('Singul legacy TVL runtime changed; refusing broad deletion');
-const replacement=`        // Current Singul TVL is bound by public-capital-client.js to the canonical\n        // public-capital-state snapshot. No page-local price request or duplicate\n        // five-minute TVL calculator is allowed here.\n\n`;
-singul=singul.slice(0,start)+replacement+singul.slice(end);
+const canonicalMarker='        // Current Singul TVL is bound by public-capital-client.js to the canonical';
+if(!singul.includes(canonicalMarker)){
+  const startMarker='        // Singul token holdings';
+  const endMarker='        // ============================================\n        // SCROLL ANIMATIONS';
+  const start=singul.indexOf(startMarker);
+  const end=singul.indexOf(endMarker,start);
+  if(start<0||end<0||end<=start)fail('Singul legacy TVL runtime markers missing');
+  const legacy=singul.slice(start,end);
+  if(!legacy.includes('/intelligence/market-data/simple-price')||!legacy.includes('setInterval(updateTVL, 300000)'))fail('Singul legacy TVL runtime changed; refusing broad deletion');
+  const replacement=`        // Current Singul TVL is bound by public-capital-client.js to the canonical\n        // public-capital-state snapshot. No page-local price request or duplicate\n        // five-minute TVL calculator is allowed here.\n\n`;
+  singul=singul.slice(0,start)+replacement+singul.slice(end);
+}
 if(!singul.includes('/intelligence/market-data/public-capital-client.js'))fail('Singul canonical public-capital client missing');
 if(singul.includes('/intelligence/market-data/simple-price'))fail('Singul page-local simple-price runtime survived retirement');
 if(singul.includes('setInterval(updateTVL, 300000)'))fail('Singul duplicate five-minute TVL timer survived retirement');
