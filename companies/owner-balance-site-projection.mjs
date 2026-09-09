@@ -42,13 +42,116 @@ html=replaceOnce(html,
 `    // 05081966.eth: AERO 202 / FRAX 393 / CRV 480`,
 `    // 05081966.eth: BTC 0.00126 / AERO 202 / FRAX 393 / CRV 480`,
 'companies/index.html Company #001 balance comment');
+
+/* Public company values may be canonicalized beyond the local browser Company
+   Book. Preserve nullable performance semantics and keep a distinct unique
+   network/index contribution so Defitea can display consolidated TVL without
+   re-counting its independently registered nested companies. */
+const oldPublicBind=`    const publicCompanyTvl = (key, fallback) => {
+        const row = publicCapitalSnapshot && Array.isArray(publicCapitalSnapshot.companies)
+            ? publicCapitalSnapshot.companies.find(x => x && (x.registry === key || x.name === key))
+            : null;
+        const value = Number(row && row.tvlUsd);
+        return Number.isFinite(value) && value >= 0 ? value : fallback;
+    };
+    const tvl1 = publicCompanyTvl('001', F1.value);
+    const tvl2 = publicCompanyTvl('002', F2.value);
+    const tvl3 = publicCompanyTvl('003', F3.value);
+    const tvl4 = publicCompanyTvl('004', F4.value);
+    const tvl5 = publicCompanyTvl('005', F5.value);
+    const tvl6 = publicCompanyTvl('006', F6.value);
+    const tvl7 = publicCompanyTvl('007', F7.value);
+    const tvl9 = publicCompanyTvl('009', F9.value);
+    const canonicalNetworkTvl = Number(publicCapitalSnapshot?.totals?.companyNetworkTvlUsd);
+    [[F1,tvl1],[F2,tvl2],[F3,tvl3],[F4,tvl4],[F5,tvl5],[F6,tvl6],[F7,tvl7],[F9,tvl9]].forEach(([f,v]) => {
+        f.value = v;
+        f.pnl = Number.isFinite(Number(f.cost)) ? v - Number(f.cost) : 0;
+        f.pct = Number(f.cost) > 0 ? (v / Number(f.cost) - 1) * 100 : 0;
+    });`;
+const newPublicBind=`    const publicCompanyRow = key => publicCapitalSnapshot && Array.isArray(publicCapitalSnapshot.companies)
+        ? publicCapitalSnapshot.companies.find(x => x && (x.registry === key || x.name === key)) || null
+        : null;
+    const publicCompanyTvl = (key, fallback) => {
+        const row = publicCompanyRow(key);
+        const value = row && row.tvlUsd !== null && row.tvlUsd !== undefined && row.tvlUsd !== '' ? Number(row.tvlUsd) : NaN;
+        return Number.isFinite(value) && value >= 0 ? value : fallback;
+    };
+    const publicCompanyNetworkContribution = (key, fallback) => {
+        const row = publicCompanyRow(key);
+        const value = row && row.networkContributionUsd !== null && row.networkContributionUsd !== undefined && row.networkContributionUsd !== ''
+            ? Number(row.networkContributionUsd) : NaN;
+        return Number.isFinite(value) && value >= 0 ? value : fallback;
+    };
+    const tvl1 = publicCompanyTvl('001', F1.value);
+    const tvl2 = publicCompanyTvl('002', F2.value);
+    const tvl3 = publicCompanyTvl('003', F3.value);
+    const tvl4 = publicCompanyTvl('004', F4.value);
+    const tvl5 = publicCompanyTvl('005', F5.value);
+    const tvl6 = publicCompanyTvl('006', F6.value);
+    const tvl7 = publicCompanyTvl('007', F7.value);
+    const tvl9 = publicCompanyTvl('009', F9.value);
+    const canonicalNetworkTvl = Number(publicCapitalSnapshot?.totals?.companyNetworkTvlUsd);
+    [[F1,tvl1,'001'],[F2,tvl2,'002'],[F3,tvl3,'003'],[F4,tvl4,'004'],[F5,tvl5,'005'],[F6,tvl6,'006'],[F7,tvl7,'007'],[F9,tvl9,'009']].forEach(([f,v,key]) => {
+        const row = publicCompanyRow(key);
+        const consolidatedWithoutBasis = key === '004' && row?.performanceBasisStatus === 'consolidated-current-value-without-automatic-consolidated-cost-basis';
+        const hasCost = !consolidatedWithoutBasis && f.cost !== null && f.cost !== undefined && f.cost !== '' && Number.isFinite(Number(f.cost)) && Number(f.cost) > 0;
+        f.value = v;
+        f.indexCapitalValue = publicCompanyNetworkContribution(key, v);
+        if (hasCost) {
+            f.pnl = v - Number(f.cost);
+            f.pct = (v / Number(f.cost) - 1) * 100;
+        } else {
+            f.cost = null;
+            f.pnl = null;
+            f.pct = null;
+        }
+    });`;
+html=replaceOnce(html,oldPublicBind,newPublicBind,'companies/index.html canonical TVL/performance/network contribution binding');
+
+html=replaceOnce(html,
+`    { key: 'capital',      weight: 0.35, raw: c => Math.sqrt(Math.max(c.val, 0)) },`,
+`    { key: 'capital',      weight: 0.35, raw: c => Math.sqrt(Math.max(c.indexCapitalValue ?? c.val, 0)) },`,
+'companies/index.html Composite unique Capital factor');
+html=replaceOnce(html,
+`    const totalVal = eligible.reduce((s, c) => s + Math.max(c.val, 0), 0);`,
+`    const totalVal = eligible.reduce((s, c) => s + Math.max(c.indexCapitalValue ?? c.val, 0), 0);`,
+'companies/index.html TVL lens unique denominator');
+html=replaceOnce(html,
+`        c.tvlWeight = totalVal > 0 ? Math.max(c.val, 0) / totalVal : (eligible.length ? 1 / eligible.length : 0);`,
+`        c.tvlWeight = totalVal > 0 ? Math.max(c.indexCapitalValue ?? c.val, 0) / totalVal : (eligible.length ? 1 / eligible.length : 0);`,
+'companies/index.html TVL lens unique company weight');
+html=replaceOnce(html,
+`    const measuredTotal = list.reduce((s, c) => s + (c.val > 0 ? c.val : 0), 0);`,
+`    const measuredTotal = list.reduce((s, c) => s + ((c.indexCapitalValue ?? c.val) > 0 ? (c.indexCapitalValue ?? c.val) : 0), 0);`,
+'companies/index.html Index unique network value');
+
+html=replaceOnce(html,
+`    ];
+    syncCompanyAprDisplays(idxLang());`,
+`    ];
+    INDEX_STATE.forEach(c => {
+        const fallback = Number.isFinite(Number(c.val)) ? Number(c.val) : 0;
+        c.indexCapitalValue = publicCompanyNetworkContribution(c.reg, fallback);
+    });
+    syncCompanyAprDisplays(idxLang());`,
+'companies/index.html Index unique network-contribution binding');
+
 fs.writeFileSync(INDEX,html);
 const indexBlob=gitBlobSha(html);
 
 let page001=fs.readFileSync(COMPANY001_PAGE,'utf8');
 page001=replaceOnce(page001,
-`  var HOLDINGS = [\n    { id: 'aerodrome-finance', name: 'Aero', proto: 'Aero Finance', qty: 202, word: 'tokens' },\n    { id: 'frax-share', name: 'FRAX', proto: 'Frax Finance', qty: 393, word: 'tokens' },\n    { id: 'curve-dao-token', name: 'CRV', proto: 'Curve Finance', qty: 480, word: 'tokens' }\n  ];`,
-`  var HOLDINGS = [\n    { id: 'bitcoin', name: 'BTC', proto: 'Bitcoin reserve', qty: 0.00126, word: 'BTC' },\n    { id: 'aerodrome-finance', name: 'Aero', proto: 'Aero Finance', qty: 202, word: 'tokens' },\n    { id: 'frax-share', name: 'FRAX', proto: 'Frax Finance', qty: 393, word: 'tokens' },\n    { id: 'curve-dao-token', name: 'CRV', proto: 'Curve Finance', qty: 480, word: 'tokens' }\n  ];`,
+`  var HOLDINGS = [
+    { id: 'aerodrome-finance', name: 'Aero', proto: 'Aero Finance', qty: 202, word: 'tokens' },
+    { id: 'frax-share', name: 'FRAX', proto: 'Frax Finance', qty: 393, word: 'tokens' },
+    { id: 'curve-dao-token', name: 'CRV', proto: 'Curve Finance', qty: 480, word: 'tokens' }
+  ];`,
+`  var HOLDINGS = [
+    { id: 'bitcoin', name: 'BTC', proto: 'Bitcoin reserve', qty: 0.00126, word: 'BTC' },
+    { id: 'aerodrome-finance', name: 'Aero', proto: 'Aero Finance', qty: 202, word: 'tokens' },
+    { id: 'frax-share', name: 'FRAX', proto: 'Frax Finance', qty: 393, word: 'tokens' },
+    { id: 'curve-dao-token', name: 'CRV', proto: 'Curve Finance', qty: 480, word: 'tokens' }
+  ];`,
 '05081966 dedicated holdings');
 page001=replaceOnce(page001,
 `    <p class="lockNote" style="margin-top:14px;">All assets are committed to the <b>maximum 4-year lock</b> — this entitles the Company to a share of the protocols’ cash flows and protects the capital from impulsive decisions.</p>`,
@@ -87,6 +190,8 @@ console.log('Owner balance site projection PASS',{
   singulDiemQuantity:diem.quantity,
   singulDiemFixedTotalValueUsd:diem.fixedTotalValueUsd,
   expectedIndexBlob:indexBlob,
+  defiteaConsolidatedDisplayUsesUniqueIndexContribution:true,
+  partialCostBasisPerformanceRemainsUnknown:true,
   manualSnapshotIsNotOnchainObservation:true,
   executionAuthority:'none'
 });
