@@ -12,7 +12,7 @@
     {"assetId":"pendle","display":"PENDLE","quantity":500,"evidenceStatus":"owner-provided-current"},
     {"assetId":"fxn-token","display":"veFXN","quantity":64.81,"evidenceStatus":"owner-provided-current"},
     {"assetId":"yield-basis","display":"veYB","quantity":10846,"evidenceStatus":"owner-provided-current"},
-    {"assetId":"frax-share","display":"veFRAX","quantity":4224,"evidenceStatus":"owner-provided-current"},
+    {"assetId":"frax-share","display":"veFRAX","quantity":4456,"evidenceStatus":"owner-provided-current","asOf":"2026-09-09"},
     {"assetId":"velodrome-finance","display":"veVELO","quantity":12180,"evidenceStatus":"owner-provided-current"},
     {"assetId":"venice-token","display":"sVVV","quantity":50,"evidenceStatus":"owner-provided-current"},
     {"assetId":"liquity","display":"LQTY","quantity":1488,"evidenceStatus":"owner-provided-current"},
@@ -50,11 +50,22 @@
         {"quantity":59.81,"entryPriceUsd":15.06,"costBasisUsd":900.7386,"evidenceStatus":"established"},
         {"quantity":5,"entryPriceUsd":16.5,"costBasisUsd":82.5,"evidenceStatus":"owner-provided"}
       ]
+    },
+    "frax": {
+      "quantity": 4456,
+      "costBasisUsd": null,
+      "knownCostBasisUsd": 1707.3408,
+      "status": "partial",
+      "lots": [
+        {"quantity":4224,"entryPriceUsd":0.4042,"costBasisUsd":1707.3408,"evidenceStatus":"established-existing-company-book"},
+        {"quantity":232,"entryPriceUsd":null,"costBasisUsd":null,"evidenceStatus":"owner-provided-current","note":"Current principal confirmed by owner; acquisition price not supplied, therefore UNKNOWN rather than inherited from the older lot."}
+      ]
     }
   },
   "semantics": {
     "allPositionsPrimaryCapitalLayer": "productive-dividend",
     "unknownCostBasisIsNotZero": true,
+    "partialCostBasisIsNotTotal": true,
     "costBasisLotsPreserved": true,
     "oneEconomicPositionOnce": true,
     "fundCompanyTvlParityRequired": true,
