@@ -40,15 +40,23 @@ assert.equal(contract.invariants?.canonicalIncomeLedgerRemainsSoleFactualIncomeA
 assert.equal(contract.invariants?.canonicalEarnedIncomeViewIsReadOnlyInterpretation, true);
 assert.equal(contract.invariants?.sameEconomicIncomeRecognizedAtMostOnce, true);
 assert.equal(contract.invariants?.settlementDoesNotReRecognizeIncome, true);
+assert.equal(contract.invariants?.settlementRequiresProvenanceLinkage, true);
 assert.equal(contract.invariants?.laterReceiptCannotRewriteEarnedHistory, true);
 assert.equal(contract.invariants?.laterClaimCannotRewriteEarnedHistory, true);
+assert.equal(contract.invariants?.laterSettlementCanReallocateEarnedMonth, false);
 assert.equal(contract.invariants?.laterPriceMovementCannotRewriteFrozenHistoricalIncome, true);
 assert.equal(contract.invariants?.openingBalanceCreatesIncome, false);
 assert.equal(contract.invariants?.claimableSnapshotsCreateIncome, false);
 assert.equal(contract.invariants?.genericReceiptCreatesIncome, false);
 assert.equal(contract.invariants?.reinvestmentCreatesSecondIncome, false);
+assert.equal(contract.invariants?.reinvestmentChangesCapitalStateOnly, true);
+assert.equal(contract.invariants?.principalMovementCreatesIncome, false);
 assert.equal(contract.invariants?.referenceAprCanBackfillIncome, false);
+assert.equal(contract.invariants?.referenceDeltaIsMissingIncome, false);
 assert.equal(contract.invariants?.estimatedIncomeCanReplaceUnknown, false);
+assert.equal(contract.invariants?.exactClosedCalendarMonthRequiresMechanismProof, true);
+assert.equal(contract.invariants?.arbitraryCrossMonthIntervalsRemainUnresolved, true);
+assert.equal(contract.invariants?.boundaryEvidencePendingRemainsPartialOrUnknown, true);
 assert.equal(contract.invariants?.crossMonthProrationAllowed, false);
 assert.equal(contract.invariants?.unknownIsNotZero, true);
 
@@ -65,6 +73,9 @@ assert.equal(view.semantics?.accruedIncomeRecognizedBeforeClaim, true);
 assert.equal(view.semantics?.embeddedCompoundingRecognizedAsEarnedIncome, true);
 assert.equal(view.semantics?.crossMonthTimeProrationCreatesIncome, false);
 assert.equal(view.semantics?.settlementDoesNotReRecognizeIncome, true);
+assert.equal(view.semantics?.exactClosedCalendarMonthRequiresExistingMechanismProof, true);
+assert.equal(view.semantics?.arbitraryCrossMonthEmbeddedIncomeRemainsUnresolved, true);
+assert.equal(view.semantics?.explicitCrossMonthUnallocatedMeansBoundaryEvidencePending, true);
 assert.equal(view.semantics?.unknownIsNotZero, true);
 assert.equal(view.authority?.executionAuthority, 'none');
 
