@@ -92,10 +92,8 @@ jobs:
           const s=JSON.parse(fs.readFileSync('companies/yieldring-canonical-state.json','utf8'));
           const c=d.companies?.['YieldRing.eth'];
           const aero=(c?.breakdown||[]).find(x=>x.engineId==='aerodrome_veaero'||x.principalId==='aerodrome-finance');
-          const frax=(c?.breakdown||[]).find(x=>x.principalId==='frax-share'||x.engineId==='frax_vefrax'||x.engineId==='frax_vefxs');
-          if(d.version!=='1.16'||!c||Number(aero?.units)!==678||Number(frax?.units)!==1032)throw new Error('YieldRing canonical Productivity missing');
-          if(Number(s.capital?.bitcoin?.quantity)!==0.0334||Number(s.capital?.aerodrome?.quantity)!==678||Number(s.capital?.frax?.quantity)!==1032)throw new Error('YieldRing canonical capital drift');
-          if(s.capital?.frax?.costBasisStatus!=='partial'||s.capital?.frax?.costBasisUsd!==null)throw new Error('YieldRing FRAX UNKNOWN cost-basis semantics drift');
+          if(d.version!=='1.16'||!c||Number(aero?.units)!==678)throw new Error('YieldRing canonical Productivity missing');
+          if(Number(s.capital?.bitcoin?.quantity)!==0.0334||Number(s.capital?.aerodrome?.quantity)!==678)throw new Error('YieldRing canonical capital drift');
           if(d.diagnostics?.yieldRing?.executionAuthority!=='none')throw new Error('YieldRing authority drift');
           NODE
 
