@@ -30,6 +30,8 @@ assert.equal(x.semantics?.principalCapitalCountedOnce,true);
 assert.equal(x.semantics?.historicalReferenceChannelDecompositionIsNotInferred,true);
 assert.equal(x.semantics?.explicitCanonicalPeriodAttributionCanResolveDiagnosticBoundary,true);
 assert.equal(x.semantics?.explicitCanonicalPeriodAttributionCannotCreateOrReallocateIncome,true);
+assert.equal(x.semantics?.boundaryEvidencePendingIsEngineeringFailure,false);
+assert.equal(x.semantics?.crossMonthIntervalProrationAllowed,false);
 assert.equal(x.semantics?.unknownIsNotZero,true);
 assert.equal(x.diagnosticBands?.accountingAuthority,false);
 assert.equal(x.diagnosticBands?.monthClosingAuthority,false);
@@ -85,6 +87,16 @@ for(const row of companyRows){
   assert.equal(row.factualTrackingActive,null,'company-period row must not fake one mechanism tracking state');
   assert.ok(Array.isArray(row.referenceScopeContributors));
   assert.ok(Array.isArray(row.confirmedOwnerBreakdown));
+  if(row.reconciliationStatus==='parked-boundary-evidence-pending'){
+    assert.equal(row.parked,true,`${row.id} boundary evidence state must remain parked`);
+    assert.equal(row.engineeringActionable,false,`${row.id} unavailable boundary leaked into engineering backlog`);
+    assert.ok(row.noticeBlockers.includes('historical-boundary-evidence-pending'),`${row.id} boundary blocker missing`);
+    assert.ok(row.noticeActions.includes('await-exact-boundary-evidence-no-proration'),`${row.id} boundary action missing`);
+    assert.ok(row.reasonCodes.includes('historical-boundary-evidence-pending'),`${row.id} boundary reason code missing`);
+    assert.ok(row.unresolvedLifecycleEventCount>0,`${row.id} boundary state has no unresolved evidence`);
+    assert.ok(row.unresolvedLifecycleReasons.every(reason=>reason==='period-boundary-evidence-pending-no-exact-month-cut'),`${row.id} mixed lifecycle reasons parked as boundary evidence pending`);
+    assert.equal(row.factualPeriodComplete,false,`${row.id} boundary evidence pending incorrectly closed factual period`);
+  }
 }
 
 const mechanismRows=x.rows.filter(row=>row.scope==='mechanism-base-reference');
@@ -127,4 +139,7 @@ const summary=x.summary||{};
 assert.equal(summary.rowCount,x.rows.length);
 assert.equal(summary.companyPeriodRowCount,companyRows.length);
 assert.equal(summary.mechanismBaseReferenceRowCount,mechanismRows.length);
+assert.equal(summary.parkedCount,companyRows.filter(row=>row.parked).length);
+assert.equal(summary.boundaryEvidencePendingCompanyPeriodCount,companyRows.filter(row=>row.reconciliationStatus==='parked-boundary-evidence-pending').length);
+assert.equal(summary.engineeringActionableCompanyPeriodCount,companyRows.filter(row=>row.engineeringActionable).length);
 console.log('Accounting Reference Reconciliation validation PASS',summary);
