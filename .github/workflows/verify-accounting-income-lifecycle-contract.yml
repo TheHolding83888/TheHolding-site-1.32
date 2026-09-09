@@ -1,20 +1,14 @@
-name: Verify Accounting Income Lifecycle Contract
+# holding-workflow-definition-proof: intelligence/reliability/accounting-income-lifecycle-workflow-retirement-proof.mjs
+name: Retired · Accounting Income Lifecycle Contract
 
 on:
-  pull_request:
-    paths:
-      - 'reporting/accounting-income-lifecycle-contract.json'
-      - 'reporting/accounting-income-lifecycle-contract-validation.mjs'
-      - 'reporting/canonical-earned-income-view.mjs'
-      - 'reporting/income-ledger.mjs'
-      - '.github/workflows/verify-accounting-income-lifecycle-contract.yml'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  verify:
+  verify-retirement:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -26,29 +20,5 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Static validation
-        shell: bash
-        run: |
-          set -euo pipefail
-          node --check reporting/accounting-income-lifecycle-contract-validation.mjs
-          node --check reporting/canonical-earned-income-view.mjs
-          test -s reporting/accounting-income-lifecycle-contract.json
-          git diff --check
-
-      - name: Validate lifecycle semantics against canonical recognition code
-        shell: bash
-        run: |
-          set -euo pipefail
-          node reporting/accounting-income-lifecycle-contract-validation.mjs
-
-      - name: Guard no execution or accounting authority expansion
-        shell: bash
-        run: |
-          set -euo pipefail
-          node - <<'NODE'
-          const fs=require('fs');
-          const x=JSON.parse(fs.readFileSync('reporting/accounting-income-lifecycle-contract.json','utf8'));
-          if(x.authority?.sourceOfTruth!==false||x.authority?.incomeCreationAuthority!==false||x.authority?.accountingCompletionAuthority!==false||x.authority?.monthClosingAuthority!==false||x.authority?.canReplaceUnknown!==false||x.authority?.executionAuthority!=='none'||x.authority?.capitalExecution!==false||x.authority?.walletAuthority!==false) throw new Error('lifecycle authority expanded');
-          if(x.recognitionContract?.unknownIsNotZero!==true||x.recognitionContract?.crossMonthTimeProrationCreatesIncome!==false||x.recognitionContract?.referenceAprCreatesFactualIncome!==false||x.recognitionContract?.economicIncomeRecognizedAtMostOnce!==true) throw new Error('lifecycle epistemic contract drift');
-          console.log('Accounting income lifecycle authority guard PASS',x.lifecycle.join(' -> '));
-          NODE
+      - name: Verify duplicate lifecycle machinery remains retired
+        run: node intelligence/reliability/accounting-income-lifecycle-workflow-retirement-proof.mjs
