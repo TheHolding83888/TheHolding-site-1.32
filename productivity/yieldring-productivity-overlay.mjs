@@ -96,6 +96,17 @@ aero.units=target;
 aero.value=round(target*price,6);
 aero.sourceState={...(aero.sourceState||{}),canonicalCompanyState:'companies/yieldring-canonical-state.json',principalQuantity:target,relayMode:state.aerodromeRelay?.mode||null,expectedUnderlyingLockCount:state.aerodromeRelay?.expectedUnderlyingLockCount??null,evidenceStatus:state.aerodromeRelay?.evidenceStatus||null};
 
+const frax=company.breakdown.find(x=>x.principalId==='frax-share'||x.engineId==='frax_vefrax'||x.engineId==='frax_vefxs');
+if(!frax)fail('YieldRing Frax Productivity row missing');
+const fraxTarget=Number(state.capital?.frax?.quantity);
+if(!(fraxTarget>0))fail('canonical YieldRing FRAX quantity missing');
+const fraxPrice=Number(frax.price);
+const fraxApr=Number(frax.apr);
+if(!(fraxPrice>0)||!Number.isFinite(fraxApr))fail('YieldRing Frax price/APR unavailable');
+frax.units=fraxTarget;
+frax.value=round(fraxTarget*fraxPrice,6);
+frax.sourceState={...(frax.sourceState||{}),canonicalCompanyState:'companies/yieldring-canonical-state.json',principalQuantity:fraxTarget,evidenceStatus:state.capital?.frax?.evidenceStatus||'owner-provided-current',asOf:state.capital?.frax?.asOf||state.effectiveAt||null,costBasisStatus:state.capital?.frax?.costBasisStatus||null};
+
 let productive=0,covered=0,weighted=0;
 for(const row of company.breakdown){
   const v=Number(row.value);
@@ -121,6 +132,6 @@ if(Array.isArray(history)&&history.length){
 }
 
 data.diagnostics=data.diagnostics||{};
-data.diagnostics.yieldRing={version:'0.1-canonical-capital-and-relay-overlay',source:'companies/yieldring-canonical-state.json',bitcoinQuantity:Number(state.capital.bitcoin.quantity),bitcoinCostBasisUsd:Number(state.capital.bitcoin.costBasisUsd),aeroQuantity:target,aeroCostBasisUsd:Number(state.capital.aerodrome.costBasisUsd),relayMode:state.aerodromeRelay.mode,managerId:state.aerodromeRelay.managerId,managerAddress:state.aerodromeRelay.managerAddress,expectedUnderlyingLockCount:state.aerodromeRelay.expectedUnderlyingLockCount,rewardsPresentation:state.aerodromeRelay.rewardsPresentation,evidenceStatus:state.aerodromeRelay.evidenceStatus,executionAuthority:'none'};
+data.diagnostics.yieldRing={version:'0.2-canonical-capital-relay-and-frax-overlay',source:'companies/yieldring-canonical-state.json',bitcoinQuantity:Number(state.capital.bitcoin.quantity),bitcoinCostBasisUsd:Number(state.capital.bitcoin.costBasisUsd),aeroQuantity:target,aeroCostBasisUsd:Number(state.capital.aerodrome.costBasisUsd),fraxQuantity:fraxTarget,fraxCostBasisStatus:state.capital?.frax?.costBasisStatus||null,fraxKnownCostBasisUsd:Number.isFinite(Number(state.capital?.frax?.knownCostBasisUsd))?Number(state.capital.frax.knownCostBasisUsd):null,relayMode:state.aerodromeRelay.mode,managerId:state.aerodromeRelay.managerId,managerAddress:state.aerodromeRelay.managerAddress,expectedUnderlyingLockCount:state.aerodromeRelay.expectedUnderlyingLockCount,rewardsPresentation:state.aerodromeRelay.rewardsPresentation,evidenceStatus:state.aerodromeRelay.evidenceStatus,unknownIsNotZero:true,executionAuthority:'none'};
 fs.writeFileSync(DATA,JSON.stringify(data,null,2)+'\n');
-console.log('YieldRing Productivity overlay PASS',{aprLatest:company.aprLatest,productiveValue:company.productiveValue,coverage:company.coverage,aeroUnits:aero.units,relayMode:state.aerodromeRelay.mode,executionAuthority:'none',fxnAuthority:deterministicValidation?'deterministic-validation-bypass':fxnAuthority});
+console.log('YieldRing Productivity overlay PASS',{aprLatest:company.aprLatest,productiveValue:company.productiveValue,coverage:company.coverage,aeroUnits:aero.units,fraxUnits:frax.units,relayMode:state.aerodromeRelay.mode,executionAuthority:'none',fxnAuthority:deterministicValidation?'deterministic-validation-bypass':fxnAuthority});

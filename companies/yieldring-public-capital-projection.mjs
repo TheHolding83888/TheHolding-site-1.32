@@ -12,8 +12,10 @@ if(state.version!=='0.1-yieldring-canonical-state')fail('unexpected YieldRing st
 
 const btc=state.capital.bitcoin;
 const aero=state.capital.aerodrome;
+const frax=state.capital.frax;
 if(Number(btc.quantity)!==0.0334||Number(btc.costBasisUsd)!==2121.88)fail('YieldRing BTC canonical contract drift');
 if(Number(aero.quantity)!==678||Number(aero.costBasisUsd)!==274.464)fail('YieldRing AERO canonical contract drift');
+if(Number(frax?.quantity)!==1032||frax?.costBasisStatus!=='partial'||frax?.costBasisUsd!==null||Number(frax?.knownCostBasisUsd)!==210.24)fail('YieldRing FRAX canonical/UNKNOWN cost-basis contract drift');
 
 function replaceOnce(text,oldText,newText,label){
   if(text.includes(newText))return text;
@@ -27,39 +29,116 @@ function gitBlobSha(text){
 }
 
 let html=fs.readFileSync(INDEX,'utf8');
-const oldBook=`    'YieldRing.eth': [\n        { id: 'bitcoin',           qty: 0.03,  entry: 63442  },\n        { id: 'aerodrome-finance', qty: 480,   entry: 0.4068 },\n        { id: 'convex-finance',    qty: 240,   entry: 1.28   },\n        { id: 'frax-share',        qty: 800,   entry: 0.2628 }\n    ],`;
-const newBook=`    'YieldRing.eth': [\n        { id: 'bitcoin', qty: 0.0334, entry: 63442, costBasisUsd: 2121.88, acquisition: 'mixed', acquisitionLots: [\n            { qty: 0.03, entry: 63442, costBasisUsd: 1903.26, evidenceStatus: 'established' },\n            { qty: 0.0034, entry: 64300, costBasisUsd: 218.62, evidenceStatus: 'owner-provided' }\n        ] },\n        { id: 'aerodrome-finance', qty: 678, entry: 0.4068, costBasisUsd: 274.464, acquisition: 'mixed', acquisitionLots: [\n            { qty: 480, entry: 0.4068, costBasisUsd: 195.264, evidenceStatus: 'established' },\n            { qty: 198, entry: 0.4, costBasisUsd: 79.2, evidenceStatus: 'owner-provided' }\n        ], relay: { mode: 'veAERO Maxi', managerId: '10298', managerAddress: '0xc9814f18a8751214f719de15c54d01b3d78ef14f', expectedUnderlyingLockCount: 2, evidenceStatus: 'owner-provided-not-yet-independently-reproduced' } },\n        { id: 'convex-finance', qty: 240, entry: 1.28 },\n        { id: 'frax-share', qty: 800, entry: 0.2628 }\n    ],`;
+const oldBook=`    'YieldRing.eth': [\n        { id: 'bitcoin', qty: 0.0334, entry: 63442, costBasisUsd: 2121.88, acquisition: 'mixed', acquisitionLots: [\n            { qty: 0.03, entry: 63442, costBasisUsd: 1903.26, evidenceStatus: 'established' },\n            { qty: 0.0034, entry: 64300, costBasisUsd: 218.62, evidenceStatus: 'owner-provided' }\n        ] },\n        { id: 'aerodrome-finance', qty: 678, entry: 0.4068, costBasisUsd: 274.464, acquisition: 'mixed', acquisitionLots: [\n            { qty: 480, entry: 0.4068, costBasisUsd: 195.264, evidenceStatus: 'established' },\n            { qty: 198, entry: 0.4, costBasisUsd: 79.2, evidenceStatus: 'owner-provided' }\n        ], relay: { mode: 'veAERO Maxi', managerId: '10298', managerAddress: '0xc9814f18a8751214f719de15c54d01b3d78ef14f', expectedUnderlyingLockCount: 2, evidenceStatus: 'owner-provided-not-yet-independently-reproduced' } },\n        { id: 'convex-finance', qty: 240, entry: 1.28 },\n        { id: 'frax-share', qty: 800, entry: 0.2628 }\n    ],`;
+const newBook=`    'YieldRing.eth': [\n        { id: 'bitcoin', qty: 0.0334, entry: 63442, costBasisUsd: 2121.88, acquisition: 'mixed', acquisitionLots: [\n            { qty: 0.03, entry: 63442, costBasisUsd: 1903.26, evidenceStatus: 'established' },\n            { qty: 0.0034, entry: 64300, costBasisUsd: 218.62, evidenceStatus: 'owner-provided' }\n        ] },\n        { id: 'aerodrome-finance', qty: 678, entry: 0.4068, costBasisUsd: 274.464, acquisition: 'mixed', acquisitionLots: [\n            { qty: 480, entry: 0.4068, costBasisUsd: 195.264, evidenceStatus: 'established' },\n            { qty: 198, entry: 0.4, costBasisUsd: 79.2, evidenceStatus: 'owner-provided' }\n        ], relay: { mode: 'veAERO Maxi', managerId: '10298', managerAddress: '0xc9814f18a8751214f719de15c54d01b3d78ef14f', expectedUnderlyingLockCount: 2, evidenceStatus: 'owner-provided-not-yet-independently-reproduced' } },\n        { id: 'convex-finance', qty: 240, entry: 1.28 },\n        { id: 'frax-share', qty: 1032, entry: null, costBasisUsd: null, costBasisStatus: 'partial', knownCostBasisUsd: 210.24, acquisition: 'mixed', acquisitionLots: [\n            { qty: 800, entry: 0.2628, costBasisUsd: 210.24, evidenceStatus: 'established' },\n            { qty: 232, entry: null, costBasisUsd: null, evidenceStatus: 'owner-provided-current' }\n        ] }\n    ],`;
 html=replaceOnce(html,oldBook,newBook,'companies/index.html YieldRing Company Book');
+
+const oldBookFigures=`function bookFigures(nm, prices) {\n    const pos = COMPANY_BOOK[nm] || [];\n    let value = 0, cost = 0;\n    pos.forEach(p => {\n        if (p.productivityOnly) return;\n        const price = (p.fixed !== undefined) ? p.fixed : (prices[p.id] || 0);\n        value += p.qty * price;\n        const explicitCost = p.costBasisUsd !== null && p.costBasisUsd !== undefined && p.costBasisUsd !== ''\n            && Number.isFinite(Number(p.costBasisUsd)) ? Number(p.costBasisUsd) : null;\n        cost += explicitCost !== null ? explicitCost : p.qty * p.entry;\n    });\n    return { value: value, cost: cost, pnl: value - cost, pct: cost > 0 ? (value / cost - 1) * 100 : 0 };\n}\n\nconst fmtMoney  = v => '$' + Math.round(v).toLocaleString('en-US');\nconst fmtSigned = v => (v >= 0 ? '+' : '−') + '$' + Math.abs(Math.round(v)).toLocaleString('en-US');\nconst fmtPct    = v => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(1) + '%';`;
+const newBookFigures=`function bookFigures(nm, prices) {\n    const pos = COMPANY_BOOK[nm] || [];\n    let value = 0, knownCost = 0, costComplete = true;\n    pos.forEach(p => {\n        if (p.productivityOnly) return;\n        const price = (p.fixed !== undefined) ? p.fixed : (prices[p.id] || 0);\n        value += p.qty * price;\n        const explicitCost = p.costBasisUsd !== null && p.costBasisUsd !== undefined && p.costBasisUsd !== ''\n            && Number.isFinite(Number(p.costBasisUsd)) ? Number(p.costBasisUsd) : null;\n        const entry = p.entry !== null && p.entry !== undefined && p.entry !== '' && Number.isFinite(Number(p.entry))\n            ? Number(p.entry) : null;\n        if (explicitCost !== null) knownCost += explicitCost;\n        else if (entry !== null) knownCost += p.qty * entry;\n        else {\n            costComplete = false;\n            if (p.knownCostBasisUsd !== null && p.knownCostBasisUsd !== undefined && p.knownCostBasisUsd !== '' && Number.isFinite(Number(p.knownCostBasisUsd))) knownCost += Number(p.knownCostBasisUsd);\n        }\n    });\n    const cost = costComplete ? knownCost : null;\n    return { value: value, cost: cost, knownCostBasisUsd: knownCost, costBasisStatus: costComplete ? 'complete' : 'partial', pnl: costComplete ? value - knownCost : null, pct: costComplete && knownCost > 0 ? (value / knownCost - 1) * 100 : null };\n}\n\nconst finiteUiNumber = v => v !== null && v !== undefined && v !== '' && Number.isFinite(Number(v));\nconst fmtMoney  = v => finiteUiNumber(v) ? '$' + Math.round(Number(v)).toLocaleString('en-US') : '—';\nconst fmtSigned = v => finiteUiNumber(v) ? (Number(v) >= 0 ? '+' : '−') + '$' + Math.abs(Math.round(Number(v))).toLocaleString('en-US') : '—';\nconst fmtPct    = v => finiteUiNumber(v) ? (Number(v) >= 0 ? '+' : '−') + Math.abs(Number(v)).toFixed(1) + '%' : '—';`;
+html=replaceOnce(html,oldBookFigures,newBookFigures,'companies/index.html partial cost basis guard');
 fs.writeFileSync(INDEX,html);
 const indexBlob=gitBlobSha(html);
 
 let page=fs.readFileSync(PAGE,'utf8');
 page=replaceOnce(page,
-`  var BTC = { id: 'bitcoin', name: 'Bitcoin', sub: 'Reserve · pledged as collateral', qty: 0.03 };`,
-`  var BTC = { id: 'bitcoin', name: 'Bitcoin', sub: 'Reserve · pledged as collateral', qty: 0.0334 };`,
-'YieldRing dedicated BTC');
+`    { id: 'frax-share', name: 'veFRAX', sub: 'Frax · locked', qty: 800 }`,
+`    { id: 'frax-share', name: 'veFRAX', sub: 'Frax · locked', qty: 1032 }`,
+'YieldRing dedicated veFRAX');
 page=replaceOnce(page,
-`    { id: 'aerodrome-finance', name: 'veAERO', sub: 'Aero · locked', qty: 480 },`,
-`    { id: 'aerodrome-finance', name: 'veAERO', sub: 'Aero · 2 locks · Maxi relay', qty: 678 },`,
-'YieldRing dedicated veAERO');
-if(!page.includes('veAERO Maxi')){
-  page=replaceOnce(page,
-`    <p class="note">The reserve is pledged on Llamalend, where roughly <b>$700 of liquidity</b> was drawn against it and committed to three long-term positions. The Bitcoin itself is never sold — a loan is serviced instead.</p>`,
-`    <p class="note">The reserve is pledged on Llamalend, where roughly <b>$700 of liquidity</b> was drawn against it and committed to three long-term positions. The Bitcoin itself is never sold — a loan is serviced instead.</p>\n    <p class="note"><b>veAERO Maxi</b> · two managed veAERO locks are tracked as one Aerodrome productive position and one aggregated rewards line. Manager ID 10298 · 0xc981…14f.</p>`,
-'YieldRing dedicated relay note');
-}
+`    <p class="foot">Value is calculated from live market prices (CoinGecko). All figures are orientations, not a guarantee of return and not financial advice. These assets are volatile; the intended horizon is 3–5+ years.</p>`,
+`    <p class="foot">Value is calculated from The Holding’s canonical market-data snapshot. Market prices are selected onchain-first; external fallback is bounded upstream rather than requested by this page. Figures are not a guarantee of return or financial advice.</p>`,
+'YieldRing dedicated valuation provenance');
+const oldRuntime=`  var CACHE_KEY = 'yieldring_prices_v1';
+  var TTL = 10 * 60 * 1000;
+  function money(n, dec) { return '$' + n.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }); }
+  function render(prices) {
+    var total = 0, reserve = 0, engines = 0, rows = '';
+    ALL.forEach(function (h) { total += (prices[h.id] || 0) * h.qty; });
+    reserve = (prices[BTC.id] || 0) * BTC.qty;
+    engines = total - reserve;
+    ALL.forEach(function (h) {
+      var p = prices[h.id] || 0, v = p * h.qty;
+      var share = total ? Math.round(v / total * 100) : 0;
+      var dec = p >= 1000 ? 0 : (p < 1 ? 3 : 2);
+      rows += '<div class="asset">' +
+        '<div class="aName"><div class="aTitle">' + h.name + '</div><div class="aQty">' + h.sub + ' · ' + h.qty + '</div></div>' +
+        '<div class="aPrice">' + (p ? money(p, dec) : '—') + '</div>' +
+        '<div class="aVal">' + (p ? money(v, 0) : '—') + '</div>' +
+        '<div class="aShare">' + (p ? share + '%' : '—') + '</div></div>';
+    });
+    document.getElementById('assets').innerHTML = rows;
+    document.getElementById('tvl').textContent = total ? money(total, 0) : '—';
+    document.getElementById('reserveVal').textContent = reserve ? money(reserve, 0) : '—';
+    document.getElementById('engineVal').textContent = engines ? money(engines, 0) : '—';
+  }
+  function setUpdated(ts, cached) {
+    var d = new Date(ts), hh = ('0' + d.getHours()).slice(-2), mm = ('0' + d.getMinutes()).slice(-2);
+    document.getElementById('updated').textContent = 'updated ' + hh + ':' + mm + (cached ? ' · cached' : ' · CoinGecko');
+  }
+  function load() {
+    var cached = null;
+    try { cached = JSON.parse(localStorage.getItem(CACHE_KEY)); } catch (e) {}
+    if (cached && cached.prices) { render(cached.prices); setUpdated(cached.ts, true); }
+    if (cached && Date.now() - cached.ts < TTL) return;
+    var ids = ALL.map(function (h) { return h.id; }).join(',');
+    fetch('https://api.coingecko.com/api/v3/simple/price?ids=' + ids + '&vs_currencies=usd')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var prices = {};
+        ALL.forEach(function (h) { if (data[h.id]) prices[h.id] = data[h.id].usd; });
+        if (!Object.keys(prices).length) return;
+        var payload = { prices: prices, ts: Date.now() };
+        try { localStorage.setItem(CACHE_KEY, JSON.stringify(payload)); } catch (e) {}
+        render(prices); setUpdated(payload.ts, false);
+      })
+      .catch(function () { if (!cached) document.getElementById('updated').textContent = 'market data temporarily unavailable'; });
+  }
+  load();`;
+const newRuntime=`  function money(n, dec) { return '$' + n.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }); }
+  function render(prices) {
+    var total = 0, reserve = 0, engines = 0, rows = '';
+    ALL.forEach(function (h) { total += (prices[h.id] || 0) * h.qty; });
+    reserve = (prices[BTC.id] || 0) * BTC.qty;
+    engines = total - reserve;
+    ALL.forEach(function (h) {
+      var p = prices[h.id] || 0, v = p * h.qty;
+      var share = total ? Math.round(v / total * 100) : 0;
+      var dec = p >= 1000 ? 0 : (p < 1 ? 3 : 2);
+      rows += '<div class="asset">' +
+        '<div class="aName"><div class="aTitle">' + h.name + '</div><div class="aQty">' + h.sub + ' · ' + h.qty + '</div></div>' +
+        '<div class="aPrice">' + (p ? money(p, dec) : '—') + '</div>' +
+        '<div class="aVal">' + (p ? money(v, 0) : '—') + '</div>' +
+        '<div class="aShare">' + (p ? share + '%' : '—') + '</div></div>';
+    });
+    document.getElementById('assets').innerHTML = rows;
+    document.getElementById('tvl').textContent = total ? money(total, 0) : '—';
+    document.getElementById('reserveVal').textContent = reserve ? money(reserve, 0) : '—';
+    document.getElementById('engineVal').textContent = engines ? money(engines, 0) : '—';
+  }
+  function load() {
+    fetch('/intelligence/market-data/public-capital-state.json?t=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error('canonical public capital unavailable'); return r.json(); })
+      .then(function (data) {
+        var row = (data.companies || []).find(function (x) { return x && x.registry === '002'; });
+        if (!row) throw new Error('YieldRing canonical company row unavailable');
+        var prices = {};
+        (row.positions || []).forEach(function (p) { if (p && p.assetId && Number.isFinite(Number(p.priceUsd))) prices[p.assetId] = Number(p.priceUsd); });
+        render(prices);
+        var d = new Date(data.generatedAt || Date.now());
+        var hh = ('0' + d.getHours()).slice(-2), mm = ('0' + d.getMinutes()).slice(-2);
+        document.getElementById('updated').textContent = 'updated ' + hh + ':' + mm + ' · canonical onchain-first snapshot';
+      })
+      .catch(function () { document.getElementById('updated').textContent = 'canonical market data temporarily unavailable'; });
+  }
+  load();`;
+page=replaceOnce(page,oldRuntime,newRuntime,'YieldRing dedicated canonical market runtime');
+if(!page.includes('2 locks · Maxi relay'))fail('YieldRing dedicated veAERO relay label missing');
+if(page.includes('api.coingecko.com'))fail('YieldRing dedicated page still performs direct browser CoinGecko requests');
 fs.writeFileSync(PAGE,page);
 
 let balance=fs.readFileSync(BALANCE,'utf8');
-balance=replaceOnce(balance,
-`    { id:'bitcoin', qty:0.03, layer:'foundation', priceSource:'coingecko' },\n    { id:'aerodrome-finance', qty:480, layer:'productive-dividend' },`,
-`    { id:'bitcoin', qty:0.0334, layer:'foundation', priceSource:'shared-market-data' },\n    { id:'aerodrome-finance', qty:678, layer:'productive-dividend' },`,
-'General Balance YieldRing quantities');
+if(!balance.includes("const YIELD_RING_STATE = 'companies/yieldring-canonical-state.json';"))fail('General Balance no longer binds canonical YieldRing state');
 balance=balance.replace(/const EXPECTED_UI_BLOB_SHA = '[0-9a-f]{40}';/,`const EXPECTED_UI_BLOB_SHA = '${indexBlob}';`);
-balance=replaceOnce(balance,
-`if (productivity.version !== '1.15') throw new Error(\`unexpected Productivity version \${productivity.version}\`);`,
-`if (!['1.15','1.16'].includes(productivity.version)) throw new Error(\`unexpected Productivity version \${productivity.version}\`);`,
-'General Balance Productivity compatibility');
 fs.writeFileSync(BALANCE,balance);
 
 console.log('YieldRing public/capital projection PASS',{
@@ -67,8 +146,14 @@ console.log('YieldRing public/capital projection PASS',{
   bitcoinCostBasisUsd:btc.costBasisUsd,
   aeroQuantity:aero.quantity,
   aeroCostBasisUsd:aero.costBasisUsd,
+  fraxQuantity:frax.quantity,
+  fraxCostBasisStatus:frax.costBasisStatus,
+  fraxKnownCostBasisUsd:frax.knownCostBasisUsd,
   expectedIndexBlob:indexBlob,
   dedicatedPageProjected:true,
+  directBrowserCoinGecko:false,
+  canonicalPublicCapitalRuntime:true,
+  partialCostBasisNullGuard:true,
   relayMode:state.aerodromeRelay.mode,
   expectedUnderlyingLockCount:state.aerodromeRelay.expectedUnderlyingLockCount,
   executionAuthority:'none'
