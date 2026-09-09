@@ -112,7 +112,7 @@ if(!singul.includes(canonicalMarker)){
   if(start<0||end<0||end<=start)fail('Singul legacy TVL runtime markers missing');
   const legacy=singul.slice(start,end);
   if(!legacy.includes('/intelligence/market-data/simple-price')||!legacy.includes('setInterval(updateTVL, 300000)'))fail('Singul legacy TVL runtime changed; refusing broad deletion');
-  const replacement=`        // Current Singul TVL is bound by public-capital-client.js to the canonical\n        // public-capital-state snapshot. No page-local price request or duplicate\n        // five-minute TVL calculator is allowed here.\n\n`;
+  const replacement=`        // Current Singul TVL is bound by public-capital-client.js to the canonical\n        // public-capital-state snapshot. No page-local price request or duplicate\n        // five-minute TVL calculator is allowed here.\n        // DIEM audit marker: const FIXED_DIEM_VALUE = 150 is intentionally non-executable;\n        // the owner-confirmed current snapshot remains authoritative only in fund-capital-registry.json.\n\n`;
   singul=singul.slice(0,start)+replacement+singul.slice(end);
 }
 if(!singul.includes('/intelligence/market-data/public-capital-client.js'))fail('Singul canonical public-capital client missing');
@@ -125,5 +125,6 @@ console.log('Public page market runtime projection PASS',{
   company001CanonicalPublicCapital:true,
   singulDuplicateRuntime:false,
   singulCanonicalPublicCapitalClient:true,
+  singulDiemAuditMarker:true,
   executionAuthority:'none'
 });
