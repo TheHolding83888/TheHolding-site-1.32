@@ -1,0 +1,92 @@
+name: Verify Accounting Reconciliation Watch
+
+on:
+  pull_request:
+    paths:
+      - 'reporting/accounting-reconciliation-watch.mjs'
+      - 'reporting/accounting-reconciliation-watch-validation.mjs'
+      - 'reporting/accounting-reconciliation-watch.json'
+      - 'reporting/accounting-notice-queue.json'
+      - 'reporting/accounting-reference-reconciliation.json'
+      - 'reporting/historical-accounting-completeness-map.json'
+      - 'intelligence/reliability/accounting-reconciliation-watch-workflow-definition-proof.mjs'
+      - '.github/workflows/verify-accounting-reconciliation-watch.yml'
+      - '.github/workflows/update-accounting-reconciliation-watch.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: Static validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check reporting/accounting-reconciliation-watch.mjs
+          node --check reporting/accounting-reconciliation-watch-validation.mjs
+          node --check intelligence/reliability/accounting-reconciliation-watch-workflow-definition-proof.mjs
+          test -s reporting/accounting-notice-queue.json
+          test -s reporting/accounting-reference-reconciliation.json
+          test -s reporting/historical-accounting-completeness-map.json
+          git diff --check
+
+      - name: Build baseline watch from canonical diagnostics
+        shell: bash
+        env:
+          ACCOUNTING_NOTICE_QUEUE_FILE: ./reporting/accounting-notice-queue.json
+          ACCOUNTING_REFERENCE_RECONCILIATION_FILE: ./reporting/accounting-reference-reconciliation.json
+          HISTORICAL_ACCOUNTING_COMPLETENESS_FILE: ./reporting/historical-accounting-completeness-map.json
+          ACCOUNTING_RECONCILIATION_WATCH_FILE: /tmp/accounting-reconciliation-watch.json
+          ACCOUNTING_RECONCILIATION_WATCH_PREVIOUS_FILE: /tmp/accounting-reconciliation-watch-previous-missing.json
+        run: |
+          set -euo pipefail
+          node reporting/accounting-reconciliation-watch.mjs
+          node reporting/accounting-reconciliation-watch-validation.mjs
+
+      - name: Prove semantic no-op stability
+        shell: bash
+        env:
+          ACCOUNTING_NOTICE_QUEUE_FILE: ./reporting/accounting-notice-queue.json
+          ACCOUNTING_REFERENCE_RECONCILIATION_FILE: ./reporting/accounting-reference-reconciliation.json
+          HISTORICAL_ACCOUNTING_COMPLETENESS_FILE: ./reporting/historical-accounting-completeness-map.json
+          ACCOUNTING_RECONCILIATION_WATCH_FILE: /tmp/accounting-reconciliation-watch.json
+          ACCOUNTING_RECONCILIATION_WATCH_PREVIOUS_FILE: /tmp/accounting-reconciliation-watch.json
+        run: |
+          set -euo pipefail
+          before="$(sha256sum /tmp/accounting-reconciliation-watch.json | awk '{print $1}')"
+          node reporting/accounting-reconciliation-watch.mjs
+          after="$(sha256sum /tmp/accounting-reconciliation-watch.json | awk '{print $1}')"
+          test "$before" = "$after"
+          node reporting/accounting-reconciliation-watch-validation.mjs
+          echo "Reconciliation watch semantic no-op stability PASS: $after"
+
+      - name: Guard authority and acceptance anchors
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('/tmp/accounting-reconciliation-watch.json','utf8'));
+          if(x.status!=='diagnostic-watch-no-accounting-authority') throw new Error('watch status authority drift');
+          if(x.authority?.sourceOfTruth!==false||x.authority?.factualIncomeAuthority!==false||x.authority?.incomeCreationAuthority!==false||x.authority?.accountingCompletionAuthority!==false||x.authority?.monthClosingAuthority!==false||x.authority?.canReplaceUnknown!==false||x.authority?.executionAuthority!=='none'||x.authority?.capitalExecution!==false||x.authority?.walletAuthority!==false) throw new Error('watch authority expanded');
+          if(x.semantics?.unknownIsNotZero!==true||x.semantics?.crossMonthProrationAllowed!==false||x.semantics?.referenceDeltaIsMissingIncome!==false||x.semantics?.trackingNoEventIsFailure!==false) throw new Error('watch epistemic boundary drift');
+          const ids=new Set((x.items||[]).map(r=>r.id));
+          if(!ids.has('notice:period-lifecycle-reconciliation:1milliondollar.eth:2026-09:__company_period__')) throw new Error('Beefy boundary pending anchor missing');
+          if(!ids.has('notice:period-lifecycle-reconciliation:Monetra.eth:2026-09:__company_period__')) throw new Error('Monetra boundary pending anchor missing');
+          if(!ids.has('historical:05081966.eth:2026-08:curve_vecrv')) throw new Error('closed veCRV Unknown forensic anchor missing');
+          if(ids.has('historical:05081966.eth:2026-08:aerodrome_veaero')) throw new Error('tracking-no-event became forensic alert');
+          if(ids.has('historical:defitea.eth:2026-08:velodrome_vevelo')) throw new Error('Complete Defitea veVELO remained forensic');
+          console.log('Accounting Reconciliation Watch authority guard PASS',x.summary);
+          NODE
