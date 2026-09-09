@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Accounting Notice Queue v0.1
+ * The Holding · Accounting Notice Queue v0.2
  *
  * A derived operational projection of canonical monthly accounting truth.
  * It never creates income, closes coverage, replaces UNKNOWN, or becomes a
@@ -17,7 +17,8 @@ const MONTHLY_FILE=process.env.COMPANY_MONTHLY_REPORTS_FILE||path.join(ROOT,'rep
 const ICP_FILE=process.env.ICP_NNS_FACTUAL_SNAPSHOTS_FILE||path.join(ROOT,'reporting','icp-nns-factual-snapshots.json');
 const OUTPUT_FILE=process.env.ACCOUNTING_NOTICE_QUEUE_FILE||path.join(ROOT,'reporting','accounting-notice-queue.json');
 
-const VERSION='0.1-accounting-notice-queue';
+const VERSION='0.2-accounting-notice-queue-boundary-evidence-pending';
+const BOUNDARY_EVIDENCE_PENDING_REASON='period-boundary-evidence-pending-no-exact-month-cut';
 const CATEGORIES=new Set([
   'missing-capability',
   'tracking-no-period-event',
@@ -52,6 +53,7 @@ const companyAmounts=row=>{
   };
 };
 const lifecycle=row=>row?.incomeAccounting?.lifecycle||{};
+const boundaryEvidencePending=reasons=>Array.isArray(reasons)&&reasons.length>0&&reasons.every(reason=>reason===BOUNDARY_EVIDENCE_PENDING_REASON);
 
 const coverage=read(COVERAGE_FILE);
 const monthly=read(MONTHLY_FILE);
@@ -135,12 +137,27 @@ for(const [companyKey,c] of Object.entries(coverage.companies||{})){
     const amounts=companyAmounts(monthRow);
     const life=lifecycle(monthRow);
     if(Number(life?.unresolvedEventCount||0)>0){
+      const unresolvedReasons=Array.isArray(life?.unresolvedReasons)?life.unresolvedReasons:[];
+      const exactCutEvidencePending=boundaryEvidencePending(unresolvedReasons);
       rows.push({
-        ...makeBase({company,registry:c?.registry,scope:'company-period',mechanism:'__company_period__',category:'period-lifecycle-reconciliation',trackingState:monthRow?.accountingStatus||null,blocker:'unresolved-period-lifecycle-events',action:'reconcile-period-boundary-settlement-or-lifecycle-semantics',engineeringActionable:true}),
+        ...makeBase({
+          company,
+          registry:c?.registry,
+          scope:'company-period',
+          mechanism:'__company_period__',
+          category:'period-lifecycle-reconciliation',
+          trackingState:monthRow?.accountingStatus||null,
+          blocker:exactCutEvidencePending?'historical-boundary-evidence-pending':'unresolved-period-lifecycle-events',
+          action:exactCutEvidencePending?'await-exact-boundary-evidence-no-proration':'reconcile-period-boundary-settlement-or-lifecycle-semantics',
+          engineeringActionable:!exactCutEvidencePending,
+          parked:exactCutEvidencePending
+        }),
         ...amounts,
         amountScope:'company-period',
         unresolvedEventCount:Number(life.unresolvedEventCount||0),
-        unresolvedReasons:Array.isArray(life?.unresolvedReasons)?life.unresolvedReasons:[]
+        unresolvedReasons,
+        boundaryEvidencePending:exactCutEvidencePending,
+        prorationAllowed:false
       });
     }
     if(finite(amounts.confirmedUsd)&&finite(amounts.estimatedUsd)&&Math.abs(Number(amounts.deltaUsd||0))>1e-8){
@@ -174,6 +191,9 @@ const output={
     deltaIsMissingIncome:false,
     trackingNoPeriodEventIsError:false,
     ownerDataPendingIsEngineeringFailure:false,
+    boundaryEvidencePendingIsEngineeringFailure:false,
+    crossMonthIntervalProrationAllowed:false,
+    boundaryEvidencePendingCanCloseAccountingCoverage:false,
     unknownIsNotZero:true
   },
   sourceState:{
@@ -184,7 +204,7 @@ const output={
   classificationContract:{
     'missing-capability':'Actual reusable factual-tracking capability is absent; engineering action is justified.',
     'tracking-no-period-event':'Factual tracking exists but no event has occurred in the selected month; this is not an error.',
-    'period-lifecycle-reconciliation':'Evidence exists but period/lifecycle attribution needs reconciliation, or owner evidence is explicitly pending.',
+    'period-lifecycle-reconciliation':'Evidence exists but period/lifecycle attribution needs reconciliation. An explicit historical-boundary-evidence-pending blocker means the source interval crosses a calendar boundary without an exact cut; it remains UNKNOWN/partial and must not be time-prorated.',
     'reference-vs-factual-divergence':'Confirmed factual income and non-factual Reference estimate are shown side by side as a diagnostic comparison only.'
   },
   summary:{
@@ -195,7 +215,8 @@ const output={
     trackingNoPeriodEventCount:count('tracking-no-period-event'),
     periodLifecycleReconciliationCount:count('period-lifecycle-reconciliation'),
     referenceVsFactualDivergenceCount:count('reference-vs-factual-divergence'),
-    ownerDataPendingCount:rows.filter(x=>x.blocker==='owner-data-pending').length
+    ownerDataPendingCount:rows.filter(x=>x.blocker==='owner-data-pending').length,
+    boundaryEvidencePendingCount:rows.filter(x=>x.blocker==='historical-boundary-evidence-pending').length
   },
   rows,
   authority:{
@@ -212,4 +233,4 @@ const output={
   }
 };
 write(OUTPUT_FILE,output);
-console.log('Accounting Notice Queue v0.1 built',output.summary);
+console.log('Accounting Notice Queue v0.2 built',output.summary);
