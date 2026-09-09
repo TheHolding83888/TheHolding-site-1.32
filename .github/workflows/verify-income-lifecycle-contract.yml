@@ -1,0 +1,52 @@
+name: Verify Income Lifecycle Acceptance Contract
+
+on:
+  pull_request:
+    paths:
+      - 'reporting/income-lifecycle-contract.json'
+      - 'reporting/income-lifecycle-contract-validation.mjs'
+      - 'reporting/canonical-earned-income-view.mjs'
+      - 'reporting/income-ledger.mjs'
+      - 'reporting/income-ledger-core.mjs'
+      - '.github/workflows/verify-income-lifecycle-contract.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: Validate lifecycle contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check reporting/income-lifecycle-contract-validation.mjs
+          test -s reporting/income-lifecycle-contract.json
+          test -s reporting/income-ledger.json
+          node reporting/income-lifecycle-contract-validation.mjs
+          git diff --check
+
+      - name: Guard read-only authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('reporting/income-lifecycle-contract.json','utf8'));
+          if(x.status!=='acceptance-contract-no-accounting-authority') throw new Error('lifecycle status authority drift');
+          const a=x.authority||{};
+          if(a.sourceOfTruth!==false||a.factualIncomeAuthority!==false||a.incomeCreationAuthority!==false||a.accountingCompletionAuthority!==false||a.monthClosingAuthority!==false||a.methodologyMutationAuthority!==false||a.executionAuthority!=='none'||a.capitalExecution!==false||a.walletAuthority!==false) throw new Error('lifecycle authority expanded');
+          if(x.invariants?.unknownIsNotZero!==true||x.invariants?.crossMonthProrationAllowed!==false||x.invariants?.referenceAprCanBackfillIncome!==false||x.invariants?.settlementDoesNotReRecognizeIncome!==true||x.invariants?.reinvestmentCreatesSecondIncome!==false) throw new Error('lifecycle invariant drift');
+          console.log('Income Lifecycle authority guard PASS',{version:x.version,sequence:x.sequence,executionAuthority:a.executionAuthority});
+          NODE
