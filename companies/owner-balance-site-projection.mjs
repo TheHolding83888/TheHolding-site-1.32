@@ -122,10 +122,10 @@ const newPublicBind=`    const publicCompanyRow = key => publicCapitalSnapshot &
     });`;
 html=replaceExactCount(html,oldPublicBind,newPublicBind,'companies/index.html canonical TVL/performance/network contribution binding',3);
 
-html=replaceOnce(html,
+html=replaceExactCount(html,
 `    { key: 'capital',      weight: 0.35, raw: c => Math.sqrt(Math.max(c.val, 0)) },`,
 `    { key: 'capital',      weight: 0.35, raw: c => Math.sqrt(Math.max(c.indexCapitalValue ?? c.val, 0)) },`,
-'companies/index.html Composite unique Capital factor');
+'companies/index.html Composite unique Capital factor',3);
 html=replaceOnce(html,
 `    const totalVal = eligible.reduce((s, c) => s + Math.max(c.val, 0), 0);`,
 `    const totalVal = eligible.reduce((s, c) => s + Math.max(c.indexCapitalValue ?? c.val, 0), 0);`,
@@ -193,6 +193,7 @@ console.log('Owner balance site projection PASS',{
   singulBeamExcluded:true,
   expectedIndexBlob:indexBlob,
   legacyTvlBindCopiesUpdated:3,
+  legacyCompositeCapitalCopiesUpdated:3,
   defiteaConsolidatedDisplayUsesUniqueIndexContribution:true,
   partialCostBasisPerformanceRemainsUnknown:true,
   manualSnapshotIsNotOnchainObservation:true,
