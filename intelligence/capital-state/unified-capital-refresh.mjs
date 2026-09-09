@@ -1,15 +1,17 @@
 #!/usr/bin/env node
 /**
- * The Holding · Unified Capital Refresh v0.2.4
+ * The Holding · Unified Capital Refresh v0.2.5
  *
  * Orchestration only. Reuses existing canonical projectors/collectors/builders:
- * Defitea projection -> YieldRing projection -> Productivity collector
- * -> Company #010 compatibility -> YieldRing overlay -> VoteMarket income channels
- * -> General Balance -> Company #007 current-state downstream binding -> Capital State.
+ * Defitea projection -> YieldRing projection -> owner-balance site projection
+ * -> Productivity collector -> Company #010 compatibility -> YieldRing overlay
+ * -> VoteMarket income channels -> General Balance -> Company #007 current-state
+ * downstream binding -> Capital State.
  *
- * v0.2.4 keeps VoteMarket veCRV/veFXN as supplementary Reference APR channels
- * over already-counted principal and persists previously measured finalized
- * observations across a later claim through a bounded derived cache.
+ * v0.2.5 admits provenance-explicit owner-confirmed current-balance bridges for
+ * Company #001 BTC, YieldRing FRAX, and Singul DIEM without upgrading those
+ * observations into independently reproduced onchain evidence. UNKNOWN cost
+ * basis remains UNKNOWN/partial rather than becoming zero.
  *
  * No execution authority. No wallet action. No factual-income methodology mutation.
  */
@@ -36,22 +38,25 @@ function run(label, cwd, script, env = {}) {
 function readJson(rel) { return JSON.parse(fs.readFileSync(path.join(ROOT, rel), 'utf8')); }
 function assert(ok, message) { if (!ok) throw new Error(message); }
 
-run('1/9 Project canonical Defitea state', ROOT, 'companies/defitea-public-capital-projection.mjs');
-run('2/9 Project canonical YieldRing state', ROOT, 'companies/yieldring-public-capital-projection.mjs');
-run('3/9 Refresh protocol APRs and established Productivity', path.join(ROOT, 'productivity'), 'productivity-engine.mjs', {
+run('1/10 Project canonical Defitea state', ROOT, 'companies/defitea-public-capital-projection.mjs');
+run('2/10 Project canonical YieldRing state', ROOT, 'companies/yieldring-public-capital-projection.mjs');
+run('3/10 Project provenance-explicit owner balance bridges', ROOT, 'companies/owner-balance-site-projection.mjs');
+run('4/10 Refresh protocol APRs and established Productivity', path.join(ROOT, 'productivity'), 'productivity-engine.mjs', {
   PAGE_FILE: '../companies/index.html',
   DATA_FILE: '../companies/productivity-data.json',
   REPORT_FILE: '../companies/productivity-source-report.json'
 });
-run('4/9 Admit Company #010 compatibility layer', ROOT, 'productivity/company-010-productivity-overlay.mjs');
-run('5/9 Apply canonical YieldRing Productivity overlay', ROOT, 'productivity/yieldring-productivity-overlay.mjs');
-run('6/9 Apply VoteMarket supplementary income channels', ROOT, 'productivity/votemarket-productivity-overlay.mjs');
-run('7/9 Rebuild General Company Balance Sheet', ROOT, 'intelligence/capital-state/general-company-balance-sheet.mjs');
-run('8/9 Bind Company #007 current state downstream', ROOT, 'intelligence/capital-state/company-007-current-state-downstream.mjs');
-run('9/9 Build Capital State', ROOT, 'intelligence/capital-state/capital-state.mjs');
+run('5/10 Admit Company #010 compatibility layer', ROOT, 'productivity/company-010-productivity-overlay.mjs');
+run('6/10 Apply canonical YieldRing Productivity overlay', ROOT, 'productivity/yieldring-productivity-overlay.mjs');
+run('7/10 Apply VoteMarket supplementary income channels', ROOT, 'productivity/votemarket-productivity-overlay.mjs');
+run('8/10 Rebuild General Company Balance Sheet', ROOT, 'intelligence/capital-state/general-company-balance-sheet.mjs');
+run('9/10 Bind Company #007 current state downstream', ROOT, 'intelligence/capital-state/company-007-current-state-downstream.mjs');
+run('10/10 Build Capital State', ROOT, 'intelligence/capital-state/capital-state.mjs');
 
 const defitea = readJson('companies/defitea-canonical-state.json');
 const canonical = readJson('companies/yieldring-canonical-state.json');
+const company001Owner = readJson('companies/company-001-owner-capital-snapshot.json');
+const fundRegistry = readJson('intelligence/market-data/fund-capital-registry.json');
 const productivity = readJson('companies/productivity-data.json');
 const productivitySource = readJson('companies/productivity-source-report.json');
 const voteMarketState = readJson('companies/votemarket-reference-state.json');
@@ -61,6 +66,8 @@ const company007Discovery = readJson('companies/company-007-discovery.json');
 const company007Resolve = readJson('companies/company-007-resolve.json');
 const companiesHtml = fs.readFileSync(path.join(ROOT, 'companies/index.html'), 'utf8');
 const yieldRingPage = fs.readFileSync(path.join(ROOT, 'yieldring/index.html'), 'utf8');
+const company001Page = fs.readFileSync(path.join(ROOT, '05081966/index.html'), 'utf8');
+const singulPage = fs.readFileSync(path.join(ROOT, 'singul/index.html'), 'utf8');
 
 assert(defitea?.authority?.executionAuthority === 'none', 'Defitea authority drift');
 assert(defitea?.productivePositions?.length === 11, 'Defitea 11-position inventory missing');
@@ -74,6 +81,15 @@ assert(defitea?.semantics?.costBasisLotsPreserved === true, 'Defitea lot preserv
 assert(canonical?.authority?.executionAuthority === 'none', 'YieldRing authority drift');
 assert(Number(canonical?.capital?.bitcoin?.quantity) === 0.0334, 'YieldRing canonical BTC drift');
 assert(Number(canonical?.capital?.aerodrome?.quantity) === 678, 'YieldRing canonical AERO drift');
+assert(Number(canonical?.capital?.frax?.quantity) === 1032, 'YieldRing canonical FRAX drift');
+assert(canonical?.capital?.frax?.costBasisStatus === 'partial' && canonical?.capital?.frax?.costBasisUsd === null, 'YieldRing FRAX UNKNOWN cost-basis semantics drift');
+assert(Number(canonical?.capital?.frax?.knownCostBasisUsd) === 210.24, 'YieldRing FRAX known cost-basis floor drift');
+
+const owner001Btc=(company001Owner?.positions||[]).find(x=>x.assetId==='bitcoin');
+assert(company001Owner?.authority?.executionAuthority==='none', 'Company #001 owner snapshot authority drift');
+assert(Number(owner001Btc?.quantity)===0.00126 && Number(owner001Btc?.entryPriceUsd)===77875 && Number(owner001Btc?.costBasisUsd)===98.1225, 'Company #001 owner BTC snapshot drift');
+const singulDiem=(fundRegistry?.funds?.singul?.positions||[]).find(x=>x.assetId==='diem');
+assert(Number(singulDiem?.quantity)===0.07 && Number(singulDiem?.fixedTotalValueUsd)===150 && singulDiem?.evidenceStatus==='owner-provided-current', 'Singul DIEM owner snapshot drift');
 
 assert(productivity?.version === '1.16', `Productivity v1.16 required, got ${productivity?.version}`);
 const dpProd = productivity?.companies?.['defitea.eth'];
@@ -123,9 +139,11 @@ assert(fxnAuthority?.canonicalEngineSynchronized === true && fxnAuthority?.curre
 
 const yp = productivity?.companies?.['YieldRing.eth'];
 const ya = (yp?.breakdown || []).find(x => x.engineId === 'aerodrome_veaero' || x.principalId === 'aerodrome-finance');
-assert(yp && Number(ya?.units) === 678, 'YieldRing 678 AERO missing from Productivity');
+const yf = (yp?.breakdown || []).find(x => x.principalId === 'frax-share' || x.engineId === 'frax_vefrax' || x.engineId === 'frax_vefxs');
+assert(yp && Number(ya?.units) === 678 && Number(yf?.units) === 1032, 'YieldRing AERO/FRAX canonical quantities missing from Productivity');
 assert(productivity?.diagnostics?.company010?.executionAuthority === 'none', 'Company #010 Productivity authority drift');
 assert(productivity?.diagnostics?.yieldRing?.executionAuthority === 'none', 'YieldRing Productivity authority drift');
+assert(productivity?.diagnostics?.yieldRing?.fraxCostBasisStatus === 'partial', 'YieldRing Productivity partial cost-basis diagnostic missing');
 assert(Date.parse(productivity.generatedAt) >= startedAt - 60_000, 'Productivity snapshot is not fresh for this unified run');
 
 const rookProd=productivity?.companies?.["Rook's portfolio"];
@@ -146,7 +164,14 @@ assert(dg && Number(dga?.units) === 2632 && Number(dgf?.units) === 64.81, 'Defit
 const yg = (general?.companies || []).find(x => x.registry === '002');
 const ygb = (yg?.positions || []).find(x => x.assetId === 'bitcoin');
 const yga = (yg?.positions || []).find(x => x.assetId === 'aerodrome-finance');
-assert(yg && Number(ygb?.units) === 0.0334 && Number(yga?.units) === 678, 'YieldRing quantities missing from General Balance');
+const ygf = (yg?.positions || []).find(x => x.assetId === 'frax-share');
+assert(yg && Number(ygb?.units) === 0.0334 && Number(yga?.units) === 678 && Number(ygf?.units) === 1032, 'YieldRing quantities missing from General Balance');
+assert(String(yg?.epistemicNote||'').includes('UNKNOWN'), 'YieldRing partial cost-basis epistemic note missing');
+
+const c001g=(general?.companies||[]).find(x=>x.registry==='001');
+const c001gb=(c001g?.positions||[]).find(x=>x.assetId==='bitcoin');
+assert(c001g && Number(c001gb?.units)===0.00126 && c001gb?.evidenceStatus==='owner-provided-current', 'Company #001 BTC owner snapshot missing from General Balance');
+assert(Number(c001gb?.entryPriceUsd)===77875 && Number(c001gb?.costBasisUsd)===98.1225, 'Company #001 BTC entry/cost provenance missing from General Balance');
 
 const rookGeneral=(general?.companies||[]).find(x=>x.registry==='007');
 const discoveryBook=new Map((company007Discovery?.proposedCompanyBook||[]).map(x=>[x.symbol,x]));
@@ -168,7 +193,11 @@ assert(dc && Number(dca?.units) === 2632 && Number(dcf?.units) === 64.81, 'Defit
 const yc = (capital?.companies || []).find(x => x.registry === '002');
 const ycb = (yc?.measuredPositions || []).find(x => x.assetId === 'bitcoin');
 const yca = (yc?.measuredPositions || []).find(x => x.assetId === 'aerodrome-finance');
-assert(yc && Number(ycb?.units) === 0.0334 && Number(yca?.units) === 678, 'YieldRing quantities missing from Capital State');
+const ycf = (yc?.measuredPositions || []).find(x => x.assetId === 'frax-share');
+assert(yc && Number(ycb?.units) === 0.0334 && Number(yca?.units) === 678 && Number(ycf?.units)===1032, 'YieldRing quantities missing from Capital State');
+const c001c=(capital?.companies||[]).find(x=>x.registry==='001');
+const c001cb=(c001c?.measuredPositions||[]).find(x=>x.assetId==='bitcoin');
+assert(c001c && Number(c001cb?.units)===0.00126, 'Company #001 BTC owner snapshot missing from Capital State');
 const rc=(capital?.companies||[]).find(x=>x.registry==='007');
 const rcb=(rc?.measuredPositions||[]).find(x=>x.assetId==='bitcoin');
 const rce=(rc?.measuredPositions||[]).find(x=>x.assetId==='ethereum');
@@ -178,8 +207,12 @@ assert(capital?.authority?.executionAuthority === 'none', 'Capital State authori
 assert(companiesHtml.includes('qty: 2632') && companiesHtml.includes('qty: 64.81'), 'Defitea Registry projection drift');
 assert(companiesHtml.includes('costBasisUsd: 1121.3') && companiesHtml.includes('qty: 192, entry: 0.42'), 'Defitea AERO cost-basis projection drift');
 assert(companiesHtml.includes('costBasisUsd: 983.2386') && companiesHtml.includes('qty: 5, entry: 16.5'), 'Defitea FXN cost-basis projection drift');
-assert(companiesHtml.includes('qty: 0.0334') && companiesHtml.includes('qty: 678'), 'YieldRing Registry projection drift');
-assert(yieldRingPage.includes('qty: 0.0334') && yieldRingPage.includes('qty: 678'), 'YieldRing dedicated page projection drift');
+assert(companiesHtml.includes("qty: 1032, entry: null, costBasisUsd: null, costBasisStatus: 'partial'") && companiesHtml.includes('knownCostBasisUsd: 210.24'), 'YieldRing FRAX partial-cost Registry projection drift');
+assert(companiesHtml.includes("id: 'bitcoin', qty: 0.00126, entry: 77875, costBasisUsd: 98.1225") && companiesHtml.includes("'05081966.eth':  ['Bitcoin','Curve','Aero','Frax']"), 'Company #001 BTC Registry projection drift');
+assert(companiesHtml.includes("const finiteUiNumber = v => v !== null") && companiesHtml.includes("costBasisStatus: costComplete ? 'complete' : 'partial'"), 'Registry partial cost-basis null guard missing');
+assert(yieldRingPage.includes('qty: 0.0334') && yieldRingPage.includes('qty: 678') && yieldRingPage.includes('qty: 1032'), 'YieldRing dedicated page projection drift');
+assert(company001Page.includes("id: 'bitcoin', name: 'BTC', proto: 'Bitcoin reserve', qty: 0.00126") && company001Page.includes('BTC is held as reserve capital'), 'Company #001 dedicated page projection drift');
+assert(singulPage.includes('const FIXED_DIEM_VALUE = 150') && singulPage.includes('owner-confirmed current snapshot'), 'Singul DIEM dedicated page projection drift');
 
 console.log('\nUNIFIED CAPITAL REFRESH PASS', {
   productivityGeneratedAt: productivity.generatedAt,
@@ -197,6 +230,10 @@ console.log('\nUNIFIED CAPITAL REFRESH PASS', {
   defiteaFxn: dcf.units,
   defiteaFxnCostBasisUsd: defitea.costBasis.fxn.costBasisUsd,
   yieldRingAprLatest: yp.aprLatest,
+  yieldRingFrax: ycf.units,
+  yieldRingFraxCostBasisStatus: canonical.capital.frax.costBasisStatus,
+  company001Btc: c001cb.units,
+  singulDiemFixedTotalValueUsd: singulDiem.fixedTotalValueUsd,
   company007ActiveYbMarkets:activeYbMarkets,
   company007ProductiveValue:rookProd.productiveValue,
   company007TotalCapitalUsd:rookGeneral.totalCapitalUsd,
