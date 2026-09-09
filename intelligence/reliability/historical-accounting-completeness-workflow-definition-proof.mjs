@@ -25,6 +25,9 @@ function ordered(text,needles,message){
 // Identity, authority and trigger boundary.
 assert.match(workflow,/^name: Update Historical Accounting Completeness Map$/m,'historical completeness writer identity drift');
 requireText('# holding-workflow-definition-proof: intelligence/reliability/historical-accounting-completeness-workflow-definition-proof.mjs','paired definition proof marker missing');
+requireText('# holding-control-plane: repository-writer','repository-writer control-plane role missing');
+requireText('# holding-truth-plane: derived-accounting-diagnostics','derived truth-plane declaration missing');
+requireText('# holding-control-domain: reporting-historical-accounting-completeness','bounded control-domain declaration missing');
 requireText('permissions:\n  contents: write','historical completeness writer contents permission drift');
 assert.doesNotMatch(workflow,/actions:\s*write|write-all/,'historical completeness writer gained broader Actions/repository authority');
 assert.doesNotMatch(workflow,/\n\s*pull_request:/,'production derived-data writer must not execute on pull_request');
@@ -95,6 +98,9 @@ console.log('Historical Accounting Completeness workflow definition paired proof
   workflow:WORKFLOW_PATH,
   proofScope:'workflow-definition-and-derived-safe-writer-contract',
   canonicalUpstream:'Update Company Monthly Reports',
+  controlPlaneRole:'repository-writer',
+  truthPlane:'derived-accounting-diagnostics',
+  controlDomain:'reporting-historical-accounting-completeness',
   factualIncomeAuthority:false,
   accountingCompletionAuthority:false,
   monthClosingAuthority:false,
