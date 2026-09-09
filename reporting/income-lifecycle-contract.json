@@ -1,0 +1,91 @@
+{
+  "version": "0.1-income-lifecycle-contract",
+  "status": "acceptance-contract-no-accounting-authority",
+  "purpose": "Machine-checkable lifecycle semantics for factual income recognition and later settlement/capital-state transitions. This contract does not create income, close periods, infer missing history, or add execution authority.",
+  "sequence": [
+    "earned",
+    "accrued",
+    "claimable",
+    "claimed",
+    "received",
+    "reinvested"
+  ],
+  "stageSemantics": {
+    "earned": {
+      "economicIncomeRecognitionBoundary": true,
+      "canonicalMechanismEvidenceRequired": true,
+      "referenceOrEstimateMayRecognizeIncome": false
+    },
+    "accrued": {
+      "mayCarryEarnedRecognition": true,
+      "claimRequiredForRecognition": false,
+      "openingBalanceCreatesIncome": false
+    },
+    "claimable": {
+      "observationStateOnly": true,
+      "createsIncomeByVisibilityAlone": false,
+      "currentClaimableMayBackfillHistory": false
+    },
+    "claimed": {
+      "settlementTransition": true,
+      "reRecognizesPriorEarnedIncome": false,
+      "mayBeFirstRecognitionOnlyWithExplicitNonOverlapProof": true
+    },
+    "received": {
+      "settlementTransition": true,
+      "reRecognizesPriorEarnedIncome": false,
+      "genericReceiptCreatesIncome": false,
+      "mayBeFirstRecognitionOnlyWithExplicitNonOverlapProof": true
+    },
+    "reinvested": {
+      "capitalStateMutation": true,
+      "createsNewIncomeFromPreviouslyRecognizedIncome": false,
+      "rewritesOriginalEarnedPeriod": false,
+      "principalMovementIsIncomeAuthority": false
+    }
+  },
+  "recognitionFamilies": {
+    "accrued-entitlement": {
+      "recognition": "earned/accrual",
+      "claimDependent": false
+    },
+    "embedded-income": {
+      "recognition": "earned-inside-position",
+      "claimDependent": false
+    },
+    "realised-cash-flow": {
+      "recognition": "explicit-non-overlap-proof-required",
+      "firstRecognitionAllowedOnlyWhenIncomeRecognitionRecognizesEarnedIncomeTrueAndRecognitionIdPresent": true,
+      "settlementOnlyWhenIncomeRecognitionRecognizesEarnedIncomeFalseAndSettlementOfPresent": true,
+      "unprovenReceiptRemainsUnresolved": true
+    }
+  },
+  "invariants": {
+    "canonicalIncomeLedgerRemainsSoleFactualIncomeAuthority": true,
+    "canonicalEarnedIncomeViewIsReadOnlyInterpretation": true,
+    "sameEconomicIncomeRecognizedAtMostOnce": true,
+    "settlementDoesNotReRecognizeIncome": true,
+    "laterReceiptCannotRewriteEarnedHistory": true,
+    "laterClaimCannotRewriteEarnedHistory": true,
+    "laterPriceMovementCannotRewriteFrozenHistoricalIncome": true,
+    "openingBalanceCreatesIncome": false,
+    "claimableSnapshotsCreateIncome": false,
+    "genericReceiptCreatesIncome": false,
+    "reinvestmentCreatesSecondIncome": false,
+    "referenceAprCanBackfillIncome": false,
+    "estimatedIncomeCanReplaceUnknown": false,
+    "crossMonthProrationAllowed": false,
+    "unknownIsNotZero": true
+  },
+  "authority": {
+    "sourceOfTruth": false,
+    "factualIncomeAuthority": false,
+    "incomeCreationAuthority": false,
+    "accountingCompletionAuthority": false,
+    "monthClosingAuthority": false,
+    "methodologyMutationAuthority": false,
+    "executionAuthority": "none",
+    "capitalExecution": false,
+    "walletAuthority": false
+  }
+}
