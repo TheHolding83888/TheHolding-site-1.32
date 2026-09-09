@@ -9,8 +9,9 @@ const q=JSON.parse(fs.readFileSync(FILE,'utf8'));
 const icp=JSON.parse(fs.readFileSync(ICP_FILE,'utf8'));
 const categories=new Set(['missing-capability','tracking-no-period-event','period-lifecycle-reconciliation','reference-vs-factual-divergence']);
 const finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v));
+const BOUNDARY_REASON='period-boundary-evidence-pending-no-exact-month-cut';
 
-assert.equal(q.version,'0.1-accounting-notice-queue');
+assert.equal(q.version,'0.2-accounting-notice-queue-boundary-evidence-pending');
 assert.equal(q.status,'diagnostic-no-completion-authority');
 assert.match(q.currentMonth,/^\d{4}-\d{2}$/);
 assert.equal(q.semantics?.sourceOfTruth,false);
@@ -21,6 +22,9 @@ assert.equal(q.semantics?.confirmedPlusEstimatedIsValidTotal,false);
 assert.equal(q.semantics?.deltaIsMissingIncome,false);
 assert.equal(q.semantics?.trackingNoPeriodEventIsError,false);
 assert.equal(q.semantics?.ownerDataPendingIsEngineeringFailure,false);
+assert.equal(q.semantics?.boundaryEvidencePendingIsEngineeringFailure,false);
+assert.equal(q.semantics?.crossMonthIntervalProrationAllowed,false);
+assert.equal(q.semantics?.boundaryEvidencePendingCanCloseAccountingCoverage,false);
 assert.equal(q.semantics?.unknownIsNotZero,true);
 assert.equal(q.authority?.readOnly,true);
 assert.equal(q.authority?.sourceOfTruth,false);
@@ -59,6 +63,18 @@ for(const row of q.rows){
     assert.equal(row.engineeringActionable,false);
     assert.equal(row.action,'await-owner-factual-snapshot');
   }
+  if(row.blocker==='historical-boundary-evidence-pending'){
+    assert.equal(row.scope,'company-period',`${row.id} boundary evidence pending must remain company-period lifecycle state`);
+    assert.equal(row.category,'period-lifecycle-reconciliation');
+    assert.equal(row.parked,true,`${row.id} boundary evidence pending must be parked`);
+    assert.equal(row.engineeringActionable,false,`${row.id} unavailable exact boundary leaked into engineering backlog`);
+    assert.equal(row.action,'await-exact-boundary-evidence-no-proration');
+    assert.equal(row.boundaryEvidencePending,true);
+    assert.equal(row.prorationAllowed,false);
+    assert.ok(Number(row.unresolvedEventCount||0)>0,`${row.id} boundary evidence pending without unresolved events`);
+    assert.ok(Array.isArray(row.unresolvedReasons)&&row.unresolvedReasons.length>0,`${row.id} boundary reasons missing`);
+    assert.ok(row.unresolvedReasons.every(reason=>reason===BOUNDARY_REASON),`${row.id} mixed lifecycle reasons cannot be parked as exact-cut evidence pending`);
+  }
   if(row.category==='reference-vs-factual-divergence'){
     assert.equal(row.scope,'company-period');
     assert.equal(row.engineeringActionable,false);
@@ -76,6 +92,7 @@ assert.equal(q.summary?.trackingNoPeriodEventCount,count('tracking-no-period-eve
 assert.equal(q.summary?.periodLifecycleReconciliationCount,count('period-lifecycle-reconciliation'));
 assert.equal(q.summary?.referenceVsFactualDivergenceCount,count('reference-vs-factual-divergence'));
 assert.equal(q.summary?.ownerDataPendingCount,q.rows.filter(x=>x.blocker==='owner-data-pending').length);
+assert.equal(q.summary?.boundaryEvidencePendingCount,q.rows.filter(x=>x.blocker==='historical-boundary-evidence-pending').length);
 
 if(icp.status==='baseline-only-no-period-income'&&Array.isArray(icp.snapshots)&&icp.snapshots.length<2){
   const icpRows=q.rows.filter(x=>x.mechanism==='icp_nns');
