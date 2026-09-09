@@ -182,6 +182,9 @@ fs.writeFileSync(BALANCE,balance);
 // projections have been applied. The runtime projection is idempotent, so
 // future coherent refreshes remain stable after the generated pages are saved.
 await import('./public-page-market-runtime-projection.mjs');
+// Apply bounded public-site navigation/footer/pyramid polish through a separate
+// deterministic projector. This has no capital, methodology or execution authority.
+await import('./public-site-polish-projection.mjs');
 
 console.log('Owner balance site projection PASS',{
   company001BtcQuantity:btc.quantity,
@@ -199,5 +202,6 @@ console.log('Owner balance site projection PASS',{
   defiteaConsolidatedDisplayUsesUniqueIndexContribution:true,
   partialCostBasisPerformanceRemainsUnknown:true,
   manualSnapshotIsNotOnchainObservation:true,
+  publicSitePolishProjected:true,
   executionAuthority:'none'
 });
