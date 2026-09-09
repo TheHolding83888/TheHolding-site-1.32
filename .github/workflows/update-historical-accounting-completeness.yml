@@ -1,0 +1,110 @@
+name: Update Historical Accounting Completeness Map
+# holding-workflow-definition-proof: intelligence/reliability/historical-accounting-completeness-workflow-definition-proof.mjs
+# holding-control-plane: repository-writer
+# holding-truth-plane: derived-accounting-diagnostics
+# holding-control-domain: reporting-historical-accounting-completeness
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - "Update Company Monthly Reports"
+    types: [completed]
+  push:
+    branches: [main]
+    paths:
+      - 'reporting/historical-accounting-completeness-map.mjs'
+      - 'reporting/historical-accounting-completeness-map-validation.mjs'
+      - '.github/workflows/update-historical-accounting-completeness.yml'
+      - '.github/workflows/verify-historical-accounting-completeness.yml'
+  schedule:
+    - cron: '52 7 * * *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: historical-accounting-completeness-map
+  cancel-in-progress: false
+
+jobs:
+  update:
+    if: >-
+      ${{
+        github.event_name != 'workflow_run' ||
+        (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+      }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout live main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: Build and validate derived map
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check reporting/historical-accounting-completeness-map.mjs
+          node --check reporting/historical-accounting-completeness-map-validation.mjs
+          test -s reporting/accounting-coverage.json
+          test -s reporting/company-monthly-reports.json
+          node reporting/historical-accounting-completeness-map.mjs
+          node reporting/historical-accounting-completeness-map-validation.mjs
+          git diff --check
+
+      - name: Commit canonical derived snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Accounting Completeness"
+          git config user.email "accounting-completeness@theholding.ai"
+
+          git add reporting/historical-accounting-completeness-map.json
+          if git diff --cached --quiet; then
+            echo "No historical completeness changes."
+            exit 0
+          fi
+          git commit -m "data: update historical accounting completeness map"
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "Safe writer guard: rebase conflict; refusing to guess."
+              exit 1
+            fi
+
+            ACCOUNTING_COVERAGE_FILE=./reporting/accounting-coverage.json \
+            COMPANY_MONTHLY_REPORTS_FILE=./reporting/company-monthly-reports.json \
+            HISTORICAL_ACCOUNTING_COMPLETENESS_FILE=./reporting/historical-accounting-completeness-map.json \
+            node reporting/historical-accounting-completeness-map.mjs
+            HISTORICAL_ACCOUNTING_COMPLETENESS_FILE=./reporting/historical-accounting-completeness-map.json \
+            node reporting/historical-accounting-completeness-map-validation.mjs
+
+            git add reporting/historical-accounting-completeness-map.json
+            git commit --amend --no-edit
+
+            mapfile -t ahead < <(git diff --name-only origin/main...HEAD)
+            for f in "${ahead[@]}"; do
+              case "$f" in
+                reporting/historical-accounting-completeness-map.json) ;;
+                *) echo "Unexpected historical completeness publish delta after rebase: $f"; exit 1 ;;
+              esac
+            done
+
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Safe writer guard: main moved during push; rebuilding on rebased current state ($attempt/3)..."
+            sleep $((attempt * 2))
+          done
+          echo "Safe writer guard: push failed after 3 attempts."
+          exit 1
