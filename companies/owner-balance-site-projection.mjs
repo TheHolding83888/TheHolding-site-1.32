@@ -6,7 +6,6 @@ const COMPANY001_STATE='companies/company-001-owner-capital-snapshot.json';
 const FUND_REGISTRY='intelligence/market-data/fund-capital-registry.json';
 const INDEX='companies/index.html';
 const COMPANY001_PAGE='05081966/index.html';
-const SINGUL_PAGE='singul/index.html';
 const BALANCE='intelligence/capital-state/general-company-balance-sheet.mjs';
 
 const company001=JSON.parse(fs.readFileSync(COMPANY001_STATE,'utf8'));
@@ -16,8 +15,18 @@ const fail=m=>{throw new Error(m);};
 const btc=(company001.positions||[]).find(x=>x.assetId==='bitcoin');
 if(company001?.company!=='05081966.eth'||company001?.authority?.executionAuthority!=='none')fail('Company #001 owner snapshot authority drift');
 if(Number(btc?.quantity)!==0.00126||Number(btc?.entryPriceUsd)!==77875||Number(btc?.costBasisUsd)!==98.1225)fail('Company #001 BTC owner snapshot drift');
-const diem=(funds?.funds?.singul?.positions||[]).find(x=>x.assetId==='diem');
+const singulPositions=funds?.funds?.singul?.positions||[];
+const diem=singulPositions.find(x=>x.assetId==='diem');
 if(Number(diem?.quantity)!==0.07||diem?.pricing!=='fixed-total'||Number(diem?.fixedTotalValueUsd)!==150||diem?.evidenceStatus!=='owner-provided-current')fail('Singul DIEM owner snapshot drift');
+if(singulPositions.some(x=>x.assetId==='beam-2'))fail('Singul BEAM must not remain in current canonical holdings');
+const expectedSingul=new Map([
+  ['decentraland',486],['the-sandbox',853],['ovr',838],['autonolas',1180],
+  ['virtual-protocol',669],['mode',1000000],['elizaos',80808],['diem',0.07]
+]);
+for(const [id,qty] of expectedSingul){
+  const row=singulPositions.find(x=>x.assetId===id);
+  if(!row||Number(row.quantity)!==qty)fail(`Singul canonical quantity drift for ${id}`);
+}
 
 function replaceOnce(text,oldText,newText,label){
   if(text.includes(newText))return text;
@@ -155,29 +164,15 @@ page001=replaceOnce(page001,
 '05081966 dedicated lock semantics');
 fs.writeFileSync(COMPANY001_PAGE,page001);
 
-let singul=fs.readFileSync(SINGUL_PAGE,'utf8');
-singul=replaceOnce(singul,
-`            diem: 0.07                    // DIEM - fixed $86 (not on CoinGecko)`,
-`            diem: 0.07                    // DIEM - owner-confirmed $150 current valuation snapshot`,
-'Singul DIEM holdings comment');
-singul=replaceOnce(singul,
-`        const FIXED_DIEM_VALUE = 86;      // Fixed $86 total value for DIEM (0.07 tokens)`,
-`        const FIXED_DIEM_VALUE = 150;     // Owner-confirmed current valuation snapshot for 0.07 DIEM`,
-'Singul DIEM fixed value');
-singul=replaceOnce(singul,
-`                    // 'diem' - not on CoinGecko, using fixed $86 value instead`,
-`                    // 'diem' - no validated dynamic route; using owner-confirmed $150 snapshot`,
-'Singul DIEM price-route comment');
-singul=replaceOnce(singul,
-`                const diemValue = FIXED_DIEM_VALUE;  // Fixed $86 for 0.07 DIEM (not on CoinGecko)`,
-`                const diemValue = FIXED_DIEM_VALUE;  // Owner-confirmed current snapshot; not an onchain-observed market price`,
-'Singul DIEM valuation comment');
-fs.writeFileSync(SINGUL_PAGE,singul);
-
 let balance=fs.readFileSync(BALANCE,'utf8');
 if(!balance.includes("const COMPANY001_OWNER_SNAPSHOT = 'companies/company-001-owner-capital-snapshot.json';"))fail('General Balance no longer binds Company #001 owner snapshot');
 balance=balance.replace(/const EXPECTED_UI_BLOB_SHA = '[0-9a-f]{40}';/,`const EXPECTED_UI_BLOB_SHA = '${indexBlob}';`);
 fs.writeFileSync(BALANCE,balance);
+
+// Retire old page-local price engines only after the current owner/state
+// projections have been applied. The runtime projection is idempotent, so
+// future coherent refreshes remain stable after the generated pages are saved.
+await import('./public-page-market-runtime-projection.mjs');
 
 console.log('Owner balance site projection PASS',{
   company001BtcQuantity:btc.quantity,
@@ -185,6 +180,8 @@ console.log('Owner balance site projection PASS',{
   company001BtcCostBasisUsd:btc.costBasisUsd,
   singulDiemQuantity:diem.quantity,
   singulDiemFixedTotalValueUsd:diem.fixedTotalValueUsd,
+  singulCurrentPositionCount:singulPositions.length,
+  singulBeamExcluded:true,
   expectedIndexBlob:indexBlob,
   defiteaConsolidatedDisplayUsesUniqueIndexContribution:true,
   partialCostBasisPerformanceRemainsUnknown:true,
