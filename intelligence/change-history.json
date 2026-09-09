@@ -2,18 +2,18 @@
   "version": "0.2.1-change-history",
   "observerVersion": "0.2.1-deterministic-memory-vault-corrections",
   "startedAt": "2026-08-13T15:19:01.108Z",
-  "lastUpdatedAt": "2026-09-08T11:33:20.716Z",
+  "lastUpdatedAt": "2026-09-09T11:40:03.491Z",
   "retention": {
     "operationalRuns": 730,
     "operationalUniqueEvents": 5000,
     "longTermCanonicalMemory": "intelligence/memory-vault/"
   },
   "lifetime": {
-    "runCount": 63,
-    "eventCount": 439,
-    "uniqueEventCount": 427,
-    "vaultRunCount": 63,
-    "vaultEventCount": 439,
+    "runCount": 64,
+    "eventCount": 446,
+    "uniqueEventCount": 434,
+    "vaultRunCount": 64,
+    "vaultEventCount": 446,
     "vaultStartedAt": "2026-08-13T15:19:01.108Z",
     "memoryCorrectionCount": 1
   },
@@ -1237,6 +1237,26 @@
       "watchCount": 13,
       "vaultRecordPath": "intelligence/memory-vault/2026/09/2026-09-08T11-33-20-716Z-ecced386e9.json",
       "vaultRecordHash": "d3031ccfabb4e116a17a084699d941d297e63f88d3c999a7a41b6db2d2194e91"
+    },
+    {
+      "date": "2026-09-09",
+      "generatedAt": "2026-09-09T11:40:03.491Z",
+      "mode": "delta",
+      "snapshotHash": "db7198d5e67cf3a544511dc6a600d1ba2f3267de862d211ee888e1fc41e12071",
+      "sourceCompositeHash": "f27c88c87a2c80bbdb6067b9777ad3660d1e70a169e698513456209286420d6f",
+      "eventCount": 7,
+      "eventIds": [
+        "4b8fb1779e4e760ba7d0",
+        "075ccaa7c028f2d5aa82",
+        "e71eaedc51e19d8eb715",
+        "13a3588e525e65ed86c3",
+        "6c8fbd5f87d92eefaf02",
+        "b66160775ce2ce535a99",
+        "9b1de67df46a35f19a53"
+      ],
+      "watchCount": 13,
+      "vaultRecordPath": "intelligence/memory-vault/2026/09/2026-09-09T11-40-03-491Z-db7198d5e6.json",
+      "vaultRecordHash": "95e431b474fd7b6fa904dc6e0117de1f5f522b1d04124a9a0c0d73773f6d233c"
     }
   ],
   "events": [
@@ -8137,6 +8157,118 @@
       "unit": "USD",
       "severity": "info",
       "summary": "aerocvxyb.eth accrued rewards moved $235.51 → $236.87 (+$1.36).",
+      "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+      "sourceKeys": [
+        "rewards"
+      ]
+    },
+    {
+      "id": "4b8fb1779e4e760ba7d0",
+      "detectedAt": "2026-09-09T11:40:03.491Z",
+      "category": "reporting",
+      "entity": "defitea.eth",
+      "metric": "new-daily-snapshot",
+      "previousValue": "2026-09-08",
+      "currentValue": "2026-09-09",
+      "unit": null,
+      "severity": "info",
+      "summary": "defitea.eth recorded a new daily reporting observation for 2026-09-09.",
+      "whyItMatters": "Every new daily observation extends the operating memory used by future analytics and decision support.",
+      "sourceKeys": [
+        "reporting"
+      ]
+    },
+    {
+      "id": "075ccaa7c028f2d5aa82",
+      "detectedAt": "2026-09-09T11:40:03.491Z",
+      "category": "reporting",
+      "entity": "defitea.eth",
+      "metric": "currentMonthCashFlowUsd",
+      "previousValue": 36.93,
+      "currentValue": 41.71,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "defitea.eth current-month cash-flow/reference-income counter moved $36.93 → $41.71.",
+      "whyItMatters": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
+      "sourceKeys": [
+        "reporting"
+      ]
+    },
+    {
+      "id": "e71eaedc51e19d8eb715",
+      "detectedAt": "2026-09-09T11:40:03.491Z",
+      "category": "reporting",
+      "entity": "Monetra.eth",
+      "metric": "new-daily-snapshot",
+      "previousValue": "2026-09-08",
+      "currentValue": "2026-09-09",
+      "unit": null,
+      "severity": "info",
+      "summary": "Monetra.eth recorded a new daily reporting observation for 2026-09-09.",
+      "whyItMatters": "Every new daily observation extends the operating memory used by future analytics and decision support.",
+      "sourceKeys": [
+        "reporting"
+      ]
+    },
+    {
+      "id": "13a3588e525e65ed86c3",
+      "detectedAt": "2026-09-09T11:40:03.491Z",
+      "category": "reporting",
+      "entity": "Monetra.eth",
+      "metric": "currentMonthCashFlowUsd",
+      "previousValue": 0.1212,
+      "currentValue": 0.1359,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "Monetra.eth current-month cash-flow/reference-income counter moved $0.12 → $0.14.",
+      "whyItMatters": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
+      "sourceKeys": [
+        "reporting"
+      ]
+    },
+    {
+      "id": "6c8fbd5f87d92eefaf02",
+      "detectedAt": "2026-09-09T11:40:03.491Z",
+      "category": "reporting",
+      "entity": "Monetra.eth",
+      "metric": "currentMonthGeneratedIncomeUsd",
+      "previousValue": 0.1212,
+      "currentValue": 0.1359,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "Monetra.eth current-month generated income moved $0.1212 → $0.1359.",
+      "whyItMatters": "Generated income is a distinct history stream for capital that may compound inside positions rather than arrive as realised cash.",
+      "sourceKeys": [
+        "reporting"
+      ]
+    },
+    {
+      "id": "b66160775ce2ce535a99",
+      "detectedAt": "2026-09-09T11:40:03.491Z",
+      "category": "rewards",
+      "entity": "0x5860...83CA8.eth",
+      "metric": "totalUsd",
+      "previousValue": 175.067225,
+      "currentValue": 171.981605,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "0x5860...83CA8.eth accrued rewards moved $175.07 → $171.98 ($-3.09).",
+      "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+      "sourceKeys": [
+        "rewards"
+      ]
+    },
+    {
+      "id": "9b1de67df46a35f19a53",
+      "detectedAt": "2026-09-09T11:40:03.491Z",
+      "category": "rewards",
+      "entity": "aerocvxyb.eth",
+      "metric": "totalUsd",
+      "previousValue": 236.868221,
+      "currentValue": 233.782601,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "aerocvxyb.eth accrued rewards moved $236.87 → $233.78 ($-3.09).",
       "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
       "sourceKeys": [
         "rewards"
