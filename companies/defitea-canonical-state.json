@@ -18,6 +18,19 @@
     {"assetId":"liquity","display":"LQTY","quantity":1488,"evidenceStatus":"owner-provided-current"},
     {"assetId":"resupply","display":"RSUP","quantity":3682,"evidenceStatus":"owner-provided-current"}
   ],
+  "capitalAggregation": {
+    "economicIdentity": "defitea-fund-equals-defitea-company",
+    "displayTvlMode": "consolidated-parent-plus-nested-companies",
+    "standaloneCapitalSource": "registry-004-general-company-balance",
+    "nestedCompanies": [
+      {"registry":"001","name":"05081966.eth","role":"nested-company-capital"},
+      {"registry":"002","name":"YieldRing.eth","role":"nested-company-capital"}
+    ],
+    "fundCompanyTvlParityRequired": true,
+    "networkContributionMode": "standalone-only-to-prevent-double-count",
+    "incomeAggregationAuthority": false,
+    "note": "Defitea Fund and defitea.eth are one economic object. Their public/current TVL is the consolidated Defitea standalone capital plus Registry #001 and #002 current company capital. The nested companies remain independently registered, so their capital must not be counted a second time in Network TVL. This capital roll-up does not itself grant factual-income aggregation authority."
+  },
   "costBasis": {
     "policy": "lot-preserved-owner-supplied-entry-basis",
     "aerodrome": {
@@ -43,7 +56,9 @@
     "allPositionsPrimaryCapitalLayer": "productive-dividend",
     "unknownCostBasisIsNotZero": true,
     "costBasisLotsPreserved": true,
-    "oneEconomicPositionOnce": true
+    "oneEconomicPositionOnce": true,
+    "fundCompanyTvlParityRequired": true,
+    "nestedCompanyCapitalDoesNotImplyIncomeAuthority": true
   },
   "authority": {
     "readOnly": true,
