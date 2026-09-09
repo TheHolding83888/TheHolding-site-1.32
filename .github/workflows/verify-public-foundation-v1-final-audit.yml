@@ -1,0 +1,145 @@
+name: Verify Public Foundation v1 Final Audit
+
+on:
+  pull_request:
+    paths:
+      - 'reporting/public-foundation-v1-final-audit.mjs'
+      - 'reporting/income-lifecycle-contract.json'
+      - 'reporting/income-lifecycle-contract-validation.mjs'
+      - 'reporting/canonical-earned-income-view.mjs'
+      - 'reporting/income-ledger.json'
+      - 'reporting/company-monthly-reports.json'
+      - 'reporting/company-monthly-earned-income-validation.mjs'
+      - 'reporting/accounting-coverage.json'
+      - 'reporting/accounting-coverage-validation.mjs'
+      - 'reporting/accounting-notice-queue.json'
+      - 'reporting/accounting-notice-queue-validation.mjs'
+      - 'reporting/accounting-reference-reconciliation.json'
+      - 'reporting/accounting-reference-reconciliation-validation.mjs'
+      - 'reporting/historical-accounting-completeness-map.json'
+      - 'reporting/historical-accounting-completeness-map-validation.mjs'
+      - 'reporting/accounting-reconciliation-watch.json'
+      - 'reporting/accounting-reconciliation-watch-validation.mjs'
+      - 'intelligence/reliability/workflow-control-plane-enforce.mjs'
+      - 'intelligence/reliability/workflow-control-plane-baseline.json'
+      - '.github/workflows/verify-public-foundation-v1-final-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: Static preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check reporting/public-foundation-v1-final-audit.mjs
+          node --check reporting/company-monthly-earned-income-validation.mjs
+          node --check reporting/accounting-coverage-validation.mjs
+          node --check reporting/accounting-notice-queue-validation.mjs
+          node --check reporting/accounting-reference-reconciliation-validation.mjs
+          node --check reporting/historical-accounting-completeness-map-validation.mjs
+          node --check reporting/accounting-reconciliation-watch-validation.mjs
+          node --check reporting/income-lifecycle-contract-validation.mjs
+          test -s reporting/income-ledger.json
+          test -s reporting/company-monthly-reports.json
+          test -s reporting/accounting-coverage.json
+          test -s reporting/accounting-notice-queue.json
+          test -s reporting/accounting-reference-reconciliation.json
+          test -s reporting/historical-accounting-completeness-map.json
+          test -s reporting/accounting-reconciliation-watch.json
+          test -s reporting/income-lifecycle-contract.json
+          git diff --check
+
+      - name: Validate final monthly earned-income projection
+        shell: bash
+        env:
+          COMPANY_MONTHLY_REPORTS_FILE: ./reporting/company-monthly-reports.json
+          INCOME_LEDGER_FILE: ./reporting/income-ledger.json
+        run: |
+          set -euo pipefail
+          node reporting/company-monthly-earned-income-validation.mjs
+
+      - name: Validate accounting coverage
+        shell: bash
+        env:
+          ACCOUNTING_COVERAGE_FILE: ./reporting/accounting-coverage.json
+        run: |
+          set -euo pipefail
+          node reporting/accounting-coverage-validation.mjs
+
+      - name: Validate accounting notice queue
+        shell: bash
+        env:
+          ACCOUNTING_NOTICE_QUEUE_FILE: ./reporting/accounting-notice-queue.json
+          ICP_NNS_FACTUAL_SNAPSHOTS_FILE: ./reporting/icp-nns-factual-snapshots.json
+        run: |
+          set -euo pipefail
+          node reporting/accounting-notice-queue-validation.mjs
+
+      - name: Validate reference reconciliation
+        shell: bash
+        env:
+          ACCOUNTING_REFERENCE_RECONCILIATION_FILE: ./reporting/accounting-reference-reconciliation.json
+        run: |
+          set -euo pipefail
+          node reporting/accounting-reference-reconciliation-validation.mjs
+
+      - name: Validate historical completeness map
+        shell: bash
+        env:
+          HISTORICAL_ACCOUNTING_COMPLETENESS_FILE: ./reporting/historical-accounting-completeness-map.json
+        run: |
+          set -euo pipefail
+          node reporting/historical-accounting-completeness-map-validation.mjs
+
+      - name: Validate reconciliation watch
+        shell: bash
+        env:
+          ACCOUNTING_NOTICE_QUEUE_FILE: ./reporting/accounting-notice-queue.json
+          ACCOUNTING_REFERENCE_RECONCILIATION_FILE: ./reporting/accounting-reference-reconciliation.json
+          HISTORICAL_ACCOUNTING_COMPLETENESS_FILE: ./reporting/historical-accounting-completeness-map.json
+          ACCOUNTING_RECONCILIATION_WATCH_FILE: ./reporting/accounting-reconciliation-watch.json
+        run: |
+          set -euo pipefail
+          node reporting/accounting-reconciliation-watch-validation.mjs
+
+      - name: Validate income lifecycle acceptance
+        shell: bash
+        env:
+          INCOME_LIFECYCLE_CONTRACT_FILE: ./reporting/income-lifecycle-contract.json
+          INCOME_LEDGER_FILE: ./reporting/income-ledger.json
+        run: |
+          set -euo pipefail
+          node reporting/income-lifecycle-contract-validation.mjs
+
+      - name: Run final cross-artifact acceptance audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          node reporting/public-foundation-v1-final-audit.mjs
+
+      - name: Enforce workflow control plane
+        shell: bash
+        run: |
+          set -euo pipefail
+          node intelligence/reliability/workflow-control-plane-enforce.mjs --json
+
+      - name: Final repository diff guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          test -z "$(git status --porcelain)"
