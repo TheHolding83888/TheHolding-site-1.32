@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-09T12:53:07.625Z",
+  "generatedAt": "2026-09-09T18:17:35.104Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 2,
-    "medium": 50,
+    "medium": 55,
     "low": 0,
     "info": 0
   },
   "source": {
-    "filesScanned": 1148,
-    "bytesScanned": 30700802,
+    "filesScanned": 1158,
+    "bytesScanned": 30821657,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -22,7 +22,7 @@
     "summary": {
       "reviewedDomFileCount": 4,
       "reviewedDomSinkCount": 21,
-      "unreviewedDomFileCount": 13,
+      "unreviewedDomFileCount": 15,
       "trustedExternalScriptCount": 1,
       "trustedExternalScriptUsageCount": 7
     },
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Tue, 08 Sep 2026 13:55:49 GMT",
+        "lastModified": "Fri, 04 Sep 2026 07:32:28 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -55,23 +55,67 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [],
-    "resolvedFindings": [
+    "newFindings": [
       {
-        "id": "d7c2948daea7dede9ad6a55fe1c94d059291b6befaa01f27c1d1464ce4808035",
+        "id": "458d04f71304ed23691b9fd12c223da2391ea7e363c6fc14cf8bad6a20315bdd",
         "severity": "medium",
         "category": "critical-surface-change",
-        "file": ".github/workflows/verify-accounting-income-lifecycle-contract.yml",
+        "file": ".github/workflows/unified-capital-refresh.yml",
         "line": null,
         "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/verify-accounting-income-lifecycle-contract.yml.",
+        "summary": "Security-sensitive surface changed: .github/workflows/unified-capital-refresh.yml.",
         "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
         "evidence": {
-          "previousSha256": "154abb2db94681046851dc93c328a7009c5dc9ddb1cfa384bc33fc7f5bf7dd98",
-          "currentSha256": "ca3a6cdcbeee382dcbbc33cfef1b1118c7d9924b3c42da37685d5ba5b1ab91db"
+          "previousSha256": "3ac67b2992375acaff2ef72e5c437fb88812ffb665842dd84b52a2b8a229f0ac",
+          "currentSha256": "a4fcc5057acf87978616ac0e7165f1d35d5ff252b7948dd613accd3fafa7a7de"
         }
+      },
+      {
+        "id": "d6ee60fa9058005f1bb4dcf8349b7ade715a8f23e3a19f13f480eaca0e8b5a3e",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/public-page-market-runtime-projection.mjs",
+        "line": 38,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "b6d27274fd9bb19d4213fd64b2c75ebe2a2d5edbda9c29f362418c7342643317",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/public-page-market-runtime-projection.mjs",
+        "line": 82,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "bf7998147c19a92a64fce8bfbe52878c1f61392a6d6f4de65e09990136fb5b85",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/yieldring-public-capital-projection.mjs",
+        "line": 69,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
+      },
+      {
+        "id": "8405d903590a963557037d1871cfa23b10ddf5778385dc697aea1ba8272526dd",
+        "severity": "medium",
+        "category": "dom-innerhtml",
+        "file": "companies/yieldring-public-capital-projection.mjs",
+        "line": 113,
+        "entity": null,
+        "summary": "Dynamic innerHTML assignment detected.",
+        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+        "evidence": null
       }
-    ]
+    ],
+    "resolvedFindings": []
   },
   "currentFindings": [
     {
@@ -95,6 +139,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "458d04f71304ed23691b9fd12c223da2391ea7e363c6fc14cf8bad6a20315bdd",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/unified-capital-refresh.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/unified-capital-refresh.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "3ac67b2992375acaff2ef72e5c437fb88812ffb665842dd84b52a2b8a229f0ac",
+        "currentSha256": "a4fcc5057acf87978616ac0e7165f1d35d5ff252b7948dd613accd3fafa7a7de"
+      }
     },
     {
       "id": "8ca3056c9e7422abd11b34f6141713c18f33ad3e0815e7fc5c29a1b5fa1cfbaf",
@@ -157,6 +215,50 @@
       "category": "dom-innerhtml",
       "file": "companies/company-010-public-adapter.js",
       "line": 412,
+      "entity": null,
+      "summary": "Dynamic innerHTML assignment detected.",
+      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+      "evidence": null
+    },
+    {
+      "id": "d6ee60fa9058005f1bb4dcf8349b7ade715a8f23e3a19f13f480eaca0e8b5a3e",
+      "severity": "medium",
+      "category": "dom-innerhtml",
+      "file": "companies/public-page-market-runtime-projection.mjs",
+      "line": 38,
+      "entity": null,
+      "summary": "Dynamic innerHTML assignment detected.",
+      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+      "evidence": null
+    },
+    {
+      "id": "b6d27274fd9bb19d4213fd64b2c75ebe2a2d5edbda9c29f362418c7342643317",
+      "severity": "medium",
+      "category": "dom-innerhtml",
+      "file": "companies/public-page-market-runtime-projection.mjs",
+      "line": 82,
+      "entity": null,
+      "summary": "Dynamic innerHTML assignment detected.",
+      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+      "evidence": null
+    },
+    {
+      "id": "bf7998147c19a92a64fce8bfbe52878c1f61392a6d6f4de65e09990136fb5b85",
+      "severity": "medium",
+      "category": "dom-innerhtml",
+      "file": "companies/yieldring-public-capital-projection.mjs",
+      "line": 69,
+      "entity": null,
+      "summary": "Dynamic innerHTML assignment detected.",
+      "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
+      "evidence": null
+    },
+    {
+      "id": "8405d903590a963557037d1871cfa23b10ddf5778385dc697aea1ba8272526dd",
+      "severity": "medium",
+      "category": "dom-innerhtml",
+      "file": "companies/yieldring-public-capital-projection.mjs",
+      "line": 113,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
@@ -731,12 +833,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "6186de7420a617bf56793e99e7f3a4c3175f9bdc30c6bb65637cde51e630a9f8",
+    "snapshotHash": "5bf80e16f9637e16c8420f701cab04de105c23120148804cd08adac7488632ff",
     "securityVault": {
-      "runCount": 944,
+      "runCount": 945,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/09/2026-09-09T12-53-07-625Z-6186de7420.json",
-      "latestRecordHash": "eb5920d68537b42be1c3010bebc7628337f80ec728c8a0e425b610837f233e83",
+      "latestRecordPath": "security/security-vault/2026/09/2026-09-09T18-17-35-104Z-5bf80e16f9.json",
+      "latestRecordHash": "d40a0b474d2871ebf618b26143b5fc946fa21a87197a827657206d2629fc94d9",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
