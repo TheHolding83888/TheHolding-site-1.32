@@ -1,7 +1,7 @@
 {
   "version": "0.1-neural-graph-telemetry",
   "engineVersion": "0.1-canonical-neuron-and-connection-counter",
-  "generatedAt": "2026-09-08T12:53:13.043Z",
+  "generatedAt": "2026-09-09T12:58:53.524Z",
   "status": "ok",
   "purpose": "Compact instrument telemetry for how The Holding knowledge graph grows and changes.",
   "semantics": {
@@ -21,9 +21,9 @@
     "marketFactAuthorityForOwnerContext": false
   },
   "totals": {
-    "neurons": 444,
+    "neurons": 443,
     "candidateNeurons": 80,
-    "neuralConnections": 291,
+    "neuralConnections": 285,
     "candidateConnections": 9,
     "nodeTypes": {
       "asset": 33,
@@ -34,12 +34,12 @@
       "entity": 10,
       "event": 80,
       "evidence": 18,
-      "memory-record": 63,
+      "memory-record": 64,
       "metric": 54,
       "metric-definition": 6,
       "owner-context": 38,
       "protocol": 27,
-      "security-finding": 46,
+      "security-finding": 44,
       "strategy": 31
     },
     "candidateNodeTypes": {
@@ -51,7 +51,7 @@
       "company-strategy": 50,
       "decision-case": 2,
       "event-entity": 80,
-      "event-metric": 23,
+      "event-metric": 17,
       "strategy-asset": 33,
       "strategy-metric": 27,
       "strategy-protocol": 31
@@ -61,11 +61,11 @@
     },
     "epistemicClasses": {
       "derived": 54,
-      "direct": 237
+      "direct": 231
     }
   },
   "deltaSincePreviousSnapshot": {
-    "previousGeneratedAt": "2026-09-08T12:53:10.917Z",
+    "previousGeneratedAt": "2026-09-09T12:58:51.469Z",
     "neurons": {
       "mode": "delta",
       "added": 0,
@@ -87,16 +87,16 @@
   },
   "activity24h": {
     "mode": "activity",
-    "snapshotCount": 4,
+    "snapshotCount": 2,
     "neurons": {
-      "added": 75,
-      "removed": 86,
-      "updated": 45
+      "added": 18,
+      "removed": 19,
+      "updated": 0
     },
     "connections": {
-      "added": 71,
-      "removed": 83,
-      "updated": 40
+      "added": 17,
+      "removed": 23,
+      "updated": 0
     }
   },
   "sourceState": {
@@ -112,8 +112,8 @@
     },
     "events": {
       "file": "intelligence/event-intelligence.json",
-      "sha256": "84d55a39d49c6b5ac93fc1649e72b7c90999b309c95cb7209fce31194a8d8a49",
-      "generatedAt": "2026-09-08T11:33:48.266Z"
+      "sha256": "ad4ed4fb2e470f33041f859b3d5a6b799ca7d9f1a4e9594cc2f48cc38ec88855",
+      "generatedAt": "2026-09-09T11:41:01.962Z"
     },
     "brain": {
       "file": "intelligence/brain-chatgpt-bridge.json",
@@ -127,13 +127,13 @@
     },
     "memory": {
       "file": "intelligence/memory-vault/manifest.json",
-      "sha256": "ca4f744e4f22e3fcdc18575678af2fea1d4e427e6d7278ae7a4e72cad8be6f3e",
-      "generatedAt": "2026-09-08T11:33:20.716Z"
+      "sha256": "916b36da0d463399f44e38f6d51f58150930088cba281539bc73ed4812835d5a",
+      "generatedAt": "2026-09-09T11:40:03.491Z"
     },
     "security": {
       "file": "security/security-intelligence.json",
-      "sha256": "6449512b62b8943e5453c1b4e9c203767eb40e59f565d843e70ef8c1c37128e6",
-      "generatedAt": "2026-09-08T12:48:38.597Z"
+      "sha256": "266aa819630dc096cb930c8334f6307e0c94fbe64e9839c3e1473da8a3add2d6",
+      "generatedAt": "2026-09-09T12:53:07.625Z"
     },
     "owner": {
       "file": "intelligence/owner-context/owner-decision-context.json",
@@ -2178,6 +2178,21 @@
         },
         "fingerprint": "754806f9590f2a4349c40bd49d2175cd050a620ed266747f045e698c34ee8633"
       },
+      "event:ev-0aa1eafdbb196f64fdd8": {
+        "id": "event:ev-0aa1eafdbb196f64fdd8",
+        "type": "event",
+        "label": "aerocvxyb.eth accrued rewards moved $236.87 → $233.78 ($-3.09).",
+        "status": "established",
+        "provenance": {
+          "source": "intelligence/event-intelligence.json"
+        },
+        "data": {
+          "type": "reward-value-change",
+          "severity": "info",
+          "occurredAt": "2026-09-09T11:40:03.491Z"
+        },
+        "fingerprint": "51cd80f248ada2485a3edcaa20599fb6ddf1776f99be8e41b32cd20c55393329"
+      },
       "event:ev-0b6c767afcc59d513733": {
         "id": "event:ev-0b6c767afcc59d513733",
         "type": "event",
@@ -2193,20 +2208,20 @@
         },
         "fingerprint": "e54b111fde5d0c29c95eae8d4480857d63b97da7ab81915419791fbfa487992b"
       },
-      "event:ev-0e58c3655a137fa2819d": {
-        "id": "event:ev-0e58c3655a137fa2819d",
+      "event:ev-13d826e194e52ac27a6c": {
+        "id": "event:ev-13d826e194e52ac27a6c",
         "type": "event",
-        "label": "convex-finance reference APR moved 11.85% → 11.88%",
+        "label": "Defitea reference APR moved 11.69% → 13.41%",
         "status": "established",
         "provenance": {
           "source": "intelligence/event-intelligence.json"
         },
         "data": {
-          "type": "protocol-reference-apr-change",
+          "type": "company-reference-apr-change",
           "severity": "watch",
-          "occurredAt": "2026-09-08T09:38:06.139Z"
+          "occurredAt": "2026-09-08T19:46:38.025Z"
         },
-        "fingerprint": "2f052fd3d26f600ba9577d71a68e7886f4520bb8848dab37d6d9f14bff980013"
+        "fingerprint": "d0d7ada58824149930cdcf7d3b5cfdcb832b59d5f0cf87d8305101cbc02834e3"
       },
       "event:ev-1547d13912eb98308398": {
         "id": "event:ev-1547d13912eb98308398",
@@ -2222,21 +2237,6 @@
           "occurredAt": "2026-09-06T20:16:55.449Z"
         },
         "fingerprint": "a29e86c87ba19d9ed277fb4031f4e0eb9342c151d97d4754832d772dfd98207b"
-      },
-      "event:ev-15706ca26132a5e2ab90": {
-        "id": "event:ev-15706ca26132a5e2ab90",
-        "type": "event",
-        "label": "curve-dao-token reference APR moved 1.74% → 6.65%",
-        "status": "established",
-        "provenance": {
-          "source": "intelligence/event-intelligence.json"
-        },
-        "data": {
-          "type": "protocol-reference-apr-change",
-          "severity": "watch",
-          "occurredAt": "2026-09-08T09:38:06.139Z"
-        },
-        "fingerprint": "e9f7a1e51af54e24922c29fdc77d6e868883a536c8e43c40ad99c9a6c06f3476"
       },
       "event:ev-219eb3c5383f74aef2e3": {
         "id": "event:ev-219eb3c5383f74aef2e3",
@@ -2282,6 +2282,21 @@
           "occurredAt": "2026-09-08T11:33:20.716Z"
         },
         "fingerprint": "1bf1bc75ff3d715f698f550428e67d5b023c6469f12baf21df479ac5d616b7a1"
+      },
+      "event:ev-2349365d5aa160917d8c": {
+        "id": "event:ev-2349365d5aa160917d8c",
+        "type": "event",
+        "label": "frax-share reference APR moved 5.34% → 5.35%",
+        "status": "established",
+        "provenance": {
+          "source": "intelligence/event-intelligence.json"
+        },
+        "data": {
+          "type": "protocol-reference-apr-change",
+          "severity": "watch",
+          "occurredAt": "2026-09-08T19:46:38.025Z"
+        },
+        "fingerprint": "646557c3b6ebabf4dc811a47b4dd7143fb4b2cbda485825f23c3781bf4667b37"
       },
       "event:ev-29c40960a892a009a0f1": {
         "id": "event:ev-29c40960a892a009a0f1",
@@ -2343,10 +2358,10 @@
         },
         "fingerprint": "e72e1dcb08a4b31ea3f8e7726d0affa1728dcc98b5c5dbfd7b353658c6e71589"
       },
-      "event:ev-33b886c386ab8d57dc8d": {
-        "id": "event:ev-33b886c386ab8d57dc8d",
+      "event:ev-3d2308a8f3abb3f89815": {
+        "id": "event:ev-3d2308a8f3abb3f89815",
         "type": "event",
-        "label": "resupply reference APR moved 21.24% → 21.50%",
+        "label": "venice-token reference APR moved 7.26% → 7.29%",
         "status": "established",
         "provenance": {
           "source": "intelligence/event-intelligence.json"
@@ -2354,24 +2369,9 @@
         "data": {
           "type": "protocol-reference-apr-change",
           "severity": "watch",
-          "occurredAt": "2026-09-05T19:10:52.658Z"
+          "occurredAt": "2026-09-08T19:46:38.025Z"
         },
-        "fingerprint": "820c6f9fa36ece823894d0929c0bbbb0316d6228dd1a786bce1234a62ef110d0"
-      },
-      "event:ev-3e967ed2976ed1632fb2": {
-        "id": "event:ev-3e967ed2976ed1632fb2",
-        "type": "event",
-        "label": "Rook's portfolio Reference APR moved 15.08% → 15.43% (+0.36 pp).",
-        "status": "established",
-        "provenance": {
-          "source": "intelligence/event-intelligence.json"
-        },
-        "data": {
-          "type": "observer-material-change",
-          "severity": "info",
-          "occurredAt": "2026-09-05T10:48:35.968Z"
-        },
-        "fingerprint": "ab5227bded624216d053a5f3c3c25b57e1ed89891566bdbb5635af9922817751"
+        "fingerprint": "b11e360304d908bb7d74b8af1d65ffe79aaa6540d18193fee05530191a5ca4e8"
       },
       "event:ev-3f77faab36ea5459d6ac": {
         "id": "event:ev-3f77faab36ea5459d6ac",
@@ -2418,6 +2418,36 @@
         },
         "fingerprint": "4840303bf457030d565d9b1de6422c405f98fb66a41a7d2268a0f1cd3015c8d3"
       },
+      "event:ev-47f4d01831bcb83d5992": {
+        "id": "event:ev-47f4d01831bcb83d5992",
+        "type": "event",
+        "label": "convex-finance reference APR moved 11.85% → 11.88%",
+        "status": "established",
+        "provenance": {
+          "source": "intelligence/event-intelligence.json"
+        },
+        "data": {
+          "type": "protocol-reference-apr-change",
+          "severity": "watch",
+          "occurredAt": "2026-09-08T19:46:38.025Z"
+        },
+        "fingerprint": "4cff2306420098fece6d5fc044e5eec344c4fb1a37b9f9ac1eafeb4769e92fde"
+      },
+      "event:ev-4d03627f4a73b728889d": {
+        "id": "event:ev-4d03627f4a73b728889d",
+        "type": "event",
+        "label": "Monetra.eth recorded a new daily reporting observation for 2026-09-09.",
+        "status": "established",
+        "provenance": {
+          "source": "intelligence/event-intelligence.json"
+        },
+        "data": {
+          "type": "daily-reporting-observation",
+          "severity": "memory",
+          "occurredAt": "2026-09-09T11:40:03.491Z"
+        },
+        "fingerprint": "663c44f1c550891ecbcb403d1cad6f4e9904dde30f8d4577821ba698aa9a5c42"
+      },
       "event:ev-4f94f52d6fa34ed688ca": {
         "id": "event:ev-4f94f52d6fa34ed688ca",
         "type": "event",
@@ -2462,21 +2492,6 @@
           "occurredAt": "2026-09-06T11:11:06.033Z"
         },
         "fingerprint": "8195e98156ca89fcd8808ac857e21b1ce4dd549a16cbf5a41e5236d603247ea5"
-      },
-      "event:ev-5ca844152eeeb1e15bfb": {
-        "id": "event:ev-5ca844152eeeb1e15bfb",
-        "type": "event",
-        "label": "yield-basis reference APR moved 5.26% → 4.96%",
-        "status": "established",
-        "provenance": {
-          "source": "intelligence/event-intelligence.json"
-        },
-        "data": {
-          "type": "protocol-reference-apr-change",
-          "severity": "watch",
-          "occurredAt": "2026-09-08T09:38:06.139Z"
-        },
-        "fingerprint": "22f67dfcd3d312a620e182992fd6197cbb378bd3aa3af13954bd263bc16e7fa6"
       },
       "event:ev-64c33f14b210c4aed38c": {
         "id": "event:ev-64c33f14b210c4aed38c",
@@ -2523,25 +2538,10 @@
         },
         "fingerprint": "33b89ac4fcf3551495db8b5f3e2bfc6be9362e9d460ba3928bdd9af9c4bd0b33"
       },
-      "event:ev-714d3737c3794569a2e0": {
-        "id": "event:ev-714d3737c3794569a2e0",
+      "event:ev-6fd7ea18b95f2f81a9a1": {
+        "id": "event:ev-6fd7ea18b95f2f81a9a1",
         "type": "event",
-        "label": "Defitea reference APR moved 11.69% → 13.57%",
-        "status": "established",
-        "provenance": {
-          "source": "intelligence/event-intelligence.json"
-        },
-        "data": {
-          "type": "company-reference-apr-change",
-          "severity": "watch",
-          "occurredAt": "2026-09-08T09:38:06.139Z"
-        },
-        "fingerprint": "987643290e27af9a088caae7fc27f48ab517e56b309bf118919160c64523470b"
-      },
-      "event:ev-757b54f37bfddd3859a1": {
-        "id": "event:ev-757b54f37bfddd3859a1",
-        "type": "event",
-        "label": "fxn-token reference APR moved 20.71% → 30.08%",
+        "label": "resupply reference APR moved 21.15% → 19.01%",
         "status": "established",
         "provenance": {
           "source": "intelligence/event-intelligence.json"
@@ -2549,9 +2549,9 @@
         "data": {
           "type": "protocol-reference-apr-change",
           "severity": "watch",
-          "occurredAt": "2026-09-08T09:38:06.139Z"
+          "occurredAt": "2026-09-08T19:46:38.025Z"
         },
-        "fingerprint": "fc6c2d2fb6ee7e147158bb4ae2dcf52a59a9da293fd8475bd4c91aa1f8896396"
+        "fingerprint": "705798d1b996a317276d93ccd30f4bb262beb103354ec49b5fd1d7ff612b2bcf"
       },
       "event:ev-786f6f2aa0e754368ce4": {
         "id": "event:ev-786f6f2aa0e754368ce4",
@@ -2583,21 +2583,6 @@
         },
         "fingerprint": "747c16346e0b9c1682c26275a43b78fb22db3bed31586e5b350222210e9acec2"
       },
-      "event:ev-79b11ab54afb84299af9": {
-        "id": "event:ev-79b11ab54afb84299af9",
-        "type": "event",
-        "label": "Cypher Reference APR moved 22.18% → 25.08% (+2.90 pp).",
-        "status": "established",
-        "provenance": {
-          "source": "intelligence/event-intelligence.json"
-        },
-        "data": {
-          "type": "observer-material-change",
-          "severity": "info",
-          "occurredAt": "2026-09-05T10:48:35.968Z"
-        },
-        "fingerprint": "387ae31857571b88780de9e2ad44ee1f8a25ccdeb1aca161195d154ea07e4948"
-      },
       "event:ev-7aec761777c5255b1bd2": {
         "id": "event:ev-7aec761777c5255b1bd2",
         "type": "event",
@@ -2612,21 +2597,6 @@
           "occurredAt": "2026-09-06T11:11:06.033Z"
         },
         "fingerprint": "216864d2074cb1fdacf30180f941b651b3adb0380ae0dd6875d41fd44a450f2d"
-      },
-      "event:ev-7cda579855f873b1468f": {
-        "id": "event:ev-7cda579855f873b1468f",
-        "type": "event",
-        "label": "Rook's portfolio rewards crossed $220",
-        "status": "established",
-        "provenance": {
-          "source": "intelligence/event-intelligence.json"
-        },
-        "data": {
-          "type": "reward-usd-milestone",
-          "severity": "info",
-          "occurredAt": "2026-09-05T10:48:35.968Z"
-        },
-        "fingerprint": "85428c0d26ffb457fb245b82a9f60aeb4e6878484f45960de1b526c99b599ae9"
       },
       "event:ev-7d92291841101ee2c8e2": {
         "id": "event:ev-7d92291841101ee2c8e2",
@@ -2643,20 +2613,20 @@
         },
         "fingerprint": "2d041bb0066df43a8c29a3dbec0db06b248a7e9cc2868f33ea7830926255ace9"
       },
-      "event:ev-7e1dd5231290fffc4059": {
-        "id": "event:ev-7e1dd5231290fffc4059",
+      "event:ev-7ff673d66b9005fecc54": {
+        "id": "event:ev-7ff673d66b9005fecc54",
         "type": "event",
-        "label": "venice-token reference APR moved 7.26% → 7.29%",
+        "label": "0x5860...83CA8.eth accrued rewards moved $175.07 → $171.98 ($-3.09).",
         "status": "established",
         "provenance": {
           "source": "intelligence/event-intelligence.json"
         },
         "data": {
-          "type": "protocol-reference-apr-change",
-          "severity": "watch",
-          "occurredAt": "2026-09-08T09:38:06.139Z"
+          "type": "reward-value-change",
+          "severity": "info",
+          "occurredAt": "2026-09-09T11:40:03.491Z"
         },
-        "fingerprint": "868a2ba426e6b4cd1c61414d331cf41de806ba75d2cc73018687657c9a36feb1"
+        "fingerprint": "722e2454d95da03f67446b3f818660714dd83421ec4043e6de51854a7fb4f6b8"
       },
       "event:ev-88f5207b78cf8fb70480": {
         "id": "event:ev-88f5207b78cf8fb70480",
@@ -2778,21 +2748,6 @@
         },
         "fingerprint": "c7f3fb448d988408e509426291a30e5e856f24cc1d66f0811ab226630bf69361"
       },
-      "event:ev-969f79f438037979fe09": {
-        "id": "event:ev-969f79f438037979fe09",
-        "type": "event",
-        "label": "1milliondollar.eth Reference APR moved 10.47% → 10.25% (-0.22 pp).",
-        "status": "established",
-        "provenance": {
-          "source": "intelligence/event-intelligence.json"
-        },
-        "data": {
-          "type": "observer-material-change",
-          "severity": "info",
-          "occurredAt": "2026-09-05T10:48:35.968Z"
-        },
-        "fingerprint": "050468b343573ae625c095ee280df80d11cbcdda05195dc26da7bffef181ebba"
-      },
       "event:ev-9a3b94933b6b756fd6b8": {
         "id": "event:ev-9a3b94933b6b756fd6b8",
         "type": "event",
@@ -2822,21 +2777,6 @@
           "occurredAt": "2026-09-08T11:33:20.716Z"
         },
         "fingerprint": "266620970884a19c0bd5ac416c8277cbe95dc880b07fddad7875bbb4cc0c8658"
-      },
-      "event:ev-9ac083938b264fadd485": {
-        "id": "event:ev-9ac083938b264fadd485",
-        "type": "event",
-        "label": "05081966.eth Reference APR moved 9.34% → 9.60% (+0.26 pp).",
-        "status": "established",
-        "provenance": {
-          "source": "intelligence/event-intelligence.json"
-        },
-        "data": {
-          "type": "observer-material-change",
-          "severity": "info",
-          "occurredAt": "2026-09-05T10:48:35.968Z"
-        },
-        "fingerprint": "fa9fc55bbb7574dac10fee5d550acd4456de1698294872201a22b39a15cb2ca4"
       },
       "event:ev-9c2cb0573b7545399358": {
         "id": "event:ev-9c2cb0573b7545399358",
@@ -2883,10 +2823,10 @@
         },
         "fingerprint": "ba3c6679e77756e318484baa00cf3d1881b2478728962bfd6a3abed31434251e"
       },
-      "event:ev-a18704660e40e108ef1f": {
-        "id": "event:ev-a18704660e40e108ef1f",
+      "event:ev-a26073b562f16110e1e2": {
+        "id": "event:ev-a26073b562f16110e1e2",
         "type": "event",
-        "label": "resupply reference APR moved 21.15% → 18.96%",
+        "label": "yield-basis reference APR moved 5.26% → 4.80%",
         "status": "established",
         "provenance": {
           "source": "intelligence/event-intelligence.json"
@@ -2894,9 +2834,9 @@
         "data": {
           "type": "protocol-reference-apr-change",
           "severity": "watch",
-          "occurredAt": "2026-09-08T09:38:06.139Z"
+          "occurredAt": "2026-09-08T19:46:38.025Z"
         },
-        "fingerprint": "793e6e184584d36f469bceef92717e6426682a4a7c1e60f0f6f6a93bce806e99"
+        "fingerprint": "7ce78ef97d2e2b2212b98cdf5b4ea15f280e452b4b0182be35ca1796d6179fb5"
       },
       "event:ev-a888f70b78a8b29ec40f": {
         "id": "event:ev-a888f70b78a8b29ec40f",
@@ -2913,20 +2853,65 @@
         },
         "fingerprint": "7559e7497f5455b098ebd80b52f67ee6a32b540273f407e3e841899ab3248bf4"
       },
-      "event:ev-b2427624f604b271dbfe": {
-        "id": "event:ev-b2427624f604b271dbfe",
+      "event:ev-a92ced8234ddad540256": {
+        "id": "event:ev-a92ced8234ddad540256",
         "type": "event",
-        "label": "dinaz.eth Reference APR moved 5.54% → 5.30% (-0.24 pp).",
+        "label": "defitea.eth recorded a new daily reporting observation for 2026-09-09.",
         "status": "established",
         "provenance": {
           "source": "intelligence/event-intelligence.json"
         },
         "data": {
-          "type": "observer-material-change",
-          "severity": "info",
-          "occurredAt": "2026-09-05T10:48:35.968Z"
+          "type": "daily-reporting-observation",
+          "severity": "memory",
+          "occurredAt": "2026-09-09T11:40:03.491Z"
         },
-        "fingerprint": "934e42fdc470e1d9b8aecf7267789303fc7e4598c5fd866ea1a065ed9394f966"
+        "fingerprint": "ff4923c02d09e649c0f9e3420979695ddd43d45da6068090b8bb11becbeb1baf"
+      },
+      "event:ev-ab335108baf55e56bb96": {
+        "id": "event:ev-ab335108baf55e56bb96",
+        "type": "event",
+        "label": "Monetra.eth current-month generated income moved $0.1212 → $0.1359.",
+        "status": "established",
+        "provenance": {
+          "source": "intelligence/event-intelligence.json"
+        },
+        "data": {
+          "type": "generated-income-change",
+          "severity": "info",
+          "occurredAt": "2026-09-09T11:40:03.491Z"
+        },
+        "fingerprint": "5f17461aa512c1cd0af31b9fe7b8d77f5ff9cf3f84e5346e2ead164eaf5862b9"
+      },
+      "event:ev-ac643a806b51fe338d5e": {
+        "id": "event:ev-ac643a806b51fe338d5e",
+        "type": "event",
+        "label": "liquity reference APR moved 0.25% → 0.06%",
+        "status": "established",
+        "provenance": {
+          "source": "intelligence/event-intelligence.json"
+        },
+        "data": {
+          "type": "protocol-reference-apr-change",
+          "severity": "watch",
+          "occurredAt": "2026-09-08T19:46:38.025Z"
+        },
+        "fingerprint": "57e4f2456e89da98ef4a225a6d2c3372044733f4aa8da783ed90975098d9f47a"
+      },
+      "event:ev-ae2954d32510f71a7260": {
+        "id": "event:ev-ae2954d32510f71a7260",
+        "type": "event",
+        "label": "Monetra.eth current-month cash-flow/reference-income counter moved $0.12 → $0.14.",
+        "status": "established",
+        "provenance": {
+          "source": "intelligence/event-intelligence.json"
+        },
+        "data": {
+          "type": "cash-flow-counter-change",
+          "severity": "info",
+          "occurredAt": "2026-09-09T11:40:03.491Z"
+        },
+        "fingerprint": "6138bf178ed8d6adb879b0bccdbfdec6027a5e331e022b5548d17667a3c4687e"
       },
       "event:ev-b4f2d6a417c75a1b9dac": {
         "id": "event:ev-b4f2d6a417c75a1b9dac",
@@ -2973,10 +2958,10 @@
         },
         "fingerprint": "a37ff85b6894c2630057bdbfa489e097d35c5a76b931bdb62d1effc2c9156f44"
       },
-      "event:ev-be4bea2510edda5db098": {
-        "id": "event:ev-be4bea2510edda5db098",
+      "event:ev-ba8cb361a6cdc80cf0fc": {
+        "id": "event:ev-ba8cb361a6cdc80cf0fc",
         "type": "event",
-        "label": "frax-share reference APR moved 5.34% → 5.35%",
+        "label": "curve-dao-token reference APR moved 1.74% → 6.65%",
         "status": "established",
         "provenance": {
           "source": "intelligence/event-intelligence.json"
@@ -2984,9 +2969,9 @@
         "data": {
           "type": "protocol-reference-apr-change",
           "severity": "watch",
-          "occurredAt": "2026-09-08T09:38:06.139Z"
+          "occurredAt": "2026-09-08T19:46:38.025Z"
         },
-        "fingerprint": "b15c796bd298fe717795b2fcd5f196a84c3f4fc1f487f2f5d29f6e3b9f8b5a23"
+        "fingerprint": "16840ee5ff054129cb071c2a1d7fa430a050367c8a3d78989ea0c26d98a81255"
       },
       "event:ev-c4d1cb9e7ff6cabf9d75": {
         "id": "event:ev-c4d1cb9e7ff6cabf9d75",
@@ -3138,6 +3123,21 @@
         },
         "fingerprint": "8912a56688253650982d4d53dfee80c9991465d1133f85118c86522ebe8d95ec"
       },
+      "event:ev-d68119e6c731df0324b5": {
+        "id": "event:ev-d68119e6c731df0324b5",
+        "type": "event",
+        "label": "fxn-token reference APR moved 20.71% → 30.07%",
+        "status": "established",
+        "provenance": {
+          "source": "intelligence/event-intelligence.json"
+        },
+        "data": {
+          "type": "protocol-reference-apr-change",
+          "severity": "watch",
+          "occurredAt": "2026-09-08T19:46:38.025Z"
+        },
+        "fingerprint": "0c9afee6a60bdf5aa4a9ae7bb98ce1a10f41ce9cf918823b0fdf47c7670cb6e2"
+      },
       "event:ev-d77f245453bb54e3d805": {
         "id": "event:ev-d77f245453bb54e3d805",
         "type": "event",
@@ -3182,6 +3182,21 @@
           "occurredAt": "2026-09-06T11:11:06.033Z"
         },
         "fingerprint": "55c6bbb35b40f9651d671a360958542649c9277e4e74b3d67f9b24047509f3ab"
+      },
+      "event:ev-ddfebf5572abe760c92f": {
+        "id": "event:ev-ddfebf5572abe760c92f",
+        "type": "event",
+        "label": "Defitea reference APR moved 13.41% → 13.37%",
+        "status": "established",
+        "provenance": {
+          "source": "intelligence/event-intelligence.json"
+        },
+        "data": {
+          "type": "company-reference-apr-change",
+          "severity": "watch",
+          "occurredAt": "2026-09-09T04:34:51.875Z"
+        },
+        "fingerprint": "deefee946c7d775a79ee34d92b78434189a41503c81e7a3047474712a3e6395f"
       },
       "event:ev-e099f2f905fb5bfde2ee": {
         "id": "event:ev-e099f2f905fb5bfde2ee",
@@ -3228,21 +3243,6 @@
         },
         "fingerprint": "1283f516421b0175e9ddf2fd140fe79656d506463e23a70db675201823cab0ba"
       },
-      "event:ev-e8f9e0982917fda1a9ec": {
-        "id": "event:ev-e8f9e0982917fda1a9ec",
-        "type": "event",
-        "label": "Cypher Productivity coverage moved 88.4% → 100.0%.",
-        "status": "established",
-        "provenance": {
-          "source": "intelligence/event-intelligence.json"
-        },
-        "data": {
-          "type": "observer-material-change",
-          "severity": "important",
-          "occurredAt": "2026-09-05T10:48:35.968Z"
-        },
-        "fingerprint": "d0c8f9f37d2094dd933c050b64073ffd361567782857e5c9b351ab0b9eb2fdda"
-      },
       "event:ev-e965ba25197777d96f72": {
         "id": "event:ev-e965ba25197777d96f72",
         "type": "event",
@@ -3257,6 +3257,21 @@
           "occurredAt": "2026-09-07T12:52:37.357Z"
         },
         "fingerprint": "312022c44a9df4f27b91c6643294363c46c32040c8cf9dacc5804ee812d86631"
+      },
+      "event:ev-edbc6cce8f0b93faea89": {
+        "id": "event:ev-edbc6cce8f0b93faea89",
+        "type": "event",
+        "label": "defitea.eth current-month cash-flow/reference-income counter moved $36.93 → $41.71.",
+        "status": "established",
+        "provenance": {
+          "source": "intelligence/event-intelligence.json"
+        },
+        "data": {
+          "type": "cash-flow-counter-change",
+          "severity": "info",
+          "occurredAt": "2026-09-09T11:40:03.491Z"
+        },
+        "fingerprint": "8ba1894db462184f8c9a844b84d7e7d11bcc880942823c99f5be1ced286eef3d"
       },
       "event:ev-ee31fb703635419e79f5": {
         "id": "event:ev-ee31fb703635419e79f5",
@@ -3287,21 +3302,6 @@
           "occurredAt": "2026-09-06T11:11:06.033Z"
         },
         "fingerprint": "a38c2b1292b96882ab48309010984dee7c61c7b83a7fefd0b0a83bb8106f40c1"
-      },
-      "event:ev-f1b706972aa237e6e866": {
-        "id": "event:ev-f1b706972aa237e6e866",
-        "type": "event",
-        "label": "liquity reference APR moved 0.25% → 0.06%",
-        "status": "established",
-        "provenance": {
-          "source": "intelligence/event-intelligence.json"
-        },
-        "data": {
-          "type": "protocol-reference-apr-change",
-          "severity": "watch",
-          "occurredAt": "2026-09-08T09:38:06.139Z"
-        },
-        "fingerprint": "15f0c7e3e6c4cf1fc1921d39a44226a32e6027fcdd4dfdee045e6cf2fb61cc5e"
       },
       "event:ev-f2bdb3963e7504da379f": {
         "id": "event:ev-f2bdb3963e7504da379f",
@@ -4460,6 +4460,21 @@
           "eventCount": 16
         },
         "fingerprint": "21ec2dc13dedd4a06e0cd2b8642c9bbac20dbb7f9e4dde8fdc0a034cd9a11138"
+      },
+      "memory-record:2026-09-09t11-40-03-491z-db7198d5e6": {
+        "id": "memory-record:2026-09-09t11-40-03-491z-db7198d5e6",
+        "type": "memory-record",
+        "label": "2026-09-09T11-40-03-491Z-db7198d5e6",
+        "status": "established",
+        "provenance": {
+          "source": "intelligence/memory-vault/manifest.json"
+        },
+        "data": {
+          "generatedAt": "2026-09-09T11:40:03.491Z",
+          "mode": "delta",
+          "eventCount": 7
+        },
+        "fingerprint": "869c1f3c941bec21b8d554ecda998f880a7cdb1d192fcc54fd6d0f70cc4af5f0"
       },
       "metric-definition:aprlatestpct": {
         "id": "metric-definition:aprlatestpct",
@@ -6437,36 +6452,6 @@
           "file": "realty/history/index.html"
         },
         "fingerprint": "f052ff5e64de368a8bed5a735100ee4f8f4b402f8fc889ecc4615c4b6e32a4a0"
-      },
-      "security-finding:5f11c4155485d515ff9b157384e896a87bba373e872d8485db94d9105cd44315": {
-        "id": "security-finding:5f11c4155485d515ff9b157384e896a87bba373e872d8485db94d9105cd44315",
-        "type": "security-finding",
-        "label": "Security-sensitive surface changed: .github/workflows/update-company-monthly-reports.yml.",
-        "status": "established",
-        "provenance": {
-          "source": "security/security-intelligence.json"
-        },
-        "data": {
-          "severity": "medium",
-          "category": "critical-surface-change",
-          "file": ".github/workflows/update-company-monthly-reports.yml"
-        },
-        "fingerprint": "670a50ed78a0432ec6594465f820c46b8be1edcea16e37c2f34fe2337a27a6c6"
-      },
-      "security-finding:60bcbcd9b440aedcb6160711bdceeae3d58da6e4c43d0e9ad2cb2641dc1b11e9": {
-        "id": "security-finding:60bcbcd9b440aedcb6160711bdceeae3d58da6e4c43d0e9ad2cb2641dc1b11e9",
-        "type": "security-finding",
-        "label": "Security-sensitive surface changed: .github/workflows/verify-company-monthly-reports.yml.",
-        "status": "established",
-        "provenance": {
-          "source": "security/security-intelligence.json"
-        },
-        "data": {
-          "severity": "medium",
-          "category": "critical-surface-change",
-          "file": ".github/workflows/verify-company-monthly-reports.yml"
-        },
-        "fingerprint": "34b6ca343accf7c68795878c2c58b57a6cb895b1d8d5438821a2a555444465c5"
       },
       "security-finding:6224790871dc842c2f2c4d139d75da0fd553117407a3abe735c8f395ff0d1ed9": {
         "id": "security-finding:6224790871dc842c2f2c4d139d75da0fd553117407a3abe735c8f395ff0d1ed9",
@@ -8596,6 +8581,16 @@
         "data": {},
         "fingerprint": "c5b74576d2b5f08e0d135bfa5e0f92bb5847cda1467707500e82ffb00bb8afb0"
       },
+      "event-entity:event:ev-0aa1eafdbb196f64fdd8->company:aerocvxyb.eth": {
+        "id": "event-entity:event:ev-0aa1eafdbb196f64fdd8->company:aerocvxyb.eth",
+        "kind": "event-entity",
+        "from": "event:ev-0aa1eafdbb196f64fdd8",
+        "to": "company:aerocvxyb.eth",
+        "status": "established",
+        "epistemicClass": "direct",
+        "data": {},
+        "fingerprint": "4f115bb828257b0a0745e11dd7134505cbd82e08dabc3bb461a5559abe072891"
+      },
       "event-entity:event:ev-0b6c767afcc59d513733->company:cypher": {
         "id": "event-entity:event:ev-0b6c767afcc59d513733->company:cypher",
         "kind": "event-entity",
@@ -8606,15 +8601,15 @@
         "data": {},
         "fingerprint": "c57b2c5b15c955ae977f4fcb12b9d4bbc50091c1615d88314008420df793741f"
       },
-      "event-entity:event:ev-0e58c3655a137fa2819d->entity:defitea-convex-finance": {
-        "id": "event-entity:event:ev-0e58c3655a137fa2819d->entity:defitea-convex-finance",
+      "event-entity:event:ev-13d826e194e52ac27a6c->entity:defitea": {
+        "id": "event-entity:event:ev-13d826e194e52ac27a6c->entity:defitea",
         "kind": "event-entity",
-        "from": "event:ev-0e58c3655a137fa2819d",
-        "to": "entity:defitea-convex-finance",
+        "from": "event:ev-13d826e194e52ac27a6c",
+        "to": "entity:defitea",
         "status": "established",
         "epistemicClass": "direct",
         "data": {},
-        "fingerprint": "550699009b684d8e1acdac99d118b9c6656a735280fe8ee6cc017c9d7c524e80"
+        "fingerprint": "67ea234b602c79a91c67434727ae4f2cd306e14842ad53d9e2d565fbff5f9fea"
       },
       "event-entity:event:ev-1547d13912eb98308398->entity:defitea-frax-share": {
         "id": "event-entity:event:ev-1547d13912eb98308398->entity:defitea-frax-share",
@@ -8625,16 +8620,6 @@
         "epistemicClass": "direct",
         "data": {},
         "fingerprint": "de7233ad1bed114e5a5da81d86d1afe435c7d2c6391a2c53b769451feda8a3a9"
-      },
-      "event-entity:event:ev-15706ca26132a5e2ab90->entity:defitea-curve-dao-token": {
-        "id": "event-entity:event:ev-15706ca26132a5e2ab90->entity:defitea-curve-dao-token",
-        "kind": "event-entity",
-        "from": "event:ev-15706ca26132a5e2ab90",
-        "to": "entity:defitea-curve-dao-token",
-        "status": "established",
-        "epistemicClass": "direct",
-        "data": {},
-        "fingerprint": "edfbc48348ee0d7f757ef17a1ed9210d78430da01391e67f93105a4bdd1b2351"
       },
       "event-entity:event:ev-219eb3c5383f74aef2e3->company:defitea.eth": {
         "id": "event-entity:event:ev-219eb3c5383f74aef2e3->company:defitea.eth",
@@ -8665,6 +8650,16 @@
         "epistemicClass": "direct",
         "data": {},
         "fingerprint": "f5c66043981bee03ca8d356dfa289ba4f3e6da91441963f05b5137977b50bf32"
+      },
+      "event-entity:event:ev-2349365d5aa160917d8c->entity:defitea-frax-share": {
+        "id": "event-entity:event:ev-2349365d5aa160917d8c->entity:defitea-frax-share",
+        "kind": "event-entity",
+        "from": "event:ev-2349365d5aa160917d8c",
+        "to": "entity:defitea-frax-share",
+        "status": "established",
+        "epistemicClass": "direct",
+        "data": {},
+        "fingerprint": "ed25e30d24fe3f6233955d84875b5aec1f7ec54280e596485a89503043dc4df5"
       },
       "event-entity:event:ev-29c40960a892a009a0f1->company:cypher": {
         "id": "event-entity:event:ev-29c40960a892a009a0f1->company:cypher",
@@ -8706,25 +8701,15 @@
         "data": {},
         "fingerprint": "70baf6c273b02634463cf2be188c509538f9557d01f261dd43a513babca14f9c"
       },
-      "event-entity:event:ev-33b886c386ab8d57dc8d->entity:defitea-resupply": {
-        "id": "event-entity:event:ev-33b886c386ab8d57dc8d->entity:defitea-resupply",
+      "event-entity:event:ev-3d2308a8f3abb3f89815->entity:defitea-venice-token": {
+        "id": "event-entity:event:ev-3d2308a8f3abb3f89815->entity:defitea-venice-token",
         "kind": "event-entity",
-        "from": "event:ev-33b886c386ab8d57dc8d",
-        "to": "entity:defitea-resupply",
+        "from": "event:ev-3d2308a8f3abb3f89815",
+        "to": "entity:defitea-venice-token",
         "status": "established",
         "epistemicClass": "direct",
         "data": {},
-        "fingerprint": "c2c4d7f012bdae46d91f1fafa79dc0c27e40595f54513dcc183de2f06a96e3ba"
-      },
-      "event-entity:event:ev-3e967ed2976ed1632fb2->company:rook-s-portfolio": {
-        "id": "event-entity:event:ev-3e967ed2976ed1632fb2->company:rook-s-portfolio",
-        "kind": "event-entity",
-        "from": "event:ev-3e967ed2976ed1632fb2",
-        "to": "company:rook-s-portfolio",
-        "status": "established",
-        "epistemicClass": "direct",
-        "data": {},
-        "fingerprint": "8e60f727b8a763e22550019c8dbc6fc0e07ee63225313121b65e0326ae60cba3"
+        "fingerprint": "043695d9e925552816e862ece3d3af84431fa2fc5d32616f91c89dd1186b91fc"
       },
       "event-entity:event:ev-3f77faab36ea5459d6ac->company:monetra.eth": {
         "id": "event-entity:event:ev-3f77faab36ea5459d6ac->company:monetra.eth",
@@ -8756,6 +8741,26 @@
         "data": {},
         "fingerprint": "f25cf014442084e5e27ecc2aa6b16c6ac32c2d17309b5ed0ed765c6eb2a35f1d"
       },
+      "event-entity:event:ev-47f4d01831bcb83d5992->entity:defitea-convex-finance": {
+        "id": "event-entity:event:ev-47f4d01831bcb83d5992->entity:defitea-convex-finance",
+        "kind": "event-entity",
+        "from": "event:ev-47f4d01831bcb83d5992",
+        "to": "entity:defitea-convex-finance",
+        "status": "established",
+        "epistemicClass": "direct",
+        "data": {},
+        "fingerprint": "28940467ab8995cc84360016887734d0235679f86a3f90513ae1d9328faba589"
+      },
+      "event-entity:event:ev-4d03627f4a73b728889d->company:monetra.eth": {
+        "id": "event-entity:event:ev-4d03627f4a73b728889d->company:monetra.eth",
+        "kind": "event-entity",
+        "from": "event:ev-4d03627f4a73b728889d",
+        "to": "company:monetra.eth",
+        "status": "established",
+        "epistemicClass": "direct",
+        "data": {},
+        "fingerprint": "1f230b8fc766cfb5a403e2a8be1032ef2eebfe22fdec35e4de7cc7454d7a9fda"
+      },
       "event-entity:event:ev-4f94f52d6fa34ed688ca->entity:defitea-venice-token": {
         "id": "event-entity:event:ev-4f94f52d6fa34ed688ca->entity:defitea-venice-token",
         "kind": "event-entity",
@@ -8785,16 +8790,6 @@
         "epistemicClass": "direct",
         "data": {},
         "fingerprint": "bdc74a903826a24de34bbf1483c880916046da6600c706ff97519719793c57e9"
-      },
-      "event-entity:event:ev-5ca844152eeeb1e15bfb->entity:defitea-yield-basis": {
-        "id": "event-entity:event:ev-5ca844152eeeb1e15bfb->entity:defitea-yield-basis",
-        "kind": "event-entity",
-        "from": "event:ev-5ca844152eeeb1e15bfb",
-        "to": "entity:defitea-yield-basis",
-        "status": "established",
-        "epistemicClass": "direct",
-        "data": {},
-        "fingerprint": "366070d363a4a7d6570942d5efd01192d25899cebe545077a85de528c7132f99"
       },
       "event-entity:event:ev-64c33f14b210c4aed38c->company:monetra.eth": {
         "id": "event-entity:event:ev-64c33f14b210c4aed38c->company:monetra.eth",
@@ -8826,25 +8821,15 @@
         "data": {},
         "fingerprint": "a6554eb29ff98fab489fcfa927b281005ffe5cac7c74b2e6ecb0ebcf63d13031"
       },
-      "event-entity:event:ev-714d3737c3794569a2e0->entity:defitea": {
-        "id": "event-entity:event:ev-714d3737c3794569a2e0->entity:defitea",
+      "event-entity:event:ev-6fd7ea18b95f2f81a9a1->entity:defitea-resupply": {
+        "id": "event-entity:event:ev-6fd7ea18b95f2f81a9a1->entity:defitea-resupply",
         "kind": "event-entity",
-        "from": "event:ev-714d3737c3794569a2e0",
-        "to": "entity:defitea",
+        "from": "event:ev-6fd7ea18b95f2f81a9a1",
+        "to": "entity:defitea-resupply",
         "status": "established",
         "epistemicClass": "direct",
         "data": {},
-        "fingerprint": "3318899146d93c85da393379d00f240459037d617fec13d04423b5601ff2cb84"
-      },
-      "event-entity:event:ev-757b54f37bfddd3859a1->entity:defitea-fxn-token": {
-        "id": "event-entity:event:ev-757b54f37bfddd3859a1->entity:defitea-fxn-token",
-        "kind": "event-entity",
-        "from": "event:ev-757b54f37bfddd3859a1",
-        "to": "entity:defitea-fxn-token",
-        "status": "established",
-        "epistemicClass": "direct",
-        "data": {},
-        "fingerprint": "be792e16d5175bdcc6882b1cf26502ecaeb16845f8fd19b80d2a9d3841f9ce76"
+        "fingerprint": "47ede4a43d4336af605918b2429ab0284cde5aa5e050150d60f29690f31ecef6"
       },
       "event-entity:event:ev-786f6f2aa0e754368ce4->entity:defitea-convex-finance": {
         "id": "event-entity:event:ev-786f6f2aa0e754368ce4->entity:defitea-convex-finance",
@@ -8866,16 +8851,6 @@
         "data": {},
         "fingerprint": "ce0dafa7e2b0f1752c4ee4fd35f523d6fc429f9562973e7fab47ff19ea6f5411"
       },
-      "event-entity:event:ev-79b11ab54afb84299af9->company:cypher": {
-        "id": "event-entity:event:ev-79b11ab54afb84299af9->company:cypher",
-        "kind": "event-entity",
-        "from": "event:ev-79b11ab54afb84299af9",
-        "to": "company:cypher",
-        "status": "established",
-        "epistemicClass": "direct",
-        "data": {},
-        "fingerprint": "641f5b686ef821a8ce3cbe411ee3225ca159fd9f514b10b6d151182272fd17c6"
-      },
       "event-entity:event:ev-7aec761777c5255b1bd2->company:defitea.eth": {
         "id": "event-entity:event:ev-7aec761777c5255b1bd2->company:defitea.eth",
         "kind": "event-entity",
@@ -8885,16 +8860,6 @@
         "epistemicClass": "direct",
         "data": {},
         "fingerprint": "64ff625d797fc79e72fe670633476b2509abc8a26b269bec1f0b4926e5df38ac"
-      },
-      "event-entity:event:ev-7cda579855f873b1468f->company:rook-s-portfolio": {
-        "id": "event-entity:event:ev-7cda579855f873b1468f->company:rook-s-portfolio",
-        "kind": "event-entity",
-        "from": "event:ev-7cda579855f873b1468f",
-        "to": "company:rook-s-portfolio",
-        "status": "established",
-        "epistemicClass": "direct",
-        "data": {},
-        "fingerprint": "8f9f0280a47575107631e212fc6ec46eb44b8f73be1c6ca04c0e2d532accc7bd"
       },
       "event-entity:event:ev-7d92291841101ee2c8e2->strategy:yieldbasis_yblp_wbtc": {
         "id": "event-entity:event:ev-7d92291841101ee2c8e2->strategy:yieldbasis_yblp_wbtc",
@@ -8906,15 +8871,15 @@
         "data": {},
         "fingerprint": "324bca63afd32c3cf9b08b1dec96c1ecc7195b80b106b90504b88f44f0c43151"
       },
-      "event-entity:event:ev-7e1dd5231290fffc4059->entity:defitea-venice-token": {
-        "id": "event-entity:event:ev-7e1dd5231290fffc4059->entity:defitea-venice-token",
+      "event-entity:event:ev-7ff673d66b9005fecc54->company:0x5860...83ca8.eth": {
+        "id": "event-entity:event:ev-7ff673d66b9005fecc54->company:0x5860...83ca8.eth",
         "kind": "event-entity",
-        "from": "event:ev-7e1dd5231290fffc4059",
-        "to": "entity:defitea-venice-token",
+        "from": "event:ev-7ff673d66b9005fecc54",
+        "to": "company:0x5860...83ca8.eth",
         "status": "established",
         "epistemicClass": "direct",
         "data": {},
-        "fingerprint": "1d475182af550c59a052d28f09fa9483864639bff2000d569671781fed5c6998"
+        "fingerprint": "55f57800ed4a4f936be5016524c18ae3c3cbdc8401211dfff9a29e8b66a25b55"
       },
       "event-entity:event:ev-88f5207b78cf8fb70480->company:05081966.eth": {
         "id": "event-entity:event:ev-88f5207b78cf8fb70480->company:05081966.eth",
@@ -8996,16 +8961,6 @@
         "data": {},
         "fingerprint": "3599ae2b9b57dfa1292e6a5c633ce25ff3b536dc84c44d96956034a9c89e5b28"
       },
-      "event-entity:event:ev-969f79f438037979fe09->company:1milliondollar.eth": {
-        "id": "event-entity:event:ev-969f79f438037979fe09->company:1milliondollar.eth",
-        "kind": "event-entity",
-        "from": "event:ev-969f79f438037979fe09",
-        "to": "company:1milliondollar.eth",
-        "status": "established",
-        "epistemicClass": "direct",
-        "data": {},
-        "fingerprint": "696ff6efa85ee672bd1bee81afef5d8dd73004b0f6807cdf29e2dec75a4d96a4"
-      },
       "event-entity:event:ev-9a3b94933b6b756fd6b8->company:0x5860...83ca8.eth": {
         "id": "event-entity:event:ev-9a3b94933b6b756fd6b8->company:0x5860...83ca8.eth",
         "kind": "event-entity",
@@ -9025,16 +8980,6 @@
         "epistemicClass": "direct",
         "data": {},
         "fingerprint": "260646634af0744b2080dc8a321b3bd63203da0d1e9118e0f42a76f25e058f43"
-      },
-      "event-entity:event:ev-9ac083938b264fadd485->company:05081966.eth": {
-        "id": "event-entity:event:ev-9ac083938b264fadd485->company:05081966.eth",
-        "kind": "event-entity",
-        "from": "event:ev-9ac083938b264fadd485",
-        "to": "company:05081966.eth",
-        "status": "established",
-        "epistemicClass": "direct",
-        "data": {},
-        "fingerprint": "9e3b5234d2ae90bd3cdc9baaa594b008f528b597b98fa9c9da105e1c6db31017"
       },
       "event-entity:event:ev-9c2cb0573b7545399358->company:aerocvxyb.eth": {
         "id": "event-entity:event:ev-9c2cb0573b7545399358->company:aerocvxyb.eth",
@@ -9066,15 +9011,15 @@
         "data": {},
         "fingerprint": "3109c07d8f32e28c30397161b980fd014f1b4415edeb29d5ac7d20094d387766"
       },
-      "event-entity:event:ev-a18704660e40e108ef1f->entity:defitea-resupply": {
-        "id": "event-entity:event:ev-a18704660e40e108ef1f->entity:defitea-resupply",
+      "event-entity:event:ev-a26073b562f16110e1e2->entity:defitea-yield-basis": {
+        "id": "event-entity:event:ev-a26073b562f16110e1e2->entity:defitea-yield-basis",
         "kind": "event-entity",
-        "from": "event:ev-a18704660e40e108ef1f",
-        "to": "entity:defitea-resupply",
+        "from": "event:ev-a26073b562f16110e1e2",
+        "to": "entity:defitea-yield-basis",
         "status": "established",
         "epistemicClass": "direct",
         "data": {},
-        "fingerprint": "10eaa4a5c246aa3de3c77a7bf1babff24c9fb67b9f22f253f7747a31b6398da6"
+        "fingerprint": "ad937593b1e85ae768c2bb73cd46e6b5cdedb49cff6f481a7d1d18b2efb6005d"
       },
       "event-entity:event:ev-a888f70b78a8b29ec40f->company:aerocvxyb.eth": {
         "id": "event-entity:event:ev-a888f70b78a8b29ec40f->company:aerocvxyb.eth",
@@ -9086,15 +9031,45 @@
         "data": {},
         "fingerprint": "1771405d61693c184b0d1c822281222f0097d00472a457e666b2fb4edb89dd5c"
       },
-      "event-entity:event:ev-b2427624f604b271dbfe->company:dinaz.eth": {
-        "id": "event-entity:event:ev-b2427624f604b271dbfe->company:dinaz.eth",
+      "event-entity:event:ev-a92ced8234ddad540256->company:defitea.eth": {
+        "id": "event-entity:event:ev-a92ced8234ddad540256->company:defitea.eth",
         "kind": "event-entity",
-        "from": "event:ev-b2427624f604b271dbfe",
-        "to": "company:dinaz.eth",
+        "from": "event:ev-a92ced8234ddad540256",
+        "to": "company:defitea.eth",
         "status": "established",
         "epistemicClass": "direct",
         "data": {},
-        "fingerprint": "0fa35560b44595ee6482e9a53bb7c6b7165895b0a360ed556e44ab9975e676a4"
+        "fingerprint": "f3b7fee325c9420b1f93b70f3975d0078be6f2321ea722ffd65a089e3b6b8f14"
+      },
+      "event-entity:event:ev-ab335108baf55e56bb96->company:monetra.eth": {
+        "id": "event-entity:event:ev-ab335108baf55e56bb96->company:monetra.eth",
+        "kind": "event-entity",
+        "from": "event:ev-ab335108baf55e56bb96",
+        "to": "company:monetra.eth",
+        "status": "established",
+        "epistemicClass": "direct",
+        "data": {},
+        "fingerprint": "4fc56137a11bcb5865a018cb79900466c9e919c56ff5df8977e664b831d553ee"
+      },
+      "event-entity:event:ev-ac643a806b51fe338d5e->entity:defitea-liquity": {
+        "id": "event-entity:event:ev-ac643a806b51fe338d5e->entity:defitea-liquity",
+        "kind": "event-entity",
+        "from": "event:ev-ac643a806b51fe338d5e",
+        "to": "entity:defitea-liquity",
+        "status": "established",
+        "epistemicClass": "direct",
+        "data": {},
+        "fingerprint": "9e2a5e13d17886f4351f5b06194634f32b062af503a7641386c9b46cc96ba85e"
+      },
+      "event-entity:event:ev-ae2954d32510f71a7260->company:monetra.eth": {
+        "id": "event-entity:event:ev-ae2954d32510f71a7260->company:monetra.eth",
+        "kind": "event-entity",
+        "from": "event:ev-ae2954d32510f71a7260",
+        "to": "company:monetra.eth",
+        "status": "established",
+        "epistemicClass": "direct",
+        "data": {},
+        "fingerprint": "754345772f22b8a19a17302ad84d6468a66bc7c9aa004d11c82ab0873966d0cf"
       },
       "event-entity:event:ev-b4f2d6a417c75a1b9dac->company:defitea.eth": {
         "id": "event-entity:event:ev-b4f2d6a417c75a1b9dac->company:defitea.eth",
@@ -9126,15 +9101,15 @@
         "data": {},
         "fingerprint": "4e42ae725ad5c9487b117b2e11b1fccb359953b3005ee8d57a471e97c00a03d0"
       },
-      "event-entity:event:ev-be4bea2510edda5db098->entity:defitea-frax-share": {
-        "id": "event-entity:event:ev-be4bea2510edda5db098->entity:defitea-frax-share",
+      "event-entity:event:ev-ba8cb361a6cdc80cf0fc->entity:defitea-curve-dao-token": {
+        "id": "event-entity:event:ev-ba8cb361a6cdc80cf0fc->entity:defitea-curve-dao-token",
         "kind": "event-entity",
-        "from": "event:ev-be4bea2510edda5db098",
-        "to": "entity:defitea-frax-share",
+        "from": "event:ev-ba8cb361a6cdc80cf0fc",
+        "to": "entity:defitea-curve-dao-token",
         "status": "established",
         "epistemicClass": "direct",
         "data": {},
-        "fingerprint": "3e6a9f08a76b8b48a9eca296a86388bfc6fbe3488e995879a1850365874c2c7e"
+        "fingerprint": "777f481bf8943e75de08c95b7b067638fe99ce460cc8737ab95ccdd445015372"
       },
       "event-entity:event:ev-c4d1cb9e7ff6cabf9d75->company:monetra.eth": {
         "id": "event-entity:event:ev-c4d1cb9e7ff6cabf9d75->company:monetra.eth",
@@ -9236,6 +9211,16 @@
         "data": {},
         "fingerprint": "47b90baa0189ec3ce7a7c0d652aea58304273d2c8797bf2b7e1dfa3b3a628920"
       },
+      "event-entity:event:ev-d68119e6c731df0324b5->entity:defitea-fxn-token": {
+        "id": "event-entity:event:ev-d68119e6c731df0324b5->entity:defitea-fxn-token",
+        "kind": "event-entity",
+        "from": "event:ev-d68119e6c731df0324b5",
+        "to": "entity:defitea-fxn-token",
+        "status": "established",
+        "epistemicClass": "direct",
+        "data": {},
+        "fingerprint": "537cf32352972f20b4ca7aa6d78d9bf205ae19a8391d4d7a10509e3923865f3c"
+      },
       "event-entity:event:ev-d77f245453bb54e3d805->company:monetra.eth": {
         "id": "event-entity:event:ev-d77f245453bb54e3d805->company:monetra.eth",
         "kind": "event-entity",
@@ -9265,6 +9250,16 @@
         "epistemicClass": "direct",
         "data": {},
         "fingerprint": "dc0ec84a9c91b19b39e5d6c09f9ef7e8ed4186f78ec31ddcdb37ccb9c4fb44b6"
+      },
+      "event-entity:event:ev-ddfebf5572abe760c92f->entity:defitea": {
+        "id": "event-entity:event:ev-ddfebf5572abe760c92f->entity:defitea",
+        "kind": "event-entity",
+        "from": "event:ev-ddfebf5572abe760c92f",
+        "to": "entity:defitea",
+        "status": "established",
+        "epistemicClass": "direct",
+        "data": {},
+        "fingerprint": "8ad9313ac22f9f8372a13a0acde690325783ba821093284d490b2880952ff0b3"
       },
       "event-entity:event:ev-e099f2f905fb5bfde2ee->entity:defitea": {
         "id": "event-entity:event:ev-e099f2f905fb5bfde2ee->entity:defitea",
@@ -9296,16 +9291,6 @@
         "data": {},
         "fingerprint": "ccada16bbe56d683af0495346fdb94a57847eac416c138ddbedbc57734ad3d3d"
       },
-      "event-entity:event:ev-e8f9e0982917fda1a9ec->company:cypher": {
-        "id": "event-entity:event:ev-e8f9e0982917fda1a9ec->company:cypher",
-        "kind": "event-entity",
-        "from": "event:ev-e8f9e0982917fda1a9ec",
-        "to": "company:cypher",
-        "status": "established",
-        "epistemicClass": "direct",
-        "data": {},
-        "fingerprint": "eb4a19ddac0fd28bf3fe6051b2fd803d89cde0ea138c1e0542a0f0747c4a7d72"
-      },
       "event-entity:event:ev-e965ba25197777d96f72->company:defitea.eth": {
         "id": "event-entity:event:ev-e965ba25197777d96f72->company:defitea.eth",
         "kind": "event-entity",
@@ -9315,6 +9300,16 @@
         "epistemicClass": "direct",
         "data": {},
         "fingerprint": "20f1903daf242fc90a5d32e057d878c846b59be86485e89deaa17f1285681470"
+      },
+      "event-entity:event:ev-edbc6cce8f0b93faea89->company:defitea.eth": {
+        "id": "event-entity:event:ev-edbc6cce8f0b93faea89->company:defitea.eth",
+        "kind": "event-entity",
+        "from": "event:ev-edbc6cce8f0b93faea89",
+        "to": "company:defitea.eth",
+        "status": "established",
+        "epistemicClass": "direct",
+        "data": {},
+        "fingerprint": "32bf2e651a127e30702a0ca181604f01d7134f74dddcb1a3e7902060e687353f"
       },
       "event-entity:event:ev-ee31fb703635419e79f5->company:dinaz.eth": {
         "id": "event-entity:event:ev-ee31fb703635419e79f5->company:dinaz.eth",
@@ -9335,16 +9330,6 @@
         "epistemicClass": "direct",
         "data": {},
         "fingerprint": "6de930aaedbeebe3c9bde70f809d16a214a90ac19dc06de4c0ebd3426f437632"
-      },
-      "event-entity:event:ev-f1b706972aa237e6e866->entity:defitea-liquity": {
-        "id": "event-entity:event:ev-f1b706972aa237e6e866->entity:defitea-liquity",
-        "kind": "event-entity",
-        "from": "event:ev-f1b706972aa237e6e866",
-        "to": "entity:defitea-liquity",
-        "status": "established",
-        "epistemicClass": "direct",
-        "data": {},
-        "fingerprint": "4666a17dc59988dfafec7ee53c16fa982d126124f8668ac919f3c77b7b0021e7"
       },
       "event-entity:event:ev-f2bdb3963e7504da379f->company:rook-s-portfolio": {
         "id": "event-entity:event:ev-f2bdb3963e7504da379f->company:rook-s-portfolio",
@@ -9396,26 +9381,6 @@
         "data": {},
         "fingerprint": "8f4dd63560fd8dc38d3bf4f42a35b12539d6ae4302498941e6642b1b1f7f5d86"
       },
-      "event-metric:event:ev-3e967ed2976ed1632fb2->metric-definition:aprlatestpct": {
-        "id": "event-metric:event:ev-3e967ed2976ed1632fb2->metric-definition:aprlatestpct",
-        "kind": "event-metric",
-        "from": "event:ev-3e967ed2976ed1632fb2",
-        "to": "metric-definition:aprlatestpct",
-        "status": "established",
-        "epistemicClass": "direct",
-        "data": {},
-        "fingerprint": "23e2b1c4e158f58aa51ce8d92c08d835ea9ca1f0c015afe4bbe7323daf3b3878"
-      },
-      "event-metric:event:ev-79b11ab54afb84299af9->metric-definition:aprlatestpct": {
-        "id": "event-metric:event:ev-79b11ab54afb84299af9->metric-definition:aprlatestpct",
-        "kind": "event-metric",
-        "from": "event:ev-79b11ab54afb84299af9",
-        "to": "metric-definition:aprlatestpct",
-        "status": "established",
-        "epistemicClass": "direct",
-        "data": {},
-        "fingerprint": "9e9384be8b9b906b2076e13593b867c23c0f8360253314f677150341e58462df"
-      },
       "event-metric:event:ev-7d92291841101ee2c8e2->metric-definition:engine-status": {
         "id": "event-metric:event:ev-7d92291841101ee2c8e2->metric-definition:engine-status",
         "kind": "event-metric",
@@ -9456,26 +9421,6 @@
         "data": {},
         "fingerprint": "c8cbabe9c534a3661f781ca63a89125acbf2ae790854ea83d7cf96a9d1fc9628"
       },
-      "event-metric:event:ev-969f79f438037979fe09->metric-definition:aprlatestpct": {
-        "id": "event-metric:event:ev-969f79f438037979fe09->metric-definition:aprlatestpct",
-        "kind": "event-metric",
-        "from": "event:ev-969f79f438037979fe09",
-        "to": "metric-definition:aprlatestpct",
-        "status": "established",
-        "epistemicClass": "direct",
-        "data": {},
-        "fingerprint": "88827209710237e297bdc657879ec49af47436f828f406ec1f2cd1c0be93b7cd"
-      },
-      "event-metric:event:ev-9ac083938b264fadd485->metric-definition:aprlatestpct": {
-        "id": "event-metric:event:ev-9ac083938b264fadd485->metric-definition:aprlatestpct",
-        "kind": "event-metric",
-        "from": "event:ev-9ac083938b264fadd485",
-        "to": "metric-definition:aprlatestpct",
-        "status": "established",
-        "epistemicClass": "direct",
-        "data": {},
-        "fingerprint": "3856ee08dd9874cd1e00bc5b83f53dad62c04a33cd32a34c84bc851d20d16ef6"
-      },
       "event-metric:event:ev-9c2cb0573b7545399358->metric-definition:aprlatestpct": {
         "id": "event-metric:event:ev-9c2cb0573b7545399358->metric-definition:aprlatestpct",
         "kind": "event-metric",
@@ -9485,16 +9430,6 @@
         "epistemicClass": "direct",
         "data": {},
         "fingerprint": "4f1302550867e0142c7eb91346d37c8dcfb0a352c710cb887f16600fc1933daf"
-      },
-      "event-metric:event:ev-b2427624f604b271dbfe->metric-definition:aprlatestpct": {
-        "id": "event-metric:event:ev-b2427624f604b271dbfe->metric-definition:aprlatestpct",
-        "kind": "event-metric",
-        "from": "event:ev-b2427624f604b271dbfe",
-        "to": "metric-definition:aprlatestpct",
-        "status": "established",
-        "epistemicClass": "direct",
-        "data": {},
-        "fingerprint": "ebb42ab593ee5dbf5a8b5aef30559cd71fe790c283ee7ebb315a49897a38811f"
       },
       "event-metric:event:ev-b4f2d6a417c75a1b9dac->metric-definition:aprlatestpct": {
         "id": "event-metric:event:ev-b4f2d6a417c75a1b9dac->metric-definition:aprlatestpct",
@@ -9545,16 +9480,6 @@
         "epistemicClass": "direct",
         "data": {},
         "fingerprint": "f23d76305e00850fa180e7095262b9a2db733b4bc32465d6af90d75aad0ba0c9"
-      },
-      "event-metric:event:ev-e8f9e0982917fda1a9ec->metric-definition:coverage": {
-        "id": "event-metric:event:ev-e8f9e0982917fda1a9ec->metric-definition:coverage",
-        "kind": "event-metric",
-        "from": "event:ev-e8f9e0982917fda1a9ec",
-        "to": "metric-definition:coverage",
-        "status": "established",
-        "epistemicClass": "direct",
-        "data": {},
-        "fingerprint": "78459198e78c3b688cdc8000bc8549ff2a34f21d03dbbe845ab99004e885aed3"
       },
       "event-metric:event:ev-ee31fb703635419e79f5->metric-definition:aprlatestpct": {
         "id": "event-metric:event:ev-ee31fb703635419e79f5->metric-definition:aprlatestpct",
@@ -10499,9 +10424,9 @@
     }
   },
   "integrity": {
-    "nodeCompositeHash": "cbc777f11636c398d6c9c25a9fb17c5c287ff1845c62c9031e0371cdc50dcacf",
-    "connectionCompositeHash": "64abb18a490bd361e6361b1e79adf10394db399c90a7894cb330914c6d03f034",
-    "sourceCompositeHash": "b491fb114df894b9ca34ac5900fd0482d23f2c66b69220f7396548178b0cd43a",
-    "telemetryHash": "3ebb4f78b818eeeb66c6c30a879516dc6d791b143abafef7a56005b77f94727a"
+    "nodeCompositeHash": "bfe7196b8d875264112fac2970d8b137fee698d55635dfa902c11b4746e8cfc6",
+    "connectionCompositeHash": "cb3450d65e3caf5c5a77011747e22f7a8994d8e7865511ecae16692e8cfdaa24",
+    "sourceCompositeHash": "6b54e54d60d7719b0df1231ebc89b500291b031a4a3249874d9ce3314c4ed05c",
+    "telemetryHash": "7f4fa02fef127ab3a503347b57dad698221329780e4ca28dd8a5e32df84ecb9d"
   }
 }
