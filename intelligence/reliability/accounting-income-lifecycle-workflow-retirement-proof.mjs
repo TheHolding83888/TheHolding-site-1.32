@@ -42,14 +42,52 @@ if(!retired.includes(`holding-workflow-definition-proof: ${PROOF}`)) throw new E
 if(!canonicalWorkflow.includes(CANONICAL_VALIDATOR)) throw new Error('canonical lifecycle workflow lost canonical validator binding');
 if(canonicalWorkflow.includes(RETIRED_VALIDATOR)||canonicalWorkflow.includes(RETIRED_CONTRACT)) throw new Error('canonical lifecycle workflow references retired duplicate machinery');
 
-const expectedLifecycle=['earned','accrued','claimable','claimed','received','reinvested'];
-if(JSON.stringify(canonicalContract.lifecycle)!==JSON.stringify(expectedLifecycle)) throw new Error('canonical lifecycle sequence drift');
-if(canonicalContract.authority?.executionAuthority!=='none') throw new Error('canonical lifecycle execution authority expanded');
-if(canonicalContract.authority?.incomeCreationAuthority!==false) throw new Error('canonical lifecycle income creation authority expanded');
-if(canonicalContract.authority?.monthClosingAuthority!==false) throw new Error('canonical lifecycle month closing authority expanded');
-if(canonicalContract.recognitionContract?.unknownIsNotZero!==true) throw new Error('canonical lifecycle UNKNOWN != 0 invariant lost');
-if(canonicalContract.recognitionContract?.crossMonthTimeProrationCreatesIncome!==false) throw new Error('canonical lifecycle cross-month proration guard lost');
-if(canonicalContract.recognitionContract?.economicIncomeRecognizedAtMostOnce!==true) throw new Error('canonical lifecycle one-time recognition invariant lost');
+const expectedSequence=['earned','accrued','claimable','claimed','received','reinvested'];
+if(JSON.stringify(canonicalContract.sequence)!==JSON.stringify(expectedSequence)) throw new Error('canonical lifecycle sequence drift');
+
+const authority=canonicalContract.authority||{};
+for(const [key,expected] of Object.entries({
+  sourceOfTruth:false,
+  factualIncomeAuthority:false,
+  incomeCreationAuthority:false,
+  accountingCompletionAuthority:false,
+  monthClosingAuthority:false,
+  methodologyMutationAuthority:false,
+  executionAuthority:'none',
+  capitalExecution:false,
+  walletAuthority:false
+})){
+  if(authority[key]!==expected) throw new Error(`canonical lifecycle authority expanded: ${key}`);
+}
+
+const invariants=canonicalContract.invariants||{};
+for(const key of [
+  'canonicalIncomeLedgerRemainsSoleFactualIncomeAuthority',
+  'sameEconomicIncomeRecognizedAtMostOnce',
+  'settlementDoesNotReRecognizeIncome',
+  'settlementRequiresProvenanceLinkage',
+  'reinvestmentChangesCapitalStateOnly',
+  'exactClosedCalendarMonthRequiresMechanismProof',
+  'arbitraryCrossMonthIntervalsRemainUnresolved',
+  'boundaryEvidencePendingRemainsPartialOrUnknown',
+  'unknownIsNotZero'
+]){
+  if(invariants[key]!==true) throw new Error(`canonical lifecycle invariant lost: ${key}`);
+}
+for(const key of [
+  'laterSettlementCanReallocateEarnedMonth',
+  'openingBalanceCreatesIncome',
+  'claimableSnapshotsCreateIncome',
+  'genericReceiptCreatesIncome',
+  'reinvestmentCreatesSecondIncome',
+  'principalMovementCreatesIncome',
+  'referenceAprCanBackfillIncome',
+  'referenceDeltaIsMissingIncome',
+  'estimatedIncomeCanReplaceUnknown',
+  'crossMonthProrationAllowed'
+]){
+  if(invariants[key]!==false) throw new Error(`forbidden lifecycle behavior enabled: ${key}`);
+}
 
 execFileSync(process.execPath,[CANONICAL_VALIDATOR],{
   encoding:'utf8',
