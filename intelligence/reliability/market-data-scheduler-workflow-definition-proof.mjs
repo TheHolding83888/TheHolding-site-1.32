@@ -9,7 +9,7 @@ function requireCondition(ok, message) {
   if (!ok) throw new Error(message);
 }
 
-requireCondition(contract.version === '0.2-market-data-scheduler-delivery-resilience', 'Market Data scheduler contract version drift');
+requireCondition(contract.version === '0.3-market-data-to-unified-capital-handoff', 'Market Data scheduler contract version drift');
 requireCondition(contract.status === 'production', 'Market Data scheduler contract must be production');
 requireCondition(contract.cron === '7,37 * * * *', 'Primary Shared Market Data cron drift');
 requireCondition(contract.recoveryCron === '22,52 * * * *', 'Shared Market Data recovery cron drift');
@@ -27,6 +27,12 @@ requireCondition(contract.epistemics?.naturalScheduleProofRequired === true, 'Na
 requireCondition(contract.epistemics?.pushOrManualRunDoesNotProveSchedulerHealth === true, 'Scheduler epistemic boundary missing');
 requireCondition(contract.epistemics?.schedulerAttemptDoesNotEqualMaterialization === true, 'Attempt/materialization epistemic boundary missing');
 requireCondition(contract.epistemics?.unknownIsNotZero === true, 'UNKNOWN != 0 boundary missing');
+requireCondition(contract.epistemics?.priceSnapshotMustPrecedeCapitalValuation === true, 'price-before-capital epistemic boundary missing');
+requireCondition(contract.separationOfConcerns?.marketDataWriterDoesNotWritePublicCapitalState === true, 'Market Data/Public Capital writer separation missing');
+requireCondition(contract.separationOfConcerns?.marketDataCommitWakesUnifiedCapital === true, 'Market Data -> Unified Capital handoff missing');
+requireCondition(contract.separationOfConcerns?.capitalStateRebuiltBeforePublicCapital === true, 'Capital State -> Public Capital order missing');
+requireCondition(contract.separationOfConcerns?.reverseCapitalStateWakeRemoved === true, 'reverse Capital State -> Market Data wake must remain removed');
+requireCondition(contract.separationOfConcerns?.publicCapitalMaterializationOwner === 'The Holding Capital · Unified Refresh', 'Public Capital materialization owner drift');
 requireCondition(contract.authority?.repositoryMutationAuthority === true, 'Repository writer authority missing');
 requireCondition(contract.authority?.workflowDispatchAuthority === false, 'Workflow dispatch authority expanded');
 requireCondition(contract.authority?.capitalExecution === false, 'Capital execution authority expanded');
@@ -51,10 +57,14 @@ requireCondition(workflow.includes('id: cadence'), 'Scheduled freshness admissio
 requireCondition(workflow.includes("ADMISSION_AGE_MINUTES: '25'"), 'Scheduled freshness admission threshold does not match contract');
 requireCondition(workflow.includes('GITHUB_EVENT_NAME'), 'Scheduled admission must distinguish natural schedule from push/manual recovery');
 requireCondition(workflow.includes('intelligence/market-data/market-data.json'), 'Scheduled admission canonical Market Data input missing');
+requireCondition(workflow.includes('- name: Publish canonical Market Data state safely'), 'bounded canonical Market Data publish step missing');
+requireCondition(!workflow.includes('node intelligence/market-data/public-capital-engine.mjs'), 'Market Data workflow must not rebuild Public Capital directly');
+requireCondition(!workflow.includes('git add intelligence/market-data/market-data-coingecko.json intelligence/market-data/market-data.json intelligence/market-data/onchain-price-shadow.json intelligence/market-data/public-capital-state.json'), 'Market Data workflow must not stage Public Capital State');
+requireCondition(!workflow.includes("- 'intelligence/capital-state/capital-state.json'"), 'reverse Capital State -> Market Data wake reintroduced');
 
 const dueGuard = "if: steps.cadence.outputs.due == 'true'";
 const dueGuardCount = workflow.split(dueGuard).length - 1;
-requireCondition(dueGuardCount === 9, `Expected 9 admitted refresh guards, found ${dueGuardCount}`);
+requireCondition(dueGuardCount === 8, `Expected 8 admitted refresh guards, found ${dueGuardCount}`);
 
 function cronMinutes(cron) {
   return cron.split(' ')[0].split(',').map(Number).sort((a, b) => a - b);
@@ -75,6 +85,9 @@ requireCondition(contract.scheduledRefreshAdmissionAgeMinutes < contract.cadence
 for (const output of contract.canonicalOutputs || []) {
   requireCondition(workflow.includes(output), `Canonical output not materialized by workflow: ${output}`);
 }
+for (const output of contract.downstreamOutputs || []) {
+  requireCondition(!workflow.includes(`git add ${output}`), `Downstream capital output must not be directly staged by Market Data: ${output}`);
+}
 
 console.log('Shared Market Data resilient scheduler workflow definition PASS', {
   primaryCron: contract.cron,
@@ -82,8 +95,12 @@ console.log('Shared Market Data resilient scheduler workflow definition PASS', {
   targetCadenceMinutes: contract.cadenceMinutes,
   schedulerAttemptCadenceMinutes: contract.schedulerAttemptCadenceMinutes,
   scheduledRefreshAdmissionAgeMinutes: contract.scheduledRefreshAdmissionAgeMinutes,
+  canonicalOutputCount: contract.canonicalOutputs.length,
+  downstreamMaterializationOwner: contract.separationOfConcerns.publicCapitalMaterializationOwner,
+  oneWayMarketDataToCapital: true,
+  reverseCapitalStateWake: false,
+  publicCapitalWrittenHere: false,
   singleCanonicalWriter: contract.deliveryResilience.singleCanonicalWriter,
-  externalWatchdogDispatch: contract.deliveryResilience.externalWatchdogDispatch,
   naturalScheduleProofRequired: contract.epistemics.naturalScheduleProofRequired,
   workflowDispatchAuthority: contract.authority.workflowDispatchAuthority,
   capitalExecution: contract.authority.capitalExecution
