@@ -38,10 +38,6 @@ html=replaceOnce(html,
 `    '05081966.eth':  ['Curve','Aero','Frax'],`,
 `    '05081966.eth':  ['Bitcoin','Curve','Aero','Frax'],`,
 'companies/index.html Company #001 protocol/asset map');
-html=replaceOnce(html,
-`    // 05081966.eth: AERO 202 / FRAX 393 / CRV 480`,
-`    // 05081966.eth: BTC 0.00126 / AERO 202 / FRAX 393 / CRV 480`,
-'companies/index.html Company #001 balance comment');
 
 /* Public company values may be canonicalized beyond the local browser Company
    Book. Preserve nullable performance semantics and keep a distinct unique
