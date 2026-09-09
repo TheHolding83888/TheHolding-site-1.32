@@ -173,7 +173,20 @@ function recognitionDecision(event) {
   }
   const month = eventMonth(event);
   if (!month) {
-    return { status: 'unresolved', reason: 'period-boundary-not-single-month' };
+    const startMonth = monthKey(event?.periodStart);
+    const endMonth = monthKey(event?.periodEnd);
+    const explicitBoundaryEvidencePending =
+      event?.family === 'embedded-income' &&
+      event?.periodAttributionStatus === 'cross-month-boundary-unallocated' &&
+      Boolean(startMonth) &&
+      Boolean(endMonth) &&
+      startMonth !== endMonth;
+    return {
+      status: 'unresolved',
+      reason: explicitBoundaryEvidencePending
+        ? 'period-boundary-evidence-pending-no-exact-month-cut'
+        : 'period-boundary-not-single-month'
+    };
   }
 
   if (event.family === 'accrued-entitlement') {
@@ -324,6 +337,8 @@ function buildCanonicalEarnedIncomeView(ledger) {
       embeddedCompoundingRecognizedAsEarnedIncome: true,
       exactClosedCalendarMonthRequiresExistingMechanismProof: true,
       arbitraryCrossMonthEmbeddedIncomeRemainsUnresolved: true,
+      explicitCrossMonthUnallocatedMeansBoundaryEvidencePending: true,
+      crossMonthTimeProrationCreatesIncome: false,
       settlementDoesNotReRecognizeIncome: true,
       historicalValuationResolutionMayCompleteUnknownUsdWithoutMutatingEconomicEvent: true,
       historicalValuationMustMatchImmutableVe33TokenIdentity: true,
