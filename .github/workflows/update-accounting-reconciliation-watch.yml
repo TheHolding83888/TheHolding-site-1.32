@@ -1,0 +1,113 @@
+name: Update Accounting Reconciliation Watch
+# holding-workflow-definition-proof: intelligence/reliability/accounting-reconciliation-watch-workflow-definition-proof.mjs
+# holding-control-plane: repository-writer
+# holding-truth-plane: derived-accounting-diagnostics
+# holding-control-domain: reporting-accounting-reconciliation-watch
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - "Update Historical Accounting Completeness Map"
+    types: [completed]
+  push:
+    branches: [main]
+    paths:
+      - 'reporting/accounting-reconciliation-watch.mjs'
+      - 'reporting/accounting-reconciliation-watch-validation.mjs'
+      - '.github/workflows/update-accounting-reconciliation-watch.yml'
+      - '.github/workflows/verify-accounting-reconciliation-watch.yml'
+  schedule:
+    - cron: '2 8 * * *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: accounting-reconciliation-watch
+  cancel-in-progress: false
+
+jobs:
+  update:
+    if: >-
+      ${{
+        github.event_name != 'workflow_run' ||
+        (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+      }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout live main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: Build and validate derived watch
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check reporting/accounting-reconciliation-watch.mjs
+          node --check reporting/accounting-reconciliation-watch-validation.mjs
+          test -s reporting/accounting-notice-queue.json
+          test -s reporting/accounting-reference-reconciliation.json
+          test -s reporting/historical-accounting-completeness-map.json
+          node reporting/accounting-reconciliation-watch.mjs
+          node reporting/accounting-reconciliation-watch-validation.mjs
+          git diff --check
+
+      - name: Commit canonical derived watch snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Accounting Reconciliation Watch"
+          git config user.email "accounting-reconciliation-watch@theholding.ai"
+
+          git add reporting/accounting-reconciliation-watch.json
+          if git diff --cached --quiet; then
+            echo "No reconciliation watch semantic changes."
+            exit 0
+          fi
+          git commit -m "data: update accounting reconciliation watch"
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "Safe writer guard: rebase conflict; refusing to guess."
+              exit 1
+            fi
+
+            ACCOUNTING_NOTICE_QUEUE_FILE=./reporting/accounting-notice-queue.json \
+            ACCOUNTING_REFERENCE_RECONCILIATION_FILE=./reporting/accounting-reference-reconciliation.json \
+            HISTORICAL_ACCOUNTING_COMPLETENESS_FILE=./reporting/historical-accounting-completeness-map.json \
+            ACCOUNTING_RECONCILIATION_WATCH_FILE=./reporting/accounting-reconciliation-watch.json \
+            ACCOUNTING_RECONCILIATION_WATCH_PREVIOUS_FILE=./reporting/accounting-reconciliation-watch.json \
+            node reporting/accounting-reconciliation-watch.mjs
+            ACCOUNTING_RECONCILIATION_WATCH_FILE=./reporting/accounting-reconciliation-watch.json \
+            node reporting/accounting-reconciliation-watch-validation.mjs
+
+            git add reporting/accounting-reconciliation-watch.json
+            git commit --amend --no-edit
+
+            mapfile -t ahead < <(git diff --name-only origin/main...HEAD)
+            for f in "${ahead[@]}"; do
+              case "$f" in
+                reporting/accounting-reconciliation-watch.json) ;;
+                *) echo "Unexpected reconciliation watch publish delta after rebase: $f"; exit 1 ;;
+              esac
+            done
+
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Safe writer guard: main moved during push; rebuilding on rebased current state ($attempt/3)..."
+            sleep $((attempt * 2))
+          done
+          echo "Safe writer guard: push failed after 3 attempts."
+          exit 1
