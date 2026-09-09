@@ -28,8 +28,10 @@ requireCondition(contract.epistemics?.pushOrManualRunDoesNotProveSchedulerHealth
 requireCondition(contract.epistemics?.schedulerAttemptDoesNotEqualMaterialization === true, 'Attempt/materialization epistemic boundary missing');
 requireCondition(contract.epistemics?.unknownIsNotZero === true, 'UNKNOWN != 0 boundary missing');
 requireCondition(contract.epistemics?.priceSnapshotMustPrecedeCapitalValuation === true, 'price-before-capital epistemic boundary missing');
+requireCondition(contract.epistemics?.generationParityDeterminesMarketDataHandoff === true, 'generation-parity handoff epistemic boundary missing');
 requireCondition(contract.separationOfConcerns?.marketDataWriterDoesNotWritePublicCapitalState === true, 'Market Data/Public Capital writer separation missing');
-requireCondition(contract.separationOfConcerns?.marketDataCommitWakesUnifiedCapital === true, 'Market Data -> Unified Capital handoff missing');
+requireCondition(contract.separationOfConcerns?.marketDataWorkflowCompletionObservedByUnifiedCapital === true, 'Market Data workflow completion handoff missing');
+requireCondition(contract.separationOfConcerns?.marketDataNoopCompletionSuppressedByGenerationParity === true, 'Market Data no-op completion suppression missing');
 requireCondition(contract.separationOfConcerns?.capitalStateRebuiltBeforePublicCapital === true, 'Capital State -> Public Capital order missing');
 requireCondition(contract.separationOfConcerns?.reverseCapitalStateWakeRemoved === true, 'reverse Capital State -> Market Data wake must remain removed');
 requireCondition(contract.separationOfConcerns?.publicCapitalMaterializationOwner === 'The Holding Capital · Unified Refresh', 'Public Capital materialization owner drift');
@@ -59,7 +61,7 @@ requireCondition(workflow.includes('GITHUB_EVENT_NAME'), 'Scheduled admission mu
 requireCondition(workflow.includes('intelligence/market-data/market-data.json'), 'Scheduled admission canonical Market Data input missing');
 requireCondition(workflow.includes('- name: Publish canonical Market Data state safely'), 'bounded canonical Market Data publish step missing');
 requireCondition(!workflow.includes('node intelligence/market-data/public-capital-engine.mjs'), 'Market Data workflow must not rebuild Public Capital directly');
-requireCondition(!workflow.includes('git add intelligence/market-data/market-data-coingecko.json intelligence/market-data/market-data.json intelligence/market-data/onchain-price-shadow.json intelligence/market-data/public-capital-state.json'), 'Market Data workflow must not stage Public Capital State');
+requireCondition(!workflow.includes('intelligence/market-data/public-capital-state.json'), 'Market Data workflow must not own or stage Public Capital State');
 requireCondition(!workflow.includes("- 'intelligence/capital-state/capital-state.json'"), 'reverse Capital State -> Market Data wake reintroduced');
 
 const dueGuard = "if: steps.cadence.outputs.due == 'true'";
@@ -86,7 +88,7 @@ for (const output of contract.canonicalOutputs || []) {
   requireCondition(workflow.includes(output), `Canonical output not materialized by workflow: ${output}`);
 }
 for (const output of contract.downstreamOutputs || []) {
-  requireCondition(!workflow.includes(`git add ${output}`), `Downstream capital output must not be directly staged by Market Data: ${output}`);
+  requireCondition(!workflow.includes(output), `Downstream capital output must not be owned by Market Data workflow: ${output}`);
 }
 
 console.log('Shared Market Data resilient scheduler workflow definition PASS', {
@@ -97,9 +99,10 @@ console.log('Shared Market Data resilient scheduler workflow definition PASS', {
   scheduledRefreshAdmissionAgeMinutes: contract.scheduledRefreshAdmissionAgeMinutes,
   canonicalOutputCount: contract.canonicalOutputs.length,
   downstreamMaterializationOwner: contract.separationOfConcerns.publicCapitalMaterializationOwner,
-  oneWayMarketDataToCapital: true,
-  reverseCapitalStateWake: false,
-  publicCapitalWrittenHere: false,
+  workflowCompletionHandoff:true,
+  generationParityAdmission:true,
+  reverseCapitalStateWake:false,
+  publicCapitalWrittenHere:false,
   singleCanonicalWriter: contract.deliveryResilience.singleCanonicalWriter,
   naturalScheduleProofRequired: contract.epistemics.naturalScheduleProofRequired,
   workflowDispatchAuthority: contract.authority.workflowDispatchAuthority,
