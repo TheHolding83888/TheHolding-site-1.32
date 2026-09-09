@@ -44,6 +44,9 @@ page=replaceOnce(page,
 `    { id: 'frax-share', name: 'veFRAX', sub: 'Frax · locked', qty: 800 }`,
 `    { id: 'frax-share', name: 'veFRAX', sub: 'Frax · locked', qty: 1032 }`,
 'YieldRing dedicated veFRAX');
+// Keep the long-standing cascade proof semantic rather than satisfying it with
+// an inert comment: the dedicated page itself must still expose the relay label.
+if(!page.includes('2 locks · Maxi relay'))fail('YieldRing dedicated veAERO relay label missing');
 fs.writeFileSync(PAGE,page);
 
 let balance=fs.readFileSync(BALANCE,'utf8');
