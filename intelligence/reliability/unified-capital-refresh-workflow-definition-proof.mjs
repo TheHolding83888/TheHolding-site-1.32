@@ -18,7 +18,7 @@ assert.match(workflow,/- "Update Company Rewards"/,'Rewards -> Unified Capital f
 assert.match(workflow,/github\.event\.workflow_run\.conclusion == 'success' && github\.event\.workflow_run\.head_branch == 'main'/,'workflow_run success/main gate missing');
 
 assert.match(workflow,/node productivity\/votemarket-productivity-overlay-validation\.mjs/,'VoteMarket deterministic validation missing');
-assert.match(orchestrator,/run\('6\/9 Apply VoteMarket supplementary income channels', ROOT, 'productivity\/votemarket-productivity-overlay\.mjs'\)/,'VoteMarket overlay missing from canonical orchestrator');
+assert.match(orchestrator,/run\('7\/10 Apply VoteMarket supplementary income channels', ROOT, 'productivity\/votemarket-productivity-overlay\.mjs'\)/,'VoteMarket overlay missing from canonical orchestrator');
 assert.match(orchestrator,/capitalDoubleCount === false/,'VoteMarket no-double-count assertion missing');
 assert.match(orchestrator,/idempotent === true/,'VoteMarket idempotency assertion missing');
 assert.match(orchestrator,/earnedIncomeAuthority === false && voteMarketDiag\?\.factualIncomeAuthority === false/,'VoteMarket factual authority separation missing');
@@ -66,16 +66,21 @@ assert.doesNotMatch(workflow,/sendTransaction|eth_sendRawTransaction|eth_sendTra
 assert.doesNotMatch(orchestrator,/sendTransaction|eth_sendRawTransaction|eth_sendTransaction|\.transfer\(|\.approve\(|\.claim\(|\.vote\(/,'Unified Capital orchestrator contains wallet/capital transaction behavior');
 
 const order=[
-  orchestrator.indexOf("run('3/9 Refresh protocol APRs and established Productivity'"),
-  orchestrator.indexOf("run('4/9 Admit Company #010 compatibility layer'"),
-  orchestrator.indexOf("run('5/9 Apply canonical YieldRing Productivity overlay'"),
-  orchestrator.indexOf("run('6/9 Apply VoteMarket supplementary income channels'"),
-  orchestrator.indexOf("run('7/9 Rebuild General Company Balance Sheet'"),
-  orchestrator.indexOf("run('9/9 Build Capital State'")
+  orchestrator.indexOf("run('1/10 Project canonical Defitea state'"),
+  orchestrator.indexOf("run('2/10 Project canonical YieldRing state'"),
+  orchestrator.indexOf("run('3/10 Project provenance-explicit owner balance bridges'"),
+  orchestrator.indexOf("run('4/10 Refresh protocol APRs and established Productivity'"),
+  orchestrator.indexOf("run('5/10 Admit Company #010 compatibility layer'"),
+  orchestrator.indexOf("run('6/10 Apply canonical YieldRing Productivity overlay'"),
+  orchestrator.indexOf("run('7/10 Apply VoteMarket supplementary income channels'"),
+  orchestrator.indexOf("run('8/10 Rebuild General Company Balance Sheet'"),
+  orchestrator.indexOf("run('9/10 Bind Company #007 current state downstream'"),
+  orchestrator.indexOf("run('10/10 Build Capital State'")
 ];
-assert.ok(order.every(x=>x>=0)&&order.every((x,i)=>i===0||x>order[i-1]),'canonical orchestrator order drift');
+assert.ok(order.every(x=>x>=0)&&order.every((x,i)=>i===0||x>order[i-1]),'canonical 10-step orchestrator order drift');
 
 console.log('Unified Capital refresh workflow definition proof PASS',{
+  orchestratorSteps:10,
   rewardsFreshnessCoupling:true,
   voteMarketAfterCanonicalProductivityOverlays:true,
   voteMarketClaimedAwarePersistence:true,
