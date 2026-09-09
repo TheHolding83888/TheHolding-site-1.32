@@ -62,6 +62,8 @@ function companyPeriodRows(monthly,queue){
       const lifecycle=row?.incomeAccounting?.lifecycle||{};
       const unresolvedReasons=Array.isArray(lifecycle?.unresolvedReasons)?lifecycle.unresolvedReasons:[];
       const notices=companyNoticeContext(queue,companyName,month);
+      const ownerDataPending=notices.blockers.includes('owner-data-pending');
+      const boundaryEvidencePending=notices.blockers.includes('historical-boundary-evidence-pending');
       const partialPeriod=row?.partialPeriod===true||String(view?.confirmed?.periodStart||'').slice(0,7)!==month||row?.status==='provisional';
       const reasonCodes=unique([
         'reference-comparator-is-non-factual',
@@ -69,7 +71,8 @@ function companyPeriodRows(monthly,queue){
         partialPeriod?'partial-observation-window':null,
         Number(lifecycle?.unresolvedEventCount||0)>0?'lifecycle-events-unresolved':null,
         unresolvedReasons.some(reason=>String(reason).includes('period-boundary'))?'period-boundary-evidence':null,
-        notices.parked?'owner-data-pending':null
+        ownerDataPending?'owner-data-pending':null,
+        boundaryEvidencePending?'historical-boundary-evidence-pending':null
       ]);
       rows.push({
         id:['company-period',canonical(companyName),month].join(':'),
@@ -103,7 +106,7 @@ function companyPeriodRows(monthly,queue){
         noticeActions:notices.actions,
         engineeringActionable:notices.engineeringActionable,
         parked:notices.parked,
-        reconciliationStatus:notices.parked?'parked-owner-data-pending':!finite(referenceUsd)||!finite(confirmedUsd)?'not-comparable':Number(lifecycle?.unresolvedEventCount||0)>0?'lifecycle-review':ratio.signalBand,
+        reconciliationStatus:ownerDataPending?'parked-owner-data-pending':boundaryEvidencePending?'parked-boundary-evidence-pending':!finite(referenceUsd)||!finite(confirmedUsd)?'not-comparable':Number(lifecycle?.unresolvedEventCount||0)>0?'lifecycle-review':ratio.signalBand,
         reasonCodes,
         comparisonSemantic:'Reference/Estimated and Confirmed are independent non-additive views. Delta and captureRatio are diagnostics, not missing-income or completeness authority.',
         sourceOfTruth:false,
@@ -259,6 +262,8 @@ const output={
     historicalReferenceChannelDecompositionIsNotInferred:true,
     explicitCanonicalPeriodAttributionCanResolveDiagnosticBoundary:true,
     explicitCanonicalPeriodAttributionCannotCreateOrReallocateIncome:true,
+    boundaryEvidencePendingIsEngineeringFailure:false,
+    crossMonthIntervalProrationAllowed:false,
     unknownIsNotZero:true
   },
   diagnosticBands:{
@@ -287,6 +292,7 @@ const output={
     reviewAttentionCount:comparable.filter(row=>row.attention==='review').length,
     lowAttentionCount:comparable.filter(row=>row.attention==='low').length,
     parkedCount:companyRows.filter(row=>row.parked).length,
+    boundaryEvidencePendingCompanyPeriodCount:companyRows.filter(row=>row.reconciliationStatus==='parked-boundary-evidence-pending').length,
     engineeringActionableCompanyPeriodCount:companyRows.filter(row=>row.engineeringActionable).length
   },
   prioritizationPolicy:{
