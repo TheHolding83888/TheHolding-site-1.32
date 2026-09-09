@@ -33,9 +33,6 @@ assert.match(workflow,/node intelligence\/capital-state\/unified-capital-market-
 assert.doesNotMatch(workflow,/node intelligence\/market-data\/market-data-engine\.mjs/,'Unified Capital must not become a Market Data writer');
 assert.doesNotMatch(workflow,/git add[\s\\\n\r\t\w./-]*intelligence\/market-data\/market-data\.json/,'Unified Capital must not stage canonical Market Data');
 
-// Public-surface materialization contract. The owner/current-state projector may
-// update these generated pages, therefore the canonical writer must validate and
-// publish the same bounded surface set rather than leaving CI-green bytes local.
 for (const script of [
   'companies/owner-balance-site-projection.mjs',
   'companies/public-page-market-runtime-projection.mjs',
@@ -43,7 +40,7 @@ for (const script of [
 ]) {
   assert.match(workflow,new RegExp(script.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')),'public surface projector is not syntax-checked by Unified Capital: '+script);
 }
-for (const surface of ['index.html','companies/index.html','05081966/index.html','yieldring/index.html','singul/index.html']) {
+for (const surface of ['index.html','companies/index.html','05081966/index.html','yieldring/index.html','singul/index.html','yield-reports/index.html']) {
   const escaped=surface.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
   const occurrences=(workflow.match(new RegExp(escaped,'g'))||[]).length;
   assert.ok(occurrences>=2,`generated public surface must be staged in both initial and retry publish paths: ${surface}`);
@@ -56,6 +53,10 @@ assert.match(sitePolishProjection,/executionAuthority:'none'/,'site polish autho
 assert.match(sitePolishProjection,/href=\"\/companies\"/,'homepage Companies navigation projection missing');
 assert.match(sitePolishProjection,/href=\"\/realty\"/,'homepage Real Estate navigation projection missing');
 assert.match(sitePolishProjection,/data-th-fund-pyramid-links/,'fund pyramid navigation marker missing');
+assert.match(sitePolishProjection,/YIELD_REPORTS='yield-reports\/index\.html'/,'Yield Reports generated surface binding missing');
+assert.match(sitePolishProjection,/The Holding · Defitea mobile cash-flow polish/,'Defitea mobile report polish marker missing');
+assert.match(sitePolishProjection,/defiteaMobileCashFlowVisible:true/,'Defitea mobile cash-flow visibility proof missing');
+assert.match(workflow,/yieldReportsPage\.includes\('The Holding · Defitea mobile cash-flow polish'\)/,'Unified validation does not prove mobile report materialization');
 assert.doesNotMatch(sitePolishProjection,/sendTransaction|eth_sendRawTransaction|eth_sendTransaction|\.transfer\(|\.approve\(|\.claim\(|\.vote\(/,'site polish projector contains wallet/capital transaction behavior');
 
 assert.match(workflow,/for attempt in 1 2 3/,'bounded safe-writer retry contract missing');
@@ -88,6 +89,7 @@ console.log('Unified Capital refresh workflow definition proof PASS',{
   capitalDoubleCount:false,
   publicSurfaceMaterialization:true,
   homepagePublicPolishBounded:true,
+  defiteaMobileReportMaterialization:true,
   company001CanonicalRuntime:true,
   singulDuplicateRuntime:false,
   factualIncomeAuthority:false,
