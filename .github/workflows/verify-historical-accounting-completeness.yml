@@ -1,0 +1,80 @@
+name: Verify Historical Accounting Completeness Map
+
+on:
+  pull_request:
+    paths:
+      - 'reporting/historical-accounting-completeness-map.mjs'
+      - 'reporting/historical-accounting-completeness-map-validation.mjs'
+      - 'reporting/historical-accounting-completeness-map.json'
+      - '.github/workflows/verify-historical-accounting-completeness.yml'
+      - '.github/workflows/update-historical-accounting-completeness.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: Static validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check reporting/historical-accounting-completeness-map.mjs
+          node --check reporting/historical-accounting-completeness-map-validation.mjs
+          test -s reporting/accounting-coverage.json
+          test -s reporting/company-monthly-reports.json
+          git diff --check
+
+      - name: Build exact derived map
+        shell: bash
+        env:
+          ACCOUNTING_COVERAGE_FILE: ./reporting/accounting-coverage.json
+          COMPANY_MONTHLY_REPORTS_FILE: ./reporting/company-monthly-reports.json
+          HISTORICAL_ACCOUNTING_COMPLETENESS_FILE: /tmp/historical-accounting-completeness-map.json
+        run: |
+          set -euo pipefail
+          node reporting/historical-accounting-completeness-map.mjs
+          node reporting/historical-accounting-completeness-map-validation.mjs
+
+      - name: Guard diagnostic-only authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('/tmp/historical-accounting-completeness-map.json','utf8'));
+          if(x.status!=='diagnostic-no-completion-authority') throw new Error('Historical completeness map gained completion status');
+          if(x.authority?.sourceOfTruth!==false||x.authority?.factualIncomeAuthority!==false||x.authority?.incomeCreationAuthority!==false||x.authority?.accountingCompletionAuthority!==false||x.authority?.monthClosingAuthority!==false||x.authority?.canReplaceUnknown!==false||x.authority?.executionAuthority!=='none') throw new Error('Historical completeness authority expanded');
+          if(x.semantics?.unknownIsNotZero!==true||x.semantics?.crossMonthProrationAllowed!==false||x.semantics?.referenceAprCanBackfillIncome!==false) throw new Error('Historical completeness epistemic boundary drift');
+          const current=x.currentMonth;
+          if((x.rows||[]).some(r=>r.month===current&&r.state==='complete')) throw new Error('Open mechanism month became Complete');
+          if((x.companyMonths||[]).some(r=>r.month===current&&r.state==='complete')) throw new Error('Open company month became Complete');
+          console.log('Historical completeness authority guard PASS',x.summary);
+          NODE
+
+      - name: Show acceptance anchors
+        shell: bash
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('/tmp/historical-accounting-completeness-map.json','utf8'));
+          const ids=[
+            'defitea.eth:2026-08:velodrome_vevelo',
+            '1milliondollar.eth:2026-09:beefy_cvxcrv',
+            '05081966.eth:2026-08:curve_vecrv',
+            '05081966.eth:2026-08:aerodrome_veaero'
+          ];
+          for(const id of ids) console.log(id,(x.rows||[]).find(r=>r.id===id));
+          console.log('summary',x.summary);
+          NODE
