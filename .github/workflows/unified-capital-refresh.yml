@@ -19,6 +19,10 @@ on:
       - 'companies/defitea-public-capital-projection.mjs'
       - 'companies/yieldring-canonical-state.json'
       - 'companies/yieldring-public-capital-projection.mjs'
+      - 'companies/company-001-owner-capital-snapshot.json'
+      - 'companies/owner-balance-site-projection.mjs'
+      - 'companies/public-page-market-runtime-projection.mjs'
+      - 'companies/public-site-polish-projection.mjs'
       - 'companies/company-010-production-state.json'
       - 'productivity/productivity-engine.mjs'
       - 'productivity/company-010-productivity-overlay.mjs'
@@ -29,6 +33,7 @@ on:
       - 'intelligence/capital-state/capital-state.mjs'
       - 'intelligence/capital-state/unified-capital-refresh.mjs'
       - 'intelligence/capital-state/unified-capital-market-data-guard.mjs'
+      - 'intelligence/market-data/fund-capital-registry.json'
       - 'intelligence/market-data/market-price-registry.json'
       - 'intelligence/market-data/public-capital-engine.mjs'
       - '.github/workflows/unified-capital-refresh.yml'
@@ -76,6 +81,9 @@ jobs:
           node --check intelligence/capital-state/unified-capital-market-data-guard.mjs
           node --check companies/defitea-public-capital-projection.mjs
           node --check companies/yieldring-public-capital-projection.mjs
+          node --check companies/owner-balance-site-projection.mjs
+          node --check companies/public-page-market-runtime-projection.mjs
+          node --check companies/public-site-polish-projection.mjs
           node --check productivity/productivity-engine.mjs
           node --check productivity/company-010-productivity-overlay.mjs
           node --check productivity/yieldring-productivity-overlay.mjs
@@ -118,6 +126,9 @@ jobs:
           const c=JSON.parse(fs.readFileSync('intelligence/capital-state/capital-state.json','utf8'));
           const m=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
           const pub=JSON.parse(fs.readFileSync('intelligence/market-data/public-capital-state.json','utf8'));
+          const home=fs.readFileSync('index.html','utf8');
+          const company001Page=fs.readFileSync('05081966/index.html','utf8');
+          const singulPage=fs.readFileSync('singul/index.html','utf8');
           const d=p.companies?.['defitea.eth'];
           const da=(d?.breakdown||[]).find(x=>x.engineId==='aerodrome_veaero'||x.principalId==='aerodrome-finance');
           const dcrow=(d?.breakdown||[]).find(x=>x.engineId==='curve_vecrv'||x.principalId==='curve-dao-token');
@@ -157,7 +168,10 @@ jobs:
           if(Number(m.authority?.unknownCount)!==0)throw new Error('Canonical Market Data contains UNKNOWN assets');
           if(Number(m.authority?.onchainSelectedAssetCount)+Number(m.authority?.coingeckoSelectedAssetCount)!==26)throw new Error('Canonical Market Data selected-lane coverage drift');
           if(!Number.isFinite(Number(pub.funds?.defitea?.tvlUsd))||!Number.isFinite(Number(pub.funds?.defitea?.referenceAprPct)))throw new Error('Defitea Public Capital incomplete');
-          console.log('Unified Capital Refresh final validation PASS',{generatedAt:p.generatedAt,defiteaApr:d.aprLatest,defiteaAero:dca.units,defiteaFxn:dcf.units,voteMarketMeasuredReferenceCompanyCount:vm.measuredReferenceCompanyCount,voteMarketClaimPersistence:true,veCrvVoteMarketStatus:dcrow?.incomeChannels?.votemarket?.status||null,veFxnVoteMarketStatus:df?.incomeChannels?.votemarket?.status||null,yieldRingApr:y.aprLatest,networkTvl:c.network.networkTvlUsd,marketObservedAt:m.observedAt,onchainSelectedAssetCount:m.authority.onchainSelectedAssetCount,coingeckoFallbackAssetCount:m.authority.coingeckoSelectedAssetCount,icpUsd:icp.usd,icpSource:icp.source,company005Icp:icp5.units,company006Icp:icp6.units,publicDefiteaTvl:pub.funds.defitea.tvlUsd});
+          if(!home.includes('href="/companies"')||!home.includes('href="/realty"')||!home.includes('data-th-fund-pyramid-links')||!home.includes('Funds · Index · Onchain Companies · Real Estate'))throw new Error('Homepage public polish projection missing');
+          if(company001Page.includes('api.coingecko.com')||!company001Page.includes('canonical onchain-first snapshot'))throw new Error('Company #001 canonical page runtime missing');
+          if(singulPage.includes('/intelligence/market-data/simple-price')||singulPage.includes('setInterval(updateTVL, 300000)')||!singulPage.includes('public-capital-client.js'))throw new Error('Singul canonical page runtime missing');
+          console.log('Unified Capital Refresh final validation PASS',{generatedAt:p.generatedAt,defiteaApr:d.aprLatest,defiteaAero:dca.units,defiteaFxn:dcf.units,voteMarketMeasuredReferenceCompanyCount:vm.measuredReferenceCompanyCount,voteMarketClaimPersistence:true,veCrvVoteMarketStatus:dcrow?.incomeChannels?.votemarket?.status||null,veFxnVoteMarketStatus:df?.incomeChannels?.votemarket?.status||null,yieldRingApr:y.aprLatest,networkTvl:c.network.networkTvlUsd,marketObservedAt:m.observedAt,onchainSelectedAssetCount:m.authority.onchainSelectedAssetCount,coingeckoFallbackAssetCount:m.authority.coingeckoSelectedAssetCount,icpUsd:icp.usd,icpSource:icp.source,company005Icp:icp5.units,company006Icp:icp6.units,publicDefiteaTvl:pub.funds.defitea.tvlUsd,homepagePublicPolish:true});
           NODE
           git diff --check
 
@@ -167,8 +181,11 @@ jobs:
           git config user.name "The Holding Capital Orchestrator"
           git config user.email "capital-orchestrator@theholding.ai"
           git add \
+            index.html \
             companies/index.html \
+            05081966/index.html \
             yieldring/index.html \
+            singul/index.html \
             companies/productivity-data.json \
             companies/productivity-source-report.json \
             companies/votemarket-reference-state.json \
@@ -196,8 +213,11 @@ jobs:
               node intelligence/capital-state/unified-capital-refresh.mjs
             node intelligence/market-data/public-capital-engine.mjs
             git add \
+              index.html \
               companies/index.html \
+              05081966/index.html \
               yieldring/index.html \
+              singul/index.html \
               companies/productivity-data.json \
               companies/productivity-source-report.json \
               companies/votemarket-reference-state.json \
