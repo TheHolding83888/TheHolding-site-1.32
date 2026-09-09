@@ -44,9 +44,96 @@ page=replaceOnce(page,
 `    { id: 'frax-share', name: 'veFRAX', sub: 'Frax · locked', qty: 800 }`,
 `    { id: 'frax-share', name: 'veFRAX', sub: 'Frax · locked', qty: 1032 }`,
 'YieldRing dedicated veFRAX');
-// Keep the long-standing cascade proof semantic rather than satisfying it with
-// an inert comment: the dedicated page itself must still expose the relay label.
+page=replaceOnce(page,
+`    <p class="foot">Value is calculated from live market prices (CoinGecko). All figures are orientations, not a guarantee of return and not financial advice. These assets are volatile; the intended horizon is 3–5+ years.</p>`,
+`    <p class="foot">Value is calculated from The Holding’s canonical market-data snapshot. Market prices are selected onchain-first; external fallback is bounded upstream rather than requested by this page. Figures are not a guarantee of return or financial advice.</p>`,
+'YieldRing dedicated valuation provenance');
+const oldRuntime=`  var CACHE_KEY = 'yieldring_prices_v1';
+  var TTL = 10 * 60 * 1000;
+  function money(n, dec) { return '$' + n.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }); }
+  function render(prices) {
+    var total = 0, reserve = 0, engines = 0, rows = '';
+    ALL.forEach(function (h) { total += (prices[h.id] || 0) * h.qty; });
+    reserve = (prices[BTC.id] || 0) * BTC.qty;
+    engines = total - reserve;
+    ALL.forEach(function (h) {
+      var p = prices[h.id] || 0, v = p * h.qty;
+      var share = total ? Math.round(v / total * 100) : 0;
+      var dec = p >= 1000 ? 0 : (p < 1 ? 3 : 2);
+      rows += '<div class="asset">' +
+        '<div class="aName"><div class="aTitle">' + h.name + '</div><div class="aQty">' + h.sub + ' · ' + h.qty + '</div></div>' +
+        '<div class="aPrice">' + (p ? money(p, dec) : '—') + '</div>' +
+        '<div class="aVal">' + (p ? money(v, 0) : '—') + '</div>' +
+        '<div class="aShare">' + (p ? share + '%' : '—') + '</div></div>';
+    });
+    document.getElementById('assets').innerHTML = rows;
+    document.getElementById('tvl').textContent = total ? money(total, 0) : '—';
+    document.getElementById('reserveVal').textContent = reserve ? money(reserve, 0) : '—';
+    document.getElementById('engineVal').textContent = engines ? money(engines, 0) : '—';
+  }
+  function setUpdated(ts, cached) {
+    var d = new Date(ts), hh = ('0' + d.getHours()).slice(-2), mm = ('0' + d.getMinutes()).slice(-2);
+    document.getElementById('updated').textContent = 'updated ' + hh + ':' + mm + (cached ? ' · cached' : ' · CoinGecko');
+  }
+  function load() {
+    var cached = null;
+    try { cached = JSON.parse(localStorage.getItem(CACHE_KEY)); } catch (e) {}
+    if (cached && cached.prices) { render(cached.prices); setUpdated(cached.ts, true); }
+    if (cached && Date.now() - cached.ts < TTL) return;
+    var ids = ALL.map(function (h) { return h.id; }).join(',');
+    fetch('https://api.coingecko.com/api/v3/simple/price?ids=' + ids + '&vs_currencies=usd')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var prices = {};
+        ALL.forEach(function (h) { if (data[h.id]) prices[h.id] = data[h.id].usd; });
+        if (!Object.keys(prices).length) return;
+        var payload = { prices: prices, ts: Date.now() };
+        try { localStorage.setItem(CACHE_KEY, JSON.stringify(payload)); } catch (e) {}
+        render(prices); setUpdated(payload.ts, false);
+      })
+      .catch(function () { if (!cached) document.getElementById('updated').textContent = 'market data temporarily unavailable'; });
+  }
+  load();`;
+const newRuntime=`  function money(n, dec) { return '$' + n.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }); }
+  function render(prices) {
+    var total = 0, reserve = 0, engines = 0, rows = '';
+    ALL.forEach(function (h) { total += (prices[h.id] || 0) * h.qty; });
+    reserve = (prices[BTC.id] || 0) * BTC.qty;
+    engines = total - reserve;
+    ALL.forEach(function (h) {
+      var p = prices[h.id] || 0, v = p * h.qty;
+      var share = total ? Math.round(v / total * 100) : 0;
+      var dec = p >= 1000 ? 0 : (p < 1 ? 3 : 2);
+      rows += '<div class="asset">' +
+        '<div class="aName"><div class="aTitle">' + h.name + '</div><div class="aQty">' + h.sub + ' · ' + h.qty + '</div></div>' +
+        '<div class="aPrice">' + (p ? money(p, dec) : '—') + '</div>' +
+        '<div class="aVal">' + (p ? money(v, 0) : '—') + '</div>' +
+        '<div class="aShare">' + (p ? share + '%' : '—') + '</div></div>';
+    });
+    document.getElementById('assets').innerHTML = rows;
+    document.getElementById('tvl').textContent = total ? money(total, 0) : '—';
+    document.getElementById('reserveVal').textContent = reserve ? money(reserve, 0) : '—';
+    document.getElementById('engineVal').textContent = engines ? money(engines, 0) : '—';
+  }
+  function load() {
+    fetch('/intelligence/market-data/public-capital-state.json?t=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error('canonical public capital unavailable'); return r.json(); })
+      .then(function (data) {
+        var row = (data.companies || []).find(function (x) { return x && x.registry === '002'; });
+        if (!row) throw new Error('YieldRing canonical company row unavailable');
+        var prices = {};
+        (row.positions || []).forEach(function (p) { if (p && p.assetId && Number.isFinite(Number(p.priceUsd))) prices[p.assetId] = Number(p.priceUsd); });
+        render(prices);
+        var d = new Date(data.generatedAt || Date.now());
+        var hh = ('0' + d.getHours()).slice(-2), mm = ('0' + d.getMinutes()).slice(-2);
+        document.getElementById('updated').textContent = 'updated ' + hh + ':' + mm + ' · canonical onchain-first snapshot';
+      })
+      .catch(function () { document.getElementById('updated').textContent = 'canonical market data temporarily unavailable'; });
+  }
+  load();`;
+page=replaceOnce(page,oldRuntime,newRuntime,'YieldRing dedicated canonical market runtime');
 if(!page.includes('2 locks · Maxi relay'))fail('YieldRing dedicated veAERO relay label missing');
+if(page.includes('api.coingecko.com'))fail('YieldRing dedicated page still performs direct browser CoinGecko requests');
 fs.writeFileSync(PAGE,page);
 
 let balance=fs.readFileSync(BALANCE,'utf8');
@@ -64,6 +151,8 @@ console.log('YieldRing public/capital projection PASS',{
   fraxKnownCostBasisUsd:frax.knownCostBasisUsd,
   expectedIndexBlob:indexBlob,
   dedicatedPageProjected:true,
+  directBrowserCoinGecko:false,
+  canonicalPublicCapitalRuntime:true,
   partialCostBasisNullGuard:true,
   relayMode:state.aerodromeRelay.mode,
   expectedUnderlyingLockCount:state.aerodromeRelay.expectedUnderlyingLockCount,
