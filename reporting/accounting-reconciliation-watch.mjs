@@ -20,7 +20,9 @@ function readJson(file, required = true) {
 }
 
 function round(value) {
-  return Number.isFinite(Number(value)) ? Number(Number(value).toFixed(8)) : null;
+  if (value === null || value === undefined || value === '') return null;
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? Number(numeric.toFixed(8)) : null;
 }
 
 function sortedUnique(values = []) {
@@ -211,7 +213,7 @@ items.sort((a, b) => a.id.localeCompare(b.id));
 if (new Set(items.map(x => x.id)).size !== items.length) throw new Error('Duplicate reconciliation watch item id');
 
 const semanticFingerprint = hash(items.map(({ id, fingerprint }) => ({ id, fingerprint })));
-const previousCompatible = previous?.version === '0.1-accounting-reconciliation-watch' && Array.isArray(previous.items);
+const previousCompatible = previous?.version === '0.1.1-accounting-reconciliation-watch-null-preserving' && Array.isArray(previous.items);
 
 // If the watched semantic state did not change, preserve the prior snapshot byte-for-byte to avoid commit noise.
 if (previousCompatible && previous.semanticFingerprint === semanticFingerprint && path.resolve(ROOT, PREVIOUS_FILE) === path.resolve(ROOT, OUTPUT_FILE)) {
@@ -254,7 +256,7 @@ const closedRows = (completeness.rows || []).filter(row => row.month && row.mont
 const highAttentionRows = (reconciliation.rows || []).filter(row => row.attention === 'high' && row.parked !== true && row.engineeringActionable !== true);
 
 const output = {
-  version: '0.1-accounting-reconciliation-watch',
+  version: '0.1.1-accounting-reconciliation-watch-null-preserving',
   generatedAt: new Date().toISOString(),
   status: 'diagnostic-watch-no-accounting-authority',
   currentMonth,
@@ -272,6 +274,7 @@ const output = {
     resolvedWatchItemClosesAccounting: false,
     baselineCreatesAlerts: false,
     crossMonthProrationAllowed: false,
+    nullAmountsRemainUnknown: true,
     unknownIsNotZero: true
   },
   authority: authorityBoundary(),
@@ -313,7 +316,7 @@ const output = {
 };
 
 fs.writeFileSync(path.resolve(ROOT, OUTPUT_FILE), `${JSON.stringify(output, null, 2)}\n`);
-console.log('Accounting Reconciliation Watch v0.1 built', {
+console.log('Accounting Reconciliation Watch v0.1.1 built', {
   baseline: output.baseline,
   semanticFingerprint: output.semanticFingerprint,
   ...output.summary
