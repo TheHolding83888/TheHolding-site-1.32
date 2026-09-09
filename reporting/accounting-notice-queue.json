@@ -1,6 +1,6 @@
 {
-  "version": "0.1-accounting-notice-queue",
-  "generatedAt": "2026-09-09T04:38:58.830Z",
+  "version": "0.2-accounting-notice-queue-boundary-evidence-pending",
+  "generatedAt": "2026-09-09T09:15:36.859Z",
   "status": "diagnostic-no-completion-authority",
   "currentMonth": "2026-09",
   "purpose": "Single derived operational queue for Company Passport accounting notices and reconciliation work. Canonical sources remain unchanged and authoritative.",
@@ -15,6 +15,9 @@
     "deltaIsMissingIncome": false,
     "trackingNoPeriodEventIsError": false,
     "ownerDataPendingIsEngineeringFailure": false,
+    "boundaryEvidencePendingIsEngineeringFailure": false,
+    "crossMonthIntervalProrationAllowed": false,
+    "boundaryEvidencePendingCanCloseAccountingCoverage": false,
     "unknownIsNotZero": true
   },
   "sourceState": {
@@ -26,7 +29,7 @@
     "companyMonthlyReports": {
       "file": "reporting/company-monthly-reports.json",
       "version": "0.5-company-monthly-confirmed-estimated-view",
-      "generatedAt": "2026-09-09T04:38:58.437Z"
+      "generatedAt": "2026-09-09T09:15:36.450Z"
     },
     "icpNnsFactualSnapshots": {
       "file": "reporting/icp-nns-factual-snapshots.json",
@@ -38,76 +41,21 @@
   "classificationContract": {
     "missing-capability": "Actual reusable factual-tracking capability is absent; engineering action is justified.",
     "tracking-no-period-event": "Factual tracking exists but no event has occurred in the selected month; this is not an error.",
-    "period-lifecycle-reconciliation": "Evidence exists but period/lifecycle attribution needs reconciliation, or owner evidence is explicitly pending.",
+    "period-lifecycle-reconciliation": "Evidence exists but period/lifecycle attribution needs reconciliation. An explicit historical-boundary-evidence-pending blocker means the source interval crosses a calendar boundary without an exact cut; it remains UNKNOWN/partial and must not be time-prorated.",
     "reference-vs-factual-divergence": "Confirmed factual income and non-factual Reference estimate are shown side by side as a diagnostic comparison only."
   },
   "summary": {
     "rowCount": 33,
-    "engineeringActionableCount": 2,
-    "parkedCount": 2,
+    "engineeringActionableCount": 0,
+    "parkedCount": 4,
     "missingCapabilityCount": 0,
     "trackingNoPeriodEventCount": 19,
     "periodLifecycleReconciliationCount": 4,
     "referenceVsFactualDivergenceCount": 10,
-    "ownerDataPendingCount": 2
+    "ownerDataPendingCount": 2,
+    "boundaryEvidencePendingCount": 2
   },
   "rows": [
-    {
-      "id": "period-lifecycle-reconciliation:1milliondollar.eth:2026-09:__company_period__",
-      "company": "1milliondollar.eth",
-      "registry": null,
-      "month": "2026-09",
-      "scope": "company-period",
-      "mechanism": "__company_period__",
-      "category": "period-lifecycle-reconciliation",
-      "priority": 2,
-      "trackingState": "partial-observed",
-      "blocker": "unresolved-period-lifecycle-events",
-      "action": "reconcile-period-boundary-settlement-or-lifecycle-semantics",
-      "engineeringActionable": true,
-      "parked": false,
-      "sourceOfTruth": false,
-      "incomeCreationAuthority": false,
-      "monthClosingAuthority": false,
-      "canReplaceUnknown": false,
-      "executionAuthority": "none",
-      "confirmedUsd": 0.85594196,
-      "estimatedUsd": 1.227937,
-      "deltaUsd": 0.37199504,
-      "amountScope": "company-period",
-      "unresolvedEventCount": 1,
-      "unresolvedReasons": [
-        "period-boundary-not-single-month"
-      ]
-    },
-    {
-      "id": "period-lifecycle-reconciliation:Monetra.eth:2026-09:__company_period__",
-      "company": "Monetra.eth",
-      "registry": "008",
-      "month": "2026-09",
-      "scope": "company-period",
-      "mechanism": "__company_period__",
-      "category": "period-lifecycle-reconciliation",
-      "priority": 2,
-      "trackingState": "partial-observed",
-      "blocker": "unresolved-period-lifecycle-events",
-      "action": "reconcile-period-boundary-settlement-or-lifecycle-semantics",
-      "engineeringActionable": true,
-      "parked": false,
-      "sourceOfTruth": false,
-      "incomeCreationAuthority": false,
-      "monthClosingAuthority": false,
-      "canReplaceUnknown": false,
-      "executionAuthority": "none",
-      "confirmedUsd": 0.05314667,
-      "estimatedUsd": 0.1359,
-      "deltaUsd": 0.08275333,
-      "amountScope": "company-period",
-      "unresolvedEventCount": 8,
-      "unresolvedReasons": [
-        "period-boundary-not-single-month"
-      ]
-    },
     {
       "id": "period-lifecycle-reconciliation:0x5860...83CA8.eth:2026-09:icp_nns",
       "company": "0x5860...83CA8.eth",
@@ -147,6 +95,36 @@
       }
     },
     {
+      "id": "period-lifecycle-reconciliation:1milliondollar.eth:2026-09:__company_period__",
+      "company": "1milliondollar.eth",
+      "registry": null,
+      "month": "2026-09",
+      "scope": "company-period",
+      "mechanism": "__company_period__",
+      "category": "period-lifecycle-reconciliation",
+      "priority": 2,
+      "trackingState": "partial-observed",
+      "blocker": "historical-boundary-evidence-pending",
+      "action": "await-exact-boundary-evidence-no-proration",
+      "engineeringActionable": false,
+      "parked": true,
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none",
+      "confirmedUsd": 0.85594196,
+      "estimatedUsd": 1.227937,
+      "deltaUsd": 0.37199504,
+      "amountScope": "company-period",
+      "unresolvedEventCount": 1,
+      "unresolvedReasons": [
+        "period-boundary-evidence-pending-no-exact-month-cut"
+      ],
+      "boundaryEvidencePending": true,
+      "prorationAllowed": false
+    },
+    {
       "id": "period-lifecycle-reconciliation:aerocvxyb.eth:2026-09:icp_nns",
       "company": "aerocvxyb.eth",
       "registry": null,
@@ -183,6 +161,36 @@
         "status": "baseline-only-no-period-income",
         "nextRequiredEvidence": "second comparable owner factual NNS maturity snapshot"
       }
+    },
+    {
+      "id": "period-lifecycle-reconciliation:Monetra.eth:2026-09:__company_period__",
+      "company": "Monetra.eth",
+      "registry": "008",
+      "month": "2026-09",
+      "scope": "company-period",
+      "mechanism": "__company_period__",
+      "category": "period-lifecycle-reconciliation",
+      "priority": 2,
+      "trackingState": "partial-observed",
+      "blocker": "historical-boundary-evidence-pending",
+      "action": "await-exact-boundary-evidence-no-proration",
+      "engineeringActionable": false,
+      "parked": true,
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none",
+      "confirmedUsd": 0.05314667,
+      "estimatedUsd": 0.1359,
+      "deltaUsd": 0.08275333,
+      "amountScope": "company-period",
+      "unresolvedEventCount": 8,
+      "unresolvedReasons": [
+        "period-boundary-evidence-pending-no-exact-month-cut"
+      ],
+      "boundaryEvidencePending": true,
+      "prorationAllowed": false
     },
     {
       "id": "tracking-no-period-event:05081966.eth:2026-09:aerodrome_veaero",
