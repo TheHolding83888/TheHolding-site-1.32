@@ -8,7 +8,7 @@
   "schedulerAttemptCadenceMinutes": 15,
   "scheduledRefreshAdmissionAgeMinutes": 25,
   "timezone": "UTC",
-  "purpose": "Single source of truth for resilient Shared Market Data wakes. This workflow owns canonical price observation/materialization only; a committed market-data.json naturally wakes Unified Capital, which rebuilds General Balance and Capital State before Public Capital on the same canonical price snapshot.",
+  "purpose": "Single source of truth for resilient Shared Market Data wakes. This workflow owns canonical price observation/materialization only; its successful completion is observed by Unified Capital, whose lightweight admission compares Market Data generation with the generation already materialized in Public Capital. Only a new price generation proceeds to General Balance, Capital State and Public Capital recomputation.",
   "canonicalOutputs": [
     "intelligence/market-data/market-data.json",
     "intelligence/market-data/onchain-price-shadow.json"
@@ -32,7 +32,8 @@
     "sharedRefreshMayReuseDailyCoinGeckoWithoutExternalRequest": true,
     "onchainObservationRunsEveryAdmittedSharedRefresh": true,
     "marketDataWriterDoesNotWritePublicCapitalState": true,
-    "marketDataCommitWakesUnifiedCapital": true,
+    "marketDataWorkflowCompletionObservedByUnifiedCapital": true,
+    "marketDataNoopCompletionSuppressedByGenerationParity": true,
     "capitalStateRebuiltBeforePublicCapital": true,
     "reverseCapitalStateWakeRemoved": true,
     "publicCapitalMaterializationOwner": "The Holding Capital · Unified Refresh"
@@ -44,7 +45,8 @@
     "unknownIsNotZero": true,
     "partialIsNotTotal": true,
     "oneEconomicPositionOnce": true,
-    "priceSnapshotMustPrecedeCapitalValuation": true
+    "priceSnapshotMustPrecedeCapitalValuation": true,
+    "generationParityDeterminesMarketDataHandoff": true
   },
   "authority": {
     "repositoryMutationAuthority": true,
