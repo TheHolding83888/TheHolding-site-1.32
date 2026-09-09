@@ -16,18 +16,12 @@ on:
       - 'intelligence/market-data/market-data-authority-policy.json'
       - 'intelligence/market-data/market-data-authority-selector.mjs'
       - 'intelligence/market-data/market-data-authority-materializer.mjs'
-      - 'intelligence/market-data/public-capital-engine.mjs'
       - 'intelligence/market-data/coingecko-fetch-shim.mjs'
-      - 'intelligence/market-data/public-capital-client.js'
       - 'intelligence/market-data/onchain-price-source-registry.json'
       - 'intelligence/market-data/onchain-price-source-registry-extensions.json'
       - 'intelligence/market-data/onchain-price-resolver.mjs'
       - 'intelligence/market-data/market-data-scheduler-contract.json'
       - 'intelligence/reliability/market-data-scheduler-workflow-definition-proof.mjs'
-      - 'companies/defitea-canonical-state.json'
-      - 'companies/stable-index-data.json'
-      - 'companies/productivity-data.json'
-      - 'intelligence/capital-state/capital-state.json'
       - '.github/workflows/market-data-refresh.yml'
 
 permissions:
@@ -129,9 +123,7 @@ jobs:
           node --check intelligence/market-data/market-data-engine.mjs
           node --check intelligence/market-data/market-data-authority-selector.mjs
           node --check intelligence/market-data/market-data-authority-materializer.mjs
-          node --check intelligence/market-data/public-capital-engine.mjs
           node --check intelligence/market-data/coingecko-fetch-shim.mjs
-          node --check intelligence/market-data/public-capital-client.js
           node --check intelligence/market-data/onchain-price-resolver.mjs
 
       - name: Reuse daily CoinGecko source lane without external request
@@ -163,10 +155,6 @@ jobs:
           MARKET_DATA_FORCE_COINGECKO_FAILBACK: 'false'
         run: node intelligence/market-data/market-data-authority-materializer.mjs
 
-      - name: Rebuild public fund + company capital view
-        if: steps.cadence.outputs.due == 'true'
-        run: node intelligence/market-data/public-capital-engine.mjs
-
       - name: Validate canonical quantities and 26-asset authority
         if: steps.cadence.outputs.due == 'true'
         run: |
@@ -176,7 +164,6 @@ jobs:
           const market=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
           const source=JSON.parse(fs.readFileSync('intelligence/market-data/market-data-coingecko.json','utf8'));
           const shadow=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-shadow.json','utf8'));
-          const pub=JSON.parse(fs.readFileSync('intelligence/market-data/public-capital-state.json','utf8'));
           const reg=JSON.parse(fs.readFileSync('intelligence/market-data/fund-capital-registry.json','utf8'));
           const policy=JSON.parse(fs.readFileSync('intelligence/market-data/market-data-authority-policy.json','utf8'));
           const ids=Object.keys(source.prices||{});
@@ -193,34 +180,33 @@ jobs:
             if(row.authority.selectedLane==='coingecko-lane'&&row.authority.fallbackUsed!==true)throw new Error(`${id}: CoinGecko may only be a failback for canonical production authority`);
             if(!Number.isFinite(Number(row.usd))||Number(row.usd)<=0)throw new Error(`${id}: finite positive price unavailable`);
           }
-          const f=reg.funds?.fructus,s=reg.funds?.singul,d=pub.funds?.defitea;
+          const f=reg.funds?.fructus,s=reg.funds?.singul;
           if(Number(f?.positions?.find(x=>x.assetId==='ondo-finance')?.quantity)!==542)throw new Error('Fructus ONDO quantity drift');
           if(Number(s?.positions?.find(x=>x.assetId==='elizaos')?.quantity)!==80808)throw new Error('Singul ELIZA quantity drift');
           const excluded=(f?.excludedFromTvl||[]).map(x=>x.assetId);
           if(!excluded.includes('dbcon')||!excluded.includes('copxon'))throw new Error('Fructus exclusions missing');
-          if(!d||!Number.isFinite(Number(d.tvlUsd))||!Number.isFinite(Number(d.referenceAprPct)))throw new Error('Defitea public state incomplete');
-          if(pub.authority?.executionAuthority!=='none'||market.authority?.executionAuthority!=='none')throw new Error('Execution authority drift');
+          if(market.authority?.executionAuthority!=='none')throw new Error('Execution authority drift');
           if(market.authority?.capitalExecution!==false||market.authority?.policyMutationAuthority!==false)throw new Error('Authority boundary drift');
           if(shadow.mode!=='shadow'||shadow.semantics?.productionPriceAuthority!==false)throw new Error('Shadow contract drift');
-          if(!Number.isFinite(Number(pub.totals?.fundEcosystemTvlUsd))||!Number.isFinite(Number(pub.totals?.companyNetworkTvlUsd)))throw new Error('Public Capital totals unavailable');
           console.log('26-asset Market Data authority PASS',{
             onchainSelectedAssetCount:market.authority.onchainSelectedAssetCount,
             coingeckoFailbackAssetCount:market.authority.coingeckoSelectedAssetCount,
             fallbackCount:market.authority.fallbackCount,
-            shadowStatus:shadow.status
+            shadowStatus:shadow.status,
+            downstreamCapitalMaterialization:'unified-capital-on-market-data-commit'
           });
           NODE
           git diff --check
 
-      - name: Publish generated shared state safely
+      - name: Publish canonical Market Data state safely
         if: steps.cadence.outputs.due == 'true'
         run: |
           set -euo pipefail
           git config user.name "The Holding Market Data Orchestrator"
           git config user.email "market-data-orchestrator@theholding.ai"
-          git add intelligence/market-data/market-data-coingecko.json intelligence/market-data/market-data.json intelligence/market-data/onchain-price-shadow.json intelligence/market-data/public-capital-state.json
-          if git diff --cached --quiet; then echo 'Shared Market Data state already current.'; exit 0; fi
-          git commit -m "market data: refresh shared public snapshot"
+          git add intelligence/market-data/market-data-coingecko.json intelligence/market-data/market-data.json intelligence/market-data/onchain-price-shadow.json
+          if git diff --cached --quiet; then echo 'Canonical Market Data state already current.'; exit 0; fi
+          git commit -m "market data: refresh canonical price snapshot"
           for attempt in 1 2 3; do
             git fetch origin main
             if ! git rebase origin/main; then git rebase --abort || true; echo 'Market Data writer conflict; refusing to guess.'; exit 1; fi
@@ -232,8 +218,7 @@ jobs:
             if [ ! -f intelligence/market-data/onchain-price-shadow.json ]; then echo 'Onchain resolver produced no state during retry.' >&2; exit 1; fi
             if [ "$shadow_code" -ne 0 ]; then echo '::warning::Retry Shadow remains partial; preserving per-asset failback.'; fi
             MARKET_DATA_FORCE_COINGECKO_FAILBACK='false' node intelligence/market-data/market-data-authority-materializer.mjs
-            node intelligence/market-data/public-capital-engine.mjs
-            git add intelligence/market-data/market-data-coingecko.json intelligence/market-data/market-data.json intelligence/market-data/onchain-price-shadow.json intelligence/market-data/public-capital-state.json
+            git add intelligence/market-data/market-data-coingecko.json intelligence/market-data/market-data.json intelligence/market-data/onchain-price-shadow.json
             git commit --amend --no-edit
             if git push origin HEAD:main; then exit 0; fi
             sleep $((attempt * 2))
