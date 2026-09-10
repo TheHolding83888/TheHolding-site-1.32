@@ -1,0 +1,95 @@
+name: "Validate General Balance · Per-Asset Market Data Consumer"
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/validate-general-balance-market-data-consumer.yml'
+      - 'intelligence/capital-state/general-company-balance-sheet.mjs'
+      - 'intelligence/capital-state/unified-capital-market-data-guard.mjs'
+      - 'intelligence/market-data/market-data.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Validate current canonical mixed-lane Market Data
+        run: |
+          set -euo pipefail
+          node --check intelligence/capital-state/general-company-balance-sheet.mjs
+          node intelligence/capital-state/unified-capital-market-data-guard.mjs
+          node intelligence/capital-state/general-company-balance-sheet.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const out=JSON.parse(fs.readFileSync('intelligence/capital-state/general-company-balance-sheet.json','utf8'));
+          if(out.engineVersion!=='0.2.2-per-asset-fallback-consumer')throw new Error('General Balance consumer version drift');
+          if(out.semantics?.perAssetFallbackAllowed!==true||out.semantics?.productionUnknownAccepted!==false)throw new Error('Per-asset fallback/UNKNOWN boundary missing');
+          if(out.authority?.executionAuthority!=='none')throw new Error('Execution authority drift');
+          console.log('Current canonical General Balance consumer PASS',out.sourceState?.marketData);
+          NODE
+
+      - name: Prove a shared asset may use explicit bounded fallback
+        run: |
+          set -euo pipefail
+          cp intelligence/market-data/market-data.json /tmp/market-data.json
+          node - <<'NODE'
+          const fs=require('fs');
+          const p='intelligence/market-data/market-data.json';
+          const m=JSON.parse(fs.readFileSync(p,'utf8'));
+          const row=m.prices.bitcoin;
+          if(row.authority.selectedLane!=='onchain')throw new Error('Fixture expects BTC to begin onchain');
+          row.authority={...row.authority,selectedLane:'coingecko-lane',fallbackUsed:true,sourceSnapshotGeneratedAt:m.generatedAt};
+          row.source='coingecko-validation-fixture';
+          m.authority.onchainSelectedAssetCount-=1;
+          m.authority.coingeckoSelectedAssetCount+=1;
+          fs.writeFileSync(p,JSON.stringify(m,null,2)+'\n');
+          NODE
+          node intelligence/capital-state/general-company-balance-sheet.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const out=JSON.parse(fs.readFileSync('intelligence/capital-state/general-company-balance-sheet.json','utf8'));
+          const rows=out.companies.flatMap(c=>c.positions||[]).filter(p=>p.assetId==='bitcoin'&&!p.productivityOnly);
+          if(!rows.length||rows.some(p=>p.priceProvenance!=='canonical-shared-market-data-coingecko-fallback'))throw new Error('Shared fallback provenance not preserved');
+          console.log('Explicit shared-asset fallback PASS',{bitcoinRows:rows.length});
+          NODE
+          mv /tmp/market-data.json intelligence/market-data/market-data.json
+
+      - name: Prove UNKNOWN still fails closed
+        run: |
+          set -euo pipefail
+          cp intelligence/market-data/market-data.json /tmp/market-data.json
+          node - <<'NODE'
+          const fs=require('fs');
+          const p='intelligence/market-data/market-data.json';
+          const m=JSON.parse(fs.readFileSync(p,'utf8'));
+          const row=m.prices.bitcoin;
+          if(row.authority.selectedLane==='onchain')m.authority.onchainSelectedAssetCount-=1;
+          else if(row.authority.selectedLane==='coingecko-lane')m.authority.coingeckoSelectedAssetCount-=1;
+          row.usd=null;
+          row.status='unknown';
+          row.source=null;
+          row.authority={...row.authority,selectedLane:'unknown',fallbackUsed:true,sourceSnapshotGeneratedAt:null};
+          m.authority.unknownCount=1;
+          m.coverage.unknownCount=1;
+          m.coverage.usableCoverage=25/26;
+          fs.writeFileSync(p,JSON.stringify(m,null,2)+'\n');
+          NODE
+          if node intelligence/capital-state/general-company-balance-sheet.mjs; then
+            echo 'General Balance incorrectly accepted UNKNOWN Market Data' >&2
+            exit 1
+          fi
+          mv /tmp/market-data.json intelligence/market-data/market-data.json
+          git diff --check
+          echo 'UNKNOWN fail-closed PASS'
