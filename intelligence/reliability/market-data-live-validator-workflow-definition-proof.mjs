@@ -20,13 +20,15 @@ for (const [name, workflow] of [['onchain', onchain], ['final-cohort', finalCoho
   requireCondition(!/contents:\s*write/.test(workflow), `${name}: contents:write authority forbidden`);
   requireCondition(!/actions:\s*write/.test(workflow), `${name}: actions:write authority forbidden`);
   requireCondition(!/id-token:\s*write/.test(workflow), `${name}: id-token:write authority forbidden`);
-  requireCondition(!workflow.includes('continue-on-error: true'), `${name}: live proof may not be softened with continue-on-error`);
-  requireCondition(workflow.includes(helperPath), `${name}: bounded live evidence helper is not a PR dependency`);
+  requireCondition(!workflow.includes('continue-on-error: true'), `${name}: audit may not be softened with continue-on-error`);
+  requireCondition(workflow.includes(helperPath), `${name}: bounded live health helper is not a PR dependency`);
   requireCondition(workflow.includes(proofPath), `${name}: paired definition proof is not a PR dependency`);
 }
 
-requireCondition(onchain.includes(`node ${helperPath} all27`), 'Onchain validator must invoke bounded all27 live evidence proof');
-requireCondition(finalCohort.includes(`node ${helperPath} final9`), 'Final cohort validator must invoke bounded final9 live evidence proof');
+requireCondition(onchain.includes(`node ${helperPath} all27`), 'Onchain validator must invoke bounded all27 live health audit');
+requireCondition(finalCohort.includes(`node ${helperPath} final9`), 'Final cohort validator must invoke bounded final9 live health audit');
+requireCondition(onchain.includes('Audit all 27 live routes across bounded public RPC attempts'), 'Onchain live audit step drift');
+requireCondition(finalCohort.includes('Audit final-route live health across bounded public RPC attempts'), 'Final cohort live audit step drift');
 requireCondition(onchain.includes('Prove 30-minute observation and per-asset materialization contract'), 'Onchain validator lost scheduler/materialization contract proof');
 requireCondition(finalCohort.includes('Validate deterministic authority and failback contracts'), 'Final cohort validator lost deterministic authority/failback proof');
 requireCondition(finalCohort.includes(`node ${healthProofPath}`), 'Final cohort validator must execute deterministic materializer health-boundary proof');
@@ -41,17 +43,20 @@ requireCondition(helper.includes('shadow.coverage?.assetCount !== 27'), 'Live he
 requireCondition(helper.includes("shadow.authority?.executionAuthority !== 'none'"), 'Live helper executionAuthority guard missing');
 requireCondition(helper.includes("row.status === 'shadow-ok'"), 'Live helper shadow-ok route health criterion missing');
 requireCondition(helper.includes("row.status === 'divergent'"), 'Live helper divergence telemetry criterion missing');
-requireCondition(helper.includes("row.status === 'dependency-warning' && row.dependencyStatus === 'divergent'"), 'Live helper dependency divergence boundary missing');
+requireCondition(helper.includes("row.status === 'dependency-warning' && row.dependencyStatus === 'divergent'"), 'Live helper dependency divergence telemetry criterion missing');
 requireCondition(helper.includes('!(Number(row.usd) > 0)'), 'Live helper positive price criterion missing');
-requireCondition(helper.includes("row.status !== 'shadow-ok'"), 'Final9 helper must still require strict shadow-ok status');
-requireCondition(helper.includes('row.source !== req.source || row.network !== req.network'), 'Final9 helper route identity guard missing');
-requireCondition(helper.includes('row.quoteAssetId !== req.quoteAssetId'), 'Final9 helper quote dependency identity guard missing');
-requireCondition(helper.includes('Number(row.divergencePct) > Number(row.maxDivergencePct)'), 'Final9 helper divergence bound missing');
-requireCondition(helper.includes("row.source !== 'uniswap-v3-twap-chainlink-quote'"), 'Final9 helper XAUT physical route guard missing');
-requireCondition(helper.includes("healthy.set(row.assetId"), 'All27 evidence accumulation missing');
-requireCondition(helper.includes("healthy.set(id"), 'Final9 evidence accumulation missing');
-requireCondition(helper.includes('routes without a fresh healthy live observation'), 'Per-route missing-evidence fail-closed guard missing');
+requireCondition(helper.includes('assertFinalIdentity'), 'Final cohort semantic identity guard missing');
+requireCondition(helper.includes('live route source identity drift'), 'Final cohort source identity fail-closed guard missing');
+requireCondition(helper.includes('live route network identity drift'), 'Final cohort network identity fail-closed guard missing');
+requireCondition(helper.includes('live quote dependency identity drift'), 'Final cohort quote dependency identity fail-closed guard missing');
+requireCondition(helper.includes("row.source !== 'uniswap-v3-twap-chainlink-quote'"), 'Final cohort XAUT source guard missing');
+requireCondition(helper.includes('0x6546055f46e866a4b9a4a13e81273e3152bae5da'), 'Final cohort XAUT pool guard missing');
+requireCondition(helper.includes('transportIncomplete'), 'Live helper must distinguish transport incompleteness from semantic failure');
+requireCondition(helper.includes('routesNotObservedHealthy: missing'), 'Live helper must expose unresolved route-health telemetry');
 requireCondition(helper.includes('unavailableAcceptedAsHealthy: false'), 'Unavailable-as-healthy prohibition missing');
+requireCondition(helper.includes('semanticIdentityGuardsFailClosed: true'), 'Semantic identity fail-closed declaration missing');
+requireCondition(helper.includes('divergenceRemainsTelemetry: true'), 'Divergence telemetry contract missing');
+requireCondition(helper.includes('deterministicFailbackValidatedSeparately: true'), 'Live helper must separate failback proof from public-RPC transport health');
 requireCondition(helper.includes('productionAuthorityMaterializationPerformedHere: false'), 'Live helper must explicitly remain observation-only');
 requireCondition(!helper.includes('market-data-authority-materializer.mjs'), 'Live helper must not materialize authority from a multi-attempt evidence window');
 requireCondition(!helper.includes('market-data.json'), 'Live helper must not inspect or mutate canonical production Market Data');
@@ -64,12 +69,12 @@ requireCondition(healthProof.includes("executionAuthority: 'none'"), 'Determinis
 
 console.log('Market Data live validator workflow definitions PASS', {
   transportWindowAttempts: 3,
-  all27EveryRoutePersonallyObservedHealthy: true,
-  final9EveryRouteStrictlyObservedHealthy: true,
-  simultaneousAllRouteAvailabilityRequired: false,
+  liveTransportMayRemainExplicitlyPartial: true,
+  unavailableAcceptedAsHealthy: false,
+  semanticIdentityGuardsFailClosed: true,
+  divergenceIsTelemetryNotAuthorityFailure: true,
   liveEvidenceAndProductionMaterializationSeparated: true,
   deterministicPerAssetFailbackValidated: true,
-  unavailableAcceptedAsHealthy: false,
-  semanticRouteGuardsRelaxed: false,
+  productionUnknownMayNotBeInventedAsZero: true,
   executionAuthority: 'none'
 });
