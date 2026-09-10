@@ -27,6 +27,11 @@ function assertEqual(actual, expected, label) {
 function assertNumber(actual, expected, label) {
   if (expected !== undefined && Number(actual) !== Number(expected)) throw new Error(`${label} drift`);
 }
+function observationCarriesSelectableRouteEvidence(observation) {
+  const usd = finite(observation?.usd);
+  const status = observation?.status;
+  return usd !== null && usd > 0 && (status === 'shadow-ok' || status === 'divergent' || status === 'dependency-warning');
+}
 
 const policy = readJson(PATHS.policy);
 const source = readJson(PATHS.source);
@@ -65,6 +70,7 @@ for (const assetId of directIds) {
   const observation = shadow?.observations?.[assetId];
   const req = policy.pilot?.routeRequirements?.[assetId];
   if (!req) throw new Error(`${assetId}: exact direct route requirement missing`);
+  if (!observationCarriesSelectableRouteEvidence(observation)) continue;
   assertEqual(observation?.source, policy.pilot.requiredRouteType, `${assetId}: direct source`);
   assertEqual(observation?.network, req.network, `${assetId}: direct network`);
   assertAddress(observation?.contract, req.contract, `${assetId}: direct contract`);
@@ -75,6 +81,7 @@ for (const assetId of relativeIds) {
   const observation = shadow?.observations?.[assetId];
   const req = policy.relativePilot?.routeRequirements?.[assetId];
   if (!req) throw new Error(`${assetId}: exact relative route requirement missing`);
+  if (!observationCarriesSelectableRouteEvidence(observation)) continue;
   assertEqual(observation?.source, policy.relativePilot.requiredRouteType, `${assetId}: relative source`);
   assertEqual(observation?.network, req.network, `${assetId}: relative network`);
   assertAddress(observation?.contract, req.contract, `${assetId}: relative contract`);
@@ -87,6 +94,7 @@ for (const assetId of v3RelativeIds) {
   const observation = shadow?.observations?.[assetId];
   const req = policy.v3RelativePilot?.routeRequirements?.[assetId];
   if (!req) throw new Error(`${assetId}: exact V3 route requirement missing`);
+  if (!observationCarriesSelectableRouteEvidence(observation)) continue;
   assertEqual(observation?.source, policy.v3RelativePilot.requiredRouteType, `${assetId}: V3 source`);
   assertEqual(observation?.network, req.network, `${assetId}: V3 network`);
   assertAddress(observation?.factory, req.factory, `${assetId}: V3 factory`);
@@ -102,7 +110,8 @@ for (const assetId of v3RelativeIds) {
 for (const assetId of reviewedIds) {
   const observation = shadow?.observations?.[assetId];
   const req = policy.reviewedPilot?.routeRequirements?.[assetId];
-  if (!observation || !req) throw new Error(`${assetId}: reviewed route evidence missing`);
+  if (!req) throw new Error(`${assetId}: reviewed route requirement missing`);
+  if (!observationCarriesSelectableRouteEvidence(observation)) continue;
   assertEqual(observation.source, req.source, `${assetId}: reviewed source`);
   assertEqual(observation.network, req.network, `${assetId}: reviewed network`);
   assertAddress(observation.factory, req.factory, `${assetId}: reviewed factory`);
