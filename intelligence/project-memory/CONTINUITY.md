@@ -2,9 +2,9 @@
 
 This file is the deterministic pointer between live `CURRENT.md` and immutable master continuity checkpoints.
 
-Latest immutable checkpoint: [THE_HOLDING_MASTER_CONTINUITY_2026-09-10_105116_AUTO_cb3fee3a.md](./THE_HOLDING_MASTER_CONTINUITY_2026-09-10_105116_AUTO_cb3fee3a.md)
-Checkpoint source head: **cb3fee3a92d9a1316c5344ed69c1f81f69cc875d**
-Checkpoint source time: **2026-09-10T13:51:16+03:00**
+Latest immutable checkpoint: [THE_HOLDING_MASTER_CONTINUITY_2026-09-10_110457_AUTO_ae8ff4a8.md](./THE_HOLDING_MASTER_CONTINUITY_2026-09-10_110457_AUTO_ae8ff4a8.md)
+Checkpoint source head: **ae8ff4a887bb6ba25f013a8b0aceee8310784b38**
+Checkpoint source time: **2026-09-10T11:04:57Z**
 
 Rules:
 - `CURRENT.md` is generated and must resolve its latest-continuity slot through this root when present.
