@@ -174,7 +174,7 @@ assert(String(yg?.epistemicNote||'').includes('UNKNOWN'), 'YieldRing partial cos
 const c001g=(general?.companies||[]).find(x=>x.registry==='001');
 const c001gb=(c001g?.positions||[]).find(x=>x.assetId==='bitcoin');
 assert(c001g && Number(c001gb?.units)===0.00205 && c001gb?.evidenceStatus==='owner-provided-current', 'Company #001 BTC owner snapshot missing from General Balance');
-assert(Number(c001gb?.entryPriceUsd)===78038.78048780488 && Number(c001gb?.costBasisUsd)===159.9795, 'Company #001 BTC entry/cost provenance missing from General Balance');
+assert(Math.abs(Number(c001gb?.entryPriceUsd)-Number(owner001Btc.entryPriceUsd))<1e-6 && Math.abs(Number(c001gb?.costBasisUsd)-Number(owner001Btc.costBasisUsd))<1e-6, 'Company #001 BTC entry/cost provenance missing from General Balance');
 
 const rookGeneral=(general?.companies||[]).find(x=>x.registry==='007');
 const discoveryBook=new Map((company007Discovery?.proposedCompanyBook||[]).map(x=>[x.symbol,x]));
