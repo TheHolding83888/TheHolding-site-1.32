@@ -147,11 +147,27 @@ for(const token of [
 
 fs.writeFileSync(COMPANIES,companies);
 
+// Production-proof boundary: the projector is not considered successful until
+// the file that is actually deployed contains both the Passport router and the
+// owner-requested single-action Collection normalizer. This catches a green
+// source change that failed to materialize into the public artifact.
+const materialized=fs.readFileSync(COMPANIES,'utf8');
+for(const token of [
+  'data-th-collection-passport-routing',
+  marker,
+  "card.setAttribute('href','#passport-' + reg)",
+  "footer.className='cc-extlink cc-passport-action'",
+  "window.addEventListener('popstate',scheduleLocationSync)"
+]){
+  if(!materialized.includes(token))fail(`Physical Collection Passport/Explore materialization missing: ${token}`);
+}
+
 console.log('Collection uniform Explore Company projection PASS',{
   uniformExploreCompany:true,
   wholeCardPassportTarget:true,
   externalCardTargetsRemoved:true,
   dynamicCompanyCardsObserved:true,
+  physicalArtifactVerified:true,
   passportRouterReused:true,
   executionAuthority:'none'
 });
