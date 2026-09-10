@@ -111,6 +111,8 @@ if(!companies.includes(marker)){
         normalizeTree(grid);
         observer=new MutationObserver(function(records){
             records.forEach(function(record){
+                var ownerCard = record.target && record.target.closest ? record.target.closest('#companiesGrid .company-card:not(.placeholder)') : null;
+                if (ownerCard) normalize(ownerCard);
                 record.addedNodes.forEach(function(node){
                     if (node && node.nodeType === 1) normalizeTree(node);
                 });
@@ -137,7 +139,8 @@ for(const token of [
   "cc-extlink cc-passport-action",
   'data-i18n="card.explore"',
   'Explore Company',
-  'MutationObserver'
+  'MutationObserver',
+  'ownerCard'
 ]){
   if(!companies.includes(token))fail(`Collection uniform Explore contract missing: ${token}`);
 }
