@@ -8,7 +8,6 @@ if (!allowedModes.has(mode)) throw new Error(`Unsupported live proof mode: ${mod
 const attempts = 3;
 const shadowPath = 'intelligence/market-data/onchain-price-shadow.json';
 const policyPath = 'intelligence/market-data/market-data-authority-policy.json';
-const marketPath = 'intelligence/market-data/market-data.json';
 const healthy = new Map();
 const attemptEvidence = [];
 
@@ -111,30 +110,6 @@ if (missing.length) {
   throw new Error(`${mode}: routes without a fresh healthy live observation after ${attempts} attempts: ${missing.join(', ')}`);
 }
 
-if (mode === 'final9') {
-  const materialize = spawnSync(process.execPath, ['intelligence/market-data/market-data-authority-materializer.mjs'], {
-    stdio: 'inherit',
-    env: { ...process.env, MARKET_DATA_FORCE_COINGECKO_FAILBACK: 'false' }
-  });
-  if (materialize.status !== 0) throw new Error(`Production authority materializer failed with exit ${materialize.status}`);
-
-  const market = readJson(marketPath);
-  const onchain = Number(market.authority?.onchainSelectedAssetCount);
-  const coingecko = Number(market.authority?.coingeckoSelectedAssetCount);
-  const unknown = Number(market.authority?.unknownCount);
-  if (onchain + coingecko !== 26) throw new Error(`Canonical production authority does not sum to 26: ${onchain}+${coingecko}`);
-  if (unknown !== 0) throw new Error(`Canonical production authority contains ${unknown} unknown assets`);
-  if (market.authority?.executionAuthority !== 'none' || market.authority?.capitalExecution !== false || market.authority?.policyMutationAuthority !== false) throw new Error('Production authority boundary drift');
-  for (const [id, row] of Object.entries(market.prices || {})) {
-    if (!(Number(row?.usd) > 0)) throw new Error(`${id}: canonical production price invalid`);
-    const lane = row.authority?.selectedLane;
-    if (!['onchain', 'coingecko-lane'].includes(lane)) throw new Error(`${id}: invalid canonical selected lane ${lane}`);
-    if (lane === 'onchain' && !String(row.source || '').startsWith('onchain-')) throw new Error(`${id}: onchain provenance missing`);
-    if (lane === 'coingecko-lane' && row.authority?.fallbackUsed !== true) throw new Error(`${id}: CoinGecko may only be selected as explicit per-asset failback`);
-  }
-  console.log('Production per-asset failback boundary PASS', { onchainSelectedAssetCount: onchain, coingeckoSelectedAssetCount: coingecko, unknownCount: unknown });
-}
-
 console.log('Market Data bounded route-by-route live evidence PASS', {
   mode,
   targetCount: targetIds.length,
@@ -142,6 +117,7 @@ console.log('Market Data bounded route-by-route live evidence PASS', {
   attemptsUsed: attemptEvidence.length,
   everyRoutePersonallyObservedHealthy: true,
   unavailableAcceptedAsHealthy: false,
+  productionAuthorityMaterializationPerformedHere: false,
   executionAuthority: 'none',
   attemptEvidence
 });
