@@ -69,6 +69,8 @@ assert.match(sitePolishProjection,/executionAuthority:'none'/,'site polish autho
 assert.match(sitePolishProjection,/href=\"\/companies\"/,'homepage Companies navigation projection missing');
 assert.match(sitePolishProjection,/href=\"\/realty\"/,'homepage Real Estate navigation projection missing');
 assert.match(sitePolishProjection,/data-th-fund-pyramid-links/,'fund pyramid navigation marker missing');
+assert.match(sitePolishProjection,/Capital Architecture · Onchain Companies · Real Estate/,'homepage Capital Architecture footer projection missing');
+assert.match(workflow,/home\.includes\('Capital Architecture · Onchain Companies · Real Estate'\)/,'Unified validation does not prove Capital Architecture footer materialization');
 assert.match(sitePolishProjection,/YIELD_REPORTS='yield-reports\/index\.html'/,'Yield Reports generated surface binding missing');
 assert.match(sitePolishProjection,/The Holding · Defitea mobile cash-flow polish/,'Defitea mobile report polish marker missing');
 assert.match(sitePolishProjection,/defiteaMobileCashFlowVisible:true/,'Defitea mobile cash-flow visibility proof missing');
