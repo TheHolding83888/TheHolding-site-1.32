@@ -10,7 +10,7 @@ const UI_BOOK_SOURCE = 'companies/index.html';
 const YIELD_RING_STATE = 'companies/yieldring-canonical-state.json';
 const COMPANY001_OWNER_SNAPSHOT = 'companies/company-001-owner-capital-snapshot.json';
 
-const EXPECTED_UI_BLOB_SHA = '0eddab3f0c62c3e192b2dc56eae5779a3b08dab0';
+const EXPECTED_UI_BLOB_SHA = '9b18fb59342bc0ae7aa89e6b6294c26df5300114';
 
 const BOOK = {
   'defitea.eth': [
