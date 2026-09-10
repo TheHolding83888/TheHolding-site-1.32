@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-10T12:38:04.169Z",
+  "generatedAt": "2026-09-10T17:06:59.952Z",
   "status": "watch",
-  "snapshotHash": "be3e64e6ee07a28662a84bd43dea8268bc6bff9c8ea1c56b8fa691a83e2786be",
+  "snapshotHash": "08324ea2fabda4e227a32e9ce89d97c22e71d82935fa4238ce08677b12d0bba2",
   "repository": {
-    "filesScanned": 1182,
-    "bytesScanned": 31025310,
+    "filesScanned": 1183,
+    "bytesScanned": 31141052,
     "criticalHashes": {
       ".github/workflows/admit-company-010-public.yml": "5feffbf58388675952487c3462d2f9149eecec6f3795483087010dd0d3b19cfb",
       ".github/workflows/ask-experience.yml": "deb9c4e1025390563f8a866f6ddf1c7870e748cbd6aba13fdbd6da2d38e983d4",
@@ -168,7 +168,7 @@
       ".github/workflows/workflow-control-plane.yml": "ee1603b549f0379dfbecbc28c46f60a59bd0b0d2491169e848575281626d01d8",
       "agents/index.html": "54530f3799b289c08b30e5a7f4010957bce22d9a768b1908f5896e4bee0fa915",
       "companies/index.html": "0fd6ffecc851e28147f7180ed16f497b082b64a3c5b14a909533569aa3070fc8",
-      "index.html": "aaadff9fabf4d84bd2d1eacbda4540ef5b6ef2fc60b9d8eb85af088b099f1521",
+      "index.html": "c389336f7ae553248a373f14323cc0b4f81bf345ff82e077225c6401669d769d",
       "intelligence/change-intelligence-engine.mjs": "6b9ef0728e0df7eb217009251e85d5efc6d059b03419f098a1387de46631519d",
       "monetra/index.html": "208ca75cfa060e3e93c5377c73b4497cc88fdbf7816590f2ecd8f7d5828ffb33",
       "yield-reports/index.html": "2d2ef97a4bf3c90cc7d0a6ba4d88444d6b800c962277aeb6802eecb9d63f151e"
@@ -481,7 +481,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Tue, 08 Sep 2026 14:18:01 GMT",
+        "lastModified": "Thu, 10 Sep 2026 01:53:50 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -517,6 +517,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "521623234e87bdc61951ef7339bf000fbb602bee8b342dfbdc4c38f6c56028c1",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": "index.html",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: index.html.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "aaadff9fabf4d84bd2d1eacbda4540ef5b6ef2fc60b9d8eb85af088b099f1521",
+        "currentSha256": "c389336f7ae553248a373f14323cc0b4f81bf345ff82e077225c6401669d769d"
+      }
     },
     {
       "id": "e0355b82064396fc141e48b5356209bc9cc44e7a4a2b15f7fe18f5dc61f03a0f",
@@ -1510,10 +1524,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 962,
+    "runCount": 963,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/09/2026-09-10T12-38-04-169Z-be3e64e6ee.json",
-    "latestRecordHash": "3f57a3bba143e0d7f2af430574a5ca79573e41ba23d2aaa1deeeadf98650eaaf",
+    "latestRecordPath": "security/security-vault/2026/09/2026-09-10T17-06-59-952Z-08324ea2fa.json",
+    "latestRecordHash": "66bd75fa3f1cb2cd8bd64f21d7ede8961a2f4c88dd3d946c9346288c8376b524",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
