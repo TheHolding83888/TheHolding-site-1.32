@@ -15,6 +15,12 @@ if (!materializer.includes('const evaluation = evaluateMarketDataAuthority({ pol
 if (!materializer.includes("selection.selectedLane === 'onchain-shadow'") || !materializer.includes("selection.selectedLane === 'coingecko-lane'")) {
   throw new Error('Materializer must preserve selector-driven per-asset authority lanes');
 }
+if (!materializer.includes('function observationCarriesSelectableRouteEvidence(observation)')) {
+  throw new Error('Materializer must distinguish selectable route evidence from transient unavailable observations');
+}
+if ((materializer.match(/if \(!observationCarriesSelectableRouteEvidence\(observation\)\) continue;/g) || []).length !== 4) {
+  throw new Error('Every materializer route cohort must defer transient unhealthy rows to selector failback');
+}
 
 const nowMs = Date.parse(shadow.generatedAt);
 if (!Number.isFinite(nowMs)) throw new Error('Shadow generatedAt invalid');
@@ -55,9 +61,30 @@ if (failedSelection.selectedLane !== 'coingecko-lane' || failedSelection.fallbac
   throw new Error('Real dependency failure must perform bounded CoinGecko failback');
 }
 
+const unavailableV3 = structuredClone(shadow);
+unavailableV3.observations.ovr = {
+  assetId: 'ovr',
+  status: 'unavailable',
+  usd: null,
+  source: 'uniswap-v3-twap-relative',
+  network: 'ethereum',
+  productionPriceAuthority: false
+};
+const unavailableV3Selection = selectMarketDataAuthority({
+  policy,
+  marketData: source,
+  shadow: unavailableV3,
+  assetId: 'ovr',
+  nowMs
+});
+if (unavailableV3Selection.selectedLane !== 'coingecko-lane' || unavailableV3Selection.fallbackUsed !== true) {
+  throw new Error('Transient V3 route unavailability with incomplete runtime metadata must fail back per asset');
+}
+
 console.log('Market Data materializer health-boundary validation PASS', {
   divergenceTelemetryKeepsOnchain: true,
   realDependencyFailureFailsBackPerAsset: true,
+  transientUnavailableRouteMetadataFailsBackPerAsset: true,
   materializerDelegatesRuntimeHealthToSelector: true,
   executionAuthority: 'none'
 });
