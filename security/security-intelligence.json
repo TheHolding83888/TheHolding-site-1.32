@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-09T18:17:35.104Z",
+  "generatedAt": "2026-09-10T02:56:37.518Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 2,
-    "medium": 55,
+    "medium": 57,
     "low": 0,
     "info": 0
   },
   "source": {
-    "filesScanned": 1158,
-    "bytesScanned": 30821657,
+    "filesScanned": 1160,
+    "bytesScanned": 30843114,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -57,6 +57,50 @@
   "whatChanged": {
     "newFindings": [
       {
+        "id": "e1ef304b70168919347e049d1b7a142d92ad4abf568cf745ca5df85173ac0679",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/market-data-refresh.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/market-data-refresh.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "d26478c3e134dcf631dd00b0576c1ecb541306ad71cf567a4f04a0133216a6cf",
+          "currentSha256": "b70f1b50668d0a352079cbb6e82e7a9fbfaadc48996b814916e5ecf4572c4150"
+        }
+      },
+      {
+        "id": "bac8cead0d6f5f089be18ed3120434f4f62072130126392ed597108f2fdadcc2",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/unified-capital-refresh.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/unified-capital-refresh.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "a4fcc5057acf87978616ac0e7165f1d35d5ff252b7948dd613accd3fafa7a7de",
+          "currentSha256": "eb9620826ec7cc5aa71ee57104edc29fe91791d228240d288506f31e84c74623"
+        }
+      },
+      {
+        "id": "474341810a5e5ff50322b2b0820cb66aef366ab3a9c6246a8b3c6aed05adb302",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/validate-onchain-market-data.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/validate-onchain-market-data.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "c4054e805c3c1c7cf6361cbffe168e6544a7b5d8da9f62eb980ff772fae71f75",
+          "currentSha256": "03c2df89d9e6e3c07ee657ac9b14d53b7444c8ed02f34fdd29aac65ed404e4b7"
+        }
+      }
+    ],
+    "resolvedFindings": [
+      {
         "id": "458d04f71304ed23691b9fd12c223da2391ea7e363c6fc14cf8bad6a20315bdd",
         "severity": "medium",
         "category": "critical-surface-change",
@@ -69,53 +113,8 @@
           "previousSha256": "3ac67b2992375acaff2ef72e5c437fb88812ffb665842dd84b52a2b8a229f0ac",
           "currentSha256": "a4fcc5057acf87978616ac0e7165f1d35d5ff252b7948dd613accd3fafa7a7de"
         }
-      },
-      {
-        "id": "d6ee60fa9058005f1bb4dcf8349b7ade715a8f23e3a19f13f480eaca0e8b5a3e",
-        "severity": "medium",
-        "category": "dom-innerhtml",
-        "file": "companies/public-page-market-runtime-projection.mjs",
-        "line": 38,
-        "entity": null,
-        "summary": "Dynamic innerHTML assignment detected.",
-        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-        "evidence": null
-      },
-      {
-        "id": "b6d27274fd9bb19d4213fd64b2c75ebe2a2d5edbda9c29f362418c7342643317",
-        "severity": "medium",
-        "category": "dom-innerhtml",
-        "file": "companies/public-page-market-runtime-projection.mjs",
-        "line": 82,
-        "entity": null,
-        "summary": "Dynamic innerHTML assignment detected.",
-        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-        "evidence": null
-      },
-      {
-        "id": "bf7998147c19a92a64fce8bfbe52878c1f61392a6d6f4de65e09990136fb5b85",
-        "severity": "medium",
-        "category": "dom-innerhtml",
-        "file": "companies/yieldring-public-capital-projection.mjs",
-        "line": 69,
-        "entity": null,
-        "summary": "Dynamic innerHTML assignment detected.",
-        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-        "evidence": null
-      },
-      {
-        "id": "8405d903590a963557037d1871cfa23b10ddf5778385dc697aea1ba8272526dd",
-        "severity": "medium",
-        "category": "dom-innerhtml",
-        "file": "companies/yieldring-public-capital-projection.mjs",
-        "line": 113,
-        "entity": null,
-        "summary": "Dynamic innerHTML assignment detected.",
-        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-        "evidence": null
       }
-    ],
-    "resolvedFindings": []
+    ]
   },
   "currentFindings": [
     {
@@ -141,7 +140,21 @@
       "evidence": null
     },
     {
-      "id": "458d04f71304ed23691b9fd12c223da2391ea7e363c6fc14cf8bad6a20315bdd",
+      "id": "e1ef304b70168919347e049d1b7a142d92ad4abf568cf745ca5df85173ac0679",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/market-data-refresh.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/market-data-refresh.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "d26478c3e134dcf631dd00b0576c1ecb541306ad71cf567a4f04a0133216a6cf",
+        "currentSha256": "b70f1b50668d0a352079cbb6e82e7a9fbfaadc48996b814916e5ecf4572c4150"
+      }
+    },
+    {
+      "id": "bac8cead0d6f5f089be18ed3120434f4f62072130126392ed597108f2fdadcc2",
       "severity": "medium",
       "category": "critical-surface-change",
       "file": ".github/workflows/unified-capital-refresh.yml",
@@ -150,8 +163,22 @@
       "summary": "Security-sensitive surface changed: .github/workflows/unified-capital-refresh.yml.",
       "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
       "evidence": {
-        "previousSha256": "3ac67b2992375acaff2ef72e5c437fb88812ffb665842dd84b52a2b8a229f0ac",
-        "currentSha256": "a4fcc5057acf87978616ac0e7165f1d35d5ff252b7948dd613accd3fafa7a7de"
+        "previousSha256": "a4fcc5057acf87978616ac0e7165f1d35d5ff252b7948dd613accd3fafa7a7de",
+        "currentSha256": "eb9620826ec7cc5aa71ee57104edc29fe91791d228240d288506f31e84c74623"
+      }
+    },
+    {
+      "id": "474341810a5e5ff50322b2b0820cb66aef366ab3a9c6246a8b3c6aed05adb302",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/validate-onchain-market-data.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/validate-onchain-market-data.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "c4054e805c3c1c7cf6361cbffe168e6544a7b5d8da9f62eb980ff772fae71f75",
+        "currentSha256": "03c2df89d9e6e3c07ee657ac9b14d53b7444c8ed02f34fdd29aac65ed404e4b7"
       }
     },
     {
@@ -833,12 +860,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "5bf80e16f9637e16c8420f701cab04de105c23120148804cd08adac7488632ff",
+    "snapshotHash": "8b4456cb1fbf611d301cfc24ee25f17d92ba512042d339ed322de5158c80ecd2",
     "securityVault": {
-      "runCount": 945,
+      "runCount": 946,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/09/2026-09-09T18-17-35-104Z-5bf80e16f9.json",
-      "latestRecordHash": "d40a0b474d2871ebf618b26143b5fc946fa21a87197a827657206d2629fc94d9",
+      "latestRecordPath": "security/security-vault/2026/09/2026-09-10T02-56-37-518Z-8b4456cb1f.json",
+      "latestRecordHash": "a5880e4d95b6330270627adb3d664cf38c1feda8cc6940676ebf219fa834879f",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }

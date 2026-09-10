@@ -2,30 +2,18 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-09-09T18:17:35.104Z",
+  "lastUpdatedAt": "2026-09-10T02:56:37.518Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 945,
-    "vaultRunCount": 945,
+    "runCount": 946,
+    "vaultRunCount": 946,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
-    {
-      "generatedAt": "2026-08-16T06:53:43.336Z",
-      "status": "watch",
-      "snapshotHash": "c1de1f64191f30c16e33116b9bf145f46e3d434bc3fe619f81a2d9ca8aa143a9",
-      "recordPath": "security/security-vault/2026/08/2026-08-16T06-53-43-336Z-c1de1f6419.json",
-      "recordHash": "bd07457e2f51c0e4335d8806204c5dc57b1f1586fdf6772ca37924dbe2b0ae19",
-      "findingCount": 25,
-      "criticalCount": 0,
-      "highCount": 6,
-      "newFindingCount": 0,
-      "resolvedFindingCount": 0
-    },
     {
       "generatedAt": "2026-08-16T06:55:34.377Z",
       "status": "watch",
@@ -8773,6 +8761,18 @@
       "highCount": 2,
       "newFindingCount": 5,
       "resolvedFindingCount": 0
+    },
+    {
+      "generatedAt": "2026-09-10T02:56:37.518Z",
+      "status": "watch",
+      "snapshotHash": "8b4456cb1fbf611d301cfc24ee25f17d92ba512042d339ed322de5158c80ecd2",
+      "recordPath": "security/security-vault/2026/09/2026-09-10T02-56-37-518Z-8b4456cb1f.json",
+      "recordHash": "a5880e4d95b6330270627adb3d664cf38c1feda8cc6940676ebf219fa834879f",
+      "findingCount": 59,
+      "criticalCount": 0,
+      "highCount": 2,
+      "newFindingCount": 3,
+      "resolvedFindingCount": 1
     }
   ],
   "events": [
@@ -31302,6 +31302,50 @@
       "category": "dom-innerhtml",
       "summary": "Dynamic innerHTML assignment detected.",
       "file": "companies/yieldring-public-capital-projection.mjs",
+      "entity": null
+    },
+    {
+      "id": "3649159284a3ae3615452b0efc215454fd1a24b5675c78ce7d65a4dbaf2a1f49",
+      "type": "finding-opened",
+      "detectedAt": "2026-09-10T02:56:37.518Z",
+      "findingId": "e1ef304b70168919347e049d1b7a142d92ad4abf568cf745ca5df85173ac0679",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Security-sensitive surface changed: .github/workflows/market-data-refresh.yml.",
+      "file": ".github/workflows/market-data-refresh.yml",
+      "entity": null
+    },
+    {
+      "id": "a5c3e9653618cc54678bce7c4a7ad6737d870162b679bfd2eb4bad59ec512bc2",
+      "type": "finding-opened",
+      "detectedAt": "2026-09-10T02:56:37.518Z",
+      "findingId": "bac8cead0d6f5f089be18ed3120434f4f62072130126392ed597108f2fdadcc2",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Security-sensitive surface changed: .github/workflows/unified-capital-refresh.yml.",
+      "file": ".github/workflows/unified-capital-refresh.yml",
+      "entity": null
+    },
+    {
+      "id": "2c1c05d7a9d6a9e16a1f0621790474ce6828828c05c53c81c4dd115e5b9d90e6",
+      "type": "finding-opened",
+      "detectedAt": "2026-09-10T02:56:37.518Z",
+      "findingId": "474341810a5e5ff50322b2b0820cb66aef366ab3a9c6246a8b3c6aed05adb302",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Security-sensitive surface changed: .github/workflows/validate-onchain-market-data.yml.",
+      "file": ".github/workflows/validate-onchain-market-data.yml",
+      "entity": null
+    },
+    {
+      "id": "a283ac5a60c52d07128339e283309dfcefcfdbef4d92c79f22e0ade578e2d915",
+      "type": "finding-resolved",
+      "detectedAt": "2026-09-10T02:56:37.518Z",
+      "findingId": "458d04f71304ed23691b9fd12c223da2391ea7e363c6fc14cf8bad6a20315bdd",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: .github/workflows/unified-capital-refresh.yml.",
+      "file": ".github/workflows/unified-capital-refresh.yml",
       "entity": null
     }
   ]
