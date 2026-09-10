@@ -58,9 +58,10 @@ const stableIndex = readJson(PATHS.stableIndex);
 const capitalState = readJson(PATHS.capital);
 
 if (defiteaState?.capitalAggregation?.fundCompanyTvlParityRequired !== true ||
-    defiteaState?.capitalAggregation?.networkContributionMode !== 'standalone-only-to-prevent-double-count' ||
-    defiteaState?.capitalAggregation?.incomeAggregationAuthority !== false) {
-  throw new Error('Defitea fund/company consolidated TVL contract unavailable');
+    defiteaState?.capitalAggregation?.displayTvlMode !== 'standalone-company-assets-only' ||
+    defiteaState?.capitalAggregation?.networkContributionMode !== 'same-standalone-company-capital' ||
+    defiteaState?.semantics?.relatedCompanyCapitalExcludedFromDefiteaTvl !== true) {
+  throw new Error('Defitea own-capital TVL contract unavailable');
 }
 
 function valueRegistryFund(fundId, fund) {
@@ -184,23 +185,16 @@ for (const company of capitalState.companies || []) {
     });
   }
 
-  const rowProjection = rows.length ? sum(rows.map(x => x.valueUsd)) : finite(company.measuredCapitalUsd);
-  const isDefiteaConsolidated =
-    company.registry === '004' &&
-    company.consolidation?.fundCompanyTvlParityRequired === true &&
-    company.consolidation?.childCapitalIncludedAgainInNetworkContribution === false;
-  const projected = isDefiteaConsolidated ? finite(company.measuredCapitalUsd) : rowProjection;
+  const projected = rows.length ? sum(rows.map(x => x.valueUsd)) : finite(company.measuredCapitalUsd);
   const networkContribution = finite(company.networkContributionUsd) ?? projected;
   if (projected === null) throw new Error(`${company.registry}/${company.name}: public TVL unavailable`);
   if (networkContribution === null) throw new Error(`${company.registry}/${company.name}: network contribution unavailable`);
-  if (isDefiteaConsolidated) {
-    const standalone = finite(company.standaloneCapitalUsd);
-    const nested = finite(company.nestedCompanyCapitalUsd);
-    if (standalone === null || nested === null || Math.abs(projected - standalone - nested) > 0.05) {
-      throw new Error('Defitea consolidated Public Capital identity drift');
+  if (company.registry === '004') {
+    if (company.consolidation?.mode !== 'standalone-company-assets-only' || company.consolidation?.relatedCompanyCapitalIncluded !== false) {
+      throw new Error('Defitea Public Capital own-capital boundary drift');
     }
-    if (Math.abs(networkContribution - standalone) > 0.05) {
-      throw new Error('Defitea Public Capital network contribution double-count drift');
+    if (Math.abs(networkContribution - projected) > 0.05) {
+      throw new Error('Defitea Public Capital/network contribution parity drift');
     }
   }
 
@@ -210,15 +204,13 @@ for (const company of capitalState.companies || []) {
     name: company.name,
     status,
     tvlUsd: round(projected),
-    standaloneTvlUsd: isDefiteaConsolidated ? round(company.standaloneCapitalUsd) : null,
-    nestedCompanyCapitalUsd: isDefiteaConsolidated ? round(company.nestedCompanyCapitalUsd) : null,
+    standaloneTvlUsd: company.registry === '004' ? round(projected) : null,
+    nestedCompanyCapitalUsd: company.registry === '004' ? 0 : null,
     networkContributionUsd: round(networkContribution),
     sourceCapitalGeneratedAt: capitalState.generatedAt,
     positions: rows,
-    consolidation: isDefiteaConsolidated ? company.consolidation : null,
-    performanceBasisStatus: isDefiteaConsolidated
-      ? 'consolidated-current-value-without-automatic-consolidated-cost-basis'
-      : 'company-scope'
+    consolidation: company.registry === '004' ? company.consolidation : null,
+    performanceBasisStatus: 'company-scope'
   });
 }
 
@@ -230,22 +222,21 @@ function valueDefitea(fund) {
   const company = publicCompany('004');
   if (!company) throw new Error('Defitea Registry #004 public company projection missing');
   const p = productivity?.companies?.[fund.companyName] || null;
-  const standaloneRows = company.positions || [];
   return {
     id: 'defitea',
     name: fund.name,
     companyName: fund.companyName,
     status: company.status,
     tvlUsd: company.tvlUsd,
-    standaloneTvlUsd: company.standaloneTvlUsd,
-    nestedCompanyCapitalUsd: company.nestedCompanyCapitalUsd,
+    standaloneTvlUsd: company.tvlUsd,
+    nestedCompanyCapitalUsd: 0,
     networkContributionUsd: company.networkContributionUsd,
     referenceAprPct: round(p?.aprLatest),
     referenceAprUpdatedAt: p?.updatedAt || productivity?.generatedAt || null,
-    positions: standaloneRows,
+    positions: company.positions || [],
     consolidation: company.consolidation,
-    source: 'capital-state-defitea-consolidated-company-identity',
-    note: 'Defitea Fund and defitea.eth publish the same consolidated TVL. Nested company capital is included in the Defitea display TVL but not counted twice in Network TVL; child-company factual income remains separate.'
+    source: 'capital-state-defitea-own-company-identity',
+    note: 'Defitea Fund and defitea.eth publish the same TVL derived only from Defitea-owned assets. Registry #001/#002 capital remains separate; fund-level income roll-up is handled independently by reporting.'
   };
 }
 
@@ -271,7 +262,7 @@ const generatedAt = new Date().toISOString();
 
 const output = {
   version: '0.1-public-capital-state',
-  engineVersion: '0.2-defitea-consolidated-parity-network-unique',
+  engineVersion: '0.3-defitea-own-tvl-boundary',
   generatedAt,
   status: companyNetworkTvl === null || fundEcosystemTvl === null ? 'partial' : worstStatus([
     ...companies.map(x => x.status),
@@ -283,9 +274,9 @@ const output = {
     fundAndCompanyConsumersShareSamePriceObservation: true,
     wrapperNavAndProtocolValuationRemainCanonicalUpstream: true,
     defiteaFundCompanyTvlParityRequired: true,
-    defiteaDisplayTvlIncludesNestedCompanies: true,
-    defiteaNestedCapitalNetworkDoubleCount: false,
-    defiteaNestedCapitalDoesNotGrantIncomeAuthority: true,
+    defiteaDisplayTvlIncludesNestedCompanies: false,
+    defiteaRelatedCompanyCapitalExcluded: true,
+    defiteaRelatedCompanyIncomeRollupSeparateFromCapital: true,
     reportingIsHistoryNotCurrentValuationAuthority: true,
     unknownIsNotZero: true,
     partialIsNotTotal: true,
@@ -305,7 +296,7 @@ const output = {
     fundEcosystemStatus: fundEcosystemTvl === null ? 'partial' : worstStatus(Object.values(funds).map(x => x.status)),
     companyNetworkTvlUsd: round(companyNetworkTvl),
     companyNetworkStatus: companyNetworkTvl === null ? 'partial' : worstStatus(companies.map(x => x.status)),
-    companyNetworkCountingPolicy: 'unique-network-contribution; Defitea consolidated parent view does not re-add Registry #001/#002'
+    companyNetworkCountingPolicy: 'one registered company contribution once; Defitea contributes only Registry #004 own capital'
   },
   funds,
   companies,
@@ -325,7 +316,6 @@ console.log('Public Capital State written', {
   companyNetworkTvlUsd: output.totals.companyNetworkTvlUsd,
   defiteaFundTvlUsd: output.funds.defitea?.tvlUsd,
   defiteaCompanyTvlUsd: defiteaCompany.tvlUsd,
-  defiteaStandaloneTvlUsd: defiteaCompany.standaloneTvlUsd,
-  defiteaNestedCompanyCapitalUsd: defiteaCompany.nestedCompanyCapitalUsd,
+  defiteaRelatedCompanyCapitalIncluded: false,
   defiteaReferenceAprPct: output.funds.defitea?.referenceAprPct
 });

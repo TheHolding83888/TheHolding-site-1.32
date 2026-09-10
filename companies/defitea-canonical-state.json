@@ -20,16 +20,16 @@
   ],
   "capitalAggregation": {
     "economicIdentity": "defitea-fund-equals-defitea-company",
-    "displayTvlMode": "consolidated-parent-plus-nested-companies",
+    "displayTvlMode": "standalone-company-assets-only",
     "standaloneCapitalSource": "registry-004-general-company-balance",
-    "nestedCompanies": [
-      {"registry":"001","name":"05081966.eth","role":"nested-company-capital"},
-      {"registry":"002","name":"YieldRing.eth","role":"nested-company-capital"}
+    "relatedCompaniesExcludedFromCapital": [
+      {"registry":"001","name":"05081966.eth","role":"separate-onchain-company"},
+      {"registry":"002","name":"YieldRing.eth","role":"separate-onchain-company"}
     ],
     "fundCompanyTvlParityRequired": true,
-    "networkContributionMode": "standalone-only-to-prevent-double-count",
+    "networkContributionMode": "same-standalone-company-capital",
     "incomeAggregationAuthority": false,
-    "note": "Defitea Fund and defitea.eth are one economic object. Their public/current TVL is the consolidated Defitea standalone capital plus Registry #001 and #002 current company capital. The nested companies remain independently registered, so their capital must not be counted a second time in Network TVL. This capital roll-up does not itself grant factual-income aggregation authority."
+    "note": "Defitea Fund and defitea.eth are one economic object and therefore publish the same current TVL. That TVL contains only assets owned by defitea.eth / Defitea Fund. Registry #001 and #002 remain separate onchain companies and their capital is never added to Defitea TVL. Any fund-level income roll-up from related companies is a separate reporting concern and does not alter capital ownership or TVL."
   },
   "costBasis": {
     "policy": "lot-preserved-owner-supplied-entry-basis",
@@ -69,7 +69,8 @@
     "costBasisLotsPreserved": true,
     "oneEconomicPositionOnce": true,
     "fundCompanyTvlParityRequired": true,
-    "nestedCompanyCapitalDoesNotImplyIncomeAuthority": true
+    "relatedCompanyCapitalExcludedFromDefiteaTvl": true,
+    "relatedCompanyIncomeRollupSeparateFromCapital": true
   },
   "authority": {
     "readOnly": true,
