@@ -32,7 +32,7 @@ function replaceOnce(text,oldText,newText,label){
   if(text.includes(newText))return text;
   const count=text.split(oldText).length-1;
   if(count!==1)fail(`${label}: expected exactly one old projection, found ${count}`);
-  return text.replace(oldText,newText);
+  return text.replace(oldText,() => newText);
 }
 function replaceExactCount(text,oldText,newText,label,expectedCount){
   const oldCount=text.split(oldText).length-1;
@@ -55,34 +55,18 @@ html=replaceOnce(html,
 `    '05081966.eth':  ['Bitcoin','Curve','Aero','Frax'],`,
 'companies/index.html Company #001 protocol/asset map');
 
-/* Public company values may be canonicalized beyond the local browser Company
-   Book. Preserve nullable performance semantics and keep a distinct unique
-   network/index contribution so Defitea can display consolidated TVL without
-   re-counting its independently registered nested companies. The legacy page
-   contains this initializer three times in separate historical boot paths; all
-   three must be updated together or a stale path can overwrite the canonical one. */
-const oldPublicBind=`    const publicCompanyTvl = (key, fallback) => {
+/* The clean public page contains two legacy boot paths. Keep their capital
+   semantics aligned without manufacturing a third copy. Use small common
+   fragments instead of one brittle whole-block replacement so both paths are
+   updated deterministically while preserving UNKNOWN != 0. */
+const oldPublicReader=`    const publicCompanyTvl = (key, fallback) => {
         const row = publicCapitalSnapshot && Array.isArray(publicCapitalSnapshot.companies)
             ? publicCapitalSnapshot.companies.find(x => x && (x.registry === key || x.name === key))
             : null;
         const value = Number(row && row.tvlUsd);
         return Number.isFinite(value) && value >= 0 ? value : fallback;
-    };
-    const tvl1 = publicCompanyTvl('001', F1.value);
-    const tvl2 = publicCompanyTvl('002', F2.value);
-    const tvl3 = publicCompanyTvl('003', F3.value);
-    const tvl4 = publicCompanyTvl('004', F4.value);
-    const tvl5 = publicCompanyTvl('005', F5.value);
-    const tvl6 = publicCompanyTvl('006', F6.value);
-    const tvl7 = publicCompanyTvl('007', F7.value);
-    const tvl9 = publicCompanyTvl('009', F9.value);
-    const canonicalNetworkTvl = Number(publicCapitalSnapshot?.totals?.companyNetworkTvlUsd);
-    [[F1,tvl1],[F2,tvl2],[F3,tvl3],[F4,tvl4],[F5,tvl5],[F6,tvl6],[F7,tvl7],[F9,tvl9]].forEach(([f,v]) => {
-        f.value = v;
-        f.pnl = Number.isFinite(Number(f.cost)) ? v - Number(f.cost) : 0;
-        f.pct = Number(f.cost) > 0 ? (v / Number(f.cost) - 1) * 100 : 0;
-    });`;
-const newPublicBind=`    const publicCompanyRow = key => publicCapitalSnapshot && Array.isArray(publicCapitalSnapshot.companies)
+    };`;
+const newPublicReader=`    const publicCompanyRow = key => publicCapitalSnapshot && Array.isArray(publicCapitalSnapshot.companies)
         ? publicCapitalSnapshot.companies.find(x => x && (x.registry === key || x.name === key)) || null
         : null;
     const publicCompanyTvl = (key, fallback) => {
@@ -95,17 +79,15 @@ const newPublicBind=`    const publicCompanyRow = key => publicCapitalSnapshot &
         const value = row && row.networkContributionUsd !== null && row.networkContributionUsd !== undefined && row.networkContributionUsd !== ''
             ? Number(row.networkContributionUsd) : NaN;
         return Number.isFinite(value) && value >= 0 ? value : fallback;
-    };
-    const tvl1 = publicCompanyTvl('001', F1.value);
-    const tvl2 = publicCompanyTvl('002', F2.value);
-    const tvl3 = publicCompanyTvl('003', F3.value);
-    const tvl4 = publicCompanyTvl('004', F4.value);
-    const tvl5 = publicCompanyTvl('005', F5.value);
-    const tvl6 = publicCompanyTvl('006', F6.value);
-    const tvl7 = publicCompanyTvl('007', F7.value);
-    const tvl9 = publicCompanyTvl('009', F9.value);
-    const canonicalNetworkTvl = Number(publicCapitalSnapshot?.totals?.companyNetworkTvlUsd);
-    [[F1,tvl1,'001'],[F2,tvl2,'002'],[F3,tvl3,'003'],[F4,tvl4,'004'],[F5,tvl5,'005'],[F6,tvl6,'006'],[F7,tvl7,'007'],[F9,tvl9,'009']].forEach(([f,v,key]) => {
+    };`;
+html=replaceExactCount(html,oldPublicReader,newPublicReader,'companies/index.html canonical public-capital reader',2);
+
+const oldPublicValueLoop=`    [[F1,tvl1],[F2,tvl2],[F3,tvl3],[F4,tvl4],[F5,tvl5],[F6,tvl6],[F7,tvl7],[F9,tvl9]].forEach(([f,v]) => {
+        f.value = v;
+        f.pnl = Number.isFinite(Number(f.cost)) ? v - Number(f.cost) : 0;
+        f.pct = Number(f.cost) > 0 ? (v / Number(f.cost) - 1) * 100 : 0;
+    });`;
+const newPublicValueLoop=`    [[F1,tvl1,'001'],[F2,tvl2,'002'],[F3,tvl3,'003'],[F4,tvl4,'004'],[F5,tvl5,'005'],[F6,tvl6,'006'],[F7,tvl7,'007'],[F9,tvl9,'009']].forEach(([f,v,key]) => {
         const row = publicCompanyRow(key);
         const consolidatedWithoutBasis = key === '004' && row?.performanceBasisStatus === 'consolidated-current-value-without-automatic-consolidated-cost-basis';
         const hasCost = !consolidatedWithoutBasis && f.cost !== null && f.cost !== undefined && f.cost !== '' && Number.isFinite(Number(f.cost)) && Number(f.cost) > 0;
@@ -120,24 +102,24 @@ const newPublicBind=`    const publicCompanyRow = key => publicCapitalSnapshot &
             f.pct = null;
         }
     });`;
-html=replaceExactCount(html,oldPublicBind,newPublicBind,'companies/index.html canonical TVL/performance/network contribution binding',3);
+html=replaceExactCount(html,oldPublicValueLoop,newPublicValueLoop,'companies/index.html canonical TVL/performance/network contribution loop',2);
 
 html=replaceExactCount(html,
 `    { key: 'capital',      weight: 0.35, raw: c => Math.sqrt(Math.max(c.val, 0)) },`,
 `    { key: 'capital',      weight: 0.35, raw: c => Math.sqrt(Math.max(c.indexCapitalValue ?? c.val, 0)) },`,
-'companies/index.html Composite unique Capital factor',3);
+'companies/index.html Composite unique Capital factor',2);
 html=replaceExactCount(html,
 `    const totalVal = eligible.reduce((s, c) => s + Math.max(c.val, 0), 0);`,
 `    const totalVal = eligible.reduce((s, c) => s + Math.max(c.indexCapitalValue ?? c.val, 0), 0);`,
-'companies/index.html TVL lens unique denominator',3);
+'companies/index.html TVL lens unique denominator',2);
 html=replaceExactCount(html,
 `        c.tvlWeight = totalVal > 0 ? Math.max(c.val, 0) / totalVal : (eligible.length ? 1 / eligible.length : 0);`,
 `        c.tvlWeight = totalVal > 0 ? Math.max(c.indexCapitalValue ?? c.val, 0) / totalVal : (eligible.length ? 1 / eligible.length : 0);`,
-'companies/index.html TVL lens unique company weight',3);
+'companies/index.html TVL lens unique company weight',2);
 html=replaceExactCount(html,
 `    const measuredTotal = list.reduce((s, c) => s + (c.val > 0 ? c.val : 0), 0);`,
 `    const measuredTotal = list.reduce((s, c) => s + ((c.indexCapitalValue ?? c.val) > 0 ? (c.indexCapitalValue ?? c.val) : 0), 0);`,
-'companies/index.html Index unique network value',3);
+'companies/index.html Index unique network value',2);
 
 html=replaceExactCount(html,
 `    ];
@@ -148,7 +130,7 @@ html=replaceExactCount(html,
         c.indexCapitalValue = publicCompanyNetworkContribution(c.reg, fallback);
     });
     syncCompanyAprDisplays(idxLang());`,
-'companies/index.html Index unique network-contribution binding',3);
+'companies/index.html Index unique network-contribution binding',2);
 
 fs.writeFileSync(INDEX,html);
 const indexBlob=gitBlobSha(html);
@@ -195,10 +177,7 @@ console.log('Owner balance site projection PASS',{
   singulCurrentPositionCount:singulPositions.length,
   singulBeamExcluded:true,
   expectedIndexBlob:indexBlob,
-  legacyTvlBindCopiesUpdated:3,
-  legacyCompositeCapitalCopiesUpdated:3,
-  legacyTvlLensCopiesUpdated:3,
-  legacyIndexNetworkCopiesUpdated:3,
+  cleanBootPathsUpdated:2,
   defiteaConsolidatedDisplayUsesUniqueIndexContribution:true,
   partialCostBasisPerformanceRemainsUnknown:true,
   manualSnapshotIsNotOnchainObservation:true,
