@@ -8,6 +8,7 @@ on:
       - 'intelligence/market-data/market-data-authority-policy.json'
       - 'intelligence/market-data/market-data-authority-materializer.mjs'
       - 'intelligence/market-data/market-data-authority-selector-validation.mjs'
+      - 'intelligence/market-data/market-data-materializer-health-boundary-validation.mjs'
       - 'intelligence/reliability/market-data-live-evidence-proof.mjs'
       - 'intelligence/reliability/market-data-live-validator-workflow-definition-proof.mjs'
       - '.github/workflows/market-data-refresh.yml'
@@ -29,16 +30,18 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Validate deterministic authority contracts
+      - name: Validate deterministic authority and failback contracts
         run: |
           set -euo pipefail
           node --check intelligence/market-data/onchain-price-resolver.mjs
           node --check intelligence/market-data/market-data-authority-selector.mjs
           node --check intelligence/market-data/market-data-authority-materializer.mjs
+          node --check intelligence/market-data/market-data-materializer-health-boundary-validation.mjs
           node --check intelligence/reliability/market-data-live-evidence-proof.mjs
           node intelligence/market-data/market-data-authority-selector-validation.mjs
+          node intelligence/market-data/market-data-materializer-health-boundary-validation.mjs
 
-      - name: Live-prove final routes and production per-asset failback
+      - name: Live-prove every final route across bounded public RPC attempts
         run: |
           set -euo pipefail
           node intelligence/reliability/market-data-live-evidence-proof.mjs final9
