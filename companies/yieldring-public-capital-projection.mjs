@@ -35,7 +35,10 @@ html=replaceOnce(html,oldBook,newBook,'companies/index.html YieldRing Company Bo
 
 const oldBookFigures=`function bookFigures(nm, prices) {\n    const pos = COMPANY_BOOK[nm] || [];\n    let value = 0, cost = 0;\n    pos.forEach(p => {\n        if (p.productivityOnly) return;\n        const price = (p.fixed !== undefined) ? p.fixed : (prices[p.id] || 0);\n        value += p.qty * price;\n        const explicitCost = p.costBasisUsd !== null && p.costBasisUsd !== undefined && p.costBasisUsd !== ''\n            && Number.isFinite(Number(p.costBasisUsd)) ? Number(p.costBasisUsd) : null;\n        cost += explicitCost !== null ? explicitCost : p.qty * p.entry;\n    });\n    return { value: value, cost: cost, pnl: value - cost, pct: cost > 0 ? (value / cost - 1) * 100 : 0 };\n}\n\nconst fmtMoney  = v => '$' + Math.round(v).toLocaleString('en-US');\nconst fmtSigned = v => (v >= 0 ? '+' : '−') + '$' + Math.abs(Math.round(v)).toLocaleString('en-US');\nconst fmtPct    = v => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(1) + '%';`;
 const newBookFigures=`function bookFigures(nm, prices) {\n    const pos = COMPANY_BOOK[nm] || [];\n    let value = 0, knownCost = 0, costComplete = true;\n    pos.forEach(p => {\n        if (p.productivityOnly) return;\n        const price = (p.fixed !== undefined) ? p.fixed : (prices[p.id] || 0);\n        value += p.qty * price;\n        const explicitCost = p.costBasisUsd !== null && p.costBasisUsd !== undefined && p.costBasisUsd !== ''\n            && Number.isFinite(Number(p.costBasisUsd)) ? Number(p.costBasisUsd) : null;\n        const entry = p.entry !== null && p.entry !== undefined && p.entry !== '' && Number.isFinite(Number(p.entry))\n            ? Number(p.entry) : null;\n        if (explicitCost !== null) knownCost += explicitCost;\n        else if (entry !== null) knownCost += p.qty * entry;\n        else {\n            costComplete = false;\n            if (p.knownCostBasisUsd !== null && p.knownCostBasisUsd !== undefined && p.knownCostBasisUsd !== '' && Number.isFinite(Number(p.knownCostBasisUsd))) knownCost += Number(p.knownCostBasisUsd);\n        }\n    });\n    const cost = costComplete ? knownCost : null;\n    return { value: value, cost: cost, knownCostBasisUsd: knownCost, costBasisStatus: costComplete ? 'complete' : 'partial', pnl: costComplete ? value - knownCost : null, pct: costComplete && knownCost > 0 ? (value / knownCost - 1) * 100 : null };\n}\n\nconst finiteUiNumber = v => v !== null && v !== undefined && v !== '' && Number.isFinite(Number(v));\nconst fmtMoney  = v => finiteUiNumber(v) ? '$' + Math.round(Number(v)).toLocaleString('en-US') : '—';\nconst fmtSigned = v => finiteUiNumber(v) ? (Number(v) >= 0 ? '+' : '−') + '$' + Math.abs(Math.round(Number(v))).toLocaleString('en-US') : '—';\nconst fmtPct    = v => finiteUiNumber(v) ? (Number(v) >= 0 ? '+' : '−') + Math.abs(Number(v)).toFixed(1) + '%' : '—';`;
-html=replaceOnce(html,oldBookFigures,newBookFigures,'companies/index.html partial cost basis guard');
+const partialKnownBasisPerformanceMarker="performanceDisplayStatus: costComplete ? 'complete' : (partialPct !== null ? 'partial-known-basis' : 'unavailable')";
+if(!html.includes(partialKnownBasisPerformanceMarker)){
+  html=replaceOnce(html,oldBookFigures,newBookFigures,'companies/index.html partial cost basis guard');
+}
 fs.writeFileSync(INDEX,html);
 const indexBlob=gitBlobSha(html);
 
@@ -154,6 +157,7 @@ console.log('YieldRing public/capital projection PASS',{
   directBrowserCoinGecko:false,
   canonicalPublicCapitalRuntime:true,
   partialCostBasisNullGuard:true,
+  partialKnownBasisPerformanceCompatible:true,
   relayMode:state.aerodromeRelay.mode,
   expectedUnderlyingLockCount:state.aerodromeRelay.expectedUnderlyingLockCount,
   executionAuthority:'none'
