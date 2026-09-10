@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-10T06:45:13.174Z",
+  "generatedAt": "2026-09-10T10:29:23.210Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 2,
-    "medium": 74,
+    "medium": 73,
     "low": 0,
     "info": 0
   },
   "source": {
-    "filesScanned": 1174,
-    "bytesScanned": 30934511,
+    "filesScanned": 1175,
+    "bytesScanned": 30940139,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Tue, 08 Sep 2026 14:18:01 GMT",
+        "lastModified": "Thu, 10 Sep 2026 01:53:50 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -55,7 +55,8 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [
+    "newFindings": [],
+    "resolvedFindings": [
       {
         "id": "64011e006ea05a2eddf952252f88bb5cfe7f1bbba3eaf5253f77a09f1a8c96c4",
         "severity": "medium",
@@ -70,8 +71,7 @@
           "currentSha256": "981c3a9a037ab7e6dd7fce90b71d02161a46790789c20cdf564b7fe7ea0db778"
         }
       }
-    ],
-    "resolvedFindings": []
+    ]
   },
   "currentFindings": [
     {
@@ -95,20 +95,6 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
-    },
-    {
-      "id": "64011e006ea05a2eddf952252f88bb5cfe7f1bbba3eaf5253f77a09f1a8c96c4",
-      "severity": "medium",
-      "category": "critical-surface-change",
-      "file": ".github/workflows/validate-defitea-index-coherence.yml",
-      "line": null,
-      "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/validate-defitea-index-coherence.yml.",
-      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-      "evidence": {
-        "previousSha256": "2afe85be72d7f56ba0e5e5a20d9468c8e16eddaf66306f52bec9d114be9dda59",
-        "currentSha256": "981c3a9a037ab7e6dd7fce90b71d02161a46790789c20cdf564b7fe7ea0db778"
-      }
     },
     {
       "id": "496bd2bfc96097d474330e632609732200506a6a1d690f251110bf2a2e2712e9",
@@ -1112,12 +1098,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "92bb1b4bbc02ce3de3e4065f7174134baa6208a99ce5a860e0a269278ae87236",
+    "snapshotHash": "4bdf5bd7e0cc08d197fda5aede9c90eea3f5bcb5973b29ed994888b3e3bb4a44",
     "securityVault": {
-      "runCount": 954,
+      "runCount": 955,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/09/2026-09-10T06-45-13-174Z-92bb1b4bbc.json",
-      "latestRecordHash": "fc74001ea3231e65be5deb7854ff4df21e8aca655f6c71de110e6d3a6130d584",
+      "latestRecordPath": "security/security-vault/2026/09/2026-09-10T10-29-23-210Z-4bdf5bd7e0.json",
+      "latestRecordHash": "8a2869be6246b20720196f0f67c776dffabe74487977b6aa4b1cd8fc5eae730c",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
