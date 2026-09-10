@@ -1,0 +1,119 @@
+#!/usr/bin/env node
+import fs from 'node:fs';
+
+const HOME='index.html';
+const COMPANIES='companies/index.html';
+const YIELD_REPORTS='yield-reports/index.html';
+const fail=m=>{throw new Error(m);};
+
+function replaceOnce(text,oldText,newText,label){
+  if(text.includes(newText))return text;
+  const count=text.split(oldText).length-1;
+  if(count!==1)fail(`${label}: expected exactly one old projection, found ${count}`);
+  return text.replace(oldText,newText);
+}
+
+let home=fs.readFileSync(HOME,'utf8');
+
+// Package 2 · compact product navigation. Keep Funds together as one group and
+// expose the two major platform surfaces before the fund-specific links.
+home=replaceOnce(home,
+`                <a href="/for-investors" class="nav-link">How It Works</a>\n                <a href="/faq" class="nav-link">FAQ</a>\n                \n                <div class="nav-separator"></div>`,
+`                <a href="/for-investors" class="nav-link">How It Works</a>\n                <a href="/faq" class="nav-link">FAQ</a>\n                <a href="/companies" class="nav-link">Companies</a>\n                <a href="/realty" class="nav-link">Real Estate</a>\n                \n                <div class="nav-separator"></div>`,
+'homepage product navigation');
+
+const oldDelays=`            .nav-links.active > :nth-child(1) { animation-delay: 0.05s; }  /* Home */\n            .nav-links.active > :nth-child(2) { animation-delay: 0.1s; }   /* separator */\n            .nav-links.active > :nth-child(3) { animation-delay: 0.15s; }  /* How It Works */\n            .nav-links.active > :nth-child(4) { animation-delay: 0.18s; }  /* FAQ */\n            .nav-links.active > :nth-child(5) { animation-delay: 0.23s; }  /* separator */\n            .nav-links.active > :nth-child(6) { animation-delay: 0.28s; }  /* Substantia */\n            .nav-links.active > :nth-child(7) { animation-delay: 0.31s; }  /* Defitea */\n            .nav-links.active > :nth-child(8) { animation-delay: 0.34s; }  /* Singul */\n            .nav-links.active > :nth-child(9) { animation-delay: 0.37s; }  /* Monetra */\n            .nav-links.active > :nth-child(10) { animation-delay: 0.40s; } /* Fructus */\n            .nav-links.active > :nth-child(11) { animation-delay: 0.45s; } /* separator */\n            .nav-links.active > :nth-child(12) { animation-delay: 0.50s; } /* Blog */`;
+const newDelays=`            .nav-links.active > :nth-child(1) { animation-delay: 0.05s; }  /* Home */\n            .nav-links.active > :nth-child(2) { animation-delay: 0.09s; }  /* separator */\n            .nav-links.active > :nth-child(3) { animation-delay: 0.13s; }  /* How It Works */\n            .nav-links.active > :nth-child(4) { animation-delay: 0.17s; }  /* FAQ */\n            .nav-links.active > :nth-child(5) { animation-delay: 0.21s; }  /* Companies */\n            .nav-links.active > :nth-child(6) { animation-delay: 0.25s; }  /* Real Estate */\n            .nav-links.active > :nth-child(7) { animation-delay: 0.29s; }  /* separator */\n            .nav-links.active > :nth-child(8) { animation-delay: 0.33s; }  /* Substantia */\n            .nav-links.active > :nth-child(9) { animation-delay: 0.36s; }  /* Defitea */\n            .nav-links.active > :nth-child(10) { animation-delay: 0.39s; } /* Singul */\n            .nav-links.active > :nth-child(11) { animation-delay: 0.42s; } /* Monetra */\n            .nav-links.active > :nth-child(12) { animation-delay: 0.45s; } /* Fructus */\n            .nav-links.active > :nth-child(13) { animation-delay: 0.48s; } /* separator */\n            .nav-links.active > :nth-child(14) { animation-delay: 0.51s; } /* Blog */`;
+home=replaceOnce(home,oldDelays,newDelays,'homepage mobile navigation sequence');
+
+// Keep the expanded mobile navigation usable on short viewports. The menu is a
+// full-screen scroll container rather than a vertically centered stack, so the
+// last links remain reachable without changing desktop navigation behavior.
+const mobileMenuMarker='/* The Holding · viewport-safe mobile navigation */';
+if(!home.includes(mobileMenuMarker)){
+  const mobileMenuCss=`\n        ${mobileMenuMarker}\n        @media (max-width: 768px) {\n            .nav-links {\n                justify-content: flex-start;\n                overflow-y: auto;\n                overscroll-behavior-y: contain;\n                -webkit-overflow-scrolling: touch;\n                padding-top: max(5.5rem, calc(env(safe-area-inset-top) + 4.5rem));\n                padding-bottom: max(1.5rem, calc(env(safe-area-inset-bottom) + 1rem));\n                scrollbar-width: thin;\n            }\n            .nav-link {\n                flex: 0 0 auto;\n                min-height: 44px;\n                padding-top: 0.68rem;\n                padding-bottom: 0.68rem;\n                line-height: 1.3;\n            }\n            .nav-separator {\n                flex: 0 0 auto;\n                margin-top: 0.45rem;\n                margin-bottom: 0.45rem;\n            }\n            .nav-close {\n                position: fixed;\n                top: max(1rem, calc(env(safe-area-inset-top) + 0.5rem));\n                right: max(1rem, calc(env(safe-area-inset-right) + 1rem));\n            }\n        }\n        @media (max-width: 768px) and (max-height: 700px) {\n            .nav-links {\n                padding-top: max(4.75rem, calc(env(safe-area-inset-top) + 4rem));\n                padding-bottom: max(1rem, calc(env(safe-area-inset-bottom) + 0.75rem));\n            }\n            .nav-link {\n                font-size: 1.08rem;\n                min-height: 44px;\n                padding-top: 0.5rem;\n                padding-bottom: 0.5rem;\n            }\n            .nav-separator {\n                margin-top: 0.3rem;\n                margin-bottom: 0.3rem;\n            }\n        }\n`;
+  const heroMarker='        /* Hero Section */';
+  const count=home.split(heroMarker).length-1;
+  if(count!==1)fail(`homepage mobile navigation CSS insertion: expected one Hero marker, found ${count}`);
+  home=home.replace(heroMarker,mobileMenuCss+heroMarker);
+}
+if(!home.includes(mobileMenuMarker)||!home.includes('overscroll-behavior-y: contain;')||!home.includes('min-height: 44px;'))fail('Homepage viewport-safe mobile navigation contract missing');
+
+home=replaceOnce(home,
+`                        <a href="/companies" class="footer-link">\n                            <span>Companies</span>\n                        </a>\n                        <a href="/manifesto" class="footer-link">`,
+`                        <a href="/companies" class="footer-link">\n                            <span>Companies</span>\n                        </a>\n                        <a href="/realty" class="footer-link">\n                            <span>Real Estate</span>\n                        </a>\n                        <a href="/manifesto" class="footer-link">`,
+'homepage footer Realty link');
+home=replaceOnce(home,
+`                        <span class="copyright-line1">Funds · Index · Onchain Companies · Real Estate</span>\n                        <span class="copyright-line2">Self-custodied capital architecture · Not financial advice</span>`,
+`                        <span class="copyright-line1">Capital Architecture · Onchain Companies · Real Estate</span>\n                        <span class="copyright-line2">Self-custodied capital architecture · Not financial advice</span>`,
+'homepage Capital Architecture footer description');
+
+const pyramidScript=`    <script data-th-fund-pyramid-links>\n    (function(){\n      var routes={substantia:'/substantia',defitea:'/defitea',singul:'/singul',fructus:'/fructus',monetra:'/monetra'};\n      function bind(){\n        document.querySelectorAll('.pyramid-item[data-allocation], .mobile-fund-card[data-allocation]').forEach(function(el){\n          var key=el.getAttribute('data-allocation'); var href=routes[key]; if(!href||el.dataset.thFundLinked==='1')return;\n          el.dataset.thFundLinked='1'; el.setAttribute('role','link'); el.setAttribute('tabindex','0'); el.style.cursor='pointer';\n          el.addEventListener('click',function(e){if(e.target.closest('a,button'))return; location.href=href;});\n          el.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();location.href=href;}});\n        });\n      }\n      if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();\n    })();\n    </script>\n`;
+if(!home.includes('data-th-fund-pyramid-links')){
+  const close='</body>';
+  const count=home.split(close).length-1;
+  if(count!==1)fail(`homepage pyramid script insertion: expected one </body>, found ${count}`);
+  home=home.replace(close,pyramidScript+close);
+}
+for(const token of ['href="/companies"','href="/realty"',"substantia:'/substantia'","defitea:'/defitea'","singul:'/singul'","fructus:'/fructus'","monetra:'/monetra'","Capital Architecture · Onchain Companies · Real Estate",mobileMenuMarker]){
+  if(!home.includes(token))fail(`homepage public polish missing: ${token}`);
+}
+fs.writeFileSync(HOME,home);
+
+// Collection -> Company Passport routing. Reuse the existing Observatory switcher,
+// General Passport disclosure and Stable Passport controller instead of creating a
+// second navigation model. Registry-specific hashes make reload/back/forward and
+// direct links deterministic while the existing external footer affordances remain intact.
+let companies=fs.readFileSync(COMPANIES,'utf8');
+const passportRoutingMarker='data-th-collection-passport-routing';
+companies=replaceOnce(companies,
+`            var hash = String(location.hash || '').toLowerCase();\n            var fromHash = hash === '#index' ? 'index' : (hash === '#stable-index' ? 'stable' : (hash === '#collection' ? 'collection' : ''));`,
+`            var hash = String(location.hash || '').toLowerCase();\n            var passportHash = hash.match(/^#passport-(\\d{3})$/);\n            var fromHash = passportHash ? (passportHash[1] === '008' ? 'stable' : 'index') : (hash === '#index' ? 'index' : (hash === '#stable-index' ? 'stable' : (hash === '#collection' ? 'collection' : '')));`,
+'Companies Passport first-paint routing');
+companies=replaceOnce(companies,
+`    window.addEventListener('hashchange', function(){\n        const mode = hashMode();`,
+`    window.thSelectCapitalMode = selectMode;\n\n    window.addEventListener('hashchange', function(){\n        const mode = hashMode();`,
+'Companies Observatory selector exposure');
+if(!companies.includes(passportRoutingMarker)){
+  const routingAddon=`\n<style data-th-collection-passport-routing-style>\n    #companiesGrid .company-card.th-passport-entry { cursor: pointer; }\n    #companiesGrid .company-card.th-passport-entry:focus-visible {\n        outline: 1px solid var(--gold-line);\n        outline-offset: 4px;\n    }\n</style>\n<script ${passportRoutingMarker}>\n(function(){\n    'use strict';\n    var REGISTRY_TO_NAME = {\n        '001':'05081966.eth',\n        '002':'YieldRing.eth',\n        '003':'dinaz.eth',\n        '004':'defitea.eth',\n        '005':'0x5860...83CA8.eth',\n        '006':'aerocvxyb.eth',\n        '007':\"Rook's portfolio\",\n        '008':'Monetra.eth',\n        '009':'1milliondollar.eth',\n        '010':'Cypher'\n    };\n    var HASH_RE = /^#passport-(\\d{3})$/;\n    var RETRY_MS = 80;\n    var RETRY_WINDOW_MS = 6000;\n    var locationSyncTimer = 0;\n\n    function registryFromCard(card){\n        var row = card && card.querySelector('.cc-regnum');\n        var match = String(row && row.textContent || '').match(/(?:Registry|Реестр)\\s*·\\s*(\\d{3})/i);\n        if (!match) match = String(row && row.textContent || '').match(/·\\s*(\\d{3})/);\n        return match ? match[1] : '';\n    }\n    function registryFromItem(item){\n        if (!item) return '';\n        if (item.dataset.thPassportRegistry) return item.dataset.thPassportRegistry;\n        var name = item.dataset.nm || '';\n        return Object.keys(REGISTRY_TO_NAME).find(function(reg){ return REGISTRY_TO_NAME[reg] === name; }) || '';\n    }\n    function markCards(){\n        document.querySelectorAll('#companiesGrid .company-card:not(.placeholder)').forEach(function(card){\n            var reg = registryFromCard(card);\n            var name = REGISTRY_TO_NAME[reg];\n            if (!name) return;\n            card.classList.add('th-passport-entry');\n            card.dataset.thPassportRegistry = reg;\n            card.dataset.thPassportCompany = name;\n            if (card.tagName !== 'A') {\n                card.setAttribute('role','button');\n                card.setAttribute('tabindex','0');\n            }\n            var visibleName = card.querySelector('.cc-name');\n            var registryText = String(card.querySelector('.cc-regnum') && card.querySelector('.cc-regnum').textContent || '');\n            var isRu = /^ru(?:-|$)/i.test(document.documentElement.lang || '') || /Реестр/i.test(registryText);\n            card.setAttribute('aria-label',(isRu ? 'Открыть паспорт компании · ' : 'Open Company Passport · ') + String(visibleName && visibleName.textContent || name).trim());\n        });\n    }\n    function selectSurface(mode){\n        if (typeof window.thSelectCapitalMode === 'function') {\n            window.thSelectCapitalMode(mode,{scroll:false,hash:false});\n            return true;\n        }\n        var btn = document.querySelector('[data-capital-mode-btn="' + mode + '"]');\n        if (!btn) return false;\n        if (!btn.classList.contains('active')) btn.click();\n        return true;\n    }\n    function writePassportHash(reg, push){\n        var next = '#passport-' + reg;\n        try {\n            if (push) {\n                if (!location.hash || location.hash === '#collection') {\n                    history.replaceState(history.state,'','#collection');\n                }\n                history.pushState({thPassportRegistry:reg},'',next);\n            } else {\n                history.replaceState(history.state,'',next);\n            }\n        } catch (_) {}\n    }\n    function writeSurfaceHash(hash){\n        try { history.replaceState(history.state,'',hash); } catch (_) {}\n    }\n    function findGeneralItem(name){\n        return Array.from(document.querySelectorAll('#idxBoard .ib-item')).find(function(item){\n            return item.dataset.nm === name;\n        }) || null;\n    }\n    function scrollRow(row){\n        if (!row) return;\n        var offset = window.innerWidth < 760 ? 72 : 104;\n        var top = row.getBoundingClientRect().top + window.pageYOffset - offset;\n        window.scrollTo({top:Math.max(0,top),behavior:(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)?'auto':'smooth'});\n    }\n    function closeGeneralPassports(){\n        document.querySelectorAll('#idxBoard .ib-item.open').forEach(function(item){\n            var row = item.querySelector('.ib-row');\n            if (row) row.click();\n        });\n    }\n    function closeStablePassport(){\n        if (typeof window.stablePassportSet === 'function') window.stablePassportSet(false,false);\n    }\n    function openGeneral(reg, name, opts){\n        selectSurface('index');\n        var deadline = Date.now() + RETRY_WINDOW_MS;\n        (function attempt(){\n            var item = findGeneralItem(name);\n            if (!item) {\n                if (Date.now() < deadline) window.setTimeout(attempt,RETRY_MS);\n                return;\n            }\n            document.querySelectorAll('#idxBoard .ib-item.open').forEach(function(other){\n                if (other === item) return;\n                var otherRow = other.querySelector('.ib-row');\n                if (otherRow) otherRow.click();\n            });\n            var row = item.querySelector('.ib-row');\n            item.dataset.thPassportRegistry = reg;\n            if (row && !item.classList.contains('open')) row.click();\n            else scrollRow(row);\n            if (opts && opts.writeHash) writePassportHash(reg,!!opts.pushHistory);\n        })();\n    }\n    function openStable(reg, opts){\n        selectSurface('stable');\n        var deadline = Date.now() + RETRY_WINDOW_MS;\n        (function attempt(){\n            var passport = document.getElementById('stablePassportMonetra');\n            if (passport && typeof window.stablePassportSet === 'function') {\n                window.stablePassportSet(true,true);\n                if (opts && opts.writeHash) writePassportHash(reg,!!opts.pushHistory);\n                return;\n            }\n            if (Date.now() < deadline) window.setTimeout(attempt,RETRY_MS);\n        })();\n    }\n    function openRegistry(reg, opts){\n        var name = REGISTRY_TO_NAME[reg];\n        if (!name) return;\n        if (reg === '008') openStable(reg,opts);\n        else openGeneral(reg,name,opts);\n    }\n    function isExternalAffordance(target){\n        if (!target || !target.closest) return false;\n        var ext = target.closest('.cc-extlink');\n        return !!(ext && !ext.classList.contains('cc-extlink-static'));\n    }\n    function syncFromLocation(){\n        locationSyncTimer = 0;\n        var hash = String(location.hash || '').toLowerCase();\n        var match = hash.match(HASH_RE);\n        if (match) {\n            openRegistry(match[1],{writeHash:false,pushHistory:false});\n            return;\n        }\n        if (hash === '#collection') {\n            closeGeneralPassports();\n            closeStablePassport();\n        }\n    }\n    function scheduleLocationSync(){\n        if (locationSyncTimer) return;\n        locationSyncTimer = window.setTimeout(syncFromLocation,0);\n    }\n\n    document.addEventListener('click',function(ev){\n        if (!ev.target || !ev.target.closest) return;\n        var card = ev.target.closest('#companiesGrid .company-card:not(.placeholder)');\n        if (card) {\n            if (isExternalAffordance(ev.target)) return;\n            var reg = card.dataset.thPassportRegistry || registryFromCard(card);\n            if (!REGISTRY_TO_NAME[reg]) return;\n            ev.preventDefault();\n            ev.stopPropagation();\n            openRegistry(reg,{writeHash:true,pushHistory:true});\n            return;\n        }\n        var generalRow = ev.target.closest('#idxBoard .ib-row');\n        if (generalRow && HASH_RE.test(location.hash)) {\n            var rowItem = generalRow.closest('.ib-item');\n            var rowReg = registryFromItem(rowItem);\n            var currentMatch = String(location.hash || '').toLowerCase().match(HASH_RE);\n            if (currentMatch && rowReg === currentMatch[1]) {\n                window.setTimeout(function(){\n                    if (rowItem && !rowItem.classList.contains('open')) writeSurfaceHash('#index');\n                },0);\n            }\n            return;\n        }\n        var generalClose = ev.target.closest('.ipx-passport-close');\n        if (generalClose && HASH_RE.test(location.hash)) {\n            window.setTimeout(function(){\n                if (!generalClose.closest('.ib-item.open')) writeSurfaceHash('#index');\n            },0);\n            return;\n        }\n        var stableClose = ev.target.closest('[data-stable-passport-close]');\n        if (stableClose && location.hash === '#passport-008') {\n            window.setTimeout(function(){\n                var passport = document.getElementById('stablePassportMonetra');\n                if (!passport || !passport.classList.contains('is-open')) writeSurfaceHash('#stable-index');\n            },0);\n        }\n    });\n    document.addEventListener('keydown',function(ev){\n        if (!ev.target || !ev.target.closest) return;\n        var card = ev.target.closest('#companiesGrid .company-card.th-passport-entry');\n        if (!card || card.tagName === 'A' || isExternalAffordance(ev.target)) return;\n        if (ev.key !== 'Enter' && ev.key !== ' ') return;\n        ev.preventDefault();\n        var reg = card.dataset.thPassportRegistry || registryFromCard(card);\n        openRegistry(reg,{writeHash:true,pushHistory:true});\n    });\n    window.addEventListener('hashchange',scheduleLocationSync);\n    window.addEventListener('popstate',scheduleLocationSync);\n\n    function boot(){\n        markCards();\n        syncFromLocation();\n    }\n    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',boot,{once:true});\n    else boot();\n})();\n</script>\n`;
+  const close='</body>';
+  const count=companies.split(close).length-1;
+  if(count!==1)fail(`Companies Passport routing insertion: expected one </body>, found ${count}`);
+  companies=companies.replace(close,routingAddon+close);
+}
+for(const token of [passportRoutingMarker,"window.thSelectCapitalMode = selectMode","#passport-(\\d{3})","'006':'aerocvxyb.eth'","'008':'Monetra.eth'","history.pushState({thPassportRegistry:reg}","window.addEventListener('popstate',scheduleLocationSync)","Открыть паспорт компании"]){
+  if(!companies.includes(token))fail(`Companies Passport routing missing: ${token}`);
+}
+fs.writeFileSync(COMPANIES,companies);
+
+// Package 3 · Defitea report mobile polish. The existing shared <=900px rule
+// hides column 2 on both report tables; that removes Defitea Cash Flow, the core
+// monthly metric. Restore only Defitea column 2 on phones and keep desktop and
+// Monetra behavior untouched.
+let reports=fs.readFileSync(YIELD_REPORTS,'utf8');
+const reportMarker='/* The Holding · Defitea mobile cash-flow polish */';
+if(!reports.includes(reportMarker)){
+  const mobileCss=`\n        ${reportMarker}\n        @media (max-width: 600px) {\n            .defitea-reports .report-table th:nth-child(2),\n            .defitea-reports .report-table td:nth-child(2) { display: table-cell; }\n            .defitea-reports .report-table th,\n            .defitea-reports .report-table td { padding-left: 0.42rem; padding-right: 0.42rem; }\n            .defitea-reports .report-table th:nth-child(1), .defitea-reports .report-table td:nth-child(1) { width: 24%; }\n            .defitea-reports .report-table th:nth-child(2), .defitea-reports .report-table td:nth-child(2) { width: 30%; text-align: right; }\n            .defitea-reports .report-table th:nth-child(3), .defitea-reports .report-table td:nth-child(3) { width: 23%; text-align: center; }\n            .defitea-reports .report-table th:nth-child(4), .defitea-reports .report-table td:nth-child(4) { width: 23%; text-align: center; }\n            .defitea-reports .report-table th:nth-child(5), .defitea-reports .report-table td:nth-child(5) { display: none; }\n            .defitea-reports .td-month { font-size: 1rem; }\n            .defitea-reports .td-yield { font-size: 1.14rem; }\n            .defitea-reports .td-num, .defitea-reports .td-apy { font-size: 0.76rem; }\n        }\n`;
+  const close='    </style>';
+  const count=reports.split(close).length-1;
+  if(count!==1)fail(`Yield Reports mobile CSS insertion: expected one </style>, found ${count}`);
+  reports=reports.replace(close,mobileCss+close);
+}
+if(!reports.includes(reportMarker)||!reports.includes('.defitea-reports .report-table td:nth-child(2) { display: table-cell; }'))fail('Defitea mobile Cash Flow visibility contract missing');
+fs.writeFileSync(YIELD_REPORTS,reports);
+
+console.log('Public site polish projection PASS',{
+  homepageCompaniesLink:true,
+  homepageRealtyLink:true,
+  footerWholeHoldingDescription:true,
+  fiveFundPyramidRoutes:true,
+  mobileNavigationViewportSafe:true,
+  collectionPassportRouting:true,
+  collectionPassportDeepLinks:true,
+  collectionPassportBackForward:true,
+  collectionPassportCloseStateSync:true,
+  collectionPassportRuAccessibility:true,
+  defiteaMobileCashFlowVisible:true,
+  desktopReportsUntouched:true,
+  executionAuthority:'none'
+});
