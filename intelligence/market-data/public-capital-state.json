@@ -1,7 +1,7 @@
 {
   "version": "0.1-public-capital-state",
-  "engineVersion": "0.2-defitea-consolidated-parity-network-unique",
-  "generatedAt": "2026-09-10T05:20:41.391Z",
+  "engineVersion": "0.3-defitea-own-tvl-boundary",
+  "generatedAt": "2026-09-10T06:48:25.337Z",
   "status": "ok",
   "semantics": {
     "marketPricesFetchedOnceUpstream": true,
@@ -9,9 +9,9 @@
     "fundAndCompanyConsumersShareSamePriceObservation": true,
     "wrapperNavAndProtocolValuationRemainCanonicalUpstream": true,
     "defiteaFundCompanyTvlParityRequired": true,
-    "defiteaDisplayTvlIncludesNestedCompanies": true,
-    "defiteaNestedCapitalNetworkDoubleCount": false,
-    "defiteaNestedCapitalDoesNotGrantIncomeAuthority": true,
+    "defiteaDisplayTvlIncludesNestedCompanies": false,
+    "defiteaRelatedCompanyCapitalExcluded": true,
+    "defiteaRelatedCompanyIncomeRollupSeparateFromCapital": true,
     "reportingIsHistoryNotCurrentValuationAuthority": true,
     "unknownIsNotZero": true,
     "partialIsNotTotal": true,
@@ -22,16 +22,16 @@
     "marketDataObservedAt": "2026-09-10T05:00:14.970Z",
     "marketDataStatus": "fallback-active",
     "defiteaCanonicalVersion": "0.1-defitea-canonical-state",
-    "productivityGeneratedAt": "2026-09-10T05:20:38.190Z",
+    "productivityGeneratedAt": "2026-09-10T06:48:07.441Z",
     "stableIndexGeneratedAt": "2026-09-06T09:42:28.036Z",
-    "capitalStateGeneratedAt": "2026-09-10T05:20:41.336Z"
+    "capitalStateGeneratedAt": "2026-09-10T06:48:25.284Z"
   },
   "totals": {
-    "fundEcosystemTvlUsd": 32562.394782,
+    "fundEcosystemTvlUsd": 28213.721491,
     "fundEcosystemStatus": "ok",
     "companyNetworkTvlUsd": 73108.434986,
     "companyNetworkStatus": "ok",
-    "companyNetworkCountingPolicy": "unique-network-contribution; Defitea consolidated parent view does not re-add Registry #001/#002"
+    "companyNetworkCountingPolicy": "one registered company contribution once; Defitea contributes only Registry #004 own capital"
   },
   "funds": {
     "substantia": {
@@ -93,12 +93,12 @@
       "name": "Defitea",
       "companyName": "defitea.eth",
       "status": "ok",
-      "tvlUsd": 17661.764933,
+      "tvlUsd": 13313.091642,
       "standaloneTvlUsd": 13313.091642,
-      "nestedCompanyCapitalUsd": 4348.673291,
+      "nestedCompanyCapitalUsd": 0,
       "networkContributionUsd": 13313.091642,
-      "referenceAprPct": 15.2062,
-      "referenceAprUpdatedAt": "2026-09-10T05:19:39.480Z",
+      "referenceAprPct": 15.2117,
+      "referenceAprUpdatedAt": "2026-09-10T06:47:03.673Z",
       "positions": [
         {
           "assetId": "aerodrome-finance",
@@ -223,31 +223,14 @@
         }
       ],
       "consolidation": {
-        "mode": "parent-plus-nested-company-capital",
+        "mode": "standalone-company-assets-only",
         "fundCompanyTvlParityRequired": true,
-        "standaloneCapitalUsd": 13313.091642,
-        "nestedCompanyCapitalUsd": 4348.673291,
-        "consolidatedCapitalUsd": 17661.764933,
-        "networkContributionUsd": 13313.091642,
-        "children": [
-          {
-            "registry": "001",
-            "name": "05081966.eth",
-            "capitalUsd": 501.010698
-          },
-          {
-            "registry": "002",
-            "name": "YieldRing.eth",
-            "capitalUsd": 3847.662593
-          }
-        ],
-        "childCapitalIncludedInDisplayTvl": true,
-        "childCapitalIncludedAgainInNetworkContribution": false,
-        "childIncomeIncluded": false,
+        "relatedCompanyCapitalIncluded": false,
+        "relatedCompanyIncomeRollupSeparate": true,
         "incomeAggregationAuthority": false
       },
-      "source": "capital-state-defitea-consolidated-company-identity",
-      "note": "Defitea Fund and defitea.eth publish the same consolidated TVL. Nested company capital is included in the Defitea display TVL but not counted twice in Network TVL; child-company factual income remains separate."
+      "source": "capital-state-defitea-own-company-identity",
+      "note": "Defitea Fund and defitea.eth publish the same TVL derived only from Defitea-owned assets. Registry #001/#002 capital remains separate; fund-level income roll-up is handled independently by reporting."
     },
     "monetra": {
       "id": "monetra",
@@ -404,7 +387,7 @@
       "standaloneTvlUsd": null,
       "nestedCompanyCapitalUsd": null,
       "networkContributionUsd": 501.010698,
-      "sourceCapitalGeneratedAt": "2026-09-10T05:20:41.336Z",
+      "sourceCapitalGeneratedAt": "2026-09-10T06:48:25.284Z",
       "positions": [
         {
           "assetId": "aerodrome-finance",
@@ -462,7 +445,7 @@
       "standaloneTvlUsd": null,
       "nestedCompanyCapitalUsd": null,
       "networkContributionUsd": 3847.662593,
-      "sourceCapitalGeneratedAt": "2026-09-10T05:20:41.336Z",
+      "sourceCapitalGeneratedAt": "2026-09-10T06:48:25.284Z",
       "positions": [
         {
           "assetId": "bitcoin",
@@ -520,7 +503,7 @@
       "standaloneTvlUsd": null,
       "nestedCompanyCapitalUsd": null,
       "networkContributionUsd": 1143.161368,
-      "sourceCapitalGeneratedAt": "2026-09-10T05:20:41.336Z",
+      "sourceCapitalGeneratedAt": "2026-09-10T06:48:25.284Z",
       "positions": [
         {
           "assetId": "yield-basis",
@@ -541,11 +524,11 @@
       "registry": "004",
       "name": "defitea.eth",
       "status": "ok",
-      "tvlUsd": 17661.764933,
+      "tvlUsd": 13313.091642,
       "standaloneTvlUsd": 13313.091642,
-      "nestedCompanyCapitalUsd": 4348.673291,
+      "nestedCompanyCapitalUsd": 0,
       "networkContributionUsd": 13313.091642,
-      "sourceCapitalGeneratedAt": "2026-09-10T05:20:41.336Z",
+      "sourceCapitalGeneratedAt": "2026-09-10T06:48:25.284Z",
       "positions": [
         {
           "assetId": "aerodrome-finance",
@@ -670,30 +653,13 @@
         }
       ],
       "consolidation": {
-        "mode": "parent-plus-nested-company-capital",
+        "mode": "standalone-company-assets-only",
         "fundCompanyTvlParityRequired": true,
-        "standaloneCapitalUsd": 13313.091642,
-        "nestedCompanyCapitalUsd": 4348.673291,
-        "consolidatedCapitalUsd": 17661.764933,
-        "networkContributionUsd": 13313.091642,
-        "children": [
-          {
-            "registry": "001",
-            "name": "05081966.eth",
-            "capitalUsd": 501.010698
-          },
-          {
-            "registry": "002",
-            "name": "YieldRing.eth",
-            "capitalUsd": 3847.662593
-          }
-        ],
-        "childCapitalIncludedInDisplayTvl": true,
-        "childCapitalIncludedAgainInNetworkContribution": false,
-        "childIncomeIncluded": false,
+        "relatedCompanyCapitalIncluded": false,
+        "relatedCompanyIncomeRollupSeparate": true,
         "incomeAggregationAuthority": false
       },
-      "performanceBasisStatus": "consolidated-current-value-without-automatic-consolidated-cost-basis"
+      "performanceBasisStatus": "company-scope"
     },
     {
       "registry": "005",
@@ -703,7 +669,7 @@
       "standaloneTvlUsd": null,
       "nestedCompanyCapitalUsd": null,
       "networkContributionUsd": 17251.012599,
-      "sourceCapitalGeneratedAt": "2026-09-10T05:20:41.336Z",
+      "sourceCapitalGeneratedAt": "2026-09-10T06:48:25.284Z",
       "positions": [
         {
           "assetId": "bitcoin",
@@ -761,7 +727,7 @@
       "standaloneTvlUsd": null,
       "nestedCompanyCapitalUsd": null,
       "networkContributionUsd": 10619.737849,
-      "sourceCapitalGeneratedAt": "2026-09-10T05:20:41.336Z",
+      "sourceCapitalGeneratedAt": "2026-09-10T06:48:25.284Z",
       "positions": [
         {
           "assetId": "aerodrome-finance",
@@ -819,7 +785,7 @@
       "standaloneTvlUsd": null,
       "nestedCompanyCapitalUsd": null,
       "networkContributionUsd": 13754.323122,
-      "sourceCapitalGeneratedAt": "2026-09-10T05:20:41.336Z",
+      "sourceCapitalGeneratedAt": "2026-09-10T06:48:25.284Z",
       "positions": [
         {
           "assetId": "bitcoin",
@@ -899,7 +865,7 @@
       "standaloneTvlUsd": null,
       "nestedCompanyCapitalUsd": null,
       "networkContributionUsd": 100.514465,
-      "sourceCapitalGeneratedAt": "2026-09-10T05:20:41.336Z",
+      "sourceCapitalGeneratedAt": "2026-09-10T06:48:25.284Z",
       "positions": [
         {
           "assetId": null,
@@ -1023,7 +989,7 @@
       "standaloneTvlUsd": null,
       "nestedCompanyCapitalUsd": null,
       "networkContributionUsd": 6660.41065,
-      "sourceCapitalGeneratedAt": "2026-09-10T05:20:41.336Z",
+      "sourceCapitalGeneratedAt": "2026-09-10T06:48:25.284Z",
       "positions": [
         {
           "assetId": "bitcoin",
@@ -1092,7 +1058,7 @@
       "standaloneTvlUsd": null,
       "nestedCompanyCapitalUsd": null,
       "networkContributionUsd": 5917.51,
-      "sourceCapitalGeneratedAt": "2026-09-10T05:20:41.336Z",
+      "sourceCapitalGeneratedAt": "2026-09-10T06:48:25.284Z",
       "positions": [
         {
           "assetId": "bitcoin",

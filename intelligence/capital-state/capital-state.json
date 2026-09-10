@@ -1,16 +1,16 @@
 {
   "version": "0.3-capital-state",
-  "engineVersion": "0.4.2-defitea-consolidated-display-network-unique",
-  "generatedAt": "2026-09-10T05:20:41.336Z",
+  "engineVersion": "0.4.3-defitea-own-tvl-boundary",
+  "generatedAt": "2026-09-10T06:48:25.284Z",
   "status": "ok",
-  "purpose": "Canonical machine-readable Capital State across the Registry with complete totals where proven, explicit Defitea parent/child consolidation for display TVL, and unique network contribution so nested registered companies are never counted twice.",
+  "purpose": "Canonical machine-readable Capital State across the Registry with complete totals where proven and explicit Defitea own-capital TVL boundary.",
   "semantics": {
-    "measuredCapitalFloorUsd": "Sum of non-overlapping network contributions proven by canonical sources. Defitea consolidated display TVL is not added on top of its already-registered nested companies.",
-    "networkTvlUsd": "Populated only when every registered company has a complete non-overlapping total-capital binding. Defitea contributes standalone Registry #004 capital because its two nested companies also contribute independently as Registry #001/#002. Company #010 Fluid is out of scope by owner policy, not an unresolved capital gap.",
-    "defiteaFundCompanyIdentity": "Defitea Fund and defitea.eth are one economic object and must publish the same consolidated current TVL: standalone Defitea plus canonical nested companies #001/#002.",
-    "defiteaIncomeBoundary": "Nested-company capital consolidation does not grant factual-income aggregation authority. Child-company earned income remains separate unless explicitly authorized by the accounting canon.",
+    "measuredCapitalFloorUsd": "Sum of non-overlapping current capital amounts proven by canonical sources. When all companies are complete this equals Network TVL.",
+    "networkTvlUsd": "Populated only when every registered company has a complete non-overlapping total-capital binding. Defitea contributes only its own Registry #004 capital; Registry #001/#002 contribute separately.",
+    "defiteaFundCompanyIdentity": "Defitea Fund and defitea.eth are one economic object and publish the same TVL derived only from Defitea-owned assets.",
+    "defiteaIncomeBoundary": "Fund-level related-company income roll-up is separate from capital ownership and does not import related-company TVL.",
     "capitalLayer": "Primary economic role. Productivity remains orthogonal and is not added again as a second capital copy.",
-    "productiveMeasuredExposureUsd": "Measured productive exposure; never added to Network capital as a separate copy. Defitea Productive exposure remains standalone-parent scope even though its displayed TVL is consolidated with nested-company capital.",
+    "productiveMeasuredExposureUsd": "Measured productive exposure; never added to Network capital as a separate copy.",
     "layerTaxonomy": [
       "foundation",
       "productive-dividend",
@@ -20,7 +20,7 @@
       "unclassified"
     ],
     "unknownPolicy": "unknown != zero; partial != total",
-    "doubleCountPolicy": "wrapper/LP/underlying/productivity representations and parent/nested-company views contribute through one canonical economic path only"
+    "doubleCountPolicy": "wrapper/LP/underlying/productivity representations contribute through one canonical economic path only"
   },
   "authority": {
     "readOnly": true,
@@ -34,23 +34,23 @@
     "generalBalanceSheet": {
       "file": "intelligence/capital-state/general-company-balance-sheet.json",
       "version": "0.1-general-company-balance-sheet",
-      "generatedAt": "2026-09-10T05:20:41.294Z",
-      "sha256": "a6a1303d11d8955ccee02cf3d981a393ccccd1cf0af376b17dae255692f2cfbf",
-      "role": "complete standalone total-capital binding for eight established general companies, including generation-bound productive exposure"
+      "generatedAt": "2026-09-10T06:48:25.244Z",
+      "sha256": "644f1b51164e9596d636a7cdfe1d326d5b33631a225e6094fe62acc8421d5ef1",
+      "role": "complete total-capital binding for eight established general companies, including generation-bound productive exposure"
     },
     "defiteaCanonicalState": {
       "file": "companies/defitea-canonical-state.json",
       "version": "0.1-defitea-canonical-state",
-      "sha256": "ef3abbb96c44f371ae9631133cba59813ed18ab48d7d98eff9c52e6236d74293",
-      "role": "Defitea Fund/company economic identity and nested-company capital aggregation contract"
+      "sha256": "3cb509b1beb59475d72e074a35b9324d0beaad3bdee1eeb0b2fc68fb20fd4f41",
+      "role": "Defitea Fund/company identity plus own-capital TVL boundary"
     },
     "productivity": {
       "file": "companies/productivity-data.json",
       "version": "1.16",
-      "generatedAt": "2026-09-10T05:20:38.190Z",
-      "sha256": "7c85b980d606d65d6771d5cfdc8d63669fe7d7de4cd60958880a852768f8ac56",
+      "generatedAt": "2026-09-10T06:48:07.441Z",
+      "sha256": "05fdadfe68722a4f3541c2288cc4383f16280e9574123e6641d6574c28616d51",
       "sameGenerationAsGeneralBalance": false,
-      "generalBalanceBoundSha256": "f4aff2bc2c8b72e4e9a7afa6424e4aff87b175b7a8c362063e34e4d0f0e96c52",
+      "generalBalanceBoundSha256": "4f433dd7db6b48450262e6f1d3b6e23dd8f795112d5f9be1e0bd4459bbca9179",
       "role": "current canonical Productivity; used directly for current diagnostics and Company #010/global routes, while established general-company productive exposure remains bound to its General Balance generation when hashes differ"
     },
     "stableIndex": {
@@ -105,7 +105,7 @@
       "venture": 0,
       "unclassified": 0.001139
     },
-    "latestUpstreamGeneratedAt": "2026-09-10T05:20:41.294Z"
+    "latestUpstreamGeneratedAt": "2026-09-10T06:48:25.244Z"
   },
   "companies": [
     {
@@ -337,15 +337,15 @@
       "registry": "004",
       "name": "defitea.eth",
       "measurementStatus": "total-capital-complete",
-      "measuredCapitalUsd": 17661.764933,
+      "measuredCapitalUsd": 13313.091642,
       "networkContributionUsd": 13313.091642,
       "productiveMeasuredExposureUsd": 13313.1,
-      "capitalScope": "defitea-consolidated-parent-plus-nested-companies",
+      "capitalScope": "defitea-own-assets-only",
       "totalCapitalComplete": true,
       "knownButUnboundCapitalMayExist": false,
       "layerValues": {
-        "foundationUsd": 2713.183414,
-        "productiveDividendUsd": 14948.581519,
+        "foundationUsd": 0,
+        "productiveDividendUsd": 13313.091642,
         "stableReserveUsd": 0,
         "rwaUsd": 0,
         "ventureUsd": 0,
@@ -353,9 +353,9 @@
       },
       "coverage": {
         "companyCapitalCoverage": 1,
-        "reason": "Defitea public/current TVL is consolidated from standalone Registry #004 capital plus canonical nested companies #001 and #002. Network contribution remains standalone to prevent double counting."
+        "reason": "Defitea Fund and defitea.eth publish the same TVL derived only from Registry #004 assets. Registry #001/#002 capital remains separate."
       },
-      "epistemicNote": "Defitea Fund and defitea.eth share one consolidated TVL. Nested-company capital is included in that display TVL but contributes to Network TVL only through each unique registered company once. No child-company factual income is promoted into Defitea by this capital relationship.",
+      "epistemicNote": "Defitea Fund and defitea.eth are one economic object for capital reporting. Their TVL contains only Defitea-owned assets. Related-company income may be aggregated at fund reporting level without importing related-company capital into Defitea TVL.",
       "productiveReconciliation": {
         "source": "general-balance-bound-generation",
         "boundProductiveExposureUsd": 13313.1,
@@ -518,42 +518,13 @@
           "productivityOnly": false
         }
       ],
-      "standaloneCapitalUsd": 13313.091642,
-      "nestedCompanyCapitalUsd": 4348.673291,
-      "consolidatedCapitalUsd": 17661.764933,
-      "standaloneLayerValues": {
-        "foundationUsd": 0,
-        "productiveDividendUsd": 13313.091642,
-        "stableReserveUsd": 0,
-        "rwaUsd": 0,
-        "ventureUsd": 0,
-        "unclassifiedUsd": 0
-      },
       "consolidation": {
-        "mode": "parent-plus-nested-company-capital",
+        "mode": "standalone-company-assets-only",
         "fundCompanyTvlParityRequired": true,
-        "standaloneCapitalUsd": 13313.091642,
-        "nestedCompanyCapitalUsd": 4348.673291,
-        "consolidatedCapitalUsd": 17661.764933,
-        "networkContributionUsd": 13313.091642,
-        "children": [
-          {
-            "registry": "001",
-            "name": "05081966.eth",
-            "capitalUsd": 501.010698
-          },
-          {
-            "registry": "002",
-            "name": "YieldRing.eth",
-            "capitalUsd": 3847.662593
-          }
-        ],
-        "childCapitalIncludedInDisplayTvl": true,
-        "childCapitalIncludedAgainInNetworkContribution": false,
-        "childIncomeIncluded": false,
+        "relatedCompanyCapitalIncluded": false,
+        "relatedCompanyIncomeRollupSeparate": true,
         "incomeAggregationAuthority": false
-      },
-      "productiveScope": "standalone-defitea-productivity-only-no-child-productivity-or-income-rollup"
+      }
     },
     {
       "registry": "005",
@@ -1389,7 +1360,7 @@
   "readiness": {
     "q12AllocationContext": "available-with-layer-provenance",
     "companyCurrentMeasuredCapital": "available-10-of-10-complete",
-    "defiteaFundCompanyTvlParity": "available-consolidated-no-network-double-count",
+    "defiteaFundCompanyTvlParity": "available-own-capital-only",
     "networkCapitalFloor": "available",
     "networkTvl": "available",
     "capitalLayerWeights": "available-with-unclassified-disclosure"
