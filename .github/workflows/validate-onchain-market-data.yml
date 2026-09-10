@@ -17,6 +17,7 @@ on:
       - 'intelligence/market-data/market-data-authority-policy.json'
       - 'intelligence/market-data/market-data-authority-materializer.mjs'
       - 'intelligence/market-data/market-data-materializer-health-boundary-validation.mjs'
+      - 'intelligence/market-data/market-data-scheduler-contract.json'
       - '.github/workflows/market-data-refresh.yml'
   workflow_dispatch:
 
@@ -85,6 +86,7 @@ jobs:
           const policy=JSON.parse(fs.readFileSync('intelligence/market-data/market-data-authority-policy.json','utf8'));
           const materializer=fs.readFileSync('intelligence/market-data/market-data-authority-materializer.mjs','utf8');
           const sourceStep='Reuse daily CoinGecko source lane without external request';
+          const publishStep='Publish canonical Market Data state safely';
           const required=[
             "cron: '7,37 * * * *'",
             sourceStep,
@@ -92,6 +94,7 @@ jobs:
             'Observe all onchain prices',
             'Materialize per-asset production authority',
             "MARKET_DATA_FORCE_COINGECKO_FAILBACK: 'false'",
+            publishStep,
             'onchain-price-resolver.mjs',
             'market-data-authority-materializer.mjs'
           ];
@@ -104,9 +107,12 @@ jobs:
           const sourceIndex=workflow.indexOf(sourceStep);
           const shadowIndex=workflow.indexOf('Observe all onchain prices');
           const materializerIndex=workflow.indexOf('Materialize per-asset production authority');
-          const publicIndex=workflow.indexOf('Rebuild public fund + company capital view');
-          if(!(sourceIndex>=0&&shadowIndex>sourceIndex&&materializerIndex>shadowIndex&&publicIndex>materializerIndex))throw new Error('Heartbeat order drift');
-          console.log('30-minute onchain heartbeat + strict daily CoinGecko reuse + per-asset failback contract PASS',{canonicalOnchainPrimary:26,cycleWideFailback:false,nonDailyCoinGeckoFetch:false,executionAuthority:'none'});
+          const publishIndex=workflow.indexOf(publishStep);
+          if(!(sourceIndex>=0&&shadowIndex>sourceIndex&&materializerIndex>shadowIndex&&publishIndex>materializerIndex))throw new Error('Heartbeat order drift');
+          if(workflow.includes('Rebuild public fund + company capital view'))throw new Error('Market Data writer must not rebuild Public Capital directly');
+          if(workflow.includes('node intelligence/market-data/public-capital-engine.mjs'))throw new Error('Market Data writer regained Public Capital execution ownership');
+          if(workflow.includes('intelligence/market-data/public-capital-state.json'))throw new Error('Market Data writer regained Public Capital state ownership');
+          console.log('30-minute onchain heartbeat + strict daily CoinGecko reuse + per-asset failback contract PASS',{canonicalOnchainPrimary:26,cycleWideFailback:false,nonDailyCoinGeckoFetch:false,publicCapitalWrittenHere:false,executionAuthority:'none'});
           NODE
 
       - name: Live-prove 27 observation routes remain usable

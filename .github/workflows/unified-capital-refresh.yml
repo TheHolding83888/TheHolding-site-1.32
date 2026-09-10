@@ -7,6 +7,7 @@ on:
     - cron: '17 4 * * 0'
   workflow_run:
     workflows:
+      - "The Holding Market Data · Shared Refresh"
       - "Update Stable Capital"
       - "Update Company Rewards"
       - "Update Company #010 · Cypher Production State"
@@ -46,11 +47,69 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  admission:
+    runs-on: ubuntu-latest
+    outputs:
+      due: ${{ steps.handoff.outputs.due }}
+      reason: ${{ steps.handoff.outputs.reason }}
+    steps:
+      - name: Checkout canonical main for handoff admission
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Determine Unified Capital handoff admission
+        id: handoff
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          UPSTREAM_WORKFLOW: ${{ github.event.workflow_run.name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$GITHUB_OUTPUT" <<'PY'
+          import json
+          import os
+          import sys
+
+          output_path = sys.argv[1]
+          event_name = os.environ.get('EVENT_NAME', '')
+          upstream = os.environ.get('UPSTREAM_WORKFLOW', '')
+          due = True
+          reason = 'direct-schedule-or-non-market-upstream'
+
+          if event_name == 'workflow_run' and upstream == 'The Holding Market Data · Shared Refresh':
+              reason = 'market-data-state-unavailable-fail-open'
+              try:
+                  with open('intelligence/market-data/market-data.json', 'r', encoding='utf-8') as handle:
+                      market = json.load(handle)
+                  with open('intelligence/market-data/public-capital-state.json', 'r', encoding='utf-8') as handle:
+                      public = json.load(handle)
+                  market_generation = str(market.get('generatedAt') or '')
+                  materialized_generation = str((public.get('sourceState') or {}).get('marketDataGeneratedAt') or '')
+                  if not market_generation:
+                      raise ValueError('canonical Market Data generation missing')
+                  due = market_generation != materialized_generation
+                  reason = 'new-market-data-awaiting-capital' if due else 'market-data-noop-already-materialized'
+              except Exception as error:
+                  print(f'::warning::Unable to prove Market Data/Public Capital generation parity: {error}')
+                  due = True
+
+          with open(output_path, 'a', encoding='utf-8') as output:
+              output.write(f"due={'true' if due else 'false'}\n")
+              output.write(f"reason={reason}\n")
+          print('Unified Capital admission', {'due': due, 'reason': reason, 'event': event_name, 'upstream': upstream})
+          PY
+
   refresh:
+    needs: admission
     if: >-
       ${{
-        github.event_name != 'workflow_run' ||
-        (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+        needs.admission.outputs.due == 'true' &&
+        (
+          github.event_name != 'workflow_run' ||
+          (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+        )
       }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -169,11 +228,12 @@ jobs:
           if(Number(m.authority?.unknownCount)!==0)throw new Error('Canonical Market Data contains UNKNOWN assets');
           if(Number(m.authority?.onchainSelectedAssetCount)+Number(m.authority?.coingeckoSelectedAssetCount)!==26)throw new Error('Canonical Market Data selected-lane coverage drift');
           if(!Number.isFinite(Number(pub.funds?.defitea?.tvlUsd))||!Number.isFinite(Number(pub.funds?.defitea?.referenceAprPct)))throw new Error('Defitea Public Capital incomplete');
+          if(pub.sourceState?.marketDataGeneratedAt!==m.generatedAt)throw new Error('Public Capital is not bound to the current Market Data generation');
           if(!home.includes('href="/companies"')||!home.includes('href="/realty"')||!home.includes('data-th-fund-pyramid-links')||!home.includes('Funds · Index · Onchain Companies · Real Estate'))throw new Error('Homepage public polish projection missing');
           if(company001Page.includes('api.coingecko.com')||!company001Page.includes('canonical onchain-first snapshot'))throw new Error('Company #001 canonical page runtime missing');
           if(singulPage.includes('/intelligence/market-data/simple-price')||singulPage.includes('setInterval(updateTVL, 300000)')||!singulPage.includes('public-capital-client.js'))throw new Error('Singul canonical page runtime missing');
           if(!yieldReportsPage.includes('The Holding · Defitea mobile cash-flow polish')||!yieldReportsPage.includes('.defitea-reports .report-table td:nth-child(2) { display: table-cell; }'))throw new Error('Defitea mobile Yield Reports cash-flow visibility missing');
-          console.log('Unified Capital Refresh final validation PASS',{generatedAt:p.generatedAt,defiteaApr:d.aprLatest,defiteaAero:dca.units,defiteaFxn:dcf.units,voteMarketMeasuredReferenceCompanyCount:vm.measuredReferenceCompanyCount,voteMarketClaimPersistence:true,veCrvVoteMarketStatus:dcrow?.incomeChannels?.votemarket?.status||null,veFxnVoteMarketStatus:df?.incomeChannels?.votemarket?.status||null,yieldRingApr:y.aprLatest,networkTvl:c.network.networkTvlUsd,marketObservedAt:m.observedAt,onchainSelectedAssetCount:m.authority.onchainSelectedAssetCount,coingeckoFallbackAssetCount:m.authority.coingeckoSelectedAssetCount,icpUsd:icp.usd,icpSource:icp.source,company005Icp:icp5.units,company006Icp:icp6.units,publicDefiteaTvl:pub.funds.defitea.tvlUsd,homepagePublicPolish:true,defiteaMobileReportPolish:true});
+          console.log('Unified Capital Refresh final validation PASS',{generatedAt:p.generatedAt,defiteaApr:d.aprLatest,defiteaAero:dca.units,defiteaFxn:dcf.units,voteMarketMeasuredReferenceCompanyCount:vm.measuredReferenceCompanyCount,voteMarketClaimPersistence:true,veCrvVoteMarketStatus:dcrow?.incomeChannels?.votemarket?.status||null,veFxnVoteMarketStatus:df?.incomeChannels?.votemarket?.status||null,yieldRingApr:y.aprLatest,networkTvl:c.network.networkTvlUsd,marketObservedAt:m.observedAt,onchainSelectedAssetCount:m.authority.onchainSelectedAssetCount,coingeckoFallbackAssetCount:m.authority.coingeckoSelectedAssetCount,icpUsd:icp.usd,icpSource:icp.source,company005Icp:icp5.units,company006Icp:icp6.units,publicDefiteaTvl:pub.funds.defitea.tvlUsd,marketGenerationParity:true,homepagePublicPolish:true,defiteaMobileReportPolish:true});
           NODE
           git diff --check
 
@@ -208,6 +268,23 @@ jobs:
               echo "Unified capital writer conflict; refusing to guess."
               exit 1
             fi
+            # A first-pass generated commit may have been composed by multiple projectors.
+            # After any fresh-main rebase, discard only generated/public materialization
+            # bytes back to canonical origin/main, then recompute the whole chain once.
+            git checkout origin/main -- \
+              index.html \
+              companies/index.html \
+              05081966/index.html \
+              yieldring/index.html \
+              singul/index.html \
+              yield-reports/index.html \
+              companies/productivity-data.json \
+              companies/productivity-source-report.json \
+              companies/votemarket-reference-state.json \
+              intelligence/capital-state/general-company-balance-sheet.mjs \
+              intelligence/capital-state/general-company-balance-sheet.json \
+              intelligence/capital-state/capital-state.json \
+              intelligence/market-data/public-capital-state.json
             node intelligence/capital-state/unified-capital-market-data-guard.mjs
             NODE_OPTIONS='--import=${{ github.workspace }}/intelligence/market-data/coingecko-fetch-shim.mjs' \
             ETH_RPC_URL='${{ secrets.ETH_RPC_URL }}' \

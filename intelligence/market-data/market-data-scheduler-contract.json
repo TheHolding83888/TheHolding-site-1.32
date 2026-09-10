@@ -1,5 +1,5 @@
 {
-  "version": "0.2-market-data-scheduler-delivery-resilience",
+  "version": "0.3-market-data-to-unified-capital-handoff",
   "status": "production",
   "workflow": "The Holding Market Data · Shared Refresh",
   "cron": "7,37 * * * *",
@@ -8,10 +8,14 @@
   "schedulerAttemptCadenceMinutes": 15,
   "scheduledRefreshAdmissionAgeMinutes": 25,
   "timezone": "UTC",
-  "purpose": "Single source of truth for resilient Shared Market Data wakes and the canonical Public Capital State refresh cadence used by fund TVL, company TVL and The Holding aggregate TVL.",
+  "purpose": "Single source of truth for resilient Shared Market Data wakes. This workflow owns canonical price observation/materialization only; its successful completion is observed by Unified Capital, whose lightweight admission compares Market Data generation with the generation already materialized in Public Capital. Only a new price generation proceeds to General Balance, Capital State and Public Capital recomputation.",
   "canonicalOutputs": [
     "intelligence/market-data/market-data.json",
-    "intelligence/market-data/onchain-price-shadow.json",
+    "intelligence/market-data/onchain-price-shadow.json"
+  ],
+  "downstreamOutputs": [
+    "intelligence/capital-state/general-company-balance-sheet.json",
+    "intelligence/capital-state/capital-state.json",
     "intelligence/market-data/public-capital-state.json"
   ],
   "deliveryResilience": {
@@ -27,7 +31,12 @@
     "dailyCoinGeckoBaselineIsSeparate": true,
     "sharedRefreshMayReuseDailyCoinGeckoWithoutExternalRequest": true,
     "onchainObservationRunsEveryAdmittedSharedRefresh": true,
-    "publicCapitalStateRebuiltEveryAdmittedSharedRefresh": true
+    "marketDataWriterDoesNotWritePublicCapitalState": true,
+    "marketDataWorkflowCompletionObservedByUnifiedCapital": true,
+    "marketDataNoopCompletionSuppressedByGenerationParity": true,
+    "capitalStateRebuiltBeforePublicCapital": true,
+    "reverseCapitalStateWakeRemoved": true,
+    "publicCapitalMaterializationOwner": "The Holding Capital · Unified Refresh"
   },
   "epistemics": {
     "naturalScheduleProofRequired": true,
@@ -35,7 +44,9 @@
     "schedulerAttemptDoesNotEqualMaterialization": true,
     "unknownIsNotZero": true,
     "partialIsNotTotal": true,
-    "oneEconomicPositionOnce": true
+    "oneEconomicPositionOnce": true,
+    "priceSnapshotMustPrecedeCapitalValuation": true,
+    "generationParityDeterminesMarketDataHandoff": true
   },
   "authority": {
     "repositoryMutationAuthority": true,
