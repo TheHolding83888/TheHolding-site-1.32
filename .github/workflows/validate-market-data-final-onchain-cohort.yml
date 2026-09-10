@@ -34,11 +34,14 @@ jobs:
           node --check intelligence/market-data/market-data-authority-materializer.mjs
           node intelligence/market-data/market-data-authority-selector-validation.mjs
 
-      - name: Live-prove all nine final routes on public RPC
+      - name: Live-prove final routes and 26 canonical selections on public RPC
         run: |
           set -euo pipefail
-          node intelligence/market-data/onchain-price-resolver.mjs
-          node - <<'NODE'
+
+          prove_live_snapshot() {
+            node intelligence/market-data/onchain-price-resolver.mjs || return 1
+
+            node - <<'NODE' || return 1
           const fs=require('fs');
           const shadow=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-shadow.json','utf8'));
           const policy=JSON.parse(fs.readFileSync('intelligence/market-data/market-data-authority-policy.json','utf8'));
@@ -63,16 +66,43 @@ jobs:
           console.log('Final nine live onchain routes PASS',{generatedAt:shadow.generatedAt,reviewedAssets:ids,xautPool:xaut.pool});
           NODE
 
-      - name: Prove live Shadow can materialize 26 canonical onchain prices
-        run: |
-          set -euo pipefail
-          MARKET_DATA_FORCE_COINGECKO_FAILBACK=false node intelligence/market-data/market-data-authority-materializer.mjs
-          node - <<'NODE'
+            MARKET_DATA_FORCE_COINGECKO_FAILBACK=false node intelligence/market-data/market-data-authority-materializer.mjs || return 1
+
+            node - <<'NODE' || return 1
           const fs=require('fs');
           const m=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
           if(m.authority?.onchainSelectedAssetCount!==26||m.authority?.coingeckoSelectedAssetCount!==0||m.authority?.fallbackCount!==0||m.authority?.unknownCount!==0)throw new Error(`Live 26/26 production selection proof failed: ${JSON.stringify(m.authority)}`);
           for(const [id,row] of Object.entries(m.prices||{}))if(row.authority?.selectedLane!=='onchain'||!String(row.source||'').startsWith('onchain-'))throw new Error(`${id}: not physically onchain-selected`);
           if(m.authority?.executionAuthority!=='none'||m.authority?.capitalExecution!==false||m.authority?.policyMutationAuthority!==false)throw new Error('Authority boundary drift');
           console.log('Live 26/26 canonical onchain materialization PASS');
+          NODE
+          }
+
+          for attempt in 1 2 3; do
+            echo "Final canonical live proof attempt ${attempt}/3"
+            if prove_live_snapshot; then
+              echo "Final canonical live proof succeeded on attempt ${attempt}/3"
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then
+              echo "::warning::Public RPC proof attempt ${attempt}/3 failed; retrying the same strict proof."
+              sleep $((attempt * 2))
+            fi
+          done
+
+          echo 'Final canonical onchain proof failed after 3 bounded strict attempts.' >&2
+          exit 1
+
+      - name: Verify successful live proof artifact
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const shadow=JSON.parse(fs.readFileSync('intelligence/market-data/onchain-price-shadow.json','utf8'));
+          const m=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
+          if(shadow.coverage?.assetCount!==27)throw new Error('Successful live proof did not retain 27-route Shadow state');
+          if(m.authority?.onchainSelectedAssetCount!==26||m.authority?.coingeckoSelectedAssetCount!==0||m.authority?.fallbackCount!==0||m.authority?.unknownCount!==0)throw new Error('Successful live proof did not retain 26/26 canonical onchain authority');
+          if(m.authority?.executionAuthority!=='none'||m.authority?.capitalExecution!==false||m.authority?.policyMutationAuthority!==false)throw new Error('Authority boundary drift');
+          console.log('Bounded strict live proof artifact PASS',{shadowGeneratedAt:shadow.generatedAt,marketGeneratedAt:m.generatedAt});
           NODE
           git diff --check
