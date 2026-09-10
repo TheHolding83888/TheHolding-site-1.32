@@ -1,0 +1,36 @@
+name: "Validate General Balance · Per-Asset Market Data Consumer"
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/validate-general-balance-market-data-consumer.yml'
+      - 'intelligence/capital-state/general-company-balance-sheet.mjs'
+      - 'intelligence/capital-state/general-balance-market-data-consumer-contract-validation.mjs'
+      - 'intelligence/capital-state/unified-capital-market-data-guard.mjs'
+      - 'intelligence/market-data/market-data.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+
+      - name: Prove current canonical mixed-lane consumer contract
+        run: |
+          set -euo pipefail
+          node --check intelligence/capital-state/general-company-balance-sheet.mjs
+          node --check intelligence/capital-state/general-balance-market-data-consumer-contract-validation.mjs
+          node intelligence/capital-state/unified-capital-market-data-guard.mjs
+          node intelligence/capital-state/general-balance-market-data-consumer-contract-validation.mjs
+          git diff --check
