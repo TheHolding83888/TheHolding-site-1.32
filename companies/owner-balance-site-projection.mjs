@@ -29,14 +29,19 @@ for(const [id,qty] of expectedSingul){
   if(!row||Number(row.quantity)!==qty)fail(`Singul canonical quantity drift for ${id}`);
 }
 
-/* Proven single-canonical-path projector. The public page contains legacy
-   duplicate boot code, but only one path is the canonical projection target.
-   Do not manufacture or normalize duplicate paths during emergency recovery. */
+/* Exact bounded replacement. Known predecessor states are allowed only for
+   one-time canonical migrations; the target state remains idempotent. */
 function replaceOnce(text,oldText,newText,label){
   if(text.includes(newText))return text;
   const count=text.split(oldText).length-1;
   if(count!==1)fail(`${label}: expected exactly one old projection, found ${count}`);
   return text.replace(oldText,() => newText);
+}
+function replaceKnownState(text,knownStates,newText,label){
+  if(text.includes(newText))return text;
+  const matches=knownStates.map(oldText=>({oldText,count:text.split(oldText).length-1})).filter(x=>x.count>0);
+  if(matches.length!==1||matches[0].count!==1)fail(`${label}: expected exactly one known predecessor projection`);
+  return text.replace(matches[0].oldText,() => newText);
 }
 function gitBlobSha(text){
   const b=Buffer.from(text);
@@ -44,9 +49,10 @@ function gitBlobSha(text){
 }
 
 let html=fs.readFileSync(INDEX,'utf8');
-const old001=`    '05081966.eth': [\n        { id: 'aerodrome-finance', qty: 202,   entry: 0.4954 },\n        { id: 'curve-dao-token',   qty: 480,   entry: 0.2126 },\n        { id: 'frax-share',        qty: 393,   entry: 0.2589 }\n    ],`;
+const preBtc001=`    '05081966.eth': [\n        { id: 'aerodrome-finance', qty: 202,   entry: 0.4954 },\n        { id: 'curve-dao-token',   qty: 480,   entry: 0.2126 },\n        { id: 'frax-share',        qty: 393,   entry: 0.2589 }\n    ],`;
+const priorBtc001=`    '05081966.eth': [\n        { id: 'bitcoin', qty: 0.00126, entry: 77875, costBasisUsd: 98.1225, evidenceStatus: 'owner-provided-current', source: 'owner-confirmed-manual-current-snapshot' },\n        { id: 'aerodrome-finance', qty: 202,   entry: 0.4954 },\n        { id: 'curve-dao-token',   qty: 480,   entry: 0.2126 },\n        { id: 'frax-share',        qty: 393,   entry: 0.2589 }\n    ],`;
 const new001=`    '05081966.eth': [\n        { id: 'bitcoin', qty: 0.00205, entry: 78038.78048780488, costBasisUsd: 159.9795, evidenceStatus: 'owner-provided-current', source: 'owner-confirmed-manual-current-snapshot' },\n        { id: 'aerodrome-finance', qty: 202,   entry: 0.4954 },\n        { id: 'curve-dao-token',   qty: 480,   entry: 0.2126 },\n        { id: 'frax-share',        qty: 393,   entry: 0.2589 }\n    ],`;
-html=replaceOnce(html,old001,new001,'companies/index.html Company #001 Company Book');
+html=replaceKnownState(html,[preBtc001,priorBtc001],new001,'companies/index.html Company #001 Company Book');
 html=replaceOnce(html,
 `    '05081966.eth':  ['Curve','Aero','Frax'],`,
 `    '05081966.eth':  ['Bitcoin','Curve','Aero','Frax'],`,
@@ -54,8 +60,7 @@ html=replaceOnce(html,
 
 /* Public company values may be canonicalized beyond the local browser Company
    Book. Preserve nullable performance semantics and keep a distinct unique
-   network/index contribution so Defitea can display consolidated TVL without
-   re-counting its independently registered nested companies. */
+   network/index contribution. */
 const oldPublicBind=`    const publicCompanyTvl = (key, fallback) => {
         const row = publicCapitalSnapshot && Array.isArray(publicCapitalSnapshot.companies)
             ? publicCapitalSnapshot.companies.find(x => x && (x.registry === key || x.name === key))
@@ -149,19 +154,24 @@ fs.writeFileSync(INDEX,html);
 const indexBlob=gitBlobSha(html);
 
 let page001=fs.readFileSync(COMPANY001_PAGE,'utf8');
-page001=replaceOnce(page001,
-`  var HOLDINGS = [
+const preBtcHoldings=`  var HOLDINGS = [
     { id: 'aerodrome-finance', name: 'Aero', proto: 'Aero Finance', qty: 202, word: 'tokens' },
     { id: 'frax-share', name: 'FRAX', proto: 'Frax Finance', qty: 393, word: 'tokens' },
     { id: 'curve-dao-token', name: 'CRV', proto: 'Curve Finance', qty: 480, word: 'tokens' }
-  ];`,
-`  var HOLDINGS = [
+  ];`;
+const priorBtcHoldings=`  var HOLDINGS = [
+    { id: 'bitcoin', name: 'BTC', proto: 'Bitcoin reserve', qty: 0.00126, word: 'BTC' },
+    { id: 'aerodrome-finance', name: 'Aero', proto: 'Aero Finance', qty: 202, word: 'tokens' },
+    { id: 'frax-share', name: 'FRAX', proto: 'Frax Finance', qty: 393, word: 'tokens' },
+    { id: 'curve-dao-token', name: 'CRV', proto: 'Curve Finance', qty: 480, word: 'tokens' }
+  ];`;
+const newBtcHoldings=`  var HOLDINGS = [
     { id: 'bitcoin', name: 'BTC', proto: 'Bitcoin reserve', qty: 0.00205, word: 'BTC' },
     { id: 'aerodrome-finance', name: 'Aero', proto: 'Aero Finance', qty: 202, word: 'tokens' },
     { id: 'frax-share', name: 'FRAX', proto: 'Frax Finance', qty: 393, word: 'tokens' },
     { id: 'curve-dao-token', name: 'CRV', proto: 'Curve Finance', qty: 480, word: 'tokens' }
-  ];`,
-'05081966 dedicated holdings');
+  ];`;
+page001=replaceKnownState(page001,[preBtcHoldings,priorBtcHoldings],newBtcHoldings,'05081966 dedicated holdings');
 page001=replaceOnce(page001,
 `    <p class="lockNote" style="margin-top:14px;">All assets are committed to the <b>maximum 4-year lock</b> — this entitles the Company to a share of the protocols’ cash flows and protects the capital from impulsive decisions.</p>`,
 `    <p class="lockNote" style="margin-top:14px;">Productive protocol positions are committed to the <b>maximum 4-year lock</b> where the protocol supports it. BTC is held as reserve capital and is not presented as a locked cash-flow position.</p>`,
@@ -173,10 +183,7 @@ if(!balance.includes("const COMPANY001_OWNER_SNAPSHOT = 'companies/company-001-o
 balance=balance.replace(/const EXPECTED_UI_BLOB_SHA = '[0-9a-f]{40}';/,`const EXPECTED_UI_BLOB_SHA = '${indexBlob}';`);
 fs.writeFileSync(BALANCE,balance);
 
-// Retire old page-local price engines only after the current owner/state
-// projections have been applied. This runtime projector is idempotent.
 await import('./public-page-market-runtime-projection.mjs');
-// Keep bounded navigation/footer/pyramid polish separate from capital authority.
 await import('./public-site-polish-projection.mjs');
 
 console.log('Owner balance site projection PASS',{
@@ -190,6 +197,7 @@ console.log('Owner balance site projection PASS',{
   singulBeamExcluded:true,
   expectedIndexBlob:indexBlob,
   canonicalProjectionPathUpdatedOnce:true,
+  knownPredecessorMigrationSupported:true,
   defiteaConsolidatedDisplayUsesUniqueIndexContribution:true,
   partialCostBasisPerformanceRemainsUnknown:true,
   manualSnapshotIsNotOnchainObservation:true,
