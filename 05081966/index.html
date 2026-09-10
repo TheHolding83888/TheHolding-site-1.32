@@ -103,7 +103,7 @@
     <div class="sectionHead" style="margin-bottom:14px;"><h2>Assets on the balance</h2><div class="sectionNote">Lock · 4 years</div></div>
     <div class="colHead" style="margin-bottom:8px;"><div>Asset</div><div>Price</div><div>Value</div><div style="text-align:right;">Share</div></div>
     <div class="assets" id="assets"></div>
-    <p class="lockNote" style="margin-top:14px;">All assets are committed to the <b>maximum 4-year lock</b> — this entitles the Company to a share of the protocols’ cash flows and protects the capital from impulsive decisions.</p>
+    <p class="lockNote" style="margin-top:14px;">Productive protocol positions are committed to the <b>maximum 4-year lock</b> where the protocol supports it. BTC is held as reserve capital and is not presented as a locked cash-flow position.</p>
   </div>
 
   <div>
@@ -131,21 +131,25 @@
 
   <footer>
     <div class="brand" style="letter-spacing:0.28em;">05081966.eth</div>
-    <p class="foot">TVL is calculated at CoinGecko market prices. All figures are guideposts — not a guarantee of returns and not financial advice. The assets are volatile; the right horizon is 3–5+ years.</p>
+    <p class="foot">TVL is calculated from The Holding’s canonical market-data snapshot. Market prices are selected onchain-first; external fallback is bounded upstream rather than requested by this page. Figures are not a guarantee of return or financial advice.</p>
   </footer>
 </div>
 
 <script>
 (function () {
   var HOLDINGS = [
+    { id: 'bitcoin', name: 'BTC', proto: 'Bitcoin reserve', qty: 0.00126, word: 'BTC' },
     { id: 'aerodrome-finance', name: 'Aero', proto: 'Aero Finance', qty: 202, word: 'tokens' },
     { id: 'frax-share', name: 'FRAX', proto: 'Frax Finance', qty: 393, word: 'tokens' },
     { id: 'curve-dao-token', name: 'CRV', proto: 'Curve Finance', qty: 480, word: 'tokens' }
   ];
-  var CACHE_KEY = 'dc05081966_prices_v1';
-  var TTL = 10 * 60 * 1000; // 10 минут — не чаще, как на главной
   function money(n, dec) {
-    return '$' + n.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+    return '
+})();
+</script>
+</body>
+</html>
+ + n.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec });
   }
   function renderRows(prices) {
     var total = 0, rows = '';
@@ -162,30 +166,20 @@
     document.getElementById('assets').innerHTML = rows;
     document.getElementById('tvl').textContent = total ? money(total, 0) : '—';
   }
-  function setUpdated(ts, fromCache) {
-    var d = new Date(ts);
-    var hh = ('0' + d.getHours()).slice(-2), mm = ('0' + d.getMinutes()).slice(-2);
-    document.getElementById('updated').textContent = 'updated at ' + hh + ':' + mm + (fromCache ? ' · cached' : ' · CoinGecko');
-  }
   function load() {
-    var cached = null;
-    try { cached = JSON.parse(localStorage.getItem(CACHE_KEY)); } catch (e) {}
-    if (cached && cached.prices) { renderRows(cached.prices); setUpdated(cached.ts, true); }
-    if (cached && Date.now() - cached.ts < TTL) return;
-    var ids = HOLDINGS.map(function (h) { return h.id; }).join(',');
-    fetch('https://api.coingecko.com/api/v3/simple/price?ids=' + ids + '&vs_currencies=usd')
-      .then(function (r) { return r.json(); })
+    fetch('/intelligence/market-data/public-capital-state.json?t=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error('canonical public capital unavailable'); return r.json(); })
       .then(function (data) {
+        var row = (data.companies || []).find(function (x) { return x && x.registry === '001'; });
+        if (!row) throw new Error('05081966 canonical company row unavailable');
         var prices = {};
-        HOLDINGS.forEach(function (h) { if (data[h.id]) prices[h.id] = data[h.id].usd; });
-        if (!Object.keys(prices).length) return;
-        var payload = { prices: prices, ts: Date.now() };
-        try { localStorage.setItem(CACHE_KEY, JSON.stringify(payload)); } catch (e) {}
-        renderRows(prices); setUpdated(payload.ts, false);
+        (row.positions || []).forEach(function (p) { if (p && p.assetId && Number.isFinite(Number(p.priceUsd))) prices[p.assetId] = Number(p.priceUsd); });
+        renderRows(prices);
+        var d = new Date(data.generatedAt || Date.now());
+        var hh = ('0' + d.getHours()).slice(-2), mm = ('0' + d.getMinutes()).slice(-2);
+        document.getElementById('updated').textContent = 'updated at ' + hh + ':' + mm + ' · canonical onchain-first snapshot';
       })
-      .catch(function () {
-        if (!cached) document.getElementById('updated').textContent = 'data temporarily unavailable';
-      });
+      .catch(function () { document.getElementById('updated').textContent = 'canonical market data temporarily unavailable'; });
   }
   load();
 })();

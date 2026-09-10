@@ -1,13 +1,17 @@
 {
   "version": "0.1-public-capital-state",
-  "engineVersion": "0.1-shared-market-data-plus-canonical-protocol-nav",
-  "generatedAt": "2026-09-09T16:41:12.744Z",
+  "engineVersion": "0.2-defitea-consolidated-parity-network-unique",
+  "generatedAt": "2026-09-10T02:59:26.630Z",
   "status": "ok",
   "semantics": {
     "marketPricesFetchedOnceUpstream": true,
     "browserExternalPriceRequestsAllowed": false,
     "fundAndCompanyConsumersShareSamePriceObservation": true,
     "wrapperNavAndProtocolValuationRemainCanonicalUpstream": true,
+    "defiteaFundCompanyTvlParityRequired": true,
+    "defiteaDisplayTvlIncludesNestedCompanies": true,
+    "defiteaNestedCapitalNetworkDoubleCount": false,
+    "defiteaNestedCapitalDoesNotGrantIncomeAuthority": true,
     "reportingIsHistoryNotCurrentValuationAuthority": true,
     "unknownIsNotZero": true,
     "partialIsNotTotal": true,
@@ -18,15 +22,16 @@
     "marketDataObservedAt": "2026-09-09T16:41:11.302Z",
     "marketDataStatus": "ok",
     "defiteaCanonicalVersion": "0.1-defitea-canonical-state",
-    "productivityGeneratedAt": "2026-09-08T12:04:06.998Z",
+    "productivityGeneratedAt": "2026-09-10T02:59:23.998Z",
     "stableIndexGeneratedAt": "2026-09-06T09:42:28.036Z",
-    "capitalStateGeneratedAt": "2026-09-08T12:04:24.335Z"
+    "capitalStateGeneratedAt": "2026-09-10T02:59:26.588Z"
   },
   "totals": {
-    "fundEcosystemTvlUsd": 28306.121464,
+    "fundEcosystemTvlUsd": 32835.851221,
     "fundEcosystemStatus": "ok",
-    "companyNetworkTvlUsd": 72877.093557,
-    "companyNetworkStatus": "ok"
+    "companyNetworkTvlUsd": 73118.493552,
+    "companyNetworkStatus": "ok",
+    "companyNetworkCountingPolicy": "unique-network-contribution; Defitea consolidated parent view does not re-add Registry #001/#002"
   },
   "funds": {
     "substantia": {
@@ -42,7 +47,9 @@
           "priceUsd": 78661.81,
           "valueUsd": 7866.181,
           "status": "ok",
-          "source": "onchain-chainlink-v3"
+          "source": "onchain-chainlink-v3",
+          "evidenceStatus": null,
+          "asOf": null
         },
         {
           "assetId": "ethereum",
@@ -51,7 +58,9 @@
           "priceUsd": 2495.2977,
           "valueUsd": 2495.2977,
           "status": "ok",
-          "source": "onchain-chainlink-v3"
+          "source": "onchain-chainlink-v3",
+          "evidenceStatus": null,
+          "asOf": null
         },
         {
           "assetId": "tether-gold",
@@ -60,7 +69,9 @@
           "priceUsd": 4395.386638,
           "valueUsd": 2197.693319,
           "status": "ok",
-          "source": "onchain-uniswap-v3-twap-chainlink-quote"
+          "source": "onchain-uniswap-v3-twap-chainlink-quote",
+          "evidenceStatus": null,
+          "asOf": null
         },
         {
           "assetId": "physical-silver",
@@ -69,7 +80,9 @@
           "priceUsd": 65.602786,
           "valueUsd": 1312.055713,
           "status": "ok",
-          "source": "legacy-xaut-ratio-preserved"
+          "source": "legacy-xaut-ratio-preserved",
+          "evidenceStatus": null,
+          "asOf": null
         }
       ],
       "excludedFromTvl": [],
@@ -80,111 +93,161 @@
       "name": "Defitea",
       "companyName": "defitea.eth",
       "status": "ok",
-      "tvlUsd": 13419.538568,
-      "referenceAprPct": 14.6215,
-      "referenceAprUpdatedAt": "2026-09-08T12:03:03.351Z",
+      "tvlUsd": 17855.232851,
+      "standaloneTvlUsd": 13489.008604,
+      "nestedCompanyCapitalUsd": 4366.224247,
+      "networkContributionUsd": 13489.008604,
+      "referenceAprPct": 14.8936,
+      "referenceAprUpdatedAt": "2026-09-10T02:58:22.290Z",
       "positions": [
         {
           "assetId": "aerodrome-finance",
-          "symbol": "veAERO",
-          "quantity": 2632,
+          "units": 2632,
           "priceUsd": 0.576667,
           "valueUsd": 1517.788334,
           "status": "ok",
-          "source": "onchain-chainlink-v3"
+          "valuationSource": "shared-market-data",
+          "canonicalSourceKind": "general-balance-sheet",
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "convex-finance",
-          "symbol": "vlCVX",
-          "quantity": 1333,
+          "units": 1333,
           "priceUsd": 2.218583,
           "valueUsd": 2957.371644,
           "status": "ok",
-          "source": "onchain-chainlink-v3-relative"
+          "valuationSource": "shared-market-data",
+          "canonicalSourceKind": "general-balance-sheet",
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "curve-dao-token",
-          "symbol": "veCRV",
-          "quantity": 4125,
+          "units": 4125,
           "priceUsd": 0.360785,
           "valueUsd": 1488.239404,
           "status": "ok",
-          "source": "onchain-chainlink-v3"
+          "valuationSource": "shared-market-data",
+          "canonicalSourceKind": "general-balance-sheet",
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "pendle",
-          "symbol": "PENDLE",
-          "quantity": 500,
+          "units": 500,
           "priceUsd": 2.0691,
           "valueUsd": 1034.55,
           "status": "ok",
-          "source": "onchain-chainlink-v3"
+          "valuationSource": "shared-market-data",
+          "canonicalSourceKind": "general-balance-sheet",
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "fxn-token",
-          "symbol": "veFXN",
-          "quantity": 64.81,
+          "units": 64.81,
           "priceUsd": 27.329525,
           "valueUsd": 1771.226514,
           "status": "ok",
-          "source": "onchain-curve-ema-relative"
+          "valuationSource": "shared-market-data",
+          "canonicalSourceKind": "general-balance-sheet",
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "yield-basis",
-          "symbol": "veYB",
-          "quantity": 10846,
+          "units": 10846,
           "priceUsd": 0.099255,
           "valueUsd": 1076.51489,
           "status": "ok",
-          "source": "onchain-curve-ema-chainlink-quote"
+          "valuationSource": "shared-market-data",
+          "canonicalSourceKind": "general-balance-sheet",
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "frax-share",
-          "symbol": "veFRAX",
-          "quantity": 4224,
+          "units": 4456,
           "priceUsd": 0.29944,
-          "valueUsd": 1264.833757,
+          "valueUsd": 1334.303793,
           "status": "ok",
-          "source": "onchain-chainlink-v3"
+          "valuationSource": "shared-market-data",
+          "canonicalSourceKind": "general-balance-sheet",
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "owner-provided-current"
         },
         {
           "assetId": "velodrome-finance",
-          "symbol": "veVELO",
-          "quantity": 12180,
+          "units": 12180,
           "priceUsd": 0.025171,
           "valueUsd": 306.588592,
           "status": "ok",
-          "source": "onchain-velodrome-v2-twap-relative"
+          "valuationSource": "shared-market-data",
+          "canonicalSourceKind": "general-balance-sheet",
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "venice-token",
-          "symbol": "sVVV",
-          "quantity": 50,
+          "units": 50,
           "priceUsd": 24.370751,
           "valueUsd": 1218.537569,
           "status": "ok",
-          "source": "onchain-chainlink-v3"
+          "valuationSource": "shared-market-data",
+          "canonicalSourceKind": "general-balance-sheet",
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "liquity",
-          "symbol": "LQTY",
-          "quantity": 1488,
+          "units": 1488,
           "priceUsd": 0.228739,
           "valueUsd": 340.364259,
           "status": "ok",
-          "source": "onchain-uniswap-v3-twap-relative"
+          "valuationSource": "shared-market-data",
+          "canonicalSourceKind": "general-balance-sheet",
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "resupply",
-          "symbol": "RSUP",
-          "quantity": 3682,
+          "units": 3682,
           "priceUsd": 0.120457,
           "valueUsd": 443.523605,
           "status": "ok",
-          "source": "onchain-curve-ema-relative"
+          "valuationSource": "shared-market-data",
+          "canonicalSourceKind": "general-balance-sheet",
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         }
       ],
-      "source": "defitea-canonical-state-plus-shared-market-data"
+      "consolidation": {
+        "mode": "parent-plus-nested-company-capital",
+        "fundCompanyTvlParityRequired": true,
+        "standaloneCapitalUsd": 13489.008604,
+        "nestedCompanyCapitalUsd": 4366.224247,
+        "consolidatedCapitalUsd": 17855.232851,
+        "networkContributionUsd": 13489.008604,
+        "children": [
+          {
+            "registry": "001",
+            "name": "05081966.eth",
+            "capitalUsd": 506.457469
+          },
+          {
+            "registry": "002",
+            "name": "YieldRing.eth",
+            "capitalUsd": 3859.766778
+          }
+        ],
+        "childCapitalIncludedInDisplayTvl": true,
+        "childCapitalIncludedAgainInNetworkContribution": false,
+        "childIncomeIncluded": false,
+        "incomeAggregationAuthority": false
+      },
+      "source": "capital-state-defitea-consolidated-company-identity",
+      "note": "Defitea Fund and defitea.eth publish the same consolidated TVL. Nested company capital is included in the Defitea display TVL but not counted twice in Network TVL; child-company factual income remains separate."
     },
     "monetra": {
       "id": "monetra",
@@ -202,25 +265,29 @@
       "id": "singul",
       "name": "Singul",
       "status": "ok",
-      "tvlUsd": 714.048594,
+      "tvlUsd": 808.084068,
       "positions": [
         {
           "assetId": "decentraland",
           "symbol": "MANA",
-          "quantity": 276,
+          "quantity": 486,
           "priceUsd": 0.075523,
-          "valueUsd": 20.844213,
+          "valueUsd": 36.70394,
           "status": "ok",
-          "source": "onchain-chainlink-v3"
+          "source": "onchain-chainlink-v3",
+          "evidenceStatus": "owner-provided-current",
+          "asOf": "2026-09-09"
         },
         {
           "assetId": "the-sandbox",
           "symbol": "SAND",
-          "quantity": 282,
+          "quantity": 853,
           "priceUsd": 0.038071,
-          "valueUsd": 10.73614,
+          "valueUsd": 32.474921,
           "status": "ok",
-          "source": "onchain-chainlink-v3"
+          "source": "onchain-chainlink-v3",
+          "evidenceStatus": "owner-provided-current",
+          "asOf": "2026-09-09"
         },
         {
           "assetId": "ovr",
@@ -229,16 +296,20 @@
           "priceUsd": 0.03373,
           "valueUsd": 28.2655,
           "status": "ok",
-          "source": "onchain-uniswap-v3-twap-relative"
+          "source": "onchain-uniswap-v3-twap-relative",
+          "evidenceStatus": "owner-provided-current",
+          "asOf": "2026-09-09"
         },
         {
           "assetId": "autonolas",
           "symbol": "OLAS",
-          "quantity": 800,
+          "quantity": 1180,
           "priceUsd": 0.027289,
-          "valueUsd": 21.831066,
+          "valueUsd": 32.200822,
           "status": "ok",
-          "source": "onchain-uniswap-v2-historical-twap-relative"
+          "source": "onchain-uniswap-v2-historical-twap-relative",
+          "evidenceStatus": "owner-provided-current",
+          "asOf": "2026-09-09"
         },
         {
           "assetId": "virtual-protocol",
@@ -247,16 +318,9 @@
           "priceUsd": 0.690301,
           "valueUsd": 461.811599,
           "status": "ok",
-          "source": "onchain-uniswap-v3-twap-relative"
-        },
-        {
-          "assetId": "beam-2",
-          "symbol": "BEAM",
-          "quantity": 11309,
-          "priceUsd": 0.001586,
-          "valueUsd": 17.93279,
-          "status": "ok",
-          "source": "onchain-uniswap-v3-twap-relative"
+          "source": "onchain-uniswap-v3-twap-relative",
+          "evidenceStatus": "owner-provided-current",
+          "asOf": "2026-09-09"
         },
         {
           "assetId": "mode",
@@ -265,7 +329,9 @@
           "priceUsd": 0.000053,
           "valueUsd": 53.094122,
           "status": "ok",
-          "source": "onchain-velodrome-v2-twap-relative"
+          "source": "onchain-velodrome-v2-twap-relative",
+          "evidenceStatus": "owner-provided-current",
+          "asOf": "2026-09-09"
         },
         {
           "assetId": "elizaos",
@@ -274,19 +340,28 @@
           "priceUsd": 0.000167,
           "valueUsd": 13.533164,
           "status": "ok",
-          "source": "onchain-uniswap-v3-twap-chainlink-quote"
+          "source": "onchain-uniswap-v3-twap-chainlink-quote",
+          "evidenceStatus": "owner-provided-current",
+          "asOf": "2026-09-09"
         },
         {
           "assetId": "diem",
           "symbol": "DIEM",
           "quantity": 0.07,
-          "priceUsd": 1228.571429,
-          "valueUsd": 86,
+          "priceUsd": 2142.857143,
+          "valueUsd": 150,
           "status": "ok",
-          "source": "explicit-fixed-total"
+          "source": "owner-provided-current-fixed-total",
+          "evidenceStatus": "owner-provided-current",
+          "asOf": "2026-09-09"
         }
       ],
-      "excludedFromTvl": [],
+      "excludedFromTvl": [
+        {
+          "assetId": "beam-2",
+          "reason": "owner directive 2026-09-09: remove BEAM from current Singul holdings and TVL"
+        }
+      ],
       "source": "canonical-fund-capital-registry"
     },
     "fructus": {
@@ -302,7 +377,9 @@
           "priceUsd": 0.370465,
           "valueUsd": 200.792105,
           "status": "ok",
-          "source": "onchain-uniswap-v3-twap-relative"
+          "source": "onchain-uniswap-v3-twap-relative",
+          "evidenceStatus": null,
+          "asOf": null
         }
       ],
       "excludedFromTvl": [
@@ -323,8 +400,11 @@
       "registry": "001",
       "name": "05081966.eth",
       "status": "ok",
-      "tvlUsd": 407.343589,
-      "sourceCapitalGeneratedAt": "2026-09-08T12:04:24.335Z",
+      "tvlUsd": 506.45747,
+      "standaloneTvlUsd": null,
+      "nestedCompanyCapitalUsd": null,
+      "networkContributionUsd": 506.457469,
+      "sourceCapitalGeneratedAt": "2026-09-10T02:59:26.588Z",
       "positions": [
         {
           "assetId": "aerodrome-finance",
@@ -334,7 +414,8 @@
           "status": "ok",
           "valuationSource": "shared-market-data",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "curve-dao-token",
@@ -344,7 +425,8 @@
           "status": "ok",
           "valuationSource": "shared-market-data",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "frax-share",
@@ -354,26 +436,44 @@
           "status": "ok",
           "valuationSource": "shared-market-data",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
+        },
+        {
+          "assetId": "bitcoin",
+          "units": 0.00126,
+          "priceUsd": 78661.81,
+          "valueUsd": 99.113881,
+          "status": "ok",
+          "valuationSource": "canonical-capital-state",
+          "canonicalSourceKind": "general-balance-sheet",
+          "primaryCapitalLayer": "foundation",
+          "evidenceStatus": "owner-provided-current"
         }
-      ]
+      ],
+      "consolidation": null,
+      "performanceBasisStatus": "company-scope"
     },
     {
       "registry": "002",
       "name": "YieldRing.eth",
       "status": "ok",
-      "tvlUsd": 3793.434071,
-      "sourceCapitalGeneratedAt": "2026-09-08T12:04:24.335Z",
+      "tvlUsd": 3859.766778,
+      "standaloneTvlUsd": null,
+      "nestedCompanyCapitalUsd": null,
+      "networkContributionUsd": 3859.766778,
+      "sourceCapitalGeneratedAt": "2026-09-10T02:59:26.588Z",
       "positions": [
         {
           "assetId": "bitcoin",
           "units": 0.0334,
-          "priceUsd": 78755.742,
-          "valueUsd": 2630.441783,
+          "priceUsd": 78661.81,
+          "valueUsd": 2627.304454,
           "status": "ok",
           "valuationSource": "canonical-capital-state",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "foundation"
+          "primaryCapitalLayer": "foundation",
+          "evidenceStatus": "canonical-company-state"
         },
         {
           "assetId": "aerodrome-finance",
@@ -383,7 +483,8 @@
           "status": "ok",
           "valuationSource": "shared-market-data",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "canonical-company-state"
         },
         {
           "assetId": "convex-finance",
@@ -393,26 +494,33 @@
           "status": "ok",
           "valuationSource": "shared-market-data",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "canonical-company-state"
         },
         {
           "assetId": "frax-share",
-          "units": 800,
+          "units": 1032,
           "priceUsd": 0.29944,
-          "valueUsd": 239.551848,
+          "valueUsd": 309.021884,
           "status": "ok",
           "valuationSource": "shared-market-data",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "owner-provided-current"
         }
-      ]
+      ],
+      "consolidation": null,
+      "performanceBasisStatus": "company-scope"
     },
     {
       "registry": "003",
       "name": "dinaz.eth",
       "status": "ok",
       "tvlUsd": 1193.933027,
-      "sourceCapitalGeneratedAt": "2026-09-08T12:04:24.335Z",
+      "standaloneTvlUsd": null,
+      "nestedCompanyCapitalUsd": null,
+      "networkContributionUsd": 1193.933027,
+      "sourceCapitalGeneratedAt": "2026-09-10T02:59:26.588Z",
       "positions": [
         {
           "assetId": "yield-basis",
@@ -422,16 +530,22 @@
           "status": "ok",
           "valuationSource": "shared-market-data",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         }
-      ]
+      ],
+      "consolidation": null,
+      "performanceBasisStatus": "company-scope"
     },
     {
       "registry": "004",
       "name": "defitea.eth",
       "status": "ok",
-      "tvlUsd": 13419.538568,
-      "sourceCapitalGeneratedAt": "2026-09-08T12:04:24.335Z",
+      "tvlUsd": 17855.232851,
+      "standaloneTvlUsd": 13489.008604,
+      "nestedCompanyCapitalUsd": 4366.224247,
+      "networkContributionUsd": 13489.008604,
+      "sourceCapitalGeneratedAt": "2026-09-10T02:59:26.588Z",
       "positions": [
         {
           "assetId": "aerodrome-finance",
@@ -441,7 +555,8 @@
           "status": "ok",
           "valuationSource": "shared-market-data",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "convex-finance",
@@ -451,7 +566,8 @@
           "status": "ok",
           "valuationSource": "shared-market-data",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "curve-dao-token",
@@ -461,7 +577,8 @@
           "status": "ok",
           "valuationSource": "shared-market-data",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "pendle",
@@ -471,7 +588,8 @@
           "status": "ok",
           "valuationSource": "shared-market-data",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "fxn-token",
@@ -481,7 +599,8 @@
           "status": "ok",
           "valuationSource": "shared-market-data",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "yield-basis",
@@ -491,17 +610,19 @@
           "status": "ok",
           "valuationSource": "shared-market-data",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "frax-share",
-          "units": 4224,
+          "units": 4456,
           "priceUsd": 0.29944,
-          "valueUsd": 1264.833757,
+          "valueUsd": 1334.303793,
           "status": "ok",
           "valuationSource": "shared-market-data",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "owner-provided-current"
         },
         {
           "assetId": "velodrome-finance",
@@ -511,7 +632,8 @@
           "status": "ok",
           "valuationSource": "shared-market-data",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "venice-token",
@@ -521,7 +643,8 @@
           "status": "ok",
           "valuationSource": "shared-market-data",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "liquity",
@@ -531,7 +654,8 @@
           "status": "ok",
           "valuationSource": "shared-market-data",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "resupply",
@@ -541,26 +665,56 @@
           "status": "ok",
           "valuationSource": "shared-market-data",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         }
-      ]
+      ],
+      "consolidation": {
+        "mode": "parent-plus-nested-company-capital",
+        "fundCompanyTvlParityRequired": true,
+        "standaloneCapitalUsd": 13489.008604,
+        "nestedCompanyCapitalUsd": 4366.224247,
+        "consolidatedCapitalUsd": 17855.232851,
+        "networkContributionUsd": 13489.008604,
+        "children": [
+          {
+            "registry": "001",
+            "name": "05081966.eth",
+            "capitalUsd": 506.457469
+          },
+          {
+            "registry": "002",
+            "name": "YieldRing.eth",
+            "capitalUsd": 3859.766778
+          }
+        ],
+        "childCapitalIncludedInDisplayTvl": true,
+        "childCapitalIncludedAgainInNetworkContribution": false,
+        "childIncomeIncluded": false,
+        "incomeAggregationAuthority": false
+      },
+      "performanceBasisStatus": "consolidated-current-value-without-automatic-consolidated-cost-basis"
     },
     {
       "registry": "005",
       "name": "0x5860...83CA8.eth",
       "status": "ok",
-      "tvlUsd": 17248.838524,
-      "sourceCapitalGeneratedAt": "2026-09-08T12:04:24.335Z",
+      "tvlUsd": 17237.181563,
+      "standaloneTvlUsd": null,
+      "nestedCompanyCapitalUsd": null,
+      "networkContributionUsd": 17237.181563,
+      "sourceCapitalGeneratedAt": "2026-09-10T02:59:26.588Z",
       "positions": [
         {
           "assetId": "bitcoin",
           "units": 0.1241,
-          "priceUsd": 78755.742,
-          "valueUsd": 9773.587582,
+          "priceUsd": 78661.81,
+          "valueUsd": 9761.930621,
           "status": "ok",
           "valuationSource": "canonical-capital-state",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "foundation"
+          "primaryCapitalLayer": "foundation",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "internet-computer",
@@ -570,7 +724,8 @@
           "status": "ok",
           "valuationSource": "shared-market-data",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "aerodrome-finance",
@@ -580,7 +735,8 @@
           "status": "ok",
           "valuationSource": "shared-market-data",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "velodrome-finance",
@@ -590,16 +746,22 @@
           "status": "ok",
           "valuationSource": "shared-market-data",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         }
-      ]
+      ],
+      "consolidation": null,
+      "performanceBasisStatus": "company-scope"
     },
     {
       "registry": "006",
       "name": "aerocvxyb.eth",
       "status": "ok",
       "tvlUsd": 10427.192419,
-      "sourceCapitalGeneratedAt": "2026-09-08T12:04:24.335Z",
+      "standaloneTvlUsd": null,
+      "nestedCompanyCapitalUsd": null,
+      "networkContributionUsd": 10427.19242,
+      "sourceCapitalGeneratedAt": "2026-09-10T02:59:26.588Z",
       "positions": [
         {
           "assetId": "aerodrome-finance",
@@ -609,7 +771,8 @@
           "status": "ok",
           "valuationSource": "shared-market-data",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "velodrome-finance",
@@ -619,7 +782,8 @@
           "status": "ok",
           "valuationSource": "shared-market-data",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "yield-basis",
@@ -629,7 +793,8 @@
           "status": "ok",
           "valuationSource": "shared-market-data",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "internet-computer",
@@ -639,36 +804,44 @@
           "status": "ok",
           "valuationSource": "shared-market-data",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         }
-      ]
+      ],
+      "consolidation": null,
+      "performanceBasisStatus": "company-scope"
     },
     {
       "registry": "007",
       "name": "Rook's portfolio",
       "status": "ok",
-      "tvlUsd": 13695.224792,
-      "sourceCapitalGeneratedAt": "2026-09-08T12:04:24.335Z",
+      "tvlUsd": 13690.237945,
+      "standaloneTvlUsd": null,
+      "nestedCompanyCapitalUsd": null,
+      "networkContributionUsd": 13690.237945,
+      "sourceCapitalGeneratedAt": "2026-09-10T02:59:26.588Z",
       "positions": [
         {
           "assetId": "bitcoin",
           "units": 0.10038716,
-          "priceUsd": 78755.742,
-          "valueUsd": 7906.065273,
+          "priceUsd": 78661.81,
+          "valueUsd": 7896.635706,
           "status": "ok",
           "valuationSource": "canonical-capital-state",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "foundation"
+          "primaryCapitalLayer": "foundation",
+          "evidenceStatus": "current-state-proven"
         },
         {
           "assetId": "ethereum",
           "units": 0.788207492752,
-          "priceUsd": 2489.82,
-          "valueUsd": 1962.49478,
+          "priceUsd": 2495.2977,
+          "valueUsd": 1966.812344,
           "status": "ok",
           "valuationSource": "canonical-capital-state",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "foundation"
+          "primaryCapitalLayer": "foundation",
+          "evidenceStatus": "current-state-proven"
         },
         {
           "assetId": "aerodrome-finance",
@@ -678,7 +851,8 @@
           "status": "ok",
           "valuationSource": "shared-market-data",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "current-state-proven"
         },
         {
           "assetId": "convex-finance",
@@ -688,7 +862,8 @@
           "status": "ok",
           "valuationSource": "shared-market-data",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "current-state-proven"
         },
         {
           "assetId": "curve-dao-token",
@@ -698,155 +873,179 @@
           "status": "ok",
           "valuationSource": "shared-market-data",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "current-state-proven"
         },
         {
           "assetId": "zksync",
           "units": 8573.908961603593,
-          "priceUsd": 0.010437,
-          "valueUsd": 89.484358,
+          "priceUsd": 0.010451,
+          "valueUsd": 89.609514,
           "status": "ok",
           "valuationSource": "canonical-capital-state",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "unclassified"
+          "primaryCapitalLayer": "unclassified",
+          "evidenceStatus": "current-state-proven"
         }
-      ]
+      ],
+      "consolidation": null,
+      "performanceBasisStatus": "company-scope"
     },
     {
       "registry": "008",
       "name": "Monetra.eth",
       "status": "ok",
       "tvlUsd": 100.438446,
-      "sourceCapitalGeneratedAt": "2026-09-08T12:04:24.335Z",
+      "standaloneTvlUsd": null,
+      "nestedCompanyCapitalUsd": null,
+      "networkContributionUsd": 100.514465,
+      "sourceCapitalGeneratedAt": "2026-09-10T02:59:26.588Z",
       "positions": [
         {
           "assetId": null,
           "units": null,
-          "priceUsd": 0,
+          "priceUsd": null,
           "valueUsd": 10.03322,
           "status": "ok",
           "valuationSource": "canonical-capital-state",
           "canonicalSourceKind": "stable-index",
-          "primaryCapitalLayer": "stable-reserve"
+          "primaryCapitalLayer": "stable-reserve",
+          "evidenceStatus": null
         },
         {
           "assetId": null,
           "units": null,
-          "priceUsd": 0,
+          "priceUsd": null,
           "valueUsd": 10.018503,
           "status": "ok",
           "valuationSource": "canonical-capital-state",
           "canonicalSourceKind": "stable-index",
-          "primaryCapitalLayer": "stable-reserve"
+          "primaryCapitalLayer": "stable-reserve",
+          "evidenceStatus": null
         },
         {
           "assetId": null,
           "units": null,
-          "priceUsd": 0,
+          "priceUsd": null,
           "valueUsd": 10.092733,
           "status": "ok",
           "valuationSource": "canonical-capital-state",
           "canonicalSourceKind": "stable-index",
-          "primaryCapitalLayer": "stable-reserve"
+          "primaryCapitalLayer": "stable-reserve",
+          "evidenceStatus": null
         },
         {
           "assetId": null,
           "units": null,
-          "priceUsd": 0,
+          "priceUsd": null,
           "valueUsd": 10.081624,
           "status": "ok",
           "valuationSource": "canonical-capital-state",
           "canonicalSourceKind": "stable-index",
-          "primaryCapitalLayer": "stable-reserve"
+          "primaryCapitalLayer": "stable-reserve",
+          "evidenceStatus": null
         },
         {
           "assetId": null,
           "units": null,
-          "priceUsd": 0,
+          "priceUsd": null,
           "valueUsd": 10.049235,
           "status": "ok",
           "valuationSource": "canonical-capital-state",
           "canonicalSourceKind": "stable-index",
-          "primaryCapitalLayer": "stable-reserve"
+          "primaryCapitalLayer": "stable-reserve",
+          "evidenceStatus": null
         },
         {
           "assetId": null,
           "units": null,
-          "priceUsd": 0,
+          "priceUsd": null,
           "valueUsd": 10.057735,
           "status": "ok",
           "valuationSource": "canonical-capital-state",
           "canonicalSourceKind": "stable-index",
-          "primaryCapitalLayer": "stable-reserve"
+          "primaryCapitalLayer": "stable-reserve",
+          "evidenceStatus": null
         },
         {
           "assetId": null,
           "units": null,
-          "priceUsd": 0,
+          "priceUsd": null,
           "valueUsd": 10.062311,
           "status": "ok",
           "valuationSource": "canonical-capital-state",
           "canonicalSourceKind": "stable-index",
-          "primaryCapitalLayer": "stable-reserve"
+          "primaryCapitalLayer": "stable-reserve",
+          "evidenceStatus": null
         },
         {
           "assetId": null,
           "units": null,
-          "priceUsd": 0,
+          "priceUsd": null,
           "valueUsd": 10.051165,
           "status": "ok",
           "valuationSource": "canonical-capital-state",
           "canonicalSourceKind": "stable-index",
-          "primaryCapitalLayer": "stable-reserve"
+          "primaryCapitalLayer": "stable-reserve",
+          "evidenceStatus": null
         },
         {
           "assetId": null,
           "units": null,
-          "priceUsd": 0,
+          "priceUsd": null,
           "valueUsd": 9.991304,
           "status": "ok",
           "valuationSource": "canonical-capital-state",
           "canonicalSourceKind": "stable-index",
-          "primaryCapitalLayer": "stable-reserve"
+          "primaryCapitalLayer": "stable-reserve",
+          "evidenceStatus": null
         },
         {
           "assetId": null,
           "units": null,
-          "priceUsd": 0,
+          "priceUsd": null,
           "valueUsd": 10.000616,
           "status": "ok",
           "valuationSource": "canonical-capital-state",
           "canonicalSourceKind": "stable-index",
-          "primaryCapitalLayer": "stable-reserve"
+          "primaryCapitalLayer": "stable-reserve",
+          "evidenceStatus": null
         }
-      ]
+      ],
+      "consolidation": null,
+      "performanceBasisStatus": "company-scope"
     },
     {
       "registry": "009",
       "name": "1milliondollar.eth",
       "status": "ok",
-      "tvlUsd": 6702.600121,
-      "sourceCapitalGeneratedAt": "2026-09-08T12:04:24.335Z",
+      "tvlUsd": 6696.691282,
+      "standaloneTvlUsd": null,
+      "nestedCompanyCapitalUsd": null,
+      "networkContributionUsd": 6696.691281,
+      "sourceCapitalGeneratedAt": "2026-09-10T02:59:26.588Z",
       "positions": [
         {
           "assetId": "bitcoin",
           "units": 0.07264572,
-          "priceUsd": 78755.742,
-          "valueUsd": 5721.267582,
+          "priceUsd": 78661.81,
+          "valueUsd": 5714.443824,
           "status": "ok",
           "valuationSource": "canonical-capital-state",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "foundation"
+          "primaryCapitalLayer": "foundation",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "ethereum",
           "units": 0.167026130614,
-          "priceUsd": 2489.82,
-          "valueUsd": 415.865001,
+          "priceUsd": 2495.2977,
+          "valueUsd": 416.77992,
           "status": "ok",
           "valuationSource": "canonical-capital-state",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "foundation"
+          "primaryCapitalLayer": "foundation",
+          "evidenceStatus": "mixed-verified-native-plus-owner-observed"
         },
         {
           "assetId": "aerodrome-finance",
@@ -856,7 +1055,8 @@
           "status": "ok",
           "valuationSource": "shared-market-data",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "convex-crv",
@@ -866,7 +1066,8 @@
           "status": "ok",
           "valuationSource": "shared-market-data",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "yield-basis",
@@ -876,158 +1077,180 @@
           "status": "ok",
           "valuationSource": "shared-market-data",
           "canonicalSourceKind": "general-balance-sheet",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         }
-      ]
+      ],
+      "consolidation": null,
+      "performanceBasisStatus": "company-scope"
     },
     {
       "registry": "010",
       "name": "Cypher",
       "status": "ok",
-      "tvlUsd": 5888.55,
-      "sourceCapitalGeneratedAt": "2026-09-08T12:04:24.335Z",
+      "tvlUsd": 5917.51,
+      "standaloneTvlUsd": null,
+      "nestedCompanyCapitalUsd": null,
+      "networkContributionUsd": 5917.51,
+      "sourceCapitalGeneratedAt": "2026-09-10T02:59:26.588Z",
       "positions": [
         {
           "assetId": "bitcoin",
-          "units": 0.00991238,
-          "priceUsd": 78344,
-          "valueUsd": 776.58,
+          "units": 0.00991239,
+          "priceUsd": 79506,
+          "valueUsd": 788.09,
           "status": "ok",
           "valuationSource": "canonical-capital-state",
           "canonicalSourceKind": "company-010-production-state",
-          "primaryCapitalLayer": "foundation"
+          "primaryCapitalLayer": "foundation",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "ethereum",
-          "units": 1.039712989854,
-          "priceUsd": 2475.53,
-          "valueUsd": 2573.84,
+          "units": 1.039763069616,
+          "priceUsd": 2511.14,
+          "valueUsd": 2610.99,
           "status": "ok",
           "valuationSource": "canonical-capital-state",
           "canonicalSourceKind": "company-010-production-state",
-          "primaryCapitalLayer": "foundation"
+          "primaryCapitalLayer": "foundation",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "hyperliquid",
           "units": 0.012600843312,
-          "priceUsd": 84.02,
-          "valueUsd": 1.06,
+          "priceUsd": 86.53,
+          "valueUsd": 1.09,
           "status": "ok",
           "valuationSource": "canonical-capital-state",
           "canonicalSourceKind": "company-010-production-state",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "convex-finance",
           "units": 213.604082243098,
-          "priceUsd": 2.24,
-          "valueUsd": 478.47,
+          "priceUsd": 2.21,
+          "valueUsd": 472.07,
           "status": "ok",
           "valuationSource": "canonical-capital-state",
           "canonicalSourceKind": "company-010-production-state",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "curve-dao-token",
           "units": 14.92796281957,
-          "priceUsd": 0.363682,
-          "valueUsd": 5.43,
+          "priceUsd": 0.362951,
+          "valueUsd": 5.42,
           "status": "ok",
           "valuationSource": "canonical-capital-state",
           "canonicalSourceKind": "company-010-production-state",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "aerodrome-finance",
           "units": 760.013782227711,
-          "priceUsd": 0.629569,
-          "valueUsd": 478.48,
+          "priceUsd": 0.607921,
+          "valueUsd": 462.03,
           "status": "ok",
           "valuationSource": "canonical-capital-state",
           "canonicalSourceKind": "company-010-production-state",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "lido-dao",
           "units": 399.713058281361,
-          "priceUsd": 0.389477,
-          "valueUsd": 155.68,
+          "priceUsd": 0.389661,
+          "valueUsd": 155.75,
           "status": "ok",
           "valuationSource": "canonical-capital-state",
           "canonicalSourceKind": "company-010-production-state",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "velodrome-finance",
           "units": 3329.368603727376,
-          "priceUsd": 0.027442,
-          "valueUsd": 91.37,
+          "priceUsd": 0.026366,
+          "valueUsd": 87.78,
           "status": "ok",
           "valuationSource": "canonical-capital-state",
           "canonicalSourceKind": "company-010-production-state",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "hyperlend-0xfd739d4e423301ce9385c1fb8850539d657c296d",
-          "units": 3.745119919115,
-          "priceUsd": 86.336015,
-          "valueUsd": 323.34,
+          "units": 3.745119919149,
+          "priceUsd": 88.523258,
+          "valueUsd": 331.53,
           "status": "ok",
           "valuationSource": "canonical-capital-state",
           "canonicalSourceKind": "company-010-production-state",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "gmx-gm-eth-usdc",
           "units": 94.298312843587,
-          "priceUsd": 1.920309,
-          "valueUsd": 181.08,
+          "priceUsd": 1.931991,
+          "valueUsd": 182.18,
           "status": "ok",
           "valuationSource": "canonical-capital-state",
           "canonicalSourceKind": "company-010-production-state",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "gmx-gm-btc-usdc",
           "units": 80.00372431636,
-          "priceUsd": 2.488457,
-          "valueUsd": 199.09,
+          "priceUsd": 2.512705,
+          "valueUsd": 201.03,
           "status": "ok",
           "valuationSource": "canonical-capital-state",
           "canonicalSourceKind": "company-010-production-state",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "concentrator-asdcrv",
           "units": 544.000360055913,
-          "priceUsd": 0.388846,
-          "valueUsd": 211.53,
+          "priceUsd": 0.381508,
+          "valueUsd": 207.54,
           "status": "ok",
           "valuationSource": "canonical-capital-state",
           "canonicalSourceKind": "company-010-production-state",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "convex-staked-cvxcrv",
           "units": 972.505684662325,
-          "priceUsd": 0.154033,
-          "valueUsd": 149.8,
+          "priceUsd": 0.152272,
+          "valueUsd": 148.09,
           "status": "ok",
           "valuationSource": "canonical-capital-state",
           "canonicalSourceKind": "company-010-production-state",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         },
         {
           "assetId": "projectx-whype-usdc",
           "units": 1,
-          "priceUsd": 262.798733,
-          "valueUsd": 262.8,
+          "priceUsd": 263.917985,
+          "valueUsd": 263.92,
           "status": "ok",
           "valuationSource": "canonical-capital-state",
           "canonicalSourceKind": "company-010-production-state",
-          "primaryCapitalLayer": "productive-dividend"
+          "primaryCapitalLayer": "productive-dividend",
+          "evidenceStatus": "established"
         }
-      ]
+      ],
+      "consolidation": null,
+      "performanceBasisStatus": "company-scope"
     }
   ],
   "authority": {

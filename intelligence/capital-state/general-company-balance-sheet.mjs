@@ -10,7 +10,7 @@ const UI_BOOK_SOURCE = 'companies/index.html';
 const YIELD_RING_STATE = 'companies/yieldring-canonical-state.json';
 const COMPANY001_OWNER_SNAPSHOT = 'companies/company-001-owner-capital-snapshot.json';
 
-const EXPECTED_UI_BLOB_SHA = 'def951f9432bfe600f29bdbbf1c26dbd58655b0d';
+const EXPECTED_UI_BLOB_SHA = '8988d7c2142e990c158add5bcf1a34f104eeaa82';
 
 const BOOK = {
   'defitea.eth': [
@@ -20,7 +20,7 @@ const BOOK = {
     { id:'pendle', qty:500, layer:'productive-dividend' },
     { id:'fxn-token', qty:64.81, layer:'productive-dividend' },
     { id:'yield-basis', qty:10846, layer:'productive-dividend' },
-    { id:'frax-share', qty:4224, layer:'productive-dividend' },
+    { id:'frax-share', qty:4456, layer:'productive-dividend', evidenceStatus:'owner-provided-current', note:'Current Defitea veFRAX principal; acquisition basis for added 232 remains UNKNOWN/partial and is not required for current-capital valuation.' },
     { id:'velodrome-finance', qty:12180, layer:'productive-dividend' },
     { id:'venice-token', qty:50, layer:'productive-dividend' },
     { id:'liquity', qty:1488, layer:'productive-dividend' },

@@ -475,17 +475,19 @@
 
             /* Staggered animation delays */
             .nav-links.active > :nth-child(1) { animation-delay: 0.05s; }  /* Home */
-            .nav-links.active > :nth-child(2) { animation-delay: 0.1s; }   /* separator */
-            .nav-links.active > :nth-child(3) { animation-delay: 0.15s; }  /* How It Works */
-            .nav-links.active > :nth-child(4) { animation-delay: 0.18s; }  /* FAQ */
-            .nav-links.active > :nth-child(5) { animation-delay: 0.23s; }  /* separator */
-            .nav-links.active > :nth-child(6) { animation-delay: 0.28s; }  /* Substantia */
-            .nav-links.active > :nth-child(7) { animation-delay: 0.31s; }  /* Defitea */
-            .nav-links.active > :nth-child(8) { animation-delay: 0.34s; }  /* Singul */
-            .nav-links.active > :nth-child(9) { animation-delay: 0.37s; }  /* Monetra */
-            .nav-links.active > :nth-child(10) { animation-delay: 0.40s; } /* Fructus */
-            .nav-links.active > :nth-child(11) { animation-delay: 0.45s; } /* separator */
-            .nav-links.active > :nth-child(12) { animation-delay: 0.50s; } /* Blog */
+            .nav-links.active > :nth-child(2) { animation-delay: 0.09s; }  /* separator */
+            .nav-links.active > :nth-child(3) { animation-delay: 0.13s; }  /* How It Works */
+            .nav-links.active > :nth-child(4) { animation-delay: 0.17s; }  /* FAQ */
+            .nav-links.active > :nth-child(5) { animation-delay: 0.21s; }  /* Companies */
+            .nav-links.active > :nth-child(6) { animation-delay: 0.25s; }  /* Real Estate */
+            .nav-links.active > :nth-child(7) { animation-delay: 0.29s; }  /* separator */
+            .nav-links.active > :nth-child(8) { animation-delay: 0.33s; }  /* Substantia */
+            .nav-links.active > :nth-child(9) { animation-delay: 0.36s; }  /* Defitea */
+            .nav-links.active > :nth-child(10) { animation-delay: 0.39s; } /* Singul */
+            .nav-links.active > :nth-child(11) { animation-delay: 0.42s; } /* Monetra */
+            .nav-links.active > :nth-child(12) { animation-delay: 0.45s; } /* Fructus */
+            .nav-links.active > :nth-child(13) { animation-delay: 0.48s; } /* separator */
+            .nav-links.active > :nth-child(14) { animation-delay: 0.51s; } /* Blog */
 
             @keyframes slideInLink {
                 to {
@@ -3172,6 +3174,8 @@
                 
                 <a href="/for-investors" class="nav-link">How It Works</a>
                 <a href="/faq" class="nav-link">FAQ</a>
+                <a href="/companies" class="nav-link">Companies</a>
+                <a href="/realty" class="nav-link">Real Estate</a>
                 
                 <div class="nav-separator"></div>
                 
@@ -4774,6 +4778,9 @@
                         <a href="/companies" class="footer-link">
                             <span>Companies</span>
                         </a>
+                        <a href="/realty" class="footer-link">
+                            <span>Real Estate</span>
+                        </a>
                         <a href="/manifesto" class="footer-link">
                             <span>Manifesto</span>
                         </a>
@@ -4810,8 +4817,8 @@
                 <div class="footer-bottom">
                     <p class="footer-copyright">
                         <span class="copyright-year">© 2026 The Holding</span>
-                        <span class="copyright-line1">Personal onchain companies · Self-custodied</span>
-                        <span class="copyright-line2">Not financial advice</span>
+                        <span class="copyright-line1">Funds · Index · Onchain Companies · Real Estate</span>
+                        <span class="copyright-line2">Self-custodied capital architecture · Not financial advice</span>
                     </p>
                     <div class="footer-social">
                         <a href="https://x.com/defitea_" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Twitter">
@@ -6122,6 +6129,20 @@
             m.addEventListener('mouseenter', ensureVisible);
             m.addEventListener('focusin', ensureVisible);
         }
+    })();
+    </script>
+    <script data-th-fund-pyramid-links>
+    (function(){
+      var routes={substantia:'/substantia',defitea:'/defitea',singul:'/singul',fructus:'/fructus',monetra:'/monetra'};
+      function bind(){
+        document.querySelectorAll('.pyramid-item[data-allocation], .mobile-fund-card[data-allocation]').forEach(function(el){
+          var key=el.getAttribute('data-allocation'); var href=routes[key]; if(!href||el.dataset.thFundLinked==='1')return;
+          el.dataset.thFundLinked='1'; el.setAttribute('role','link'); el.setAttribute('tabindex','0'); el.style.cursor='pointer';
+          el.addEventListener('click',function(e){if(e.target.closest('a,button'))return; location.href=href;});
+          el.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();location.href=href;}});
+        });
+      }
+      if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
     })();
     </script>
 </body>
