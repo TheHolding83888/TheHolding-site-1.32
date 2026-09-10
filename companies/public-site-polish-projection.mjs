@@ -30,9 +30,9 @@ home=replaceOnce(home,
 `                        <a href="/companies" class="footer-link">\n                            <span>Companies</span>\n                        </a>\n                        <a href="/realty" class="footer-link">\n                            <span>Real Estate</span>\n                        </a>\n                        <a href="/manifesto" class="footer-link">`,
 'homepage footer Realty link');
 home=replaceOnce(home,
-`                        <span class="copyright-line1">Personal onchain companies · Self-custodied</span>\n                        <span class="copyright-line2">Not financial advice</span>`,
 `                        <span class="copyright-line1">Funds · Index · Onchain Companies · Real Estate</span>\n                        <span class="copyright-line2">Self-custodied capital architecture · Not financial advice</span>`,
-'homepage whole-Holding footer description');
+`                        <span class="copyright-line1">Capital Architecture · Onchain Companies · Real Estate</span>\n                        <span class="copyright-line2">Self-custodied capital architecture · Not financial advice</span>`,
+'homepage Capital Architecture footer description');
 
 const pyramidScript=`    <script data-th-fund-pyramid-links>\n    (function(){\n      var routes={substantia:'/substantia',defitea:'/defitea',singul:'/singul',fructus:'/fructus',monetra:'/monetra'};\n      function bind(){\n        document.querySelectorAll('.pyramid-item[data-allocation], .mobile-fund-card[data-allocation]').forEach(function(el){\n          var key=el.getAttribute('data-allocation'); var href=routes[key]; if(!href||el.dataset.thFundLinked==='1')return;\n          el.dataset.thFundLinked='1'; el.setAttribute('role','link'); el.setAttribute('tabindex','0'); el.style.cursor='pointer';\n          el.addEventListener('click',function(e){if(e.target.closest('a,button'))return; location.href=href;});\n          el.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();location.href=href;}});\n        });\n      }\n      if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();\n    })();\n    </script>\n`;
 if(!home.includes('data-th-fund-pyramid-links')){
@@ -41,7 +41,7 @@ if(!home.includes('data-th-fund-pyramid-links')){
   if(count!==1)fail(`homepage pyramid script insertion: expected one </body>, found ${count}`);
   home=home.replace(close,pyramidScript+close);
 }
-for(const token of ['href="/companies"','href="/realty"',"substantia:'/substantia'","defitea:'/defitea'","singul:'/singul'","fructus:'/fructus'","monetra:'/monetra'","Funds · Index · Onchain Companies · Real Estate"]){
+for(const token of ['href="/companies"','href="/realty"',"substantia:'/substantia'","defitea:'/defitea'","singul:'/singul'","fructus:'/fructus'","monetra:'/monetra'","Capital Architecture · Onchain Companies · Real Estate"]){
   if(!home.includes(token))fail(`homepage public polish missing: ${token}`);
 }
 fs.writeFileSync(HOME,home);
