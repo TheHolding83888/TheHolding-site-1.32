@@ -9,7 +9,7 @@ function replaceOnce(text,oldText,newText,label){
   if(text.includes(newText))return text;
   const count=text.split(oldText).length-1;
   if(count!==1)fail(`${label}: expected exactly one old projection, found ${count}`);
-  return text.replace(oldText,newText);
+  return text.replace(oldText,() => newText);
 }
 
 let page001=fs.readFileSync(COMPANY001_PAGE,'utf8');

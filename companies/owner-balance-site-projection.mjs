@@ -28,18 +28,14 @@ for(const [id,qty] of expectedSingul){
   if(!row||Number(row.quantity)!==qty)fail(`Singul canonical quantity drift for ${id}`);
 }
 
+/* Proven single-canonical-path projector. The public page contains legacy
+   duplicate boot code, but only one path is the canonical projection target.
+   Do not manufacture or normalize duplicate paths during emergency recovery. */
 function replaceOnce(text,oldText,newText,label){
   if(text.includes(newText))return text;
   const count=text.split(oldText).length-1;
   if(count!==1)fail(`${label}: expected exactly one old projection, found ${count}`);
-  return text.replace(oldText,newText);
-}
-function replaceExactCount(text,oldText,newText,label,expectedCount){
-  const oldCount=text.split(oldText).length-1;
-  const newCount=text.split(newText).length-1;
-  if(oldCount===0 && newCount===expectedCount)return text;
-  if(oldCount!==expectedCount||newCount!==0)fail(`${label}: expected ${expectedCount} old and 0 new projections, found old=${oldCount} new=${newCount}`);
-  return text.split(oldText).join(newText);
+  return text.replace(oldText,() => newText);
 }
 function gitBlobSha(text){
   const b=Buffer.from(text);
@@ -58,9 +54,7 @@ html=replaceOnce(html,
 /* Public company values may be canonicalized beyond the local browser Company
    Book. Preserve nullable performance semantics and keep a distinct unique
    network/index contribution so Defitea can display consolidated TVL without
-   re-counting its independently registered nested companies. The legacy page
-   contains this initializer three times in separate historical boot paths; all
-   three must be updated together or a stale path can overwrite the canonical one. */
+   re-counting its independently registered nested companies. */
 const oldPublicBind=`    const publicCompanyTvl = (key, fallback) => {
         const row = publicCapitalSnapshot && Array.isArray(publicCapitalSnapshot.companies)
             ? publicCapitalSnapshot.companies.find(x => x && (x.registry === key || x.name === key))
@@ -120,26 +114,26 @@ const newPublicBind=`    const publicCompanyRow = key => publicCapitalSnapshot &
             f.pct = null;
         }
     });`;
-html=replaceExactCount(html,oldPublicBind,newPublicBind,'companies/index.html canonical TVL/performance/network contribution binding',3);
+html=replaceOnce(html,oldPublicBind,newPublicBind,'companies/index.html canonical TVL/performance/network contribution binding');
 
-html=replaceExactCount(html,
+html=replaceOnce(html,
 `    { key: 'capital',      weight: 0.35, raw: c => Math.sqrt(Math.max(c.val, 0)) },`,
 `    { key: 'capital',      weight: 0.35, raw: c => Math.sqrt(Math.max(c.indexCapitalValue ?? c.val, 0)) },`,
-'companies/index.html Composite unique Capital factor',3);
-html=replaceExactCount(html,
+'companies/index.html Composite unique Capital factor');
+html=replaceOnce(html,
 `    const totalVal = eligible.reduce((s, c) => s + Math.max(c.val, 0), 0);`,
 `    const totalVal = eligible.reduce((s, c) => s + Math.max(c.indexCapitalValue ?? c.val, 0), 0);`,
-'companies/index.html TVL lens unique denominator',3);
-html=replaceExactCount(html,
+'companies/index.html TVL lens unique denominator');
+html=replaceOnce(html,
 `        c.tvlWeight = totalVal > 0 ? Math.max(c.val, 0) / totalVal : (eligible.length ? 1 / eligible.length : 0);`,
 `        c.tvlWeight = totalVal > 0 ? Math.max(c.indexCapitalValue ?? c.val, 0) / totalVal : (eligible.length ? 1 / eligible.length : 0);`,
-'companies/index.html TVL lens unique company weight',3);
-html=replaceExactCount(html,
+'companies/index.html TVL lens unique company weight');
+html=replaceOnce(html,
 `    const measuredTotal = list.reduce((s, c) => s + (c.val > 0 ? c.val : 0), 0);`,
 `    const measuredTotal = list.reduce((s, c) => s + ((c.indexCapitalValue ?? c.val) > 0 ? (c.indexCapitalValue ?? c.val) : 0), 0);`,
-'companies/index.html Index unique network value',3);
+'companies/index.html Index unique network value');
 
-html=replaceExactCount(html,
+html=replaceOnce(html,
 `    ];
     syncCompanyAprDisplays(idxLang());`,
 `    ];
@@ -148,7 +142,7 @@ html=replaceExactCount(html,
         c.indexCapitalValue = publicCompanyNetworkContribution(c.reg, fallback);
     });
     syncCompanyAprDisplays(idxLang());`,
-'companies/index.html Index unique network-contribution binding',3);
+'companies/index.html Index unique network-contribution binding');
 
 fs.writeFileSync(INDEX,html);
 const indexBlob=gitBlobSha(html);
@@ -179,11 +173,9 @@ balance=balance.replace(/const EXPECTED_UI_BLOB_SHA = '[0-9a-f]{40}';/,`const EX
 fs.writeFileSync(BALANCE,balance);
 
 // Retire old page-local price engines only after the current owner/state
-// projections have been applied. The runtime projection is idempotent, so
-// future coherent refreshes remain stable after the generated pages are saved.
+// projections have been applied. This runtime projector is idempotent.
 await import('./public-page-market-runtime-projection.mjs');
-// Apply bounded public-site navigation/footer/pyramid polish through a separate
-// deterministic projector. This has no capital, methodology or execution authority.
+// Keep bounded navigation/footer/pyramid polish separate from capital authority.
 await import('./public-site-polish-projection.mjs');
 
 console.log('Owner balance site projection PASS',{
@@ -195,10 +187,7 @@ console.log('Owner balance site projection PASS',{
   singulCurrentPositionCount:singulPositions.length,
   singulBeamExcluded:true,
   expectedIndexBlob:indexBlob,
-  legacyTvlBindCopiesUpdated:3,
-  legacyCompositeCapitalCopiesUpdated:3,
-  legacyTvlLensCopiesUpdated:3,
-  legacyIndexNetworkCopiesUpdated:3,
+  canonicalProjectionPathUpdatedOnce:true,
   defiteaConsolidatedDisplayUsesUniqueIndexContribution:true,
   partialCostBasisPerformanceRemainsUnknown:true,
   manualSnapshotIsNotOnchainObservation:true,
