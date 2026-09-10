@@ -229,7 +229,7 @@ jobs:
           if(Number(m.authority?.onchainSelectedAssetCount)+Number(m.authority?.coingeckoSelectedAssetCount)!==26)throw new Error('Canonical Market Data selected-lane coverage drift');
           if(!Number.isFinite(Number(pub.funds?.defitea?.tvlUsd))||!Number.isFinite(Number(pub.funds?.defitea?.referenceAprPct)))throw new Error('Defitea Public Capital incomplete');
           if(pub.sourceState?.marketDataGeneratedAt!==m.generatedAt)throw new Error('Public Capital is not bound to the current Market Data generation');
-          if(!home.includes('href="/companies"')||!home.includes('href="/realty"')||!home.includes('data-th-fund-pyramid-links')||!home.includes('Funds · Index · Onchain Companies · Real Estate'))throw new Error('Homepage public polish projection missing');
+          if(!home.includes('href="/companies"')||!home.includes('href="/realty"')||!home.includes('data-th-fund-pyramid-links')||!home.includes('Capital Architecture · Onchain Companies · Real Estate'))throw new Error('Homepage public polish projection missing');
           if(company001Page.includes('api.coingecko.com')||!company001Page.includes('canonical onchain-first snapshot'))throw new Error('Company #001 canonical page runtime missing');
           if(singulPage.includes('/intelligence/market-data/simple-price')||singulPage.includes('setInterval(updateTVL, 300000)')||!singulPage.includes('public-capital-client.js'))throw new Error('Singul canonical page runtime missing');
           if(!yieldReportsPage.includes('The Holding · Defitea mobile cash-flow polish')||!yieldReportsPage.includes('.defitea-reports .report-table td:nth-child(2) { display: table-cell; }'))throw new Error('Defitea mobile Yield Reports cash-flow visibility missing');
