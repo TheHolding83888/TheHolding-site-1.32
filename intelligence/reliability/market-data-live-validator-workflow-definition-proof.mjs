@@ -4,9 +4,11 @@ const onchainPath = '.github/workflows/validate-onchain-market-data.yml';
 const finalPath = '.github/workflows/validate-market-data-final-onchain-cohort.yml';
 const helperPath = 'intelligence/reliability/market-data-live-evidence-proof.mjs';
 const proofPath = 'intelligence/reliability/market-data-live-validator-workflow-definition-proof.mjs';
+const healthProofPath = 'intelligence/market-data/market-data-materializer-health-boundary-validation.mjs';
 const onchain = fs.readFileSync(onchainPath, 'utf8');
 const finalCohort = fs.readFileSync(finalPath, 'utf8');
 const helper = fs.readFileSync(helperPath, 'utf8');
+const healthProof = fs.readFileSync(healthProofPath, 'utf8');
 
 function requireCondition(ok, message) {
   if (!ok) throw new Error(message);
@@ -26,7 +28,9 @@ for (const [name, workflow] of [['onchain', onchain], ['final-cohort', finalCoho
 requireCondition(onchain.includes(`node ${helperPath} all27`), 'Onchain validator must invoke bounded all27 live evidence proof');
 requireCondition(finalCohort.includes(`node ${helperPath} final9`), 'Final cohort validator must invoke bounded final9 live evidence proof');
 requireCondition(onchain.includes('Prove 30-minute observation and per-asset materialization contract'), 'Onchain validator lost scheduler/materialization contract proof');
-requireCondition(finalCohort.includes('Validate deterministic authority contracts'), 'Final cohort validator lost deterministic authority proof');
+requireCondition(finalCohort.includes('Validate deterministic authority and failback contracts'), 'Final cohort validator lost deterministic authority/failback proof');
+requireCondition(finalCohort.includes(`node ${healthProofPath}`), 'Final cohort validator must execute deterministic materializer health-boundary proof');
+requireCondition(finalCohort.includes(`- '${healthProofPath}'`), 'Final cohort validator health-boundary proof is not a PR dependency');
 
 requireCondition(helper.includes("const allowedModes = new Set(['all27', 'final9'])"), 'Live helper mode boundary drift');
 requireCondition(helper.includes('const attempts = 3;'), 'Live helper bounded three-attempt contract missing');
@@ -48,23 +52,24 @@ requireCondition(helper.includes("healthy.set(row.assetId"), 'All27 evidence acc
 requireCondition(helper.includes("healthy.set(id"), 'Final9 evidence accumulation missing');
 requireCondition(helper.includes('routes without a fresh healthy live observation'), 'Per-route missing-evidence fail-closed guard missing');
 requireCondition(helper.includes('unavailableAcceptedAsHealthy: false'), 'Unavailable-as-healthy prohibition missing');
-requireCondition(helper.includes("MARKET_DATA_FORCE_COINGECKO_FAILBACK: 'false'"), 'Final9 production materializer execution missing');
-requireCondition(helper.includes('onchain + coingecko !== 26'), 'Production 26-asset authority accounting guard missing');
-requireCondition(helper.includes('unknown !== 0'), 'Production UNKNOWN fail-closed guard missing');
-requireCondition(helper.includes("!['onchain', 'coingecko-lane'].includes(lane)"), 'Production selected-lane allowlist missing');
-requireCondition(helper.includes("lane === 'coingecko-lane' && row.authority?.fallbackUsed !== true"), 'CoinGecko must remain explicit per-asset failback only');
-requireCondition(helper.includes("market.authority?.executionAuthority !== 'none'"), 'Production executionAuthority boundary missing');
-requireCondition(helper.includes('market.authority?.capitalExecution !== false'), 'Production capitalExecution boundary missing');
-requireCondition(helper.includes('market.authority?.policyMutationAuthority !== false'), 'Production policyMutationAuthority boundary missing');
+requireCondition(helper.includes('productionAuthorityMaterializationPerformedHere: false'), 'Live helper must explicitly remain observation-only');
+requireCondition(!helper.includes('market-data-authority-materializer.mjs'), 'Live helper must not materialize authority from a multi-attempt evidence window');
+requireCondition(!helper.includes('market-data.json'), 'Live helper must not inspect or mutate canonical production Market Data');
 requireCondition(!helper.includes('unavailableAcceptedAsHealthy: true'), 'Unavailable routes may not be accepted as healthy');
+
+requireCondition(healthProof.includes("selectedLane !== 'coingecko-lane'"), 'Deterministic health proof must require CoinGecko failback on real dependency failure');
+requireCondition(healthProof.includes('failedSelection.fallbackUsed !== true'), 'Deterministic health proof must require explicit fallbackUsed=true');
+requireCondition(healthProof.includes('materializerDelegatesRuntimeHealthToSelector: true'), 'Materializer health delegation proof missing');
+requireCondition(healthProof.includes("executionAuthority: 'none'"), 'Deterministic health proof execution authority boundary missing');
 
 console.log('Market Data live validator workflow definitions PASS', {
   transportWindowAttempts: 3,
   all27EveryRoutePersonallyObservedHealthy: true,
   final9EveryRouteStrictlyObservedHealthy: true,
   simultaneousAllRouteAvailabilityRequired: false,
-  productionPerAssetFailbackValidated: true,
-  unknownAllowed: false,
+  liveEvidenceAndProductionMaterializationSeparated: true,
+  deterministicPerAssetFailbackValidated: true,
+  unavailableAcceptedAsHealthy: false,
   semanticRouteGuardsRelaxed: false,
   executionAuthority: 'none'
 });
