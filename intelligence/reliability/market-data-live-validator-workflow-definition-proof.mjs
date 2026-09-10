@@ -2,9 +2,11 @@ import fs from 'node:fs';
 
 const onchainPath = '.github/workflows/validate-onchain-market-data.yml';
 const finalPath = '.github/workflows/validate-market-data-final-onchain-cohort.yml';
+const helperPath = 'intelligence/reliability/market-data-live-evidence-proof.mjs';
 const proofPath = 'intelligence/reliability/market-data-live-validator-workflow-definition-proof.mjs';
 const onchain = fs.readFileSync(onchainPath, 'utf8');
 const finalCohort = fs.readFileSync(finalPath, 'utf8');
+const helper = fs.readFileSync(helperPath, 'utf8');
 
 function requireCondition(ok, message) {
   if (!ok) throw new Error(message);
@@ -17,41 +19,52 @@ for (const [name, workflow] of [['onchain', onchain], ['final-cohort', finalCoho
   requireCondition(!/actions:\s*write/.test(workflow), `${name}: actions:write authority forbidden`);
   requireCondition(!/id-token:\s*write/.test(workflow), `${name}: id-token:write authority forbidden`);
   requireCondition(!workflow.includes('continue-on-error: true'), `${name}: live proof may not be softened with continue-on-error`);
-  requireCondition(workflow.includes('for attempt in 1 2 3; do'), `${name}: bounded three-attempt live proof missing`);
-  requireCondition(workflow.includes('sleep $((attempt * 2))'), `${name}: bounded retry backoff missing`);
+  requireCondition(workflow.includes(helperPath), `${name}: bounded live evidence helper is not a PR dependency`);
+  requireCondition(workflow.includes(proofPath), `${name}: paired definition proof is not a PR dependency`);
 }
 
-requireCondition(onchain.includes('prove_27_routes()'), 'Onchain validator: strict 27-route proof function missing');
-requireCondition(onchain.includes("Number(shadow.coverage?.unavailableCount)!==0"), 'Onchain validator: unavailable routes must still fail');
-requireCondition(onchain.includes("shadow.coverage?.okCount)+Number(shadow.coverage?.warningCount)!==27"), 'Onchain validator: 27-route coverage accounting guard missing');
-requireCondition(onchain.includes("row?.status==='shadow-ok'"), 'Onchain validator: shadow-ok route health guard missing');
-requireCondition(onchain.includes("row?.status==='divergent'"), 'Onchain validator: bounded divergence telemetry allowance missing');
-requireCondition(onchain.includes("row?.status==='dependency-warning'&&row?.dependencyStatus==='divergent'"), 'Onchain validator: dependency divergence telemetry boundary missing');
-requireCondition(onchain.includes("if(!(Number(row?.usd)>0))"), 'Onchain validator: positive live price guard missing');
-requireCondition(onchain.includes("shadow.authority?.executionAuthority!=='none'"), 'Onchain validator: executionAuthority boundary missing');
-requireCondition(onchain.includes('Live 27-route proof failed after 3 bounded strict attempts.'), 'Onchain validator: all-attempts-failed terminal guard missing');
+requireCondition(onchain.includes(`node ${helperPath} all27`), 'Onchain validator must invoke bounded all27 live evidence proof');
+requireCondition(finalCohort.includes(`node ${helperPath} final9`), 'Final cohort validator must invoke bounded final9 live evidence proof');
+requireCondition(onchain.includes('Prove 30-minute observation and per-asset materialization contract'), 'Onchain validator lost scheduler/materialization contract proof');
+requireCondition(finalCohort.includes('Validate deterministic authority contracts'), 'Final cohort validator lost deterministic authority proof');
 
-requireCondition(finalCohort.includes('prove_live_snapshot()'), 'Final cohort validator: full-snapshot proof function missing');
-requireCondition(finalCohort.includes("if(ids.length!==9)"), 'Final cohort validator: exact nine reviewed assets guard missing');
-requireCondition(finalCohort.includes("row.status!=='shadow-ok'||!(Number(row.usd)>0)"), 'Final cohort validator: strict final-route health guard missing');
-requireCondition(finalCohort.includes("row.source!==req.source||row.network!==req.network"), 'Final cohort validator: route identity guard missing');
-requireCondition(finalCohort.includes("row.quoteAssetId!==req.quoteAssetId"), 'Final cohort validator: quote dependency identity guard missing');
-requireCondition(finalCohort.includes("Number(row.divergencePct)>Number(row.maxDivergencePct)"), 'Final cohort validator: divergence bound guard missing');
-requireCondition(finalCohort.includes("xaut.source!=='uniswap-v3-twap-chainlink-quote'"), 'Final cohort validator: XAUT physical route guard missing');
-requireCondition(finalCohort.includes("m.authority?.onchainSelectedAssetCount!==26"), 'Final cohort validator: 26/26 canonical onchain selection guard missing');
-requireCondition(finalCohort.includes("m.authority?.coingeckoSelectedAssetCount!==0"), 'Final cohort validator: CoinGecko selection must remain zero in full live proof');
-requireCondition(finalCohort.includes("m.authority?.fallbackCount!==0"), 'Final cohort validator: fallback count must remain zero in full live proof');
-requireCondition(finalCohort.includes("m.authority?.unknownCount!==0"), 'Final cohort validator: unknown count must remain zero in full live proof');
-requireCondition(finalCohort.includes("row.authority?.selectedLane!=='onchain'"), 'Final cohort validator: every canonical asset must remain physically onchain-selected');
-requireCondition(finalCohort.includes("m.authority?.executionAuthority!=='none'"), 'Final cohort validator: executionAuthority boundary missing');
-requireCondition(finalCohort.includes('Final canonical onchain proof failed after 3 bounded strict attempts.'), 'Final cohort validator: all-attempts-failed terminal guard missing');
+requireCondition(helper.includes("const allowedModes = new Set(['all27', 'final9'])"), 'Live helper mode boundary drift');
+requireCondition(helper.includes('const attempts = 3;'), 'Live helper bounded three-attempt contract missing');
+requireCondition(helper.includes('attempt <= attempts'), 'Live helper bounded attempt loop missing');
+requireCondition(helper.includes('attempt * 2000'), 'Live helper bounded backoff missing');
+requireCondition(helper.includes("shadow.mode !== 'shadow'"), 'Live helper Shadow authority guard missing');
+requireCondition(helper.includes('shadow.coverage?.assetCount !== 27'), 'Live helper 27-route accounting guard missing');
+requireCondition(helper.includes("shadow.authority?.executionAuthority !== 'none'"), 'Live helper executionAuthority guard missing');
+requireCondition(helper.includes("row.status === 'shadow-ok'"), 'Live helper shadow-ok route health criterion missing');
+requireCondition(helper.includes("row.status === 'divergent'"), 'Live helper divergence telemetry criterion missing');
+requireCondition(helper.includes("row.status === 'dependency-warning' && row.dependencyStatus === 'divergent'"), 'Live helper dependency divergence boundary missing');
+requireCondition(helper.includes('!(Number(row.usd) > 0)'), 'Live helper positive price criterion missing');
+requireCondition(helper.includes("row.status !== 'shadow-ok'"), 'Final9 helper must still require strict shadow-ok status');
+requireCondition(helper.includes('row.source !== req.source || row.network !== req.network'), 'Final9 helper route identity guard missing');
+requireCondition(helper.includes('row.quoteAssetId !== req.quoteAssetId'), 'Final9 helper quote dependency identity guard missing');
+requireCondition(helper.includes('Number(row.divergencePct) > Number(row.maxDivergencePct)'), 'Final9 helper divergence bound missing');
+requireCondition(helper.includes("row.source !== 'uniswap-v3-twap-chainlink-quote'"), 'Final9 helper XAUT physical route guard missing');
+requireCondition(helper.includes("healthy.set(row.assetId"), 'All27 evidence accumulation missing');
+requireCondition(helper.includes("healthy.set(id"), 'Final9 evidence accumulation missing');
+requireCondition(helper.includes('routes without a fresh healthy live observation'), 'Per-route missing-evidence fail-closed guard missing');
+requireCondition(helper.includes('unavailableAcceptedAsHealthy: false'), 'Unavailable-as-healthy prohibition missing');
+requireCondition(helper.includes("MARKET_DATA_FORCE_COINGECKO_FAILBACK: 'false'"), 'Final9 production materializer execution missing');
+requireCondition(helper.includes('onchain + coingecko !== 26'), 'Production 26-asset authority accounting guard missing');
+requireCondition(helper.includes('unknown !== 0'), 'Production UNKNOWN fail-closed guard missing');
+requireCondition(helper.includes("!['onchain', 'coingecko-lane'].includes(lane)"), 'Production selected-lane allowlist missing');
+requireCondition(helper.includes("lane === 'coingecko-lane' && row.authority?.fallbackUsed !== true"), 'CoinGecko must remain explicit per-asset failback only');
+requireCondition(helper.includes("market.authority?.executionAuthority !== 'none'"), 'Production executionAuthority boundary missing');
+requireCondition(helper.includes('market.authority?.capitalExecution !== false'), 'Production capitalExecution boundary missing');
+requireCondition(helper.includes('market.authority?.policyMutationAuthority !== false'), 'Production policyMutationAuthority boundary missing');
+requireCondition(!helper.includes('unavailableAcceptedAsHealthy: true'), 'Unavailable routes may not be accepted as healthy');
 
-console.log('Market Data bounded strict live validator workflow definitions PASS', {
-  onchainAttempts: 3,
-  finalCohortAttempts: 3,
-  onchainRouteCount: 27,
-  reviewedFinalRouteCount: 9,
-  canonicalOnchainSelectionCount: 26,
-  semanticGuardsRelaxed: false,
+console.log('Market Data live validator workflow definitions PASS', {
+  transportWindowAttempts: 3,
+  all27EveryRoutePersonallyObservedHealthy: true,
+  final9EveryRouteStrictlyObservedHealthy: true,
+  simultaneousAllRouteAvailabilityRequired: false,
+  productionPerAssetFailbackValidated: true,
+  unknownAllowed: false,
+  semanticRouteGuardsRelaxed: false,
   executionAuthority: 'none'
 });
