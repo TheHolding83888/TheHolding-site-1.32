@@ -25,6 +25,19 @@ const oldDelays=`            .nav-links.active > :nth-child(1) { animation-delay
 const newDelays=`            .nav-links.active > :nth-child(1) { animation-delay: 0.05s; }  /* Home */\n            .nav-links.active > :nth-child(2) { animation-delay: 0.09s; }  /* separator */\n            .nav-links.active > :nth-child(3) { animation-delay: 0.13s; }  /* How It Works */\n            .nav-links.active > :nth-child(4) { animation-delay: 0.17s; }  /* FAQ */\n            .nav-links.active > :nth-child(5) { animation-delay: 0.21s; }  /* Companies */\n            .nav-links.active > :nth-child(6) { animation-delay: 0.25s; }  /* Real Estate */\n            .nav-links.active > :nth-child(7) { animation-delay: 0.29s; }  /* separator */\n            .nav-links.active > :nth-child(8) { animation-delay: 0.33s; }  /* Substantia */\n            .nav-links.active > :nth-child(9) { animation-delay: 0.36s; }  /* Defitea */\n            .nav-links.active > :nth-child(10) { animation-delay: 0.39s; } /* Singul */\n            .nav-links.active > :nth-child(11) { animation-delay: 0.42s; } /* Monetra */\n            .nav-links.active > :nth-child(12) { animation-delay: 0.45s; } /* Fructus */\n            .nav-links.active > :nth-child(13) { animation-delay: 0.48s; } /* separator */\n            .nav-links.active > :nth-child(14) { animation-delay: 0.51s; } /* Blog */`;
 home=replaceOnce(home,oldDelays,newDelays,'homepage mobile navigation sequence');
 
+// Keep the expanded mobile navigation usable on short viewports. The menu is a
+// full-screen scroll container rather than a vertically centered stack, so the
+// last links remain reachable without changing desktop navigation behavior.
+const mobileMenuMarker='/* The Holding · viewport-safe mobile navigation */';
+if(!home.includes(mobileMenuMarker)){
+  const mobileMenuCss=`\n        ${mobileMenuMarker}\n        @media (max-width: 768px) {\n            .nav-links {\n                justify-content: flex-start;\n                overflow-y: auto;\n                overscroll-behavior-y: contain;\n                -webkit-overflow-scrolling: touch;\n                padding-top: max(5.5rem, calc(env(safe-area-inset-top) + 4.5rem));\n                padding-bottom: max(1.5rem, calc(env(safe-area-inset-bottom) + 1rem));\n                scrollbar-width: thin;\n            }\n            .nav-link {\n                flex: 0 0 auto;\n                min-height: 44px;\n                padding-top: 0.68rem;\n                padding-bottom: 0.68rem;\n                line-height: 1.3;\n            }\n            .nav-separator {\n                flex: 0 0 auto;\n                margin-top: 0.45rem;\n                margin-bottom: 0.45rem;\n            }\n            .nav-close {\n                position: fixed;\n                top: max(1rem, calc(env(safe-area-inset-top) + 0.5rem));\n                right: max(1rem, calc(env(safe-area-inset-right) + 1rem));\n            }\n        }\n        @media (max-width: 768px) and (max-height: 700px) {\n            .nav-links {\n                padding-top: max(4.75rem, calc(env(safe-area-inset-top) + 4rem));\n                padding-bottom: max(1rem, calc(env(safe-area-inset-bottom) + 0.75rem));\n            }\n            .nav-link {\n                font-size: 1.08rem;\n                min-height: 44px;\n                padding-top: 0.5rem;\n                padding-bottom: 0.5rem;\n            }\n            .nav-separator {\n                margin-top: 0.3rem;\n                margin-bottom: 0.3rem;\n            }\n        }\n`;
+  const heroMarker='        /* Hero Section */';
+  const count=home.split(heroMarker).length-1;
+  if(count!==1)fail(`homepage mobile navigation CSS insertion: expected one Hero marker, found ${count}`);
+  home=home.replace(heroMarker,mobileMenuCss+heroMarker);
+}
+if(!home.includes(mobileMenuMarker)||!home.includes('overscroll-behavior-y: contain;')||!home.includes('min-height: 44px;'))fail('Homepage viewport-safe mobile navigation contract missing');
+
 home=replaceOnce(home,
 `                        <a href="/companies" class="footer-link">\n                            <span>Companies</span>\n                        </a>\n                        <a href="/manifesto" class="footer-link">`,
 `                        <a href="/companies" class="footer-link">\n                            <span>Companies</span>\n                        </a>\n                        <a href="/realty" class="footer-link">\n                            <span>Real Estate</span>\n                        </a>\n                        <a href="/manifesto" class="footer-link">`,
@@ -41,7 +54,7 @@ if(!home.includes('data-th-fund-pyramid-links')){
   if(count!==1)fail(`homepage pyramid script insertion: expected one </body>, found ${count}`);
   home=home.replace(close,pyramidScript+close);
 }
-for(const token of ['href="/companies"','href="/realty"',"substantia:'/substantia'","defitea:'/defitea'","singul:'/singul'","fructus:'/fructus'","monetra:'/monetra'","Capital Architecture · Onchain Companies · Real Estate"]){
+for(const token of ['href="/companies"','href="/realty"',"substantia:'/substantia'","defitea:'/defitea'","singul:'/singul'","fructus:'/fructus'","monetra:'/monetra'","Capital Architecture · Onchain Companies · Real Estate",mobileMenuMarker]){
   if(!home.includes(token))fail(`homepage public polish missing: ${token}`);
 }
 fs.writeFileSync(HOME,home);
@@ -67,6 +80,7 @@ console.log('Public site polish projection PASS',{
   homepageRealtyLink:true,
   footerWholeHoldingDescription:true,
   fiveFundPyramidRoutes:true,
+  mobileNavigationViewportSafe:true,
   defiteaMobileCashFlowVisible:true,
   desktopReportsUntouched:true,
   executionAuthority:'none'
