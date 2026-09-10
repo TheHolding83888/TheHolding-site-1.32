@@ -38,8 +38,10 @@ jobs:
           node --check intelligence/market-data/market-data-authority-materializer.mjs
           node --check intelligence/market-data/market-data-materializer-health-boundary-validation.mjs
           node --check intelligence/reliability/market-data-live-evidence-proof.mjs
+          node --check intelligence/reliability/market-data-live-validator-workflow-definition-proof.mjs
           node intelligence/market-data/market-data-authority-selector-validation.mjs
           node intelligence/market-data/market-data-materializer-health-boundary-validation.mjs
+          node intelligence/reliability/market-data-live-validator-workflow-definition-proof.mjs
 
       - name: Audit final-route live health across bounded public RPC attempts
         run: |
