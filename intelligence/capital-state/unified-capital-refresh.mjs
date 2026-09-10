@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Unified Capital Refresh v0.2.5
+ * The Holding · Unified Capital Refresh v0.2.6
  *
  * Orchestration only. Reuses existing canonical projectors/collectors/builders:
  * Defitea projection -> YieldRing projection -> owner-balance site projection
@@ -8,10 +8,11 @@
  * -> VoteMarket income channels -> General Balance -> Company #007 current-state
  * downstream binding -> Capital State.
  *
- * v0.2.5 admits provenance-explicit owner-confirmed current-balance bridges for
- * Company #001 BTC, YieldRing FRAX, and Singul DIEM without upgrading those
- * observations into independently reproduced onchain evidence. UNKNOWN cost
- * basis remains UNKNOWN/partial rather than becoming zero.
+ * v0.2.6 keeps the provenance-explicit owner-confirmed current-balance bridges
+ * aligned with their canonical state, including both Company #001 BTC lots,
+ * YieldRing FRAX, and Singul DIEM without upgrading those observations into
+ * independently reproduced onchain evidence. UNKNOWN cost basis remains
+ * UNKNOWN/partial rather than becoming zero.
  *
  * No execution authority. No wallet action. No factual-income methodology mutation.
  */
@@ -86,8 +87,10 @@ assert(canonical?.capital?.frax?.costBasisStatus === 'partial' && canonical?.cap
 assert(Number(canonical?.capital?.frax?.knownCostBasisUsd) === 210.24, 'YieldRing FRAX known cost-basis floor drift');
 
 const owner001Btc=(company001Owner?.positions||[]).find(x=>x.assetId==='bitcoin');
+const owner001Lots=owner001Btc?.lots||[];
 assert(company001Owner?.authority?.executionAuthority==='none', 'Company #001 owner snapshot authority drift');
-assert(Number(owner001Btc?.quantity)===0.00126 && Number(owner001Btc?.entryPriceUsd)===77875 && Number(owner001Btc?.costBasisUsd)===98.1225, 'Company #001 owner BTC snapshot drift');
+assert(Number(owner001Btc?.quantity)===0.00205 && Number(owner001Btc?.entryPriceUsd)===78038.78048780488 && Number(owner001Btc?.costBasisUsd)===159.9795, 'Company #001 owner BTC snapshot drift');
+assert(owner001Lots.length===2 && Number(owner001Lots[1]?.quantity)===0.00079 && Number(owner001Lots[1]?.acquisitionPriceUsd)===78300 && Number(owner001Lots[1]?.costBasisUsd)===61.857, 'Company #001 BTC lot history drift');
 const singulDiem=(fundRegistry?.funds?.singul?.positions||[]).find(x=>x.assetId==='diem');
 assert(Number(singulDiem?.quantity)===0.07 && Number(singulDiem?.fixedTotalValueUsd)===150 && singulDiem?.evidenceStatus==='owner-provided-current', 'Singul DIEM owner snapshot drift');
 
@@ -170,8 +173,8 @@ assert(String(yg?.epistemicNote||'').includes('UNKNOWN'), 'YieldRing partial cos
 
 const c001g=(general?.companies||[]).find(x=>x.registry==='001');
 const c001gb=(c001g?.positions||[]).find(x=>x.assetId==='bitcoin');
-assert(c001g && Number(c001gb?.units)===0.00126 && c001gb?.evidenceStatus==='owner-provided-current', 'Company #001 BTC owner snapshot missing from General Balance');
-assert(Number(c001gb?.entryPriceUsd)===77875 && Number(c001gb?.costBasisUsd)===98.1225, 'Company #001 BTC entry/cost provenance missing from General Balance');
+assert(c001g && Number(c001gb?.units)===0.00205 && c001gb?.evidenceStatus==='owner-provided-current', 'Company #001 BTC owner snapshot missing from General Balance');
+assert(Math.abs(Number(c001gb?.entryPriceUsd)-Number(owner001Btc.entryPriceUsd))<1e-6 && Math.abs(Number(c001gb?.costBasisUsd)-Number(owner001Btc.costBasisUsd))<1e-6, 'Company #001 BTC entry/cost provenance missing from General Balance');
 
 const rookGeneral=(general?.companies||[]).find(x=>x.registry==='007');
 const discoveryBook=new Map((company007Discovery?.proposedCompanyBook||[]).map(x=>[x.symbol,x]));
@@ -197,7 +200,7 @@ const ycf = (yc?.measuredPositions || []).find(x => x.assetId === 'frax-share');
 assert(yc && Number(ycb?.units) === 0.0334 && Number(yca?.units) === 678 && Number(ycf?.units)===1032, 'YieldRing quantities missing from Capital State');
 const c001c=(capital?.companies||[]).find(x=>x.registry==='001');
 const c001cb=(c001c?.measuredPositions||[]).find(x=>x.assetId==='bitcoin');
-assert(c001c && Number(c001cb?.units)===0.00126, 'Company #001 BTC owner snapshot missing from Capital State');
+assert(c001c && Number(c001cb?.units)===0.00205, 'Company #001 BTC owner snapshot missing from Capital State');
 const rc=(capital?.companies||[]).find(x=>x.registry==='007');
 const rcb=(rc?.measuredPositions||[]).find(x=>x.assetId==='bitcoin');
 const rce=(rc?.measuredPositions||[]).find(x=>x.assetId==='ethereum');
@@ -208,10 +211,10 @@ assert(companiesHtml.includes('qty: 2632') && companiesHtml.includes('qty: 64.81
 assert(companiesHtml.includes('costBasisUsd: 1121.3') && companiesHtml.includes('qty: 192, entry: 0.42'), 'Defitea AERO cost-basis projection drift');
 assert(companiesHtml.includes('costBasisUsd: 983.2386') && companiesHtml.includes('qty: 5, entry: 16.5'), 'Defitea FXN cost-basis projection drift');
 assert(companiesHtml.includes("qty: 1032, entry: null, costBasisUsd: null, costBasisStatus: 'partial'") && companiesHtml.includes('knownCostBasisUsd: 210.24'), 'YieldRing FRAX partial-cost Registry projection drift');
-assert(companiesHtml.includes("id: 'bitcoin', qty: 0.00126, entry: 77875, costBasisUsd: 98.1225") && companiesHtml.includes("'05081966.eth':  ['Bitcoin','Curve','Aero','Frax']"), 'Company #001 BTC Registry projection drift');
+assert(companiesHtml.includes("id: 'bitcoin', qty: 0.00205, entry: 78038.78048780488, costBasisUsd: 159.9795") && companiesHtml.includes("'05081966.eth':  ['Bitcoin','Curve','Aero','Frax']"), 'Company #001 BTC Registry projection drift');
 assert(companiesHtml.includes("const finiteUiNumber = v => v !== null") && companiesHtml.includes("costBasisStatus: costComplete ? 'complete' : 'partial'"), 'Registry partial cost-basis null guard missing');
 assert(yieldRingPage.includes('qty: 0.0334') && yieldRingPage.includes('qty: 678') && yieldRingPage.includes('qty: 1032'), 'YieldRing dedicated page projection drift');
-assert(company001Page.includes("id: 'bitcoin', name: 'BTC', proto: 'Bitcoin reserve', qty: 0.00126") && company001Page.includes('BTC is held as reserve capital'), 'Company #001 dedicated page projection drift');
+assert(company001Page.includes("id: 'bitcoin', name: 'BTC', proto: 'Bitcoin reserve', qty: 0.00205") && company001Page.includes('BTC is held as reserve capital'), 'Company #001 dedicated page projection drift');
 assert(singulPage.includes('const FIXED_DIEM_VALUE = 150') && singulPage.includes('owner-confirmed current snapshot'), 'Singul DIEM dedicated page projection drift');
 
 console.log('\nUNIFIED CAPITAL REFRESH PASS', {
