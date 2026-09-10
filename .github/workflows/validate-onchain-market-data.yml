@@ -119,7 +119,7 @@ jobs:
           console.log('30-minute onchain heartbeat + strict daily CoinGecko reuse + per-asset failback contract PASS',{canonicalOnchainPrimary:26,cycleWideFailback:false,nonDailyCoinGeckoFetch:false,publicCapitalWrittenHere:false,executionAuthority:'none'});
           NODE
 
-      - name: Live-prove all 27 observation routes across bounded public RPC attempts
+      - name: Audit all 27 live routes across bounded public RPC attempts
         run: |
           set -euo pipefail
           node intelligence/reliability/market-data-live-evidence-proof.mjs all27
