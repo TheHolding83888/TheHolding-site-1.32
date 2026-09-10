@@ -9,7 +9,7 @@ function requireCondition(ok, message) {
   if (!ok) throw new Error(message);
 }
 
-requireCondition(contract.version === '0.3-market-data-to-unified-capital-handoff', 'Market Data scheduler contract version drift');
+requireCondition(contract.version === '0.4-validated-snapshot-publish', 'Market Data scheduler contract version drift');
 requireCondition(contract.status === 'production', 'Market Data scheduler contract must be production');
 requireCondition(contract.cron === '7,37 * * * *', 'Primary Shared Market Data cron drift');
 requireCondition(contract.recoveryCron === '22,52 * * * *', 'Shared Market Data recovery cron drift');
@@ -23,9 +23,15 @@ requireCondition(contract.deliveryResilience?.secondWriter === false, 'A second 
 requireCondition(contract.deliveryResilience?.externalWatchdogDispatch === false, 'External watchdog dispatch must remain disabled');
 requireCondition(contract.deliveryResilience?.scheduledAttemptSkipsWhenSnapshotFresh === true, 'Fresh scheduled-attempt no-op boundary missing');
 requireCondition(contract.deliveryResilience?.nonScheduleEventsAlwaysAdmitted === true, 'Push/manual recovery admission boundary missing');
+requireCondition(contract.deliveryResilience?.validatedSnapshotPreservedAcrossUnrelatedRebase === true, 'Validated snapshot preservation boundary missing');
+requireCondition(contract.deliveryResilience?.liveRpcRecomputeAfterUnrelatedRebase === false, 'Unrelated rebase must not cause a second live RPC recompute');
+requireCondition(contract.deliveryResilience?.candidateSupersededWhenMarketInputsChangeAfterValidation === true, 'Post-validation Market Data input-change supersession boundary missing');
+requireCondition(contract.deliveryResilience?.publishRetryRevalidatesMainInputBoundary === true, 'Publish retry must re-check the main input boundary');
 requireCondition(contract.epistemics?.naturalScheduleProofRequired === true, 'Natural schedule proof boundary missing');
 requireCondition(contract.epistemics?.pushOrManualRunDoesNotProveSchedulerHealth === true, 'Scheduler epistemic boundary missing');
 requireCondition(contract.epistemics?.schedulerAttemptDoesNotEqualMaterialization === true, 'Attempt/materialization epistemic boundary missing');
+requireCondition(contract.epistemics?.validatedSnapshotDoesNotBecomeInvalidBecauseUnrelatedRepositoryFilesChanged === true, 'Validated snapshot epistemic boundary missing');
+requireCondition(contract.epistemics?.marketInputChangeInvalidatesPreChangeCandidate === true, 'Market-input invalidation epistemic boundary missing');
 requireCondition(contract.epistemics?.unknownIsNotZero === true, 'UNKNOWN != 0 boundary missing');
 requireCondition(contract.epistemics?.priceSnapshotMustPrecedeCapitalValuation === true, 'price-before-capital epistemic boundary missing');
 requireCondition(contract.epistemics?.generationParityDeterminesMarketDataHandoff === true, 'generation-parity handoff epistemic boundary missing');
@@ -64,6 +70,33 @@ requireCondition(!workflow.includes('node intelligence/market-data/public-capita
 requireCondition(!workflow.includes('intelligence/market-data/public-capital-state.json'), 'Market Data workflow must not own or stage Public Capital State');
 requireCondition(!workflow.includes("- 'intelligence/capital-state/capital-state.json'"), 'reverse Capital State -> Market Data wake reintroduced');
 
+const publishStart = workflow.indexOf('- name: Publish canonical Market Data state safely');
+requireCondition(publishStart >= 0, 'Market Data publish step body missing');
+const publish = workflow.slice(publishStart);
+requireCondition(publish.includes('validated_base="$(git rev-parse HEAD)"'), 'Validated base SHA is not captured before publish');
+requireCondition(publish.includes('market_input_paths=('), 'Market Data retry input boundary missing');
+requireCondition(publish.includes('changed_inputs=('), 'Market Data retry changed-input detection missing');
+requireCondition(publish.includes('git diff --name-only "$validated_base" "$latest_main" -- "${market_input_paths[@]}"'), 'Market Data retry does not compare validated base with latest main input boundary');
+requireCondition(publish.includes('Validated Market Data candidate superseded by newer Market Data inputs.'), 'Input-change supersession path missing');
+requireCondition(publish.includes('Unrelated main churn detected; preserving validated Market Data snapshot through rebase.'), 'Validated snapshot unrelated-rebase preservation path missing');
+requireCondition(publish.includes('git rebase origin/main'), 'Bounded rebase retry missing');
+const rebaseIndex = publish.indexOf('git rebase origin/main');
+const afterRebase = publish.slice(rebaseIndex);
+requireCondition(!afterRebase.includes("MARKET_DATA_DAILY_REFRESH='false' node intelligence/market-data/market-data-engine.mjs"), 'Market Data engine must not rerun after unrelated rebase');
+requireCondition(!afterRebase.includes('node intelligence/market-data/onchain-price-resolver.mjs'), 'Live onchain resolver must not rerun after unrelated rebase');
+requireCondition(!afterRebase.includes('node intelligence/market-data/market-data-authority-materializer.mjs'), 'Authority materializer must not rerun after unrelated rebase');
+for (const token of [
+  'intelligence/market-data/market-data-engine.mjs',
+  'intelligence/market-data/market-data-coingecko.json',
+  'intelligence/market-data/market-data-authority-policy.json',
+  'intelligence/market-data/market-data-authority-materializer.mjs',
+  'intelligence/market-data/onchain-price-source-registry.json',
+  'intelligence/market-data/onchain-price-source-registry-extensions.json',
+  'intelligence/market-data/onchain-price-resolver.mjs',
+  'intelligence/market-data/market-data-scheduler-contract.json',
+  '.github/workflows/market-data-refresh.yml'
+]) requireCondition(publish.includes(`'${token}'`), `Market Data retry input boundary missing: ${token}`);
+
 const dueGuard = "if: steps.cadence.outputs.due == 'true'";
 const dueGuardCount = workflow.split(dueGuard).length - 1;
 requireCondition(dueGuardCount === 8, `Expected 8 admitted refresh guards, found ${dueGuardCount}`);
@@ -101,6 +134,9 @@ console.log('Shared Market Data resilient scheduler workflow definition PASS', {
   downstreamMaterializationOwner: contract.separationOfConcerns.publicCapitalMaterializationOwner,
   workflowCompletionHandoff:true,
   generationParityAdmission:true,
+  validatedSnapshotPreservedAcrossUnrelatedRebase:true,
+  liveRpcRecomputeAfterUnrelatedRebase:false,
+  marketInputChangeSupersedesCandidate:true,
   reverseCapitalStateWake:false,
   publicCapitalWrittenHere:false,
   singleCanonicalWriter: contract.deliveryResilience.singleCanonicalWriter,

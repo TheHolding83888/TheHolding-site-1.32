@@ -204,22 +204,50 @@ jobs:
           set -euo pipefail
           git config user.name "The Holding Market Data Orchestrator"
           git config user.email "market-data-orchestrator@theholding.ai"
+
+          validated_base="$(git rev-parse HEAD)"
+          market_input_paths=(
+            'intelligence/market-data/market-price-registry.json'
+            'intelligence/market-data/fund-capital-registry.json'
+            'intelligence/market-data/market-data-engine.mjs'
+            'intelligence/market-data/market-data-coingecko.json'
+            'intelligence/market-data/market-data-authority-policy.json'
+            'intelligence/market-data/market-data-authority-selector.mjs'
+            'intelligence/market-data/market-data-authority-materializer.mjs'
+            'intelligence/market-data/coingecko-fetch-shim.mjs'
+            'intelligence/market-data/onchain-price-source-registry.json'
+            'intelligence/market-data/onchain-price-source-registry-extensions.json'
+            'intelligence/market-data/onchain-price-resolver.mjs'
+            'intelligence/market-data/market-data-scheduler-contract.json'
+            'intelligence/reliability/market-data-scheduler-workflow-definition-proof.mjs'
+            '.github/workflows/market-data-refresh.yml'
+          )
+
           git add intelligence/market-data/market-data-coingecko.json intelligence/market-data/market-data.json intelligence/market-data/onchain-price-shadow.json
           if git diff --cached --quiet; then echo 'Canonical Market Data state already current.'; exit 0; fi
           git commit -m "market data: refresh canonical price snapshot"
+
           for attempt in 1 2 3; do
             git fetch origin main
-            if ! git rebase origin/main; then git rebase --abort || true; echo 'Market Data writer conflict; refusing to guess.'; exit 1; fi
-            MARKET_DATA_DAILY_REFRESH='false' node intelligence/market-data/market-data-engine.mjs
-            set +e
-            node intelligence/market-data/onchain-price-resolver.mjs
-            shadow_code=$?
-            set -e
-            if [ ! -f intelligence/market-data/onchain-price-shadow.json ]; then echo 'Onchain resolver produced no state during retry.' >&2; exit 1; fi
-            if [ "$shadow_code" -ne 0 ]; then echo '::warning::Retry Shadow remains partial; preserving per-asset failback.'; fi
-            MARKET_DATA_FORCE_COINGECKO_FAILBACK='false' node intelligence/market-data/market-data-authority-materializer.mjs
-            git add intelligence/market-data/market-data-coingecko.json intelligence/market-data/market-data.json intelligence/market-data/onchain-price-shadow.json
-            git commit --amend --no-edit
+            latest_main="$(git rev-parse origin/main)"
+            changed_inputs=()
+            mapfile -t changed_inputs < <(git diff --name-only "$validated_base" "$latest_main" -- "${market_input_paths[@]}")
+
+            if [ "${#changed_inputs[@]}" -gt 0 ]; then
+              echo 'Validated Market Data candidate superseded by newer Market Data inputs.'
+              printf 'Changed input: %s\n' "${changed_inputs[@]}"
+              exit 0
+            fi
+
+            if [ "$latest_main" != "$validated_base" ]; then
+              echo 'Unrelated main churn detected; preserving validated Market Data snapshot through rebase.'
+            fi
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo 'Market Data writer conflict; refusing to guess.'
+              exit 1
+            fi
+
             if git push origin HEAD:main; then exit 0; fi
             sleep $((attempt * 2))
           done

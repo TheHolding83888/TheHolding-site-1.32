@@ -1,5 +1,5 @@
 {
-  "version": "0.3-market-data-to-unified-capital-handoff",
+  "version": "0.4-validated-snapshot-publish",
   "status": "production",
   "workflow": "The Holding Market Data · Shared Refresh",
   "cron": "7,37 * * * *",
@@ -8,7 +8,7 @@
   "schedulerAttemptCadenceMinutes": 15,
   "scheduledRefreshAdmissionAgeMinutes": 25,
   "timezone": "UTC",
-  "purpose": "Single source of truth for resilient Shared Market Data wakes. This workflow owns canonical price observation/materialization only; its successful completion is observed by Unified Capital, whose lightweight admission compares Market Data generation with the generation already materialized in Public Capital. Only a new price generation proceeds to General Balance, Capital State and Public Capital recomputation.",
+  "purpose": "Single source of truth for resilient Shared Market Data wakes. This workflow owns canonical price observation/materialization only; a snapshot that has passed canonical validation remains immutable through unrelated main-branch churn. Its successful completion is observed by Unified Capital, whose lightweight admission compares Market Data generation with the generation already materialized in Public Capital.",
   "canonicalOutputs": [
     "intelligence/market-data/market-data.json",
     "intelligence/market-data/onchain-price-shadow.json"
@@ -25,7 +25,11 @@
     "secondWriter": false,
     "externalWatchdogDispatch": false,
     "scheduledAttemptSkipsWhenSnapshotFresh": true,
-    "nonScheduleEventsAlwaysAdmitted": true
+    "nonScheduleEventsAlwaysAdmitted": true,
+    "validatedSnapshotPreservedAcrossUnrelatedRebase": true,
+    "liveRpcRecomputeAfterUnrelatedRebase": false,
+    "candidateSupersededWhenMarketInputsChangeAfterValidation": true,
+    "publishRetryRevalidatesMainInputBoundary": true
   },
   "separationOfConcerns": {
     "dailyCoinGeckoBaselineIsSeparate": true,
@@ -42,6 +46,8 @@
     "naturalScheduleProofRequired": true,
     "pushOrManualRunDoesNotProveSchedulerHealth": true,
     "schedulerAttemptDoesNotEqualMaterialization": true,
+    "validatedSnapshotDoesNotBecomeInvalidBecauseUnrelatedRepositoryFilesChanged": true,
+    "marketInputChangeInvalidatesPreChangeCandidate": true,
     "unknownIsNotZero": true,
     "partialIsNotTotal": true,
     "oneEconomicPositionOnce": true,
