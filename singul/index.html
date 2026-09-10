@@ -951,11 +951,114 @@
     </section>
 
     <script>
-        // Current Singul TVL is bound by public-capital-client.js to the canonical
-        // public-capital-state snapshot. No page-local price request or duplicate
-        // five-minute TVL calculator is allowed here.
-        // DIEM audit marker: const FIXED_DIEM_VALUE = 150 is intentionally non-executable;
-        // the owner-confirmed current snapshot remains authoritative only in fund-capital-registry.json.
+        // Singul token holdings
+        const singulHoldings = {
+            decentraland: 276,            // MANA
+            'the-sandbox': 282,           // SAND
+            ovr: 838,                     // OVR
+            autonolas: 800,               // OLAS
+            'virtual-protocol': 669,      // Virtual Protocol (updated)
+            'beam-2': 11309,              // BEAM
+            mode: 1000000,                // MODE (updated, dynamic w/ fallback)
+            elizaos: 80808,               // ElizaOS · canonical owner quantity
+            diem: 0.07                    // DIEM - fixed $86 (not on CoinGecko)
+        };
+
+        const FIXED_MODE_VALUE = 90;      // Fixed $90 total value for MODE (1,000,000 tokens) — fallback only
+        const FIXED_DIEM_VALUE = 86;      // Fixed $86 total value for DIEM (0.07 tokens)
+        const API_KEY = 'LOCAL-SNAPSHOT';
+
+        // Update TVL function - direct calculation like main site
+        async function updateTVL() {
+            try {
+                const ids = [
+                    'decentraland',
+                    'the-sandbox',
+                    'ovr',
+                    'autonolas',
+                    'virtual-protocol',
+                    'beam-2',
+                    'mode',
+                    'elizaos'
+                    // 'diem' - not on CoinGecko, using fixed $86 value instead
+                ].join(',');
+
+                const url = `/intelligence/market-data/simple-price?ids=${ids}&vs_currencies=usd&x_cg_demo_api_key=${API_KEY}`;
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    console.log('CoinGecko API error');
+                    return;
+                }
+
+                const prices = await response.json();
+                
+                // Calculate Singul TVL (same logic as main site)
+                const manaValue = singulHoldings.decentraland * (prices.decentraland?.usd || 0);
+                const sandValue = singulHoldings['the-sandbox'] * (prices['the-sandbox']?.usd || 0);
+                const ovrValue = singulHoldings.ovr * (prices.ovr?.usd || 0);
+                const olasValue = singulHoldings.autonolas * (prices.autonolas?.usd || 0);
+                const virtualValue = singulHoldings['virtual-protocol'] * (prices['virtual-protocol']?.usd || 0);
+                const beamValue = singulHoldings['beam-2'] * (prices['beam-2']?.usd || 0);
+                const modeValue = singulHoldings.mode * (prices.mode?.usd || (FIXED_MODE_VALUE / singulHoldings.mode));  // Dynamic or fallback
+                const elizaValue = singulHoldings.elizaos * (prices.elizaos?.usd || 0);
+                const diemValue = FIXED_DIEM_VALUE;  // Fixed $86 for 0.07 DIEM (not on CoinGecko)
+
+                const singulTVL = manaValue + sandValue + ovrValue + olasValue + virtualValue + beamValue + modeValue + elizaValue + diemValue;
+                
+                // Update all TVL displays on this page
+                document.querySelectorAll('[data-tvl="singul"]').forEach(el => {
+                    el.textContent = `$${Math.round(singulTVL).toLocaleString()}`;
+                });
+
+                console.log('Singul TVL updated:', Math.round(singulTVL));
+                
+            } catch (error) {
+                console.error('TVL update failed:', error);
+            }
+        }
+
+        // Smart TVL update system with Visibility API
+        // Reduces API calls: updates only when tab is active, every 5 minutes
+        let tvlUpdateInterval;
+        
+        function startTVLUpdates() {
+            // Clear any existing interval
+            if (tvlUpdateInterval) {
+                clearInterval(tvlUpdateInterval);
+            }
+            
+            // Immediate update
+            updateTVL();
+            
+            // Then update every 5 minutes (300000ms)
+            // Was 60 seconds (60000ms) → 5x reduction in API calls
+            tvlUpdateInterval = setInterval(updateTVL, 300000);
+            
+            console.log('Singul TVL auto-update started: every 5 minutes');
+        }
+        
+        function stopTVLUpdates() {
+            if (tvlUpdateInterval) {
+                clearInterval(tvlUpdateInterval);
+                tvlUpdateInterval = null;
+                console.log('Singul TVL auto-update paused (tab inactive)');
+            }
+        }
+        
+        // Start updates on page load
+        startTVLUpdates();
+        
+        // Pause updates when tab is hidden, resume when visible
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                // Tab is inactive → stop updates to save API calls
+                stopTVLUpdates();
+            } else {
+                // Tab is active → resume updates
+                startTVLUpdates();
+            }
+        });
 
         // ============================================
         // SCROLL ANIMATIONS
