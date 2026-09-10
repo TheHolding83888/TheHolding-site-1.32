@@ -230,6 +230,7 @@ jobs:
           for attempt in 1 2 3; do
             git fetch origin main
             latest_main="$(git rev-parse origin/main)"
+            changed_inputs=()
             mapfile -t changed_inputs < <(git diff --name-only "$validated_base" "$latest_main" -- "${market_input_paths[@]}")
 
             if [ "${#changed_inputs[@]}" -gt 0 ]; then
