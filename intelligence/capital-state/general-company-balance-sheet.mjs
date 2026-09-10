@@ -90,26 +90,50 @@ function canonicalMarketPrices() {
   const prices=market?.prices||{};
   const deterministicFixture=market?.validationFixture===true;
   const productionCanonical=market?.semantics?.perAssetAuthoritySelectionApplied===true;
-  if(Object.keys(prices).length!==26)throw new Error('general balance sheet requires complete 26-asset Market Data');
+  const entries=Object.entries(prices);
+  if(entries.length!==26)throw new Error('general balance sheet requires complete 26-asset Market Data');
   if(!productionCanonical&&!deterministicFixture)throw new Error('general balance sheet requires canonical Market Data or explicit deterministic CI fixture');
   if(deterministicFixture&&Number(market?.semantics?.externalRequestCount)!==0)throw new Error('deterministic Market Data fixture must be zero-request');
-  if(productionCanonical&&Number(market?.authority?.onchainSelectedAssetCount)!==26)throw new Error('general balance sheet requires 26/26 onchain-selected production Market Data');
+  if(productionCanonical){
+    if(Number(market?.authority?.unknownCount)!==0)throw new Error('general balance sheet refuses production Market Data with UNKNOWN assets');
+    const onchainCount=Number(market?.authority?.onchainSelectedAssetCount);
+    const fallbackCount=Number(market?.authority?.coingeckoSelectedAssetCount);
+    if(!Number.isFinite(onchainCount)||!Number.isFinite(fallbackCount)||onchainCount+fallbackCount!==entries.length)throw new Error('general balance sheet requires complete per-asset authority lane coverage');
+    if(Number(market?.coverage?.usableCoverage)!==1)throw new Error('general balance sheet requires fully usable canonical Market Data');
+    for(const [id,row] of entries){
+      const v=Number(row?.usd);
+      const lane=row?.authority?.selectedLane;
+      if(!Number.isFinite(v)||v<=0)throw new Error(`${id}: canonical positive USD price unavailable`);
+      if(row?.authority?.requestedPrimary!=='onchain')throw new Error(`${id}: onchain-primary request contract missing`);
+      if(!['onchain','coingecko-lane'].includes(lane))throw new Error(`${id}: invalid canonical selected lane`);
+      if(lane==='onchain'){
+        if(row?.authority?.fallbackUsed!==false||!String(row?.source||'').startsWith('onchain-'))throw new Error(`${id}: invalid canonical onchain provenance`);
+      }else if(row?.authority?.fallbackUsed!==true){
+        throw new Error(`${id}: CoinGecko lane is allowed only as explicit fallback`);
+      }
+    }
+  }
   const out={};
+  const laneById={};
   for(const id of SHARED_MARKET_IDS){
     const row=prices[id];
     const v=Number(row?.usd);
     if(!Number.isFinite(v)||v<=0)throw new Error(`missing canonical USD price for ${id}`);
-    if(productionCanonical&&(row?.authority?.selectedLane!=='onchain'||row?.authority?.fallbackUsed!==false||!String(row?.source||'').startsWith('onchain-')))throw new Error(`${id}: canonical onchain authority unavailable`);
     out[id]=v;
+    laneById[id]=deterministicFixture?'deterministic-validation-fixture':row?.authority?.selectedLane||null;
   }
   return {
     prices:out,
+    laneById,
     generatedAt:market.generatedAt||null,
     observedAt:market.observedAt||null,
     sha256:sha256File(MARKET_DATA),
     sourceFile:MARKET_DATA,
     deterministicFixture,
-    productionCanonical
+    productionCanonical,
+    onchainSelectedAssetCount:productionCanonical?Number(market?.authority?.onchainSelectedAssetCount):null,
+    coingeckoFallbackAssetCount:productionCanonical?Number(market?.authority?.coingeckoSelectedAssetCount):null,
+    unknownCount:productionCanonical?Number(market?.authority?.unknownCount):null
   };
 }
 
@@ -175,7 +199,8 @@ for (const [registry,name] of REGISTRY) {
     const pp=productiveById.get(row.id);
     if (row.priceSource==='shared-market-data') {
       price=Number(market.prices[row.id]);
-      priceProvenance=market.deterministicFixture?'deterministic-validation-fixture':'canonical-shared-market-data-onchain-selected';
+      const lane=market.laneById[row.id];
+      priceProvenance=market.deterministicFixture?'deterministic-validation-fixture':lane==='onchain'?'canonical-shared-market-data-onchain':'canonical-shared-market-data-coingecko-fallback';
     } else {
       if (!pp) throw new Error(`${name}: productive Company Book row ${row.id} missing from canonical Productivity breakdown`);
       if (Math.abs(Number(pp.units)-Number(row.qty)) > Math.max(1e-9,Math.abs(Number(row.qty))*1e-9)) throw new Error(`${name}: quantity drift for ${row.id}`);
@@ -225,7 +250,7 @@ for (const [registry,name] of REGISTRY) {
 for (const k of Object.keys(layerTotals)) layerTotals[k]=round(layerTotals[k]);
 const output={
   version:'0.1-general-company-balance-sheet',
-  engineVersion:'0.2.1-owner-snapshot-capital-bridge',
+  engineVersion:'0.2.2-per-asset-fallback-consumer',
   generatedAt:new Date().toISOString(),status:'ok',
   purpose:'Machine-readable total-capital binding for the eight general Registry companies. Browser Company Book remains a reviewed baseline; provenance-explicit canonical owner snapshots may bridge current capital until unified blockchain-native discovery covers those positions. Productive exposure is reconciled without conflating Productivity with primary capital layer.',
   authority:{readOnly:true,executionAuthority:'none',capitalExecution:false,allocationAuthority:false,policyMutationAuthority:false,methodologyMutationAuthority:false},
@@ -233,8 +258,10 @@ const output={
     unknownPolicy:'unknown != zero',
     partialCostBasisIsNotTotal:true,
     ownerConfirmedManualSnapshotIsNotOnchainObservation:true,
-    marketPriceAuthority:market.deterministicFixture?'deterministic zero-request CI fixture':'canonical per-asset onchain-selected Market Data; no direct external price request',
+    marketPriceAuthority:market.deterministicFixture?'deterministic zero-request CI fixture':'canonical per-asset Market Data; onchain primary with explicit bounded CoinGecko fallback; no direct external price request',
     deterministicValidationFixture:market.deterministicFixture,
+    perAssetFallbackAllowed:!market.deterministicFixture,
+    productionUnknownAccepted:false,
     doubleCountPolicy:'productivityOnly rows never add a second copy of parent BTC/ETH economic exposure',
     productiveExposure:'A capital position can be economically productive while its primary capital layer remains Foundation or another layer; Productivity is an earning attribute, not automatically a Productive Dividend capital classification.',
     layerTaxonomy:['foundation','productive-dividend','stable-reserve','rwa','venture','unclassified']
@@ -244,7 +271,7 @@ const output={
     yieldRingCanonicalState:{file:YIELD_RING_STATE,version:yieldRingState.version||null,effectiveAt:yieldRingState.effectiveAt||null,sha256:sha256File(YIELD_RING_STATE),role:'current canonical YieldRing quantities and provenance'},
     company001OwnerSnapshot:{file:COMPANY001_OWNER_SNAPSHOT,version:company001OwnerSnapshot.version||null,asOf:company001OwnerSnapshot.asOf||null,sha256:sha256File(COMPANY001_OWNER_SNAPSHOT),role:'provenance-explicit temporary current-capital bridge; not independently reproduced onchain'},
     productivity:{file:PRODUCTIVITY,version:productivity.version,generatedAt:productivity.generatedAt||null,sha256:sha256File(PRODUCTIVITY),role:'productive quantity/exposure reconciliation and productive-asset current prices'},
-    marketData:{file:market.sourceFile,generatedAt:market.generatedAt,observedAt:market.observedAt,sha256:market.sha256,assetIds:SHARED_MARKET_IDS,role:market.deterministicFixture?'deterministic zero-request validation prices; never production authority':'canonical onchain-selected BTC/ETH/ZK prices; no direct CoinGecko request'}
+    marketData:{file:market.sourceFile,generatedAt:market.generatedAt,observedAt:market.observedAt,sha256:market.sha256,assetIds:SHARED_MARKET_IDS,onchainSelectedAssetCount:market.onchainSelectedAssetCount,coingeckoFallbackAssetCount:market.coingeckoFallbackAssetCount,unknownCount:market.unknownCount,role:market.deterministicFixture?'deterministic zero-request validation prices; never production authority':'canonical per-asset BTC/ETH/ZK prices; onchain primary with explicit bounded fallback; no direct external price request'}
   },
   network:{
     generalCompanyCount:REGISTRY.length,
@@ -270,6 +297,9 @@ console.log('General company balance sheet built',{
   generalCompanyTvlUsd:output.network.generalCompanyTvlUsd,
   productiveMeasuredExposureUsd:output.network.productiveMeasuredExposureUsd,
   primaryProductiveDividendCapitalUsd:output.network.primaryProductiveDividendCapitalUsd,
-  marketDataMode:market.deterministicFixture?'deterministic-validation-fixture':'canonical-onchain-selected',
+  marketDataMode:market.deterministicFixture?'deterministic-validation-fixture':'canonical-per-asset-authority',
+  onchainSelectedAssetCount:market.onchainSelectedAssetCount,
+  coingeckoFallbackAssetCount:market.coingeckoFallbackAssetCount,
+  unknownCount:market.unknownCount,
   executionAuthority:output.authority.executionAuthority
 });
