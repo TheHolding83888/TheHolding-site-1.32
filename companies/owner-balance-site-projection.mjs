@@ -122,6 +122,95 @@ const newPublicBind=`    const publicCompanyRow = key => publicCapitalSnapshot &
     });`;
 html=replaceOnce(html,oldPublicBind,newPublicBind,'companies/index.html canonical TVL/performance/network contribution binding');
 
+/* Display-only partial Performance recovery. A newly added lot whose cost basis
+   is UNKNOWN must not erase the measured result of older lots whose basis is
+   known. The known-basis subset may be shown explicitly as partial, while the
+   full-company Performance and the Index Performance factor remain UNKNOWN /
+   neutral until every lot has a complete basis. */
+const oldBookFigures=`function bookFigures(nm, prices) {
+    const pos = COMPANY_BOOK[nm] || [];
+    let value = 0, knownCost = 0, costComplete = true;
+    pos.forEach(p => {
+        if (p.productivityOnly) return;
+        const price = (p.fixed !== undefined) ? p.fixed : (prices[p.id] || 0);
+        value += p.qty * price;
+        const explicitCost = p.costBasisUsd !== null && p.costBasisUsd !== undefined && p.costBasisUsd !== ''
+            && Number.isFinite(Number(p.costBasisUsd)) ? Number(p.costBasisUsd) : null;
+        const entry = p.entry !== null && p.entry !== undefined && p.entry !== '' && Number.isFinite(Number(p.entry))
+            ? Number(p.entry) : null;
+        if (explicitCost !== null) knownCost += explicitCost;
+        else if (entry !== null) knownCost += p.qty * entry;
+        else {
+            costComplete = false;
+            if (p.knownCostBasisUsd !== null && p.knownCostBasisUsd !== undefined && p.knownCostBasisUsd !== '' && Number.isFinite(Number(p.knownCostBasisUsd))) knownCost += Number(p.knownCostBasisUsd);
+        }
+    });
+    const cost = costComplete ? knownCost : null;
+    return { value: value, cost: cost, knownCostBasisUsd: knownCost, costBasisStatus: costComplete ? 'complete' : 'partial', pnl: costComplete ? value - knownCost : null, pct: costComplete && knownCost > 0 ? (value / knownCost - 1) * 100 : null };
+}`;
+const newBookFigures=`function bookFigures(nm, prices) {
+    const pos = COMPANY_BOOK[nm] || [];
+    let value = 0, knownCost = 0, knownBasisValue = 0, costComplete = true, knownBasisValueComplete = true;
+    pos.forEach(p => {
+        if (p.productivityOnly) return;
+        const rawPrice = (p.fixed !== undefined) ? p.fixed : prices[p.id];
+        const priceObserved = rawPrice !== null && rawPrice !== undefined && rawPrice !== '' && Number.isFinite(Number(rawPrice));
+        const price = priceObserved ? Number(rawPrice) : 0;
+        value += p.qty * price;
+        const explicitCost = p.costBasisUsd !== null && p.costBasisUsd !== undefined && p.costBasisUsd !== ''
+            && Number.isFinite(Number(p.costBasisUsd)) ? Number(p.costBasisUsd) : null;
+        const entry = p.entry !== null && p.entry !== undefined && p.entry !== '' && Number.isFinite(Number(p.entry))
+            ? Number(p.entry) : null;
+        if (explicitCost !== null || entry !== null) {
+            knownCost += explicitCost !== null ? explicitCost : p.qty * entry;
+            if (priceObserved) knownBasisValue += p.qty * price;
+            else knownBasisValueComplete = false;
+        } else {
+            costComplete = false;
+            const lots = Array.isArray(p.acquisitionLots) ? p.acquisitionLots : [];
+            let lotKnownCost = 0, lotKnownQty = 0;
+            lots.forEach(lot => {
+                const qty = lot?.qty !== null && lot?.qty !== undefined && lot?.qty !== '' && Number.isFinite(Number(lot.qty)) ? Number(lot.qty) : null;
+                const lotCost = lot?.costBasisUsd !== null && lot?.costBasisUsd !== undefined && lot?.costBasisUsd !== '' && Number.isFinite(Number(lot.costBasisUsd)) ? Number(lot.costBasisUsd) : null;
+                const lotEntry = lot?.entry !== null && lot?.entry !== undefined && lot?.entry !== '' && Number.isFinite(Number(lot.entry)) ? Number(lot.entry) : null;
+                if (qty !== null && (lotCost !== null || lotEntry !== null)) {
+                    lotKnownQty += qty;
+                    lotKnownCost += lotCost !== null ? lotCost : qty * lotEntry;
+                }
+            });
+            const parentKnownCost = p.knownCostBasisUsd !== null && p.knownCostBasisUsd !== undefined && p.knownCostBasisUsd !== '' && Number.isFinite(Number(p.knownCostBasisUsd))
+                ? Number(p.knownCostBasisUsd) : null;
+            knownCost += parentKnownCost !== null ? parentKnownCost : lotKnownCost;
+            if (lotKnownQty > 0 && priceObserved) knownBasisValue += lotKnownQty * price;
+            else if ((parentKnownCost !== null && parentKnownCost > 0) || lotKnownCost > 0) knownBasisValueComplete = false;
+        }
+    });
+    const cost = costComplete ? knownCost : null;
+    const partialPct = !costComplete && knownCost > 0 && knownBasisValueComplete
+        ? (knownBasisValue / knownCost - 1) * 100 : null;
+    return {
+        value: value,
+        cost: cost,
+        knownCostBasisUsd: knownCost,
+        knownBasisValue: knownBasisValueComplete ? knownBasisValue : null,
+        costBasisStatus: costComplete ? 'complete' : 'partial',
+        pnl: costComplete ? value - knownCost : null,
+        pct: costComplete && knownCost > 0 ? (value / knownCost - 1) * 100 : null,
+        partialPnl: partialPct !== null ? knownBasisValue - knownCost : null,
+        partialPct: partialPct,
+        performanceDisplayStatus: costComplete ? 'complete' : (partialPct !== null ? 'partial-known-basis' : 'unavailable')
+    };
+}`;
+html=replaceOnce(html,oldBookFigures,newBookFigures,'companies/index.html partial known-basis Performance derivation');
+html=replaceOnce(html,
+`                +     econ(L.performance, c.cost > 0 ? fmtPct(c.pct) : (c.performancePending ? (lang === 'ru' ? 'Ожидается' : 'Pending') : '—'))`,
+`                +     econ(L.performance, c.cost > 0 ? fmtPct(c.pct) : (finiteUiNumber(c.partialPct) ? (fmtPct(c.partialPct) + ' · ' + (lang === 'ru' ? 'частично' : 'partial')) : (c.performancePending ? (lang === 'ru' ? 'Ожидается' : 'Pending') : '—')))`,
+'companies/index.html partial Performance headline');
+if(!html.includes("performanceDisplayStatus: costComplete ? 'complete' : (partialPct !== null ? 'partial-known-basis' : 'unavailable')")||
+   !html.includes("fmtPct(c.partialPct) + ' · ' + (lang === 'ru' ? 'частично' : 'partial')")){
+  fail('Partial known-basis Performance display contract missing');
+}
+
 html=replaceOnce(html,
 `    { key: 'capital',      weight: 0.35, raw: c => Math.sqrt(Math.max(c.val, 0)) },`,
 `    { key: 'capital',      weight: 0.35, raw: c => Math.sqrt(Math.max(c.indexCapitalValue ?? c.val, 0)) },`,
@@ -200,6 +289,8 @@ console.log('Owner balance site projection PASS',{
   knownPredecessorMigrationSupported:true,
   defiteaConsolidatedDisplayUsesUniqueIndexContribution:true,
   partialCostBasisPerformanceRemainsUnknown:true,
+  partialKnownBasisPerformanceDisplayAvailable:true,
+  indexPerformanceMethodologyUnchanged:true,
   manualSnapshotIsNotOnchainObservation:true,
   publicSitePolishProjected:true,
   executionAuthority:'none'
