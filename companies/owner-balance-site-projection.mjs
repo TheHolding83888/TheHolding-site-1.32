@@ -14,7 +14,8 @@ const fail=m=>{throw new Error(m);};
 
 const btc=(company001.positions||[]).find(x=>x.assetId==='bitcoin');
 if(company001?.company!=='05081966.eth'||company001?.authority?.executionAuthority!=='none')fail('Company #001 owner snapshot authority drift');
-if(Number(btc?.quantity)!==0.00126||Number(btc?.entryPriceUsd)!==77875||Number(btc?.costBasisUsd)!==98.1225)fail('Company #001 BTC owner snapshot drift');
+if(Number(btc?.quantity)!==0.00205||Number(btc?.entryPriceUsd)!==78038.78048780488||Number(btc?.costBasisUsd)!==159.9795)fail('Company #001 BTC owner snapshot drift');
+if(!Array.isArray(btc?.lots)||btc.lots.length!==2||Number(btc.lots[1]?.quantity)!==0.00079||Number(btc.lots[1]?.acquisitionPriceUsd)!==78300||Number(btc.lots[1]?.costBasisUsd)!==61.857)fail('Company #001 BTC lot history drift');
 const singulPositions=funds?.funds?.singul?.positions||[];
 const diem=singulPositions.find(x=>x.assetId==='diem');
 if(Number(diem?.quantity)!==0.07||diem?.pricing!=='fixed-total'||Number(diem?.fixedTotalValueUsd)!==150||diem?.evidenceStatus!=='owner-provided-current')fail('Singul DIEM owner snapshot drift');
@@ -44,7 +45,7 @@ function gitBlobSha(text){
 
 let html=fs.readFileSync(INDEX,'utf8');
 const old001=`    '05081966.eth': [\n        { id: 'aerodrome-finance', qty: 202,   entry: 0.4954 },\n        { id: 'curve-dao-token',   qty: 480,   entry: 0.2126 },\n        { id: 'frax-share',        qty: 393,   entry: 0.2589 }\n    ],`;
-const new001=`    '05081966.eth': [\n        { id: 'bitcoin', qty: 0.00126, entry: 77875, costBasisUsd: 98.1225, evidenceStatus: 'owner-provided-current', source: 'owner-confirmed-manual-current-snapshot' },\n        { id: 'aerodrome-finance', qty: 202,   entry: 0.4954 },\n        { id: 'curve-dao-token',   qty: 480,   entry: 0.2126 },\n        { id: 'frax-share',        qty: 393,   entry: 0.2589 }\n    ],`;
+const new001=`    '05081966.eth': [\n        { id: 'bitcoin', qty: 0.00205, entry: 78038.78048780488, costBasisUsd: 159.9795, evidenceStatus: 'owner-provided-current', source: 'owner-confirmed-manual-current-snapshot' },\n        { id: 'aerodrome-finance', qty: 202,   entry: 0.4954 },\n        { id: 'curve-dao-token',   qty: 480,   entry: 0.2126 },\n        { id: 'frax-share',        qty: 393,   entry: 0.2589 }\n    ],`;
 html=replaceOnce(html,old001,new001,'companies/index.html Company #001 Company Book');
 html=replaceOnce(html,
 `    '05081966.eth':  ['Curve','Aero','Frax'],`,
@@ -155,7 +156,7 @@ page001=replaceOnce(page001,
     { id: 'curve-dao-token', name: 'CRV', proto: 'Curve Finance', qty: 480, word: 'tokens' }
   ];`,
 `  var HOLDINGS = [
-    { id: 'bitcoin', name: 'BTC', proto: 'Bitcoin reserve', qty: 0.00126, word: 'BTC' },
+    { id: 'bitcoin', name: 'BTC', proto: 'Bitcoin reserve', qty: 0.00205, word: 'BTC' },
     { id: 'aerodrome-finance', name: 'Aero', proto: 'Aero Finance', qty: 202, word: 'tokens' },
     { id: 'frax-share', name: 'FRAX', proto: 'Frax Finance', qty: 393, word: 'tokens' },
     { id: 'curve-dao-token', name: 'CRV', proto: 'Curve Finance', qty: 480, word: 'tokens' }
@@ -182,6 +183,7 @@ console.log('Owner balance site projection PASS',{
   company001BtcQuantity:btc.quantity,
   company001BtcEntryPriceUsd:btc.entryPriceUsd,
   company001BtcCostBasisUsd:btc.costBasisUsd,
+  company001BtcLotCount:btc.lots.length,
   singulDiemQuantity:diem.quantity,
   singulDiemFixedTotalValueUsd:diem.fixedTotalValueUsd,
   singulCurrentPositionCount:singulPositions.length,
