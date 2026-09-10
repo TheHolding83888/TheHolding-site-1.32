@@ -1,18 +1,16 @@
 #!/usr/bin/env node
 /**
- * The Holding · Unified Capital Refresh v0.2.6
+ * The Holding · Unified Capital Refresh v0.2.7
  *
  * Orchestration only. Reuses existing canonical projectors/collectors/builders:
  * Defitea projection -> YieldRing projection -> owner-balance site projection
  * -> Productivity collector -> Company #010 compatibility -> YieldRing overlay
  * -> VoteMarket income channels -> General Balance -> Company #007 current-state
- * downstream binding -> Capital State.
+ * downstream binding -> Capital State -> canonical public-site polish projection.
  *
- * v0.2.6 keeps the provenance-explicit owner-confirmed current-balance bridges
- * aligned with their canonical state, including both Company #001 BTC lots,
- * YieldRing FRAX, and Singul DIEM without upgrading those observations into
- * independently reproduced onchain evidence. UNKNOWN cost basis remains
- * UNKNOWN/partial rather than becoming zero.
+ * v0.2.7 makes the already-canonical public-site polish projector an executed
+ * part of the coherent refresh instead of merely a trigger/syntax-check input.
+ * This keeps generated public surfaces reproducible without a parallel writer.
  *
  * No execution authority. No wallet action. No factual-income methodology mutation.
  */
@@ -53,6 +51,7 @@ run('7/10 Apply VoteMarket supplementary income channels', ROOT, 'productivity/v
 run('8/10 Rebuild General Company Balance Sheet', ROOT, 'intelligence/capital-state/general-company-balance-sheet.mjs');
 run('9/10 Bind Company #007 current state downstream', ROOT, 'intelligence/capital-state/company-007-current-state-downstream.mjs');
 run('10/10 Build Capital State', ROOT, 'intelligence/capital-state/capital-state.mjs');
+run('Materialize canonical public-site polish', ROOT, 'companies/public-site-polish-projection.mjs');
 
 const defitea = readJson('companies/defitea-canonical-state.json');
 const canonical = readJson('companies/yieldring-canonical-state.json');
@@ -213,6 +212,7 @@ assert(companiesHtml.includes('costBasisUsd: 983.2386') && companiesHtml.include
 assert(companiesHtml.includes("qty: 1032, entry: null, costBasisUsd: null, costBasisStatus: 'partial'") && companiesHtml.includes('knownCostBasisUsd: 210.24'), 'YieldRing FRAX partial-cost Registry projection drift');
 assert(companiesHtml.includes("id: 'bitcoin', qty: 0.00205, entry: 78038.78048780488, costBasisUsd: 159.9795") && companiesHtml.includes("'05081966.eth':  ['Bitcoin','Curve','Aero','Frax']"), 'Company #001 BTC Registry projection drift');
 assert(companiesHtml.includes("const finiteUiNumber = v => v !== null") && companiesHtml.includes("costBasisStatus: costComplete ? 'complete' : 'partial'"), 'Registry partial cost-basis null guard missing');
+assert(companiesHtml.includes('data-th-collection-passport-routing') && companiesHtml.includes("window.addEventListener('popstate',scheduleLocationSync)"), 'Collection Passport routing public projection missing');
 assert(yieldRingPage.includes('qty: 0.0334') && yieldRingPage.includes('qty: 678') && yieldRingPage.includes('qty: 1032'), 'YieldRing dedicated page projection drift');
 assert(company001Page.includes("id: 'bitcoin', name: 'BTC', proto: 'Bitcoin reserve', qty: 0.00205") && company001Page.includes('BTC is held as reserve capital'), 'Company #001 dedicated page projection drift');
 assert(singulPage.includes('const FIXED_DIEM_VALUE = 150') && singulPage.includes('owner-confirmed current snapshot'), 'Singul DIEM dedicated page projection drift');
@@ -242,5 +242,6 @@ console.log('\nUNIFIED CAPITAL REFRESH PASS', {
   company007TotalCapitalUsd:rookGeneral.totalCapitalUsd,
   networkTvlUsd: capital.network.networkTvlUsd,
   registryCompanies: capital.network.registryCompanyCount,
+  publicSitePolishMaterialized: true,
   executionAuthority: capital.authority.executionAuthority
 });
