@@ -177,7 +177,7 @@ jobs:
             if(!row||row.authority?.requestedPrimary!=='onchain')throw new Error(`${id}: not configured onchain-primary`);
             if(!['onchain','coingecko-lane'].includes(row.authority?.selectedLane))throw new Error(`${id}: invalid selected lane`);
             if(row.authority.selectedLane==='onchain'&&!String(row.source||'').startsWith('onchain-'))throw new Error(`${id}: onchain provenance missing`);
-            if(row.authority.selectedLane==='coingecko-lane'&&row.authority.fallbackUsed!==true)throw new Error(`${id}: CoinGecko may only be a failback for canonical production authority`);
+            if(row.authority.selectedLane==='coingecko-lane'&&row.authority?.fallbackUsed!==true)throw new Error(`${id}: CoinGecko may only be a failback for canonical production authority`);
             if(!Number.isFinite(Number(row.usd))||Number(row.usd)<=0)throw new Error(`${id}: finite positive price unavailable`);
           }
           const f=reg.funds?.fructus,s=reg.funds?.singul;
@@ -223,7 +223,7 @@ jobs:
             '.github/workflows/market-data-refresh.yml'
           )
 
-          git add intelligence/market-data/market-data-coingecko.json intelligence/market-data/market-data.json intelligence/market-data/onchain-price-shadow.json
+          git add intelligence/market-data/market-data.json intelligence/market-data/onchain-price-shadow.json
           if git diff --cached --quiet; then echo 'Canonical Market Data state already current.'; exit 0; fi
           git commit -m "market data: refresh canonical price snapshot"
 
