@@ -1,3 +1,4 @@
+# holding-workflow-definition-proof: intelligence/reliability/company-010-hyperlend-writer-ownership-proof.mjs
 name: "Update Company #010 · HyperLend Income"
 
 on:
@@ -12,17 +13,19 @@ on:
     branches: [main]
     paths:
       - 'onboarding/company-010-hyperlend-income-overlay.mjs'
+      - 'rewards/company-010-hyperlend-rewards-overlay.mjs'
+      - 'intelligence/reliability/company-010-hyperlend-writer-ownership-proof.mjs'
       - '.github/workflows/update-company-010-hyperlend-income.yml'
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: company-010-hyperlend-income
   cancel-in-progress: false
 
 jobs:
-  update:
+  diagnose:
     if: >-
       ${{ github.event_name != 'workflow_run' ||
           (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main') }}
@@ -40,55 +43,38 @@ jobs:
           node-version: '22'
       - name: Install bounded dependency
         run: npm install --no-save --no-package-lock ethers@6
-      - name: Measure HyperLend income semantics
+      - name: Replay HyperLend income and Rewards projection ephemerally
         env:
           HYPEREVM_RPC_URL: ${{ secrets.HYPEREVM_RPC_URL }}
+          COMPANY_010_STATE: /tmp/company-010-production-state.json
+          REWARDS_DATA: /tmp/rewards-data.json
         run: |
           set -euo pipefail
+          cp companies/company-010-production-state.json "$COMPANY_010_STATE"
+          cp companies/rewards-data.json "$REWARDS_DATA"
           node --check onboarding/company-010-hyperlend-income-overlay.mjs
+          node --check rewards/company-010-hyperlend-rewards-overlay.mjs
           node onboarding/company-010-hyperlend-income-overlay.mjs
+          node rewards/company-010-hyperlend-rewards-overlay.mjs
           node - <<'NODE'
           const fs=require('fs');
-          const s=JSON.parse(fs.readFileSync('companies/company-010-production-state.json','utf8'));
-          const r=JSON.parse(fs.readFileSync('companies/rewards-data.json','utf8'));
+          const s=JSON.parse(fs.readFileSync(process.env.COMPANY_010_STATE,'utf8'));
+          const r=JSON.parse(fs.readFileSync(process.env.REWARDS_DATA,'utf8'));
           const h=s.strategies?.hyperlend;
           if(h?.version!=='0.1-company-010-hyperlend-income-parity'||h.status!=='measured')throw new Error('HyperLend income capability missing');
           if(h.income?.primary?.state!=='Compounded'||h.income?.primary?.claimableApplicable!==false)throw new Error('HyperLend embedded income semantics drift');
-          if(h.accountingBoundary?.embeddedInterestNotAdditiveCapital!==true||h.accountingBoundary?.embeddedInterestNotClaimable!==true||h.accountingBoundary?.externalIncentivesSeparateFromSupplyApr!==true)throw new Error('HyperLend accounting boundary missing');
+          if(h.accountingBoundary?.embeddedInterestNotAdditiveCapital!==true||h.accountingBoundary?.embeddedInterestNotClaimable!==true||h.accountingBoundary?.externalIncentivesSeparateFromSupplyApr!==true||h.accountingBoundary?.noDoubleCount!==true)throw new Error('HyperLend accounting boundary missing');
           const c=r.companies?.Cypher;
           const e=(c?.embeddedIncome||[]).find(x=>x.route==='hyperlend-khype');
-          if(!e||e.state!=='Compounded'||e.claimableApplicable!==false||e.usdValueIncludedInClaimableTotal!==false)throw new Error('HyperLend Rewards Drawer projection missing');
+          if(!e||e.state!=='Compounded'||e.claimableApplicable!==false||e.usdValueIncludedInClaimableTotal!==false)throw new Error('HyperLend Rewards projection missing');
           const src=(c?.sources||[]).find(x=>x.route==='hyperlend-khype');
           if(!src||!['ok','partial'].includes(src.status)||src.details?.rewardState!=='Compounded')throw new Error('HyperLend source projection missing');
-          if(s.authority?.executionAuthority!=='none'||h.authority?.executionAuthority!=='none')throw new Error('authority drift');
-          console.log('HyperLend income state PASS',{hToken:h.hToken,referenceAprPct:h.referenceAprPct,embedded:h.income.primary,externalIncentives:h.income.externalIncentives,rewardsDrawer:{measuredEmbeddedUsd:c.measuredEmbeddedUsd,measuredEarnedUsd:c.measuredEarnedUsd}});
+          if(r.diagnostics?.company010?.hyperlendIncome?.repositoryMutationAuthority!=='Update Company Rewards')throw new Error('HyperLend Rewards writer ownership diagnostic missing');
+          if(s.authority?.executionAuthority!=='none'||h.authority?.executionAuthority!=='none'||r.diagnostics?.company010?.hyperlendIncome?.executionAuthority!=='none')throw new Error('authority drift');
+          console.log('HyperLend read-only diagnostic PASS',{hToken:h.hToken,referenceAprPct:h.referenceAprPct,embedded:h.income.primary,externalIncentives:h.income.externalIncentives,rewardsDrawer:{measuredEmbeddedUsd:c.measuredEmbeddedUsd,measuredEarnedUsd:c.measuredEarnedUsd},repositoryMutationAuthority:false,executionAuthority:'none'});
           NODE
-      - name: Commit HyperLend income state
+      - name: Prove diagnostic left repository untouched
         run: |
           set -euo pipefail
-          git config user.name "The Holding HyperLend Income"
-          git config user.email "hyperlend-income@theholding.ai"
-          git add companies/company-010-production-state.json companies/rewards-data.json
-          if git diff --cached --quiet; then
-            echo "No HyperLend income changes to commit."
-            exit 0
-          fi
-          git commit -m "data: update HyperLend income semantics"
-          for attempt in 1 2 3; do
-            git fetch origin main
-            if ! git rebase origin/main; then
-              git rebase --abort || true
-              echo "Safe writer guard: rebase conflict; refusing to guess."
-              exit 1
-            fi
-            HYPEREVM_RPC_URL='${{ secrets.HYPEREVM_RPC_URL }}' node onboarding/company-010-hyperlend-income-overlay.mjs
-            git add companies/company-010-production-state.json companies/rewards-data.json
-            git commit --amend --no-edit
-            if git push origin HEAD:main; then
-              exit 0
-            fi
-            echo "Safe writer guard: main moved; retrying ($attempt/3)..."
-            sleep $((attempt * 2))
-          done
-          echo "Safe writer guard: push failed after 3 attempts."
-          exit 1
+          test -z "$(git status --porcelain)"
+          echo 'HyperLend diagnostic is repository read-only; Company State and Rewards canonical writers own materialization.'
