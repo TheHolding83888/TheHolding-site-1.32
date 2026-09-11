@@ -46,11 +46,12 @@ if(page.includes('api.coingecko.com'))fail('YieldRing dedicated page still perfo
 if(!page.includes('/intelligence/market-data/public-capital-state.json'))fail('YieldRing dedicated page canonical market runtime missing');
 if(!page.includes('2 locks · Maxi relay'))fail('YieldRing dedicated veAERO relay label missing');
 
+if(!html.includes(rendered))fail('YieldRing canonical Company Book block did not materialize exactly');
 for(const row of rows){
   const basisToken=`costBasisUsd: ${row.costBasisUsd}`;
-  if(!html.includes(basisToken))fail(`YieldRing physical Company Book basis missing for ${row.assetId}`);
+  if(!rendered.includes(basisToken))fail(`YieldRing canonical Company Book basis missing for ${row.assetId}`);
 }
-if(html.includes('knownCostBasisUsd: 210.24'))fail('retired YieldRing partial FRAX basis survived physical projection');
+if(rendered.includes('knownCostBasisUsd')||rendered.includes("costBasisStatus: 'partial'"))fail('YieldRing active Company Book remained partial after canonical projection');
 
 console.log('YieldRing public/capital projection PASS',{
   positions:rows.length,
