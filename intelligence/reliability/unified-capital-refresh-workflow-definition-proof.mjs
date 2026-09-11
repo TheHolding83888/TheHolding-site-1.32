@@ -48,6 +48,18 @@ assert.doesNotMatch(workflow,/node intelligence\/market-data\/market-data-engine
 assert.doesNotMatch(workflow,/git add[\s\\\n\r\t\w./-]*intelligence\/market-data\/market-data\.json/,'Unified Capital must not stage canonical Market Data');
 assert.match(workflow,/pub\.sourceState\?\.marketDataGeneratedAt!==m\.generatedAt/,'same-generation Public Capital validation missing');
 
+// Company quantities used by final coherence validation must come from the same
+// canonical states that drive the public Company Book, not duplicated literals.
+assert.match(workflow,/const defiteaState=JSON\.parse\(fs\.readFileSync\('companies\/defitea-canonical-state\.json','utf8'\)\)/,'Defitea canonical quantity authority missing from final validation');
+assert.match(workflow,/const yieldRingState=JSON\.parse\(fs\.readFileSync\('companies\/yieldring-canonical-state\.json','utf8'\)\)/,'YieldRing canonical quantity authority missing from final validation');
+assert.match(workflow,/expectedDefiteaAero=Number\(canonicalDefiteaAero\?\.quantity\)/,'Defitea AERO canonical quantity binding missing');
+assert.match(workflow,/expectedDefiteaFxn=Number\(canonicalDefiteaFxn\?\.quantity\)/,'Defitea FXN canonical quantity binding missing');
+assert.match(workflow,/Number\(da\?\.units\)!==expectedDefiteaAero/,'Defitea Productivity is not checked against canonical AERO quantity');
+assert.match(workflow,/Number\(dca\?\.units\)!==expectedDefiteaAero/,'Defitea Capital State is not checked against canonical AERO quantity');
+assert.match(workflow,/Number\(a\?\.units\)!==expectedYieldRingAero/,'YieldRing Productivity is not checked against canonical AERO quantity');
+assert.match(workflow,/Number\(btc\?\.units\)!==expectedYieldRingBtc/,'YieldRing Capital State is not checked against canonical BTC quantity');
+assert.doesNotMatch(workflow,/Number\(da\?\.units\)!==2632(?:\D|$)/,'stale rounded Defitea AERO literal survived final validation');
+
 for (const script of [
   'companies/owner-balance-site-projection.mjs',
   'companies/public-page-market-runtime-projection.mjs',
@@ -113,6 +125,7 @@ console.log('Unified Capital refresh workflow definition proof PASS',{
   marketDataWorkflowRunHandoff:true,
   marketDataNoopSuppression:true,
   marketGenerationParity:true,
+  canonicalCompanyQuantityAuthority:true,
   freshMainRetryReset:true,
   rewardsFreshnessCoupling:true,
   voteMarketAfterCanonicalProductivityOverlays:true,
