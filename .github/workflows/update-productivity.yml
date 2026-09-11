@@ -1,14 +1,15 @@
 # holding-workflow-definition-proof: intelligence/reliability/productivity-recovery-workflow-definition-proof.mjs
 name: Update The Holding Productivity Data
 
-# Legacy bounded recovery path. Automatic capital refresh is owned by
-# "The Holding Capital · Unified Refresh". Market prices remain owned by the
-# shared Market Data layer even when this manual recovery path is used.
+# Legacy manual diagnostic replay. Production mutation is owned exclusively by
+# "The Holding Capital · Unified Refresh", which already exposes workflow_dispatch.
+# This workflow may rebuild the Productivity chain in its ephemeral checkout for
+# validation, but it must never publish generated state back to the repository.
 on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: productivity-weekly
@@ -46,15 +47,15 @@ jobs:
           const fs=require('fs');
           const m=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
           const prices=m.prices||{};
-          if(m.semantics?.perAssetAuthoritySelectionApplied!==true)throw new Error('Productivity recovery refuses non-materialized Market Data');
-          if(Object.keys(prices).length!==26||Number(m.authority?.onchainSelectedAssetCount)!==26)throw new Error('Productivity recovery requires 26/26 onchain-selected Market Data');
+          if(m.semantics?.perAssetAuthoritySelectionApplied!==true)throw new Error('Productivity diagnostic refuses non-materialized Market Data');
+          if(Object.keys(prices).length!==26||Number(m.authority?.onchainSelectedAssetCount)!==26)throw new Error('Productivity diagnostic requires 26/26 onchain-selected Market Data');
           for(const [id,row] of Object.entries(prices)){
             if(row?.authority?.selectedLane!=='onchain'||row?.authority?.fallbackUsed!==false||!String(row?.source||'').startsWith('onchain-'))throw new Error(`${id}: canonical onchain authority unavailable`);
           }
-          console.log('Productivity recovery canonical Market Data PASS',{generatedAt:m.generatedAt,onchainSelectedAssetCount:m.authority.onchainSelectedAssetCount});
+          console.log('Productivity diagnostic canonical Market Data PASS',{generatedAt:m.generatedAt,onchainSelectedAssetCount:m.authority.onchainSelectedAssetCount});
           NODE
 
-      - name: Update protocol APRs and established company Productivity
+      - name: Rebuild protocol APRs and established company Productivity ephemerally
         working-directory: productivity
         env:
           NODE_OPTIONS: --import=${{ github.workspace }}/intelligence/market-data/coingecko-fetch-shim.mjs
@@ -66,7 +67,7 @@ jobs:
           REPORT_FILE: ../companies/productivity-source-report.json
         run: npm run update
 
-      - name: Admit Company #010 Cypher from canonical state
+      - name: Admit Company #010 Cypher from canonical state ephemerally
         run: |
           set -euo pipefail
           node --check productivity/company-010-productivity-overlay.mjs
@@ -81,7 +82,7 @@ jobs:
           if(!(Number(c.coverage)>0&&Number(c.coverage)<=1))throw new Error('Cypher coverage invalid');
           NODE
 
-      - name: Apply canonical YieldRing principal and relay state
+      - name: Apply canonical YieldRing principal and relay state ephemerally
         run: |
           set -euo pipefail
           node --check productivity/yieldring-productivity-overlay.mjs
@@ -97,7 +98,7 @@ jobs:
           if(d.diagnostics?.yieldRing?.executionAuthority!=='none')throw new Error('YieldRing authority drift');
           NODE
 
-      - name: Apply VoteMarket supplementary income channels
+      - name: Apply VoteMarket supplementary income channels ephemerally
         run: |
           set -euo pipefail
           node --check productivity/votemarket-productivity-overlay.mjs
@@ -118,57 +119,28 @@ jobs:
             const row=(c?.breakdown||[]).find(x=>x.engineId===id);
             if(!row?.incomeChannels||row.incomeChannels.capitalAccounting!=='principal-counted-once'||row.incomeChannels.capitalDoubleCount!==false)throw new Error('Defitea VoteMarket hierarchy missing: '+id);
           }
-          console.log('VoteMarket recovery overlay PASS',{measuredReferenceCompanyCount:diag.measuredReferenceCompanyCount,claimedPeriodPersistence:true,persistenceStateSourceOfTruth:false});
+          console.log('VoteMarket diagnostic overlay PASS',{measuredReferenceCompanyCount:diag.measuredReferenceCompanyCount,claimedPeriodPersistence:true,persistenceStateSourceOfTruth:false});
           NODE
 
-      - name: Rebuild public capital projection from shared prices
+      - name: Rebuild public capital projection from shared prices ephemerally
         run: |
           set -euo pipefail
           node --check intelligence/market-data/public-capital-engine.mjs
           node intelligence/market-data/public-capital-engine.mjs
 
-      - name: Commit recovery snapshot safely
+      - name: Verify diagnostic replay without repository publication
         run: |
           set -euo pipefail
-          git config user.name "The Holding Data Engine"
-          git config user.email "data-engine@theholding.ai"
-          git add \
-            companies/productivity-data.json \
-            companies/productivity-source-report.json \
-            companies/votemarket-reference-state.json \
-            intelligence/market-data/public-capital-state.json
-          if git diff --cached --quiet; then echo "No data changes."; exit 0; fi
-          git commit -m "data: update weekly productivity snapshot"
-          for attempt in 1 2 3; do
-            git fetch origin main
-            if ! git rebase origin/main; then
-              git rebase --abort || true
-              echo "Safe writer guard: rebase conflict; refusing to guess."
-              exit 1
-            fi
-            node -e '
-              const fs=require("fs");
-              const m=JSON.parse(fs.readFileSync("intelligence/market-data/market-data.json","utf8"));
-              const prices=m.prices||{};
-              if(m.semantics?.perAssetAuthoritySelectionApplied!==true||Object.keys(prices).length!==26||Number(m.authority?.onchainSelectedAssetCount)!==26)throw new Error("Canonical Market Data lost during Productivity recovery rebase");
-              for(const [id,row] of Object.entries(prices))if(row?.authority?.selectedLane!=="onchain"||row?.authority?.fallbackUsed!==false)throw new Error(`${id}: onchain authority lost during Productivity recovery rebase`);
-            '
-            NODE_OPTIONS='--import=${{ github.workspace }}/intelligence/market-data/coingecko-fetch-shim.mjs' \
-            ETH_RPC_URL='${{ secrets.ETH_RPC_URL }}' \
-            BASE_RPC_URL='${{ secrets.BASE_RPC_URL }}' \
-            GITHUB_TOKEN='${{ github.token }}' \
-              npm --prefix productivity run update
-            node productivity/company-010-productivity-overlay.mjs
-            node productivity/yieldring-productivity-overlay.mjs
-            node productivity/votemarket-productivity-overlay.mjs
-            node intelligence/market-data/public-capital-engine.mjs
-            git add \
-              companies/productivity-data.json \
-              companies/productivity-source-report.json \
-              companies/votemarket-reference-state.json \
-              intelligence/market-data/public-capital-state.json
-            git commit --amend --no-edit
-            if git push origin HEAD:main; then exit 0; fi
-            sleep $((attempt * 2))
-          done
-          exit 1
+          test -s companies/productivity-data.json
+          test -s companies/productivity-source-report.json
+          test -s companies/votemarket-reference-state.json
+          test -s intelligence/market-data/public-capital-state.json
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('companies/productivity-data.json','utf8'));
+          const pub=JSON.parse(fs.readFileSync('intelligence/market-data/public-capital-state.json','utf8'));
+          if(d.diagnostics?.voteMarketIncomeChannels?.executionAuthority!=='none')throw new Error('Productivity diagnostic authority drift');
+          if(pub.authority?.executionAuthority!=='none')throw new Error('Public Capital diagnostic authority drift');
+          console.log('Productivity read-only diagnostic replay PASS',{generatedAt:d.generatedAt,executionAuthority:'none',repositoryMutation:false});
+          NODE
+          git diff --check
