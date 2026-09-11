@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
-import { completePerformanceEvidence, renderCompanyBookBlock, replaceCompanyBookBlock, validateCompleteBasis } from './company-capital-state-contract.mjs';
+import { completePerformanceEvidence, extractCompanyBookBlock, renderCompanyBookBlock, replaceCompanyBookBlock, validateCompleteBasis } from './company-capital-state-contract.mjs';
 
 const STATE='companies/defitea-canonical-state.json';
 const INDEX='companies/index.html';
@@ -30,11 +30,13 @@ const rendered=renderCompanyBookBlock('defitea.eth',rows);
 html=replaceCompanyBookBlock(html,'defitea.eth',rendered);
 fs.writeFileSync(INDEX,html);
 
+const activeBlock=extractCompanyBookBlock(html,'defitea.eth');
+if(activeBlock!==rendered)fail('Defitea canonical Company Book block did not materialize exactly inside COMPANY_BOOK');
 for(const row of rows){
   const basisToken=`costBasisUsd: ${row.costBasisUsd}`;
-  if(!html.includes(basisToken))fail(`Defitea physical Company Book basis missing for ${row.assetId}`);
+  if(!activeBlock.includes(basisToken))fail(`Defitea active Company Book basis missing for ${row.assetId}`);
 }
-if(html.includes("'defitea.eth': [\n        { id: 'frax-share', qty: 4456"))fail('retired Defitea rounded/partial FRAX projection survived');
+if(activeBlock.includes("{ id: 'frax-share', qty: 4456,"))fail('retired Defitea rounded/partial FRAX projection survived inside active Company Book');
 
 console.log('Defitea canonical projection PASS',{
   positions:rows.length,
@@ -43,5 +45,6 @@ console.log('Defitea canonical projection PASS',{
   evidenceSnapshotMarketValueUsd:snapshot.market,
   evidenceSnapshotPerformancePct:snapshot.pct,
   livePerformance:'dynamic-current-canonical-market-value-vs-complete-historical-cost-basis',
+  activeCompanyBookScoped:true,
   executionAuthority:'none'
 });
