@@ -14795,6 +14795,38 @@ function finalizeReloadRestore() {
     function closeStablePassport(){
         if (typeof window.stablePassportSet === 'function') window.stablePassportSet(false,false);
     }
+    function fixedTopInset(){
+        var inset=16;
+        document.querySelectorAll('header,.subnav').forEach(function(el){
+            var style=window.getComputedStyle?window.getComputedStyle(el):null;
+            if (!style || (style.position!=='fixed' && style.position!=='sticky')) return;
+            var rect=el.getBoundingClientRect();
+            if (rect.bottom>0 && rect.top<=8) inset=Math.max(inset,Math.ceil(rect.bottom)+12);
+        });
+        return inset;
+    }
+    function scrollCollectionIndexTop(){
+        var section=document.getElementById('index');
+        if (!section) return;
+        var reduce=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+        var top=section.getBoundingClientRect().top+window.pageYOffset-fixedTopInset();
+        window.scrollTo({top:Math.max(0,top),behavior:reduce?'auto':'smooth'});
+    }
+    function writeIndexHash(push){
+        try {
+            if (push && location.hash!=='#index') history.pushState({thSurface:'index'},'','#index');
+            else history.replaceState(history.state,'','#index');
+        } catch (_) {}
+    }
+    function openCollectionIndex(opts){
+        closeGeneralPassports();
+        closeStablePassport();
+        selectSurface('index');
+        if (opts && opts.writeHash) writeIndexHash(!!opts.pushHistory);
+        window.requestAnimationFrame(function(){
+            window.requestAnimationFrame(scrollCollectionIndexTop);
+        });
+    }
     function openGeneral(reg, name, opts){
         selectSurface('index');
         var deadline = Date.now() + RETRY_WINDOW_MS;
@@ -14849,6 +14881,10 @@ function finalizeReloadRestore() {
             openRegistry(match[1],{writeHash:false,pushHistory:false});
             return;
         }
+        if (hash === '#index') {
+            openCollectionIndex({writeHash:false,pushHistory:false});
+            return;
+        }
         if (hash === '#collection') {
             closeGeneralPassports();
             closeStablePassport();
@@ -14863,12 +14899,9 @@ function finalizeReloadRestore() {
         if (!ev.target || !ev.target.closest) return;
         var card = ev.target.closest('#companiesGrid .company-card:not(.placeholder)');
         if (card) {
-            if (isExternalAffordance(ev.target)) return;
-            var reg = card.dataset.thPassportRegistry || registryFromCard(card);
-            if (!REGISTRY_TO_NAME[reg]) return;
             ev.preventDefault();
             ev.stopPropagation();
-            openRegistry(reg,{writeHash:true,pushHistory:true});
+            openCollectionIndex({writeHash:true,pushHistory:true});
             return;
         }
         var generalRow = ev.target.closest('#idxBoard .ib-row');
@@ -14900,12 +14933,11 @@ function finalizeReloadRestore() {
     });
     document.addEventListener('keydown',function(ev){
         if (!ev.target || !ev.target.closest) return;
-        var card = ev.target.closest('#companiesGrid .company-card.th-passport-entry');
-        if (!card || card.tagName === 'A' || isExternalAffordance(ev.target)) return;
+        var card = ev.target.closest('#companiesGrid .company-card.th-index-entry');
+        if (!card || card.tagName === 'A') return;
         if (ev.key !== 'Enter' && ev.key !== ' ') return;
         ev.preventDefault();
-        var reg = card.dataset.thPassportRegistry || registryFromCard(card);
-        openRegistry(reg,{writeHash:true,pushHistory:true});
+        openCollectionIndex({writeHash:true,pushHistory:true});
     });
     window.addEventListener('hashchange',scheduleLocationSync);
     window.addEventListener('popstate',scheduleLocationSync);
@@ -14919,57 +14951,53 @@ function finalizeReloadRestore() {
 })();
 </script>
 
-<style data-th-collection-uniform-explore-style>
-    #companiesGrid .company-card.th-passport-entry { cursor: pointer; }
-    #companiesGrid .company-card.th-passport-entry .cc-passport-action { pointer-events: none; }
-    #companiesGrid .company-card.th-passport-entry:hover .cc-ext-label {
+
+
+
+<style data-th-collection-index-entry-v2-style>
+    #companiesGrid .company-card.th-index-entry { cursor: pointer; }
+    #companiesGrid .company-card.th-index-entry .cc-index-action { pointer-events: none; }
+    #companiesGrid .company-card.th-index-entry:hover .cc-ext-label {
         opacity: 0.95;
         color: var(--gold);
     }
-    #companiesGrid .company-card.th-passport-entry:hover .cc-ext-arrow {
+    #companiesGrid .company-card.th-index-entry:hover .cc-ext-arrow {
         color: var(--gold);
         opacity: 1;
         transform: translate(2px, -2px);
     }
-    #companiesGrid .company-card.th-passport-entry:focus-visible {
+    #companiesGrid .company-card.th-index-entry:focus-visible {
         outline: 1px solid var(--gold-line);
         outline-offset: 4px;
     }
 </style>
-<script data-th-collection-uniform-explore>
+<script data-th-collection-index-entry-v2>
 (function(){
     'use strict';
-    var KNOWN = new Set(['001','002','003','004','005','006','007','008','009','010']);
-    var observer = null;
-
-    function registryFromCard(card){
-        var row = card && card.querySelector('.cc-regnum');
-        var text = String(row && row.textContent || '');
-        var match = text.match(/(?:Registry|Реестр)\s*·\s*(\d{3})/i) || text.match(/·\s*(\d{3})/);
-        return match ? match[1] : '';
-    }
+    var observer=null;
 
     function isRu(card){
-        var row = card && card.querySelector('.cc-regnum');
-        return /^ru(?:-|$)/i.test(document.documentElement.lang || '') || /Реестр/i.test(String(row && row.textContent || ''));
+        var row=card&&card.querySelector('.cc-regnum');
+        return /^ru(?:-|$)/i.test(document.documentElement.lang||'') || /Реестр/i.test(String(row&&row.textContent||''));
     }
 
-    function exploreMarkup(card){
-        var label = isRu(card) ? 'Перейти к компании' : 'Explore Company';
-        return '<span class="cc-ext-label" data-i18n="card.explore">' + label + '</span>' +
+    function actionMarkup(card){
+        var label=isRu(card)?'Перейти к компании':'Explore Company';
+        return '<span class="cc-ext-label" data-i18n="card.explore">'+label+'</span>'+
             '<svg class="cc-ext-arrow" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     }
 
     function normalize(card){
         if (!card || card.classList.contains('placeholder')) return;
-        var reg = registryFromCard(card);
-        if (!KNOWN.has(reg)) return;
 
-        card.classList.add('th-passport-entry');
-        card.dataset.thPassportRegistry = reg;
+        card.classList.remove('th-passport-entry');
+        card.classList.add('th-index-entry');
+        delete card.dataset.thPassportRegistry;
+        delete card.dataset.thPassportCompany;
+        card.dataset.thIndexTarget='index';
 
-        if (card.tagName === 'A') {
-            card.setAttribute('href','#passport-' + reg);
+        if (card.tagName==='A') {
+            card.setAttribute('href','#index');
             card.removeAttribute('target');
             card.removeAttribute('rel');
         } else {
@@ -14977,29 +15005,28 @@ function finalizeReloadRestore() {
             card.setAttribute('tabindex','0');
         }
 
-        var visibleName = card.querySelector('.cc-name');
-        card.setAttribute('aria-label',(isRu(card) ? 'Открыть паспорт компании · ' : 'Open Company Passport · ') + String(visibleName && visibleName.textContent || '').trim());
+        card.setAttribute('aria-label',isRu(card)?'Открыть The Holding Index':'Open The Holding Index');
 
-        var footer = card.querySelector('.cc-extlink');
+        var footer=card.querySelector('.cc-extlink');
         if (!footer) {
-            footer = document.createElement('span');
+            footer=document.createElement('span');
             card.appendChild(footer);
         }
-        var alreadyUniform = footer.classList.contains('cc-passport-action') &&
+        var alreadyUniform=footer.classList.contains('cc-index-action') &&
             footer.querySelector('[data-i18n="card.explore"]') &&
             !footer.querySelector('.cc-ext-debank') &&
-            footer.children.length === 2;
-        footer.className='cc-extlink cc-passport-action';
+            footer.children.length===2;
+        footer.className='cc-extlink cc-index-action';
         footer.removeAttribute('aria-disabled');
         footer.removeAttribute('role');
         footer.removeAttribute('tabindex');
         footer.removeAttribute('data-href');
-        if (!alreadyUniform) footer.innerHTML=exploreMarkup(card);
+        if (!alreadyUniform) footer.innerHTML=actionMarkup(card);
     }
 
     function normalizeTree(root){
         if (!root) return;
-        if (root.matches && root.matches('#companiesGrid .company-card:not(.placeholder)')) normalize(root);
+        if (root.matches&&root.matches('#companiesGrid .company-card:not(.placeholder)')) normalize(root);
         if (root.querySelectorAll) root.querySelectorAll('#companiesGrid .company-card:not(.placeholder), .company-card:not(.placeholder)').forEach(normalize);
     }
 
@@ -15009,17 +15036,22 @@ function finalizeReloadRestore() {
         normalizeTree(grid);
         observer=new MutationObserver(function(records){
             records.forEach(function(record){
-                var ownerCard = record.target && record.target.closest ? record.target.closest('#companiesGrid .company-card:not(.placeholder)') : null;
+                var ownerCard=record.target&&record.target.closest?record.target.closest('#companiesGrid .company-card:not(.placeholder)'):null;
                 if (ownerCard) normalize(ownerCard);
                 record.addedNodes.forEach(function(node){
-                    if (node && node.nodeType === 1) normalizeTree(node);
+                    if (node&&node.nodeType===1) normalizeTree(node);
                 });
             });
         });
         observer.observe(grid,{childList:true,subtree:true});
+        document.querySelectorAll('.lang-switch button').forEach(function(btn){
+            if (btn.dataset.thIndexEntryBound==='1') return;
+            btn.dataset.thIndexEntryBound='1';
+            btn.addEventListener('click',function(){window.requestAnimationFrame(function(){normalizeTree(grid);});});
+        });
     }
 
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',boot,{once:true});
+    if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot,{once:true});
     else boot();
 })();
 </script>
