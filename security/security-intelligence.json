@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-11T19:09:00.695Z",
+  "generatedAt": "2026-09-11T19:16:01.141Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 2,
-    "medium": 72,
+    "medium": 73,
     "low": 0,
     "info": 0
   },
   "source": {
-    "filesScanned": 1221,
-    "bytesScanned": 31462201,
+    "filesScanned": 1222,
+    "bytesScanned": 31473536,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Thu, 10 Sep 2026 04:08:54 GMT",
+        "lastModified": "Wed, 09 Sep 2026 20:54:19 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -56,6 +56,36 @@
   },
   "whatChanged": {
     "newFindings": [
+      {
+        "id": "7627297e1b73ae9903e7aa8a316f06f800657a906fab08280a75230ff756ac2d",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/update-company-010-projectx-reference-apr.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/update-company-010-projectx-reference-apr.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "f3434862952258c73fb82ae6227b83ec5cdd65f7ab808651a37dfc1b8890203e",
+          "currentSha256": "49bbf7423490380e73f7bf8a0deda35ce069f9f6d3b1ef46c4a5190369385bea"
+        }
+      },
+      {
+        "id": "7c51358d4622615e70aa20448d8bdbc46d7ec8084d3eeb8741f581e80906b603",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/update-company-010-state.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/update-company-010-state.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "8a21c7750f805af37937c5b20106a0b91c5f577870f42b33332ef10b8f5cbecd",
+          "currentSha256": "752075fc3194ee5d09a905e1f9354ce3a273f6fe04a7b7aba01969b97cf3807d"
+        }
+      }
+    ],
+    "resolvedFindings": [
       {
         "id": "d994c7dda229e682bfa3deff4483d088634f1c9c824579cc6d3c3b66af7e5e34",
         "severity": "medium",
@@ -69,44 +99,6 @@
           "previousSha256": "5feffbf58388675952487c3462d2f9149eecec6f3795483087010dd0d3b19cfb",
           "currentSha256": "bb4f80e7263e86c63c379b78d476e35e0f846d8d68172f048d44395c739e9cde"
         }
-      }
-    ],
-    "resolvedFindings": [
-      {
-        "id": "6709e627401ca9bdabef2505eae3170816220a65793eb1f7233deeccb1782072",
-        "severity": "medium",
-        "category": "critical-surface-change",
-        "file": ".github/workflows/project-yieldring-capital-state.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/project-yieldring-capital-state.yml.",
-        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-        "evidence": {
-          "previousSha256": "3eef6bcfa649c55e07f1f69f91ef72946518c3d6edc609105097f806cc78903d",
-          "currentSha256": "256e4ba17d7dcdcc8badc8e4a2d17750e1109dc6ff4636a313eff9153f5c8934"
-        }
-      },
-      {
-        "id": "d64d971c588b1c7c1729eb139d96d8561897baff9119fc140a19c056dabce90e",
-        "severity": "medium",
-        "category": "dom-innerhtml",
-        "file": "onboarding/company-010-public-admission.mjs",
-        "line": 59,
-        "entity": null,
-        "summary": "Dynamic innerHTML assignment detected.",
-        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-        "evidence": null
-      },
-      {
-        "id": "de1f57ff2b912b563c1c97d4743636b6eeb3037ec5acceaab9d48d64008aed97",
-        "severity": "medium",
-        "category": "dom-innerhtml",
-        "file": "onboarding/company-010-public-admission.mjs",
-        "line": 67,
-        "entity": null,
-        "summary": "Dynamic innerHTML assignment detected.",
-        "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
-        "evidence": null
       }
     ]
   },
@@ -134,17 +126,31 @@
       "evidence": null
     },
     {
-      "id": "d994c7dda229e682bfa3deff4483d088634f1c9c824579cc6d3c3b66af7e5e34",
+      "id": "7627297e1b73ae9903e7aa8a316f06f800657a906fab08280a75230ff756ac2d",
       "severity": "medium",
       "category": "critical-surface-change",
-      "file": ".github/workflows/admit-company-010-public.yml",
+      "file": ".github/workflows/update-company-010-projectx-reference-apr.yml",
       "line": null,
       "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/admit-company-010-public.yml.",
+      "summary": "Security-sensitive surface changed: .github/workflows/update-company-010-projectx-reference-apr.yml.",
       "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
       "evidence": {
-        "previousSha256": "5feffbf58388675952487c3462d2f9149eecec6f3795483087010dd0d3b19cfb",
-        "currentSha256": "bb4f80e7263e86c63c379b78d476e35e0f846d8d68172f048d44395c739e9cde"
+        "previousSha256": "f3434862952258c73fb82ae6227b83ec5cdd65f7ab808651a37dfc1b8890203e",
+        "currentSha256": "49bbf7423490380e73f7bf8a0deda35ce069f9f6d3b1ef46c4a5190369385bea"
+      }
+    },
+    {
+      "id": "7c51358d4622615e70aa20448d8bdbc46d7ec8084d3eeb8741f581e80906b603",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/update-company-010-state.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/update-company-010-state.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "8a21c7750f805af37937c5b20106a0b91c5f577870f42b33332ef10b8f5cbecd",
+        "currentSha256": "752075fc3194ee5d09a905e1f9354ce3a273f6fe04a7b7aba01969b97cf3807d"
       }
     },
     {
@@ -1133,12 +1139,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "72840e5868aa1bc92a5ce576d5d18cefb4e65f51e6e302e48bdb09f2fd94cce6",
+    "snapshotHash": "3aa88229096a966caa10697d8be2afdb4bc2bd82b286d548d8fb0e82693ffb1a",
     "securityVault": {
-      "runCount": 994,
+      "runCount": 995,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/09/2026-09-11T19-09-00-695Z-72840e5868.json",
-      "latestRecordHash": "15ad81e06f1a5ab7fa865c7ff91fd0bb0847ce8f644defadf4843a4a922b061a",
+      "latestRecordPath": "security/security-vault/2026/09/2026-09-11T19-16-01-141Z-3aa8822909.json",
+      "latestRecordHash": "046e8e6af86b4c2fadbf7e23c4d9a48186589e563cb56cd7b436318baf9ba3c5",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }

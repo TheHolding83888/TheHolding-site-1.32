@@ -2,30 +2,18 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-09-11T19:09:00.695Z",
+  "lastUpdatedAt": "2026-09-11T19:16:01.141Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 994,
-    "vaultRunCount": 994,
+    "runCount": 995,
+    "vaultRunCount": 995,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
-    {
-      "generatedAt": "2026-08-17T14:44:05.651Z",
-      "status": "watch",
-      "snapshotHash": "55992106b8ae52af344f8946b1aba8ceddfe24ffcc5cf5040256c3a53cb13ee7",
-      "recordPath": "security/security-vault/2026/08/2026-08-17T14-44-05-651Z-55992106b8.json",
-      "recordHash": "80e64794dd7f32c0071277294bed67e0f31d4b1f087972dcbcf27004fd7f188a",
-      "findingCount": 36,
-      "criticalCount": 0,
-      "highCount": 6,
-      "newFindingCount": 25,
-      "resolvedFindingCount": 20
-    },
     {
       "generatedAt": "2026-08-17T15:11:30.592Z",
       "status": "watch",
@@ -8773,6 +8761,18 @@
       "highCount": 2,
       "newFindingCount": 1,
       "resolvedFindingCount": 3
+    },
+    {
+      "generatedAt": "2026-09-11T19:16:01.141Z",
+      "status": "watch",
+      "snapshotHash": "3aa88229096a966caa10697d8be2afdb4bc2bd82b286d548d8fb0e82693ffb1a",
+      "recordPath": "security/security-vault/2026/09/2026-09-11T19-16-01-141Z-3aa8822909.json",
+      "recordHash": "046e8e6af86b4c2fadbf7e23c4d9a48186589e563cb56cd7b436318baf9ba3c5",
+      "findingCount": 75,
+      "criticalCount": 0,
+      "highCount": 2,
+      "newFindingCount": 2,
+      "resolvedFindingCount": 1
     }
   ],
   "events": [
@@ -36967,6 +36967,39 @@
       "category": "dom-innerhtml",
       "summary": "Resolved: Dynamic innerHTML assignment detected.",
       "file": "onboarding/company-010-public-admission.mjs",
+      "entity": null
+    },
+    {
+      "id": "55f0f5116f55732aa93e8bbee0146c6e8e86144348d999d8dada9eaffb3e6f32",
+      "type": "finding-opened",
+      "detectedAt": "2026-09-11T19:16:01.141Z",
+      "findingId": "7627297e1b73ae9903e7aa8a316f06f800657a906fab08280a75230ff756ac2d",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Security-sensitive surface changed: .github/workflows/update-company-010-projectx-reference-apr.yml.",
+      "file": ".github/workflows/update-company-010-projectx-reference-apr.yml",
+      "entity": null
+    },
+    {
+      "id": "af9bc15cb1b6a2fdab472ad4390b1150334a8bf915c343c5e9ad4aa05ae1ce77",
+      "type": "finding-opened",
+      "detectedAt": "2026-09-11T19:16:01.141Z",
+      "findingId": "7c51358d4622615e70aa20448d8bdbc46d7ec8084d3eeb8741f581e80906b603",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Security-sensitive surface changed: .github/workflows/update-company-010-state.yml.",
+      "file": ".github/workflows/update-company-010-state.yml",
+      "entity": null
+    },
+    {
+      "id": "77001b48fe54abf77311cb26b9f5b8a551f16f7c73023f3df1e8045909066d13",
+      "type": "finding-resolved",
+      "detectedAt": "2026-09-11T19:16:01.141Z",
+      "findingId": "d994c7dda229e682bfa3deff4483d088634f1c9c824579cc6d3c3b66af7e5e34",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: .github/workflows/admit-company-010-public.yml.",
+      "file": ".github/workflows/admit-company-010-public.yml",
       "entity": null
     }
   ]
