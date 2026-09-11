@@ -1,6 +1,6 @@
 # The Holding — Autonomous Security Intelligence
 
-**Generated:** 2026-09-10T18:40:18.921Z
+**Generated:** 2026-09-11T07:52:08.444Z
 **Sentinel:** 0.2-browser-trust-aware-security-sentinel
 
 ## 2 high-signal security watch items detected; no critical secret exposure found.
@@ -25,8 +25,8 @@
 
 ## Permanent security memory
 
-- Security Vault runs: 966.
-- Latest record: `security/security-vault/2026/09/2026-09-10T18-40-18-921Z-25f1eb081b.json`.
+- Security Vault runs: 967.
+- Latest record: `security/security-vault/2026/09/2026-09-11T07-52-08-444Z-3aa673a022.json`.
 - Vault retention: indefinite / append-only hash chain.
 
 ---
