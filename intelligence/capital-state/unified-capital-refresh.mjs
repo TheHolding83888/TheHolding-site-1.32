@@ -1,14 +1,18 @@
 #!/usr/bin/env node
 /**
- * The Holding · Unified Capital Refresh v0.2.9
+ * The Holding · Unified Capital Refresh v0.2.10
  *
- * Orchestration only. Reuses existing canonical projectors/collectors/builders:
+ * Capital orchestration only. Reuses existing canonical projectors/collectors/builders:
  * Defitea projection -> YieldRing projection -> owner-balance site projection
  * -> Productivity collector -> Company #010 compatibility -> YieldRing overlay
  * -> VoteMarket income channels -> General Balance -> Company #007 current-state
- * downstream binding -> Capital State -> canonical public-site polish projection.
+ * downstream binding -> Capital State.
  *
- * v0.2.9 requires complete historical acquisition basis for the current
+ * Presentation materialization is intentionally not owned by this orchestrator.
+ * Capital may project canonical economic data into shared public surfaces, but
+ * homepage/navigation/report polish is a separate presentation responsibility.
+ *
+ * v0.2.10 preserves complete historical acquisition basis for the current
  * Defitea and YieldRing economic positions while preserving dynamic current
  * valuation from canonical market data. Owner evidence is not silently upgraded
  * to independently reproduced onchain evidence.
@@ -53,7 +57,6 @@ run('7/10 Apply VoteMarket supplementary income channels', ROOT, 'productivity/v
 run('8/10 Rebuild General Company Balance Sheet', ROOT, 'intelligence/capital-state/general-company-balance-sheet.mjs');
 run('9/10 Bind Company #007 current state downstream', ROOT, 'intelligence/capital-state/company-007-current-state-downstream.mjs');
 run('10/10 Build Capital State', ROOT, 'intelligence/capital-state/capital-state.mjs');
-run('Materialize canonical public-site polish', ROOT, 'companies/public-site-polish-projection.mjs');
 
 const defitea = readJson('companies/defitea-canonical-state.json');
 const canonical = readJson('companies/yieldring-canonical-state.json');
@@ -218,7 +221,7 @@ assert(companiesHtml.includes("id: 'bitcoin', qty: 0.00205, entry: 78038.7804878
 assert(companiesHtml.includes("const finiteUiNumber = v => v !== null") && companiesHtml.includes("costBasisStatus: costComplete ? 'complete' : 'partial'"), 'Registry partial cost-basis null guard missing');
 const collectionIndexV3 = ['data-th-collection-index-navigation-v3','window.__TH_COLLECTION_INDEX_NAV_V3__',"card.removeAttribute('href')",'ev.stopImmediatePropagation()','function waitForIndexReady',"panel.querySelector('.index-head')"].every(token => companiesHtml.includes(token));
 const retiredCollectionRouterPresent = ['data-th-collection-passport-routing-style','<script data-th-collection-passport-routing>','data-th-collection-uniform-explore','data-th-collection-index-entry-v2',"card.setAttribute('href','#index')"].some(token => companiesHtml.includes(token));
-assert(collectionIndexV3 && !retiredCollectionRouterPresent, 'Collection -> Index v3 public projection missing or retired Collection router survived');
+assert(collectionIndexV3 && !retiredCollectionRouterPresent, 'Capital projection damaged canonical Collection -> Index v3 presentation state');
 assert(yieldRingPage.includes('qty: 0.0334') && yieldRingPage.includes('qty: 678') && yieldRingPage.includes('qty: 1032'), 'YieldRing dedicated page projection drift');
 assert(company001Page.includes("id: 'bitcoin', name: 'BTC', proto: 'Bitcoin reserve', qty: 0.00205") && company001Page.includes('BTC is held as reserve capital'), 'Company #001 dedicated page projection drift');
 assert(singulPage.includes('const FIXED_DIEM_VALUE = 150') && singulPage.includes('owner-confirmed current snapshot'), 'Singul DIEM dedicated page projection drift');
@@ -247,6 +250,6 @@ console.log('\nUNIFIED CAPITAL REFRESH PASS', {
   company007TotalCapitalUsd:rookGeneral.totalCapitalUsd,
   networkTvlUsd: capital.network.networkTvlUsd,
   registryCompanies: capital.network.registryCompanyCount,
-  publicSitePolishMaterialized: true,
+  presentationMaterializationOwnedElsewhere: true,
   executionAuthority: capital.authority.executionAuthority
 });
