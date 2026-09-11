@@ -5,12 +5,17 @@ on:
     paths:
       - '.github/workflows/unified-capital-refresh.yml'
       - '.github/workflows/market-data-refresh.yml'
+      - '.github/workflows/validate-unified-capital-refresh.yml'
       - 'intelligence/capital-state/unified-capital-refresh.mjs'
       - 'intelligence/market-data/**'
       - 'companies/defitea-canonical-state.json'
       - 'companies/defitea-public-capital-projection.mjs'
       - 'companies/yieldring-canonical-state.json'
       - 'companies/yieldring-public-capital-projection.mjs'
+      - 'companies/company-001-owner-capital-snapshot.json'
+      - 'companies/owner-balance-site-projection.mjs'
+      - 'companies/public-page-market-runtime-projection.mjs'
+      - 'companies/public-site-polish-projection.mjs'
       - 'companies/votemarket-reference-state.json'
       - 'productivity/productivity-engine.mjs'
       - 'productivity/company-010-productivity-overlay.mjs'
@@ -127,6 +132,8 @@ jobs:
           if(!html.includes('costBasisUsd: 1121.3')||!html.includes('qty: 192, entry: 0.42'))throw new Error('Defitea AERO lot basis missing');
           if(!html.includes('costBasisUsd: 983.2386')||!html.includes('qty: 5, entry: 16.5'))throw new Error('Defitea FXN lot basis missing');
           if(!html.includes('const publicCompanyTvl = (key, fallback) =>')||!html.includes('canonicalNetworkTvl'))throw new Error('Companies Public Capital binding missing');
+          if(!html.includes('const PERFORMANCE_STATE_BY_REGISTRY = new Map([')||!html.includes('c.partialPct = f.partialPct;')||!html.includes('c.performanceDisplayStatus = f.performanceDisplayStatus;'))throw new Error('Passport partial Performance state propagation missing');
+          if(!html.includes('knownCostBasisUsd: 1707.3408')||!html.includes('knownCostBasisUsd: 210.24'))throw new Error('Defitea/YieldRing partial known-basis evidence missing');
           const y=p.companies?.['YieldRing.eth'];
           const pa=(y?.breakdown||[]).find(x=>x.engineId==='aerodrome_veaero'||x.principalId==='aerodrome-finance');
           const yc=(c.companies||[]).find(x=>x.registry==='002');
