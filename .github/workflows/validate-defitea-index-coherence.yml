@@ -9,7 +9,9 @@ on:
       - 'intelligence/market-data/public-capital-engine.mjs'
       - 'intelligence/capital-state/capital-state.json'
       - 'intelligence/capital-state/capital-state.mjs'
+      - 'companies/company-capital-state-contract.mjs'
       - 'companies/defitea-canonical-state.json'
+      - 'companies/defitea-public-capital-projection.mjs'
       - 'companies/index.html'
   workflow_dispatch:
 
@@ -32,12 +34,15 @@ jobs:
       - name: Rebuild Defitea capital surfaces from PR head
         run: |
           set -euo pipefail
+          node --check companies/company-capital-state-contract.mjs
+          node --check companies/defitea-public-capital-projection.mjs
+          node companies/defitea-public-capital-projection.mjs
           node --check intelligence/capital-state/capital-state.mjs
           node --check intelligence/market-data/public-capital-engine.mjs
           node intelligence/capital-state/capital-state.mjs
           node intelligence/market-data/public-capital-engine.mjs
 
-      - name: Prove Defitea fund/company/index coherence
+      - name: Prove Defitea fund/company/index/performance coherence
         run: |
           set -euo pipefail
           node --check intelligence/capital-state/defitea-index-coherence-acceptance.mjs
