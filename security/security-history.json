@@ -2,30 +2,18 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-09-11T14:54:28.552Z",
+  "lastUpdatedAt": "2026-09-11T15:06:46.274Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 980,
-    "vaultRunCount": 980,
+    "runCount": 981,
+    "vaultRunCount": 981,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
-    {
-      "generatedAt": "2026-08-17T04:05:33.174Z",
-      "status": "watch",
-      "snapshotHash": "60ce399e977c8724bae368c8db39da8773618e0e1fd9f854122a0c9143790089",
-      "recordPath": "security/security-vault/2026/08/2026-08-17T04-05-33-174Z-60ce399e97.json",
-      "recordHash": "df4eee3ec5c776af9e1985e42816b116ea1db1f3fff1c38fe2a6f3d67f15bc40",
-      "findingCount": 26,
-      "criticalCount": 0,
-      "highCount": 6,
-      "newFindingCount": 0,
-      "resolvedFindingCount": 0
-    },
     {
       "generatedAt": "2026-08-17T04:14:52.404Z",
       "status": "watch",
@@ -8773,6 +8761,18 @@
       "highCount": 2,
       "newFindingCount": 1,
       "resolvedFindingCount": 0
+    },
+    {
+      "generatedAt": "2026-09-11T15:06:46.274Z",
+      "status": "watch",
+      "snapshotHash": "7670ab3fc6282a78b8cd75d3d0896fd0f4947b39252392794745e065c3c0774f",
+      "recordPath": "security/security-vault/2026/09/2026-09-11T15-06-46-274Z-7670ab3fc6.json",
+      "recordHash": "ee92e6cdc745e6ff8b268ae0de2dedf015ff8dc534c1b919c52e70538ae4ec68",
+      "findingCount": 75,
+      "criticalCount": 0,
+      "highCount": 2,
+      "newFindingCount": 1,
+      "resolvedFindingCount": 2
     }
   ],
   "events": [
@@ -36285,6 +36285,39 @@
       "category": "critical-surface-change",
       "summary": "Security-sensitive surface changed: .github/workflows/validate-unified-capital-refresh.yml.",
       "file": ".github/workflows/validate-unified-capital-refresh.yml",
+      "entity": null
+    },
+    {
+      "id": "ca63e33f04d85d1740f290560d7d9c0e0c7b1b245f1b17adfa57e00ed5100466",
+      "type": "finding-opened",
+      "detectedAt": "2026-09-11T15:06:46.274Z",
+      "findingId": "316b2c6781bd055680fcd05fd3fb956f83186405e45f4cfee599b3efd9c10401",
+      "severity": "medium",
+      "category": "dom-innerhtml",
+      "summary": "Dynamic innerHTML assignment detected.",
+      "file": "companies/public-site-polish-materializer.mjs",
+      "entity": null
+    },
+    {
+      "id": "f6638f53ca2f74b5f0a9a29a083cbfdb1f1e64d012fd6c0086f8032b1c112973",
+      "type": "finding-resolved",
+      "detectedAt": "2026-09-11T15:06:46.274Z",
+      "findingId": "254a8ce0722486bb8fa4ffdb059cc4ecb8421fb3ff594cf0bf0d30a52a71ef51",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: .github/workflows/validate-unified-capital-refresh.yml.",
+      "file": ".github/workflows/validate-unified-capital-refresh.yml",
+      "entity": null
+    },
+    {
+      "id": "ead0233be4d32e8f997f948d2863e33bc11bc1410687724ef7817a643a999584",
+      "type": "finding-resolved",
+      "detectedAt": "2026-09-11T15:06:46.274Z",
+      "findingId": "79a183320227df82bc0005c6814a44c6413468a54159f7caa3ffbfc7e3a35d88",
+      "severity": "medium",
+      "category": "dom-innerhtml",
+      "summary": "Resolved: Dynamic innerHTML assignment detected.",
+      "file": "companies/public-site-polish-projection.mjs",
       "entity": null
     }
   ]
