@@ -1,8 +1,10 @@
 import fs from 'node:fs';
 
 const workflowPath = '.github/workflows/market-data-refresh.yml';
+const dailyWorkflowPath = '.github/workflows/market-data-coingecko-daily.yml';
 const contractPath = 'intelligence/market-data/market-data-scheduler-contract.json';
 const workflow = fs.readFileSync(workflowPath, 'utf8');
+const daily = fs.readFileSync(dailyWorkflowPath, 'utf8');
 const contract = JSON.parse(fs.readFileSync(contractPath, 'utf8'));
 
 function requireCondition(ok, message) {
@@ -27,6 +29,7 @@ requireCondition(contract.deliveryResilience?.validatedSnapshotPreservedAcrossUn
 requireCondition(contract.deliveryResilience?.liveRpcRecomputeAfterUnrelatedRebase === false, 'Unrelated rebase must not cause a second live RPC recompute');
 requireCondition(contract.deliveryResilience?.candidateSupersededWhenMarketInputsChangeAfterValidation === true, 'Post-validation Market Data input-change supersession boundary missing');
 requireCondition(contract.deliveryResilience?.publishRetryRevalidatesMainInputBoundary === true, 'Publish retry must re-check the main input boundary');
+requireCondition(contract.separationOfConcerns?.dailyCoinGeckoBaselineIsSeparate === true, 'Daily CoinGecko source-lane separation missing');
 requireCondition(contract.epistemics?.naturalScheduleProofRequired === true, 'Natural schedule proof boundary missing');
 requireCondition(contract.epistemics?.pushOrManualRunDoesNotProveSchedulerHealth === true, 'Scheduler epistemic boundary missing');
 requireCondition(contract.epistemics?.schedulerAttemptDoesNotEqualMaterialization === true, 'Attempt/materialization epistemic boundary missing');
@@ -47,11 +50,17 @@ requireCondition(contract.authority?.capitalExecution === false, 'Capital execut
 requireCondition(contract.authority?.walletAuthority === false, 'Wallet authority expanded');
 requireCondition(contract.authority?.methodologyMutationAuthority === false, 'Methodology mutation authority expanded');
 
-requireCondition(workflow.includes('# holding-workflow-definition-proof: intelligence/reliability/market-data-scheduler-workflow-definition-proof.mjs'), 'Workflow proof marker missing');
+// Both Market Data writers are proven by this one deterministic boundary proof.
+const proofMarker = '# holding-workflow-definition-proof: intelligence/reliability/market-data-scheduler-workflow-definition-proof.mjs';
+requireCondition(workflow.includes(proofMarker), 'Shared Market Data workflow proof marker missing');
+requireCondition(daily.includes(proofMarker), 'Daily CoinGecko workflow proof marker missing');
+
+// Shared Refresh is the only writer for canonical Market Data + onchain shadow.
 requireCondition(workflow.includes(`- cron: '${contract.cron}'`), 'Workflow primary cron does not match scheduler contract');
 requireCondition(workflow.includes(`- cron: '${contract.recoveryCron}'`), 'Workflow recovery cron does not match scheduler contract');
 requireCondition(workflow.includes('workflow_dispatch:'), 'Manual recovery trigger missing');
 requireCondition(workflow.includes('schedule:'), 'Natural schedule trigger missing');
+requireCondition(workflow.includes("- 'intelligence/market-data/market-data-coingecko.json'"), 'Daily source lane is not a Shared Refresh push dependency');
 requireCondition(workflow.includes("- 'intelligence/market-data/market-data-scheduler-contract.json'"), 'Scheduler contract is not a push dependency');
 requireCondition(workflow.includes("- 'intelligence/reliability/market-data-scheduler-workflow-definition-proof.mjs'"), 'Scheduler proof is not a push dependency');
 requireCondition(workflow.includes('group: shared-market-data-refresh'), 'Shared Market Data single-flight group drift');
@@ -73,6 +82,8 @@ requireCondition(!workflow.includes("- 'intelligence/capital-state/capital-state
 const publishStart = workflow.indexOf('- name: Publish canonical Market Data state safely');
 requireCondition(publishStart >= 0, 'Market Data publish step body missing');
 const publish = workflow.slice(publishStart);
+requireCondition(publish.includes('git add intelligence/market-data/market-data.json intelligence/market-data/onchain-price-shadow.json'), 'Shared Refresh canonical output staging drift');
+requireCondition(!/git add[^\n]*market-data-coingecko\.json/.test(publish), 'Shared Refresh regained Daily CoinGecko source-lane writer authority');
 requireCondition(publish.includes('validated_base="$(git rev-parse HEAD)"'), 'Validated base SHA is not captured before publish');
 requireCondition(publish.includes('market_input_paths=('), 'Market Data retry input boundary missing');
 requireCondition(publish.includes('changed_inputs=('), 'Market Data retry changed-input detection missing');
@@ -96,6 +107,35 @@ for (const token of [
   'intelligence/market-data/market-data-scheduler-contract.json',
   '.github/workflows/market-data-refresh.yml'
 ]) requireCondition(publish.includes(`'${token}'`), `Market Data retry input boundary missing: ${token}`);
+
+// Daily CoinGecko owns only the external source-lane snapshot. It may validate
+// canonical authority ephemerally, but it cannot publish canonical/public state.
+requireCondition(daily.includes("cron: '12 3 * * *'"), 'Daily CoinGecko schedule drift');
+requireCondition(daily.includes('workflow_dispatch:'), 'Daily CoinGecko manual recovery trigger missing');
+requireCondition(daily.includes('group: shared-market-data-refresh'), 'Daily and Shared Market Data writers must remain single-flight');
+requireCondition(/permissions:\s*\n\s*contents:\s*write/.test(daily), 'Daily source-lane repository writer authority missing');
+requireCondition(!/actions:\s*write/.test(daily), 'Daily workflow actions:write authority expanded');
+requireCondition(!/id-token:\s*write/.test(daily), 'Daily workflow id-token:write authority expanded');
+requireCondition(daily.includes("MARKET_DATA_DAILY_REFRESH: 'true'"), 'Daily external source-lane gate missing');
+requireCondition(!daily.includes('node intelligence/market-data/onchain-price-resolver.mjs'), 'Daily CoinGecko workflow must not perform onchain RPC observation');
+requireCondition(!daily.includes('node intelligence/market-data/public-capital-engine.mjs'), 'Daily CoinGecko workflow regained Public Capital materialization');
+requireCondition(!daily.includes('intelligence/market-data/public-capital-state.json'), 'Daily CoinGecko workflow regained Public Capital ownership');
+requireCondition(daily.includes('- name: Publish daily CoinGecko source lane safely'), 'Daily source-lane publish step missing');
+const dailyPublishStart = daily.indexOf('- name: Publish daily CoinGecko source lane safely');
+const dailyPublish = daily.slice(dailyPublishStart);
+requireCondition(dailyPublish.includes('git checkout -- intelligence/market-data/market-data.json'), 'Daily workflow must discard ephemeral canonical Market Data before publication');
+requireCondition(dailyPublish.includes('git add intelligence/market-data/market-data-coingecko.json'), 'Daily source-lane staging missing');
+requireCondition(!/git add[^\n]*market-data\.json/.test(dailyPublish), 'Daily workflow regained canonical Market Data writer authority');
+requireCondition(!/git add[^\n]*onchain-price-shadow\.json/.test(dailyPublish), 'Daily workflow regained onchain shadow writer authority');
+requireCondition(dailyPublish.includes('validated_base="$(git rev-parse HEAD)"'), 'Daily validated base SHA missing');
+requireCondition(dailyPublish.includes('daily_input_paths=('), 'Daily source-lane retry input boundary missing');
+requireCondition(dailyPublish.includes('Validated daily CoinGecko candidate superseded by newer source-lane inputs.'), 'Daily input-change supersession path missing');
+requireCondition(dailyPublish.includes('Unrelated main churn detected; preserving validated daily CoinGecko source snapshot through rebase.'), 'Daily unrelated-rebase preservation path missing');
+requireCondition(dailyPublish.includes('git rebase origin/main'), 'Daily bounded rebase retry missing');
+const dailyRebaseIndex = dailyPublish.indexOf('git rebase origin/main');
+const dailyAfterRebase = dailyPublish.slice(dailyRebaseIndex);
+requireCondition(!dailyAfterRebase.includes('market-data-engine.mjs'), 'Daily external source fetch must not rerun after unrelated rebase');
+requireCondition(!dailyAfterRebase.includes('market-data-authority-materializer.mjs'), 'Daily ephemeral authority materialization must not rerun after unrelated rebase');
 
 const dueGuard = "if: steps.cadence.outputs.due == 'true'";
 const dueGuardCount = workflow.split(dueGuard).length - 1;
@@ -124,23 +164,31 @@ for (const output of contract.downstreamOutputs || []) {
   requireCondition(!workflow.includes(output), `Downstream capital output must not be owned by Market Data workflow: ${output}`);
 }
 
-console.log('Shared Market Data resilient scheduler workflow definition PASS', {
+const noWalletPattern = /sendTransaction|eth_sendRawTransaction|eth_sendTransaction|\.transfer\(|\.approve\(|\.claim\(|\.vote\(/;
+requireCondition(!noWalletPattern.test(workflow), 'Shared Market Data workflow contains wallet/capital transaction behavior');
+requireCondition(!noWalletPattern.test(daily), 'Daily CoinGecko workflow contains wallet/capital transaction behavior');
+
+console.log('Market Data single-owner writer chain definition PASS', {
   primaryCron: contract.cron,
   recoveryCron: contract.recoveryCron,
+  dailyCron: '12 3 * * *',
   targetCadenceMinutes: contract.cadenceMinutes,
   schedulerAttemptCadenceMinutes: contract.schedulerAttemptCadenceMinutes,
   scheduledRefreshAdmissionAgeMinutes: contract.scheduledRefreshAdmissionAgeMinutes,
-  canonicalOutputCount: contract.canonicalOutputs.length,
+  dailyBaselineWriter: 'The Holding Market Data · Daily CoinGecko Baseline',
+  canonicalMarketDataWriter: 'The Holding Market Data · Shared Refresh',
   downstreamMaterializationOwner: contract.separationOfConcerns.publicCapitalMaterializationOwner,
+  dailyWritesCanonicalMarketData:false,
+  dailyWritesPublicCapital:false,
+  sharedWritesDailySourceLane:false,
+  sharedWritesPublicCapital:false,
   workflowCompletionHandoff:true,
   generationParityAdmission:true,
   validatedSnapshotPreservedAcrossUnrelatedRebase:true,
   liveRpcRecomputeAfterUnrelatedRebase:false,
   marketInputChangeSupersedesCandidate:true,
-  reverseCapitalStateWake:false,
-  publicCapitalWrittenHere:false,
   singleCanonicalWriter: contract.deliveryResilience.singleCanonicalWriter,
-  naturalScheduleProofRequired: contract.epistemics.naturalScheduleProofRequired,
   workflowDispatchAuthority: contract.authority.workflowDispatchAuthority,
-  capitalExecution: contract.authority.capitalExecution
+  capitalExecution: contract.authority.capitalExecution,
+  executionAuthority:'none'
 });
