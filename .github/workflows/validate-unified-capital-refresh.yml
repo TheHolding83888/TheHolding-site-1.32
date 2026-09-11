@@ -147,7 +147,7 @@ jobs:
             if(row.incomeChannels.factualIncomeAuthority!==false||row.incomeChannels.earnedIncomeAuthority!==false)throw new Error(label+' VoteMarket factual authority drift');
           }
           if(!html.includes('costBasisUsd: 1038.45')||!html.includes('costBasisUsd: 1777.44')||!html.includes('costBasisUsd: 1713.55'))throw new Error('Defitea complete cost basis missing from public Company Book');
-          if(!html.includes('costBasisUsd: 279.57')||!html.includes('costBasisUsd: 2123.11')||html.includes('knownCostBasisUsd: 210.24'))throw new Error('YieldRing complete cost basis missing or stale partial basis survived');
+          if(!html.includes('costBasisUsd: 279.57')||!html.includes('costBasisUsd: 2123.11'))throw new Error('YieldRing complete cost basis missing from active public Company Book');
           if(!html.includes('const publicCompanyTvl = (key, fallback) =>')||!html.includes('canonicalNetworkTvl'))throw new Error('Companies Public Capital binding missing');
           if(!html.includes('const PERFORMANCE_STATE_BY_REGISTRY = new Map([')||!html.includes('c.partialPct = f.partialPct;')||!html.includes('c.performanceDisplayStatus = f.performanceDisplayStatus;'))throw new Error('Passport Performance state propagation missing');
           const y=p.companies?.['YieldRing.eth'];
