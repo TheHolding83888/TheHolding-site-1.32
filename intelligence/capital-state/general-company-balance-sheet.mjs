@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 import path from 'node:path';
+import vm from 'node:vm';
 
 const ROOT = process.cwd();
 const OUT = path.join(ROOT, 'intelligence/capital-state/general-company-balance-sheet.json');
@@ -9,8 +10,6 @@ const MARKET_DATA = 'intelligence/market-data/market-data.json';
 const UI_BOOK_SOURCE = 'companies/index.html';
 const YIELD_RING_STATE = 'companies/yieldring-canonical-state.json';
 const COMPANY001_OWNER_SNAPSHOT = 'companies/company-001-owner-capital-snapshot.json';
-
-const EXPECTED_UI_BLOB_SHA = '034f85979ef855568c89d235f805dd475224f31c';
 
 const BOOK = {
   'defitea.eth': [
@@ -80,10 +79,93 @@ const SHARED_MARKET_IDS = ['bitcoin','ethereum','zksync'];
 const round = (n,d=6) => { const p=10**d; return Number.isFinite(Number(n)) ? Math.round(Number(n)*p)/p : null; };
 const readJson = rel => JSON.parse(fs.readFileSync(path.join(ROOT, rel),'utf8'));
 const sha256File = rel => crypto.createHash('sha256').update(fs.readFileSync(path.join(ROOT,rel))).digest('hex');
-const gitBlobSha = rel => {
-  const buf=fs.readFileSync(path.join(ROOT,rel));
-  return crypto.createHash('sha1').update(Buffer.from(`blob ${buf.length}\0`)).update(buf).digest('hex');
-};
+const sha256Json = value => crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
+
+function extractBalancedObject(text,objectStart) {
+  let depth=0;
+  let quote=null;
+  let escaped=false;
+  let lineComment=false;
+  let blockComment=false;
+  for(let i=objectStart;i<text.length;i+=1){
+    const ch=text[i];
+    const next=text[i+1]||'';
+    if(lineComment){
+      if(ch==='\n')lineComment=false;
+      continue;
+    }
+    if(blockComment){
+      if(ch==='*'&&next==='/'){blockComment=false;i+=1;}
+      continue;
+    }
+    if(quote){
+      if(escaped){escaped=false;continue;}
+      if(ch==='\\'){escaped=true;continue;}
+      if(ch===quote)quote=null;
+      continue;
+    }
+    if(ch==='/'&&next==='/'){lineComment=true;i+=1;continue;}
+    if(ch==='/'&&next==='*'){blockComment=true;i+=1;continue;}
+    if(ch==='\''||ch==='"'||ch==='`'){quote=ch;continue;}
+    if(ch==='{')depth+=1;
+    else if(ch==='}'){
+      depth-=1;
+      if(depth===0)return text.slice(objectStart,i+1);
+      if(depth<0)break;
+    }
+  }
+  throw new Error('companies/index.html COMPANY_BOOK balanced object boundary missing');
+}
+
+function readUiCompanyBook() {
+  const text=fs.readFileSync(path.join(ROOT,UI_BOOK_SOURCE),'utf8');
+  const startMarker='const COMPANY_BOOK = ';
+  const start=text.indexOf(startMarker);
+  if(start<0)throw new Error('companies/index.html COMPANY_BOOK source missing');
+  const objectStart=text.indexOf('{',start+startMarker.length);
+  if(objectStart<0)throw new Error('companies/index.html COMPANY_BOOK object start missing');
+  const literal=extractBalancedObject(text,objectStart);
+  let book;
+  try {
+    book=vm.runInNewContext(`(${literal})`,Object.create(null),{timeout:100});
+  } catch (error) {
+    throw new Error(`companies/index.html COMPANY_BOOK parse failed: ${error.message}`);
+  }
+  if(!book||typeof book!=='object'||Array.isArray(book))throw new Error('companies/index.html COMPANY_BOOK parsed to invalid value');
+  return book;
+}
+
+function semanticRows(rows=[]) {
+  if(!Array.isArray(rows))return null;
+  return rows.map(row=>({
+    id:String(row?.id||''),
+    qty:Number(row?.qty),
+    productivityOnly:row?.productivityOnly===true,
+    engineId:row?.productivityOnly===true&&row?.engineId?String(row.engineId):null
+  })).sort((a,b)=>`${a.id}|${a.productivityOnly?1:0}|${a.engineId||''}`.localeCompare(`${b.id}|${b.productivityOnly?1:0}|${b.engineId||''}`));
+}
+
+function bindUiCompanyBookSemantics(uiBook) {
+  const bound={};
+  for(const [,name] of REGISTRY){
+    const expected=semanticRows(BOOK[name]);
+    const actual=semanticRows(uiBook?.[name]);
+    if(!expected||!actual)throw new Error(`${name}: browser Company Book semantic rows missing`);
+    if(actual.length!==expected.length)throw new Error(`${name}: browser Company Book row-count drift expected=${expected.length} actual=${actual.length}`);
+    for(let i=0;i<expected.length;i+=1){
+      const e=expected[i];
+      const a=actual[i];
+      if(a.id!==e.id||a.productivityOnly!==e.productivityOnly||a.engineId!==e.engineId)throw new Error(`${name}: browser Company Book identity/inclusion drift at row ${i+1}`);
+      if(!Number.isFinite(a.qty)||Math.abs(a.qty-e.qty)>Math.max(1e-9,Math.abs(e.qty)*1e-9))throw new Error(`${name}: browser Company Book quantity drift for ${e.id}${e.engineId?`/${e.engineId}`:''}`);
+    }
+    bound[name]=actual;
+  }
+  return {
+    companyCount:Object.keys(bound).length,
+    semanticFields:['id','qty','productivityOnly','engineId'],
+    sha256:sha256Json(bound)
+  };
+}
 
 function canonicalMarketPrices() {
   const market=readJson(MARKET_DATA);
@@ -141,9 +223,6 @@ const productivity=readJson(PRODUCTIVITY);
 const yieldRingState=readJson(YIELD_RING_STATE);
 const company001OwnerSnapshot=readJson(COMPANY001_OWNER_SNAPSHOT);
 if (!['1.15','1.16'].includes(productivity.version)) throw new Error(`unexpected Productivity version ${productivity.version}`);
-if (gitBlobSha(UI_BOOK_SOURCE) !== EXPECTED_UI_BLOB_SHA) {
-  throw new Error('companies/index.html changed since Company Book normalization; review browser Company Book before publishing balance sheet');
-}
 if(yieldRingState?.company!=='YieldRing.eth'||yieldRingState?.authority?.executionAuthority!=='none')throw new Error('YieldRing canonical state invalid');
 if(company001OwnerSnapshot?.company!=='05081966.eth'||company001OwnerSnapshot?.authority?.executionAuthority!=='none')throw new Error('Company #001 owner snapshot invalid');
 
@@ -158,6 +237,7 @@ for(const p of company001OwnerSnapshot.positions||[]){
   BOOK['05081966.eth'].push({id:p.assetId,qty:Number(p.quantity),layer:p.primaryCapitalLayer,priceSource:'shared-market-data',evidenceStatus:p.evidenceStatus||'owner-provided-current',note:p.note||null,entryPriceUsd:Number(p.entryPriceUsd),costBasisUsd:Number(p.costBasisUsd),sourceType:p.sourceType||'owner-confirmed-manual-current-snapshot'});
 }
 
+const browserCompanyBookBinding=bindUiCompanyBookSemantics(readUiCompanyBook());
 const market=canonicalMarketPrices();
 const companies=[];
 let networkTotal=0;
@@ -250,7 +330,7 @@ for (const [registry,name] of REGISTRY) {
 for (const k of Object.keys(layerTotals)) layerTotals[k]=round(layerTotals[k]);
 const output={
   version:'0.1-general-company-balance-sheet',
-  engineVersion:'0.2.2-per-asset-fallback-consumer',
+  engineVersion:'0.2.3-semantic-company-book-guard',
   generatedAt:new Date().toISOString(),status:'ok',
   purpose:'Machine-readable total-capital binding for the eight general Registry companies. Browser Company Book remains a reviewed baseline; provenance-explicit canonical owner snapshots may bridge current capital until unified blockchain-native discovery covers those positions. Productive exposure is reconciled without conflating Productivity with primary capital layer.',
   authority:{readOnly:true,executionAuthority:'none',capitalExecution:false,allocationAuthority:false,policyMutationAuthority:false,methodologyMutationAuthority:false},
@@ -258,6 +338,8 @@ const output={
     unknownPolicy:'unknown != zero',
     partialCostBasisIsNotTotal:true,
     ownerConfirmedManualSnapshotIsNotOnchainObservation:true,
+    browserCompanyBookGuard:'semantic-quantity-and-inclusion-binding',
+    publicSitePolishDoesNotInvalidateCompanyBook:true,
     marketPriceAuthority:market.deterministicFixture?'deterministic zero-request CI fixture':'canonical per-asset Market Data; onchain primary with explicit bounded CoinGecko fallback; no direct external price request',
     deterministicValidationFixture:market.deterministicFixture,
     perAssetFallbackAllowed:!market.deterministicFixture,
@@ -267,7 +349,7 @@ const output={
     layerTaxonomy:['foundation','productive-dividend','stable-reserve','rwa','venture','unclassified']
   },
   sourceState:{
-    browserCompanyBook:{file:UI_BOOK_SOURCE,gitBlobSha:EXPECTED_UI_BLOB_SHA,sha256:sha256File(UI_BOOK_SOURCE),role:'reviewed browser Company Book baseline; current canonical owner-state overlays are explicit and independently identified'},
+    browserCompanyBook:{file:UI_BOOK_SOURCE,semanticBindingSha256:browserCompanyBookBinding.sha256,semanticFields:browserCompanyBookBinding.semanticFields,companyCount:browserCompanyBookBinding.companyCount,sha256:sha256File(UI_BOOK_SOURCE),role:'reviewed browser Company Book semantic quantities/inclusion; unrelated public-site polish may change the surrounding HTML without invalidating capital normalization'},
     yieldRingCanonicalState:{file:YIELD_RING_STATE,version:yieldRingState.version||null,effectiveAt:yieldRingState.effectiveAt||null,sha256:sha256File(YIELD_RING_STATE),role:'current canonical YieldRing quantities and provenance'},
     company001OwnerSnapshot:{file:COMPANY001_OWNER_SNAPSHOT,version:company001OwnerSnapshot.version||null,asOf:company001OwnerSnapshot.asOf||null,sha256:sha256File(COMPANY001_OWNER_SNAPSHOT),role:'provenance-explicit temporary current-capital bridge; not independently reproduced onchain'},
     productivity:{file:PRODUCTIVITY,version:productivity.version,generatedAt:productivity.generatedAt||null,sha256:sha256File(PRODUCTIVITY),role:'productive quantity/exposure reconciliation and productive-asset current prices'},
@@ -285,7 +367,7 @@ const output={
   gaps:[
     {id:'company-009-owner-observed-weth-proof',severity:'evidence-quality',affects:['company-009-foundation-provenance'],detail:'0.1606 WETH remains owner-observed and is not silently represented as independently reproduced onchain evidence.'},
     {id:'company-002-frax-cost-basis-partial',severity:'evidence-quality',affects:['company-002-performance-cost-basis'],detail:'YieldRing current FRAX principal is 1,032; cost basis for the additional 232 FRAX remains UNKNOWN and is not treated as zero.'},
-    {id:'company-001-btc-manual-current-snapshot',severity:'evidence-quality',affects:['company-001-current-capital-provenance'],detail:'0.00126 BTC is owner-confirmed current capital and explicitly remains manual evidence until blockchain-native discovery reproduces it.'},
+    {id:'company-001-btc-manual-current-snapshot',severity:'evidence-quality',affects:['company-001-current-capital-provenance'],detail:'0.00205 BTC is owner-confirmed current capital and explicitly remains manual evidence until blockchain-native discovery reproduces it.'},
     {id:'unclassified-zk-layer',severity:'classification',affects:['registry-007-layer-allocation'],detail:'ZK is included in total capital but remains unclassified rather than being promoted into Foundation/Productive/RWA/Venture without a proven economic-layer rule.'}
   ]
 };
