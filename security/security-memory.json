@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-11T08:59:09.141Z",
+  "generatedAt": "2026-09-11T09:23:29.317Z",
   "status": "watch",
-  "snapshotHash": "980ba7aeb2469eba8456ea4a1d81db9c350afe74df586bd76d94d5dce2f94b8d",
+  "snapshotHash": "8caa264dd7f053fd633c5dcc51858ea8c09601fd71749cb36a8774fbcd9d96b6",
   "repository": {
-    "filesScanned": 1195,
-    "bytesScanned": 31239087,
+    "filesScanned": 1196,
+    "bytesScanned": 31239984,
     "criticalHashes": {
       ".github/workflows/admit-company-010-public.yml": "5feffbf58388675952487c3462d2f9149eecec6f3795483087010dd0d3b19cfb",
       ".github/workflows/ask-experience.yml": "deb9c4e1025390563f8a866f6ddf1c7870e748cbd6aba13fdbd6da2d38e983d4",
@@ -105,7 +105,7 @@
       ".github/workflows/validate-onchain-market-data.yml": "531fe2816eacb3df7537bf51ce238a244d122f091e60f68f4ac2ffc2fe9d2173",
       ".github/workflows/validate-ovr-onchain-market-data.yml": "148d32c7e70bdfadb4b6ad1a9c67a857a2820385ceb88939a509eecaea929f58",
       ".github/workflows/validate-productivity-overlay-order.yml": "630be78eace3f6629bec3e72b0857c0c992dafcb6728da365fbb6c9de56f5c12",
-      ".github/workflows/validate-unified-capital-refresh.yml": "c4f5e89cf57231c3ace2ce98a5896218beff7d311752445233325998e850933e",
+      ".github/workflows/validate-unified-capital-refresh.yml": "1ac39a95bfdd44c5a497bdce428a650a5c92f100c1ada56be7098bdce06e1c4c",
       ".github/workflows/validate-yb-curve-crvusd-onchain-market-data.yml": "3444c5a6aac01bb33d72505a5e09a2f7edf4bc6f372c0276b9833cb56ccc4e7c",
       ".github/workflows/validate-yieldring-capital-state.yml": "72851330416153d65c8a9d11d800bedd3c1bd70a894dd7abc6a393b55f1ce31c",
       ".github/workflows/validate-yieldring-production-cascade.yml": "2e4d0b65e8b6e4608587e6c85f843d59e17832838af241fcb9d95b9d122c5e13",
@@ -167,7 +167,7 @@
       ".github/workflows/verify-vlcvx-votium-economic-candidate.yml": "45b319c29efac35fbfaf305da3f3ce153fd2e1bd733c53cf6787a5a19d08f694",
       ".github/workflows/workflow-control-plane.yml": "ee1603b549f0379dfbecbc28c46f60a59bd0b0d2491169e848575281626d01d8",
       "agents/index.html": "54530f3799b289c08b30e5a7f4010957bce22d9a768b1908f5896e4bee0fa915",
-      "companies/index.html": "1f4a51959e18733c60891a04e24edfe8de1eb7df561d06d381b29d216612f747",
+      "companies/index.html": "bc54292f43ae953769fc1f5e3848db244499327147370542c95e76e553e43e07",
       "index.html": "c389336f7ae553248a373f14323cc0b4f81bf345ff82e077225c6401669d769d",
       "intelligence/change-intelligence-engine.mjs": "6b9ef0728e0df7eb217009251e85d5efc6d059b03419f098a1387de46631519d",
       "monetra/index.html": "208ca75cfa060e3e93c5377c73b4497cc88fdbf7816590f2ecd8f7d5828ffb33",
@@ -335,7 +335,7 @@
         "classification": "trusted-canonical-company-registry-and-generated-data",
         "sinkCount": 19,
         "expectedCount": 18,
-        "currentGitBlobSha1": "9e6e2b582eb7dc9e1054c8d5ca2b160072bca67f",
+        "currentGitBlobSha1": "f0703954b3c3e3ef66044f57a1b90eb336258aab",
         "reviewedGitBlobSha1": "def951f9432bfe600f29bdbbf1c26dbd58655b0d",
         "rationale": null
       },
@@ -491,7 +491,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Thu, 10 Sep 2026 16:13:08 GMT",
+        "lastModified": "Thu, 10 Sep 2026 04:08:54 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -527,6 +527,34 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "c2c468d2bfd408d86339364d3bf8f15116a02b9b951dad56ee2df641f35cecba",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/validate-unified-capital-refresh.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/validate-unified-capital-refresh.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "c4f5e89cf57231c3ace2ce98a5896218beff7d311752445233325998e850933e",
+        "currentSha256": "1ac39a95bfdd44c5a497bdce428a650a5c92f100c1ada56be7098bdce06e1c4c"
+      }
+    },
+    {
+      "id": "27c01efc3bd14783f751d3cfe71e3afc452a785581e836e7695a169695eb960a",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": "companies/index.html",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: companies/index.html.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "1f4a51959e18733c60891a04e24edfe8de1eb7df561d06d381b29d216612f747",
+        "currentSha256": "bc54292f43ae953769fc1f5e3848db244499327147370542c95e76e553e43e07"
+      }
     },
     {
       "id": "e0355b82064396fc141e48b5356209bc9cc44e7a4a2b15f7fe18f5dc61f03a0f",
@@ -612,7 +640,7 @@
       "evidence": null
     },
     {
-      "id": "453bb51617b6b78c627c74d12557f2eb35b4d7b205f003c87e60880b032f7937",
+      "id": "7a0a7b21a06a8a12cf0844c6116353926d1800ce278d4c7477150c622e2f40a0",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
@@ -623,13 +651,13 @@
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "def951f9432bfe600f29bdbbf1c26dbd58655b0d",
-        "currentGitBlobSha1": "9e6e2b582eb7dc9e1054c8d5ca2b160072bca67f",
+        "currentGitBlobSha1": "f0703954b3c3e3ef66044f57a1b90eb336258aab",
         "expectedCount": 18,
         "currentCount": 19
       }
     },
     {
-      "id": "8ca42c878c736eea91e3d003178cdf2a17dc8106d5f320520424403a0f9cbb4c",
+      "id": "4233284e7c37f87326412e75a9d79ffe63c5a60c5bd161d54990cad58ce24334",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
@@ -640,13 +668,13 @@
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "def951f9432bfe600f29bdbbf1c26dbd58655b0d",
-        "currentGitBlobSha1": "9e6e2b582eb7dc9e1054c8d5ca2b160072bca67f",
+        "currentGitBlobSha1": "f0703954b3c3e3ef66044f57a1b90eb336258aab",
         "expectedCount": 18,
         "currentCount": 19
       }
     },
     {
-      "id": "a0eff4d930e41a843eaa366acfcaf206b53e4856e08ea2eac1ce3e0505c77e62",
+      "id": "93c3e2580bcab127568c04c1a8e18d519c1aa6386aa9ccbbaf2cd463ee0a5d68",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
@@ -657,13 +685,13 @@
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "def951f9432bfe600f29bdbbf1c26dbd58655b0d",
-        "currentGitBlobSha1": "9e6e2b582eb7dc9e1054c8d5ca2b160072bca67f",
+        "currentGitBlobSha1": "f0703954b3c3e3ef66044f57a1b90eb336258aab",
         "expectedCount": 18,
         "currentCount": 19
       }
     },
     {
-      "id": "1ae555c9ca32bc4bed68834aca958bcdf994b5fbd46bd9b46dee5aa8131cfbcc",
+      "id": "881042bab73197fd001819b3e9d66e3e25b122e1668e5cf4c600699690813b80",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
@@ -674,13 +702,13 @@
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "def951f9432bfe600f29bdbbf1c26dbd58655b0d",
-        "currentGitBlobSha1": "9e6e2b582eb7dc9e1054c8d5ca2b160072bca67f",
+        "currentGitBlobSha1": "f0703954b3c3e3ef66044f57a1b90eb336258aab",
         "expectedCount": 18,
         "currentCount": 19
       }
     },
     {
-      "id": "101b8d04e9be459869c08cf7d9abb3ea8a6ba360070ed9f5d7a05380904b3d6e",
+      "id": "4fe804ebc174adc1b36f83b573fbdc8b9de140e78b60c92a740d0493661bea78",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
@@ -691,13 +719,13 @@
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "def951f9432bfe600f29bdbbf1c26dbd58655b0d",
-        "currentGitBlobSha1": "9e6e2b582eb7dc9e1054c8d5ca2b160072bca67f",
+        "currentGitBlobSha1": "f0703954b3c3e3ef66044f57a1b90eb336258aab",
         "expectedCount": 18,
         "currentCount": 19
       }
     },
     {
-      "id": "691e9c9f9b1c1f03a77ac2922e66cee2b6a3f1d6e589834435131b6bce0cda17",
+      "id": "6f584b680799678207c5761bfc9a8ec87f40c1d48de1ca073a979ef28cdf4900",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
@@ -708,13 +736,13 @@
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "def951f9432bfe600f29bdbbf1c26dbd58655b0d",
-        "currentGitBlobSha1": "9e6e2b582eb7dc9e1054c8d5ca2b160072bca67f",
+        "currentGitBlobSha1": "f0703954b3c3e3ef66044f57a1b90eb336258aab",
         "expectedCount": 18,
         "currentCount": 19
       }
     },
     {
-      "id": "c28622e2913ec5e8e8d3c1d037c17ac0065f4502cd2e8e7a7e7aa3b1ad430be6",
+      "id": "074229c9868c8ae53e9f924e5937c8f29a926b17e319900a38def69b652e3ef1",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
@@ -725,13 +753,13 @@
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "def951f9432bfe600f29bdbbf1c26dbd58655b0d",
-        "currentGitBlobSha1": "9e6e2b582eb7dc9e1054c8d5ca2b160072bca67f",
+        "currentGitBlobSha1": "f0703954b3c3e3ef66044f57a1b90eb336258aab",
         "expectedCount": 18,
         "currentCount": 19
       }
     },
     {
-      "id": "3033d831ace21bfaa22d114706c8edf23c80d074c5b3ab0745c1a4eb3962f61b",
+      "id": "99e32942b43dcdf5b35b92a3b35b80192623caaccc49e1a139f865d63dd8fc69",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
@@ -742,13 +770,13 @@
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "def951f9432bfe600f29bdbbf1c26dbd58655b0d",
-        "currentGitBlobSha1": "9e6e2b582eb7dc9e1054c8d5ca2b160072bca67f",
+        "currentGitBlobSha1": "f0703954b3c3e3ef66044f57a1b90eb336258aab",
         "expectedCount": 18,
         "currentCount": 19
       }
     },
     {
-      "id": "db318e89a24834ae9659bfeefce6bf36fe68d476ef575368dd9d63852c2e61e5",
+      "id": "4a8abcb83a7f452f7b14f0354bfb9479bd22fb74f2df169691a18f3e86bb66c2",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
@@ -759,13 +787,13 @@
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "def951f9432bfe600f29bdbbf1c26dbd58655b0d",
-        "currentGitBlobSha1": "9e6e2b582eb7dc9e1054c8d5ca2b160072bca67f",
+        "currentGitBlobSha1": "f0703954b3c3e3ef66044f57a1b90eb336258aab",
         "expectedCount": 18,
         "currentCount": 19
       }
     },
     {
-      "id": "dac6afd1ca1636da5ac5e47043009f5cc2f465acc3445f3e47776bd1bc9cb401",
+      "id": "94f17ce82614e2decc2c1f307b06285029eba9b83df7c16a182edaea188699fa",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
@@ -776,13 +804,13 @@
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "def951f9432bfe600f29bdbbf1c26dbd58655b0d",
-        "currentGitBlobSha1": "9e6e2b582eb7dc9e1054c8d5ca2b160072bca67f",
+        "currentGitBlobSha1": "f0703954b3c3e3ef66044f57a1b90eb336258aab",
         "expectedCount": 18,
         "currentCount": 19
       }
     },
     {
-      "id": "c9148afb04274a650ac6c13586bfda43224afff395754e778d8a35f4c6d0e1ff",
+      "id": "2b43240f8999d095c85d2819bc2d498d847944c744921a0270fe1a51e6ec142f",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
@@ -793,13 +821,13 @@
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "def951f9432bfe600f29bdbbf1c26dbd58655b0d",
-        "currentGitBlobSha1": "9e6e2b582eb7dc9e1054c8d5ca2b160072bca67f",
+        "currentGitBlobSha1": "f0703954b3c3e3ef66044f57a1b90eb336258aab",
         "expectedCount": 18,
         "currentCount": 19
       }
     },
     {
-      "id": "362415d1cd418033b594c91ec2c1ad052131d7567ce860a6335ba4cec3189730",
+      "id": "094fd7470bde61ee8a79741195989eff4408050580d1b565514380a7d3315bb6",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
@@ -810,13 +838,13 @@
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "def951f9432bfe600f29bdbbf1c26dbd58655b0d",
-        "currentGitBlobSha1": "9e6e2b582eb7dc9e1054c8d5ca2b160072bca67f",
+        "currentGitBlobSha1": "f0703954b3c3e3ef66044f57a1b90eb336258aab",
         "expectedCount": 18,
         "currentCount": 19
       }
     },
     {
-      "id": "16f743145e47b7bb2ff2848e2ceff81c558bbd6393d6158cb3b5d13348019ca2",
+      "id": "0082e2fd93b20b5e6426d72a0aa7bb1e2baacd47213863da8e7e1ee0b2c66026",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
@@ -827,13 +855,13 @@
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "def951f9432bfe600f29bdbbf1c26dbd58655b0d",
-        "currentGitBlobSha1": "9e6e2b582eb7dc9e1054c8d5ca2b160072bca67f",
+        "currentGitBlobSha1": "f0703954b3c3e3ef66044f57a1b90eb336258aab",
         "expectedCount": 18,
         "currentCount": 19
       }
     },
     {
-      "id": "b537ef857e199b42148d59f8d428c0a7100061109e8977da177243362f0880c4",
+      "id": "d0e8aac647fe4969d46854fb48d26b046b23313eeb7f5f105bfe93f8740e3f30",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
@@ -844,13 +872,13 @@
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "def951f9432bfe600f29bdbbf1c26dbd58655b0d",
-        "currentGitBlobSha1": "9e6e2b582eb7dc9e1054c8d5ca2b160072bca67f",
+        "currentGitBlobSha1": "f0703954b3c3e3ef66044f57a1b90eb336258aab",
         "expectedCount": 18,
         "currentCount": 19
       }
     },
     {
-      "id": "ff29f8c79891d111abc01f54900a9a4a010774eac3d30b1c182c6855453ee4d0",
+      "id": "5f8dd8fa4eb49adde138f3de2e1a88879c2cba734d1f68497b17be57c9477e25",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
@@ -861,13 +889,13 @@
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "def951f9432bfe600f29bdbbf1c26dbd58655b0d",
-        "currentGitBlobSha1": "9e6e2b582eb7dc9e1054c8d5ca2b160072bca67f",
+        "currentGitBlobSha1": "f0703954b3c3e3ef66044f57a1b90eb336258aab",
         "expectedCount": 18,
         "currentCount": 19
       }
     },
     {
-      "id": "98f33a058ef727a771d46f22bd6d1abcff8459d23fc55763d680b928b0bd9c33",
+      "id": "1ba2e7d23bfcc707fe8083293f0351e850952cb37e06575da1872af3c26327e2",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
@@ -878,13 +906,13 @@
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "def951f9432bfe600f29bdbbf1c26dbd58655b0d",
-        "currentGitBlobSha1": "9e6e2b582eb7dc9e1054c8d5ca2b160072bca67f",
+        "currentGitBlobSha1": "f0703954b3c3e3ef66044f57a1b90eb336258aab",
         "expectedCount": 18,
         "currentCount": 19
       }
     },
     {
-      "id": "0fffe1b8f1fa8e0d0017cd5531627fc808b424e6cf0c8e1688b6880cebda83bb",
+      "id": "b34476bb38fbe68c534b510db965110df22a8b99bd1f5d0c70ba6dad39433f11",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
@@ -895,13 +923,13 @@
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "def951f9432bfe600f29bdbbf1c26dbd58655b0d",
-        "currentGitBlobSha1": "9e6e2b582eb7dc9e1054c8d5ca2b160072bca67f",
+        "currentGitBlobSha1": "f0703954b3c3e3ef66044f57a1b90eb336258aab",
         "expectedCount": 18,
         "currentCount": 19
       }
     },
     {
-      "id": "ddaefd3ce29f87c8943b2d380d3b6388baccfbaa2b6e454fa33ff819d77520a1",
+      "id": "7b4df0932a3e127fb211775d112377244c95cc97b357e363d90b9d2271c6ba62",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
@@ -912,24 +940,24 @@
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "def951f9432bfe600f29bdbbf1c26dbd58655b0d",
-        "currentGitBlobSha1": "9e6e2b582eb7dc9e1054c8d5ca2b160072bca67f",
+        "currentGitBlobSha1": "f0703954b3c3e3ef66044f57a1b90eb336258aab",
         "expectedCount": 18,
         "currentCount": 19
       }
     },
     {
-      "id": "665d918c261824d49d7feb72e953143cfeac97e298799bbb72fa7f21e64af8dc",
+      "id": "00a6bb8b2f2fcce16924155082a232ac1dee1db238a4cffa44487f43ebf725ac",
       "severity": "medium",
       "category": "dom-innerhtml",
       "file": "companies/index.html",
-      "line": 15024,
+      "line": 14761,
       "entity": null,
       "summary": "Dynamic innerHTML assignment detected.",
       "whyItMatters": "If any assigned value later becomes user-controlled or external data, this can become a DOM-XSS sink.",
       "evidence": {
         "reviewInvalidated": true,
         "expectedGitBlobSha1": "def951f9432bfe600f29bdbbf1c26dbd58655b0d",
-        "currentGitBlobSha1": "9e6e2b582eb7dc9e1054c8d5ca2b160072bca67f",
+        "currentGitBlobSha1": "f0703954b3c3e3ef66044f57a1b90eb336258aab",
         "expectedCount": 18,
         "currentCount": 19
       }
@@ -1548,10 +1576,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 973,
+    "runCount": 974,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/09/2026-09-11T08-59-09-141Z-980ba7aeb2.json",
-    "latestRecordHash": "ef182e9e842042fa9a11e0c3fa8412023eeced86bb886a21a40de05501b69ca3",
+    "latestRecordPath": "security/security-vault/2026/09/2026-09-11T09-23-29-317Z-8caa264dd7.json",
+    "latestRecordHash": "5d52b6f1920f5715ac8d80c8342ffee2be24c341d7d114baccf5cc67d63f77fd",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
