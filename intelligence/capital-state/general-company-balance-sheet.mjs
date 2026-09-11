@@ -17,7 +17,7 @@ const BOOK = {
     { id:'convex-finance', qty:1333, layer:'productive-dividend' },
     { id:'curve-dao-token', qty:4125, layer:'productive-dividend' },
     { id:'pendle', qty:500, layer:'productive-dividend' },
-    { ieÚ'fxn-token', qty:64.81, layer:'productive-dividend' },
+    { id:'fxn-token', qty:64.81, layer:'productive-dividend' },
     { id:'yield-basis', qty:10846, layer:'productive-dividend' },
     { id:'frax-share', qty:4456, layer:'productive-dividend', evidenceStatus:'owner-provided-current', note:'Current Defitea veFRAX principal; acquisition basis for added 232 remains UNKNOWN/partial and is not required for current-capital valuation.' },
     { id:'velodrome-finance', qty:12180, layer:'productive-dividend' },
