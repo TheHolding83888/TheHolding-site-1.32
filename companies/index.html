@@ -138,7 +138,8 @@
         try {
             var allowed = { collection:1, index:1, stable:1 };
             var hash = String(location.hash || '').toLowerCase();
-            var fromHash = hash === '#index' ? 'index' : (hash === '#stable-index' ? 'stable' : (hash === '#collection' ? 'collection' : ''));
+            var passportHash = hash.match(/^#passport-(\d{3})$/);
+            var fromHash = passportHash ? (passportHash[1] === '008' ? 'stable' : 'index') : (hash === '#index' ? 'index' : (hash === '#stable-index' ? 'stable' : (hash === '#collection' ? 'collection' : '')));
             var saved = sessionStorage.getItem('thCapitalSurfaceMode') || '';
             var mode = allowed[fromHash] ? fromHash : (allowed[saved] ? saved : 'collection');
             document.documentElement.setAttribute('data-capital-mode', mode);
@@ -14564,6 +14565,8 @@ function finalizeReloadRestore() {
     window.addEventListener('scroll', updateSubnav, { passive:true });
     window.addEventListener('resize', updateSubnav, { passive:true });
 
+    window.thSelectCapitalMode = selectMode;
+
     window.addEventListener('hashchange', function(){
         const mode = hashMode();
         if (mode) selectMode(mode, { scroll:true, hash:false });
@@ -14664,5 +14667,336 @@ function finalizeReloadRestore() {
 })();</script>
 
 <script src="/companies/company-010-public-adapter.js" defer data-company-010-public-adapter></script>
+
+<style data-th-collection-passport-routing-style>
+    #companiesGrid .company-card.th-passport-entry { cursor: pointer; }
+    #companiesGrid .company-card.th-passport-entry:focus-visible {
+        outline: 1px solid var(--gold-line);
+        outline-offset: 4px;
+    }
+</style>
+<script data-th-collection-passport-routing>
+(function(){
+    'use strict';
+    var REGISTRY_TO_NAME = {
+        '001':'05081966.eth',
+        '002':'YieldRing.eth',
+        '003':'dinaz.eth',
+        '004':'defitea.eth',
+        '005':'0x5860...83CA8.eth',
+        '006':'aerocvxyb.eth',
+        '007':"Rook's portfolio",
+        '008':'Monetra.eth',
+        '009':'1milliondollar.eth',
+        '010':'Cypher'
+    };
+    var HASH_RE = /^#passport-(\d{3})$/;
+    var RETRY_MS = 80;
+    var RETRY_WINDOW_MS = 6000;
+    var locationSyncTimer = 0;
+
+    function registryFromCard(card){
+        var row = card && card.querySelector('.cc-regnum');
+        var match = String(row && row.textContent || '').match(/(?:Registry|Реестр)\s*·\s*(\d{3})/i);
+        if (!match) match = String(row && row.textContent || '').match(/·\s*(\d{3})/);
+        return match ? match[1] : '';
+    }
+    function registryFromItem(item){
+        if (!item) return '';
+        if (item.dataset.thPassportRegistry) return item.dataset.thPassportRegistry;
+        var name = item.dataset.nm || '';
+        return Object.keys(REGISTRY_TO_NAME).find(function(reg){ return REGISTRY_TO_NAME[reg] === name; }) || '';
+    }
+    function markCards(){
+        document.querySelectorAll('#companiesGrid .company-card:not(.placeholder)').forEach(function(card){
+            var reg = registryFromCard(card);
+            var name = REGISTRY_TO_NAME[reg];
+            if (!name) return;
+            card.classList.add('th-passport-entry');
+            card.dataset.thPassportRegistry = reg;
+            card.dataset.thPassportCompany = name;
+            if (card.tagName !== 'A') {
+                card.setAttribute('role','button');
+                card.setAttribute('tabindex','0');
+            }
+            var visibleName = card.querySelector('.cc-name');
+            var registryText = String(card.querySelector('.cc-regnum') && card.querySelector('.cc-regnum').textContent || '');
+            var isRu = /^ru(?:-|$)/i.test(document.documentElement.lang || '') || /Реестр/i.test(registryText);
+            card.setAttribute('aria-label',(isRu ? 'Открыть паспорт компании · ' : 'Open Company Passport · ') + String(visibleName && visibleName.textContent || name).trim());
+        });
+    }
+    function selectSurface(mode){
+        if (typeof window.thSelectCapitalMode === 'function') {
+            window.thSelectCapitalMode(mode,{scroll:false,hash:false});
+            return true;
+        }
+        var btn = document.querySelector('[data-capital-mode-btn="' + mode + '"]');
+        if (!btn) return false;
+        if (!btn.classList.contains('active')) btn.click();
+        return true;
+    }
+    function writePassportHash(reg, push){
+        var next = '#passport-' + reg;
+        try {
+            if (push) {
+                if (!location.hash || location.hash === '#collection') {
+                    history.replaceState(history.state,'','#collection');
+                }
+                history.pushState({thPassportRegistry:reg},'',next);
+            } else {
+                history.replaceState(history.state,'',next);
+            }
+        } catch (_) {}
+    }
+    function writeSurfaceHash(hash){
+        try { history.replaceState(history.state,'',hash); } catch (_) {}
+    }
+    function findGeneralItem(name){
+        return Array.from(document.querySelectorAll('#idxBoard .ib-item')).find(function(item){
+            return item.dataset.nm === name;
+        }) || null;
+    }
+    function scrollRow(row){
+        if (!row) return;
+        var offset = window.innerWidth < 760 ? 72 : 104;
+        var top = row.getBoundingClientRect().top + window.pageYOffset - offset;
+        window.scrollTo({top:Math.max(0,top),behavior:(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)?'auto':'smooth'});
+    }
+    function closeGeneralPassports(){
+        document.querySelectorAll('#idxBoard .ib-item.open').forEach(function(item){
+            var row = item.querySelector('.ib-row');
+            if (row) row.click();
+        });
+    }
+    function closeStablePassport(){
+        if (typeof window.stablePassportSet === 'function') window.stablePassportSet(false,false);
+    }
+    function openGeneral(reg, name, opts){
+        selectSurface('index');
+        var deadline = Date.now() + RETRY_WINDOW_MS;
+        (function attempt(){
+            var item = findGeneralItem(name);
+            if (!item) {
+                if (Date.now() < deadline) window.setTimeout(attempt,RETRY_MS);
+                return;
+            }
+            document.querySelectorAll('#idxBoard .ib-item.open').forEach(function(other){
+                if (other === item) return;
+                var otherRow = other.querySelector('.ib-row');
+                if (otherRow) otherRow.click();
+            });
+            var row = item.querySelector('.ib-row');
+            item.dataset.thPassportRegistry = reg;
+            if (row && !item.classList.contains('open')) row.click();
+            else scrollRow(row);
+            if (opts && opts.writeHash) writePassportHash(reg,!!opts.pushHistory);
+        })();
+    }
+    function openStable(reg, opts){
+        selectSurface('stable');
+        var deadline = Date.now() + RETRY_WINDOW_MS;
+        (function attempt(){
+            var passport = document.getElementById('stablePassportMonetra');
+            if (passport && typeof window.stablePassportSet === 'function') {
+                window.stablePassportSet(true,true);
+                if (opts && opts.writeHash) writePassportHash(reg,!!opts.pushHistory);
+                return;
+            }
+            if (Date.now() < deadline) window.setTimeout(attempt,RETRY_MS);
+        })();
+    }
+    function openRegistry(reg, opts){
+        var name = REGISTRY_TO_NAME[reg];
+        if (!name) return;
+        if (reg === '008') openStable(reg,opts);
+        else openGeneral(reg,name,opts);
+    }
+    function isExternalAffordance(target){
+        if (!target || !target.closest) return false;
+        var ext = target.closest('.cc-extlink');
+        return !!(ext && !ext.classList.contains('cc-extlink-static'));
+    }
+    function syncFromLocation(){
+        locationSyncTimer = 0;
+        var hash = String(location.hash || '').toLowerCase();
+        var match = hash.match(HASH_RE);
+        if (match) {
+            openRegistry(match[1],{writeHash:false,pushHistory:false});
+            return;
+        }
+        if (hash === '#collection') {
+            closeGeneralPassports();
+            closeStablePassport();
+        }
+    }
+    function scheduleLocationSync(){
+        if (locationSyncTimer) return;
+        locationSyncTimer = window.setTimeout(syncFromLocation,0);
+    }
+
+    document.addEventListener('click',function(ev){
+        if (!ev.target || !ev.target.closest) return;
+        var card = ev.target.closest('#companiesGrid .company-card:not(.placeholder)');
+        if (card) {
+            if (isExternalAffordance(ev.target)) return;
+            var reg = card.dataset.thPassportRegistry || registryFromCard(card);
+            if (!REGISTRY_TO_NAME[reg]) return;
+            ev.preventDefault();
+            ev.stopPropagation();
+            openRegistry(reg,{writeHash:true,pushHistory:true});
+            return;
+        }
+        var generalRow = ev.target.closest('#idxBoard .ib-row');
+        if (generalRow && HASH_RE.test(location.hash)) {
+            var rowItem = generalRow.closest('.ib-item');
+            var rowReg = registryFromItem(rowItem);
+            var currentMatch = String(location.hash || '').toLowerCase().match(HASH_RE);
+            if (currentMatch && rowReg === currentMatch[1]) {
+                window.setTimeout(function(){
+                    if (rowItem && !rowItem.classList.contains('open')) writeSurfaceHash('#index');
+                },0);
+            }
+            return;
+        }
+        var generalClose = ev.target.closest('.ipx-passport-close');
+        if (generalClose && HASH_RE.test(location.hash)) {
+            window.setTimeout(function(){
+                if (!generalClose.closest('.ib-item.open')) writeSurfaceHash('#index');
+            },0);
+            return;
+        }
+        var stableClose = ev.target.closest('[data-stable-passport-close]');
+        if (stableClose && location.hash === '#passport-008') {
+            window.setTimeout(function(){
+                var passport = document.getElementById('stablePassportMonetra');
+                if (!passport || !passport.classList.contains('is-open')) writeSurfaceHash('#stable-index');
+            },0);
+        }
+    });
+    document.addEventListener('keydown',function(ev){
+        if (!ev.target || !ev.target.closest) return;
+        var card = ev.target.closest('#companiesGrid .company-card.th-passport-entry');
+        if (!card || card.tagName === 'A' || isExternalAffordance(ev.target)) return;
+        if (ev.key !== 'Enter' && ev.key !== ' ') return;
+        ev.preventDefault();
+        var reg = card.dataset.thPassportRegistry || registryFromCard(card);
+        openRegistry(reg,{writeHash:true,pushHistory:true});
+    });
+    window.addEventListener('hashchange',scheduleLocationSync);
+    window.addEventListener('popstate',scheduleLocationSync);
+
+    function boot(){
+        markCards();
+        syncFromLocation();
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',boot,{once:true});
+    else boot();
+})();
+</script>
+
+<style data-th-collection-uniform-explore-style>
+    #companiesGrid .company-card.th-passport-entry { cursor: pointer; }
+    #companiesGrid .company-card.th-passport-entry .cc-passport-action { pointer-events: none; }
+    #companiesGrid .company-card.th-passport-entry:hover .cc-ext-label {
+        opacity: 0.95;
+        color: var(--gold);
+    }
+    #companiesGrid .company-card.th-passport-entry:hover .cc-ext-arrow {
+        color: var(--gold);
+        opacity: 1;
+        transform: translate(2px, -2px);
+    }
+    #companiesGrid .company-card.th-passport-entry:focus-visible {
+        outline: 1px solid var(--gold-line);
+        outline-offset: 4px;
+    }
+</style>
+<script data-th-collection-uniform-explore>
+(function(){
+    'use strict';
+    var KNOWN = new Set(['001','002','003','004','005','006','007','008','009','010']);
+    var observer = null;
+
+    function registryFromCard(card){
+        var row = card && card.querySelector('.cc-regnum');
+        var text = String(row && row.textContent || '');
+        var match = text.match(/(?:Registry|Реестр)\s*·\s*(\d{3})/i) || text.match(/·\s*(\d{3})/);
+        return match ? match[1] : '';
+    }
+
+    function isRu(card){
+        var row = card && card.querySelector('.cc-regnum');
+        return /^ru(?:-|$)/i.test(document.documentElement.lang || '') || /Реестр/i.test(String(row && row.textContent || ''));
+    }
+
+    function exploreMarkup(card){
+        var label = isRu(card) ? 'Перейти к компании' : 'Explore Company';
+        return '<span class="cc-ext-label" data-i18n="card.explore">' + label + '</span>' +
+            '<svg class="cc-ext-arrow" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M4.5 11.5L11.5 4.5M11.5 4.5H5.5M11.5 4.5V10.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    }
+
+    function normalize(card){
+        if (!card || card.classList.contains('placeholder')) return;
+        var reg = registryFromCard(card);
+        if (!KNOWN.has(reg)) return;
+
+        card.classList.add('th-passport-entry');
+        card.dataset.thPassportRegistry = reg;
+
+        if (card.tagName === 'A') {
+            card.setAttribute('href','#passport-' + reg);
+            card.removeAttribute('target');
+            card.removeAttribute('rel');
+        } else {
+            card.setAttribute('role','link');
+            card.setAttribute('tabindex','0');
+        }
+
+        var visibleName = card.querySelector('.cc-name');
+        card.setAttribute('aria-label',(isRu(card) ? 'Открыть паспорт компании · ' : 'Open Company Passport · ') + String(visibleName && visibleName.textContent || '').trim());
+
+        var footer = card.querySelector('.cc-extlink');
+        if (!footer) {
+            footer = document.createElement('span');
+            card.appendChild(footer);
+        }
+        var alreadyUniform = footer.classList.contains('cc-passport-action') &&
+            footer.querySelector('[data-i18n="card.explore"]') &&
+            !footer.querySelector('.cc-ext-debank') &&
+            footer.children.length === 2;
+        footer.className='cc-extlink cc-passport-action';
+        footer.removeAttribute('aria-disabled');
+        footer.removeAttribute('role');
+        footer.removeAttribute('tabindex');
+        footer.removeAttribute('data-href');
+        if (!alreadyUniform) footer.innerHTML=exploreMarkup(card);
+    }
+
+    function normalizeTree(root){
+        if (!root) return;
+        if (root.matches && root.matches('#companiesGrid .company-card:not(.placeholder)')) normalize(root);
+        if (root.querySelectorAll) root.querySelectorAll('#companiesGrid .company-card:not(.placeholder), .company-card:not(.placeholder)').forEach(normalize);
+    }
+
+    function boot(){
+        var grid=document.getElementById('companiesGrid');
+        if (!grid) return;
+        normalizeTree(grid);
+        observer=new MutationObserver(function(records){
+            records.forEach(function(record){
+                var ownerCard = record.target && record.target.closest ? record.target.closest('#companiesGrid .company-card:not(.placeholder)') : null;
+                if (ownerCard) normalize(ownerCard);
+                record.addedNodes.forEach(function(node){
+                    if (node && node.nodeType === 1) normalizeTree(node);
+                });
+            });
+        });
+        observer.observe(grid,{childList:true,subtree:true});
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',boot,{once:true});
+    else boot();
+})();
+</script>
 </body>
 </html>
