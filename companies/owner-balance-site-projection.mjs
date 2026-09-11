@@ -211,17 +211,30 @@ if(!html.includes("performanceDisplayStatus: costComplete ? 'complete' : (partia
   fail('Partial known-basis Performance display contract missing');
 }
 
-/* Keep the complete/partial Performance object intact when Company figures are
-   transferred into INDEX_STATE. The previous projector calculated partialPct
-   correctly, but then copied only cost/pnl/pct into the Passport state, so the
-   UI had no way to render the measured known-basis subset and showed a dash. */
-const oldIndexPerformanceTransfer=`    ];
-    INDEX_STATE.forEach(c => {
-        const fallback = Number.isFinite(Number(c.val)) ? Number(c.val) : 0;
-        c.indexCapitalValue = publicCompanyNetworkContribution(c.reg, fallback);
-    });
-    syncCompanyAprDisplays(idxLang());`;
-const newIndexPerformanceTransfer=`    ];
+html=replaceOnce(html,
+`    { key: 'capital',      weight: 0.35, raw: c => Math.sqrt(Math.max(c.val, 0)) },`,
+`    { key: 'capital',      weight: 0.35, raw: c => Math.sqrt(Math.max(c.indexCapitalValue ?? c.val, 0)) },`,
+'companies/index.html Composite unique Capital factor');
+html=replaceOnce(html,
+`    const totalVal = eligible.reduce((s, c) => s + Math.max(c.val, 0), 0);`,
+`    const totalVal = eligible.reduce((s, c) => s + Math.max(c.indexCapitalValue ?? c.val, 0), 0);`,
+'companies/index.html TVL lens unique denominator');
+html=replaceOnce(html,
+`        c.tvlWeight = totalVal > 0 ? Math.max(c.val, 0) / totalVal : (eligible.length ? 1 / eligible.length : 0);`,
+`        c.tvlWeight = totalVal > 0 ? Math.max(c.indexCapitalValue ?? c.val, 0) / totalVal : (eligible.length ? 1 / eligible.length : 0);`,
+'companies/index.html TVL lens unique company weight');
+html=replaceOnce(html,
+`    const measuredTotal = list.reduce((s, c) => s + (c.val > 0 ? c.val : 0), 0);`,
+`    const measuredTotal = list.reduce((s, c) => s + ((c.indexCapitalValue ?? c.val) > 0 ? (c.indexCapitalValue ?? c.val) : 0), 0);`,
+'companies/index.html Index unique network value');
+
+/* One canonical post-construction binding owns all Company Performance state
+   and unique Index capital contribution. This avoids layered projectors racing
+   over the same INDEX_STATE handoff. */
+html=replaceOnce(html,
+`    ];
+    syncCompanyAprDisplays(idxLang());`,
+`    ];
     const PERFORMANCE_STATE_BY_REGISTRY = new Map([
         ['001',F1],['002',F2],['003',F3],['004',F4],
         ['005',F5],['006',F6],['007',F7],['009',F9]
@@ -242,41 +255,14 @@ const newIndexPerformanceTransfer=`    ];
         const fallback = Number.isFinite(Number(c.val)) ? Number(c.val) : 0;
         c.indexCapitalValue = publicCompanyNetworkContribution(c.reg, fallback);
     });
-    syncCompanyAprDisplays(idxLang());`;
-html=replaceOnce(html,oldIndexPerformanceTransfer,newIndexPerformanceTransfer,'companies/index.html full Performance state propagation');
+    syncCompanyAprDisplays(idxLang());`,
+'companies/index.html canonical Performance/index-state binding');
 if(!html.includes('const PERFORMANCE_STATE_BY_REGISTRY = new Map([')||
    !html.includes('c.partialPct = f.partialPct;')||
-   !html.includes('c.performanceDisplayStatus = f.performanceDisplayStatus;')){
-  fail('Passport Performance state propagation contract missing');
+   !html.includes('c.performanceDisplayStatus = f.performanceDisplayStatus;')||
+   !html.includes('c.indexCapitalValue = publicCompanyNetworkContribution(c.reg, fallback);')){
+  fail('Canonical Passport Performance/index-state binding missing');
 }
-
-html=replaceOnce(html,
-`    { key: 'capital',      weight: 0.35, raw: c => Math.sqrt(Math.max(c.val, 0)) },`,
-`    { key: 'capital',      weight: 0.35, raw: c => Math.sqrt(Math.max(c.indexCapitalValue ?? c.val, 0)) },`,
-'companies/index.html Composite unique Capital factor');
-html=replaceOnce(html,
-`    const totalVal = eligible.reduce((s, c) => s + Math.max(c.val, 0), 0);`,
-`    const totalVal = eligible.reduce((s, c) => s + Math.max(c.indexCapitalValue ?? c.val, 0), 0);`,
-'companies/index.html TVL lens unique denominator');
-html=replaceOnce(html,
-`        c.tvlWeight = totalVal > 0 ? Math.max(c.val, 0) / totalVal : (eligible.length ? 1 / eligible.length : 0);`,
-`        c.tvlWeight = totalVal > 0 ? Math.max(c.indexCapitalValue ?? c.val, 0) / totalVal : (eligible.length ? 1 / eligible.length : 0);`,
-'companies/index.html TVL lens unique company weight');
-html=replaceOnce(html,
-`    const measuredTotal = list.reduce((s, c) => s + (c.val > 0 ? c.val : 0), 0);`,
-`    const measuredTotal = list.reduce((s, c) => s + ((c.indexCapitalValue ?? c.val) > 0 ? (c.indexCapitalValue ?? c.val) : 0), 0);`,
-'companies/index.html Index unique network value');
-
-html=replaceOnce(html,
-`    ];
-    syncCompanyAprDisplays(idxLang());`,
-`    ];
-    INDEX_STATE.forEach(c => {
-        const fallback = Number.isFinite(Number(c.val)) ? Number(c.val) : 0;
-        c.indexCapitalValue = publicCompanyNetworkContribution(c.reg, fallback);
-    });
-    syncCompanyAprDisplays(idxLang());`,
-'companies/index.html Index unique network-contribution binding');
 
 fs.writeFileSync(INDEX,html);
 const indexBlob=gitBlobSha(html);
