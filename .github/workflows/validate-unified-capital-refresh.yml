@@ -17,6 +17,7 @@ on:
       - 'companies/owner-balance-site-projection.mjs'
       - 'companies/public-page-market-runtime-projection.mjs'
       - 'companies/public-site-polish-projection.mjs'
+      - 'companies/public-site-polish-projection-core.mjs'
       - 'companies/votemarket-reference-state.json'
       - 'productivity/productivity-engine.mjs'
       - 'productivity/company-010-productivity-overlay.mjs'
@@ -67,6 +68,8 @@ jobs:
           node --check companies/yieldring-public-capital-projection.mjs
           node --check intelligence/capital-state/general-company-balance-sheet.mjs
           node --check intelligence/capital-state/unified-capital-refresh.mjs
+          node --check companies/public-site-polish-projection-core.mjs
+          node --check companies/public-site-polish-projection.mjs
 
       - name: Install Productivity dependencies
         working-directory: productivity
@@ -150,6 +153,8 @@ jobs:
           if(!html.includes('costBasisUsd: 279.57')||!html.includes('costBasisUsd: 2123.11'))throw new Error('YieldRing complete cost basis missing from active public Company Book');
           if(!html.includes('const publicCompanyTvl = (key, fallback) =>')||!html.includes('canonicalNetworkTvl'))throw new Error('Companies Public Capital binding missing');
           if(!html.includes('const PERFORMANCE_STATE_BY_REGISTRY = new Map([')||!html.includes('c.partialPct = f.partialPct;')||!html.includes('c.performanceDisplayStatus = f.performanceDisplayStatus;'))throw new Error('Passport Performance state propagation missing');
+          if(html.includes('data-th-collection-passport-routing'))throw new Error('retired Collection -> Passport router survived materialization');
+          if(!html.includes('data-th-collection-index-navigation-v3')||!html.includes('window.__TH_COLLECTION_INDEX_NAV_V3__'))throw new Error('canonical Collection -> Index v3 authority missing');
           const y=p.companies?.['YieldRing.eth'];
           const pa=(y?.breakdown||[]).find(x=>x.engineId==='aerodrome_veaero'||x.principalId==='aerodrome-finance');
           const yc=(c.companies||[]).find(x=>x.registry==='002');
@@ -163,6 +168,6 @@ jobs:
           if(m.validationFixture!==true||m.semantics?.externalRequestCount!==0||m.semantics?.browserExternalPriceRequestsAllowed!==false)throw new Error('Zero-request CI Market Data contract drift');
           if(!Number.isFinite(Number(pub.funds?.defitea?.tvlUsd))||!Number.isFinite(Number(pub.funds?.defitea?.referenceAprPct)))throw new Error('Defitea Public Capital unavailable');
           if(!Number.isFinite(Number(pub.totals?.fundEcosystemTvlUsd))||!Number.isFinite(Number(pub.totals?.companyNetworkTvlUsd)))throw new Error('Public Capital totals unavailable');
-          console.log('Unified Capital Refresh E2E PASS',{generatedAt:p.generatedAt,marketFixture:true,externalPriceRequests:0,defiteaApr:d.aprLatest,defiteaTvl:pub.funds.defitea.tvlUsd,defiteaAero:dca.units,defiteaCostBasisUsd:defitea.costBasis.totalUsd,voteMarketMeasuredReferenceCompanyCount:vm.measuredReferenceCompanyCount,voteMarketClaimPersistence:true,veCrvVoteMarketStatus:dcrv?.incomeChannels?.votemarket?.status||null,veFxnVoteMarketStatus:df?.incomeChannels?.votemarket?.status||null,yieldRingApr:y.aprLatest,yieldRingCostBasisUsd:yieldring.portfolioCostBasis.totalUsd,networkTvlUsd:pub.totals.companyNetworkTvlUsd,fundEcosystemTvlUsd:pub.totals.fundEcosystemTvlUsd});
+          console.log('Unified Capital Refresh E2E PASS',{generatedAt:p.generatedAt,marketFixture:true,externalPriceRequests:0,defiteaApr:d.aprLatest,defiteaTvl:pub.funds.defitea.tvlUsd,defiteaAero:dca.units,defiteaCostBasisUsd:defitea.costBasis.totalUsd,voteMarketMeasuredReferenceCompanyCount:vm.measuredReferenceCompanyCount,voteMarketClaimPersistence:true,veCrvVoteMarketStatus:dcrv?.incomeChannels?.votemarket?.status||null,veFxnVoteMarketStatus:df?.incomeChannels?.votemarket?.status||null,yieldRingApr:y.aprLatest,yieldRingCostBasisUsd:yieldring.portfolioCostBasis.totalUsd,networkTvlUsd:pub.totals.companyNetworkTvlUsd,fundEcosystemTvlUsd:pub.totals.fundEcosystemTvlUsd,legacyCollectionPassportRouter:false,collectionIndexV3:true});
           NODE
           git diff --check
