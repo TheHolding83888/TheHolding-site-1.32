@@ -14756,11 +14756,35 @@ function finalizeReloadRestore() {
             return item.dataset.nm === name;
         }) || null;
     }
+    var PASSPORT_FOCUS_MARKER='data-th-passport-focus-v2';
+    function passportFocusOffset(){
+        return Math.max(84,Math.min(Math.round(window.innerHeight*0.20),170));
+    }
+    function focusPassport(block,anchor){
+        if (!block) return;
+        var reduce=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+        var started=performance.now();
+        var lastHeight=-1;
+        var stableFrames=0;
+        (function settle(){
+            if (!block.isConnected) return;
+            var height=block.getBoundingClientRect().height;
+            stableFrames=Math.abs(height-lastHeight)<1?stableFrames+1:0;
+            lastHeight=height;
+            if (stableFrames<3&&performance.now()-started<650){
+                requestAnimationFrame(settle);
+                return;
+            }
+            var target=anchor&&anchor.isConnected?anchor:block;
+            var rect=target.getBoundingClientRect();
+            var top=window.pageYOffset+rect.top-passportFocusOffset();
+            var maxTop=Math.max(0,document.documentElement.scrollHeight-window.innerHeight);
+            window.scrollTo({top:Math.min(Math.max(0,top),maxTop),behavior:reduce?'auto':'smooth'});
+        })();
+    }
     function scrollRow(row){
         if (!row) return;
-        var offset = window.innerWidth < 760 ? 72 : 104;
-        var top = row.getBoundingClientRect().top + window.pageYOffset - offset;
-        window.scrollTo({top:Math.max(0,top),behavior:(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)?'auto':'smooth'});
+        focusPassport(row.closest('.ib-item')||row,row);
     }
     function closeGeneralPassports(){
         document.querySelectorAll('#idxBoard .ib-item.open').forEach(function(item){
@@ -14788,7 +14812,7 @@ function finalizeReloadRestore() {
             var row = item.querySelector('.ib-row');
             item.dataset.thPassportRegistry = reg;
             if (row && !item.classList.contains('open')) row.click();
-            else scrollRow(row);
+            focusPassport(item,row);
             if (opts && opts.writeHash) writePassportHash(reg,!!opts.pushHistory);
         })();
     }
@@ -14799,6 +14823,7 @@ function finalizeReloadRestore() {
             var passport = document.getElementById('stablePassportMonetra');
             if (passport && typeof window.stablePassportSet === 'function') {
                 window.stablePassportSet(true,true);
+                focusPassport(passport,passport);
                 if (opts && opts.writeHash) writePassportHash(reg,!!opts.pushHistory);
                 return;
             }
