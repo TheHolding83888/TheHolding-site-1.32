@@ -180,6 +180,8 @@ jobs:
           node - <<'NODE'
           const fs=require('fs');
           const p=JSON.parse(fs.readFileSync('companies/productivity-data.json','utf8'));
+          const defiteaState=JSON.parse(fs.readFileSync('companies/defitea-canonical-state.json','utf8'));
+          const yieldRingState=JSON.parse(fs.readFileSync('companies/yieldring-canonical-state.json','utf8'));
           const vmState=JSON.parse(fs.readFileSync('companies/votemarket-reference-state.json','utf8'));
           const g=JSON.parse(fs.readFileSync('intelligence/capital-state/general-company-balance-sheet.json','utf8'));
           const c=JSON.parse(fs.readFileSync('intelligence/capital-state/capital-state.json','utf8'));
@@ -189,6 +191,13 @@ jobs:
           const company001Page=fs.readFileSync('05081966/index.html','utf8');
           const singulPage=fs.readFileSync('singul/index.html','utf8');
           const yieldReportsPage=fs.readFileSync('yield-reports/index.html','utf8');
+          const canonicalDefiteaAero=(defiteaState.productivePositions||[]).find(x=>x.assetId==='aerodrome-finance');
+          const canonicalDefiteaFxn=(defiteaState.productivePositions||[]).find(x=>x.assetId==='fxn-token');
+          const expectedDefiteaAero=Number(canonicalDefiteaAero?.quantity);
+          const expectedDefiteaFxn=Number(canonicalDefiteaFxn?.quantity);
+          const expectedYieldRingAero=Number(yieldRingState.capital?.aerodrome?.quantity);
+          const expectedYieldRingBtc=Number(yieldRingState.capital?.bitcoin?.quantity);
+          if(!Number.isFinite(expectedDefiteaAero)||!Number.isFinite(expectedDefiteaFxn)||!Number.isFinite(expectedYieldRingAero)||!Number.isFinite(expectedYieldRingBtc))throw new Error('Canonical company quantity authority unavailable');
           const d=p.companies?.['defitea.eth'];
           const da=(d?.breakdown||[]).find(x=>x.engineId==='aerodrome_veaero'||x.principalId==='aerodrome-finance');
           const dcrow=(d?.breakdown||[]).find(x=>x.engineId==='curve_vecrv'||x.principalId==='curve-dao-token');
@@ -197,8 +206,8 @@ jobs:
           const dc=(c.companies||[]).find(x=>x.registry==='004');
           const dca=(dc?.measuredPositions||[]).find(x=>x.assetId==='aerodrome-finance');
           const dcf=(dc?.measuredPositions||[]).find(x=>x.assetId==='fxn-token');
-          if(!d||Number(da?.units)!==2632||Number(df?.units)!==64.81)throw new Error('Defitea Productivity coherence missing');
-          if(!dc||Number(dca?.units)!==2632||Number(dcf?.units)!==64.81)throw new Error('Defitea Capital State coherence missing');
+          if(!d||Number(da?.units)!==expectedDefiteaAero||Number(df?.units)!==expectedDefiteaFxn)throw new Error('Defitea Productivity coherence missing');
+          if(!dc||Number(dca?.units)!==expectedDefiteaAero||Number(dcf?.units)!==expectedDefiteaFxn)throw new Error('Defitea Capital State coherence missing');
           if(vm?.capitalDoubleCount!==false||vm?.idempotent!==true||vm?.factualIncomeAuthority!==false||vm?.executionAuthority!=='none')throw new Error('VoteMarket safety contract missing from coherent snapshot');
           if(vm?.claimedPeriodPersistencePending!==false||vm?.observationPersistence!=='claimed-aware-derived-cache')throw new Error('VoteMarket claimed-period persistence contract missing');
           if(vmState?.semantics?.sourceOfTruth!==false||vmState?.semantics?.factualIncomeAuthority!==false||vmState?.semantics?.executionAuthority!=='none')throw new Error('VoteMarket derived persistence authority drift');
@@ -215,9 +224,9 @@ jobs:
           const icp5=(c5?.positions||[]).find(x=>x.assetId==='internet-computer');
           const icp6=(c6?.positions||[]).find(x=>x.assetId==='internet-computer');
           const icp=m.prices?.['internet-computer'];
-          if(p.version!=='1.16'||Number(a?.units)!==678)throw new Error('YieldRing Productivity coherence missing');
+          if(p.version!=='1.16'||Number(a?.units)!==expectedYieldRingAero)throw new Error('YieldRing Productivity coherence missing');
           if(g.status!=='ok'||c.status!=='ok')throw new Error('capital substrate not coherent');
-          if(Number(btc?.units)!==0.0334||Number(aero?.units)!==678)throw new Error('YieldRing Capital State coherence missing');
+          if(Number(btc?.units)!==expectedYieldRingBtc||Number(aero?.units)!==expectedYieldRingAero)throw new Error('YieldRing Capital State coherence missing');
           if(Number(icp5?.units)!==1363||Number(icp6?.units)!==1296)throw new Error('Company #005/#006 ICP balances missing');
           if(Math.abs(Number(icp5?.priceUsd)-Number(icp?.usd))>1e-9||Math.abs(Number(icp6?.priceUsd)-Number(icp?.usd))>1e-9)throw new Error('Company #005/#006 ICP valuation not bound to canonical Market Data');
           if(icp?.authority?.selectedLane!=='onchain'||!String(icp?.source||'').startsWith('onchain-'))throw new Error('ICP onchain authority drift');
