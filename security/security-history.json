@@ -2,30 +2,18 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-09-11T13:48:29.739Z",
+  "lastUpdatedAt": "2026-09-11T14:16:57.760Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 976,
-    "vaultRunCount": 976,
+    "runCount": 977,
+    "vaultRunCount": 977,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
-    {
-      "generatedAt": "2026-08-16T19:33:41.904Z",
-      "status": "watch",
-      "snapshotHash": "d21f9bb5cea4c5c3ca971239a61084ba8125a52f9dfe6fad785d65371f2c765c",
-      "recordPath": "security/security-vault/2026/08/2026-08-16T19-33-41-904Z-d21f9bb5ce.json",
-      "recordHash": "5b1b2d2799afb04e3ceb0637a69a5f88c8cd96418429c86aaa1a084eb8623c65",
-      "findingCount": 26,
-      "criticalCount": 0,
-      "highCount": 6,
-      "newFindingCount": 0,
-      "resolvedFindingCount": 0
-    },
     {
       "generatedAt": "2026-08-16T19:52:20.771Z",
       "status": "watch",
@@ -8773,6 +8761,18 @@
       "highCount": 2,
       "newFindingCount": 24,
       "resolvedFindingCount": 22
+    },
+    {
+      "generatedAt": "2026-09-11T14:16:57.760Z",
+      "status": "watch",
+      "snapshotHash": "1b39ce4566b6d08745c951c077a3a6496091e5fe9dbf6c935085c7c45b806f1f",
+      "recordPath": "security/security-vault/2026/09/2026-09-11T14-16-57-760Z-1b39ce4566.json",
+      "recordHash": "b2a26169938ebbf9f0078613332c52cb6a6879daaf0117fbf7a4b4c935d792b7",
+      "findingCount": 76,
+      "criticalCount": 0,
+      "highCount": 2,
+      "newFindingCount": 1,
+      "resolvedFindingCount": 5
     }
   ],
   "events": [
@@ -35757,6 +35757,72 @@
       "category": "dom-innerhtml",
       "summary": "Resolved: Dynamic innerHTML assignment detected.",
       "file": "companies/yieldring-public-capital-projection.mjs",
+      "entity": null
+    },
+    {
+      "id": "fe6c05e65be0baa76c6ff5235558e8605f41999f634e8285654ca6a96e97d751",
+      "type": "finding-opened",
+      "detectedAt": "2026-09-11T14:16:57.760Z",
+      "findingId": "230ca2d87134ea8313217dc8ed2cc0add20795b035c749f775aaeb9f1d389b7d",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Security-sensitive surface changed: .github/workflows/unified-capital-refresh.yml.",
+      "file": ".github/workflows/unified-capital-refresh.yml",
+      "entity": null
+    },
+    {
+      "id": "69536859b75c01ab081e99a7d3412588f02f18832dc1dd1f0e5ecd930604912a",
+      "type": "finding-resolved",
+      "detectedAt": "2026-09-11T14:16:57.760Z",
+      "findingId": "a40d733c5514b75f60ca49a71d94711f58c0fe21ca2aabf781cf437877fb319f",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: .github/workflows/validate-defitea-index-coherence.yml.",
+      "file": ".github/workflows/validate-defitea-index-coherence.yml",
+      "entity": null
+    },
+    {
+      "id": "655b4ddca4f33e3f36679c6948f5faed135155c8da5d6e60ef024606bb71fd39",
+      "type": "finding-resolved",
+      "detectedAt": "2026-09-11T14:16:57.760Z",
+      "findingId": "5a81f5b2c24c5491384769fc40359b3884fac237105954a2d3aaacbe997d50c7",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: .github/workflows/validate-unified-capital-refresh.yml.",
+      "file": ".github/workflows/validate-unified-capital-refresh.yml",
+      "entity": null
+    },
+    {
+      "id": "6cf14a03de4c69c1db5555ce32a34635b26ae6653f9063de62125743903117e3",
+      "type": "finding-resolved",
+      "detectedAt": "2026-09-11T14:16:57.760Z",
+      "findingId": "74ce0aaeaab6f1fb3fc750c480035bc4b5e6a4c0825df2a5d2fd24b28ef28455",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: .github/workflows/validate-yieldring-capital-state.yml.",
+      "file": ".github/workflows/validate-yieldring-capital-state.yml",
+      "entity": null
+    },
+    {
+      "id": "3c9b262c79fe543605e32b60ef19363e1c21f9ba14315c6bfccd65960e3e11b6",
+      "type": "finding-resolved",
+      "detectedAt": "2026-09-11T14:16:57.760Z",
+      "findingId": "16e76591a4a6228bfe48cba5b6f02c22a1bb733c5e5f91ee383f2299006af42e",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: .github/workflows/validate-yieldring-production-cascade.yml.",
+      "file": ".github/workflows/validate-yieldring-production-cascade.yml",
+      "entity": null
+    },
+    {
+      "id": "359934c7068f1b179b15ff710587e33482959d33201993d6a44e3c1b8758f758",
+      "type": "finding-resolved",
+      "detectedAt": "2026-09-11T14:16:57.760Z",
+      "findingId": "79be1346a7dc9a27bdd0efce3d4d73b00e751a283c926dc13936cc85d08a1a78",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: companies/index.html.",
+      "file": "companies/index.html",
       "entity": null
     }
   ]
