@@ -1,5 +1,10 @@
+# holding-workflow-definition-proof: intelligence/reliability/company-010-public-admission-workflow-definition-proof.mjs
 name: "Admit Company #010 · Cypher Public Surface"
 
+# Company #010 is already admitted to the canonical Companies surface.
+# This legacy entrypoint now proves admission parity read-only; production
+# companies/index.html publication remains with Unified Capital or an explicit
+# reviewed source+generated-surface change, never an independent recovery writer.
 on:
   workflow_dispatch:
   push:
@@ -10,7 +15,7 @@ on:
       - '.github/workflows/admit-company-010-public.yml'
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: company-010-public-admission
@@ -29,12 +34,14 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
-      - name: Validate public source
+      - name: Validate public source and build admission preview
         run: |
           set -euo pipefail
           node --check companies/company-010-public-adapter.js
           node --check onboarding/company-010-public-admission.mjs
+          rm -f .tmp-company-010-public-admission.html
           node onboarding/company-010-public-admission.mjs
+          test -f .tmp-company-010-public-admission.html
           node --check .tmp-company-010-public-admission.html >/dev/null 2>&1 || true
       - name: Validate canonical Company #010 boundary
         run: |
@@ -53,30 +60,17 @@ jobs:
           if(d.epistemicBoundary?.unknownIsNotZero!==true||d.epistemicBoundary?.partialTotalIsNotTotal!==true) throw new Error('epistemic boundary drift');
           console.log('Company #010 complete canonical boundary PASS');
           NODE
-      - name: Apply public admission
+      - name: Verify current canonical public surface matches admission preview
         run: |
           set -euo pipefail
-          rm -f .tmp-company-010-public-admission.html
-          node onboarding/company-010-public-admission.mjs --write
-      - name: Commit public surface
-        run: |
-          set -euo pipefail
-          git config user.name "The Holding Public Admission"
-          git config user.email "public-admission@theholding.ai"
-          git add companies/index.html
-          if git diff --cached --quiet; then
-            echo "Public surface already admitted."
-            exit 0
+          if ! cmp -s companies/index.html .tmp-company-010-public-admission.html; then
+            echo 'Cypher admission preview differs from canonical companies/index.html; refusing implicit publication.' >&2
+            exit 1
           fi
-          git commit -m "companies: admit Cypher public surface"
-          for attempt in 1 2 3; do
-            git fetch origin main
-            git rebase origin/main
-            node onboarding/company-010-public-admission.mjs --write
-            git add companies/index.html
-            if ! git diff --cached --quiet; then git commit --amend --no-edit; fi
-            if git push origin HEAD:main; then exit 0; fi
-            sleep $((attempt * 2))
-          done
-          echo "Safe writer guard: push failed after 3 attempts."
-          exit 1
+          rm -f .tmp-company-010-public-admission.html
+          if [ -n "$(git status --porcelain -- companies/index.html)" ]; then
+            echo 'Cypher admission diagnostic modified canonical Companies surface unexpectedly.' >&2
+            exit 1
+          fi
+          echo 'Cypher public admission parity PASS: repositoryMutation=false; canonicalWriter=The Holding Capital · Unified Refresh; executionAuthority=none'
+          git diff --check
