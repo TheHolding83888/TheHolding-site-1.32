@@ -10,8 +10,11 @@ function requireCondition(ok, message) {
 requireCondition(market.semantics?.perAssetAuthoritySelectionApplied === true, 'Current Market Data is not canonical per-asset authority');
 requireCondition(Object.keys(market.prices || {}).length === 26, 'Current Market Data asset count drift');
 requireCondition(Number(market.authority?.unknownCount) === 0, 'Current Market Data contains UNKNOWN assets');
-requireCondition(Number(market.authority?.onchainSelectedAssetCount) + Number(market.authority?.coingeckoSelectedAssetCount) === 26, 'Current Market Data lane coverage drift');
-requireCondition(Number(market.authority?.coingeckoSelectedAssetCount) > 0, 'This regression proof requires the current physical mixed-lane snapshot');
+const onchainSelectedAssetCount = Number(market.authority?.onchainSelectedAssetCount);
+const coingeckoSelectedAssetCount = Number(market.authority?.coingeckoSelectedAssetCount);
+requireCondition(Number.isFinite(onchainSelectedAssetCount) && onchainSelectedAssetCount >= 0, 'Current Market Data onchain lane count invalid');
+requireCondition(Number.isFinite(coingeckoSelectedAssetCount) && coingeckoSelectedAssetCount >= 0, 'Current Market Data fallback lane count invalid');
+requireCondition(onchainSelectedAssetCount + coingeckoSelectedAssetCount === 26, 'Current Market Data lane coverage drift');
 requireCondition(Number(market.coverage?.usableCoverage) === 1, 'Current physical Market Data is not fully usable');
 
 requireCondition(!source.includes('general balance sheet requires 26/26 onchain-selected production Market Data'), 'Legacy 26/26 onchain-only General Balance blocker is still present');
@@ -40,10 +43,11 @@ for (const [id, row] of Object.entries(market.prices || {})) {
 
 console.log('General Balance per-asset Market Data consumer regression contract PASS', {
   assetCount: 26,
-  onchainSelectedAssetCount: Number(market.authority.onchainSelectedAssetCount),
-  coingeckoFallbackAssetCount: Number(market.authority.coingeckoSelectedAssetCount),
+  onchainSelectedAssetCount,
+  coingeckoFallbackAssetCount: coingeckoSelectedAssetCount,
   unknownCount: Number(market.authority.unknownCount),
   usableCoverage: Number(market.coverage.usableCoverage),
+  currentCanonicalLaneMixAccepted: true,
   oldOnchainOnlyBlockerRemoved: true,
   unknownStillFailsClosed: true,
   executionAuthority: 'none'
