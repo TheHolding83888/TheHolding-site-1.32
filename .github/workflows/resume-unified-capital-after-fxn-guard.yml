@@ -1,10 +1,12 @@
-name: Resume Unified Capital After f(x) Guard Change
+name: Resume Unified Capital After Capital Guard Change
 
 on:
   push:
     branches: [main]
     paths:
       - 'productivity/fxn-locker-apr-guard.mjs'
+      - 'intelligence/capital-state/general-company-balance-sheet.mjs'
+      - 'intelligence/capital-state/general-balance-market-data-consumer-contract-validation.mjs'
       - '.github/workflows/resume-unified-capital-after-fxn-guard.yml'
 
 permissions:
@@ -12,7 +14,7 @@ permissions:
   actions: write
 
 concurrency:
-  group: unified-capital-fxn-guard-resume
+  group: unified-capital-guard-resume
   cancel-in-progress: false
 
 jobs:
@@ -25,11 +27,15 @@ jobs:
         with:
           ref: main
 
-      - name: Verify exact f(x) guard is present
+      - name: Verify capital guards are present and syntactically valid
         run: |
           set -euo pipefail
           test -s productivity/fxn-locker-apr-guard.mjs
+          test -s intelligence/capital-state/general-company-balance-sheet.mjs
+          test -s intelligence/capital-state/general-balance-market-data-consumer-contract-validation.mjs
           node --check productivity/fxn-locker-apr-guard.mjs
+          node --check intelligence/capital-state/general-company-balance-sheet.mjs
+          node --check intelligence/capital-state/general-balance-market-data-consumer-contract-validation.mjs
 
       - name: Dispatch canonical Unified Capital writer
         env:
