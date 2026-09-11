@@ -8,6 +8,7 @@ const orchestrator=fs.readFileSync('intelligence/capital-state/unified-capital-r
 const ownerProjection=fs.readFileSync('companies/owner-balance-site-projection.mjs','utf8');
 const marketRuntimeProjection=fs.readFileSync('companies/public-page-market-runtime-projection.mjs','utf8');
 const sitePolishProjection=fs.readFileSync('companies/public-site-polish-projection.mjs','utf8');
+const sitePolishMaterializer=fs.readFileSync('companies/public-site-polish-materializer.mjs','utf8');
 const sitePolishCore=fs.readFileSync('companies/public-site-polish-projection-core.mjs','utf8');
 
 assert.match(workflow,/^# holding-workflow-definition-proof: intelligence\/reliability\/unified-capital-refresh-workflow-definition-proof\.mjs$/m,'paired workflow proof marker missing');
@@ -74,9 +75,17 @@ for (const surface of generatedSurfaces) {
   const occurrences=(workflow.match(new RegExp(escaped,'g'))||[]).length;
   assert.ok(occurrences>=3,`generated public surface must be initial-staged, fresh-main-reset and retry-staged: ${surface}`);
 }
+
+// Presentation may still be invoked explicitly by Unified Capital in this migration
+// atom, but importing the owner/capital bridge must no longer execute site polish.
 assert.match(ownerProjection,/await import\('\.\/public-page-market-runtime-projection\.mjs'\)/,'owner projection no longer chains canonical page runtime projection');
-assert.match(ownerProjection,/await import\('\.\/public-site-polish-projection\.mjs'\)/,'owner projection no longer chains bounded site polish');
-assert.match(sitePolishProjection,/await import\('\.\/public-site-polish-projection-core\.mjs'\)/,'public-site coordinator no longer delegates shared polish to core');
+assert.match(ownerProjection,/await import\('\.\/public-site-polish-projection\.mjs'\)/,'owner projection import compatibility edge missing');
+assert.match(sitePolishProjection,/export async function materializePublicSitePolish\(\)/,'explicit public-site materialization function missing');
+assert.match(sitePolishProjection,/if\(invoked===SELF\)/,'public-site coordinator direct-execution gate missing');
+assert.match(sitePolishProjection,/await import\('\.\/public-site-polish-materializer\.mjs'\)/,'public-site coordinator no longer delegates explicit materialization');
+assert.doesNotMatch(sitePolishProjection,/await import\('\.\/public-site-polish-projection-core\.mjs'\)/,'public-site coordinator regained hidden core side effects');
+assert.match(sitePolishMaterializer,/await import\('\.\/public-site-polish-projection-core\.mjs'\)/,'materializer no longer delegates shared polish to core');
+assert.match(orchestrator,/run\('Materialize canonical public-site polish', ROOT, 'companies\/public-site-polish-projection\.mjs'\)/,'explicit presentation invocation missing during migration atom');
 assert.match(marketRuntimeProjection,/company001DirectBrowserCoinGecko:false/,'Company #001 direct-browser external pricing guard missing');
 assert.match(marketRuntimeProjection,/singulDuplicateRuntime:false/,'Singul duplicate price runtime retirement proof missing');
 assert.match(sitePolishCore,/href=\"\/companies\"/,'homepage Companies navigation projection missing');
@@ -89,6 +98,7 @@ assert.match(sitePolishCore,/The Holding · Defitea mobile cash-flow polish/,'De
 assert.match(sitePolishCore,/defiteaMobileCashFlowVisible:true/,'Defitea mobile cash-flow visibility proof missing');
 assert.match(workflow,/yieldReportsPage\.includes\('The Holding · Defitea mobile cash-flow polish'\)/,'Unified validation does not prove mobile report materialization');
 assert.doesNotMatch(sitePolishProjection,/sendTransaction|eth_sendRawTransaction|eth_sendTransaction|\.transfer\(|\.approve\(|\.claim\(|\.vote\(/,'site polish coordinator contains wallet/capital transaction behavior');
+assert.doesNotMatch(sitePolishMaterializer,/sendTransaction|eth_sendRawTransaction|eth_sendTransaction|\.transfer\(|\.approve\(|\.claim\(|\.vote\(/,'site polish materializer contains wallet/capital transaction behavior');
 assert.doesNotMatch(sitePolishCore,/sendTransaction|eth_sendRawTransaction|eth_sendTransaction|\.transfer\(|\.approve\(|\.claim\(|\.vote\(/,'site polish core contains wallet/capital transaction behavior');
 
 assert.match(workflow,/for attempt in 1 2 3/,'bounded safe-writer retry contract missing');
@@ -128,7 +138,8 @@ console.log('Unified Capital refresh workflow definition proof PASS',{
   marketDataNoopSuppression:true,
   marketGenerationParity:true,
   canonicalCompanyQuantityAuthority:true,
-  publicSitePolishLayering:true,
+  explicitPublicSitePolishEntrypoint:true,
+  hiddenPublicSitePolishImportSideEffect:false,
   freshMainRetryReset:true,
   rewardsFreshnessCoupling:true,
   voteMarketAfterCanonicalProductivityOverlays:true,
