@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-11T07:52:08.444Z",
+  "generatedAt": "2026-09-11T07:55:13.839Z",
   "status": "watch",
-  "snapshotHash": "3aa673a022b98aeea8e356e1482520dcb38a6425a4cd0efe21fe612e9830e9b8",
+  "snapshotHash": "bfd6665ff99fbe2fc871451fbcc392e5f4f7ca2cfd5df2f7433a3551858b281b",
   "repository": {
-    "filesScanned": 1189,
-    "bytesScanned": 31178800,
+    "filesScanned": 1190,
+    "bytesScanned": 31184801,
     "criticalHashes": {
       ".github/workflows/admit-company-010-public.yml": "5feffbf58388675952487c3462d2f9149eecec6f3795483087010dd0d3b19cfb",
       ".github/workflows/ask-experience.yml": "deb9c4e1025390563f8a866f6ddf1c7870e748cbd6aba13fdbd6da2d38e983d4",
@@ -47,7 +47,7 @@
       ".github/workflows/resolve-monetra-strategy-entry-ledger.yml": "d130e2957d8f0b6f837ca54ad1581427a08116238e22fc3bef4692f2ddcfc517",
       ".github/workflows/resume-cognitive-stack-after-release.yml": "8dac46ad3c6ddf77cefb24ec26b719813d8f4dbea46f4cf59b351c93998e0230",
       ".github/workflows/resume-economic-graph-after-code-change.yml": "6818f9792aa28d4cb9ddfb42200f1968d83d9fa6085f9b63d4058716887a5257",
-      ".github/workflows/resume-unified-capital-after-fxn-guard.yml": "5470e1c68ea0a9f340f68635076f6dcb1f9a9f4e421b2530ec1587865b99365b",
+      ".github/workflows/resume-unified-capital-after-fxn-guard.yml": "1118018fbee9d2962e122d125546b2ae57f7e05fc08cf938d9f8cc9524fe9503",
       ".github/workflows/runtime-reliability-observer.yml": "2585116c2757e276ea9f3e7470354edeec4d19239c4e08e018983f9a0ba0f118",
       ".github/workflows/security-hardening-actions.yml": "0353e44050c35c920c7d5e86dda4aeef15b4cb50ef432225ff7884d26ecc3704",
       ".github/workflows/security-sentinel.yml": "c9d7f5f61c2b17e0a2f303eedc187751065a9dc917761ca74c7b3a19b4266078",
@@ -527,6 +527,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "0e8839690dcfbd556ec2bbab161334b83bde8b15744d2798d04719fe62d31f48",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/resume-unified-capital-after-fxn-guard.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/resume-unified-capital-after-fxn-guard.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "5470e1c68ea0a9f340f68635076f6dcb1f9a9f4e421b2530ec1587865b99365b",
+        "currentSha256": "1118018fbee9d2962e122d125546b2ae57f7e05fc08cf938d9f8cc9524fe9503"
+      }
     },
     {
       "id": "e0355b82064396fc141e48b5356209bc9cc44e7a4a2b15f7fe18f5dc61f03a0f",
@@ -1531,10 +1545,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 967,
+    "runCount": 968,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/09/2026-09-11T07-52-08-444Z-3aa673a022.json",
-    "latestRecordHash": "4ac950189eecbb422a2f861b1a8a0d98a3d80634084e8c2bfd711c48cbb26967",
+    "latestRecordPath": "security/security-vault/2026/09/2026-09-11T07-55-13-839Z-bfd6665ff9.json",
+    "latestRecordHash": "9220b26b031d09ea9ded05e53a50dea452d7e80c8d5dea4ba11f9a0863937bda",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
