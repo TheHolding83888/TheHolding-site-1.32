@@ -25,6 +25,19 @@ if ((materializer.match(/if \(!observationCarriesSelectableRouteEvidence\(observ
 const nowMs = Date.parse(shadow.generatedAt);
 if (!Number.isFinite(nowMs)) throw new Error('Shadow generatedAt invalid');
 
+// Health-boundary tests must not depend on the wall-clock age of the checked-in
+// daily CoinGecko snapshot. Build an explicitly fresh failback fixture for the
+// cases that are intended to prove bounded failback, and separately prove that
+// an over-age source is rejected.
+const freshFailbackSource = structuredClone(source);
+const freshObservedAt = new Date(nowMs).toISOString();
+freshFailbackSource.generatedAt = freshObservedAt;
+freshFailbackSource.requestedAt = freshObservedAt;
+freshFailbackSource.observedAt = freshObservedAt;
+for (const row of Object.values(freshFailbackSource.prices || {})) {
+  row.observedAt = freshObservedAt;
+}
+
 const divergent = structuredClone(shadow);
 divergent.observations['convex-finance'] = {
   ...divergent.observations['convex-finance'],
@@ -52,13 +65,26 @@ failed.observations['convex-finance'] = {
 };
 const failedSelection = selectMarketDataAuthority({
   policy,
-  marketData: source,
+  marketData: freshFailbackSource,
   shadow: failed,
   assetId: 'convex-finance',
   nowMs
 });
 if (failedSelection.selectedLane !== 'coingecko-lane' || failedSelection.fallbackUsed !== true) {
-  throw new Error('Real dependency failure must perform bounded CoinGecko failback');
+  throw new Error('Real dependency failure with a fresh daily source must perform bounded CoinGecko failback');
+}
+
+const staleFailbackSource = structuredClone(freshFailbackSource);
+staleFailbackSource.prices['convex-finance'].observedAt = new Date(nowMs - (31 * 60 * 60 * 1000)).toISOString();
+const staleSelection = selectMarketDataAuthority({
+  policy,
+  marketData: staleFailbackSource,
+  shadow: failed,
+  assetId: 'convex-finance',
+  nowMs
+});
+if (staleSelection.selectedLane !== 'unknown' || staleSelection.coingeckoCandidate?.checks?.sourceFresh !== false) {
+  throw new Error('CoinGecko failback older than the 30-hour safety bound must be rejected');
 }
 
 const unavailableV3 = structuredClone(shadow);
@@ -72,7 +98,7 @@ unavailableV3.observations.ovr = {
 };
 const unavailableV3Selection = selectMarketDataAuthority({
   policy,
-  marketData: source,
+  marketData: freshFailbackSource,
   shadow: unavailableV3,
   assetId: 'ovr',
   nowMs
@@ -84,6 +110,7 @@ if (unavailableV3Selection.selectedLane !== 'coingecko-lane' || unavailableV3Sel
 console.log('Market Data materializer health-boundary validation PASS', {
   divergenceTelemetryKeepsOnchain: true,
   realDependencyFailureFailsBackPerAsset: true,
+  staleCoinGeckoFailbackRejected: true,
   transientUnavailableRouteMetadataFailsBackPerAsset: true,
   materializerDelegatesRuntimeHealthToSelector: true,
   executionAuthority: 'none'
