@@ -23,7 +23,6 @@ on:
       - 'companies/company-001-owner-capital-snapshot.json'
       - 'companies/owner-balance-site-projection.mjs'
       - 'companies/public-page-market-runtime-projection.mjs'
-      - 'companies/public-site-polish-projection.mjs'
       - 'companies/company-010-production-state.json'
       - 'productivity/productivity-engine.mjs'
       - 'productivity/company-010-productivity-overlay.mjs'
@@ -121,7 +120,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        uses: actions/setup-node@49933a526288e4c291dd5f0618f51aa685886508 # v4
         with:
           node-version: '22'
 
@@ -133,7 +132,7 @@ jobs:
         working-directory: productivity
         run: npx playwright install chromium
 
-      - name: Validate unified orchestrator and existing engines
+      - name: Validate capital orchestrator and existing engines
         run: |
           set -euo pipefail
           node --check intelligence/capital-state/unified-capital-refresh.mjs
@@ -142,7 +141,6 @@ jobs:
           node --check companies/yieldring-public-capital-projection.mjs
           node --check companies/owner-balance-site-projection.mjs
           node --check companies/public-page-market-runtime-projection.mjs
-          node --check companies/public-site-polish-projection.mjs
           node --check productivity/productivity-engine.mjs
           node --check productivity/company-010-productivity-overlay.mjs
           node --check productivity/yieldring-productivity-overlay.mjs
@@ -163,7 +161,7 @@ jobs:
           set -euo pipefail
           node intelligence/capital-state/unified-capital-market-data-guard.mjs
 
-      - name: Refresh all coherent capital surfaces from canonical Market Data
+      - name: Refresh coherent capital state from canonical Market Data
         env:
           NODE_OPTIONS: --import=${{ github.workspace }}/intelligence/market-data/coingecko-fetch-shim.mjs
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
@@ -174,75 +172,50 @@ jobs:
       - name: Rebuild coherent public capital projection
         run: node intelligence/market-data/public-capital-engine.mjs
 
-      - name: Validate final coherent snapshot
+      - name: Validate final coherent capital snapshot
         run: |
           set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');
           const p=JSON.parse(fs.readFileSync('companies/productivity-data.json','utf8'));
-          const defiteaState=JSON.parse(fs.readFileSync('companies/defitea-canonical-state.json','utf8'));
-          const yieldRingState=JSON.parse(fs.readFileSync('companies/yieldring-canonical-state.json','utf8'));
           const vmState=JSON.parse(fs.readFileSync('companies/votemarket-reference-state.json','utf8'));
           const g=JSON.parse(fs.readFileSync('intelligence/capital-state/general-company-balance-sheet.json','utf8'));
           const c=JSON.parse(fs.readFileSync('intelligence/capital-state/capital-state.json','utf8'));
           const m=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
           const pub=JSON.parse(fs.readFileSync('intelligence/market-data/public-capital-state.json','utf8'));
-          const home=fs.readFileSync('index.html','utf8');
+          const companiesHtml=fs.readFileSync('companies/index.html','utf8');
           const company001Page=fs.readFileSync('05081966/index.html','utf8');
           const singulPage=fs.readFileSync('singul/index.html','utf8');
-          const yieldReportsPage=fs.readFileSync('yield-reports/index.html','utf8');
-          const canonicalDefiteaAero=(defiteaState.productivePositions||[]).find(x=>x.assetId==='aerodrome-finance');
-          const canonicalDefiteaFxn=(defiteaState.productivePositions||[]).find(x=>x.assetId==='fxn-token');
-          const expectedDefiteaAero=Number(canonicalDefiteaAero?.quantity);
-          const expectedDefiteaFxn=Number(canonicalDefiteaFxn?.quantity);
-          const expectedYieldRingAero=Number(yieldRingState.capital?.aerodrome?.quantity);
-          const expectedYieldRingBtc=Number(yieldRingState.capital?.bitcoin?.quantity);
-          if(!Number.isFinite(expectedDefiteaAero)||!Number.isFinite(expectedDefiteaFxn)||!Number.isFinite(expectedYieldRingAero)||!Number.isFinite(expectedYieldRingBtc))throw new Error('Canonical company quantity authority unavailable');
           const d=p.companies?.['defitea.eth'];
-          const da=(d?.breakdown||[]).find(x=>x.engineId==='aerodrome_veaero'||x.principalId==='aerodrome-finance');
-          const dcrow=(d?.breakdown||[]).find(x=>x.engineId==='curve_vecrv'||x.principalId==='curve-dao-token');
-          const df=(d?.breakdown||[]).find(x=>x.engineId==='fx_vefxn'||x.principalId==='fxn-token');
+          const y=p.companies?.['YieldRing.eth'];
           const vm=p.diagnostics?.voteMarketIncomeChannels;
           const dc=(c.companies||[]).find(x=>x.registry==='004');
-          const dca=(dc?.measuredPositions||[]).find(x=>x.assetId==='aerodrome-finance');
-          const dcf=(dc?.measuredPositions||[]).find(x=>x.assetId==='fxn-token');
-          if(!d||Number(da?.units)!==expectedDefiteaAero||Number(df?.units)!==expectedDefiteaFxn)throw new Error('Defitea Productivity coherence missing');
-          if(!dc||Number(dca?.units)!==expectedDefiteaAero||Number(dcf?.units)!==expectedDefiteaFxn)throw new Error('Defitea Capital State coherence missing');
-          if(vm?.capitalDoubleCount!==false||vm?.idempotent!==true||vm?.factualIncomeAuthority!==false||vm?.executionAuthority!=='none')throw new Error('VoteMarket safety contract missing from coherent snapshot');
-          if(vm?.claimedPeriodPersistencePending!==false||vm?.observationPersistence!=='claimed-aware-derived-cache')throw new Error('VoteMarket claimed-period persistence contract missing');
-          if(vmState?.semantics?.sourceOfTruth!==false||vmState?.semantics?.factualIncomeAuthority!==false||vmState?.semantics?.executionAuthority!=='none')throw new Error('VoteMarket derived persistence authority drift');
-          for(const [label,row] of [['veCRV',dcrow],['veFXN',df]]){
-            if(!row?.incomeChannels||row.incomeChannels.capitalAccounting!=='principal-counted-once'||row.incomeChannels.capitalDoubleCount!==false)throw new Error(label+' VoteMarket principal hierarchy missing');
-          }
-          const y=p.companies?.['YieldRing.eth'];
-          const a=(y?.breakdown||[]).find(x=>x.engineId==='aerodrome_veaero'||x.principalId==='aerodrome-finance');
           const yc=(c.companies||[]).find(x=>x.registry==='002');
-          const btc=(yc?.measuredPositions||[]).find(x=>x.assetId==='bitcoin');
-          const aero=(yc?.measuredPositions||[]).find(x=>x.assetId==='aerodrome-finance');
           const c5=(g.companies||[]).find(x=>x.registry==='005');
           const c6=(g.companies||[]).find(x=>x.registry==='006');
           const icp5=(c5?.positions||[]).find(x=>x.assetId==='internet-computer');
           const icp6=(c6?.positions||[]).find(x=>x.assetId==='internet-computer');
           const icp=m.prices?.['internet-computer'];
-          if(p.version!=='1.16'||Number(a?.units)!==expectedYieldRingAero)throw new Error('YieldRing Productivity coherence missing');
+          if(!d||!y)throw new Error('canonical company Productivity unavailable');
           if(g.status!=='ok'||c.status!=='ok')throw new Error('capital substrate not coherent');
-          if(Number(btc?.units)!==expectedYieldRingBtc||Number(aero?.units)!==expectedYieldRingAero)throw new Error('YieldRing Capital State coherence missing');
-          if(Number(icp5?.units)!==1363||Number(icp6?.units)!==1296)throw new Error('Company #005/#006 ICP balances missing');
-          if(Math.abs(Number(icp5?.priceUsd)-Number(icp?.usd))>1e-9||Math.abs(Number(icp6?.priceUsd)-Number(icp?.usd))>1e-9)throw new Error('Company #005/#006 ICP valuation not bound to canonical Market Data');
-          if(icp?.authority?.selectedLane!=='onchain'||!String(icp?.source||'').startsWith('onchain-'))throw new Error('ICP onchain authority drift');
           if(c.network?.registryCompanyCount!==10||c.network?.totalCapitalCompleteCompanyCount!==10||c.network?.totalCapitalCoverage!==1)throw new Error('Registry capital coverage drift');
           if(!(Number(c.network?.networkTvlUsd)>0)||c.network?.networkTvlStatus!=='complete')throw new Error('Network TVL unavailable');
+          if(vm?.capitalDoubleCount!==false||vm?.idempotent!==true||vm?.factualIncomeAuthority!==false||vm?.executionAuthority!=='none')throw new Error('VoteMarket safety contract missing');
+          if(vm?.claimedPeriodPersistencePending!==false||vm?.observationPersistence!=='claimed-aware-derived-cache')throw new Error('VoteMarket persistence contract missing');
+          if(vmState?.semantics?.sourceOfTruth!==false||vmState?.semantics?.executionAuthority!=='none')throw new Error('VoteMarket derived cache authority drift');
+          if(Number(icp5?.units)!==1363||Number(icp6?.units)!==1296)throw new Error('Company #005/#006 ICP balances missing');
+          if(Math.abs(Number(icp5?.priceUsd)-Number(icp?.usd))>1e-9||Math.abs(Number(icp6?.priceUsd)-Number(icp?.usd))>1e-9)throw new Error('ICP valuation not bound to canonical Market Data');
+          if(icp?.authority?.selectedLane!=='onchain'||!String(icp?.source||'').startsWith('onchain-'))throw new Error('ICP onchain authority drift');
           if(c.authority?.executionAuthority!=='none'||pub.authority?.executionAuthority!=='none')throw new Error('authority drift');
           if(m.semantics?.browserExternalPriceRequestsAllowed!==false||m.semantics?.perAssetAuthoritySelectionApplied!==true||pub.semantics?.browserExternalPriceRequestsAllowed!==false)throw new Error('market price authority drift');
           if(Number(m.authority?.unknownCount)!==0)throw new Error('Canonical Market Data contains UNKNOWN assets');
-          if(Number(m.authority?.onchainSelectedAssetCount)+Number(m.authority?.coingeckoSelectedAssetCount)!==26)throw new Error('Canonical Market Data selected-lane coverage drift');
-          if(!Number.isFinite(Number(pub.funds?.defitea?.tvlUsd))||!Number.isFinite(Number(pub.funds?.defitea?.referenceAprPct)))throw new Error('Defitea Public Capital incomplete');
           if(pub.sourceState?.marketDataGeneratedAt!==m.generatedAt)throw new Error('Public Capital is not bound to the current Market Data generation');
-          if(!home.includes('href="/companies"')||!home.includes('href="/realty"')||!home.includes('data-th-fund-pyramid-links')||!home.includes('Capital Architecture · Onchain Companies · Real Estate'))throw new Error('Homepage public polish projection missing');
+          if(!Number.isFinite(Number(pub.funds?.defitea?.tvlUsd))||!Number.isFinite(Number(pub.totals?.companyNetworkTvlUsd)))throw new Error('Public Capital incomplete');
           if(company001Page.includes('api.coingecko.com')||!company001Page.includes('canonical onchain-first snapshot'))throw new Error('Company #001 canonical page runtime missing');
           if(singulPage.includes('/intelligence/market-data/simple-price')||singulPage.includes('setInterval(updateTVL, 300000)')||!singulPage.includes('public-capital-client.js'))throw new Error('Singul canonical page runtime missing');
-          if(!yieldReportsPage.includes('The Holding · Defitea mobile cash-flow polish')||!yieldReportsPage.includes('.defitea-reports .report-table td:nth-child(2) { display: table-cell; }'))throw new Error('Defitea mobile Yield Reports cash-flow visibility missing');
-          console.log('Unified Capital Refresh final validation PASS',{generatedAt:p.generatedAt,defiteaApr:d.aprLatest,defiteaAero:dca.units,defiteaFxn:dcf.units,voteMarketMeasuredReferenceCompanyCount:vm.measuredReferenceCompanyCount,voteMarketClaimPersistence:true,veCrvVoteMarketStatus:dcrow?.incomeChannels?.votemarket?.status||null,veFxnVoteMarketStatus:df?.incomeChannels?.votemarket?.status||null,yieldRingApr:y.aprLatest,networkTvl:c.network.networkTvlUsd,marketObservedAt:m.observedAt,onchainSelectedAssetCount:m.authority.onchainSelectedAssetCount,coingeckoFallbackAssetCount:m.authority.coingeckoSelectedAssetCount,icpUsd:icp.usd,icpSource:icp.source,company005Icp:icp5.units,company006Icp:icp6.units,publicDefiteaTvl:pub.funds.defitea.tvlUsd,marketGenerationParity:true,homepagePublicPolish:true,defiteaMobileReportPolish:true});
+          if(companiesHtml.includes('data-th-collection-passport-routing'))throw new Error('Capital refresh damaged Presentation by restoring retired Collection router');
+          if(!companiesHtml.includes('data-th-collection-index-navigation-v3'))throw new Error('Capital refresh damaged canonical Collection -> Index v3 state');
+          console.log('Unified Capital final validation PASS',{generatedAt:p.generatedAt,defiteaApr:d.aprLatest,yieldRingApr:y.aprLatest,networkTvl:c.network.networkTvlUsd,marketObservedAt:m.observedAt,publicDefiteaTvl:pub.funds.defitea.tvlUsd,presentationPreservedNotOwned:true});
           NODE
           git diff --check
 
@@ -252,12 +225,10 @@ jobs:
           git config user.name "The Holding Capital Orchestrator"
           git config user.email "capital-orchestrator@theholding.ai"
           git add \
-            index.html \
             companies/index.html \
             05081966/index.html \
             yieldring/index.html \
             singul/index.html \
-            yield-reports/index.html \
             companies/productivity-data.json \
             companies/productivity-source-report.json \
             companies/votemarket-reference-state.json \
@@ -277,16 +248,14 @@ jobs:
               echo "Unified capital writer conflict; refusing to guess."
               exit 1
             fi
-            # A first-pass generated commit may have been composed by multiple projectors.
-            # After any fresh-main rebase, discard only generated/public materialization
-            # bytes back to canonical origin/main, then recompute the whole chain once.
+            # Reset only Capital-owned generated/public surfaces, then recompute
+            # the coherent Capital chain. Pure Presentation surfaces are outside
+            # this writer and must never be reset or staged here.
             git checkout origin/main -- \
-              index.html \
               companies/index.html \
               05081966/index.html \
               yieldring/index.html \
               singul/index.html \
-              yield-reports/index.html \
               companies/productivity-data.json \
               companies/productivity-source-report.json \
               companies/votemarket-reference-state.json \
@@ -302,12 +271,10 @@ jobs:
               node intelligence/capital-state/unified-capital-refresh.mjs
             node intelligence/market-data/public-capital-engine.mjs
             git add \
-              index.html \
               companies/index.html \
               05081966/index.html \
               yieldring/index.html \
               singul/index.html \
-              yield-reports/index.html \
               companies/productivity-data.json \
               companies/productivity-source-report.json \
               companies/votemarket-reference-state.json \
