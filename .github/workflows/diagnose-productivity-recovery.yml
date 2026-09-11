@@ -7,7 +7,6 @@ on:
       - '.github/workflows/unified-capital-refresh.yml'
       - '.github/workflows/market-data-refresh.yml'
       - 'productivity/**'
-      - 'intelligence/capital-state/unified-capital-refresh.mjs'
       - 'intelligence/market-data/**'
       - 'companies/index.html'
       - 'companies/yieldring-canonical-state.json'
@@ -27,6 +26,12 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
+
+      - name: Verify bounded diagnostic wake contract
+        run: |
+          set -euo pipefail
+          node --check productivity/productivity-recovery-workflow-contract.mjs
+          node productivity/productivity-recovery-workflow-contract.mjs
 
       - name: Install collector dependencies
         working-directory: productivity
