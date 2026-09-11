@@ -69,10 +69,11 @@ assert.match(orchestrator,/observationPersistence === 'claimed-aware-derived-cac
 assert.match(orchestrator,/voteMarketState\?\.semantics\?\.sourceOfTruth === false/,'VoteMarket derived cache source-of-truth guard missing');
 assert.match(orchestrator,/voteMarketState\?\.semantics\?\.executionAuthority === 'none'/,'VoteMarket execution boundary missing');
 
-// Economic public projections may update shared public surfaces, but they cannot
-// own pure Presentation polish through import side effects.
+// Economic public projections may update shared public surfaces, but Capital
+// must not retain a compatibility dependency on the Presentation coordinator.
 assert.match(ownerProjection,/await import\('\.\/public-page-market-runtime-projection\.mjs'\)/,'owner projection no longer chains canonical page market runtime');
-assert.match(ownerProjection,/await import\('\.\/public-site-polish-projection\.mjs'\)/,'owner projection compatibility import missing');
+assert.doesNotMatch(ownerProjection,/public-site-polish-projection\.mjs/,'owner projection regained Presentation coordinator dependency');
+assert.match(ownerProjection,/presentationMaterializationOwnedElsewhere:\s*true/,'owner projection Presentation ownership diagnostic missing');
 assert.match(sitePolishProjection,/export async function materializePublicSitePolish\(\)/,'explicit public-site materialization function missing');
 assert.match(sitePolishProjection,/if\(invoked===SELF\)/,'public-site direct-execution gate missing');
 assert.match(sitePolishProjection,/await import\('\.\/public-site-polish-materializer\.mjs'\)/,'public-site coordinator delegation missing');
@@ -118,6 +119,7 @@ console.log('Unified Capital workflow definition proof PASS',{
   presentationSourceWakesCapitalWriter:false,
   homepageOwnedByCapitalWriter:false,
   yieldReportsOwnedByCapitalWriter:false,
+  ownerProjectionDependsOnPresentation:false,
   presentationEntrypointExplicit:true,
   presentationImportSideEffects:false,
   marketDataConsumerOnly:true,
