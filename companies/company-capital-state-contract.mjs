@@ -22,13 +22,11 @@ export function validateCompleteBasis(rows,{company,expectedCount,expectedTotalU
   return total;
 }
 
-export function replaceCompanyBookBlock(html,companyName,renderedBlock){
-  const marker=`    '${companyName}': [`;
-  const start=html.indexOf(marker);
-  if(start<0)fail(`${companyName}: Company Book block start missing`);
-  let quote=null,escaped=false,depth=0,end=-1;
-  for(let i=start+marker.length-1;i<html.length;i+=1){
-    const ch=html[i];
+function scanBalanced(text,start,openChar,closeChar,label){
+  if(text[start]!==openChar)fail(`${label}: expected ${openChar} at balanced-scan start`);
+  let quote=null,escaped=false,depth=0;
+  for(let i=start;i<text.length;i+=1){
+    const ch=text[i];
     if(quote){
       if(escaped){escaped=false;continue;}
       if(ch==='\\'){escaped=true;continue;}
@@ -36,20 +34,53 @@ export function replaceCompanyBookBlock(html,companyName,renderedBlock){
       continue;
     }
     if(ch==='\''||ch==='"'||ch==='`'){quote=ch;continue;}
-    if(ch==='[')depth+=1;
-    else if(ch===']'){
+    if(ch===openChar)depth+=1;
+    else if(ch===closeChar){
       depth-=1;
-      if(depth===0){
-        let j=i+1;
-        while(j<html.length&&/\s/.test(html[j]))j+=1;
-        if(html[j]!==',')fail(`${companyName}: Company Book block terminator missing`);
-        end=j+1;
-        break;
-      }
+      if(depth===0)return i+1;
+      if(depth<0)fail(`${label}: unbalanced ${closeChar}`);
     }
   }
-  if(end<0)fail(`${companyName}: Company Book block boundary missing`);
-  return html.slice(0,start)+renderedBlock+html.slice(end);
+  fail(`${label}: balanced boundary missing`);
+}
+
+function companyBookBounds(html){
+  const declaration='const COMPANY_BOOK = {';
+  const declarationCount=html.split(declaration).length-1;
+  if(declarationCount!==1)fail(`Company Book declaration: expected exactly one ${declaration}, found ${declarationCount}`);
+  const declarationStart=html.indexOf(declaration);
+  const objectStart=declarationStart+declaration.lastIndexOf('{');
+  const objectEnd=scanBalanced(html,objectStart,'{','}','Company Book object');
+  let end=objectEnd;
+  while(end<html.length&&/\s/.test(html[end]))end+=1;
+  if(html[end]!==';')fail('Company Book object terminator missing');
+  return {declarationStart,objectStart,objectEnd,end:end+1};
+}
+
+export function extractCompanyBookBlock(html,companyName){
+  const bounds=companyBookBounds(html);
+  const marker=`    '${companyName}': [`;
+  const scoped=html.slice(bounds.objectStart,bounds.objectEnd);
+  const markerCount=scoped.split(marker).length-1;
+  if(markerCount!==1)fail(`${companyName}: expected exactly one Company Book row inside COMPANY_BOOK, found ${markerCount}`);
+  const start=bounds.objectStart+scoped.indexOf(marker);
+  const arrayStart=start+marker.length-1;
+  const arrayEnd=scanBalanced(html,arrayStart,'[',']',`${companyName}: Company Book array`);
+  if(arrayEnd>bounds.objectEnd)fail(`${companyName}: Company Book row escaped COMPANY_BOOK boundary`);
+  let end=arrayEnd;
+  while(end<html.length&&/\s/.test(html[end]))end+=1;
+  if(html[end]!==',')fail(`${companyName}: Company Book block terminator missing`);
+  return html.slice(start,end+1);
+}
+
+export function replaceCompanyBookBlock(html,companyName,renderedBlock){
+  const current=extractCompanyBookBlock(html,companyName);
+  if(current===renderedBlock)return html;
+  const bounds=companyBookBounds(html);
+  const marker=`    '${companyName}': [`;
+  const scoped=html.slice(bounds.objectStart,bounds.objectEnd);
+  const start=bounds.objectStart+scoped.indexOf(marker);
+  return html.slice(0,start)+renderedBlock+html.slice(start+current.length);
 }
 
 export function jsValue(value){
