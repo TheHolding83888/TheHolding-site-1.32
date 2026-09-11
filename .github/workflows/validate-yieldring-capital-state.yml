@@ -38,7 +38,7 @@ jobs:
           if(s.wallet?.address!=='0x90815314fB9e7F015AB5845572FE5BcC0Ba14669')throw new Error('YieldRing wallet identity drift');
           if(s.wallet?.onchainReconciliationStatus!=='pending-independent-reproduction')throw new Error('owner evidence was silently upgraded to blockchain-confirmed');
           const positions=Object.values(s.capital||{});
-          if(positions.length!==4||positions.some(x=>!(Number(x.quantity)>0)||!Number.isFinite(Number(x.costBasisUsd))||x.costBasisStatus!=='complete')throw new Error('YieldRing current position basis is not complete');
+          if(positions.length!==4||positions.some(x=>!(Number(x.quantity)>0)||!Number.isFinite(Number(x.costBasisUsd))||x.costBasisStatus!=='complete'))throw new Error('YieldRing current position basis is not complete');
           const total=positions.reduce((n,x)=>n+Number(x.costBasisUsd),0);
           if(!close(total,2984.6)||!close(s.portfolioCostBasis?.totalUsd,2984.6)||s.portfolioCostBasis?.status!=='complete')throw new Error('YieldRing portfolio basis drift');
           if(!close(s.capital?.bitcoin?.quantity,0.0334)||!close(s.capital?.bitcoin?.costBasisUsd,2123.11))throw new Error('YieldRing BTC basis drift');
