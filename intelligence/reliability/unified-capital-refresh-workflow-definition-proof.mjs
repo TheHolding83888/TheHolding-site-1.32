@@ -8,6 +8,7 @@ const orchestrator=fs.readFileSync('intelligence/capital-state/unified-capital-r
 const ownerProjection=fs.readFileSync('companies/owner-balance-site-projection.mjs','utf8');
 const marketRuntimeProjection=fs.readFileSync('companies/public-page-market-runtime-projection.mjs','utf8');
 const sitePolishProjection=fs.readFileSync('companies/public-site-polish-projection.mjs','utf8');
+const sitePolishCore=fs.readFileSync('companies/public-site-polish-projection-core.mjs','utf8');
 
 assert.match(workflow,/^# holding-workflow-definition-proof: intelligence\/reliability\/unified-capital-refresh-workflow-definition-proof\.mjs$/m,'paired workflow proof marker missing');
 assert.match(workflow,/permissions:\s*\n\s*contents:\s*write/,'Unified Capital writer permission missing');
@@ -48,6 +49,18 @@ assert.doesNotMatch(workflow,/node intelligence\/market-data\/market-data-engine
 assert.doesNotMatch(workflow,/git add[\s\\\n\r\t\w./-]*intelligence\/market-data\/market-data\.json/,'Unified Capital must not stage canonical Market Data');
 assert.match(workflow,/pub\.sourceState\?\.marketDataGeneratedAt!==m\.generatedAt/,'same-generation Public Capital validation missing');
 
+// Company quantities used by final coherence validation must come from the same
+// canonical states that drive the public Company Book, not duplicated literals.
+assert.match(workflow,/const defiteaState=JSON\.parse\(fs\.readFileSync\('companies\/defitea-canonical-state\.json','utf8'\)\)/,'Defitea canonical quantity authority missing from final validation');
+assert.match(workflow,/const yieldRingState=JSON\.parse\(fs\.readFileSync\('companies\/yieldring-canonical-state\.json','utf8'\)\)/,'YieldRing canonical quantity authority missing from final validation');
+assert.match(workflow,/expectedDefiteaAero=Number\(canonicalDefiteaAero\?\.quantity\)/,'Defitea AERO canonical quantity binding missing');
+assert.match(workflow,/expectedDefiteaFxn=Number\(canonicalDefiteaFxn\?\.quantity\)/,'Defitea FXN canonical quantity binding missing');
+assert.match(workflow,/Number\(da\?\.units\)!==expectedDefiteaAero/,'Defitea Productivity is not checked against canonical AERO quantity');
+assert.match(workflow,/Number\(dca\?\.units\)!==expectedDefiteaAero/,'Defitea Capital State is not checked against canonical AERO quantity');
+assert.match(workflow,/Number\(a\?\.units\)!==expectedYieldRingAero/,'YieldRing Productivity is not checked against canonical AERO quantity');
+assert.match(workflow,/Number\(btc\?\.units\)!==expectedYieldRingBtc/,'YieldRing Capital State is not checked against canonical BTC quantity');
+assert.doesNotMatch(workflow,/Number\(da\?\.units\)!==2632\|\|/,'stale rounded Defitea AERO literal survived final validation');
+
 for (const script of [
   'companies/owner-balance-site-projection.mjs',
   'companies/public-page-market-runtime-projection.mjs',
@@ -63,19 +76,20 @@ for (const surface of generatedSurfaces) {
 }
 assert.match(ownerProjection,/await import\('\.\/public-page-market-runtime-projection\.mjs'\)/,'owner projection no longer chains canonical page runtime projection');
 assert.match(ownerProjection,/await import\('\.\/public-site-polish-projection\.mjs'\)/,'owner projection no longer chains bounded site polish');
+assert.match(sitePolishProjection,/await import\('\.\/public-site-polish-projection-core\.mjs'\)/,'public-site coordinator no longer delegates shared polish to core');
 assert.match(marketRuntimeProjection,/company001DirectBrowserCoinGecko:false/,'Company #001 direct-browser external pricing guard missing');
 assert.match(marketRuntimeProjection,/singulDuplicateRuntime:false/,'Singul duplicate price runtime retirement proof missing');
-assert.match(sitePolishProjection,/executionAuthority:'none'/,'site polish authority boundary missing');
-assert.match(sitePolishProjection,/href=\"\/companies\"/,'homepage Companies navigation projection missing');
-assert.match(sitePolishProjection,/href=\"\/realty\"/,'homepage Real Estate navigation projection missing');
-assert.match(sitePolishProjection,/data-th-fund-pyramid-links/,'fund pyramid navigation marker missing');
-assert.match(sitePolishProjection,/Capital Architecture · Onchain Companies · Real Estate/,'homepage Capital Architecture footer projection missing');
+assert.match(sitePolishCore,/href=\"\/companies\"/,'homepage Companies navigation projection missing');
+assert.match(sitePolishCore,/href=\"\/realty\"/,'homepage Real Estate navigation projection missing');
+assert.match(sitePolishCore,/data-th-fund-pyramid-links/,'fund pyramid navigation marker missing');
+assert.match(sitePolishCore,/Capital Architecture · Onchain Companies · Real Estate/,'homepage Capital Architecture footer projection missing');
 assert.match(workflow,/home\.includes\('Capital Architecture · Onchain Companies · Real Estate'\)/,'Unified validation does not prove Capital Architecture footer materialization');
-assert.match(sitePolishProjection,/YIELD_REPORTS='yield-reports\/index\.html'/,'Yield Reports generated surface binding missing');
-assert.match(sitePolishProjection,/The Holding · Defitea mobile cash-flow polish/,'Defitea mobile report polish marker missing');
-assert.match(sitePolishProjection,/defiteaMobileCashFlowVisible:true/,'Defitea mobile cash-flow visibility proof missing');
+assert.match(sitePolishCore,/YIELD_REPORTS='yield-reports\/index\.html'/,'Yield Reports generated surface binding missing');
+assert.match(sitePolishCore,/The Holding · Defitea mobile cash-flow polish/,'Defitea mobile report polish marker missing');
+assert.match(sitePolishCore,/defiteaMobileCashFlowVisible:true/,'Defitea mobile cash-flow visibility proof missing');
 assert.match(workflow,/yieldReportsPage\.includes\('The Holding · Defitea mobile cash-flow polish'\)/,'Unified validation does not prove mobile report materialization');
-assert.doesNotMatch(sitePolishProjection,/sendTransaction|eth_sendRawTransaction|eth_sendTransaction|\.transfer\(|\.approve\(|\.claim\(|\.vote\(/,'site polish projector contains wallet/capital transaction behavior');
+assert.doesNotMatch(sitePolishProjection,/sendTransaction|eth_sendRawTransaction|eth_sendTransaction|\.transfer\(|\.approve\(|\.claim\(|\.vote\(/,'site polish coordinator contains wallet/capital transaction behavior');
+assert.doesNotMatch(sitePolishCore,/sendTransaction|eth_sendRawTransaction|eth_sendTransaction|\.transfer\(|\.approve\(|\.claim\(|\.vote\(/,'site polish core contains wallet/capital transaction behavior');
 
 assert.match(workflow,/for attempt in 1 2 3/,'bounded safe-writer retry contract missing');
 assert.match(workflow,/git fetch origin main/,'fresh-main reconciliation missing');
@@ -113,6 +127,8 @@ console.log('Unified Capital refresh workflow definition proof PASS',{
   marketDataWorkflowRunHandoff:true,
   marketDataNoopSuppression:true,
   marketGenerationParity:true,
+  canonicalCompanyQuantityAuthority:true,
+  publicSitePolishLayering:true,
   freshMainRetryReset:true,
   rewardsFreshnessCoupling:true,
   voteMarketAfterCanonicalProductivityOverlays:true,
