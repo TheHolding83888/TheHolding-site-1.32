@@ -1,7 +1,7 @@
 {
   "version": "0.1-neural-graph-telemetry",
   "engineVersion": "0.1-canonical-neuron-and-connection-counter",
-  "generatedAt": "2026-09-10T12:56:17.047Z",
+  "generatedAt": "2026-09-11T12:50:39.366Z",
   "status": "ok",
   "purpose": "Compact instrument telemetry for how The Holding knowledge graph grows and changes.",
   "semantics": {
@@ -21,9 +21,9 @@
     "marketFactAuthorityForOwnerContext": false
   },
   "totals": {
-    "neurons": 465,
+    "neurons": 467,
     "candidateNeurons": 80,
-    "neuralConnections": 292,
+    "neuralConnections": 296,
     "candidateConnections": 9,
     "nodeTypes": {
       "asset": 33,
@@ -31,15 +31,15 @@
       "company": 10,
       "coverage-gap": 6,
       "decision": 2,
-      "entity": 10,
+      "entity": 9,
       "event": 80,
       "evidence": 18,
-      "memory-record": 65,
+      "memory-record": 66,
       "metric": 54,
-      "metric-definition": 4,
+      "metric-definition": 3,
       "owner-context": 38,
       "protocol": 27,
-      "security-finding": 67,
+      "security-finding": 70,
       "strategy": 31
     },
     "candidateNodeTypes": {
@@ -51,7 +51,7 @@
       "company-strategy": 50,
       "decision-case": 2,
       "event-entity": 80,
-      "event-metric": 24,
+      "event-metric": 28,
       "strategy-asset": 33,
       "strategy-metric": 27,
       "strategy-protocol": 31
@@ -61,11 +61,11 @@
     },
     "epistemicClasses": {
       "derived": 54,
-      "direct": 238
+      "direct": 242
     }
   },
   "deltaSincePreviousSnapshot": {
-    "previousGeneratedAt": "2026-09-10T12:56:14.923Z",
+    "previousGeneratedAt": "2026-09-11T12:50:37.270Z",
     "neurons": {
       "mode": "delta",
       "added": 0,
@@ -89,21 +89,21 @@
     "mode": "activity",
     "snapshotCount": 4,
     "neurons": {
-      "added": 65,
-      "removed": 44,
-      "updated": 44
+      "added": 76,
+      "removed": 52,
+      "updated": 88
     },
     "connections": {
-      "added": 38,
-      "removed": 37,
-      "updated": 40
+      "added": 33,
+      "removed": 22,
+      "updated": 80
     }
   },
   "sourceState": {
     "productivity": {
       "file": "companies/productivity-data.json",
-      "sha256": "1ab86816a029c9e6af873893ad69f25111781a0152f3c95a287dea75a3d0a4b9",
-      "generatedAt": "2026-09-10T12:40:41.901Z"
+      "sha256": "4594ca55875ea0c8cfb19361776fb2fd45886c454ae1b25f67b2240cd196ae46",
+      "generatedAt": "2026-09-11T11:15:59.972Z"
     },
     "stable": {
       "file": "companies/stable-capital-data.json",
@@ -112,8 +112,8 @@
     },
     "events": {
       "file": "intelligence/event-intelligence.json",
-      "sha256": "d6de8ba01868173caa1ab33dd2b3d6c766cad7291668bdecf2ff38f19e77a8ca",
-      "generatedAt": "2026-09-10T11:38:23.012Z"
+      "sha256": "41f9392fcfa57ab562397481d31d460edbefb7382cff729ee95dd083436f75d3",
+      "generatedAt": "2026-09-11T11:39:46.911Z"
     },
     "brain": {
       "file": "intelligence/brain-chatgpt-bridge.json",
@@ -127,13 +127,13 @@
     },
     "memory": {
       "file": "intelligence/memory-vault/manifest.json",
-      "sha256": "21d059554fa6d787b315be59d0ef3fcca9355c67f6bed04512aea4e1818724f4",
-      "generatedAt": "2026-09-10T11:37:52.873Z"
+      "sha256": "1372dba0a156f2ccc42c1107a15315ff81b04698736874c8ec188c6db93ad018",
+      "generatedAt": "2026-09-11T11:39:13.628Z"
     },
     "security": {
       "file": "security/security-intelligence.json",
-      "sha256": "c17a67c39cef60883705af8567259703c555f841070cb048525eb62d4a68c8f3",
-      "generatedAt": "2026-09-10T12:38:04.169Z"
+      "sha256": "762577638e17228c72e71eca0dfab7b8bc3bf0b7b807be064ece5ca1e0581982",
+      "generatedAt": "2026-09-11T11:50:19.267Z"
     },
     "owner": {
       "file": "intelligence/owner-context/owner-decision-context.json",
@@ -2107,17 +2107,6 @@
         "data": {},
         "fingerprint": "a91b51e4f9233e4cca4e00ca8aa9f5f92ac0c8da56b434204294e0dd68f6b776"
       },
-      "entity:stable-companies-index": {
-        "id": "entity:stable-companies-index",
-        "type": "entity",
-        "label": "Stable Companies Index",
-        "status": "established",
-        "provenance": {
-          "source": "intelligence/event-intelligence.json"
-        },
-        "data": {},
-        "fingerprint": "816e254546b1a13ac614cbb7833d79c4dd5c27e13521f50e144050b25f7d8625"
-      },
       "event:ev-0024a2cc11bcb86bb238": {
         "id": "event:ev-0024a2cc11bcb86bb238",
         "type": "event",
@@ -2283,6 +2272,21 @@
         },
         "fingerprint": "1bf1bc75ff3d715f698f550428e67d5b023c6469f12baf21df479ac5d616b7a1"
       },
+      "event:ev-22dc7275f1cd86a4ae63": {
+        "id": "event:ev-22dc7275f1cd86a4ae63",
+        "type": "event",
+        "label": "Cypher Reference APR moved 25.66% → 25.34% (-0.32 pp).",
+        "status": "established",
+        "provenance": {
+          "source": "intelligence/event-intelligence.json"
+        },
+        "data": {
+          "type": "observer-material-change",
+          "severity": "info",
+          "occurredAt": "2026-09-11T11:39:13.628Z"
+        },
+        "fingerprint": "2764893b180c6fff9d2f0624b25217cf1005a343fef7905e09b70676f3a17a94"
+      },
       "event:ev-2349365d5aa160917d8c": {
         "id": "event:ev-2349365d5aa160917d8c",
         "type": "event",
@@ -2297,21 +2301,6 @@
           "occurredAt": "2026-09-08T19:46:38.025Z"
         },
         "fingerprint": "646557c3b6ebabf4dc811a47b4dd7143fb4b2cbda485825f23c3781bf4667b37"
-      },
-      "event:ev-29c40960a892a009a0f1": {
-        "id": "event:ev-29c40960a892a009a0f1",
-        "type": "event",
-        "label": "Cypher accrued rewards moved $4.62 → $4.86 (+$0.24).",
-        "status": "established",
-        "provenance": {
-          "source": "intelligence/event-intelligence.json"
-        },
-        "data": {
-          "type": "reward-value-change",
-          "severity": "info",
-          "occurredAt": "2026-09-06T11:11:06.033Z"
-        },
-        "fingerprint": "6ea77368420b70ec866d94bb86cc803cc84e585162ebb74828f0acbe972a424f"
       },
       "event:ev-2bd9684133149d4ecd45": {
         "id": "event:ev-2bd9684133149d4ecd45",
@@ -2342,6 +2331,21 @@
           "occurredAt": "2026-09-10T11:37:52.873Z"
         },
         "fingerprint": "55e9c99e5cb147d2a06801b2e7bcb0148c6d909218bf0a75f71ac8c6812b1ec2"
+      },
+      "event:ev-2dbe42b86921609b6dde": {
+        "id": "event:ev-2dbe42b86921609b6dde",
+        "type": "event",
+        "label": "1milliondollar.eth Reference APR moved 10.80% → 11.23% (+0.43 pp).",
+        "status": "established",
+        "provenance": {
+          "source": "intelligence/event-intelligence.json"
+        },
+        "data": {
+          "type": "observer-material-change",
+          "severity": "info",
+          "occurredAt": "2026-09-11T11:39:13.628Z"
+        },
+        "fingerprint": "858588944110451a2d5dc9b5232c0ac7ba8773f2bcd307da4c465b28faf30b4a"
       },
       "event:ev-30d10e738f3f05a64b79": {
         "id": "event:ev-30d10e738f3f05a64b79",
@@ -2448,21 +2452,6 @@
         },
         "fingerprint": "663c44f1c550891ecbcb403d1cad6f4e9904dde30f8d4577821ba698aa9a5c42"
       },
-      "event:ev-52481ab48a622061a8f8": {
-        "id": "event:ev-52481ab48a622061a8f8",
-        "type": "event",
-        "label": "1milliondollar.eth accrued rewards moved $33.83 → $35.61 (+$1.78).",
-        "status": "established",
-        "provenance": {
-          "source": "intelligence/event-intelligence.json"
-        },
-        "data": {
-          "type": "reward-value-change",
-          "severity": "info",
-          "occurredAt": "2026-09-06T11:11:06.033Z"
-        },
-        "fingerprint": "6baeb1ea14c4a9ae6e20ad1bb967de41fca6c56942aa38938067efa2d48afb68"
-      },
       "event:ev-5a495e3aa3bdb3098c2b": {
         "id": "event:ev-5a495e3aa3bdb3098c2b",
         "type": "event",
@@ -2492,6 +2481,36 @@
           "occurredAt": "2026-09-06T11:11:06.033Z"
         },
         "fingerprint": "8195e98156ca89fcd8808ac857e21b1ce4dd549a16cbf5a41e5236d603247ea5"
+      },
+      "event:ev-5ee41063832b985a1f64": {
+        "id": "event:ev-5ee41063832b985a1f64",
+        "type": "event",
+        "label": "dinaz.eth Reference APR moved 5.39% → 5.80% (+0.41 pp).",
+        "status": "established",
+        "provenance": {
+          "source": "intelligence/event-intelligence.json"
+        },
+        "data": {
+          "type": "observer-material-change",
+          "severity": "info",
+          "occurredAt": "2026-09-11T11:39:13.628Z"
+        },
+        "fingerprint": "91490f144060a222367332871e3030eaca450a83b461403b28b2ed2cbb13ea17"
+      },
+      "event:ev-5ff2b61ef94468eb58b2": {
+        "id": "event:ev-5ff2b61ef94468eb58b2",
+        "type": "event",
+        "label": "0x5860...83CA8.eth accrued rewards moved $168.83 → $169.68 (+$0.85).",
+        "status": "established",
+        "provenance": {
+          "source": "intelligence/event-intelligence.json"
+        },
+        "data": {
+          "type": "reward-value-change",
+          "severity": "info",
+          "occurredAt": "2026-09-11T11:39:13.628Z"
+        },
+        "fingerprint": "9ce77b2e4053061ac2d6f1eec7b3314e790e974f188339b3055c2e848a4c0dc3"
       },
       "event:ev-67fc238418625db631da": {
         "id": "event:ev-67fc238418625db631da",
@@ -2553,6 +2572,21 @@
         },
         "fingerprint": "705798d1b996a317276d93ccd30f4bb262beb103354ec49b5fd1d7ff612b2bcf"
       },
+      "event:ev-795ac5feaa922ae7f4e8": {
+        "id": "event:ev-795ac5feaa922ae7f4e8",
+        "type": "event",
+        "label": "defitea.eth Reference APR moved 14.95% → 15.45% (+0.50 pp).",
+        "status": "established",
+        "provenance": {
+          "source": "intelligence/event-intelligence.json"
+        },
+        "data": {
+          "type": "observer-material-change",
+          "severity": "info",
+          "occurredAt": "2026-09-11T11:39:13.628Z"
+        },
+        "fingerprint": "dbf09409bb53737a7481386277daf2d0dfe7f9347c0fb080990296318437363f"
+      },
       "event:ev-796ec3b96d6699808579": {
         "id": "event:ev-796ec3b96d6699808579",
         "type": "event",
@@ -2612,6 +2646,21 @@
           "occurredAt": "2026-09-09T11:40:03.491Z"
         },
         "fingerprint": "722e2454d95da03f67446b3f818660714dd83421ec4043e6de51854a7fb4f6b8"
+      },
+      "event:ev-8142eb1a83e29836ed40": {
+        "id": "event:ev-8142eb1a83e29836ed40",
+        "type": "event",
+        "label": "YieldRing.eth Reference APR moved 15.04% → 15.53% (+0.49 pp).",
+        "status": "established",
+        "provenance": {
+          "source": "intelligence/event-intelligence.json"
+        },
+        "data": {
+          "type": "observer-material-change",
+          "severity": "info",
+          "occurredAt": "2026-09-11T11:39:13.628Z"
+        },
+        "fingerprint": "063d183a35539bb099e48767851ed7a736948c0e06cdb9f825be04d6ac2d74b3"
       },
       "event:ev-88f5207b78cf8fb70480": {
         "id": "event:ev-88f5207b78cf8fb70480",
@@ -2777,21 +2826,6 @@
           "occurredAt": "2026-09-06T11:11:06.033Z"
         },
         "fingerprint": "b57098a03018708d18a06cd8b5a18ed1c3059045acd2605178bae7e304d45953"
-      },
-      "event:ev-9fea417271c0b1c72014": {
-        "id": "event:ev-9fea417271c0b1c72014",
-        "type": "event",
-        "label": "YieldRing.eth accrued rewards moved $10.49 → $10.82 (+$0.33).",
-        "status": "established",
-        "provenance": {
-          "source": "intelligence/event-intelligence.json"
-        },
-        "data": {
-          "type": "reward-value-change",
-          "severity": "info",
-          "occurredAt": "2026-09-06T11:11:06.033Z"
-        },
-        "fingerprint": "e978fb2d81406f02dedd9195593e380eb83362035efa42954542abe1dc6b8e6b"
       },
       "event:ev-a0b1ca7887c199ebdd02": {
         "id": "event:ev-a0b1ca7887c199ebdd02",
@@ -3048,36 +3082,6 @@
         },
         "fingerprint": "38f2ffe96767d08d5250b17396f11718585b00734ebc6a57b9919c5ef0361011"
       },
-      "event:ev-c65e62dd4073fb397aca": {
-        "id": "event:ev-c65e62dd4073fb397aca",
-        "type": "event",
-        "label": "aerocvxyb.eth accrued rewards moved $218.45 → $225.79 (+$7.34).",
-        "status": "established",
-        "provenance": {
-          "source": "intelligence/event-intelligence.json"
-        },
-        "data": {
-          "type": "reward-value-change",
-          "severity": "info",
-          "occurredAt": "2026-09-06T11:11:06.033Z"
-        },
-        "fingerprint": "93cda3e823274d435c18a3a48ce64b8c5ddca37a62f214fd2cd2c14e3ba813bd"
-      },
-      "event:ev-c6600901822c2ec94aba": {
-        "id": "event:ev-c6600901822c2ec94aba",
-        "type": "event",
-        "label": "defitea.eth accrued rewards moved $183.60 → $187.97 (+$4.38).",
-        "status": "established",
-        "provenance": {
-          "source": "intelligence/event-intelligence.json"
-        },
-        "data": {
-          "type": "reward-value-change",
-          "severity": "info",
-          "occurredAt": "2026-09-06T11:11:06.033Z"
-        },
-        "fingerprint": "7eebdd9bc6a6d0cae9646cfac99245b2cc306744756ddf4fc8ff71120557af41"
-      },
       "event:ev-c7f0d29868da1d87a879": {
         "id": "event:ev-c7f0d29868da1d87a879",
         "type": "event",
@@ -3092,6 +3096,21 @@
           "occurredAt": "2026-09-06T20:16:55.449Z"
         },
         "fingerprint": "d7514e59274baa152786dbba0e2b57c82f63e1bfc5ee053a6e8ccc1b3f822dc4"
+      },
+      "event:ev-c9177c95c0b299420379": {
+        "id": "event:ev-c9177c95c0b299420379",
+        "type": "event",
+        "label": "aerocvxyb.eth accrued rewards moved $230.63 → $231.48 (+$0.85).",
+        "status": "established",
+        "provenance": {
+          "source": "intelligence/event-intelligence.json"
+        },
+        "data": {
+          "type": "reward-value-change",
+          "severity": "info",
+          "occurredAt": "2026-09-11T11:39:13.628Z"
+        },
+        "fingerprint": "3fedc9c62022b7a9a508902d8d49afebbdcc695ec2c51fd019db0883e15b77cf"
       },
       "event:ev-d029906f136ae7555d6c": {
         "id": "event:ev-d029906f136ae7555d6c",
@@ -3152,21 +3171,6 @@
           "occurredAt": "2026-09-06T11:11:06.033Z"
         },
         "fingerprint": "8faa94828f556da00d38c33787c8683466a677edf7da02837af5249f1c678f11"
-      },
-      "event:ev-dbec42cb9a24dd702d4e": {
-        "id": "event:ev-dbec42cb9a24dd702d4e",
-        "type": "event",
-        "label": "Rook's portfolio accrued rewards moved $222.30 → $234.28 (+$11.99).",
-        "status": "established",
-        "provenance": {
-          "source": "intelligence/event-intelligence.json"
-        },
-        "data": {
-          "type": "reward-value-change",
-          "severity": "info",
-          "occurredAt": "2026-09-06T11:11:06.033Z"
-        },
-        "fingerprint": "95abf34b8bad66ce1eafd91490cd97f0567de6b814c4f52639575324cc1365ca"
       },
       "event:ev-dca1267bdbc9a0240c00": {
         "id": "event:ev-dca1267bdbc9a0240c00",
@@ -3272,21 +3276,6 @@
           "occurredAt": "2026-09-08T11:33:20.716Z"
         },
         "fingerprint": "878503236782686d5f2dfbc2933bdc6159c3e9fc679d0e7b31402b4bf47de0b6"
-      },
-      "event:ev-efcac4684614f666a65e": {
-        "id": "event:ev-efcac4684614f666a65e",
-        "type": "event",
-        "label": "Stable Companies current capital moved $100.4718 → $100.5145 (+$0.0427).",
-        "status": "established",
-        "provenance": {
-          "source": "intelligence/event-intelligence.json"
-        },
-        "data": {
-          "type": "stable-capital-change",
-          "severity": "info",
-          "occurredAt": "2026-09-06T11:11:06.033Z"
-        },
-        "fingerprint": "a38c2b1292b96882ab48309010984dee7c61c7b83a7fefd0b0a83bb8106f40c1"
       },
       "event:ev-f2bdb3963e7504da379f": {
         "id": "event:ev-f2bdb3963e7504da379f",
@@ -4491,6 +4480,21 @@
         },
         "fingerprint": "118f57ac4023cefd9da478320406da04a82468efff63185e7a6e5d50919d8802"
       },
+      "memory-record:2026-09-11t11-39-13-628z-f884ed91b1": {
+        "id": "memory-record:2026-09-11t11-39-13-628z-f884ed91b1",
+        "type": "memory-record",
+        "label": "2026-09-11T11-39-13-628Z-f884ed91b1",
+        "status": "established",
+        "provenance": {
+          "source": "intelligence/memory-vault/manifest.json"
+        },
+        "data": {
+          "generatedAt": "2026-09-11T11:39:13.628Z",
+          "mode": "delta",
+          "eventCount": 7
+        },
+        "fingerprint": "9d8142879b7c610f7c97fe817fa354ae6ff025772ca0ddd87162956599e56309"
+      },
       "metric-definition:aprlatestpct": {
         "id": "metric-definition:aprlatestpct",
         "type": "metric-definition",
@@ -4517,19 +4521,6 @@
         },
         "fingerprint": "b364450e54805630fa6972288110030531a0a79a06cadbe7631e5e09ae4c1784"
       },
-      "metric-definition:currentcapitalusd": {
-        "id": "metric-definition:currentcapitalusd",
-        "type": "metric-definition",
-        "label": "currentCapitalUsd",
-        "status": "established",
-        "provenance": {
-          "source": "intelligence/event-intelligence.json"
-        },
-        "data": {
-          "category": null
-        },
-        "fingerprint": "cf3a0173ae5464495c13fcb56a33a7719b6cb98df8c1ee2e046655aac361ed12"
-      },
       "metric-definition:engine-status": {
         "id": "metric-definition:engine-status",
         "type": "metric-definition",
@@ -4554,9 +4545,9 @@
         "data": {
           "value": 1,
           "unit": "ratio",
-          "observedAt": "2026-09-10T12:39:43.992Z"
+          "observedAt": "2026-09-11T11:14:58.952Z"
         },
-        "fingerprint": "ba43a6e3b92dd165da6f225d054b180cf1e1e3a5f34262d13c1ed809554036bf"
+        "fingerprint": "ee2ff1f0b83af94aab294940996044b95c2bea7b9034ecad7de814ecbcec64bc"
       },
       "metric:company:05081966.eth:productive-value": {
         "id": "metric:company:05081966.eth:productive-value",
@@ -4567,11 +4558,11 @@
           "source": "companies/productivity-data.json"
         },
         "data": {
-          "value": 384,
+          "value": 375.6,
           "unit": "USD",
-          "observedAt": "2026-09-10T12:39:43.992Z"
+          "observedAt": "2026-09-11T11:14:58.952Z"
         },
-        "fingerprint": "5a65acc829313c14b8885a6e7e6d58502053446c0895f2aa5f8ba78867c5738f"
+        "fingerprint": "dbfa46e88a50bcad22217b0a0551fc6f1207ce9fc06a29814c9d69c779946a67"
       },
       "metric:company:05081966.eth:reference-yield": {
         "id": "metric:company:05081966.eth:reference-yield",
@@ -4582,11 +4573,11 @@
           "source": "companies/productivity-data.json"
         },
         "data": {
-          "value": 10.2613,
+          "value": 10.329,
           "unit": "percent",
-          "observedAt": "2026-09-10T12:39:43.992Z"
+          "observedAt": "2026-09-11T11:14:58.952Z"
         },
-        "fingerprint": "1b47a6746692c2380848c3621ee06c7e0e92ed4233f355f13cc580ed85928d2e"
+        "fingerprint": "18e3dc4bedadebcdf9cfb94cd59e468f1c4afd852002954bb188e4da3dbf37c5"
       },
       "metric:company:0x5860...83ca8.eth:coverage": {
         "id": "metric:company:0x5860...83ca8.eth:coverage",
@@ -4599,9 +4590,9 @@
         "data": {
           "value": 1,
           "unit": "ratio",
-          "observedAt": "2026-09-10T12:39:43.992Z"
+          "observedAt": "2026-09-11T11:14:58.952Z"
         },
-        "fingerprint": "d119658f4c10709097f6cf553712cd38ead77f8d8922e0e2ea560a487764c1f3"
+        "fingerprint": "1215d26a3fc85f9c2e73178a02d96acc9c0e779d46975efc44b51777df98a13e"
       },
       "metric:company:0x5860...83ca8.eth:productive-value": {
         "id": "metric:company:0x5860...83ca8.eth:productive-value",
@@ -4612,11 +4603,11 @@
           "source": "companies/productivity-data.json"
         },
         "data": {
-          "value": 7171.63,
+          "value": 7096.77,
           "unit": "USD",
-          "observedAt": "2026-09-10T12:39:43.992Z"
+          "observedAt": "2026-09-11T11:14:58.952Z"
         },
-        "fingerprint": "815a9fe2e37de13d9027ee723c3dee52c7f6067a5530d3644d01940121bb67b6"
+        "fingerprint": "e53d0c226bd14ffddd3395a1f334b3a95609e53d6cda7b195ff83e7ce0401d7d"
       },
       "metric:company:0x5860...83ca8.eth:reference-yield": {
         "id": "metric:company:0x5860...83ca8.eth:reference-yield",
@@ -4627,11 +4618,11 @@
           "source": "companies/productivity-data.json"
         },
         "data": {
-          "value": 16.1274,
+          "value": 16.1181,
           "unit": "percent",
-          "observedAt": "2026-09-10T12:39:43.992Z"
+          "observedAt": "2026-09-11T11:14:58.952Z"
         },
-        "fingerprint": "f99f2b8fbf4e293ce0448081ab4a809343eb3e320de3be2ad74cc5703cf9b92c"
+        "fingerprint": "d3c2c90e66d67c157fa683a19a73f0d1059f7ba499e3a73a2d17c1f964b2e8e6"
       },
       "metric:company:1milliondollar.eth:coverage": {
         "id": "metric:company:1milliondollar.eth:coverage",
@@ -4644,9 +4635,9 @@
         "data": {
           "value": 1,
           "unit": "ratio",
-          "observedAt": "2026-09-10T12:39:43.992Z"
+          "observedAt": "2026-09-11T11:14:58.952Z"
         },
-        "fingerprint": "efde1df71ba8307bdfe21e7f44ef29d4787e773f0c9c0fdd3912d1c4b2d8b1f8"
+        "fingerprint": "8d8a5e6e0c7d9dbf6f372704bf07d561d0956f51bd6f7e8437db0cdefd3585bd"
       },
       "metric:company:1milliondollar.eth:productive-value": {
         "id": "metric:company:1milliondollar.eth:productive-value",
@@ -4657,11 +4648,11 @@
           "source": "companies/productivity-data.json"
         },
         "data": {
-          "value": 525.26,
+          "value": 504.7,
           "unit": "USD",
-          "observedAt": "2026-09-10T12:39:43.992Z"
+          "observedAt": "2026-09-11T11:14:58.952Z"
         },
-        "fingerprint": "3c94afc925a902c2617243878df929a4df9be51005a28caa326adf299aa71103"
+        "fingerprint": "0ee06beefea5a316af2938d56ddba8679184ad54d0a1739cd7eaae266c2607e0"
       },
       "metric:company:1milliondollar.eth:reference-yield": {
         "id": "metric:company:1milliondollar.eth:reference-yield",
@@ -4672,11 +4663,11 @@
           "source": "companies/productivity-data.json"
         },
         "data": {
-          "value": 10.8552,
+          "value": 11.2251,
           "unit": "percent",
-          "observedAt": "2026-09-10T12:39:43.992Z"
+          "observedAt": "2026-09-11T11:14:58.952Z"
         },
-        "fingerprint": "5101adb44dc72bb203f8ffd4b39acfe2b8e54a1273b189704468ccb132ca8947"
+        "fingerprint": "44f5e25deffc76a9a00688ee77d7f292dbfb3995af2f2857aad7854f93284312"
       },
       "metric:company:aerocvxyb.eth:coverage": {
         "id": "metric:company:aerocvxyb.eth:coverage",
@@ -4689,9 +4680,9 @@
         "data": {
           "value": 1,
           "unit": "ratio",
-          "observedAt": "2026-09-10T12:39:43.992Z"
+          "observedAt": "2026-09-11T11:14:58.952Z"
         },
-        "fingerprint": "725aaea9f3af78cbc6d34044deee7d29a03f50b964da82800e5c35663ed1232e"
+        "fingerprint": "f44f150ac43c9404418a69e0ab9eac6810b8a72cadb1d37e70a35eb16e582b0d"
       },
       "metric:company:aerocvxyb.eth:productive-value": {
         "id": "metric:company:aerocvxyb.eth:productive-value",
@@ -4702,11 +4693,11 @@
           "source": "companies/productivity-data.json"
         },
         "data": {
-          "value": 9941.7,
+          "value": 9787.74,
           "unit": "USD",
-          "observedAt": "2026-09-10T12:39:43.992Z"
+          "observedAt": "2026-09-11T11:14:58.952Z"
         },
-        "fingerprint": "f3c0b1552479692f56f433840dc63913fb363114cbdee0660f208ed4127f206f"
+        "fingerprint": "89b0cd21f9f47fd1561ed5cda367b0dd80098de9552400fdb495ecb0f4c5a171"
       },
       "metric:company:aerocvxyb.eth:reference-yield": {
         "id": "metric:company:aerocvxyb.eth:reference-yield",
@@ -4717,11 +4708,11 @@
           "source": "companies/productivity-data.json"
         },
         "data": {
-          "value": 17.1639,
+          "value": 17.2479,
           "unit": "percent",
-          "observedAt": "2026-09-10T12:39:43.992Z"
+          "observedAt": "2026-09-11T11:14:58.952Z"
         },
-        "fingerprint": "f968f6f2b8c0051c812465c20b47ed23a7b6dbf9bb3ed5667cb664c3c23333cf"
+        "fingerprint": "6c621f1725f7b9b7469b659252458cf69e84540c81ce09adbe6a16d48e5439c7"
       },
       "metric:company:cypher:coverage": {
         "id": "metric:company:cypher:coverage",
@@ -4732,11 +4723,11 @@
           "source": "companies/productivity-data.json"
         },
         "data": {
-          "value": 0.9141,
+          "value": 0.9127,
           "unit": "ratio",
-          "observedAt": "2026-09-10T09:18:37.467Z"
+          "observedAt": "2026-09-11T09:16:28.027Z"
         },
-        "fingerprint": "0cf70cc9ffeca5e3b4832f1299663107dda071b58218d7ee374449a2ac9a68b3"
+        "fingerprint": "9bd849965a8a4245183598309632eb9929fade9f84fe634cd540e8e4014b54cd"
       },
       "metric:company:cypher:productive-value": {
         "id": "metric:company:cypher:productive-value",
@@ -4747,11 +4738,11 @@
           "source": "companies/productivity-data.json"
         },
         "data": {
-          "value": 2232.69,
+          "value": 2225.1,
           "unit": "USD",
-          "observedAt": "2026-09-10T09:18:37.467Z"
+          "observedAt": "2026-09-11T09:16:28.027Z"
         },
-        "fingerprint": "4627cb4af4b81a789983c1385c8a58b13ca8bd95e670259b273e00ede6d606a0"
+        "fingerprint": "f0b17f2d2a31629ac512b1e6da919ced69880c0a3d2d0db9775ab4bc5a883e43"
       },
       "metric:company:cypher:reference-yield": {
         "id": "metric:company:cypher:reference-yield",
@@ -4762,11 +4753,11 @@
           "source": "companies/productivity-data.json"
         },
         "data": {
-          "value": 25.6578,
+          "value": 25.3384,
           "unit": "percent",
-          "observedAt": "2026-09-10T09:18:37.467Z"
+          "observedAt": "2026-09-11T09:16:28.027Z"
         },
-        "fingerprint": "4e830f16e13182479aa4e6a2567839781880eff82289213f77ba7150814f41c8"
+        "fingerprint": "5b9a9ed51815575dc28691a404ac0377107a83af5c414dbb77165f41b611cc0d"
       },
       "metric:company:defitea.eth:coverage": {
         "id": "metric:company:defitea.eth:coverage",
@@ -4777,11 +4768,11 @@
           "source": "companies/productivity-data.json"
         },
         "data": {
-          "value": 0.922881,
+          "value": 0.922344,
           "unit": "ratio",
-          "observedAt": "2026-09-10T12:39:43.992Z"
+          "observedAt": "2026-09-11T11:14:58.952Z"
         },
-        "fingerprint": "a846b5d469bfd501d3f2e95f2539a5c8d18b24edbe652b6cd7afeeac0f7dd2e3"
+        "fingerprint": "7ebed184ff520cb969439efee5809f7a435ed0a406375ebf43ec64c06603ec90"
       },
       "metric:company:defitea.eth:productive-value": {
         "id": "metric:company:defitea.eth:productive-value",
@@ -4792,11 +4783,11 @@
           "source": "companies/productivity-data.json"
         },
         "data": {
-          "value": 12900.49,
+          "value": 12757.28,
           "unit": "USD",
-          "observedAt": "2026-09-10T12:39:43.992Z"
+          "observedAt": "2026-09-11T11:14:58.952Z"
         },
-        "fingerprint": "828454fe826d8a892f31f3258ab90871c3ef2aaf9371d2b6d9544c89b7410869"
+        "fingerprint": "5356d84139dd114450cbcae441b4f5d4cab1fa41b0f278547dffead218e22f4e"
       },
       "metric:company:defitea.eth:reference-yield": {
         "id": "metric:company:defitea.eth:reference-yield",
@@ -4807,11 +4798,11 @@
           "source": "companies/productivity-data.json"
         },
         "data": {
-          "value": 15.0021,
+          "value": 15.4512,
           "unit": "percent",
-          "observedAt": "2026-09-10T12:39:43.992Z"
+          "observedAt": "2026-09-11T11:14:58.952Z"
         },
-        "fingerprint": "b8ef43201914058df60735e2e592c8f8633053f9687c412e37259c419f506132"
+        "fingerprint": "0a4b5a133f038ac4330957010f2c12e43c6261a56d1453d0be614364519272ea"
       },
       "metric:company:dinaz.eth:coverage": {
         "id": "metric:company:dinaz.eth:coverage",
@@ -4824,9 +4815,9 @@
         "data": {
           "value": 1,
           "unit": "ratio",
-          "observedAt": "2026-09-10T12:39:43.992Z"
+          "observedAt": "2026-09-11T11:14:58.952Z"
         },
-        "fingerprint": "6b0bdff066fe0b2097011b31545ff160c2180123c496324b5d6d741dd1c04f19"
+        "fingerprint": "acb1adc5494babcbcd0843d3547fb2899bf1987cc32fc02292ef32f5f1659744"
       },
       "metric:company:dinaz.eth:productive-value": {
         "id": "metric:company:dinaz.eth:productive-value",
@@ -4837,11 +4828,11 @@
           "source": "companies/productivity-data.json"
         },
         "data": {
-          "value": 1105.32,
+          "value": 1047.74,
           "unit": "USD",
-          "observedAt": "2026-09-10T12:39:43.992Z"
+          "observedAt": "2026-09-11T11:14:58.952Z"
         },
-        "fingerprint": "1ff70e84c2d46ad9b40eab4037bad45950865f21e72ce637673997ca915a3e9e"
+        "fingerprint": "191233d1caacaded9878b87d9d5d72c4e2ff7782c5585098c20aab4d081f4f54"
       },
       "metric:company:dinaz.eth:reference-yield": {
         "id": "metric:company:dinaz.eth:reference-yield",
@@ -4852,11 +4843,11 @@
           "source": "companies/productivity-data.json"
         },
         "data": {
-          "value": 5.48,
+          "value": 5.8,
           "unit": "percent",
-          "observedAt": "2026-09-10T12:39:43.992Z"
+          "observedAt": "2026-09-11T11:14:58.952Z"
         },
-        "fingerprint": "c3fc7d9b6733571d1c3ad309f22112e8762b97c05d5090bef950733fa484706b"
+        "fingerprint": "31dedfcc0a3037006c2cc220f856b4caeda2ecce3c22169930f4557f4e73cd54"
       },
       "metric:company:rook-s-portfolio:coverage": {
         "id": "metric:company:rook-s-portfolio:coverage",
@@ -4869,9 +4860,9 @@
         "data": {
           "value": 1,
           "unit": "ratio",
-          "observedAt": "2026-09-10T12:40:41.901Z"
+          "observedAt": "2026-09-11T11:15:59.972Z"
         },
-        "fingerprint": "e28411844868822377e0a0007758b6e5285e6100d6613594bb6d140a6482c358"
+        "fingerprint": "dcb663fcf9a214f8d5ae93d10b3ad3d5561554023bf4108495ee8b3ebab16db5"
       },
       "metric:company:rook-s-portfolio:productive-value": {
         "id": "metric:company:rook-s-portfolio:productive-value",
@@ -4882,11 +4873,11 @@
           "source": "companies/productivity-data.json"
         },
         "data": {
-          "value": 3534.95,
+          "value": 3500.63,
           "unit": "USD",
-          "observedAt": "2026-09-10T12:40:41.901Z"
+          "observedAt": "2026-09-11T11:15:59.972Z"
         },
-        "fingerprint": "d68360f42e08736aa69c78192f1dd55805deae9cc9915eaedab4e2b89a9b3212"
+        "fingerprint": "0b9b17819fbc4276a57e33fc66b9562e74ae988346c1242a67d558459dad46ee"
       },
       "metric:company:rook-s-portfolio:reference-yield": {
         "id": "metric:company:rook-s-portfolio:reference-yield",
@@ -4897,11 +4888,11 @@
           "source": "companies/productivity-data.json"
         },
         "data": {
-          "value": 20.7777,
+          "value": 20.9608,
           "unit": "percent",
-          "observedAt": "2026-09-10T12:40:41.901Z"
+          "observedAt": "2026-09-11T11:15:59.972Z"
         },
-        "fingerprint": "b34c935985975dede23d4ac0ce54bf3288d51ab6aecbb8987757299a73de873d"
+        "fingerprint": "f6710c49e6048831ec2cfe91b6950188029a260a0960c5dbbdb2a93daaaf4ed7"
       },
       "metric:company:yieldring.eth:coverage": {
         "id": "metric:company:yieldring.eth:coverage",
@@ -4914,9 +4905,9 @@
         "data": {
           "value": 1,
           "unit": "ratio",
-          "observedAt": "2026-09-10T12:40:41.901Z"
+          "observedAt": "2026-09-11T11:15:59.972Z"
         },
-        "fingerprint": "cdf584c790f8edae560388543fa47e3ecf659a324700c3e21c0910ed82e73021"
+        "fingerprint": "863850566e883813fe3ad52746386b4c76925a404188f443ec72b364a8593afe"
       },
       "metric:company:yieldring.eth:productive-value": {
         "id": "metric:company:yieldring.eth:productive-value",
@@ -4927,11 +4918,11 @@
           "source": "companies/productivity-data.json"
         },
         "data": {
-          "value": 1166.94,
+          "value": 1147.58,
           "unit": "USD",
-          "observedAt": "2026-09-10T12:40:41.901Z"
+          "observedAt": "2026-09-11T11:15:59.972Z"
         },
-        "fingerprint": "9fcf05d0408c9a0825315ab9bf5997a03ca24f59ea18524bb876c65257ff16b7"
+        "fingerprint": "bc0fd3d3ea9bb205969346cabf703e4e4d9774ceee6dca1563405af513abe76b"
       },
       "metric:company:yieldring.eth:reference-yield": {
         "id": "metric:company:yieldring.eth:reference-yield",
@@ -4942,11 +4933,11 @@
           "source": "companies/productivity-data.json"
         },
         "data": {
-          "value": 15.0374,
+          "value": 15.5317,
           "unit": "percent",
-          "observedAt": "2026-09-10T12:40:41.901Z"
+          "observedAt": "2026-09-11T11:15:59.972Z"
         },
-        "fingerprint": "c7fcd7f8d2f6e7f81d14086f4b25043987f35ddb9ae63a4af92c99979b93424d"
+        "fingerprint": "049bdb20f86782657ce67026752f9b19c69b4fc880b51ac4f1eff69ad82fe301"
       },
       "metric:strategy:aerodrome_veaero:reference-yield": {
         "id": "metric:strategy:aerodrome_veaero:reference-yield",
@@ -4960,9 +4951,9 @@
         "data": {
           "value": 27.04,
           "unit": "percent",
-          "observedAt": "2026-09-10T12:39:43.992Z"
+          "observedAt": "2026-09-11T11:14:58.952Z"
         },
-        "fingerprint": "1ef9fbc4521d6f4e977bda0d979758b3ef742baeb6a86d6c278be1b5d96f4cde"
+        "fingerprint": "547ecf97fb3f8de8471ef10f2932be4cf04542375a8af01ca99bc77e48e4153d"
       },
       "metric:strategy:beefy_cvxcrv:reference-yield": {
         "id": "metric:strategy:beefy_cvxcrv:reference-yield",
@@ -4974,11 +4965,11 @@
           "semantics": "Beefy convex-staked-cvxCRV vault APY · auto-compounded embedded yield"
         },
         "data": {
-          "value": 9.9547,
+          "value": 10.0572,
           "unit": "percent",
-          "observedAt": "2026-09-10T12:39:43.992Z"
+          "observedAt": "2026-09-11T11:14:58.952Z"
         },
-        "fingerprint": "f124292b12e96d7866dc146c02634b50c67c89d66d30e81a877b0ab59231f698"
+        "fingerprint": "722240391f7e9124a6f2ec77a27c32cbe1cbb7c25d02c73e79baf4dc97c54b8c"
       },
       "metric:strategy:convex_staked_cvxcrv:reference-yield": {
         "id": "metric:strategy:convex_staked_cvxcrv:reference-yield",
@@ -4990,11 +4981,11 @@
           "semantics": "Convex preference-weighted current reward-stream vAPR"
         },
         "data": {
-          "value": 10.7784,
+          "value": 10.534,
           "unit": "percent",
-          "observedAt": "2026-09-10T09:18:37.467Z"
+          "observedAt": "2026-09-11T09:16:28.027Z"
         },
-        "fingerprint": "d3c6844e8c369cc34ace624ee2578d9551b954c5f7b0b5b0516ed8bd8be51997"
+        "fingerprint": "721c158341c2389b8e4e1b6f2eadec5641f6ecfd6b2b80578ed95b213ad6d0ed"
       },
       "metric:strategy:convex_vlcvx:reference-yield": {
         "id": "metric:strategy:convex_vlcvx:reference-yield",
@@ -5006,11 +4997,11 @@
           "semantics": "Locked CVX platform vAPR + last completed Votium incentives APR"
         },
         "data": {
-          "value": 11.8326,
+          "value": 12.7904,
           "unit": "percent",
-          "observedAt": "2026-09-10T12:39:43.992Z"
+          "observedAt": "2026-09-11T11:14:58.952Z"
         },
-        "fingerprint": "d4c616c6190070c142e7b3f460dd50fed61f9a3523354886b5d601846a7aa8d4"
+        "fingerprint": "ef8ae0e317394a71462351bd8134456a56c4583b62c5112853ced51dba18d2e5"
       },
       "metric:strategy:curve_vecrv:reference-yield": {
         "id": "metric:strategy:curve_vecrv:reference-yield",
@@ -5022,11 +5013,11 @@
           "semantics": "veCRV crvUSD fee APR · 4 completed weeks average"
         },
         "data": {
-          "value": 2.1732,
+          "value": 2.2,
           "unit": "percent",
-          "observedAt": "2026-09-10T12:39:43.992Z"
+          "observedAt": "2026-09-11T11:14:58.952Z"
         },
-        "fingerprint": "fccaf1ec4853103a176eb0e5e6a133b817037cd04dcfe6871d8414a9e11340cd"
+        "fingerprint": "83d89e734be872da1dd324adf5f495ced24045c2628a88338be01bda9261420a"
       },
       "metric:strategy:frax_vefrax:reference-yield": {
         "id": "metric:strategy:frax_vefrax:reference-yield",
@@ -5038,11 +5029,11 @@
           "semantics": "Fraxtal veFRAX/veFXS APR"
         },
         "data": {
-          "value": 5.3455,
+          "value": 5.3482,
           "unit": "percent",
-          "observedAt": "2026-09-10T12:39:43.992Z"
+          "observedAt": "2026-09-11T11:14:58.952Z"
         },
-        "fingerprint": "7a2864c8e29f166675eb5010afd94d52f1f349acc39a6c34498d46fb86d303e1"
+        "fingerprint": "6ae4771473192f692d3ae778827e7712aacc8b4cb8c7e236fc9828855f51264a"
       },
       "metric:strategy:fx_vefxn:reference-yield": {
         "id": "metric:strategy:fx_vefxn:reference-yield",
@@ -5054,11 +5045,11 @@
           "semantics": "veFXN Locker APR"
         },
         "data": {
-          "value": 22.77,
+          "value": 22.65,
           "unit": "percent",
-          "observedAt": "2026-09-10T12:40:41.901Z"
+          "observedAt": "2026-09-11T11:15:59.972Z"
         },
-        "fingerprint": "9173b25155cb1a656efdd126e6c889e31130503018e0b6da26c6bc78b2ad4dfa"
+        "fingerprint": "ae55aa118b81db3268d87ece5674fd066297fe28aca847110cd7bf3250416289"
       },
       "metric:strategy:gmx-gm-btc-usdc:reference-yield": {
         "id": "metric:strategy:gmx-gm-btc-usdc:reference-yield",
@@ -5070,11 +5061,11 @@
           "semantics": "GMX 30D Fee APY"
         },
         "data": {
-          "value": 6.0853,
+          "value": 6.1875,
           "unit": "percent",
-          "observedAt": "2026-09-10T09:18:37.467Z"
+          "observedAt": "2026-09-11T09:16:28.027Z"
         },
-        "fingerprint": "e482093d1b7746e707171c65e55a24d5215a55b46acc33a3675fa43fb16becd1"
+        "fingerprint": "ecb1d20bebc1e97f852c994d36938b74a74aaf3d7d8056635b05e05b216c194d"
       },
       "metric:strategy:gmx-gm-eth-usdc:reference-yield": {
         "id": "metric:strategy:gmx-gm-eth-usdc:reference-yield",
@@ -5086,11 +5077,11 @@
           "semantics": "GMX 30D Fee APY"
         },
         "data": {
-          "value": 11.4338,
+          "value": 11.5602,
           "unit": "percent",
-          "observedAt": "2026-09-10T09:18:37.467Z"
+          "observedAt": "2026-09-11T09:16:28.027Z"
         },
-        "fingerprint": "479a306f666eafc3002496672aec05dc52622b098a4dbcdc7a9f505a2d1c5105"
+        "fingerprint": "e26aeaf025909d3d0fc3ad591f7937333f452604b492f41abc8dfbc36a6fa5bc"
       },
       "metric:strategy:hyperlend-0xfd739d4e423301ce9385c1fb8850539d657c296d:reference-yield": {
         "id": "metric:strategy:hyperlend-0xfd739d4e423301ce9385c1fb8850539d657c296d:reference-yield",
@@ -5102,11 +5093,11 @@
           "semantics": "HyperLend · kHYPE Reference APR"
         },
         "data": {
-          "value": 62.4208,
+          "value": 59.7921,
           "unit": "percent",
-          "observedAt": "2026-09-10T09:18:37.467Z"
+          "observedAt": "2026-09-11T09:16:28.027Z"
         },
-        "fingerprint": "0623b004b34cfd0435604724193944e454bc336d3a8e42d86faf3262b1ad897b"
+        "fingerprint": "285b1cd0fb12b6991e88b28ca9647e490543320b43b73b9383639ef1107d5f44"
       },
       "metric:strategy:icp_nns:reference-yield": {
         "id": "metric:strategy:icp_nns:reference-yield",
@@ -5118,11 +5109,11 @@
           "semantics": "NNS 2-year dissolve-delay Annualized Estimate Rewards"
         },
         "data": {
-          "value": 6.58,
+          "value": 6.57,
           "unit": "percent",
-          "observedAt": "2026-09-10T12:39:43.992Z"
+          "observedAt": "2026-09-11T11:14:58.952Z"
         },
-        "fingerprint": "c6a89e8a518396cfb86a3869796524ebaac79ed227cde0e375f224cb9be9da91"
+        "fingerprint": "dd0f2d5e96f906e7b76345353376783d4b11f47effbda58e3a4f0f3c3a58f384"
       },
       "metric:strategy:liquity_lqty:reference-yield": {
         "id": "metric:strategy:liquity_lqty:reference-yield",
@@ -5136,9 +5127,9 @@
         "data": {
           "value": 0.0636,
           "unit": "percent",
-          "observedAt": "2026-09-10T12:39:43.992Z"
+          "observedAt": "2026-09-11T11:14:58.952Z"
         },
-        "fingerprint": "af78e0829501db205a3c2ae0271c192d57582db18ba4c9220ddf658f27e9ce23"
+        "fingerprint": "5bbaa886360442f516bdb6be91045be5121c110d2cb26c25beb142179a7d07c4"
       },
       "metric:strategy:projectx-whype-usdc:reference-yield": {
         "id": "metric:strategy:projectx-whype-usdc:reference-yield",
@@ -5150,11 +5141,11 @@
           "semantics": "Project X observed collectible fee APR · trailing stable-window"
         },
         "data": {
-          "value": 34.8885,
+          "value": 35.3391,
           "unit": "percent",
-          "observedAt": "2026-09-10T09:18:37.467Z"
+          "observedAt": "2026-09-11T09:16:28.027Z"
         },
-        "fingerprint": "dd2f81869790371c848e48567d2f6708b854fa2ad98541099ce074a130b8d606"
+        "fingerprint": "86ee6ec408bd94d95a298951b3eba1c3249ca7f2e7707f53cba82ac63420ae4c"
       },
       "metric:strategy:resupply_rsup:reference-yield": {
         "id": "metric:strategy:resupply_rsup:reference-yield",
@@ -5166,11 +5157,11 @@
           "semantics": "Staked RSUP vAPR"
         },
         "data": {
-          "value": 22.15,
+          "value": 22.81,
           "unit": "percent",
-          "observedAt": "2026-09-10T12:39:43.992Z"
+          "observedAt": "2026-09-11T11:14:58.952Z"
         },
-        "fingerprint": "21f9171fe5e86e84af30773eeeb307e0c9c64a4e84dab97228baa0f41189e9a4"
+        "fingerprint": "b0ac4aa5e2e293a4243eaa61a2cd90f408833f682242decf57e4282970b08a92"
       },
       "metric:strategy:stable:base:aave:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913:reference-yield": {
         "id": "metric:strategy:stable:base:aave:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913:reference-yield",
@@ -5344,9 +5335,9 @@
         "data": {
           "value": 24.96,
           "unit": "percent",
-          "observedAt": "2026-09-10T12:39:43.992Z"
+          "observedAt": "2026-09-11T11:14:58.952Z"
         },
-        "fingerprint": "26808fc071a0e7d5925aec66c06237fa447dd682848e13472d66870cf4b7d356"
+        "fingerprint": "c196ccfb47f4d4acfecc2dde566bc53c17913d2593110facf0ac8b32d7bbdbe9"
       },
       "metric:strategy:venice_svvv:reference-yield": {
         "id": "metric:strategy:venice_svvv:reference-yield",
@@ -5358,11 +5349,11 @@
           "semantics": "VVV emissionRatePerSecond / total sVVV supply"
         },
         "data": {
-          "value": 7.3324,
+          "value": 7.3395,
           "unit": "percent",
-          "observedAt": "2026-09-10T12:39:43.992Z"
+          "observedAt": "2026-09-11T11:14:58.952Z"
         },
-        "fingerprint": "998c21fdfa2a1e09ca95f6627d312e3963f092b9bee63004386677454bad034e"
+        "fingerprint": "74918b569d07c39ac1d584f699092c3d6c7be824cb3235421b7203ef366fd964"
       },
       "metric:strategy:yieldbasis_veyb:reference-yield": {
         "id": "metric:strategy:yieldbasis_veyb:reference-yield",
@@ -5374,11 +5365,11 @@
           "semantics": "veYB APR · current/latest epoch"
         },
         "data": {
-          "value": 5.48,
+          "value": 5.8,
           "unit": "percent",
-          "observedAt": "2026-09-10T12:39:43.992Z"
+          "observedAt": "2026-09-11T11:14:58.952Z"
         },
-        "fingerprint": "2df120d49233af7d12c72aa4df61f440ab0bc43764335ea28f57f294eddc3f4e"
+        "fingerprint": "cd9bfd78320f305f559f77dafb4a4285cbe0591914a3a0b3db230af6aa24ad89"
       },
       "owner-context:audio-owner-q:q1": {
         "id": "owner-context:audio-owner-q:q1",
@@ -6262,8 +6253,8 @@
         },
         "fingerprint": "b0e5f44102e46635a35c8b4d2ede6890ba7ddc25d29becbcdcdd11a80405074e"
       },
-      "security-finding:0c887e18e4b6ee4e8310b0a99656c4a2a6146bfa25e7e06bffd76a64704b6aa7": {
-        "id": "security-finding:0c887e18e4b6ee4e8310b0a99656c4a2a6146bfa25e7e06bffd76a64704b6aa7",
+      "security-finding:0d943743606f49ef7156c5f7201b4a0e72d79709fcebaa8c82fbdcf16150eb8a": {
+        "id": "security-finding:0d943743606f49ef7156c5f7201b4a0e72d79709fcebaa8c82fbdcf16150eb8a",
         "type": "security-finding",
         "label": "Dynamic innerHTML assignment detected.",
         "status": "established",
@@ -6291,21 +6282,6 @@
           "file": ".github/workflows/production-boundary-guard.yml"
         },
         "fingerprint": "4c6e9ea1225afd476fff9a06d98e5776c9f95ddac62d0e65d595bf54ff966098"
-      },
-      "security-finding:16910933abd31093ab9fd9d12301cbb10114d8fb5680c8a2678bba5e3a75e58b": {
-        "id": "security-finding:16910933abd31093ab9fd9d12301cbb10114d8fb5680c8a2678bba5e3a75e58b",
-        "type": "security-finding",
-        "label": "Dynamic innerHTML assignment detected.",
-        "status": "established",
-        "provenance": {
-          "source": "security/security-intelligence.json"
-        },
-        "data": {
-          "severity": "medium",
-          "category": "dom-innerhtml",
-          "file": "companies/index.html"
-        },
-        "fingerprint": "bb4ffc3ae0b62869cca5e90e7c270b117bfdf15dee40578ce9ac35540fd4bf05"
       },
       "security-finding:16e1ad919c6bb2d6020947943c3915c485798067f0be2082a32b22c3754adbf4": {
         "id": "security-finding:16e1ad919c6bb2d6020947943c3915c485798067f0be2082a32b22c3754adbf4",
@@ -6352,6 +6328,51 @@
         },
         "fingerprint": "5f40d6af7b7707d06d26a69d8eed4b7856f20e3914f23b80b87871c80a6806ea"
       },
+      "security-finding:27bb95072ad78c86f45906d7c4d1ab1861dda63fc9bc2717579d35f8282d49c7": {
+        "id": "security-finding:27bb95072ad78c86f45906d7c4d1ab1861dda63fc9bc2717579d35f8282d49c7",
+        "type": "security-finding",
+        "label": "Dynamic innerHTML assignment detected.",
+        "status": "established",
+        "provenance": {
+          "source": "security/security-intelligence.json"
+        },
+        "data": {
+          "severity": "medium",
+          "category": "dom-innerhtml",
+          "file": "companies/index.html"
+        },
+        "fingerprint": "bb4ffc3ae0b62869cca5e90e7c270b117bfdf15dee40578ce9ac35540fd4bf05"
+      },
+      "security-finding:2e11edf2cf3dcba16f45845ba17d01b47f77598200f43c173e77c19e515c2237": {
+        "id": "security-finding:2e11edf2cf3dcba16f45845ba17d01b47f77598200f43c173e77c19e515c2237",
+        "type": "security-finding",
+        "label": "Dynamic innerHTML assignment detected.",
+        "status": "established",
+        "provenance": {
+          "source": "security/security-intelligence.json"
+        },
+        "data": {
+          "severity": "medium",
+          "category": "dom-innerhtml",
+          "file": "companies/index.html"
+        },
+        "fingerprint": "bb4ffc3ae0b62869cca5e90e7c270b117bfdf15dee40578ce9ac35540fd4bf05"
+      },
+      "security-finding:2ecf2b07e5215c1248d3e449454a63319caeab5e272ca573446d9345a15faeca": {
+        "id": "security-finding:2ecf2b07e5215c1248d3e449454a63319caeab5e272ca573446d9345a15faeca",
+        "type": "security-finding",
+        "label": "Dynamic innerHTML assignment detected.",
+        "status": "established",
+        "provenance": {
+          "source": "security/security-intelligence.json"
+        },
+        "data": {
+          "severity": "medium",
+          "category": "dom-innerhtml",
+          "file": "companies/index.html"
+        },
+        "fingerprint": "bb4ffc3ae0b62869cca5e90e7c270b117bfdf15dee40578ce9ac35540fd4bf05"
+      },
       "security-finding:3072d663d323dd12cef8f6a0d1201cedc24ade5d304e3949622fadf8add98e3d": {
         "id": "security-finding:3072d663d323dd12cef8f6a0d1201cedc24ade5d304e3949622fadf8add98e3d",
         "type": "security-finding",
@@ -6396,6 +6417,36 @@
           "file": "companies/company-010-public-adapter.js"
         },
         "fingerprint": "b019e444fe6ba72b7de96f0deaeb5a32c31d9d358e921263f60d9a66017a540e"
+      },
+      "security-finding:3b15b14453e77f65e24d97cfcbfa491bffbe2e8357873f01b0e748e3c27e641f": {
+        "id": "security-finding:3b15b14453e77f65e24d97cfcbfa491bffbe2e8357873f01b0e748e3c27e641f",
+        "type": "security-finding",
+        "label": "Dynamic innerHTML assignment detected.",
+        "status": "established",
+        "provenance": {
+          "source": "security/security-intelligence.json"
+        },
+        "data": {
+          "severity": "medium",
+          "category": "dom-innerhtml",
+          "file": "companies/index.html"
+        },
+        "fingerprint": "bb4ffc3ae0b62869cca5e90e7c270b117bfdf15dee40578ce9ac35540fd4bf05"
+      },
+      "security-finding:3d9015f2cccd44db9985ee9d89af003a2ade75b5b90036e8948d5ac1d5e600ea": {
+        "id": "security-finding:3d9015f2cccd44db9985ee9d89af003a2ade75b5b90036e8948d5ac1d5e600ea",
+        "type": "security-finding",
+        "label": "Dynamic innerHTML assignment detected.",
+        "status": "established",
+        "provenance": {
+          "source": "security/security-intelligence.json"
+        },
+        "data": {
+          "severity": "medium",
+          "category": "dom-innerhtml",
+          "file": "companies/index.html"
+        },
+        "fingerprint": "bb4ffc3ae0b62869cca5e90e7c270b117bfdf15dee40578ce9ac35540fd4bf05"
       },
       "security-finding:3f19a98b9eff87aed3dd12d0ef9feadd1d397ed3317206633c1ea651a367ed67": {
         "id": "security-finding:3f19a98b9eff87aed3dd12d0ef9feadd1d397ed3317206633c1ea651a367ed67",
@@ -6457,36 +6508,6 @@
         },
         "fingerprint": "f052ff5e64de368a8bed5a735100ee4f8f4b402f8fc889ecc4615c4b6e32a4a0"
       },
-      "security-finding:4fe71078ba9c5b64881b6429662fefdea4f1d39af207cc2e3a35549c359d5485": {
-        "id": "security-finding:4fe71078ba9c5b64881b6429662fefdea4f1d39af207cc2e3a35549c359d5485",
-        "type": "security-finding",
-        "label": "Dynamic innerHTML assignment detected.",
-        "status": "established",
-        "provenance": {
-          "source": "security/security-intelligence.json"
-        },
-        "data": {
-          "severity": "medium",
-          "category": "dom-innerhtml",
-          "file": "companies/index.html"
-        },
-        "fingerprint": "bb4ffc3ae0b62869cca5e90e7c270b117bfdf15dee40578ce9ac35540fd4bf05"
-      },
-      "security-finding:5086fe932b88b82460500b1b737e88bbd705bb760283b21ad3ad25837e994871": {
-        "id": "security-finding:5086fe932b88b82460500b1b737e88bbd705bb760283b21ad3ad25837e994871",
-        "type": "security-finding",
-        "label": "Dynamic innerHTML assignment detected.",
-        "status": "established",
-        "provenance": {
-          "source": "security/security-intelligence.json"
-        },
-        "data": {
-          "severity": "medium",
-          "category": "dom-innerhtml",
-          "file": "companies/index.html"
-        },
-        "fingerprint": "bb4ffc3ae0b62869cca5e90e7c270b117bfdf15dee40578ce9ac35540fd4bf05"
-      },
       "security-finding:566d026dc0d6ffda61ab0c02583f9d23b6979cc7cfdb22579891345abd2cf8cd": {
         "id": "security-finding:566d026dc0d6ffda61ab0c02583f9d23b6979cc7cfdb22579891345abd2cf8cd",
         "type": "security-finding",
@@ -6501,6 +6522,21 @@
           "file": "yield-reports/index.html"
         },
         "fingerprint": "8ce1ae632887b852b9544abbd318ef9625e0df73a3053b1f62c7243ef9e154c8"
+      },
+      "security-finding:56bbc5b996fb3a7175d4aac9f2cc194381a21f326d4a365bb37bd124cca7e7b6": {
+        "id": "security-finding:56bbc5b996fb3a7175d4aac9f2cc194381a21f326d4a365bb37bd124cca7e7b6",
+        "type": "security-finding",
+        "label": "Dynamic innerHTML assignment detected.",
+        "status": "established",
+        "provenance": {
+          "source": "security/security-intelligence.json"
+        },
+        "data": {
+          "severity": "medium",
+          "category": "dom-innerhtml",
+          "file": "companies/index.html"
+        },
+        "fingerprint": "bb4ffc3ae0b62869cca5e90e7c270b117bfdf15dee40578ce9ac35540fd4bf05"
       },
       "security-finding:5c890310412abf1495b4770e60b16602674f6e415a9b549ef9dc94543ce8bad1": {
         "id": "security-finding:5c890310412abf1495b4770e60b16602674f6e415a9b549ef9dc94543ce8bad1",
@@ -6517,20 +6553,20 @@
         },
         "fingerprint": "8ce1ae632887b852b9544abbd318ef9625e0df73a3053b1f62c7243ef9e154c8"
       },
-      "security-finding:5e653159f00faead2c2340bb8f646b331290795b100bc71666f0ea5a1160e396": {
-        "id": "security-finding:5e653159f00faead2c2340bb8f646b331290795b100bc71666f0ea5a1160e396",
+      "security-finding:5fe3534d21009974c2a791006f35f325ada30c5d27fcc456e2a0abd0fc49fdd1": {
+        "id": "security-finding:5fe3534d21009974c2a791006f35f325ada30c5d27fcc456e2a0abd0fc49fdd1",
         "type": "security-finding",
-        "label": "Dynamic innerHTML assignment detected.",
+        "label": "Security-sensitive surface changed: companies/index.html.",
         "status": "established",
         "provenance": {
           "source": "security/security-intelligence.json"
         },
         "data": {
           "severity": "medium",
-          "category": "dom-innerhtml",
+          "category": "critical-surface-change",
           "file": "companies/index.html"
         },
-        "fingerprint": "bb4ffc3ae0b62869cca5e90e7c270b117bfdf15dee40578ce9ac35540fd4bf05"
+        "fingerprint": "066b2e4b34527ace75415b3a6313c2eef4556b229ce0aa0844a1eba6a01d9d9d"
       },
       "security-finding:6224790871dc842c2f2c4d139d75da0fd553117407a3abe735c8f395ff0d1ed9": {
         "id": "security-finding:6224790871dc842c2f2c4d139d75da0fd553117407a3abe735c8f395ff0d1ed9",
@@ -6547,6 +6583,21 @@
         },
         "fingerprint": "4d92810e90d14eb1a5a2578ba39e2a2abf305015dce62fe914b77065482e7931"
       },
+      "security-finding:64586a2bfa82e176fc94c0822b1189c6b68ff6e99dba3bc2f518cf0d319362c1": {
+        "id": "security-finding:64586a2bfa82e176fc94c0822b1189c6b68ff6e99dba3bc2f518cf0d319362c1",
+        "type": "security-finding",
+        "label": "Dynamic innerHTML assignment detected.",
+        "status": "established",
+        "provenance": {
+          "source": "security/security-intelligence.json"
+        },
+        "data": {
+          "severity": "medium",
+          "category": "dom-innerhtml",
+          "file": "companies/index.html"
+        },
+        "fingerprint": "bb4ffc3ae0b62869cca5e90e7c270b117bfdf15dee40578ce9ac35540fd4bf05"
+      },
       "security-finding:65fe613f4c800c18225648786edd064bb3caba0e548b077cee7384c68341bfd0": {
         "id": "security-finding:65fe613f4c800c18225648786edd064bb3caba0e548b077cee7384c68341bfd0",
         "type": "security-finding",
@@ -6561,21 +6612,6 @@
           "file": "realty/data-health/index.html"
         },
         "fingerprint": "4d92810e90d14eb1a5a2578ba39e2a2abf305015dce62fe914b77065482e7931"
-      },
-      "security-finding:672b05131403d10a6493cf90997e1cbcc3d968f71db8e14ff94818e41830aa53": {
-        "id": "security-finding:672b05131403d10a6493cf90997e1cbcc3d968f71db8e14ff94818e41830aa53",
-        "type": "security-finding",
-        "label": "Dynamic innerHTML assignment detected.",
-        "status": "established",
-        "provenance": {
-          "source": "security/security-intelligence.json"
-        },
-        "data": {
-          "severity": "medium",
-          "category": "dom-innerhtml",
-          "file": "companies/index.html"
-        },
-        "fingerprint": "bb4ffc3ae0b62869cca5e90e7c270b117bfdf15dee40578ce9ac35540fd4bf05"
       },
       "security-finding:6bc4dcda8f6c4c28a426b8375da9da8046a08da07ed78b981811e8671c22f8a7": {
         "id": "security-finding:6bc4dcda8f6c4c28a426b8375da9da8046a08da07ed78b981811e8671c22f8a7",
@@ -6592,51 +6628,6 @@
         },
         "fingerprint": "00ce1135f55b7d557256d424e16f8e12993525a44eb5d67d92149c8ff3af48b7"
       },
-      "security-finding:6c77ca7ee593de3c33854b345977a098a6d20a56061ded915bdbca3d96fda100": {
-        "id": "security-finding:6c77ca7ee593de3c33854b345977a098a6d20a56061ded915bdbca3d96fda100",
-        "type": "security-finding",
-        "label": "Dynamic innerHTML assignment detected.",
-        "status": "established",
-        "provenance": {
-          "source": "security/security-intelligence.json"
-        },
-        "data": {
-          "severity": "medium",
-          "category": "dom-innerhtml",
-          "file": "companies/index.html"
-        },
-        "fingerprint": "bb4ffc3ae0b62869cca5e90e7c270b117bfdf15dee40578ce9ac35540fd4bf05"
-      },
-      "security-finding:6dd69b7a54eb88b4694050af581b83cca55535da9418911998c7fbf7ed161d20": {
-        "id": "security-finding:6dd69b7a54eb88b4694050af581b83cca55535da9418911998c7fbf7ed161d20",
-        "type": "security-finding",
-        "label": "Dynamic innerHTML assignment detected.",
-        "status": "established",
-        "provenance": {
-          "source": "security/security-intelligence.json"
-        },
-        "data": {
-          "severity": "medium",
-          "category": "dom-innerhtml",
-          "file": "companies/index.html"
-        },
-        "fingerprint": "bb4ffc3ae0b62869cca5e90e7c270b117bfdf15dee40578ce9ac35540fd4bf05"
-      },
-      "security-finding:73a2749a1c3de37dcf04d0fc407f41019d017cc7f730723f9b83ef164de3de6b": {
-        "id": "security-finding:73a2749a1c3de37dcf04d0fc407f41019d017cc7f730723f9b83ef164de3de6b",
-        "type": "security-finding",
-        "label": "Dynamic innerHTML assignment detected.",
-        "status": "established",
-        "provenance": {
-          "source": "security/security-intelligence.json"
-        },
-        "data": {
-          "severity": "medium",
-          "category": "dom-innerhtml",
-          "file": "companies/index.html"
-        },
-        "fingerprint": "bb4ffc3ae0b62869cca5e90e7c270b117bfdf15dee40578ce9ac35540fd4bf05"
-      },
       "security-finding:7407929f4fc90a3b1b2a38377932cc7f6843db354fe04b2cea670ed861818a29": {
         "id": "security-finding:7407929f4fc90a3b1b2a38377932cc7f6843db354fe04b2cea670ed861818a29",
         "type": "security-finding",
@@ -6651,21 +6642,6 @@
           "file": "yield-reports/index.html"
         },
         "fingerprint": "8ce1ae632887b852b9544abbd318ef9625e0df73a3053b1f62c7243ef9e154c8"
-      },
-      "security-finding:74f7017dea175e3d35372b8fed86ae13beef45354c565b78acc7609e14db4b0c": {
-        "id": "security-finding:74f7017dea175e3d35372b8fed86ae13beef45354c565b78acc7609e14db4b0c",
-        "type": "security-finding",
-        "label": "Dynamic innerHTML assignment detected.",
-        "status": "established",
-        "provenance": {
-          "source": "security/security-intelligence.json"
-        },
-        "data": {
-          "severity": "medium",
-          "category": "dom-innerhtml",
-          "file": "companies/index.html"
-        },
-        "fingerprint": "bb4ffc3ae0b62869cca5e90e7c270b117bfdf15dee40578ce9ac35540fd4bf05"
       },
       "security-finding:7914948588b0db76f347c165ee091bff0170f5774b963916557cf5115de7370c": {
         "id": "security-finding:7914948588b0db76f347c165ee091bff0170f5774b963916557cf5115de7370c",
@@ -6697,8 +6673,8 @@
         },
         "fingerprint": "5cc6c5c99aa7de4187b2316bc96828198d3bfb7f2c40b593ee7abc94de869f1a"
       },
-      "security-finding:7ad162de9b64242437d27b7847615066102be7649622208b14f390b3cb2c04ff": {
-        "id": "security-finding:7ad162de9b64242437d27b7847615066102be7649622208b14f390b3cb2c04ff",
+      "security-finding:79a183320227df82bc0005c6814a44c6413468a54159f7caa3ffbfc7e3a35d88": {
+        "id": "security-finding:79a183320227df82bc0005c6814a44c6413468a54159f7caa3ffbfc7e3a35d88",
         "type": "security-finding",
         "label": "Dynamic innerHTML assignment detected.",
         "status": "established",
@@ -6708,9 +6684,9 @@
         "data": {
           "severity": "medium",
           "category": "dom-innerhtml",
-          "file": "companies/index.html"
+          "file": "companies/public-site-polish-projection.mjs"
         },
-        "fingerprint": "bb4ffc3ae0b62869cca5e90e7c270b117bfdf15dee40578ce9ac35540fd4bf05"
+        "fingerprint": "a1a8afcc5adffd74c58e908b75ef06b3ac0a5cbbe049a1ed5379c4aa00d15bbd"
       },
       "security-finding:7d8d05fdb96d89cdb0c56b734b2b38c5732ffa4e3503ca49ac598506510501c4": {
         "id": "security-finding:7d8d05fdb96d89cdb0c56b734b2b38c5732ffa4e3503ca49ac598506510501c4",
@@ -6772,21 +6748,6 @@
         },
         "fingerprint": "5f40d6af7b7707d06d26a69d8eed4b7856f20e3914f23b80b87871c80a6806ea"
       },
-      "security-finding:96a34304e8d524bc5ccdebf498393fa8751390668fe90fe2aa419300c711e9ef": {
-        "id": "security-finding:96a34304e8d524bc5ccdebf498393fa8751390668fe90fe2aa419300c711e9ef",
-        "type": "security-finding",
-        "label": "Dynamic innerHTML assignment detected.",
-        "status": "established",
-        "provenance": {
-          "source": "security/security-intelligence.json"
-        },
-        "data": {
-          "severity": "medium",
-          "category": "dom-innerhtml",
-          "file": "companies/index.html"
-        },
-        "fingerprint": "bb4ffc3ae0b62869cca5e90e7c270b117bfdf15dee40578ce9ac35540fd4bf05"
-      },
       "security-finding:96f4849878d660ca715ea925dab4c3cfeeae316050d82db79f23620972087c89": {
         "id": "security-finding:96f4849878d660ca715ea925dab4c3cfeeae316050d82db79f23620972087c89",
         "type": "security-finding",
@@ -6817,6 +6778,21 @@
         },
         "fingerprint": "ab343128810cee433839f9610e744b7672d4063c5e2738eafe892e92e37788f3"
       },
+      "security-finding:a2a6b2430bf10ab6b1996ecce8789538660ef506bb33eb10d3364b744d710f16": {
+        "id": "security-finding:a2a6b2430bf10ab6b1996ecce8789538660ef506bb33eb10d3364b744d710f16",
+        "type": "security-finding",
+        "label": "Dynamic innerHTML assignment detected.",
+        "status": "established",
+        "provenance": {
+          "source": "security/security-intelligence.json"
+        },
+        "data": {
+          "severity": "medium",
+          "category": "dom-innerhtml",
+          "file": "companies/index.html"
+        },
+        "fingerprint": "bb4ffc3ae0b62869cca5e90e7c270b117bfdf15dee40578ce9ac35540fd4bf05"
+      },
       "security-finding:a3244c66693b45cfd3f61b73c558aeeee1b4ed757a8b1067c3cd25825011180e": {
         "id": "security-finding:a3244c66693b45cfd3f61b73c558aeeee1b4ed757a8b1067c3cd25825011180e",
         "type": "security-finding",
@@ -6831,6 +6807,21 @@
           "file": "realty/market/index.html"
         },
         "fingerprint": "5f40d6af7b7707d06d26a69d8eed4b7856f20e3914f23b80b87871c80a6806ea"
+      },
+      "security-finding:a7d78107e90118b74405927ebf082373ffde68c3ed40d5379a8dad687d1e8b39": {
+        "id": "security-finding:a7d78107e90118b74405927ebf082373ffde68c3ed40d5379a8dad687d1e8b39",
+        "type": "security-finding",
+        "label": "Dynamic innerHTML assignment detected.",
+        "status": "established",
+        "provenance": {
+          "source": "security/security-intelligence.json"
+        },
+        "data": {
+          "severity": "medium",
+          "category": "dom-innerhtml",
+          "file": "companies/index.html"
+        },
+        "fingerprint": "bb4ffc3ae0b62869cca5e90e7c270b117bfdf15dee40578ce9ac35540fd4bf05"
       },
       "security-finding:ac6efad8a8c22c87bd11a3b2a54c32f61acb82d0ee1e4b9e5923e9f992f792fe": {
         "id": "security-finding:ac6efad8a8c22c87bd11a3b2a54c32f61acb82d0ee1e4b9e5923e9f992f792fe",
@@ -6847,8 +6838,8 @@
         },
         "fingerprint": "ab343128810cee433839f9610e744b7672d4063c5e2738eafe892e92e37788f3"
       },
-      "security-finding:adea5a2747b8019551d67f2c52f5dd815a1119a45355901f2f1e2b12d9f99137": {
-        "id": "security-finding:adea5a2747b8019551d67f2c52f5dd815a1119a45355901f2f1e2b12d9f99137",
+      "security-finding:aebc525d7ff76b5518b0e0f15f3fd7ef4afc83ba95e7b4b1a6956d99926d6c2e": {
+        "id": "security-finding:aebc525d7ff76b5518b0e0f15f3fd7ef4afc83ba95e7b4b1a6956d99926d6c2e",
         "type": "security-finding",
         "label": "Dynamic innerHTML assignment detected.",
         "status": "established",
@@ -6892,6 +6883,21 @@
         },
         "fingerprint": "4d92810e90d14eb1a5a2578ba39e2a2abf305015dce62fe914b77065482e7931"
       },
+      "security-finding:b131cb6aacab5179146e7bbdf441a47410bd3a974d686748f55f0cd5f8a2bf8b": {
+        "id": "security-finding:b131cb6aacab5179146e7bbdf441a47410bd3a974d686748f55f0cd5f8a2bf8b",
+        "type": "security-finding",
+        "label": "Dynamic innerHTML assignment detected.",
+        "status": "established",
+        "provenance": {
+          "source": "security/security-intelligence.json"
+        },
+        "data": {
+          "severity": "medium",
+          "category": "dom-innerhtml",
+          "file": "companies/index.html"
+        },
+        "fingerprint": "bb4ffc3ae0b62869cca5e90e7c270b117bfdf15dee40578ce9ac35540fd4bf05"
+      },
       "security-finding:b1603aa46114933994805405bed6dc71e841c4a3f9638ba184c797029d26ca31": {
         "id": "security-finding:b1603aa46114933994805405bed6dc71e841c4a3f9638ba184c797029d26ca31",
         "type": "security-finding",
@@ -6906,6 +6912,51 @@
           "file": "realty/discover/index.html"
         },
         "fingerprint": "c75e7aff4f8e2d6c47c42d664008892410b572bc16f10bfd1f99efe0e3e18de2"
+      },
+      "security-finding:b1a88cc6073cb5ffa80fdc4d78f9cc393b20ea4d016b6d33fb337f5267ded31a": {
+        "id": "security-finding:b1a88cc6073cb5ffa80fdc4d78f9cc393b20ea4d016b6d33fb337f5267ded31a",
+        "type": "security-finding",
+        "label": "Dynamic innerHTML assignment detected.",
+        "status": "established",
+        "provenance": {
+          "source": "security/security-intelligence.json"
+        },
+        "data": {
+          "severity": "medium",
+          "category": "dom-innerhtml",
+          "file": "companies/index.html"
+        },
+        "fingerprint": "bb4ffc3ae0b62869cca5e90e7c270b117bfdf15dee40578ce9ac35540fd4bf05"
+      },
+      "security-finding:b534431cdb690a1c0fdd261b996796bd68541292983b918b49c0a7c72f879660": {
+        "id": "security-finding:b534431cdb690a1c0fdd261b996796bd68541292983b918b49c0a7c72f879660",
+        "type": "security-finding",
+        "label": "Dynamic innerHTML assignment detected.",
+        "status": "established",
+        "provenance": {
+          "source": "security/security-intelligence.json"
+        },
+        "data": {
+          "severity": "medium",
+          "category": "dom-innerhtml",
+          "file": "companies/index.html"
+        },
+        "fingerprint": "bb4ffc3ae0b62869cca5e90e7c270b117bfdf15dee40578ce9ac35540fd4bf05"
+      },
+      "security-finding:b56fae2fa942699a1d28d26dfce7897701506b3abc1e7f57a86280bfd63b9f50": {
+        "id": "security-finding:b56fae2fa942699a1d28d26dfce7897701506b3abc1e7f57a86280bfd63b9f50",
+        "type": "security-finding",
+        "label": "Dynamic innerHTML assignment detected.",
+        "status": "established",
+        "provenance": {
+          "source": "security/security-intelligence.json"
+        },
+        "data": {
+          "severity": "medium",
+          "category": "dom-innerhtml",
+          "file": "companies/index.html"
+        },
+        "fingerprint": "bb4ffc3ae0b62869cca5e90e7c270b117bfdf15dee40578ce9ac35540fd4bf05"
       },
       "security-finding:b6d27274fd9bb19d4213fd64b2c75ebe2a2d5edbda9c29f362418c7342643317": {
         "id": "security-finding:b6d27274fd9bb19d4213fd64b2c75ebe2a2d5edbda9c29f362418c7342643317",
@@ -6967,6 +7018,21 @@
         },
         "fingerprint": "b0e5f44102e46635a35c8b4d2ede6890ba7ddc25d29becbcdcdd11a80405074e"
       },
+      "security-finding:c25d35d393cc02227800d4b40ba3b6806e393f75a54df4532b14a5c0966116a3": {
+        "id": "security-finding:c25d35d393cc02227800d4b40ba3b6806e393f75a54df4532b14a5c0966116a3",
+        "type": "security-finding",
+        "label": "Dynamic innerHTML assignment detected.",
+        "status": "established",
+        "provenance": {
+          "source": "security/security-intelligence.json"
+        },
+        "data": {
+          "severity": "medium",
+          "category": "dom-innerhtml",
+          "file": "companies/index.html"
+        },
+        "fingerprint": "bb4ffc3ae0b62869cca5e90e7c270b117bfdf15dee40578ce9ac35540fd4bf05"
+      },
       "security-finding:c55945f561435ad0599260b4eee403ac4fcd6413b26285376f6f24b11932c4b3": {
         "id": "security-finding:c55945f561435ad0599260b4eee403ac4fcd6413b26285376f6f24b11932c4b3",
         "type": "security-finding",
@@ -7012,21 +7078,6 @@
         },
         "fingerprint": "b019e444fe6ba72b7de96f0deaeb5a32c31d9d358e921263f60d9a66017a540e"
       },
-      "security-finding:c937e72a3e26ece9257b57380e2026715149318a787a556f361e9b0e2f0d37f2": {
-        "id": "security-finding:c937e72a3e26ece9257b57380e2026715149318a787a556f361e9b0e2f0d37f2",
-        "type": "security-finding",
-        "label": "Dynamic innerHTML assignment detected.",
-        "status": "established",
-        "provenance": {
-          "source": "security/security-intelligence.json"
-        },
-        "data": {
-          "severity": "medium",
-          "category": "dom-innerhtml",
-          "file": "companies/index.html"
-        },
-        "fingerprint": "bb4ffc3ae0b62869cca5e90e7c270b117bfdf15dee40578ce9ac35540fd4bf05"
-      },
       "security-finding:ca0b4aea9a779ba21efc0f8893aab70add786b34260d1681e7e66e30af807112": {
         "id": "security-finding:ca0b4aea9a779ba21efc0f8893aab70add786b34260d1681e7e66e30af807112",
         "type": "security-finding",
@@ -7042,23 +7093,8 @@
         },
         "fingerprint": "b24f50a1b5581ca2ff969a719cf6d34a3587bb25f49d4dc3ceb6f3b42de5f370"
       },
-      "security-finding:d0cb233e5ca13dbaad4584903b56190e41bfbc975b7353f76c93558201643778": {
-        "id": "security-finding:d0cb233e5ca13dbaad4584903b56190e41bfbc975b7353f76c93558201643778",
-        "type": "security-finding",
-        "label": "Dynamic innerHTML assignment detected.",
-        "status": "established",
-        "provenance": {
-          "source": "security/security-intelligence.json"
-        },
-        "data": {
-          "severity": "medium",
-          "category": "dom-innerhtml",
-          "file": "companies/index.html"
-        },
-        "fingerprint": "bb4ffc3ae0b62869cca5e90e7c270b117bfdf15dee40578ce9ac35540fd4bf05"
-      },
-      "security-finding:d54dbe3c6cad1a8c7761d91c1e8a21f35fab903a510d608ecd7a04a1ba76b416": {
-        "id": "security-finding:d54dbe3c6cad1a8c7761d91c1e8a21f35fab903a510d608ecd7a04a1ba76b416",
+      "security-finding:d2eb2623fcc0524d282b33eebab77e518179c19bd5d7efbe13a46d4beed07179": {
+        "id": "security-finding:d2eb2623fcc0524d282b33eebab77e518179c19bd5d7efbe13a46d4beed07179",
         "type": "security-finding",
         "label": "Dynamic innerHTML assignment detected.",
         "status": "established",
@@ -7101,6 +7137,21 @@
           "file": "companies/public-page-market-runtime-projection.mjs"
         },
         "fingerprint": "e867554e8226971e50e669294615e75c55db3fc3a89a1e5126c92b5203a9c830"
+      },
+      "security-finding:d7954a7e7e8566eece03c356d3cfc22768d869aa61182f03f383b8c96d5f5c96": {
+        "id": "security-finding:d7954a7e7e8566eece03c356d3cfc22768d869aa61182f03f383b8c96d5f5c96",
+        "type": "security-finding",
+        "label": "Dynamic innerHTML assignment detected.",
+        "status": "established",
+        "provenance": {
+          "source": "security/security-intelligence.json"
+        },
+        "data": {
+          "severity": "medium",
+          "category": "dom-innerhtml",
+          "file": "companies/index.html"
+        },
+        "fingerprint": "bb4ffc3ae0b62869cca5e90e7c270b117bfdf15dee40578ce9ac35540fd4bf05"
       },
       "security-finding:da1fa9a134a8438f3cd6fbf9d4529cef63bfb951549472b3506b149cadfb58b6": {
         "id": "security-finding:da1fa9a134a8438f3cd6fbf9d4529cef63bfb951549472b3506b149cadfb58b6",
@@ -7147,6 +7198,21 @@
         },
         "fingerprint": "7055ad6abd7184ef95367524afcfd0ac279aec14134f337b0afa289cd8e9a4ec"
       },
+      "security-finding:e251d64db19e3f351dde2e5ec99ada322dbd62e0d0744d2f02d71868af66d71b": {
+        "id": "security-finding:e251d64db19e3f351dde2e5ec99ada322dbd62e0d0744d2f02d71868af66d71b",
+        "type": "security-finding",
+        "label": "Dynamic innerHTML assignment detected.",
+        "status": "established",
+        "provenance": {
+          "source": "security/security-intelligence.json"
+        },
+        "data": {
+          "severity": "medium",
+          "category": "dom-innerhtml",
+          "file": "companies/index.html"
+        },
+        "fingerprint": "bb4ffc3ae0b62869cca5e90e7c270b117bfdf15dee40578ce9ac35540fd4bf05"
+      },
       "security-finding:e40fc26b6c2f3b41f6e59082836967486e559beeb8327a4ec2e5ca8bd209f924": {
         "id": "security-finding:e40fc26b6c2f3b41f6e59082836967486e559beeb8327a4ec2e5ca8bd209f924",
         "type": "security-finding",
@@ -7161,21 +7227,6 @@
           "file": "agents/console/owner-intelligence.js"
         },
         "fingerprint": "9de74b5f3bfe6e91c1c26a2e38b3d11c84bae102b7fa02a167d226f067f848b2"
-      },
-      "security-finding:ecb3748b9620700f99259a69c3620ca7c752925a07b1c3142a9b179bc49e5ad1": {
-        "id": "security-finding:ecb3748b9620700f99259a69c3620ca7c752925a07b1c3142a9b179bc49e5ad1",
-        "type": "security-finding",
-        "label": "Dynamic innerHTML assignment detected.",
-        "status": "established",
-        "provenance": {
-          "source": "security/security-intelligence.json"
-        },
-        "data": {
-          "severity": "medium",
-          "category": "dom-innerhtml",
-          "file": "companies/index.html"
-        },
-        "fingerprint": "bb4ffc3ae0b62869cca5e90e7c270b117bfdf15dee40578ce9ac35540fd4bf05"
       },
       "security-finding:ef417c17300ac0312bf4244c306b8b4508a5f702286467b0f07546f919473aec": {
         "id": "security-finding:ef417c17300ac0312bf4244c306b8b4508a5f702286467b0f07546f919473aec",
@@ -7221,21 +7272,6 @@
           "file": "realty/discover/index.html"
         },
         "fingerprint": "c75e7aff4f8e2d6c47c42d664008892410b572bc16f10bfd1f99efe0e3e18de2"
-      },
-      "security-finding:f90dd265433df5cb2cc0a86469cf4e7ff3f88d9714696da497181857f7a7be8c": {
-        "id": "security-finding:f90dd265433df5cb2cc0a86469cf4e7ff3f88d9714696da497181857f7a7be8c",
-        "type": "security-finding",
-        "label": "Dynamic innerHTML assignment detected.",
-        "status": "established",
-        "provenance": {
-          "source": "security/security-intelligence.json"
-        },
-        "data": {
-          "severity": "medium",
-          "category": "dom-innerhtml",
-          "file": "companies/index.html"
-        },
-        "fingerprint": "bb4ffc3ae0b62869cca5e90e7c270b117bfdf15dee40578ce9ac35540fd4bf05"
       },
       "security-finding:fa4963c3ca96ad9b844920953a4c78a8ab0bf2a8289b6f1311715f20a3ac8356": {
         "id": "security-finding:fa4963c3ca96ad9b844920953a4c78a8ab0bf2a8289b6f1311715f20a3ac8356",
@@ -8263,9 +8299,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 110.62
+          "valueUsd": 109.39
         },
-        "fingerprint": "2d1293b241a0733b73bcb630d60b101ee59919adfeb6d229b0e582f974d66c95"
+        "fingerprint": "967adf1eba32d2ede594aff34646a03e87b2ee2ef5343611aca7b1e28ad46005"
       },
       "company-strategy:company:05081966.eth->strategy:curve_vecrv": {
         "id": "company-strategy:company:05081966.eth->strategy:curve_vecrv",
@@ -8275,9 +8311,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 161.45
+          "valueUsd": 159.48
         },
-        "fingerprint": "36193966a22710610a5b6cc4b8bb62aee04c2a7f49453f3fff1e9369d1d5944b"
+        "fingerprint": "8d74fe97aec551b55a93dd917dcac53758c6c933996850bd5d0fe19074b3f614"
       },
       "company-strategy:company:05081966.eth->strategy:frax_vefrax": {
         "id": "company-strategy:company:05081966.eth->strategy:frax_vefrax",
@@ -8287,9 +8323,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 111.93
+          "valueUsd": 106.73
         },
-        "fingerprint": "8df9addc35dac30b46598b56b43c1f0b587567e822c4f360326922f68ee5dd5a"
+        "fingerprint": "5d78528e2ba28cc2c514047eb67e21b1905022bbbcc3e064d8d8fa3e96009ba3"
       },
       "company-strategy:company:0x5860...83ca8.eth->strategy:aerodrome_veaero": {
         "id": "company-strategy:company:0x5860...83ca8.eth->strategy:aerodrome_veaero",
@@ -8299,9 +8335,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 2738.18
+          "valueUsd": 2707.56
         },
-        "fingerprint": "7302eff808ecb446f942b5f180ee120266c78d9a7f514596013f88ed63ea226a"
+        "fingerprint": "e746d9ad9193b3ff6d8b86e4455cb5a752b1176c4bd1e97cab1a8f6bbdcda90e"
       },
       "company-strategy:company:0x5860...83ca8.eth->strategy:icp_nns": {
         "id": "company-strategy:company:0x5860...83ca8.eth->strategy:icp_nns",
@@ -8311,9 +8347,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 3756.25
+          "valueUsd": 3718.36
         },
-        "fingerprint": "3d449aa2cc0d304edcc15ef265768830c558d71723710e85756af8c0f33aedd6"
+        "fingerprint": "5e6a21591069760c5d1338b6c52213a01f52ecde1ed8f89f838315ed16518f70"
       },
       "company-strategy:company:0x5860...83ca8.eth->strategy:velodrome_vevelo": {
         "id": "company-strategy:company:0x5860...83ca8.eth->strategy:velodrome_vevelo",
@@ -8323,9 +8359,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 677.2
+          "valueUsd": 670.85
         },
-        "fingerprint": "5d4ae93330ab6f699cc3bafea4a2735fe9742a477291ead5c36c2e4df5f23471"
+        "fingerprint": "7e8104730b4fe5a1f02e8135d5a811b8fe70e677f72f5a0e96af51b32515f909"
       },
       "company-strategy:company:1milliondollar.eth->strategy:aerodrome_veaero": {
         "id": "company-strategy:company:1milliondollar.eth->strategy:aerodrome_veaero",
@@ -8335,9 +8371,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 117.63
+          "valueUsd": 116.32
         },
-        "fingerprint": "b6121f2d8d13c26860550a52eb4b06f27ba28a2b50514ac9c6f457974daccc29"
+        "fingerprint": "82da3afd8e3175faae5832116a4cd2b3b188bc33abad170c46ba69d7855ad40d"
       },
       "company-strategy:company:1milliondollar.eth->strategy:beefy_cvxcrv": {
         "id": "company-strategy:company:1milliondollar.eth->strategy:beefy_cvxcrv",
@@ -8347,9 +8383,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 64.19
+          "valueUsd": 62.83
         },
-        "fingerprint": "cb5b8a4b9ee36b85d10d329cbf7ebcb4893918c2ad6f3c810e9eadae0270070b"
+        "fingerprint": "d32888909bb29a04682eef84f8bce068ad422c3c158e38b8f7112ce18f6e676b"
       },
       "company-strategy:company:1milliondollar.eth->strategy:yieldbasis_veyb": {
         "id": "company-strategy:company:1milliondollar.eth->strategy:yieldbasis_veyb",
@@ -8359,9 +8395,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 343.44
+          "valueUsd": 325.55
         },
-        "fingerprint": "b382ec2545526c2f02ecfa6c09fdfea61635dd29f05ec49107f8a7b033a3ffeb"
+        "fingerprint": "c73a0f03e79f76d0de65aa62c22394d787f9ea375d906e6de6d6e10c5207f730"
       },
       "company-strategy:company:aerocvxyb.eth->strategy:aerodrome_veaero": {
         "id": "company-strategy:company:aerocvxyb.eth->strategy:aerodrome_veaero",
@@ -8371,9 +8407,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 5054.81
+          "valueUsd": 4998.28
         },
-        "fingerprint": "298eed27f358c677212445daefe6d920608ec94d29226ac5b4127f0eb4c43f4e"
+        "fingerprint": "7c6f623c6dc8ade595ff45bc9eb9cda553ce8aea604769ec2a88c60d5c96f904"
       },
       "company-strategy:company:aerocvxyb.eth->strategy:icp_nns": {
         "id": "company-strategy:company:aerocvxyb.eth->strategy:icp_nns",
@@ -8383,9 +8419,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 3571.61
+          "valueUsd": 3535.58
         },
-        "fingerprint": "069bf1716a43164300e7c6af32a8521e6f9fbebf60ec79205cb98811df6cfb01"
+        "fingerprint": "8794f504b71588bd6f0ed76440409f08c8aee36d41d21d1c47baa50c71603c4c"
       },
       "company-strategy:company:aerocvxyb.eth->strategy:velodrome_vevelo": {
         "id": "company-strategy:company:aerocvxyb.eth->strategy:velodrome_vevelo",
@@ -8395,9 +8431,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 166.68
+          "valueUsd": 165.12
         },
-        "fingerprint": "c02e8e9a6c8ca1aef8b53fd3f5ad03d59c0b15242298fde56e50f7d54af1ff33"
+        "fingerprint": "33750217bdf0b0871e1b42ad566f2b9709847f261b97ac30d9d0708bae7ed902"
       },
       "company-strategy:company:aerocvxyb.eth->strategy:yieldbasis_veyb": {
         "id": "company-strategy:company:aerocvxyb.eth->strategy:yieldbasis_veyb",
@@ -8407,9 +8443,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 1148.6
+          "valueUsd": 1088.76
         },
-        "fingerprint": "f0ed9e65c9d668083e8d3306fedd723dc48403da6838c7218a82609a29d565b7"
+        "fingerprint": "d2cee7269535e7aab74f8a78f06676c97f478da1be879267399b7f877821e363"
       },
       "company-strategy:company:cypher->strategy:aerodrome_veaero": {
         "id": "company-strategy:company:cypher->strategy:aerodrome_veaero",
@@ -8419,9 +8455,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 417.24
+          "valueUsd": 424.96
         },
-        "fingerprint": "50e220a9e30124d550c0bd8405a60bb1a6350975281c747743a40f6cd535b2fa"
+        "fingerprint": "da318b1e584700323fcff2246a9c73dec1ccf28dfd264383c5db386dbf9f34eb"
       },
       "company-strategy:company:cypher->strategy:concentrator_asdcrv": {
         "id": "company-strategy:company:cypher->strategy:concentrator_asdcrv",
@@ -8431,9 +8467,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 191.81
+          "valueUsd": 194.27
         },
-        "fingerprint": "db05ace9343904ef393bc82b6cb4d48022f6b8f727b5658c8daaf4b1b7f51178"
+        "fingerprint": "ba63c1f53a0c5eb02128358cd57a673be3d3fda97c746d8de820a5d54c87d856"
       },
       "company-strategy:company:cypher->strategy:convex_staked_cvxcrv": {
         "id": "company-strategy:company:cypher->strategy:convex_staked_cvxcrv",
@@ -8443,9 +8479,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 134.79
+          "valueUsd": 136.16
         },
-        "fingerprint": "84564513ce895b10411f1938551b5c0fb072a556bae42723d10ca7b61ecedecc"
+        "fingerprint": "a72d6f3357c033d62248550b070fb338c7f5d322de5e3e92a9da4312e6ec8b1e"
       },
       "company-strategy:company:cypher->strategy:convex_vlcvx": {
         "id": "company-strategy:company:cypher->strategy:convex_vlcvx",
@@ -8455,9 +8491,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 448.57
+          "valueUsd": 444.3
         },
-        "fingerprint": "979ce675dfc73711f7495b30dace3cb8ad9f1a061f0e46fc2953a50caeb2d945"
+        "fingerprint": "66bc1d05ee002a07c138ff487a1908303c134b5f1852b2de87a09141062c2880"
       },
       "company-strategy:company:cypher->strategy:gmx-gm-btc-usdc": {
         "id": "company-strategy:company:cypher->strategy:gmx-gm-btc-usdc",
@@ -8467,9 +8503,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 198.8
+          "valueUsd": 197.98
         },
-        "fingerprint": "d9477141238eb64a234b344bbce8ac283252ead3e6238eff41833e672e38ad1f"
+        "fingerprint": "3471383da9d70a8d1c8b3b4928ac5516cdea08bbc53c9dfc3121124a0275e055"
       },
       "company-strategy:company:cypher->strategy:gmx-gm-eth-usdc": {
         "id": "company-strategy:company:cypher->strategy:gmx-gm-eth-usdc",
@@ -8479,9 +8515,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 180.87
+          "valueUsd": 180.95
         },
-        "fingerprint": "33c75abc3220a9394f4d530d18735d65f581a9188f7ce1f8b009e0a4004ab615"
+        "fingerprint": "d47267e81ba8cbdc55bcc1080e3f97772b61924ff5d09f9da2f8e20ed2d657eb"
       },
       "company-strategy:company:cypher->strategy:hyperlend-0xfd739d4e423301ce9385c1fb8850539d657c296d": {
         "id": "company-strategy:company:cypher->strategy:hyperlend-0xfd739d4e423301ce9385c1fb8850539d657c296d",
@@ -8491,9 +8527,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 319.04
+          "valueUsd": 307.21
         },
-        "fingerprint": "8884d76df585dd7d7ce5b349b697baa3174b47f1392aa4e1a0c3c35642487d66"
+        "fingerprint": "666af3f2160eddbb63978b024c054336a6079ebba7d8eadd4ab492186898e2a5"
       },
       "company-strategy:company:cypher->strategy:projectx-whype-usdc": {
         "id": "company-strategy:company:cypher->strategy:projectx-whype-usdc",
@@ -8503,9 +8539,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 262.25
+          "valueUsd": 259.77
         },
-        "fingerprint": "399f20e784206f262854bbbecb959e6dd67a39f1d2cf89fb1eb18411710320ca"
+        "fingerprint": "71f39bb194a7663ec30d81dfc0dd21ccf489e627aca4e1056dfa3ef63514155c"
       },
       "company-strategy:company:cypher->strategy:velodrome_vevelo": {
         "id": "company-strategy:company:cypher->strategy:velodrome_vevelo",
@@ -8515,9 +8551,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 79.32
+          "valueUsd": 79.5
         },
-        "fingerprint": "f6412d80452acff9896e1e65001d662cee41754c42e85b87463464644b84869e"
+        "fingerprint": "51f49280bffec42047519af1c0baf706f64b2c79a1bef1a962e0ec9ffb419eca"
       },
       "company-strategy:company:defitea.eth->strategy:aerodrome_veaero": {
         "id": "company-strategy:company:defitea.eth->strategy:aerodrome_veaero",
@@ -8527,9 +8563,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 1441.38
+          "valueUsd": 1425.26
         },
-        "fingerprint": "84d143eb64f466b3d357a69c6969f3e56380e90fbac5b4a73a82d57805494ae8"
+        "fingerprint": "cbc2fa31fbb005cd4a708fab818d7c6421560572929a43b40c32dc248b5e30ba"
       },
       "company-strategy:company:defitea.eth->strategy:convex_vlcvx": {
         "id": "company-strategy:company:defitea.eth->strategy:convex_vlcvx",
@@ -8539,9 +8575,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 2786.69
+          "valueUsd": 2778.03
         },
-        "fingerprint": "b123631d3508cde722ff8c3223f86f04dc7163f17dc6133834a5eb4a1f7ca4a3"
+        "fingerprint": "3a612bca3379e002f9b5ea03d1d130916e1da8dd1dbb66247e1e7d6d3525eff6"
       },
       "company-strategy:company:defitea.eth->strategy:curve_vecrv": {
         "id": "company-strategy:company:defitea.eth->strategy:curve_vecrv",
@@ -8551,9 +8587,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 1387.44
+          "valueUsd": 1370.53
         },
-        "fingerprint": "2ec91350cbcd771ed420e0ed1149458c0399f32097b5d9872be5b2c58f13be44"
+        "fingerprint": "e29878bcef3abfaeaec7fa63af04a3be642fdc675a7a1c1661da007c7b913550"
       },
       "company-strategy:company:defitea.eth->strategy:frax_vefrax": {
         "id": "company-strategy:company:defitea.eth->strategy:frax_vefrax",
@@ -8563,9 +8599,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 1269.06
+          "valueUsd": 1210.12
         },
-        "fingerprint": "623db6b398b193f5d78a161ca33af5c8e3dd8d331f4a7472315931ca62158ad3"
+        "fingerprint": "a4a180f98e5587d6420ed8b47225fd57aca6f5dde636bc0032b45630f6180b87"
       },
       "company-strategy:company:defitea.eth->strategy:fx_vefxn": {
         "id": "company-strategy:company:defitea.eth->strategy:fx_vefxn",
@@ -8575,9 +8611,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 1744.46
+          "valueUsd": 1795.64
         },
-        "fingerprint": "5a6d09ee2456d972dc630bba2edc49667b16d1bb7977f9514f1b8d4c8770221c"
+        "fingerprint": "878504e838e91d3f72dbf80a4ba5cf636759601b38ca43544c9e5f8babfa977d"
       },
       "company-strategy:company:defitea.eth->strategy:liquity_lqty": {
         "id": "company-strategy:company:defitea.eth->strategy:liquity_lqty",
@@ -8587,9 +8623,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 345.34
+          "valueUsd": 316.92
         },
-        "fingerprint": "9f582c15d2f6571d8544538523366f436e1e2834b9404a7301837a739eec1f40"
+        "fingerprint": "665dfcda5b84fa46958c82e0191c643defa832f5101264eda65837dbeef90c32"
       },
       "company-strategy:company:defitea.eth->strategy:pendle_spendle": {
         "id": "company-strategy:company:defitea.eth->strategy:pendle_spendle",
@@ -8599,9 +8635,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 994.87
+          "valueUsd": 990.68
         },
-        "fingerprint": "7ba4fe918e8392167c78042a018ad7fe0e929dd88d4b37cc3ff9c8e66a10f43e"
+        "fingerprint": "a329a16906dd18029ead1788449ba58ec335e89355cf8220782c45fa42263ee9"
       },
       "company-strategy:company:defitea.eth->strategy:resupply_rsup": {
         "id": "company-strategy:company:defitea.eth->strategy:resupply_rsup",
@@ -8611,9 +8647,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 447.83
+          "valueUsd": 432.35
         },
-        "fingerprint": "916ad1ce23090c68b00c6c67f9814e2d20f387088ff2addc35e9d4393dbded55"
+        "fingerprint": "1637995e287e86d63bd8f22af4f1086468a2fb6d981289f106c49ab9b88fc203"
       },
       "company-strategy:company:defitea.eth->strategy:velodrome_vevelo": {
         "id": "company-strategy:company:defitea.eth->strategy:velodrome_vevelo",
@@ -8623,9 +8659,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 291.19
+          "valueUsd": 288.46
         },
-        "fingerprint": "478d45b3a64c85f3cca93e67192d6b50079aaaa2cee0426a4c12121612040f96"
+        "fingerprint": "fb7a2f26aab6fdd945accaea46d5f5dee7a8f14c2b006d0def154112ab0c2bfa"
       },
       "company-strategy:company:defitea.eth->strategy:venice_svvv": {
         "id": "company-strategy:company:defitea.eth->strategy:venice_svvv",
@@ -8635,9 +8671,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 1195.61
+          "valueUsd": 1204.59
         },
-        "fingerprint": "59f31fa0295c34a52f7249732613bb9cd4e73209fdd13271843efedbbbf9b341"
+        "fingerprint": "f4c4dcd4af8415942242590add1331ce59d289018c39f00917b76c0dc322cccd"
       },
       "company-strategy:company:defitea.eth->strategy:yieldbasis_veyb": {
         "id": "company-strategy:company:defitea.eth->strategy:yieldbasis_veyb",
@@ -8647,9 +8683,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 996.62
+          "valueUsd": 944.7
         },
-        "fingerprint": "fbb629966a89e5c773ef1e384ab236b73d5f413a9aa0a52d54045bf401ca5547"
+        "fingerprint": "3d715675bba0d86517e0ede43591151e55de3e3b051d53fa0f3eee97cb82c5d7"
       },
       "company-strategy:company:dinaz.eth->strategy:yieldbasis_veyb": {
         "id": "company-strategy:company:dinaz.eth->strategy:yieldbasis_veyb",
@@ -8659,9 +8695,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 1105.32
+          "valueUsd": 1047.74
         },
-        "fingerprint": "75257e34263efda296f6896debecf2acb05bc0d6d13f44b16bd5325e110d14c6"
+        "fingerprint": "5fbcea54380134d8b3f924b7132bc7866aac67f8cce660b3a0aaeb897e17d881"
       },
       "company-strategy:company:monetra.eth->strategy:stable:base:aave:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913": {
         "id": "company-strategy:company:monetra.eth->strategy:stable:base:aave:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
@@ -8791,9 +8827,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 2371.68
+          "valueUsd": 2345.15
         },
-        "fingerprint": "5d20ba7afead59e74c3915d077fd6c023eca029459599ef9e3d22624ce706d97"
+        "fingerprint": "24c6f00f3efefc53a904f946eb6fcae8d0e1449902291c7a818b129591ebd2cb"
       },
       "company-strategy:company:rook-s-portfolio->strategy:convex_vlcvx": {
         "id": "company-strategy:company:rook-s-portfolio->strategy:convex_vlcvx",
@@ -8803,9 +8839,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 702.92
+          "valueUsd": 700.74
         },
-        "fingerprint": "c3b5443eec46e0fb47c291a522d190679a528b0e1d597c2430a986e01572c6d1"
+        "fingerprint": "777c47f53faf9b11538f9cd501eb4fa38c9271f91fceed8698886799c32c952f"
       },
       "company-strategy:company:rook-s-portfolio->strategy:curve_vecrv": {
         "id": "company-strategy:company:rook-s-portfolio->strategy:curve_vecrv",
@@ -8815,9 +8851,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 460.35
+          "valueUsd": 454.74
         },
-        "fingerprint": "acb8b90948f8e8f96535e205f4c82610b071a1a026fc9621481151e91cef1c41"
+        "fingerprint": "baf0a0c18ba7db4b28ebd1ade2fa26708bb3dabc97c75503c5ea4cf373886e90"
       },
       "company-strategy:company:yieldring.eth->strategy:aerodrome_veaero": {
         "id": "company-strategy:company:yieldring.eth->strategy:aerodrome_veaero",
@@ -8827,9 +8863,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 371.296876
+          "valueUsd": 367.144553
         },
-        "fingerprint": "559071bcdb39f4e36096ba462bfcb2b7aaca4f2beab386b0e68987ad90f5ca9c"
+        "fingerprint": "57c4b18e164d9c8173c73fa10c94f3446df6d067d3cd9ee5fe2e2003988d53f0"
       },
       "company-strategy:company:yieldring.eth->strategy:convex_vlcvx": {
         "id": "company-strategy:company:yieldring.eth->strategy:convex_vlcvx",
@@ -8839,9 +8875,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 501.73
+          "valueUsd": 500.17
         },
-        "fingerprint": "a2152ebe9889db6d1efa5f9089b7c3be582fca50dae7fa6e12251d7c1c21ddab"
+        "fingerprint": "921ab88fc2b1a817a96af96419feb254a299008195eb2b5ca1b464e38be8da2d"
       },
       "company-strategy:company:yieldring.eth->strategy:frax_vefrax": {
         "id": "company-strategy:company:yieldring.eth->strategy:frax_vefrax",
@@ -8851,9 +8887,9 @@
         "status": "established",
         "epistemicClass": "direct",
         "data": {
-          "valueUsd": 293.910432
+          "valueUsd": 280.262283
         },
-        "fingerprint": "f26149001e2efb73b46909fd385b3780a62a1313edc2e334589026d7f80b457a"
+        "fingerprint": "126303302b92c9f84d394de8bbc3078ebe99f05b50bf617e8adca5d29a5bcd1f"
       },
       "decision-case:decision:dec-062ad9c0ce2e0ebbc95e->brain-case:bd92163ceaf2983dcdb57151": {
         "id": "decision-case:decision:dec-062ad9c0ce2e0ebbc95e->brain-case:bd92163ceaf2983dcdb57151",
@@ -8985,6 +9021,16 @@
         "data": {},
         "fingerprint": "f5c66043981bee03ca8d356dfa289ba4f3e6da91441963f05b5137977b50bf32"
       },
+      "event-entity:event:ev-22dc7275f1cd86a4ae63->company:cypher": {
+        "id": "event-entity:event:ev-22dc7275f1cd86a4ae63->company:cypher",
+        "kind": "event-entity",
+        "from": "event:ev-22dc7275f1cd86a4ae63",
+        "to": "company:cypher",
+        "status": "established",
+        "epistemicClass": "direct",
+        "data": {},
+        "fingerprint": "48a1065ab898db9d2ef92c8456625c4bf2fc9b31323420eebfdc3ee588507e52"
+      },
       "event-entity:event:ev-2349365d5aa160917d8c->entity:defitea-frax-share": {
         "id": "event-entity:event:ev-2349365d5aa160917d8c->entity:defitea-frax-share",
         "kind": "event-entity",
@@ -8994,16 +9040,6 @@
         "epistemicClass": "direct",
         "data": {},
         "fingerprint": "ed25e30d24fe3f6233955d84875b5aec1f7ec54280e596485a89503043dc4df5"
-      },
-      "event-entity:event:ev-29c40960a892a009a0f1->company:cypher": {
-        "id": "event-entity:event:ev-29c40960a892a009a0f1->company:cypher",
-        "kind": "event-entity",
-        "from": "event:ev-29c40960a892a009a0f1",
-        "to": "company:cypher",
-        "status": "established",
-        "epistemicClass": "direct",
-        "data": {},
-        "fingerprint": "261a6b83b140ca58d4011ce087b7bc198ccdf39e86c89cad032d4da1854388de"
       },
       "event-entity:event:ev-2bd9684133149d4ecd45->company:0x5860...83ca8.eth": {
         "id": "event-entity:event:ev-2bd9684133149d4ecd45->company:0x5860...83ca8.eth",
@@ -9024,6 +9060,16 @@
         "epistemicClass": "direct",
         "data": {},
         "fingerprint": "2524187d8731631754098e4f14444fd8c45ddeb1da785de1acff5eca8e4b47d3"
+      },
+      "event-entity:event:ev-2dbe42b86921609b6dde->company:1milliondollar.eth": {
+        "id": "event-entity:event:ev-2dbe42b86921609b6dde->company:1milliondollar.eth",
+        "kind": "event-entity",
+        "from": "event:ev-2dbe42b86921609b6dde",
+        "to": "company:1milliondollar.eth",
+        "status": "established",
+        "epistemicClass": "direct",
+        "data": {},
+        "fingerprint": "70853f901ca7895b253677bb08e10c77a5810df9aed5fb5a44939f8caf5ff388"
       },
       "event-entity:event:ev-30d10e738f3f05a64b79->company:aerocvxyb.eth": {
         "id": "event-entity:event:ev-30d10e738f3f05a64b79->company:aerocvxyb.eth",
@@ -9095,16 +9141,6 @@
         "data": {},
         "fingerprint": "1f230b8fc766cfb5a403e2a8be1032ef2eebfe22fdec35e4de7cc7454d7a9fda"
       },
-      "event-entity:event:ev-52481ab48a622061a8f8->company:1milliondollar.eth": {
-        "id": "event-entity:event:ev-52481ab48a622061a8f8->company:1milliondollar.eth",
-        "kind": "event-entity",
-        "from": "event:ev-52481ab48a622061a8f8",
-        "to": "company:1milliondollar.eth",
-        "status": "established",
-        "epistemicClass": "direct",
-        "data": {},
-        "fingerprint": "3a580dde8a9ee24b914400ece71899abf9c5c68a22a241455822e64494fd329e"
-      },
       "event-entity:event:ev-5a495e3aa3bdb3098c2b->company:aerocvxyb.eth": {
         "id": "event-entity:event:ev-5a495e3aa3bdb3098c2b->company:aerocvxyb.eth",
         "kind": "event-entity",
@@ -9124,6 +9160,26 @@
         "epistemicClass": "direct",
         "data": {},
         "fingerprint": "bdc74a903826a24de34bbf1483c880916046da6600c706ff97519719793c57e9"
+      },
+      "event-entity:event:ev-5ee41063832b985a1f64->company:dinaz.eth": {
+        "id": "event-entity:event:ev-5ee41063832b985a1f64->company:dinaz.eth",
+        "kind": "event-entity",
+        "from": "event:ev-5ee41063832b985a1f64",
+        "to": "company:dinaz.eth",
+        "status": "established",
+        "epistemicClass": "direct",
+        "data": {},
+        "fingerprint": "51af35e5bc6d04aa238e6e61f07051e9961224a3168cd6ee4e3f28cc2d3fa491"
+      },
+      "event-entity:event:ev-5ff2b61ef94468eb58b2->company:0x5860...83ca8.eth": {
+        "id": "event-entity:event:ev-5ff2b61ef94468eb58b2->company:0x5860...83ca8.eth",
+        "kind": "event-entity",
+        "from": "event:ev-5ff2b61ef94468eb58b2",
+        "to": "company:0x5860...83ca8.eth",
+        "status": "established",
+        "epistemicClass": "direct",
+        "data": {},
+        "fingerprint": "e337e8ae687882c9ca894d06fb9dbeb1e70cc5d88dc1743d0743b8381914d790"
       },
       "event-entity:event:ev-67fc238418625db631da->company:yieldring.eth": {
         "id": "event-entity:event:ev-67fc238418625db631da->company:yieldring.eth",
@@ -9165,6 +9221,16 @@
         "data": {},
         "fingerprint": "47ede4a43d4336af605918b2429ab0284cde5aa5e050150d60f29690f31ecef6"
       },
+      "event-entity:event:ev-795ac5feaa922ae7f4e8->company:defitea.eth": {
+        "id": "event-entity:event:ev-795ac5feaa922ae7f4e8->company:defitea.eth",
+        "kind": "event-entity",
+        "from": "event:ev-795ac5feaa922ae7f4e8",
+        "to": "company:defitea.eth",
+        "status": "established",
+        "epistemicClass": "direct",
+        "data": {},
+        "fingerprint": "afccd6529ee424d6c122eebaa6856272ea274b03733816d760c509b783e72851"
+      },
       "event-entity:event:ev-796ec3b96d6699808579->entity:defitea-curve-dao-token": {
         "id": "event-entity:event:ev-796ec3b96d6699808579->entity:defitea-curve-dao-token",
         "kind": "event-entity",
@@ -9204,6 +9270,16 @@
         "epistemicClass": "direct",
         "data": {},
         "fingerprint": "55f57800ed4a4f936be5016524c18ae3c3cbdc8401211dfff9a29e8b66a25b55"
+      },
+      "event-entity:event:ev-8142eb1a83e29836ed40->company:yieldring.eth": {
+        "id": "event-entity:event:ev-8142eb1a83e29836ed40->company:yieldring.eth",
+        "kind": "event-entity",
+        "from": "event:ev-8142eb1a83e29836ed40",
+        "to": "company:yieldring.eth",
+        "status": "established",
+        "epistemicClass": "direct",
+        "data": {},
+        "fingerprint": "dd509013e1fd9123ff9d1fb32090795754f0b84b069da158878e8d5c4c752606"
       },
       "event-entity:event:ev-88f5207b78cf8fb70480->company:05081966.eth": {
         "id": "event-entity:event:ev-88f5207b78cf8fb70480->company:05081966.eth",
@@ -9314,16 +9390,6 @@
         "epistemicClass": "direct",
         "data": {},
         "fingerprint": "b63fb46fa468efce3d3b99ce4e729275b3500663c98365c881cd61e54a36c350"
-      },
-      "event-entity:event:ev-9fea417271c0b1c72014->company:yieldring.eth": {
-        "id": "event-entity:event:ev-9fea417271c0b1c72014->company:yieldring.eth",
-        "kind": "event-entity",
-        "from": "event:ev-9fea417271c0b1c72014",
-        "to": "company:yieldring.eth",
-        "status": "established",
-        "epistemicClass": "direct",
-        "data": {},
-        "fingerprint": "20ebd8f0c8c1309653a16330c92e9d4ba8ad2d6fc7d52fe94b7f630bb0c1ab94"
       },
       "event-entity:event:ev-a0b1ca7887c199ebdd02->company:defitea.eth": {
         "id": "event-entity:event:ev-a0b1ca7887c199ebdd02->company:defitea.eth",
@@ -9495,26 +9561,6 @@
         "data": {},
         "fingerprint": "8a1fc1a732fe115ec8297082c677d630dd8a61be737a5d90b31578f013be8201"
       },
-      "event-entity:event:ev-c65e62dd4073fb397aca->company:aerocvxyb.eth": {
-        "id": "event-entity:event:ev-c65e62dd4073fb397aca->company:aerocvxyb.eth",
-        "kind": "event-entity",
-        "from": "event:ev-c65e62dd4073fb397aca",
-        "to": "company:aerocvxyb.eth",
-        "status": "established",
-        "epistemicClass": "direct",
-        "data": {},
-        "fingerprint": "8544f650be304cd717badeeed7d6dd9265a06750d62f6f402dbf80efc4151c59"
-      },
-      "event-entity:event:ev-c6600901822c2ec94aba->company:defitea.eth": {
-        "id": "event-entity:event:ev-c6600901822c2ec94aba->company:defitea.eth",
-        "kind": "event-entity",
-        "from": "event:ev-c6600901822c2ec94aba",
-        "to": "company:defitea.eth",
-        "status": "established",
-        "epistemicClass": "direct",
-        "data": {},
-        "fingerprint": "c636a41b17bf48998bcd9812968701c07e6ff20d573071f38369aae7a0c4ff23"
-      },
       "event-entity:event:ev-c7f0d29868da1d87a879->entity:defitea-fxn-token": {
         "id": "event-entity:event:ev-c7f0d29868da1d87a879->entity:defitea-fxn-token",
         "kind": "event-entity",
@@ -9524,6 +9570,16 @@
         "epistemicClass": "direct",
         "data": {},
         "fingerprint": "30b98a838c8ec072a21fa15808226f2c6c773ab324ef3068307adcab49e5f492"
+      },
+      "event-entity:event:ev-c9177c95c0b299420379->company:aerocvxyb.eth": {
+        "id": "event-entity:event:ev-c9177c95c0b299420379->company:aerocvxyb.eth",
+        "kind": "event-entity",
+        "from": "event:ev-c9177c95c0b299420379",
+        "to": "company:aerocvxyb.eth",
+        "status": "established",
+        "epistemicClass": "direct",
+        "data": {},
+        "fingerprint": "922b9e77358a7377717083c22cc83ba72324a05192c247ae7ddb5e0ecb25913c"
       },
       "event-entity:event:ev-d029906f136ae7555d6c->company:monetra.eth": {
         "id": "event-entity:event:ev-d029906f136ae7555d6c->company:monetra.eth",
@@ -9564,16 +9620,6 @@
         "epistemicClass": "direct",
         "data": {},
         "fingerprint": "61aafd38faedb7c874d33719915d726cca8450ef338ba239349ef3d437932f25"
-      },
-      "event-entity:event:ev-dbec42cb9a24dd702d4e->company:rook-s-portfolio": {
-        "id": "event-entity:event:ev-dbec42cb9a24dd702d4e->company:rook-s-portfolio",
-        "kind": "event-entity",
-        "from": "event:ev-dbec42cb9a24dd702d4e",
-        "to": "company:rook-s-portfolio",
-        "status": "established",
-        "epistemicClass": "direct",
-        "data": {},
-        "fingerprint": "8c78fcb0c5e5f31e4d2bfdcae79b5964c306a1221b64c24e05f9d9c6439d161f"
       },
       "event-entity:event:ev-dca1267bdbc9a0240c00->strategy:yieldbasis_yblp_weth": {
         "id": "event-entity:event:ev-dca1267bdbc9a0240c00->strategy:yieldbasis_yblp_weth",
@@ -9645,16 +9691,6 @@
         "data": {},
         "fingerprint": "f758453b94dfdf254c429ae4daec536eb9bb509446c1819ed4559828ee11b718"
       },
-      "event-entity:event:ev-efcac4684614f666a65e->entity:stable-companies-index": {
-        "id": "event-entity:event:ev-efcac4684614f666a65e->entity:stable-companies-index",
-        "kind": "event-entity",
-        "from": "event:ev-efcac4684614f666a65e",
-        "to": "entity:stable-companies-index",
-        "status": "established",
-        "epistemicClass": "direct",
-        "data": {},
-        "fingerprint": "6de930aaedbeebe3c9bde70f809d16a214a90ac19dc06de4c0ebd3426f437632"
-      },
       "event-entity:event:ev-f2bdb3963e7504da379f->company:rook-s-portfolio": {
         "id": "event-entity:event:ev-f2bdb3963e7504da379f->company:rook-s-portfolio",
         "kind": "event-entity",
@@ -9715,6 +9751,16 @@
         "data": {},
         "fingerprint": "8f4dd63560fd8dc38d3bf4f42a35b12539d6ae4302498941e6642b1b1f7f5d86"
       },
+      "event-metric:event:ev-22dc7275f1cd86a4ae63->metric-definition:aprlatestpct": {
+        "id": "event-metric:event:ev-22dc7275f1cd86a4ae63->metric-definition:aprlatestpct",
+        "kind": "event-metric",
+        "from": "event:ev-22dc7275f1cd86a4ae63",
+        "to": "metric-definition:aprlatestpct",
+        "status": "established",
+        "epistemicClass": "direct",
+        "data": {},
+        "fingerprint": "c0b17d284ebc8807d9963eaf9053c115b61adda17621ed2b5a4673d9ab6e82f2"
+      },
       "event-metric:event:ev-2c01198e50af2b13a622->metric-definition:aprlatestpct": {
         "id": "event-metric:event:ev-2c01198e50af2b13a622->metric-definition:aprlatestpct",
         "kind": "event-metric",
@@ -9724,6 +9770,26 @@
         "epistemicClass": "direct",
         "data": {},
         "fingerprint": "b301c3b0cdacbf62d59645d5df0b038318d26a13990c71c36acf088cd866faa1"
+      },
+      "event-metric:event:ev-2dbe42b86921609b6dde->metric-definition:aprlatestpct": {
+        "id": "event-metric:event:ev-2dbe42b86921609b6dde->metric-definition:aprlatestpct",
+        "kind": "event-metric",
+        "from": "event:ev-2dbe42b86921609b6dde",
+        "to": "metric-definition:aprlatestpct",
+        "status": "established",
+        "epistemicClass": "direct",
+        "data": {},
+        "fingerprint": "ceb364a8a90acd233c0c8e4b49aaa7eb7811187bf8de1bd1083b4a302ea7cb03"
+      },
+      "event-metric:event:ev-5ee41063832b985a1f64->metric-definition:aprlatestpct": {
+        "id": "event-metric:event:ev-5ee41063832b985a1f64->metric-definition:aprlatestpct",
+        "kind": "event-metric",
+        "from": "event:ev-5ee41063832b985a1f64",
+        "to": "metric-definition:aprlatestpct",
+        "status": "established",
+        "epistemicClass": "direct",
+        "data": {},
+        "fingerprint": "9a22b34d6b994d8c89f89964529896375817a86d1c465b965366ca886b95399b"
       },
       "event-metric:event:ev-67fc238418625db631da->metric-definition:aprlatestpct": {
         "id": "event-metric:event:ev-67fc238418625db631da->metric-definition:aprlatestpct",
@@ -9735,6 +9801,16 @@
         "data": {},
         "fingerprint": "8aea1e178482fc3b06d267683c1859193a8793cf1458458b5fb93b5a2f7660e6"
       },
+      "event-metric:event:ev-795ac5feaa922ae7f4e8->metric-definition:aprlatestpct": {
+        "id": "event-metric:event:ev-795ac5feaa922ae7f4e8->metric-definition:aprlatestpct",
+        "kind": "event-metric",
+        "from": "event:ev-795ac5feaa922ae7f4e8",
+        "to": "metric-definition:aprlatestpct",
+        "status": "established",
+        "epistemicClass": "direct",
+        "data": {},
+        "fingerprint": "baa9199738cc9b4e8a17bf654d1339cac536fff99eead9eee30640cadbe1d1de"
+      },
       "event-metric:event:ev-7d92291841101ee2c8e2->metric-definition:engine-status": {
         "id": "event-metric:event:ev-7d92291841101ee2c8e2->metric-definition:engine-status",
         "kind": "event-metric",
@@ -9744,6 +9820,16 @@
         "epistemicClass": "direct",
         "data": {},
         "fingerprint": "f1e3c5f2ad74c316db4a0605288b1e5bd8a3d58926e7c96edc9b8338d436050f"
+      },
+      "event-metric:event:ev-8142eb1a83e29836ed40->metric-definition:aprlatestpct": {
+        "id": "event-metric:event:ev-8142eb1a83e29836ed40->metric-definition:aprlatestpct",
+        "kind": "event-metric",
+        "from": "event:ev-8142eb1a83e29836ed40",
+        "to": "metric-definition:aprlatestpct",
+        "status": "established",
+        "epistemicClass": "direct",
+        "data": {},
+        "fingerprint": "c760942734afd344b028f029dab31d974542a82ceaf88fad7655ca201a2893f4"
       },
       "event-metric:event:ev-88f5207b78cf8fb70480->metric-definition:aprlatestpct": {
         "id": "event-metric:event:ev-88f5207b78cf8fb70480->metric-definition:aprlatestpct",
@@ -9894,16 +9980,6 @@
         "epistemicClass": "direct",
         "data": {},
         "fingerprint": "2b4fdfd98a07ff7cd4bc78f7903e8457f8f2be8188e11db2058f7023bc8f9898"
-      },
-      "event-metric:event:ev-efcac4684614f666a65e->metric-definition:currentcapitalusd": {
-        "id": "event-metric:event:ev-efcac4684614f666a65e->metric-definition:currentcapitalusd",
-        "kind": "event-metric",
-        "from": "event:ev-efcac4684614f666a65e",
-        "to": "metric-definition:currentcapitalusd",
-        "status": "established",
-        "epistemicClass": "direct",
-        "data": {},
-        "fingerprint": "4e32ff09eae6c4a3ac74f8b4742df6890298c85ef6395292ada9268e6915161b"
       },
       "event-metric:event:ev-f2bdb3963e7504da379f->metric-definition:aprlatestpct": {
         "id": "event-metric:event:ev-f2bdb3963e7504da379f->metric-definition:aprlatestpct",
@@ -10828,9 +10904,9 @@
     }
   },
   "integrity": {
-    "nodeCompositeHash": "f843f2e65a76e5260f98e52fd0254a51451ff4ff58037f356fb4f59565b3e89c",
-    "connectionCompositeHash": "bd66094c50cfa62cab0db8d2ffeb04958a8ded0757fb88e77e6dbd72204ea234",
-    "sourceCompositeHash": "690e6941863e72299a1a3ae3190f7268e24d9ed2626633ef791e463bb5303920",
-    "telemetryHash": "a61bef3f2bf9999d24cf10e9b7fe89b565c514ae22f935946c1c6f776755d704"
+    "nodeCompositeHash": "bda9946a5d29103be6e0abf8cb04dd515eb7d13c9efe2eda4ee5618b8bd82f9d",
+    "connectionCompositeHash": "6025247581d62d1e4ec61bc821021d9884262311ef0a885dfe8b400a411ba336",
+    "sourceCompositeHash": "cdc9ac2a68301db8a1fe3c7eb339e6315a34f62d9b710a26e570a085562e666a",
+    "telemetryHash": "eb6763c6ae089f94e5e5c1ab9d5c9739425a1b8955c8ffbf0bf6ce075a204a82"
   }
 }
