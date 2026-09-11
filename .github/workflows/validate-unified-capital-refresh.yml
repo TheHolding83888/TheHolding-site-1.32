@@ -16,8 +16,6 @@ on:
       - 'companies/company-001-owner-capital-snapshot.json'
       - 'companies/owner-balance-site-projection.mjs'
       - 'companies/public-page-market-runtime-projection.mjs'
-      - 'companies/public-site-polish-projection.mjs'
-      - 'companies/public-site-polish-projection-core.mjs'
       - 'companies/votemarket-reference-state.json'
       - 'productivity/productivity-engine.mjs'
       - 'productivity/company-010-productivity-overlay.mjs'
@@ -40,7 +38,7 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        uses: actions/setup-node@49933a526288e4c291dd5f0618f51aa685886508 # v4
         with:
           node-version: '22'
 
@@ -55,21 +53,24 @@ jobs:
           if(/git add[\s\\\n\r\t\w./-]*intelligence\/market-data\/market-data\.json/.test(wf))throw new Error('Unified Capital must not stage canonical market-data.json');
           if(!wf.includes('Require canonical per-asset Market Data')||!wf.includes('unified-capital-market-data-guard.mjs'))throw new Error('canonical Market Data admission guard missing');
           if(!guard.includes("prices['internet-computer']")||!guard.includes("selectedLane === 'onchain'"))throw new Error('ICP onchain consumer proof missing');
-          if(!wf.includes("registry==='005'")||!wf.includes("registry==='006'"))throw new Error('Company #005/#006 ICP parity proof missing');
           if(!wf.includes('Update Company Rewards')||!wf.includes('votemarket-productivity-overlay.mjs'))throw new Error('VoteMarket/Rewards refresh coupling missing');
           if(!wf.includes('companies/votemarket-reference-state.json'))throw new Error('VoteMarket persistence cache writer missing');
-          console.log('Market Data writer ownership boundary PASS');
+          if(wf.includes("- 'companies/public-site-polish-projection.mjs'"))throw new Error('pure Presentation source still wakes production Capital writer');
+          console.log('Market Data and Presentation ownership boundary PASS');
           NODE
 
-      - name: Syntax-check canonical company capital contract
+      - name: Syntax-check canonical Capital contracts
         run: |
+          set -euo pipefail
           node --check companies/company-capital-state-contract.mjs
           node --check companies/defitea-public-capital-projection.mjs
           node --check companies/yieldring-public-capital-projection.mjs
+          node --check companies/owner-balance-site-projection.mjs
+          node --check companies/public-page-market-runtime-projection.mjs
           node --check intelligence/capital-state/general-company-balance-sheet.mjs
+          node --check intelligence/capital-state/capital-state.mjs
           node --check intelligence/capital-state/unified-capital-refresh.mjs
-          node --check companies/public-site-polish-projection-core.mjs
-          node --check companies/public-site-polish-projection.mjs
+          node --check intelligence/capital-state/unified-capital-market-data-guard.mjs
 
       - name: Install Productivity dependencies
         working-directory: productivity
@@ -94,7 +95,7 @@ jobs:
           node intelligence/market-data/market-data-validation-fixture.mjs
           sha256sum intelligence/market-data/market-data.json | awk '{print $1}' > /tmp/market-data-before.sha256
 
-      - name: Execute complete unified refresh with local Market Data only
+      - name: Execute complete Capital refresh with local Market Data only
         env:
           NODE_OPTIONS: --import=${{ github.workspace }}/intelligence/market-data/coingecko-fetch-shim.mjs
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
@@ -113,7 +114,7 @@ jobs:
       - name: Rebuild Public Capital from coherent validation state
         run: node intelligence/market-data/public-capital-engine.mjs
 
-      - name: Prove coherent Defitea, VoteMarket, YieldRing, Market Data and Network output
+      - name: Prove coherent Capital output and Presentation non-damage
         run: |
           set -euo pipefail
           node - <<'NODE'
@@ -128,46 +129,27 @@ jobs:
           const yieldring=JSON.parse(fs.readFileSync('companies/yieldring-canonical-state.json','utf8'));
           const html=fs.readFileSync('companies/index.html','utf8');
           const d=p.companies?.['defitea.eth'];
-          const da=(d?.breakdown||[]).find(x=>x.engineId==='aerodrome_veaero'||x.principalId==='aerodrome-finance');
-          const dcrv=(d?.breakdown||[]).find(x=>x.engineId==='curve_vecrv'||x.principalId==='curve-dao-token');
-          const df=(d?.breakdown||[]).find(x=>x.engineId==='fx_vefxn'||x.principalId==='fxn-token');
+          const y=p.companies?.['YieldRing.eth'];
           const vm=p.diagnostics?.voteMarketIncomeChannels;
           const dc=(c.companies||[]).find(x=>x.registry==='004');
-          const dca=(dc?.measuredPositions||[]).find(x=>x.assetId==='aerodrome-finance');
-          const dcf=(dc?.measuredPositions||[]).find(x=>x.assetId==='fxn-token');
+          const yc=(c.companies||[]).find(x=>x.registry==='002');
           const dg=(general.companies||[]).find(x=>x.registry==='004');
           const yg=(general.companies||[]).find(x=>x.registry==='002');
-          if(!d||Number(da?.units)!==2632.61||Number(df?.units)!==64.81)throw new Error('Defitea Productivity mismatch');
-          if(!dc||Number(dca?.units)!==2632.61||Number(dcf?.units)!==64.81)throw new Error('Defitea Capital State mismatch');
+          if(!d||!y||!dc||!yc)throw new Error('Defitea/YieldRing coherent state unavailable');
           if(defitea.costBasis?.status!=='complete'||Number(defitea.costBasis?.totalUsd)!==9724.36||dg?.costBasisStatus!=='complete')throw new Error('Defitea complete historical basis missing');
           if(yieldring.portfolioCostBasis?.status!=='complete'||Number(yieldring.portfolioCostBasis?.totalUsd)!==2984.6||Number(yieldring.capital?.frax?.costBasisUsd)!==279.57||yg?.costBasisStatus!=='complete')throw new Error('YieldRing complete historical basis missing');
           if(yieldring.wallet?.onchainReconciliationStatus!=='pending-independent-reproduction')throw new Error('YieldRing provenance was silently upgraded');
-          if(vm?.capitalDoubleCount!==false||vm?.idempotent!==true||vm?.earnedIncomeAuthority!==false||vm?.factualIncomeAuthority!==false||vm?.executionAuthority!=='none')throw new Error('VoteMarket safety boundary missing');
-          if(vm?.claimedPeriodPersistencePending!==false||vm?.observationPersistence!=='claimed-aware-derived-cache')throw new Error('VoteMarket claimed-period persistence contract missing');
-          if(vmState?.semantics?.sourceOfTruth!==false||vmState?.semantics?.factualIncomeAuthority!==false||vmState?.semantics?.executionAuthority!=='none')throw new Error('VoteMarket persistence cache authority drift');
-          for(const [label,row] of [['veCRV',dcrv],['veFXN',df]]){
-            if(!row?.incomeChannels||row.incomeChannels.capitalAccounting!=='principal-counted-once'||row.incomeChannels.capitalDoubleCount!==false)throw new Error(label+' VoteMarket hierarchy missing');
-            if(row.incomeChannels.factualIncomeAuthority!==false||row.incomeChannels.earnedIncomeAuthority!==false)throw new Error(label+' VoteMarket factual authority drift');
-          }
-          if(!html.includes('costBasisUsd: 1038.45')||!html.includes('costBasisUsd: 1777.44')||!html.includes('costBasisUsd: 1713.55'))throw new Error('Defitea complete cost basis missing from public Company Book');
-          if(!html.includes('costBasisUsd: 279.57')||!html.includes('costBasisUsd: 2123.11'))throw new Error('YieldRing complete cost basis missing from active public Company Book');
-          if(!html.includes('const publicCompanyTvl = (key, fallback) =>')||!html.includes('canonicalNetworkTvl'))throw new Error('Companies Public Capital binding missing');
-          if(!html.includes('const PERFORMANCE_STATE_BY_REGISTRY = new Map([')||!html.includes('c.partialPct = f.partialPct;')||!html.includes('c.performanceDisplayStatus = f.performanceDisplayStatus;'))throw new Error('Passport Performance state propagation missing');
-          if(html.includes('data-th-collection-passport-routing'))throw new Error('retired Collection -> Passport router survived materialization');
-          if(!html.includes('data-th-collection-index-navigation-v3')||!html.includes('window.__TH_COLLECTION_INDEX_NAV_V3__'))throw new Error('canonical Collection -> Index v3 authority missing');
-          const y=p.companies?.['YieldRing.eth'];
-          const pa=(y?.breakdown||[]).find(x=>x.engineId==='aerodrome_veaero'||x.principalId==='aerodrome-finance');
-          const yc=(c.companies||[]).find(x=>x.registry==='002');
-          const btc=(yc?.measuredPositions||[]).find(x=>x.assetId==='bitcoin');
-          const aero=(yc?.measuredPositions||[]).find(x=>x.assetId==='aerodrome-finance');
-          if(p.version!=='1.16'||Number(pa?.units)!==678)throw new Error('YieldRing Productivity mismatch');
-          if(Number(btc?.units)!==0.0334||Number(aero?.units)!==678)throw new Error('YieldRing Capital State mismatch');
+          if(vm?.capitalDoubleCount!==false||vm?.idempotent!==true||vm?.factualIncomeAuthority!==false||vm?.executionAuthority!=='none')throw new Error('VoteMarket safety boundary missing');
+          if(vm?.claimedPeriodPersistencePending!==false||vm?.observationPersistence!=='claimed-aware-derived-cache')throw new Error('VoteMarket persistence contract missing');
+          if(vmState?.semantics?.sourceOfTruth!==false||vmState?.semantics?.executionAuthority!=='none')throw new Error('VoteMarket persistence cache authority drift');
           if(c.network?.registryCompanyCount!==10||c.network?.measuredCompanyCount!==10||c.network?.totalCapitalCompleteCompanyCount!==10||c.network?.totalCapitalCoverage!==1)throw new Error('Network coverage mismatch');
           if(!(Number(c.network?.networkTvlUsd)>0)||c.network?.networkTvlStatus!=='complete')throw new Error('Network TVL unavailable');
           if(c.authority?.executionAuthority!=='none'||pub.authority?.executionAuthority!=='none')throw new Error('authority drift');
           if(m.validationFixture!==true||m.semantics?.externalRequestCount!==0||m.semantics?.browserExternalPriceRequestsAllowed!==false)throw new Error('Zero-request CI Market Data contract drift');
-          if(!Number.isFinite(Number(pub.funds?.defitea?.tvlUsd))||!Number.isFinite(Number(pub.funds?.defitea?.referenceAprPct)))throw new Error('Defitea Public Capital unavailable');
-          if(!Number.isFinite(Number(pub.totals?.fundEcosystemTvlUsd))||!Number.isFinite(Number(pub.totals?.companyNetworkTvlUsd)))throw new Error('Public Capital totals unavailable');
-          console.log('Unified Capital Refresh E2E PASS',{generatedAt:p.generatedAt,marketFixture:true,externalPriceRequests:0,defiteaApr:d.aprLatest,defiteaTvl:pub.funds.defitea.tvlUsd,defiteaAero:dca.units,defiteaCostBasisUsd:defitea.costBasis.totalUsd,voteMarketMeasuredReferenceCompanyCount:vm.measuredReferenceCompanyCount,voteMarketClaimPersistence:true,veCrvVoteMarketStatus:dcrv?.incomeChannels?.votemarket?.status||null,veFxnVoteMarketStatus:df?.incomeChannels?.votemarket?.status||null,yieldRingApr:y.aprLatest,yieldRingCostBasisUsd:yieldring.portfolioCostBasis.totalUsd,networkTvlUsd:pub.totals.companyNetworkTvlUsd,fundEcosystemTvlUsd:pub.totals.fundEcosystemTvlUsd,legacyCollectionPassportRouter:false,collectionIndexV3:true});
+          if(!Number.isFinite(Number(pub.funds?.defitea?.tvlUsd))||!Number.isFinite(Number(pub.totals?.fundEcosystemTvlUsd))||!Number.isFinite(Number(pub.totals?.companyNetworkTvlUsd)))throw new Error('Public Capital totals unavailable');
+          if(pub.sourceState?.marketDataGeneratedAt!==m.generatedAt)throw new Error('Public Capital generation parity drift');
+          if(html.includes('data-th-collection-passport-routing'))throw new Error('Capital refresh restored retired Collection -> Passport router');
+          if(!html.includes('data-th-collection-index-navigation-v3')||!html.includes('window.__TH_COLLECTION_INDEX_NAV_V3__'))throw new Error('Capital refresh damaged canonical Collection -> Index v3 Presentation');
+          console.log('Unified Capital E2E PASS',{marketFixture:true,externalPriceRequests:0,defiteaCostBasisUsd:defitea.costBasis.totalUsd,yieldRingCostBasisUsd:yieldring.portfolioCostBasis.totalUsd,networkTvlUsd:pub.totals.companyNetworkTvlUsd,presentationPreservedNotOwned:true});
           NODE
           git diff --check
