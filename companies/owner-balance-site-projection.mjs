@@ -228,16 +228,45 @@ html=replaceOnce(html,
 `    const measuredTotal = list.reduce((s, c) => s + ((c.indexCapitalValue ?? c.val) > 0 ? (c.indexCapitalValue ?? c.val) : 0), 0);`,
 'companies/index.html Index unique network value');
 
+/* One canonical post-construction binding owns all Company Performance state
+   and unique Index capital contribution. This avoids layered projectors racing
+   over the same INDEX_STATE handoff. */
 html=replaceOnce(html,
-`    ];
-    syncCompanyAprDisplays(idxLang());`,
 `    ];
     INDEX_STATE.forEach(c => {
         const fallback = Number.isFinite(Number(c.val)) ? Number(c.val) : 0;
         c.indexCapitalValue = publicCompanyNetworkContribution(c.reg, fallback);
     });
     syncCompanyAprDisplays(idxLang());`,
-'companies/index.html Index unique network-contribution binding');
+`    ];
+    const PERFORMANCE_STATE_BY_REGISTRY = new Map([
+        ['001',F1],['002',F2],['003',F3],['004',F4],
+        ['005',F5],['006',F6],['007',F7],['009',F9]
+    ]);
+    INDEX_STATE.forEach(c => {
+        const f = PERFORMANCE_STATE_BY_REGISTRY.get(c.reg);
+        if (f) {
+            c.cost = f.cost;
+            c.pnl = f.pnl;
+            c.pct = f.pct;
+            c.knownCostBasisUsd = f.knownCostBasisUsd;
+            c.knownBasisValue = f.knownBasisValue;
+            c.costBasisStatus = f.costBasisStatus;
+            c.partialPnl = f.partialPnl;
+            c.partialPct = f.partialPct;
+            c.performanceDisplayStatus = f.performanceDisplayStatus;
+        }
+        const fallback = Number.isFinite(Number(c.val)) ? Number(c.val) : 0;
+        c.indexCapitalValue = publicCompanyNetworkContribution(c.reg, fallback);
+    });
+    syncCompanyAprDisplays(idxLang());`,
+'companies/index.html canonical Performance/index-state binding');
+if(!html.includes('const PERFORMANCE_STATE_BY_REGISTRY = new Map([')||
+   !html.includes('c.partialPct = f.partialPct;')||
+   !html.includes('c.performanceDisplayStatus = f.performanceDisplayStatus;')||
+   !html.includes('c.indexCapitalValue = publicCompanyNetworkContribution(c.reg, fallback);')){
+  fail('Canonical Passport Performance/index-state binding missing');
+}
 
 fs.writeFileSync(INDEX,html);
 const indexBlob=gitBlobSha(html);
@@ -290,6 +319,7 @@ console.log('Owner balance site projection PASS',{
   defiteaConsolidatedDisplayUsesUniqueIndexContribution:true,
   partialCostBasisPerformanceRemainsUnknown:true,
   partialKnownBasisPerformanceDisplayAvailable:true,
+  partialPerformanceStatePropagated:true,
   indexPerformanceMethodologyUnchanged:true,
   manualSnapshotIsNotOnchainObservation:true,
   publicSitePolishProjected:true,
