@@ -1,13 +1,15 @@
+# holding-workflow-definition-proof: intelligence/reliability/capital-state-recovery-workflow-definition-proof.mjs
 name: "The Holding Intelligence · Capital State"
 
-# Legacy bounded recovery path. Automatic capital refresh is owned by
-# "The Holding Capital · Unified Refresh". This recovery path consumes canonical
-# Market Data and never performs its own external price discovery.
+# Legacy manual diagnostic replay. Production mutation is owned exclusively by
+# "The Holding Capital · Unified Refresh", which already exposes workflow_dispatch.
+# This workflow may rebuild Capital State in its ephemeral checkout for
+# validation, but it must never publish generated state back to the repository.
 on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: capital-state
@@ -40,18 +42,18 @@ jobs:
           const fs=require('fs');
           const m=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
           const prices=m.prices||{};
-          if(m.semantics?.perAssetAuthoritySelectionApplied!==true)throw new Error('Capital recovery refuses non-materialized Market Data');
-          if(Object.keys(prices).length!==26||Number(m.authority?.onchainSelectedAssetCount)!==26)throw new Error('Capital recovery requires 26/26 onchain-selected Market Data');
+          if(m.semantics?.perAssetAuthoritySelectionApplied!==true)throw new Error('Capital diagnostic refuses non-materialized Market Data');
+          if(Object.keys(prices).length!==26||Number(m.authority?.onchainSelectedAssetCount)!==26)throw new Error('Capital diagnostic requires 26/26 onchain-selected Market Data');
           for(const [id,row] of Object.entries(prices)){
             if(row?.authority?.selectedLane!=='onchain'||row?.authority?.fallbackUsed!==false||!String(row?.source||'').startsWith('onchain-'))throw new Error(`${id}: canonical onchain authority unavailable`);
           }
-          console.log('Capital recovery canonical Market Data PASS',{generatedAt:m.generatedAt,onchainSelectedAssetCount:m.authority.onchainSelectedAssetCount});
+          console.log('Capital diagnostic canonical Market Data PASS',{generatedAt:m.generatedAt,onchainSelectedAssetCount:m.authority.onchainSelectedAssetCount});
           NODE
-      - name: Rebuild General Balance Sheet
+      - name: Rebuild General Balance Sheet ephemerally
         env:
           NODE_OPTIONS: --import=${{ github.workspace }}/intelligence/market-data/coingecko-fetch-shim.mjs
         run: node intelligence/capital-state/general-company-balance-sheet.mjs
-      - name: Build Capital State
+      - name: Build Capital State ephemerally
         run: node intelligence/capital-state/capital-state.mjs
       - name: Validate complete Registry admission semantics
         run: |
@@ -77,32 +79,8 @@ jobs:
           const icp=m.prices?.['internet-computer'];
           if(Number(yrBtc?.units)!==0.0334||Number(yrAero?.units)!==678) throw new Error('YieldRing canonical quantities not propagated');
           if(Number(icp5?.units)!==1363||Number(icp6?.units)!==1296)throw new Error('Company #005/#006 ICP balances missing');
-          if(Math.abs(Number(icp5?.priceUsd)-Number(icp?.usd))>1e-9||Math.abs(Number(icp6?.priceUsd)-Number(icp?.usd))>1e-9)throw new Error('Company #005/#006 ICP recovery valuation not bound to canonical Market Data');
+          if(Math.abs(Number(icp5?.priceUsd)-Number(icp?.usd))>1e-9||Math.abs(Number(icp6?.priceUsd)-Number(icp?.usd))>1e-9)throw new Error('Company #005/#006 ICP diagnostic valuation not bound to canonical Market Data');
           if(c.authority?.executionAuthority!=='none') throw new Error('authority drift');
+          console.log('Capital State read-only diagnostic replay PASS',{networkTvlUsd:c.network.networkTvlUsd,executionAuthority:'none',repositoryMutation:false});
           NODE
-      - name: Commit recovery state safely
-        run: |
-          set -euo pipefail
-          git config user.name "The Holding Capital State"
-          git config user.email "capital-state@theholding.ai"
-          git add intelligence/capital-state/general-company-balance-sheet.json intelligence/capital-state/capital-state.json
-          if git diff --cached --quiet; then echo "No Capital State changes."; exit 0; fi
-          git commit -m "intelligence: refresh capital state"
-          for attempt in 1 2 3; do
-            git fetch origin main
-            if ! git rebase origin/main; then git rebase --abort || true; echo "Safe writer guard: rebase conflict; refusing to guess."; exit 1; fi
-            node - <<'NODE'
-            const fs=require('fs');
-            const m=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
-            const prices=m.prices||{};
-            if(m.semantics?.perAssetAuthoritySelectionApplied!==true||Object.keys(prices).length!==26||Number(m.authority?.onchainSelectedAssetCount)!==26)throw new Error('Canonical Market Data lost during Capital recovery rebase');
-            for(const [id,row] of Object.entries(prices))if(row?.authority?.selectedLane!=='onchain'||row?.authority?.fallbackUsed!==false)throw new Error(`${id}: onchain authority lost during Capital recovery rebase`);
-            NODE
-            NODE_OPTIONS='--import=${{ github.workspace }}/intelligence/market-data/coingecko-fetch-shim.mjs' node intelligence/capital-state/general-company-balance-sheet.mjs
-            node intelligence/capital-state/capital-state.mjs
-            git add intelligence/capital-state/general-company-balance-sheet.json intelligence/capital-state/capital-state.json
-            git commit --amend --no-edit
-            if git push origin HEAD:main; then exit 0; fi
-            sleep $((attempt * 2))
-          done
-          exit 1
+          git diff --check
