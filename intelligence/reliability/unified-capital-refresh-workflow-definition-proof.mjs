@@ -19,6 +19,8 @@ assert.match(workflow,/permissions:\s*\n\s*contents:\s*write/,'Unified Capital w
 assert.doesNotMatch(workflow,/permissions:\s*write-all|actions:\s*write|pull-requests:\s*write/,'Unified Capital permissions widened');
 assert.match(workflow,/concurrency:\s*\n\s*group:\s*unified-capital-refresh\s*\n\s*cancel-in-progress:\s*false/,'Unified Capital concurrency contract drift');
 assert.match(workflow,/schedule:\s*\n\s*- cron: '17 4 \* \* 0'/,'bounded weekly fallback schedule drift');
+assert.match(workflow,/actions\/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020/,'Unified Capital setup-node pin drift');
+assert.doesNotMatch(workflow,/actions\/setup-node@49933a526288e4c291dd5f0618f51aa685886508/,'known-bad Unified Capital setup-node pin returned');
 assert.match(workflow,/- "Update Company Rewards"/,'Rewards -> Unified Capital freshness coupling missing');
 assert.match(workflow,/- "The Holding Market Data · Shared Refresh"/,'Market Data -> Unified Capital handoff missing');
 assert.match(workflow,/github\.event\.workflow_run\.conclusion == 'success' && github\.event\.workflow_run\.head_branch == 'main'/,'workflow_run success/main gate missing');
@@ -115,6 +117,7 @@ for(const text of [workflow,orchestrator,sitePolishProjection,sitePolishMaterial
 
 console.log('Unified Capital workflow definition proof PASS',{
   orchestratorSteps:10,
+  setupNodePinVerified:true,
   capitalOwnsPresentationMaterialization:false,
   presentationSourceWakesCapitalWriter:false,
   homepageOwnedByCapitalWriter:false,
