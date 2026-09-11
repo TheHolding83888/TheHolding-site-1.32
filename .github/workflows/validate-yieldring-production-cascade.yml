@@ -3,14 +3,18 @@ name: "Validate YieldRing Production Cascade"
 on:
   pull_request:
     paths:
+      - 'companies/company-capital-state-contract.mjs'
+      - 'companies/yieldring-canonical-state.json'
       - 'companies/yieldring-public-capital-projection.mjs'
       - 'companies/defitea-public-capital-projection.mjs'
+      - 'intelligence/capital-state/general-company-balance-sheet.mjs'
       - 'intelligence/capital-state/unified-capital-refresh.mjs'
       - '.github/workflows/unified-capital-refresh.yml'
       - '.github/workflows/project-yieldring-capital-state.yml'
       - '.github/workflows/update-productivity.yml'
       - '.github/workflows/update-capital-state.yml'
       - '.github/workflows/diagnose-productivity-recovery.yml'
+      - '.github/workflows/validate-yieldring-production-cascade.yml'
   workflow_dispatch:
 
 permissions:
@@ -39,6 +43,8 @@ jobs:
           const capital=fs.readFileSync('.github/workflows/update-capital-state.yml','utf8');
           const diagnostic=fs.readFileSync('.github/workflows/diagnose-productivity-recovery.yml','utf8');
           const projection=fs.readFileSync('companies/yieldring-public-capital-projection.mjs','utf8');
+          const state=fs.readFileSync('companies/yieldring-canonical-state.json','utf8');
+          const balance=fs.readFileSync('intelligence/capital-state/general-company-balance-sheet.mjs','utf8');
 
           const sequence=[
             "Project canonical Defitea state",
@@ -67,16 +73,18 @@ jobs:
           if(!productivity.includes('node productivity/company-010-productivity-overlay.mjs')||productivity.indexOf('node productivity/company-010-productivity-overlay.mjs')>productivity.indexOf('node productivity/yieldring-productivity-overlay.mjs'))throw new Error('legacy recovery overlay order drift');
 
           if(!projector.includes('yieldring/index.html'))throw new Error('dedicated YieldRing page recovery projection missing');
-          if(!projection.includes("const PAGE='yieldring/index.html'"))throw new Error('dedicated YieldRing page projection missing');
-          if(!projection.includes('qty: 0.0334')||!projection.includes('qty: 678')||!projection.includes('2 locks · Maxi relay'))throw new Error('YieldRing canonical projection guards missing');
-          if(!engine.includes("Number(canonical?.capital?.bitcoin?.quantity) === 0.0334")||!engine.includes("Number(canonical?.capital?.aerodrome?.quantity) === 678"))throw new Error('Unified YieldRing canonical guards missing');
+          if(!projection.includes("const PAGE='yieldring/index.html'")||!projection.includes("renderCompanyBookBlock('YieldRing.eth',rows)"))throw new Error('state-driven YieldRing public projection missing');
+          if(!state.includes('"version": "0.2-yieldring-canonical-state"')||!state.includes('"totalUsd": 2984.6')||!state.includes('"costBasisUsd":279.57'))throw new Error('YieldRing complete acquisition-basis state missing');
+          if(!balance.includes("const YIELD_RING_STATE = 'companies/yieldring-canonical-state.json';")||!balance.includes('Object.values(yieldRingState.capital||{})')||!balance.includes('yieldRingState.portfolioCostBasis.totalUsd'))throw new Error('General Balance state-driven YieldRing binding missing');
+          if(!engine.includes("Number(canonical?.capital?.bitcoin?.quantity) === 0.0334")||!engine.includes("Number(canonical?.capital?.aerodrome?.quantity) === 678")||!engine.includes("canonical?.portfolioCostBasis?.status === 'complete'"))throw new Error('Unified YieldRing canonical guards missing');
           if(!engine.includes("capital?.authority?.executionAuthority === 'none'"))throw new Error('Unified authority guard missing');
 
-          console.log('Unified production architecture PASS',{singleOrchestrator:true,defiteaCanonical:true,legacyRecoveryOnly:true,noAptMutation:true,coherentPublish:true,executionAuthority:'none'});
+          console.log('Unified production architecture PASS',{singleOrchestrator:true,defiteaCanonical:true,yieldRingCompleteBasis:true,stateDrivenProjection:true,legacyRecoveryOnly:true,noAptMutation:true,coherentPublish:true,executionAuthority:'none'});
           NODE
       - name: Syntax and diff hygiene
         run: |
           set -euo pipefail
+          node --check companies/company-capital-state-contract.mjs
           node --check companies/defitea-public-capital-projection.mjs
           node --check companies/yieldring-public-capital-projection.mjs
           node --check productivity/yieldring-productivity-overlay.mjs

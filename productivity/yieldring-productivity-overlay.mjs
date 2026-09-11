@@ -74,7 +74,7 @@ if(!deterministicValidation){
 }
 
 const data=read(DATA),state=read(STATE);
-if(state.version!=='0.1-yieldring-canonical-state'||state.company!=='YieldRing.eth')fail('unexpected YieldRing canonical state');
+if(state.version!=='0.2-yieldring-canonical-state'||state.company!=='YieldRing.eth')fail('unexpected YieldRing canonical state');
 if(data.version!=='1.16')fail(`unexpected Productivity version ${data.version}`);
 if(!deterministicValidation){
   const s=data?.engines?.fx_vefxn?.details?.economicSnapshot;
@@ -105,7 +105,7 @@ const fraxApr=Number(frax.apr);
 if(!(fraxPrice>0)||!Number.isFinite(fraxApr))fail('YieldRing Frax price/APR unavailable');
 frax.units=fraxTarget;
 frax.value=round(fraxTarget*fraxPrice,6);
-frax.sourceState={...(frax.sourceState||{}),canonicalCompanyState:'companies/yieldring-canonical-state.json',principalQuantity:fraxTarget,evidenceStatus:state.capital?.frax?.evidenceStatus||'owner-provided-current',asOf:state.capital?.frax?.asOf||state.effectiveAt||null,costBasisStatus:state.capital?.frax?.costBasisStatus||null};
+frax.sourceState={...(frax.sourceState||{}),canonicalCompanyState:'companies/yieldring-canonical-state.json',principalQuantity:fraxTarget,evidenceStatus:state.capital?.frax?.evidenceStatus||'owner-provided-current',asOf:state.effectiveAt||null,costBasisStatus:state.capital?.frax?.costBasisStatus||null,costBasisUsd:Number(state.capital?.frax?.costBasisUsd)};
 
 let productive=0,covered=0,weighted=0;
 for(const row of company.breakdown){
@@ -132,6 +132,6 @@ if(Array.isArray(history)&&history.length){
 }
 
 data.diagnostics=data.diagnostics||{};
-data.diagnostics.yieldRing={version:'0.2-canonical-capital-relay-and-frax-overlay',source:'companies/yieldring-canonical-state.json',bitcoinQuantity:Number(state.capital.bitcoin.quantity),bitcoinCostBasisUsd:Number(state.capital.bitcoin.costBasisUsd),aeroQuantity:target,aeroCostBasisUsd:Number(state.capital.aerodrome.costBasisUsd),fraxQuantity:fraxTarget,fraxCostBasisStatus:state.capital?.frax?.costBasisStatus||null,fraxKnownCostBasisUsd:Number.isFinite(Number(state.capital?.frax?.knownCostBasisUsd))?Number(state.capital.frax.knownCostBasisUsd):null,relayMode:state.aerodromeRelay.mode,managerId:state.aerodromeRelay.managerId,managerAddress:state.aerodromeRelay.managerAddress,expectedUnderlyingLockCount:state.aerodromeRelay.expectedUnderlyingLockCount,rewardsPresentation:state.aerodromeRelay.rewardsPresentation,evidenceStatus:state.aerodromeRelay.evidenceStatus,unknownIsNotZero:true,executionAuthority:'none'};
+data.diagnostics.yieldRing={version:'0.3-complete-cost-basis-overlay',source:'companies/yieldring-canonical-state.json',bitcoinQuantity:Number(state.capital.bitcoin.quantity),bitcoinCostBasisUsd:Number(state.capital.bitcoin.costBasisUsd),aeroQuantity:target,aeroCostBasisUsd:Number(state.capital.aerodrome.costBasisUsd),fraxQuantity:fraxTarget,fraxCostBasisStatus:state.capital?.frax?.costBasisStatus||null,fraxCostBasisUsd:Number(state.capital?.frax?.costBasisUsd),portfolioCostBasisStatus:state.portfolioCostBasis?.status||null,portfolioCostBasisUsd:Number(state.portfolioCostBasis?.totalUsd),relayMode:state.aerodromeRelay.mode,managerId:state.aerodromeRelay.managerId,managerAddress:state.aerodromeRelay.managerAddress,expectedUnderlyingLockCount:state.aerodromeRelay.expectedUnderlyingLockCount,rewardsPresentation:state.aerodromeRelay.rewardsPresentation,evidenceStatus:state.aerodromeRelay.evidenceStatus,onchainReconciliationStatus:state.wallet?.onchainReconciliationStatus||null,unknownIsNotZero:true,executionAuthority:'none'};
 fs.writeFileSync(DATA,JSON.stringify(data,null,2)+'\n');
-console.log('YieldRing Productivity overlay PASS',{aprLatest:company.aprLatest,productiveValue:company.productiveValue,coverage:company.coverage,aeroUnits:aero.units,fraxUnits:frax.units,relayMode:state.aerodromeRelay.mode,executionAuthority:'none',fxnAuthority:deterministicValidation?'deterministic-validation-bypass':fxnAuthority});
+console.log('YieldRing Productivity overlay PASS',{aprLatest:company.aprLatest,productiveValue:company.productiveValue,coverage:company.coverage,aeroUnits:aero.units,fraxUnits:frax.units,fraxCostBasisStatus:state.capital.frax.costBasisStatus,relayMode:state.aerodromeRelay.mode,executionAuthority:'none',fxnAuthority:deterministicValidation?'deterministic-validation-bypass':fxnAuthority});

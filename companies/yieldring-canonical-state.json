@@ -1,15 +1,38 @@
 {
-  "version": "0.1-yieldring-canonical-state",
+  "version": "0.2-yieldring-canonical-state",
   "company": "YieldRing.eth",
   "registry": "002",
-  "effectiveAt": "2026-09-09",
+  "effectiveAt": "2026-09-11",
   "authority": {"executionAuthority":"none","capitalExecution":false,"walletAction":false},
+  "wallet": {
+    "address": "0x90815314fB9e7F015AB5845572FE5BcC0Ba14669",
+    "onchainReconciliationStatus": "pending-independent-reproduction",
+    "note": "Current economic positions may include locked or protocol-managed balances and therefore must not be reduced to direct wallet ERC-20 balanceOf alone. Independent public explorer reproduction was not available in this run; owner evidence remains explicit rather than being silently upgraded to onchain-confirmed."
+  },
   "capital": {
-    "bitcoin": {"assetId":"bitcoin","quantity":0.0334,"costBasisUsd":2121.88,"lots":[{"quantity":0.03,"entryPriceUsd":63442,"costBasisUsd":1903.26,"evidenceStatus":"established"},{"quantity":0.0034,"entryPriceUsd":64300,"costBasisUsd":218.62,"evidenceStatus":"owner-provided"}]},
-    "aerodrome": {"assetId":"aerodrome-finance","quantity":678,"costBasisUsd":274.464,"lots":[{"quantity":480,"entryPriceUsd":0.4068,"costBasisUsd":195.264,"evidenceStatus":"established"},{"quantity":198,"entryPriceUsd":0.4,"costBasisUsd":79.2,"evidenceStatus":"owner-provided"}]},
-    "convex": {"assetId":"convex-finance","quantity":240,"entryPriceUsd":1.28,"costBasisUsd":307.2,"evidenceStatus":"established"},
-    "frax": {"assetId":"frax-share","quantity":1032,"costBasisUsd":null,"costBasisStatus":"partial","knownCostBasisUsd":210.24,"evidenceStatus":"owner-provided-current","asOf":"2026-09-09","lots":[{"quantity":800,"entryPriceUsd":0.2628,"costBasisUsd":210.24,"evidenceStatus":"established"},{"quantity":232,"entryPriceUsd":null,"costBasisUsd":null,"evidenceStatus":"owner-provided-current","note":"Current principal confirmed by owner; acquisition price/cost basis not supplied, therefore UNKNOWN rather than zero."}]}
+    "bitcoin": {"assetId":"bitcoin","quantity":0.0334,"costBasisUsd":2123.11,"costBasisStatus":"complete","evidenceStatus":"owner-provided-portfolio-screenshot","valuationAtEvidenceUsd":2572.3},
+    "aerodrome": {"assetId":"aerodrome-finance","quantity":678,"costBasisUsd":274.72,"costBasisStatus":"complete","evidenceStatus":"owner-provided-portfolio-screenshot","valuationAtEvidenceUsd":370.79},
+    "convex": {"assetId":"convex-finance","quantity":240,"costBasisUsd":307.2,"costBasisStatus":"complete","evidenceStatus":"owner-provided-portfolio-screenshot","valuationAtEvidenceUsd":490.36},
+    "frax": {"assetId":"frax-share","quantity":1032,"costBasisUsd":279.57,"costBasisStatus":"complete","evidenceStatus":"owner-provided-portfolio-screenshot","valuationAtEvidenceUsd":279.75}
+  },
+  "portfolioCostBasis": {
+    "status": "complete",
+    "totalUsd": 2984.6,
+    "coveredPositionCount": 4,
+    "totalPositionCount": 4,
+    "source": "owner-provided-portfolio-screenshots",
+    "policy": "current-economic-position-explicit-total-cost-basis",
+    "note": "The current 1,032 FRAX position is one economic position with total invested basis $279.57; the previous 800-known plus 232-UNKNOWN split is retired rather than layered underneath this evidence."
+  },
+  "evidenceSnapshot": {
+    "source": "owner-provided-portfolio-screenshots",
+    "observedDate": "2026-09-11",
+    "marketValueUsd": 3713.2,
+    "investedUsd": 2984.6,
+    "unrealizedProfitUsd": 728.6,
+    "performancePct": 24.4119815051,
+    "role": "historical acquisition-basis evidence and point-in-time reconciliation only; live valuation/performance must use current canonical market data"
   },
   "aerodromeRelay": {"mode":"veAERO Maxi","managerId":"10298","managerAddress":"0xc9814f18a8751214f719de15c54d01b3d78ef14f","expectedUnderlyingLockCount":2,"aggregatePrincipalAero":678,"rewardsPresentation":"single-aggregated-aerodrome-line","evidenceStatus":"owner-provided-not-yet-independently-reproduced","semanticGuard":"Manager metadata is provenance/expectation only and must not create a second economic AERO position or alter measured rewards by itself."},
-  "semantics": {"oneEconomicPositionOnce":true,"unknownIsNotZero":true,"costBasisLotsPreserved":true,"partialCostBasisIsNotTotal":true,"rewardAggregation":"Two managed veAERO locks may be represented as one YieldRing Aerodrome reward line while preserving underlying lock provenance.","manualSnapshotPolicy":"Owner-confirmed current quantities may bridge incomplete automatic wallet discovery when provenance is explicit; they are not represented as independently reproduced onchain observations."}
+  "semantics": {"oneEconomicPositionOnce":true,"unknownIsNotZero":true,"completeCostBasisRequiresEveryCurrentPosition":true,"newPositionWithoutBasisRevertsPortfolioToPartial":true,"displayedAverageBuyIsRoundedEvidenceOnly":true,"rewardAggregation":"Two managed veAERO locks may be represented as one YieldRing Aerodrome reward line while preserving underlying lock provenance.","manualSnapshotPolicy":"Owner-confirmed current quantities and acquisition basis may bridge incomplete automatic wallet discovery when provenance is explicit; they are not represented as independently reproduced onchain observations.","livePerformance":"current canonical market value versus explicit historical cost basis; screenshot market values are never frozen as live valuation"}
 }

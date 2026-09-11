@@ -8,29 +8,13 @@ const OUT = path.join(ROOT, 'intelligence/capital-state/general-company-balance-
 const PRODUCTIVITY = 'companies/productivity-data.json';
 const MARKET_DATA = 'intelligence/market-data/market-data.json';
 const UI_BOOK_SOURCE = 'companies/index.html';
+const DEFITEA_STATE = 'companies/defitea-canonical-state.json';
 const YIELD_RING_STATE = 'companies/yieldring-canonical-state.json';
 const COMPANY001_OWNER_SNAPSHOT = 'companies/company-001-owner-capital-snapshot.json';
 
 const BOOK = {
-  'defitea.eth': [
-    { id:'aerodrome-finance', qty:2632, layer:'productive-dividend' },
-    { id:'convex-finance', qty:1333, layer:'productive-dividend' },
-    { id:'curve-dao-token', qty:4125, layer:'productive-dividend' },
-    { id:'pendle', qty:500, layer:'productive-dividend' },
-    { id:'fxn-token', qty:64.81, layer:'productive-dividend' },
-    { id:'yield-basis', qty:10846, layer:'productive-dividend' },
-    { id:'frax-share', qty:4456, layer:'productive-dividend', evidenceStatus:'owner-provided-current', note:'Current Defitea veFRAX principal; acquisition basis for added 232 remains UNKNOWN/partial and is not required for current-capital valuation.' },
-    { id:'velodrome-finance', qty:12180, layer:'productive-dividend' },
-    { id:'venice-token', qty:50, layer:'productive-dividend' },
-    { id:'liquity', qty:1488, layer:'productive-dividend' },
-    { id:'resupply', qty:3682, layer:'productive-dividend' }
-  ],
-  'YieldRing.eth': [
-    { id:'bitcoin', qty:0.0334, layer:'foundation', priceSource:'shared-market-data' },
-    { id:'aerodrome-finance', qty:678, layer:'productive-dividend' },
-    { id:'convex-finance', qty:240, layer:'productive-dividend' },
-    { id:'frax-share', qty:800, layer:'productive-dividend' }
-  ],
+  'defitea.eth': [],
+  'YieldRing.eth': [],
   '05081966.eth': [
     { id:'aerodrome-finance', qty:202, layer:'productive-dividend' },
     { id:'curve-dao-token', qty:480, layer:'productive-dividend' },
@@ -80,30 +64,15 @@ const round = (n,d=6) => { const p=10**d; return Number.isFinite(Number(n)) ? Ma
 const readJson = rel => JSON.parse(fs.readFileSync(path.join(ROOT, rel),'utf8'));
 const sha256File = rel => crypto.createHash('sha256').update(fs.readFileSync(path.join(ROOT,rel))).digest('hex');
 const sha256Json = value => crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
+const fail = message => { throw new Error(message); };
 
 function extractBalancedObject(text,objectStart) {
-  let depth=0;
-  let quote=null;
-  let escaped=false;
-  let lineComment=false;
-  let blockComment=false;
+  let depth=0,quote=null,escaped=false,lineComment=false,blockComment=false;
   for(let i=objectStart;i<text.length;i+=1){
-    const ch=text[i];
-    const next=text[i+1]||'';
-    if(lineComment){
-      if(ch==='\n')lineComment=false;
-      continue;
-    }
-    if(blockComment){
-      if(ch==='*'&&next==='/'){blockComment=false;i+=1;}
-      continue;
-    }
-    if(quote){
-      if(escaped){escaped=false;continue;}
-      if(ch==='\\'){escaped=true;continue;}
-      if(ch===quote)quote=null;
-      continue;
-    }
+    const ch=text[i],next=text[i+1]||'';
+    if(lineComment){if(ch==='\n')lineComment=false;continue;}
+    if(blockComment){if(ch==='*'&&next==='/'){blockComment=false;i+=1;}continue;}
+    if(quote){if(escaped){escaped=false;continue;}if(ch==='\\'){escaped=true;continue;}if(ch===quote)quote=null;continue;}
     if(ch==='/'&&next==='/'){lineComment=true;i+=1;continue;}
     if(ch==='/'&&next==='*'){blockComment=true;i+=1;continue;}
     if(ch==='\''||ch==='"'||ch==='`'){quote=ch;continue;}
@@ -126,11 +95,8 @@ function readUiCompanyBook() {
   if(objectStart<0)throw new Error('companies/index.html COMPANY_BOOK object start missing');
   const literal=extractBalancedObject(text,objectStart);
   let book;
-  try {
-    book=vm.runInNewContext(`(${literal})`,Object.create(null),{timeout:100});
-  } catch (error) {
-    throw new Error(`companies/index.html COMPANY_BOOK parse failed: ${error.message}`);
-  }
+  try { book=vm.runInNewContext(`(${literal})`,Object.create(null),{timeout:100}); }
+  catch (error) { throw new Error(`companies/index.html COMPANY_BOOK parse failed: ${error.message}`); }
   if(!book||typeof book!=='object'||Array.isArray(book))throw new Error('companies/index.html COMPANY_BOOK parsed to invalid value');
   return book;
 }
@@ -153,18 +119,13 @@ function bindUiCompanyBookSemantics(uiBook) {
     if(!expected||!actual)throw new Error(`${name}: browser Company Book semantic rows missing`);
     if(actual.length!==expected.length)throw new Error(`${name}: browser Company Book row-count drift expected=${expected.length} actual=${actual.length}`);
     for(let i=0;i<expected.length;i+=1){
-      const e=expected[i];
-      const a=actual[i];
+      const e=expected[i],a=actual[i];
       if(a.id!==e.id||a.productivityOnly!==e.productivityOnly||a.engineId!==e.engineId)throw new Error(`${name}: browser Company Book identity/inclusion drift at row ${i+1}`);
       if(!Number.isFinite(a.qty)||Math.abs(a.qty-e.qty)>Math.max(1e-9,Math.abs(e.qty)*1e-9))throw new Error(`${name}: browser Company Book quantity drift for ${e.id}${e.engineId?`/${e.engineId}`:''}`);
     }
     bound[name]=actual;
   }
-  return {
-    companyCount:Object.keys(bound).length,
-    semanticFields:['id','qty','productivityOnly','engineId'],
-    sha256:sha256Json(bound)
-  };
+  return {companyCount:Object.keys(bound).length,semanticFields:['id','qty','productivityOnly','engineId'],sha256:sha256Json(bound)};
 }
 
 function canonicalMarketPrices() {
@@ -183,55 +144,50 @@ function canonicalMarketPrices() {
     if(!Number.isFinite(onchainCount)||!Number.isFinite(fallbackCount)||onchainCount+fallbackCount!==entries.length)throw new Error('general balance sheet requires complete per-asset authority lane coverage');
     if(Number(market?.coverage?.usableCoverage)!==1)throw new Error('general balance sheet requires fully usable canonical Market Data');
     for(const [id,row] of entries){
-      const v=Number(row?.usd);
-      const lane=row?.authority?.selectedLane;
+      const v=Number(row?.usd),lane=row?.authority?.selectedLane;
       if(!Number.isFinite(v)||v<=0)throw new Error(`${id}: canonical positive USD price unavailable`);
       if(row?.authority?.requestedPrimary!=='onchain')throw new Error(`${id}: onchain-primary request contract missing`);
       if(!['onchain','coingecko-lane'].includes(lane))throw new Error(`${id}: invalid canonical selected lane`);
       if(lane==='onchain'){
         if(row?.authority?.fallbackUsed!==false||!String(row?.source||'').startsWith('onchain-'))throw new Error(`${id}: invalid canonical onchain provenance`);
-      }else if(row?.authority?.fallbackUsed!==true){
-        throw new Error(`${id}: CoinGecko lane is allowed only as explicit fallback`);
-      }
+      }else if(row?.authority?.fallbackUsed!==true)throw new Error(`${id}: CoinGecko lane is allowed only as explicit fallback`);
     }
   }
-  const out={};
-  const laneById={};
+  const out={},laneById={};
   for(const id of SHARED_MARKET_IDS){
-    const row=prices[id];
-    const v=Number(row?.usd);
+    const row=prices[id],v=Number(row?.usd);
     if(!Number.isFinite(v)||v<=0)throw new Error(`missing canonical USD price for ${id}`);
     out[id]=v;
     laneById[id]=deterministicFixture?'deterministic-validation-fixture':row?.authority?.selectedLane||null;
   }
-  return {
-    prices:out,
-    laneById,
-    generatedAt:market.generatedAt||null,
-    observedAt:market.observedAt||null,
-    sha256:sha256File(MARKET_DATA),
-    sourceFile:MARKET_DATA,
-    deterministicFixture,
-    productionCanonical,
-    onchainSelectedAssetCount:productionCanonical?Number(market?.authority?.onchainSelectedAssetCount):null,
-    coingeckoFallbackAssetCount:productionCanonical?Number(market?.authority?.coingeckoSelectedAssetCount):null,
-    unknownCount:productionCanonical?Number(market?.authority?.unknownCount):null
-  };
+  return {prices:out,laneById,generatedAt:market.generatedAt||null,observedAt:market.observedAt||null,sha256:sha256File(MARKET_DATA),sourceFile:MARKET_DATA,deterministicFixture,productionCanonical,onchainSelectedAssetCount:productionCanonical?Number(market?.authority?.onchainSelectedAssetCount):null,coingeckoFallbackAssetCount:productionCanonical?Number(market?.authority?.coingeckoSelectedAssetCount):null,unknownCount:productionCanonical?Number(market?.authority?.unknownCount):null};
+}
+
+function assertCompleteStateRows(rows,{company,totalCostBasisUsd}){
+  if(!Array.isArray(rows)||!rows.length)fail(`${company}: canonical current-capital rows missing`);
+  let basis=0;
+  for(const row of rows){
+    if(!(Number(row.qty)>0))fail(`${company}: invalid quantity for ${row.id}`);
+    if(!Number.isFinite(Number(row.costBasisUsd))||Number(row.costBasisUsd)<0)fail(`${company}: UNKNOWN cost basis for ${row.id}`);
+    basis+=Number(row.costBasisUsd);
+  }
+  if(Math.abs(basis-Number(totalCostBasisUsd))>0.005)fail(`${company}: cost-basis total drift expected=${totalCostBasisUsd} actual=${basis}`);
 }
 
 const productivity=readJson(PRODUCTIVITY);
+const defiteaState=readJson(DEFITEA_STATE);
 const yieldRingState=readJson(YIELD_RING_STATE);
 const company001OwnerSnapshot=readJson(COMPANY001_OWNER_SNAPSHOT);
 if (!['1.15','1.16'].includes(productivity.version)) throw new Error(`unexpected Productivity version ${productivity.version}`);
-if(yieldRingState?.company!=='YieldRing.eth'||yieldRingState?.authority?.executionAuthority!=='none')throw new Error('YieldRing canonical state invalid');
+if(defiteaState?.company?.name!=='defitea.eth'||defiteaState?.authority?.executionAuthority!=='none'||defiteaState?.costBasis?.status!=='complete')throw new Error('Defitea canonical state invalid');
+if(yieldRingState?.company!=='YieldRing.eth'||yieldRingState?.authority?.executionAuthority!=='none'||yieldRingState?.portfolioCostBasis?.status!=='complete')throw new Error('YieldRing canonical state invalid');
 if(company001OwnerSnapshot?.company!=='05081966.eth'||company001OwnerSnapshot?.authority?.executionAuthority!=='none')throw new Error('Company #001 owner snapshot invalid');
 
-BOOK['YieldRing.eth']=[
-  {id:'bitcoin',qty:Number(yieldRingState.capital?.bitcoin?.quantity),layer:'foundation',priceSource:'shared-market-data',evidenceStatus:'canonical-company-state'},
-  {id:'aerodrome-finance',qty:Number(yieldRingState.capital?.aerodrome?.quantity),layer:'productive-dividend',evidenceStatus:'canonical-company-state'},
-  {id:'convex-finance',qty:Number(yieldRingState.capital?.convex?.quantity),layer:'productive-dividend',evidenceStatus:'canonical-company-state'},
-  {id:'frax-share',qty:Number(yieldRingState.capital?.frax?.quantity),layer:'productive-dividend',evidenceStatus:yieldRingState.capital?.frax?.evidenceStatus||'owner-provided-current',note:'Current FRAX principal is canonical; cost basis is partial/UNKNOWN for the added 232 FRAX and is not required for current-capital valuation.'}
-];
+BOOK['defitea.eth']=(defiteaState.productivePositions||[]).map(p=>({id:p.assetId,qty:Number(p.quantity),layer:'productive-dividend',evidenceStatus:p.evidenceStatus||'owner-provided-portfolio-screenshot',costBasisUsd:Number(p.costBasisUsd),entryPriceUsd:Number(p.averageBuyPriceDisplayed),sourceType:'owner-provided-portfolio-screenshot'}));
+BOOK['YieldRing.eth']=Object.values(yieldRingState.capital||{}).map(p=>({id:p.assetId,qty:Number(p.quantity),layer:p.assetId==='bitcoin'?'foundation':'productive-dividend',...(p.assetId==='bitcoin'?{priceSource:'shared-market-data'}:{}),evidenceStatus:p.evidenceStatus||'owner-provided-portfolio-screenshot',costBasisUsd:Number(p.costBasisUsd),sourceType:'owner-provided-portfolio-screenshot'}));
+assertCompleteStateRows(BOOK['defitea.eth'],{company:'defitea.eth',totalCostBasisUsd:defiteaState.costBasis.totalUsd});
+assertCompleteStateRows(BOOK['YieldRing.eth'],{company:'YieldRing.eth',totalCostBasisUsd:yieldRingState.portfolioCostBasis.totalUsd});
+
 for(const p of company001OwnerSnapshot.positions||[]){
   if(p?.assetId!=='bitcoin'||Number(p?.quantity)<=0||p?.primaryCapitalLayer!=='foundation')throw new Error('Company #001 owner snapshot contains unsupported position');
   BOOK['05081966.eth'].push({id:p.assetId,qty:Number(p.quantity),layer:p.primaryCapitalLayer,priceSource:'shared-market-data',evidenceStatus:p.evidenceStatus||'owner-provided-current',note:p.note||null,entryPriceUsd:Number(p.entryPriceUsd),costBasisUsd:Number(p.costBasisUsd),sourceType:p.sourceType||'owner-confirmed-manual-current-snapshot'});
@@ -240,15 +196,12 @@ for(const p of company001OwnerSnapshot.positions||[]){
 const browserCompanyBookBinding=bindUiCompanyBookSemantics(readUiCompanyBook());
 const market=canonicalMarketPrices();
 const companies=[];
-let networkTotal=0;
-let networkProductiveExposure=0;
+let networkTotal=0,networkProductiveExposure=0;
 const layerTotals={foundationUsd:0,productiveDividendUsd:0,stableReserveUsd:0,rwaUsd:0,ventureUsd:0,unclassifiedUsd:0};
 
 for (const [registry,name] of REGISTRY) {
-  const sourceRows=BOOK[name];
-  const pCompany=productivity.companies?.[name];
+  const sourceRows=BOOK[name],pCompany=productivity.companies?.[name];
   if (!sourceRows || !pCompany) throw new Error(`${name}: missing Company Book or Productivity binding`);
-
   const pBreakdown=pCompany.breakdown||[];
   const productiveById=new Map(pBreakdown.map(p=>[p.principalId,p]));
   const productiveByEngine=new Map(pBreakdown.map(p=>[p.engineId,p]));
@@ -264,18 +217,11 @@ for (const [registry,name] of REGISTRY) {
       const exposureValue=Number(pp.value);
       if (!Number.isFinite(exposureValue)||exposureValue<0) throw new Error(`${name}: invalid productive exposure for ${row.engineId}`);
       representedProductiveExposure+=exposureValue;
-      positions.push({
-        assetId:row.id,engineId:row.engineId,units:round(row.qty,12),priceUsd:round(pp.price,12),productiveExposureValueUsd:round(exposureValue),
-        primaryCapitalLayer:null,productiveAttribute:true,productivityOnly:true,
-        inclusion:'excluded-from-capital-total-productivity-representation',
-        doubleCountPolicy:'excluded from capital total because the same economic BTC/ETH exposure is already represented by the parent Company Book holding; retained only as a Productivity attribute/proof'
-      });
+      positions.push({assetId:row.id,engineId:row.engineId,units:round(row.qty,12),priceUsd:round(pp.price,12),productiveExposureValueUsd:round(exposureValue),primaryCapitalLayer:null,productiveAttribute:true,productivityOnly:true,inclusion:'excluded-from-capital-total-productivity-representation',doubleCountPolicy:'excluded from capital total because the same economic BTC/ETH exposure is already represented by the parent Company Book holding; retained only as a Productivity attribute/proof'});
       continue;
     }
 
-    let price=null;
-    let priceProvenance=null;
-    let productiveAttribute=false;
+    let price=null,priceProvenance=null,productiveAttribute=false;
     const pp=productiveById.get(row.id);
     if (row.priceSource==='shared-market-data') {
       price=Number(market.prices[row.id]);
@@ -294,35 +240,24 @@ for (const [registry,name] of REGISTRY) {
     const key = row.layer==='foundation'?'foundationUsd':row.layer==='productive-dividend'?'productiveDividendUsd':row.layer==='unclassified'?'unclassifiedUsd':null;
     if (!key) throw new Error(`${name}: unsupported capital layer ${row.layer}`);
     layers[key]+=value;
-    positions.push({
-      assetId:row.id, units:round(row.qty,12), priceUsd:round(price,12), valueUsd:round(value),
-      primaryCapitalLayer:row.layer, productiveAttribute, priceProvenance,
-      evidenceStatus:row.evidenceStatus||'established', note:row.note||null,
-      ...(Number.isFinite(row.entryPriceUsd)?{entryPriceUsd:round(row.entryPriceUsd,6)}:{}),
-      ...(Number.isFinite(row.costBasisUsd)?{costBasisUsd:round(row.costBasisUsd,6)}:{}),
-      ...(row.sourceType?{sourceType:row.sourceType}:{}),
-      inclusion:'included-once-in-company-total', productivityOnly:false
-    });
+    positions.push({assetId:row.id,units:round(row.qty,12),priceUsd:round(price,12),valueUsd:round(value),primaryCapitalLayer:row.layer,productiveAttribute,priceProvenance,evidenceStatus:row.evidenceStatus||'established',note:row.note||null,...(Number.isFinite(row.entryPriceUsd)?{entryPriceUsd:round(row.entryPriceUsd,6)}:{}),...(Number.isFinite(row.costBasisUsd)?{costBasisUsd:round(row.costBasisUsd,6),costBasisStatus:'complete'}:{}),...(row.sourceType?{sourceType:row.sourceType}:{}),inclusion:'included-once-in-company-total',productivityOnly:false});
   }
 
   const productiveExpected=Number(pCompany.productiveValue);
   if (!Number.isFinite(productiveExpected)||productiveExpected<0) throw new Error(`${name}: canonical Productive exposure unavailable`);
   if (Math.abs(representedProductiveExposure-productiveExpected)>0.05) throw new Error(`${name}: Company Book representations do not reconcile to canonical Productive exposure`);
-
   const total=Object.values(layers).reduce((s,v)=>s+v,0);
   if (!(total>0)) throw new Error(`${name}: total capital unavailable`);
-
   for (const k of Object.keys(layers)) { layers[k]=round(layers[k]); layerTotals[k]+=layers[k]; }
-  networkTotal+=total;
-  networkProductiveExposure+=productiveExpected;
+  networkTotal+=total;networkProductiveExposure+=productiveExpected;
+  const completeBasis=(name==='defitea.eth'||name==='YieldRing.eth');
   companies.push({
     registry,name,status:'total-capital-complete',totalCapitalUsd:round(total),totalCapitalComplete:true,
-    sourceScope:(name==='05081966.eth'||name==='YieldRing.eth')?'browser-company-book-baseline-plus-canonical-owner-state':'browser-company-book-normalized-to-machine-readable-balance-sheet',
-    productiveMeasuredExposureUsd:round(productiveExpected),
-    primaryProductiveDividendCapitalUsd:round(layers.productiveDividendUsd),
-    productiveExposureOutsidePrimaryProductiveLayerUsd:round(Math.max(0,productiveExpected-layers.productiveDividendUsd)),
-    layerValues:layers,
-    epistemicNote:name==='1milliondollar.eth'?'Total includes an explicitly disclosed owner-observed WETH component; provenance is preserved rather than silently upgraded to independently reproduced onchain evidence.':name==='YieldRing.eth'?'Current FRAX quantity is owner-confirmed; added-lot cost basis remains UNKNOWN/partial and is not silently treated as zero.':name==='05081966.eth'?'Current BTC position is owner-confirmed manual evidence pending unified blockchain-native balance discovery.':null,
+    sourceScope:(name==='05081966.eth')?'browser-company-book-baseline-plus-canonical-owner-state':completeBasis?'canonical-company-state-projected-to-browser-company-book':'browser-company-book-normalized-to-machine-readable-balance-sheet',
+    costBasisStatus:completeBasis?'complete':null,
+    historicalCostBasisUsd:name==='defitea.eth'?Number(defiteaState.costBasis.totalUsd):name==='YieldRing.eth'?Number(yieldRingState.portfolioCostBasis.totalUsd):null,
+    productiveMeasuredExposureUsd:round(productiveExpected),primaryProductiveDividendCapitalUsd:round(layers.productiveDividendUsd),productiveExposureOutsidePrimaryProductiveLayerUsd:round(Math.max(0,productiveExpected-layers.productiveDividendUsd)),layerValues:layers,
+    epistemicNote:name==='1milliondollar.eth'?'Total includes an explicitly disclosed owner-observed WETH component; provenance is preserved rather than silently upgraded to independently reproduced onchain evidence.':name==='YieldRing.eth'?'Current quantities and acquisition basis are owner-evidenced and complete for Performance; independent blockchain-native reproduction remains pending and is not falsely claimed.':name==='defitea.eth'?'Current quantities and historical acquisition basis are complete from owner-provided holdings screenshots; live market value remains canonical-market-data-driven.':name==='05081966.eth'?'Current BTC position is owner-confirmed manual evidence pending unified blockchain-native balance discovery.':null,
     positions
   });
 }
@@ -330,43 +265,24 @@ for (const [registry,name] of REGISTRY) {
 for (const k of Object.keys(layerTotals)) layerTotals[k]=round(layerTotals[k]);
 const output={
   version:'0.1-general-company-balance-sheet',
-  engineVersion:'0.2.3-semantic-company-book-guard',
+  engineVersion:'0.2.4-complete-company-basis',
   generatedAt:new Date().toISOString(),status:'ok',
-  purpose:'Machine-readable total-capital binding for the eight general Registry companies. Browser Company Book remains a reviewed baseline; provenance-explicit canonical owner snapshots may bridge current capital until unified blockchain-native discovery covers those positions. Productive exposure is reconciled without conflating Productivity with primary capital layer.',
+  purpose:'Machine-readable total-capital binding for the eight general Registry companies. Defitea and YieldRing consume complete canonical acquisition-basis states; current valuation remains canonical-market-data-driven. Browser Company Book remains a semantic projection/guard rather than a competing source of truth.',
   authority:{readOnly:true,executionAuthority:'none',capitalExecution:false,allocationAuthority:false,policyMutationAuthority:false,methodologyMutationAuthority:false},
-  semantics:{
-    unknownPolicy:'unknown != zero',
-    partialCostBasisIsNotTotal:true,
-    ownerConfirmedManualSnapshotIsNotOnchainObservation:true,
-    browserCompanyBookGuard:'semantic-quantity-and-inclusion-binding',
-    publicSitePolishDoesNotInvalidateCompanyBook:true,
-    marketPriceAuthority:market.deterministicFixture?'deterministic zero-request CI fixture':'canonical per-asset Market Data; onchain primary with explicit bounded CoinGecko fallback; no direct external price request',
-    deterministicValidationFixture:market.deterministicFixture,
-    perAssetFallbackAllowed:!market.deterministicFixture,
-    productionUnknownAccepted:false,
-    doubleCountPolicy:'productivityOnly rows never add a second copy of parent BTC/ETH economic exposure',
-    productiveExposure:'A capital position can be economically productive while its primary capital layer remains Foundation or another layer; Productivity is an earning attribute, not automatically a Productive Dividend capital classification.',
-    layerTaxonomy:['foundation','productive-dividend','stable-reserve','rwa','venture','unclassified']
-  },
+  semantics:{unknownPolicy:'unknown != zero',partialCostBasisIsNotTotal:true,completeCostBasisRequiresEveryCurrentPosition:true,newPositionWithoutBasisRevertsPerformanceToPartial:true,ownerConfirmedManualSnapshotIsNotOnchainObservation:true,browserCompanyBookGuard:'semantic-quantity-and-inclusion-binding',publicSitePolishDoesNotInvalidateCompanyBook:true,marketPriceAuthority:market.deterministicFixture?'deterministic zero-request CI fixture':'canonical per-asset Market Data; onchain primary with explicit bounded CoinGecko fallback; no direct external price request',deterministicValidationFixture:market.deterministicFixture,perAssetFallbackAllowed:!market.deterministicFixture,productionUnknownAccepted:false,doubleCountPolicy:'productivityOnly rows never add a second copy of parent BTC/ETH economic exposure',productiveExposure:'A capital position can be economically productive while its primary capital layer remains Foundation or another layer; Productivity is an earning attribute, not automatically a Productive Dividend capital classification.',layerTaxonomy:['foundation','productive-dividend','stable-reserve','rwa','venture','unclassified']},
   sourceState:{
-    browserCompanyBook:{file:UI_BOOK_SOURCE,semanticBindingSha256:browserCompanyBookBinding.sha256,semanticFields:browserCompanyBookBinding.semanticFields,companyCount:browserCompanyBookBinding.companyCount,sha256:sha256File(UI_BOOK_SOURCE),role:'reviewed browser Company Book semantic quantities/inclusion; unrelated public-site polish may change the surrounding HTML without invalidating capital normalization'},
-    yieldRingCanonicalState:{file:YIELD_RING_STATE,version:yieldRingState.version||null,effectiveAt:yieldRingState.effectiveAt||null,sha256:sha256File(YIELD_RING_STATE),role:'current canonical YieldRing quantities and provenance'},
+    browserCompanyBook:{file:UI_BOOK_SOURCE,semanticBindingSha256:browserCompanyBookBinding.sha256,semanticFields:browserCompanyBookBinding.semanticFields,companyCount:browserCompanyBookBinding.companyCount,sha256:sha256File(UI_BOOK_SOURCE),role:'browser projection semantic quantities/inclusion; unrelated public-site polish may change surrounding HTML without invalidating capital normalization'},
+    defiteaCanonicalState:{file:DEFITEA_STATE,version:defiteaState.version||null,effectiveAt:defiteaState.effectiveAt||null,sha256:sha256File(DEFITEA_STATE),role:'current canonical Defitea quantities plus complete historical acquisition basis from owner-provided holdings evidence'},
+    yieldRingCanonicalState:{file:YIELD_RING_STATE,version:yieldRingState.version||null,effectiveAt:yieldRingState.effectiveAt||null,sha256:sha256File(YIELD_RING_STATE),role:'current canonical YieldRing quantities plus complete historical acquisition basis; blockchain-native reconciliation status remains explicit'},
     company001OwnerSnapshot:{file:COMPANY001_OWNER_SNAPSHOT,version:company001OwnerSnapshot.version||null,asOf:company001OwnerSnapshot.asOf||null,sha256:sha256File(COMPANY001_OWNER_SNAPSHOT),role:'provenance-explicit temporary current-capital bridge; not independently reproduced onchain'},
     productivity:{file:PRODUCTIVITY,version:productivity.version,generatedAt:productivity.generatedAt||null,sha256:sha256File(PRODUCTIVITY),role:'productive quantity/exposure reconciliation and productive-asset current prices'},
     marketData:{file:market.sourceFile,generatedAt:market.generatedAt,observedAt:market.observedAt,sha256:market.sha256,assetIds:SHARED_MARKET_IDS,onchainSelectedAssetCount:market.onchainSelectedAssetCount,coingeckoFallbackAssetCount:market.coingeckoFallbackAssetCount,unknownCount:market.unknownCount,role:market.deterministicFixture?'deterministic zero-request validation prices; never production authority':'canonical per-asset BTC/ETH/ZK prices; onchain primary with explicit bounded fallback; no direct external price request'}
   },
-  network:{
-    generalCompanyCount:REGISTRY.length,
-    totalCapitalCompleteCompanyCount:companies.length,
-    generalCompanyTvlUsd:round(networkTotal),
-    productiveMeasuredExposureUsd:round(networkProductiveExposure),
-    primaryProductiveDividendCapitalUsd:round(layerTotals.productiveDividendUsd),
-    layerValues:layerTotals
-  },
+  network:{generalCompanyCount:REGISTRY.length,totalCapitalCompleteCompanyCount:companies.length,generalCompanyTvlUsd:round(networkTotal),productiveMeasuredExposureUsd:round(networkProductiveExposure),primaryProductiveDividendCapitalUsd:round(layerTotals.productiveDividendUsd),layerValues:layerTotals},
   companies,
   gaps:[
     {id:'company-009-owner-observed-weth-proof',severity:'evidence-quality',affects:['company-009-foundation-provenance'],detail:'0.1606 WETH remains owner-observed and is not silently represented as independently reproduced onchain evidence.'},
-    {id:'company-002-frax-cost-basis-partial',severity:'evidence-quality',affects:['company-002-performance-cost-basis'],detail:'YieldRing current FRAX principal is 1,032; cost basis for the additional 232 FRAX remains UNKNOWN and is not treated as zero.'},
+    {id:'company-002-onchain-reconciliation-pending',severity:'evidence-quality',affects:['company-002-provenance'],detail:'YieldRing quantities and acquisition basis are complete from owner evidence, but blockchain-native reproduction of all direct and protocol-managed positions remains pending; no onchain confirmation is fabricated.'},
     {id:'company-001-btc-manual-current-snapshot',severity:'evidence-quality',affects:['company-001-current-capital-provenance'],detail:'0.00205 BTC is owner-confirmed current capital and explicitly remains manual evidence until blockchain-native discovery reproduces it.'},
     {id:'unclassified-zk-layer',severity:'classification',affects:['registry-007-layer-allocation'],detail:'ZK is included in total capital but remains unclassified rather than being promoted into Foundation/Productive/RWA/Venture without a proven economic-layer rule.'}
   ]
@@ -378,10 +294,9 @@ console.log('General company balance sheet built',{
   companies:companies.length,
   generalCompanyTvlUsd:output.network.generalCompanyTvlUsd,
   productiveMeasuredExposureUsd:output.network.productiveMeasuredExposureUsd,
-  primaryProductiveDividendCapitalUsd:output.network.primaryProductiveDividendCapitalUsd,
-  marketDataMode:market.deterministicFixture?'deterministic-validation-fixture':'canonical-per-asset-authority',
-  onchainSelectedAssetCount:market.onchainSelectedAssetCount,
-  coingeckoFallbackAssetCount:market.coingeckoFallbackAssetCount,
-  unknownCount:market.unknownCount,
-  executionAuthority:output.authority.executionAuthority
+  defiteaCostBasisUsd:Number(defiteaState.costBasis.totalUsd),
+  yieldRingCostBasisUsd:Number(yieldRingState.portfolioCostBasis.totalUsd),
+  marketDataSha256:market.sha256,
+  deterministicValidationFixture:market.deterministicFixture,
+  executionAuthority:'none'
 });

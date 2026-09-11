@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Unified Capital Refresh v0.2.8
+ * The Holding · Unified Capital Refresh v0.2.9
  *
  * Orchestration only. Reuses existing canonical projectors/collectors/builders:
  * Defitea projection -> YieldRing projection -> owner-balance site projection
@@ -8,10 +8,10 @@
  * -> VoteMarket income channels -> General Balance -> Company #007 current-state
  * downstream binding -> Capital State -> canonical public-site polish projection.
  *
- * v0.2.7 makes the already-canonical public-site polish projector an executed
- * part of the coherent refresh instead of merely a trigger/syntax-check input.
- * v0.2.8 binds the final Collection navigation proof to the canonical v3
- * Collection -> Index controller and fails closed if any retired router survives.
+ * v0.2.9 requires complete historical acquisition basis for the current
+ * Defitea and YieldRing economic positions while preserving dynamic current
+ * valuation from canonical market data. Owner evidence is not silently upgraded
+ * to independently reproduced onchain evidence.
  *
  * No execution authority. No wallet action. No factual-income methodology mutation.
  */
@@ -37,6 +37,7 @@ function run(label, cwd, script, env = {}) {
 }
 function readJson(rel) { return JSON.parse(fs.readFileSync(path.join(ROOT, rel), 'utf8')); }
 function assert(ok, message) { if (!ok) throw new Error(message); }
+function close(a,b,t=0.005){return Number.isFinite(Number(a))&&Math.abs(Number(a)-Number(b))<=t;}
 
 run('1/10 Project canonical Defitea state', ROOT, 'companies/defitea-public-capital-projection.mjs');
 run('2/10 Project canonical YieldRing state', ROOT, 'companies/yieldring-public-capital-projection.mjs');
@@ -70,21 +71,25 @@ const yieldRingPage = fs.readFileSync(path.join(ROOT, 'yieldring/index.html'), '
 const company001Page = fs.readFileSync(path.join(ROOT, '05081966/index.html'), 'utf8');
 const singulPage = fs.readFileSync(path.join(ROOT, 'singul/index.html'), 'utf8');
 
-assert(defitea?.authority?.executionAuthority === 'none', 'Defitea authority drift');
+assert(defitea?.version==='0.2-defitea-canonical-state' && defitea?.authority?.executionAuthority === 'none', 'Defitea authority/version drift');
 assert(defitea?.productivePositions?.length === 11, 'Defitea 11-position inventory missing');
 const dp = new Map(defitea.productivePositions.map(x=>[x.assetId,x]));
-assert(Number(dp.get('aerodrome-finance')?.quantity) === 2632, 'Defitea canonical AERO drift');
+assert(Number(dp.get('aerodrome-finance')?.quantity) === 2632.61, 'Defitea canonical AERO drift');
+assert(Number(dp.get('convex-finance')?.quantity) === 1333.8, 'Defitea canonical CVX drift');
+assert(Number(dp.get('pendle')?.quantity) === 501.74, 'Defitea canonical PENDLE drift');
+assert(Number(dp.get('frax-share')?.quantity) === 4456.96, 'Defitea canonical FRAX drift');
 assert(Number(dp.get('fxn-token')?.quantity) === 64.81, 'Defitea canonical FXN drift');
-assert(defitea?.costBasis?.aerodrome?.status === 'complete' && Number(defitea.costBasis.aerodrome.costBasisUsd) === 1121.3, 'Defitea AERO lot basis incomplete');
-assert(defitea?.costBasis?.fxn?.status === 'complete' && Number(defitea.costBasis.fxn.costBasisUsd) === 983.2386, 'Defitea FXN lot basis incomplete');
-assert(defitea?.semantics?.costBasisLotsPreserved === true, 'Defitea lot preservation contract missing');
+assert(defitea?.costBasis?.status === 'complete' && close(defitea.costBasis.totalUsd,9724.36), 'Defitea complete portfolio basis missing');
+assert(defitea.productivePositions.every(x=>Number.isFinite(Number(x.costBasisUsd))), 'Defitea current position without explicit cost basis');
+assert(close(defitea?.evidenceSnapshot?.marketValueUsd,12814.37)&&close(defitea?.evidenceSnapshot?.unrealizedProfitUsd,3090.01), 'Defitea screenshot reconciliation drift');
 
-assert(canonical?.authority?.executionAuthority === 'none', 'YieldRing authority drift');
+assert(canonical?.version==='0.2-yieldring-canonical-state' && canonical?.authority?.executionAuthority === 'none', 'YieldRing authority/version drift');
 assert(Number(canonical?.capital?.bitcoin?.quantity) === 0.0334, 'YieldRing canonical BTC drift');
 assert(Number(canonical?.capital?.aerodrome?.quantity) === 678, 'YieldRing canonical AERO drift');
 assert(Number(canonical?.capital?.frax?.quantity) === 1032, 'YieldRing canonical FRAX drift');
-assert(canonical?.capital?.frax?.costBasisStatus === 'partial' && canonical?.capital?.frax?.costBasisUsd === null, 'YieldRing FRAX UNKNOWN cost-basis semantics drift');
-assert(Number(canonical?.capital?.frax?.knownCostBasisUsd) === 210.24, 'YieldRing FRAX known cost-basis floor drift');
+assert(canonical?.portfolioCostBasis?.status === 'complete' && close(canonical.portfolioCostBasis.totalUsd,2984.6), 'YieldRing complete portfolio basis missing');
+assert(canonical?.capital?.frax?.costBasisStatus === 'complete' && close(canonical?.capital?.frax?.costBasisUsd,279.57), 'YieldRing complete FRAX basis missing');
+assert(canonical?.wallet?.onchainReconciliationStatus === 'pending-independent-reproduction', 'YieldRing owner evidence was silently upgraded to onchain confirmation');
 
 const owner001Btc=(company001Owner?.positions||[]).find(x=>x.assetId==='bitcoin');
 const owner001Lots=owner001Btc?.lots||[];
@@ -99,7 +104,7 @@ const dpProd = productivity?.companies?.['defitea.eth'];
 const dpa = (dpProd?.breakdown || []).find(x => x.engineId === 'aerodrome_veaero' || x.principalId === 'aerodrome-finance');
 const dpc = (dpProd?.breakdown || []).find(x => x.engineId === 'curve_vecrv' || x.principalId === 'curve-dao-token');
 const dpf = (dpProd?.breakdown || []).find(x => x.engineId === 'fx_vefxn' || x.principalId === 'fxn-token');
-assert(dpProd && Number(dpa?.units) === 2632 && Number(dpf?.units) === 64.81, 'Defitea canonical quantities missing from Productivity');
+assert(dpProd && Number(dpa?.units) === 2632.61 && Number(dpf?.units) === 64.81, 'Defitea canonical quantities missing from Productivity');
 assert(Number(dpProd?.coverage) > 0 && Number(dpProd?.coverage) <= 1, 'Defitea Productivity coverage invalid');
 
 const voteMarketDiag = productivity?.diagnostics?.voteMarketIncomeChannels;
@@ -126,12 +131,7 @@ const fxnCurrentHistory = fxnEngineHistory.at(-1);
 const fxnAuthority = productivity?.diagnostics?.fxnLockerAprAuthority;
 const fxnExactApr = Number(fxnAuthority?.exactApr);
 const dpfNativeApr = Number(dpf?.incomeChannels?.native?.aprPct ?? dpf?.apr);
-const fxnAprSurfaces = {
-  sourceReport: Number(fxnSource?.apr),
-  canonicalEngine: Number(fxnEngine?.aprLatest),
-  currentEngineHistory: Number(fxnCurrentHistory?.apr),
-  defiteaNativePosition: dpfNativeApr
-};
+const fxnAprSurfaces = {sourceReport:Number(fxnSource?.apr),canonicalEngine:Number(fxnEngine?.aprLatest),currentEngineHistory:Number(fxnCurrentHistory?.apr),defiteaNativePosition:dpfNativeApr};
 assert(fxnSource?.status === 'ok' && fxnSource?.sourceType === 'official-frontend-exact-block' && fxnSource?.sourceMetric === 'veFXN Locker APR', 'veFXN exact source-report authority drift');
 assert(fxnEngine?.status === 'ok' && fxnEngine?.sourceType === 'official-frontend-exact-block' && fxnEngine?.sourceMetric === 'veFXN Locker APR', 'veFXN canonical engine authority drift');
 assert(fxnCurrentHistory?.snapshotKey === productivity?.snapshotKey, 'veFXN current engine-history observation missing');
@@ -146,7 +146,7 @@ const yf = (yp?.breakdown || []).find(x => x.principalId === 'frax-share' || x.e
 assert(yp && Number(ya?.units) === 678 && Number(yf?.units) === 1032, 'YieldRing AERO/FRAX canonical quantities missing from Productivity');
 assert(productivity?.diagnostics?.company010?.executionAuthority === 'none', 'Company #010 Productivity authority drift');
 assert(productivity?.diagnostics?.yieldRing?.executionAuthority === 'none', 'YieldRing Productivity authority drift');
-assert(productivity?.diagnostics?.yieldRing?.fraxCostBasisStatus === 'partial', 'YieldRing Productivity partial cost-basis diagnostic missing');
+assert(productivity?.diagnostics?.yieldRing?.fraxCostBasisStatus === 'complete' && close(productivity?.diagnostics?.yieldRing?.fraxCostBasisUsd,279.57), 'YieldRing Productivity complete cost-basis diagnostic missing');
 assert(Date.parse(productivity.generatedAt) >= startedAt - 60_000, 'Productivity snapshot is not fresh for this unified run');
 
 const rookProd=productivity?.companies?.["Rook's portfolio"];
@@ -162,14 +162,17 @@ assert(general?.version === '0.1-general-company-balance-sheet' && general?.stat
 const dg = (general?.companies || []).find(x => x.registry === '004');
 const dga = (dg?.positions || []).find(x => x.assetId === 'aerodrome-finance');
 const dgf = (dg?.positions || []).find(x => x.assetId === 'fxn-token');
-assert(dg && Number(dga?.units) === 2632 && Number(dgf?.units) === 64.81, 'Defitea quantities missing from General Balance');
+const dgfr = (dg?.positions || []).find(x => x.assetId === 'frax-share');
+assert(dg && Number(dga?.units) === 2632.61 && Number(dgf?.units) === 64.81 && Number(dgfr?.units)===4456.96, 'Defitea quantities missing from General Balance');
+assert(dg?.costBasisStatus==='complete'&&close(dg?.historicalCostBasisUsd,9724.36)&&close(dga?.costBasisUsd,1038.45)&&close(dgfr?.costBasisUsd,1777.44), 'Defitea complete basis missing from General Balance');
 
 const yg = (general?.companies || []).find(x => x.registry === '002');
 const ygb = (yg?.positions || []).find(x => x.assetId === 'bitcoin');
 const yga = (yg?.positions || []).find(x => x.assetId === 'aerodrome-finance');
 const ygf = (yg?.positions || []).find(x => x.assetId === 'frax-share');
 assert(yg && Number(ygb?.units) === 0.0334 && Number(yga?.units) === 678 && Number(ygf?.units) === 1032, 'YieldRing quantities missing from General Balance');
-assert(String(yg?.epistemicNote||'').includes('UNKNOWN'), 'YieldRing partial cost-basis epistemic note missing');
+assert(yg?.costBasisStatus==='complete'&&close(yg?.historicalCostBasisUsd,2984.6)&&close(ygf?.costBasisUsd,279.57), 'YieldRing complete basis missing from General Balance');
+assert(String(yg?.epistemicNote||'').includes('independent'), 'YieldRing provenance boundary note missing');
 
 const c001g=(general?.companies||[]).find(x=>x.registry==='001');
 const c001gb=(c001g?.positions||[]).find(x=>x.assetId==='bitcoin');
@@ -192,7 +195,7 @@ assert(Number(capital?.network?.networkTvlUsd) > 0 && capital?.network?.networkT
 const dc = (capital?.companies || []).find(x => x.registry === '004');
 const dca = (dc?.measuredPositions || []).find(x => x.assetId === 'aerodrome-finance');
 const dcf = (dc?.measuredPositions || []).find(x => x.assetId === 'fxn-token');
-assert(dc && Number(dca?.units) === 2632 && Number(dcf?.units) === 64.81, 'Defitea quantities missing from Capital State');
+assert(dc && Number(dca?.units) === 2632.61 && Number(dcf?.units) === 64.81, 'Defitea quantities missing from Capital State');
 const yc = (capital?.companies || []).find(x => x.registry === '002');
 const ycb = (yc?.measuredPositions || []).find(x => x.assetId === 'bitcoin');
 const yca = (yc?.measuredPositions || []).find(x => x.assetId === 'aerodrome-finance');
@@ -207,27 +210,14 @@ const rce=(rc?.measuredPositions||[]).find(x=>x.assetId==='ethereum');
 assert(rc&&Math.abs(Number(rcb?.units)-Number(rookBtc?.units))<1e-12&&Math.abs(Number(rce?.units)-Number(rookEth?.units))<1e-12, 'Company #007 current-state quantities missing from Capital State');
 assert(capital?.authority?.executionAuthority === 'none', 'Capital State authority drift');
 
-assert(companiesHtml.includes('qty: 2632') && companiesHtml.includes('qty: 64.81'), 'Defitea Registry projection drift');
-assert(companiesHtml.includes('costBasisUsd: 1121.3') && companiesHtml.includes('qty: 192, entry: 0.42'), 'Defitea AERO cost-basis projection drift');
-assert(companiesHtml.includes('costBasisUsd: 983.2386') && companiesHtml.includes('qty: 5, entry: 16.5'), 'Defitea FXN cost-basis projection drift');
-assert(companiesHtml.includes("qty: 1032, entry: null, costBasisUsd: null, costBasisStatus: 'partial'") && companiesHtml.includes('knownCostBasisUsd: 210.24'), 'YieldRing FRAX partial-cost Registry projection drift');
+assert(companiesHtml.includes('qty: 2632.61') && companiesHtml.includes('qty: 64.81') && companiesHtml.includes('qty: 4456.96'), 'Defitea Registry projection drift');
+assert(companiesHtml.includes('costBasisUsd: 1038.45') && companiesHtml.includes('costBasisUsd: 1777.44') && companiesHtml.includes('costBasisUsd: 1713.55'), 'Defitea complete cost-basis projection drift');
+assert(companiesHtml.includes('qty: 1032') && companiesHtml.includes('costBasisUsd: 279.57') && companiesHtml.includes('costBasisUsd: 2123.11'), 'YieldRing complete cost-basis Registry projection drift');
+assert(!companiesHtml.includes('knownCostBasisUsd: 210.24'), 'retired YieldRing partial known-basis evidence survived');
 assert(companiesHtml.includes("id: 'bitcoin', qty: 0.00205, entry: 78038.78048780488, costBasisUsd: 159.9795") && companiesHtml.includes("'05081966.eth':  ['Bitcoin','Curve','Aero','Frax']"), 'Company #001 BTC Registry projection drift');
 assert(companiesHtml.includes("const finiteUiNumber = v => v !== null") && companiesHtml.includes("costBasisStatus: costComplete ? 'complete' : 'partial'"), 'Registry partial cost-basis null guard missing');
-const collectionIndexV3 = [
-  'data-th-collection-index-navigation-v3',
-  'window.__TH_COLLECTION_INDEX_NAV_V3__',
-  "card.removeAttribute('href')",
-  'ev.stopImmediatePropagation()',
-  'function waitForIndexReady',
-  "panel.querySelector('.index-head')"
-].every(token => companiesHtml.includes(token));
-const retiredCollectionRouterPresent = [
-  'data-th-collection-passport-routing-style',
-  '<script data-th-collection-passport-routing>',
-  'data-th-collection-uniform-explore',
-  'data-th-collection-index-entry-v2',
-  "card.setAttribute('href','#index')"
-].some(token => companiesHtml.includes(token));
+const collectionIndexV3 = ['data-th-collection-index-navigation-v3','window.__TH_COLLECTION_INDEX_NAV_V3__',"card.removeAttribute('href')",'ev.stopImmediatePropagation()','function waitForIndexReady',"panel.querySelector('.index-head')"].every(token => companiesHtml.includes(token));
+const retiredCollectionRouterPresent = ['data-th-collection-passport-routing-style','<script data-th-collection-passport-routing>','data-th-collection-uniform-explore','data-th-collection-index-entry-v2',"card.setAttribute('href','#index')"].some(token => companiesHtml.includes(token));
 assert(collectionIndexV3 && !retiredCollectionRouterPresent, 'Collection -> Index v3 public projection missing or retired Collection router survived');
 assert(yieldRingPage.includes('qty: 0.0334') && yieldRingPage.includes('qty: 678') && yieldRingPage.includes('qty: 1032'), 'YieldRing dedicated page projection drift');
 assert(company001Page.includes("id: 'bitcoin', name: 'BTC', proto: 'Bitcoin reserve', qty: 0.00205") && company001Page.includes('BTC is held as reserve capital'), 'Company #001 dedicated page projection drift');
@@ -245,12 +235,11 @@ console.log('\nUNIFIED CAPITAL REFRESH PASS', {
   defiteaVeFxnVoteMarketStatus: dpf?.incomeChannels?.votemarket?.status || null,
   defiteaProductiveValue: dpProd.productiveValue,
   defiteaAero: dca.units,
-  defiteaAeroCostBasisUsd: defitea.costBasis.aerodrome.costBasisUsd,
-  defiteaFxn: dcf.units,
-  defiteaFxnCostBasisUsd: defitea.costBasis.fxn.costBasisUsd,
+  defiteaCostBasisUsd: defitea.costBasis.totalUsd,
   yieldRingAprLatest: yp.aprLatest,
   yieldRingFrax: ycf.units,
-  yieldRingFraxCostBasisStatus: canonical.capital.frax.costBasisStatus,
+  yieldRingCostBasisUsd: canonical.portfolioCostBasis.totalUsd,
+  yieldRingOnchainReconciliationStatus: canonical.wallet.onchainReconciliationStatus,
   company001Btc: c001cb.units,
   singulDiemFixedTotalValueUsd: singulDiem.fixedTotalValueUsd,
   company007ActiveYbMarkets:activeYbMarkets,
