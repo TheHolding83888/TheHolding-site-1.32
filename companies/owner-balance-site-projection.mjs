@@ -211,6 +211,45 @@ if(!html.includes("performanceDisplayStatus: costComplete ? 'complete' : (partia
   fail('Partial known-basis Performance display contract missing');
 }
 
+/* Keep the complete/partial Performance object intact when Company figures are
+   transferred into INDEX_STATE. The previous projector calculated partialPct
+   correctly, but then copied only cost/pnl/pct into the Passport state, so the
+   UI had no way to render the measured known-basis subset and showed a dash. */
+const oldIndexPerformanceTransfer=`    ];
+    INDEX_STATE.forEach(c => {
+        const fallback = Number.isFinite(Number(c.val)) ? Number(c.val) : 0;
+        c.indexCapitalValue = publicCompanyNetworkContribution(c.reg, fallback);
+    });
+    syncCompanyAprDisplays(idxLang());`;
+const newIndexPerformanceTransfer=`    ];
+    const PERFORMANCE_STATE_BY_REGISTRY = new Map([
+        ['001',F1],['002',F2],['003',F3],['004',F4],
+        ['005',F5],['006',F6],['007',F7],['009',F9]
+    ]);
+    INDEX_STATE.forEach(c => {
+        const f = PERFORMANCE_STATE_BY_REGISTRY.get(c.reg);
+        if (f) {
+            c.cost = f.cost;
+            c.pnl = f.pnl;
+            c.pct = f.pct;
+            c.knownCostBasisUsd = f.knownCostBasisUsd;
+            c.knownBasisValue = f.knownBasisValue;
+            c.costBasisStatus = f.costBasisStatus;
+            c.partialPnl = f.partialPnl;
+            c.partialPct = f.partialPct;
+            c.performanceDisplayStatus = f.performanceDisplayStatus;
+        }
+        const fallback = Number.isFinite(Number(c.val)) ? Number(c.val) : 0;
+        c.indexCapitalValue = publicCompanyNetworkContribution(c.reg, fallback);
+    });
+    syncCompanyAprDisplays(idxLang());`;
+html=replaceOnce(html,oldIndexPerformanceTransfer,newIndexPerformanceTransfer,'companies/index.html full Performance state propagation');
+if(!html.includes('const PERFORMANCE_STATE_BY_REGISTRY = new Map([')||
+   !html.includes('c.partialPct = f.partialPct;')||
+   !html.includes('c.performanceDisplayStatus = f.performanceDisplayStatus;')){
+  fail('Passport Performance state propagation contract missing');
+}
+
 html=replaceOnce(html,
 `    { key: 'capital',      weight: 0.35, raw: c => Math.sqrt(Math.max(c.val, 0)) },`,
 `    { key: 'capital',      weight: 0.35, raw: c => Math.sqrt(Math.max(c.indexCapitalValue ?? c.val, 0)) },`,
@@ -290,6 +329,7 @@ console.log('Owner balance site projection PASS',{
   defiteaConsolidatedDisplayUsesUniqueIndexContribution:true,
   partialCostBasisPerformanceRemainsUnknown:true,
   partialKnownBasisPerformanceDisplayAvailable:true,
+  partialPerformanceStatePropagated:true,
   indexPerformanceMethodologyUnchanged:true,
   manualSnapshotIsNotOnchainObservation:true,
   publicSitePolishProjected:true,
