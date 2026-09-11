@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Holding · Unified Capital Refresh v0.2.7
+ * The Holding · Unified Capital Refresh v0.2.8
  *
  * Orchestration only. Reuses existing canonical projectors/collectors/builders:
  * Defitea projection -> YieldRing projection -> owner-balance site projection
@@ -10,7 +10,8 @@
  *
  * v0.2.7 makes the already-canonical public-site polish projector an executed
  * part of the coherent refresh instead of merely a trigger/syntax-check input.
- * This keeps generated public surfaces reproducible without a parallel writer.
+ * v0.2.8 binds the final Collection navigation proof to the canonical v3
+ * Collection -> Index controller and fails closed if any retired router survives.
  *
  * No execution authority. No wallet action. No factual-income methodology mutation.
  */
@@ -212,7 +213,22 @@ assert(companiesHtml.includes('costBasisUsd: 983.2386') && companiesHtml.include
 assert(companiesHtml.includes("qty: 1032, entry: null, costBasisUsd: null, costBasisStatus: 'partial'") && companiesHtml.includes('knownCostBasisUsd: 210.24'), 'YieldRing FRAX partial-cost Registry projection drift');
 assert(companiesHtml.includes("id: 'bitcoin', qty: 0.00205, entry: 78038.78048780488, costBasisUsd: 159.9795") && companiesHtml.includes("'05081966.eth':  ['Bitcoin','Curve','Aero','Frax']"), 'Company #001 BTC Registry projection drift');
 assert(companiesHtml.includes("const finiteUiNumber = v => v !== null") && companiesHtml.includes("costBasisStatus: costComplete ? 'complete' : 'partial'"), 'Registry partial cost-basis null guard missing');
-assert(companiesHtml.includes('data-th-collection-passport-routing') && companiesHtml.includes("window.addEventListener('popstate',scheduleLocationSync)"), 'Collection Passport routing public projection missing');
+const collectionIndexV3 = [
+  'data-th-collection-index-navigation-v3',
+  'window.__TH_COLLECTION_INDEX_NAV_V3__',
+  "card.removeAttribute('href')",
+  'ev.stopImmediatePropagation()',
+  'function waitForIndexReady',
+  "panel.querySelector('.index-head')"
+].every(token => companiesHtml.includes(token));
+const retiredCollectionRouterPresent = [
+  'data-th-collection-passport-routing-style',
+  '<script data-th-collection-passport-routing>',
+  'data-th-collection-uniform-explore',
+  'data-th-collection-index-entry-v2',
+  "card.setAttribute('href','#index')"
+].some(token => companiesHtml.includes(token));
+assert(collectionIndexV3 && !retiredCollectionRouterPresent, 'Collection -> Index v3 public projection missing or retired Collection router survived');
 assert(yieldRingPage.includes('qty: 0.0334') && yieldRingPage.includes('qty: 678') && yieldRingPage.includes('qty: 1032'), 'YieldRing dedicated page projection drift');
 assert(company001Page.includes("id: 'bitcoin', name: 'BTC', proto: 'Bitcoin reserve', qty: 0.00205") && company001Page.includes('BTC is held as reserve capital'), 'Company #001 dedicated page projection drift');
 assert(singulPage.includes('const FIXED_DIEM_VALUE = 150') && singulPage.includes('owner-confirmed current snapshot'), 'Singul DIEM dedicated page projection drift');
