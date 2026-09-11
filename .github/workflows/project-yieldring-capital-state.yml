@@ -1,12 +1,14 @@
+# holding-workflow-definition-proof: intelligence/reliability/yieldring-recovery-workflow-definition-proof.mjs
 name: "Project YieldRing Canonical Capital State"
 
-# Legacy bounded recovery path. Automatic projection is owned by
-# "The Holding Capital · Unified Refresh".
+# Legacy bounded recovery path. Automatic production projection is owned by
+# "The Holding Capital · Unified Refresh". This entrypoint remains available
+# only as a read-only diagnostic replay.
 on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: yieldring-capital-projection-main
@@ -26,7 +28,7 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
-      - name: Project YieldRing public and capital surfaces
+      - name: Replay YieldRing public and capital projection diagnostically
         run: |
           set -euo pipefail
           node --check companies/yieldring-public-capital-projection.mjs
@@ -41,23 +43,12 @@ jobs:
           if(!page.includes("qty: 0.0334")||!page.includes("qty: 678")||!page.includes('2 locks · Maxi relay'))throw new Error('YieldRing dedicated page projection missing');
           if(!bal.includes("qty:0.0334")||!bal.includes("qty:678"))throw new Error('YieldRing General Balance projection missing');
           if(s.authority?.executionAuthority!=='none')throw new Error('YieldRing authority drift');
+          console.log('YieldRing diagnostic projection PASS',{repositoryMutation:false,canonicalWriter:'The Holding Capital · Unified Refresh',executionAuthority:'none'});
           NODE
           git diff --check
-      - name: Publish recovery projection safely
+      - name: Verify diagnostic replay without repository publication
         run: |
           set -euo pipefail
-          git config user.name "The Holding YieldRing Projector"
-          git config user.email "yieldring-projector@theholding.ai"
-          git add companies/index.html yieldring/index.html intelligence/capital-state/general-company-balance-sheet.mjs
-          if git diff --cached --quiet; then echo "YieldRing projection already current."; exit 0; fi
-          git commit -m "data: project YieldRing canonical capital state"
-          for attempt in 1 2 3; do
-            git fetch origin main
-            if ! git rebase origin/main; then git rebase --abort || true; echo "YieldRing projection conflict; fail closed."; exit 1; fi
-            node companies/yieldring-public-capital-projection.mjs
-            git add companies/index.html yieldring/index.html intelligence/capital-state/general-company-balance-sheet.mjs
-            git commit --amend --no-edit
-            if git push origin HEAD:main; then exit 0; fi
-            sleep $((attempt * 2))
-          done
-          exit 1
+          echo 'YieldRing recovery replay is intentionally repository read-only.'
+          git status --short
+          git diff --check
