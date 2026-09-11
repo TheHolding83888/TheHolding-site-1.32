@@ -379,7 +379,8 @@ for(const token of [
   "document.querySelectorAll('nav,.subnav')",
   "history.pushState({thSurface:'index',thEntry:'collection-card'}",
   "overflow-anchor:none",
-  'var PASSPORT_RE=/^#passport-(\\d{3})$/'
+  'var PASSPORT_RE=/^#passport-',
+  'function syncPassportHash'
 ]){
   if(!materialized.includes(token))fail(`Collection navigation v3 physical contract missing: ${token}`);
 }
