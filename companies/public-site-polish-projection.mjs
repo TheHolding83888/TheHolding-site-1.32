@@ -16,8 +16,94 @@ await import('./public-site-polish-projection-core.mjs');
 
 const COMPANIES='companies/index.html';
 const marker='data-th-collection-uniform-explore';
+const focusMarker='data-th-passport-focus-v2';
 const fail=m=>{throw new Error(m);};
 let companies=fs.readFileSync(COMPANIES,'utf8');
+
+function replaceExactOnce(text,oldText,newText,label){
+  if(text.includes(newText))return text;
+  const count=text.split(oldText).length-1;
+  if(count!==1)fail(`${label}: expected exactly one old projection, found ${count}`);
+  return text.replace(oldText,newText);
+}
+
+// Passport viewport contract. Collection cards should open the exact company,
+// not merely the top of the Index. After the existing disclosure finishes its
+// layout transition, place the company row in a stable upper-third focus zone
+// so the Passport itself is immediately readable on desktop and mobile.
+if(!companies.includes(focusMarker)){
+  companies=replaceExactOnce(companies,
+`    function scrollRow(row){
+        if (!row) return;
+        var offset = window.innerWidth < 760 ? 72 : 104;
+        var top = row.getBoundingClientRect().top + window.pageYOffset - offset;
+        window.scrollTo({top:Math.max(0,top),behavior:(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)?'auto':'smooth'});
+    }`,
+`    var PASSPORT_FOCUS_MARKER='${focusMarker}';
+    function passportFocusOffset(){
+        return Math.max(84,Math.min(Math.round(window.innerHeight*0.20),170));
+    }
+    function focusPassport(block,anchor){
+        if (!block) return;
+        var reduce=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+        var started=performance.now();
+        var lastHeight=-1;
+        var stableFrames=0;
+        (function settle(){
+            if (!block.isConnected) return;
+            var height=block.getBoundingClientRect().height;
+            stableFrames=Math.abs(height-lastHeight)<1?stableFrames+1:0;
+            lastHeight=height;
+            if (stableFrames<3&&performance.now()-started<650){
+                requestAnimationFrame(settle);
+                return;
+            }
+            var target=anchor&&anchor.isConnected?anchor:block;
+            var rect=target.getBoundingClientRect();
+            var top=window.pageYOffset+rect.top-passportFocusOffset();
+            var maxTop=Math.max(0,document.documentElement.scrollHeight-window.innerHeight);
+            window.scrollTo({top:Math.min(Math.max(0,top),maxTop),behavior:reduce?'auto':'smooth'});
+        })();
+    }
+    function scrollRow(row){
+        if (!row) return;
+        focusPassport(row.closest('.ib-item')||row,row);
+    }`,
+  'Companies Passport contextual focus helper');
+
+  companies=replaceExactOnce(companies,
+`            if (row && !item.classList.contains('open')) row.click();
+            else scrollRow(row);
+            if (opts && opts.writeHash) writePassportHash(reg,!!opts.pushHistory);`,
+`            if (row && !item.classList.contains('open')) row.click();
+            focusPassport(item,row);
+            if (opts && opts.writeHash) writePassportHash(reg,!!opts.pushHistory);`,
+  'Companies general Passport post-open focus');
+
+  companies=replaceExactOnce(companies,
+`            if (passport && typeof window.stablePassportSet === 'function') {
+                window.stablePassportSet(true,true);
+                if (opts && opts.writeHash) writePassportHash(reg,!!opts.pushHistory);
+                return;
+            }`,
+`            if (passport && typeof window.stablePassportSet === 'function') {
+                window.stablePassportSet(true,true);
+                focusPassport(passport,passport);
+                if (opts && opts.writeHash) writePassportHash(reg,!!opts.pushHistory);
+                return;
+            }`,
+  'Companies Stable Passport post-open focus');
+}
+
+for(const token of [
+  focusMarker,
+  'function focusPassport(block,anchor)',
+  'stableFrames<3&&performance.now()-started<650',
+  'focusPassport(item,row);',
+  'focusPassport(passport,passport);'
+]){
+  if(!companies.includes(token))fail(`Collection Passport focus contract missing: ${token}`);
+}
 
 if(!companies.includes(marker)){
   const addon=`
@@ -148,12 +234,16 @@ for(const token of [
 fs.writeFileSync(COMPANIES,companies);
 
 // Production-proof boundary: the projector is not considered successful until
-// the file that is actually deployed contains both the Passport router and the
-// owner-requested single-action Collection normalizer. This catches a green
-// source change that failed to materialize into the public artifact.
+// the file that is actually deployed contains the Passport router, the
+// contextual focus contract and the owner-requested single-action Collection
+// normalizer. This catches a green source change that failed to materialize into
+// the public artifact.
 const materialized=fs.readFileSync(COMPANIES,'utf8');
 for(const token of [
   'data-th-collection-passport-routing',
+  focusMarker,
+  'function focusPassport(block,anchor)',
+  'focusPassport(item,row);',
   marker,
   "card.setAttribute('href','#passport-' + reg)",
   "footer.className='cc-extlink cc-passport-action'",
@@ -167,6 +257,8 @@ console.log('Collection uniform Explore Company projection PASS',{
   wholeCardPassportTarget:true,
   externalCardTargetsRemoved:true,
   dynamicCompanyCardsObserved:true,
+  contextualPassportFocus:true,
+  focusAfterDisclosureSettles:true,
   physicalArtifactVerified:true,
   passportRouterReused:true,
   executionAuthority:'none'
