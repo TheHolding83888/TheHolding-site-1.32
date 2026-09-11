@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
-import { completePerformanceEvidence, renderCompanyBookBlock, replaceCompanyBookBlock, validateCompleteBasis } from './company-capital-state-contract.mjs';
+import { completePerformanceEvidence, extractCompanyBookBlock, renderCompanyBookBlock, replaceCompanyBookBlock, validateCompleteBasis } from './company-capital-state-contract.mjs';
 
 const STATE='companies/yieldring-canonical-state.json';
 const INDEX='companies/index.html';
@@ -46,12 +46,13 @@ if(page.includes('api.coingecko.com'))fail('YieldRing dedicated page still perfo
 if(!page.includes('/intelligence/market-data/public-capital-state.json'))fail('YieldRing dedicated page canonical market runtime missing');
 if(!page.includes('2 locks · Maxi relay'))fail('YieldRing dedicated veAERO relay label missing');
 
-if(!html.includes(rendered))fail('YieldRing canonical Company Book block did not materialize exactly');
+const activeBlock=extractCompanyBookBlock(html,'YieldRing.eth');
+if(activeBlock!==rendered)fail('YieldRing canonical Company Book block did not materialize exactly inside COMPANY_BOOK');
 for(const row of rows){
   const basisToken=`costBasisUsd: ${row.costBasisUsd}`;
-  if(!rendered.includes(basisToken))fail(`YieldRing canonical Company Book basis missing for ${row.assetId}`);
+  if(!activeBlock.includes(basisToken))fail(`YieldRing active Company Book basis missing for ${row.assetId}`);
 }
-if(rendered.includes('knownCostBasisUsd')||rendered.includes("costBasisStatus: 'partial'"))fail('YieldRing active Company Book remained partial after canonical projection');
+if(activeBlock.includes('knownCostBasisUsd')||activeBlock.includes("costBasisStatus: 'partial'"))fail('YieldRing active Company Book remained partial after canonical projection');
 
 console.log('YieldRing public/capital projection PASS',{
   positions:rows.length,
@@ -62,6 +63,7 @@ console.log('YieldRing public/capital projection PASS',{
   evidenceSnapshotPerformancePct:snapshot.pct,
   onchainReconciliationStatus:state.wallet.onchainReconciliationStatus,
   livePerformance:'dynamic-current-canonical-market-value-vs-complete-historical-cost-basis',
+  activeCompanyBookScoped:true,
   relayMode:state.aerodromeRelay.mode,
   executionAuthority:'none'
 });
