@@ -233,6 +233,10 @@ html=replaceOnce(html,
    over the same INDEX_STATE handoff. */
 html=replaceOnce(html,
 `    ];
+    INDEX_STATE.forEach(c => {
+        const fallback = Number.isFinite(Number(c.val)) ? Number(c.val) : 0;
+        c.indexCapitalValue = publicCompanyNetworkContribution(c.reg, fallback);
+    });
     syncCompanyAprDisplays(idxLang());`,
 `    ];
     const PERFORMANCE_STATE_BY_REGISTRY = new Map([
