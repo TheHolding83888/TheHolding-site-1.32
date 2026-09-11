@@ -23,6 +23,11 @@ assert.match(workflow,/- "Update Company Rewards"/,'Rewards -> Unified Capital f
 assert.match(workflow,/- "The Holding Market Data · Shared Refresh"/,'Market Data -> Unified Capital handoff missing');
 assert.match(workflow,/github\.event\.workflow_run\.conclusion == 'success' && github\.event\.workflow_run\.head_branch == 'main'/,'workflow_run success/main gate missing');
 
+// Pure Presentation source changes no longer wake the production Capital writer.
+const pushBlock=workflow.slice(workflow.indexOf('  push:'),workflow.indexOf('\n\npermissions:'));
+assert.ok(pushBlock.length>0,'Unified Capital push block missing');
+assert.doesNotMatch(pushBlock,/public-site-polish-(?:projection|materializer|projection-core)\.mjs/,'pure Presentation source still wakes Unified Capital');
+
 // Cheap Market Data admission remains ahead of the heavy capital path.
 assert.match(workflow,/^  admission:\s*$/m,'Unified Capital lightweight admission job missing');
 assert.match(workflow,/upstream == 'The Holding Market Data · Shared Refresh'/,'Market Data-specific handoff admission missing');
@@ -64,8 +69,8 @@ assert.match(orchestrator,/observationPersistence === 'claimed-aware-derived-cac
 assert.match(orchestrator,/voteMarketState\?\.semantics\?\.sourceOfTruth === false/,'VoteMarket derived cache source-of-truth guard missing');
 assert.match(orchestrator,/voteMarketState\?\.semantics\?\.executionAuthority === 'none'/,'VoteMarket execution boundary missing');
 
-// Economic public projections may update public surfaces, but they cannot own
-// pure Presentation polish through import side effects.
+// Economic public projections may update shared public surfaces, but they cannot
+// own pure Presentation polish through import side effects.
 assert.match(ownerProjection,/await import\('\.\/public-page-market-runtime-projection\.mjs'\)/,'owner projection no longer chains canonical page market runtime');
 assert.match(ownerProjection,/await import\('\.\/public-site-polish-projection\.mjs'\)/,'owner projection compatibility import missing');
 assert.match(sitePolishProjection,/export async function materializePublicSitePolish\(\)/,'explicit public-site materialization function missing');
@@ -74,15 +79,24 @@ assert.match(sitePolishProjection,/await import\('\.\/public-site-polish-materia
 assert.doesNotMatch(sitePolishProjection,/await import\('\.\/public-site-polish-projection-core\.mjs'\)/,'public-site coordinator regained hidden core side effects');
 assert.match(sitePolishMaterializer,/await import\('\.\/public-site-polish-projection-core\.mjs'\)/,'materializer no longer delegates shared polish to core');
 
-// Presentation implementation remains bounded and wallet-free, but its exact
-// homepage/navigation/report output is not a Capital-orchestrator obligation.
+// Pure Presentation artifacts are not Capital writer surfaces anymore.
+const publishBlock=workflow.slice(workflow.indexOf('- name: Publish one coherent capital snapshot safely'));
+assert.ok(publishBlock.length>0,'Capital publish block missing');
+assert.doesNotMatch(publishBlock,/\n\s+index\.html\s*\\/,'homepage remained in Capital writer surface');
+assert.doesNotMatch(publishBlock,/yield-reports\/index\.html/,'Yield Reports remained in Capital writer surface');
+for(const surface of ['companies/index.html','05081966/index.html','yieldring/index.html','singul/index.html','companies/productivity-data.json','intelligence/capital-state/capital-state.json','intelligence/market-data/public-capital-state.json']){
+  assert.ok(publishBlock.includes(surface),`required Capital-owned surface missing from writer: ${surface}`);
+}
+
+// Presentation implementation remains bounded and wallet-free; Capital only
+// verifies that its own projections do not damage the already-materialized UI.
 assert.match(sitePolishCore,/data-th-fund-pyramid-links/,'fund pyramid presentation contract missing');
 assert.match(sitePolishCore,/The Holding · Defitea mobile cash-flow polish/,'Defitea mobile report presentation contract missing');
 assert.match(marketRuntimeProjection,/company001DirectBrowserCoinGecko:false/,'Company #001 direct-browser external pricing guard missing');
 assert.match(marketRuntimeProjection,/singulDuplicateRuntime:false/,'Singul duplicate price runtime retirement proof missing');
+assert.match(workflow,/Capital refresh damaged canonical Collection -> Index v3 state/,'Capital non-damage Presentation guard missing');
 
-// Existing safe writer mechanics remain bounded while the writer-plane split is
-// completed in subsequent atoms.
+// Safe writer mechanics remain bounded on the smaller ownership surface.
 assert.match(workflow,/for attempt in 1 2 3/,'bounded safe-writer retry contract missing');
 assert.match(workflow,/git fetch origin main/,'fresh-main reconciliation missing');
 assert.match(workflow,/git rebase origin\/main/,'safe-writer rebase missing');
@@ -101,6 +115,9 @@ for(const text of [workflow,orchestrator,sitePolishProjection,sitePolishMaterial
 console.log('Unified Capital workflow definition proof PASS',{
   orchestratorSteps:10,
   capitalOwnsPresentationMaterialization:false,
+  presentationSourceWakesCapitalWriter:false,
+  homepageOwnedByCapitalWriter:false,
+  yieldReportsOwnedByCapitalWriter:false,
   presentationEntrypointExplicit:true,
   presentationImportSideEffects:false,
   marketDataConsumerOnly:true,
