@@ -6,11 +6,14 @@
 
 Canonical source state represented here: **2026-09-11T18:48:46.196Z**
 
+> **Checkpoint-branch supplement (2026-09-11 21:22 MSK):** this branch adds a manual architecture handoff for the active `ONE ARTIFACT -> ONE CANONICAL WRITER` cleanup. On resume, re-read live `main` first, then use the manual handoff only as continuity guidance.
+
 ## Minimum recovery packet
 
 1. [THE_HOLDING_MASTER_CONTINUITY_2026-09-11_184847_AUTO_0a8f6adc.md](./THE_HOLDING_MASTER_CONTINUITY_2026-09-11_184847_AUTO_0a8f6adc.md)
-2. [Memory Routing Index v2](./THE_HOLDING_MEMORY_ROUTING_INDEX_v2_2026-08-26.md)
-3. Follow the router: load only the task-specific durable canon/context and live machine-readable evidence needed for the current objective.
+2. [Manual Architecture Writer-Ownership Handoff · 2026-09-11 21:22 MSK](./THE_HOLDING_MASTER_CONTINUITY_2026-09-11_2122_MSK_ARCHITECTURE_WRITER_OWNERSHIP_HANDOFF.md)
+3. [Memory Routing Index v2](./THE_HOLDING_MEMORY_ROUTING_INDEX_v2_2026-08-26.md)
+4. Follow the router: load only the task-specific durable canon/context and live machine-readable evidence needed for the current objective.
 
 Full Owner Collaboration, Build Discipline, legacy routing and README are **cold durable references**, not default chat payload. Their critical invariants are carried here and independently machine-verified.
 
