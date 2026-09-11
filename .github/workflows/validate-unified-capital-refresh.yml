@@ -8,6 +8,7 @@ on:
       - '.github/workflows/validate-unified-capital-refresh.yml'
       - 'intelligence/capital-state/unified-capital-refresh.mjs'
       - 'intelligence/market-data/**'
+      - 'companies/company-capital-state-contract.mjs'
       - 'companies/defitea-canonical-state.json'
       - 'companies/defitea-public-capital-projection.mjs'
       - 'companies/yieldring-canonical-state.json'
@@ -58,6 +59,14 @@ jobs:
           if(!wf.includes('companies/votemarket-reference-state.json'))throw new Error('VoteMarket persistence cache writer missing');
           console.log('Market Data writer ownership boundary PASS');
           NODE
+
+      - name: Syntax-check canonical company capital contract
+        run: |
+          node --check companies/company-capital-state-contract.mjs
+          node --check companies/defitea-public-capital-projection.mjs
+          node --check companies/yieldring-public-capital-projection.mjs
+          node --check intelligence/capital-state/general-company-balance-sheet.mjs
+          node --check intelligence/capital-state/unified-capital-refresh.mjs
 
       - name: Install Productivity dependencies
         working-directory: productivity
@@ -111,6 +120,9 @@ jobs:
           const c=JSON.parse(fs.readFileSync('intelligence/capital-state/capital-state.json','utf8'));
           const m=JSON.parse(fs.readFileSync('intelligence/market-data/market-data.json','utf8'));
           const pub=JSON.parse(fs.readFileSync('intelligence/market-data/public-capital-state.json','utf8'));
+          const general=JSON.parse(fs.readFileSync('intelligence/capital-state/general-company-balance-sheet.json','utf8'));
+          const defitea=JSON.parse(fs.readFileSync('companies/defitea-canonical-state.json','utf8'));
+          const yieldring=JSON.parse(fs.readFileSync('companies/yieldring-canonical-state.json','utf8'));
           const html=fs.readFileSync('companies/index.html','utf8');
           const d=p.companies?.['defitea.eth'];
           const da=(d?.breakdown||[]).find(x=>x.engineId==='aerodrome_veaero'||x.principalId==='aerodrome-finance');
@@ -120,8 +132,13 @@ jobs:
           const dc=(c.companies||[]).find(x=>x.registry==='004');
           const dca=(dc?.measuredPositions||[]).find(x=>x.assetId==='aerodrome-finance');
           const dcf=(dc?.measuredPositions||[]).find(x=>x.assetId==='fxn-token');
-          if(!d||Number(da?.units)!==2632||Number(df?.units)!==64.81)throw new Error('Defitea Productivity mismatch');
-          if(!dc||Number(dca?.units)!==2632||Number(dcf?.units)!==64.81)throw new Error('Defitea Capital State mismatch');
+          const dg=(general.companies||[]).find(x=>x.registry==='004');
+          const yg=(general.companies||[]).find(x=>x.registry==='002');
+          if(!d||Number(da?.units)!==2632.61||Number(df?.units)!==64.81)throw new Error('Defitea Productivity mismatch');
+          if(!dc||Number(dca?.units)!==2632.61||Number(dcf?.units)!==64.81)throw new Error('Defitea Capital State mismatch');
+          if(defitea.costBasis?.status!=='complete'||Number(defitea.costBasis?.totalUsd)!==9724.36||dg?.costBasisStatus!=='complete')throw new Error('Defitea complete historical basis missing');
+          if(yieldring.portfolioCostBasis?.status!=='complete'||Number(yieldring.portfolioCostBasis?.totalUsd)!==2984.6||Number(yieldring.capital?.frax?.costBasisUsd)!==279.57||yg?.costBasisStatus!=='complete')throw new Error('YieldRing complete historical basis missing');
+          if(yieldring.wallet?.onchainReconciliationStatus!=='pending-independent-reproduction')throw new Error('YieldRing provenance was silently upgraded');
           if(vm?.capitalDoubleCount!==false||vm?.idempotent!==true||vm?.earnedIncomeAuthority!==false||vm?.factualIncomeAuthority!==false||vm?.executionAuthority!=='none')throw new Error('VoteMarket safety boundary missing');
           if(vm?.claimedPeriodPersistencePending!==false||vm?.observationPersistence!=='claimed-aware-derived-cache')throw new Error('VoteMarket claimed-period persistence contract missing');
           if(vmState?.semantics?.sourceOfTruth!==false||vmState?.semantics?.factualIncomeAuthority!==false||vmState?.semantics?.executionAuthority!=='none')throw new Error('VoteMarket persistence cache authority drift');
@@ -129,11 +146,10 @@ jobs:
             if(!row?.incomeChannels||row.incomeChannels.capitalAccounting!=='principal-counted-once'||row.incomeChannels.capitalDoubleCount!==false)throw new Error(label+' VoteMarket hierarchy missing');
             if(row.incomeChannels.factualIncomeAuthority!==false||row.incomeChannels.earnedIncomeAuthority!==false)throw new Error(label+' VoteMarket factual authority drift');
           }
-          if(!html.includes('costBasisUsd: 1121.3')||!html.includes('qty: 192, entry: 0.42'))throw new Error('Defitea AERO lot basis missing');
-          if(!html.includes('costBasisUsd: 983.2386')||!html.includes('qty: 5, entry: 16.5'))throw new Error('Defitea FXN lot basis missing');
+          if(!html.includes('costBasisUsd: 1038.45')||!html.includes('costBasisUsd: 1777.44')||!html.includes('costBasisUsd: 1713.55'))throw new Error('Defitea complete cost basis missing from public Company Book');
+          if(!html.includes('costBasisUsd: 279.57')||!html.includes('costBasisUsd: 2123.11')||html.includes('knownCostBasisUsd: 210.24'))throw new Error('YieldRing complete cost basis missing or stale partial basis survived');
           if(!html.includes('const publicCompanyTvl = (key, fallback) =>')||!html.includes('canonicalNetworkTvl'))throw new Error('Companies Public Capital binding missing');
-          if(!html.includes('const PERFORMANCE_STATE_BY_REGISTRY = new Map([')||!html.includes('c.partialPct = f.partialPct;')||!html.includes('c.performanceDisplayStatus = f.performanceDisplayStatus;'))throw new Error('Passport partial Performance state propagation missing');
-          if(!html.includes('knownCostBasisUsd: 1707.3408')||!html.includes('knownCostBasisUsd: 210.24'))throw new Error('Defitea/YieldRing partial known-basis evidence missing');
+          if(!html.includes('const PERFORMANCE_STATE_BY_REGISTRY = new Map([')||!html.includes('c.partialPct = f.partialPct;')||!html.includes('c.performanceDisplayStatus = f.performanceDisplayStatus;'))throw new Error('Passport Performance state propagation missing');
           const y=p.companies?.['YieldRing.eth'];
           const pa=(y?.breakdown||[]).find(x=>x.engineId==='aerodrome_veaero'||x.principalId==='aerodrome-finance');
           const yc=(c.companies||[]).find(x=>x.registry==='002');
@@ -147,6 +163,6 @@ jobs:
           if(m.validationFixture!==true||m.semantics?.externalRequestCount!==0||m.semantics?.browserExternalPriceRequestsAllowed!==false)throw new Error('Zero-request CI Market Data contract drift');
           if(!Number.isFinite(Number(pub.funds?.defitea?.tvlUsd))||!Number.isFinite(Number(pub.funds?.defitea?.referenceAprPct)))throw new Error('Defitea Public Capital unavailable');
           if(!Number.isFinite(Number(pub.totals?.fundEcosystemTvlUsd))||!Number.isFinite(Number(pub.totals?.companyNetworkTvlUsd)))throw new Error('Public Capital totals unavailable');
-          console.log('Unified Capital Refresh E2E PASS',{generatedAt:p.generatedAt,marketFixture:true,externalPriceRequests:0,defiteaApr:d.aprLatest,defiteaTvl:pub.funds.defitea.tvlUsd,defiteaAero:dca.units,defiteaFxn:dcf.units,voteMarketMeasuredReferenceCompanyCount:vm.measuredReferenceCompanyCount,voteMarketClaimPersistence:true,veCrvVoteMarketStatus:dcrv?.incomeChannels?.votemarket?.status||null,veFxnVoteMarketStatus:df?.incomeChannels?.votemarket?.status||null,yieldRingApr:y.aprLatest,networkTvlUsd:pub.totals.companyNetworkTvlUsd,fundEcosystemTvlUsd:pub.totals.fundEcosystemTvlUsd});
+          console.log('Unified Capital Refresh E2E PASS',{generatedAt:p.generatedAt,marketFixture:true,externalPriceRequests:0,defiteaApr:d.aprLatest,defiteaTvl:pub.funds.defitea.tvlUsd,defiteaAero:dca.units,defiteaCostBasisUsd:defitea.costBasis.totalUsd,voteMarketMeasuredReferenceCompanyCount:vm.measuredReferenceCompanyCount,voteMarketClaimPersistence:true,veCrvVoteMarketStatus:dcrv?.incomeChannels?.votemarket?.status||null,veFxnVoteMarketStatus:df?.incomeChannels?.votemarket?.status||null,yieldRingApr:y.aprLatest,yieldRingCostBasisUsd:yieldring.portfolioCostBasis.totalUsd,networkTvlUsd:pub.totals.companyNetworkTvlUsd,fundEcosystemTvlUsd:pub.totals.fundEcosystemTvlUsd});
           NODE
           git diff --check

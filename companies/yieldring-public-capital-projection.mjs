@@ -1,164 +1,66 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
-import crypto from 'node:crypto';
+import { completePerformanceEvidence, renderCompanyBookBlock, replaceCompanyBookBlock, validateCompleteBasis } from './company-capital-state-contract.mjs';
 
 const STATE='companies/yieldring-canonical-state.json';
 const INDEX='companies/index.html';
 const PAGE='yieldring/index.html';
-const BALANCE='intelligence/capital-state/general-company-balance-sheet.mjs';
 const state=JSON.parse(fs.readFileSync(STATE,'utf8'));
 const fail=m=>{throw new Error(m);};
-if(state.version!=='0.1-yieldring-canonical-state')fail('unexpected YieldRing state version');
 
-const btc=state.capital.bitcoin;
-const aero=state.capital.aerodrome;
-const frax=state.capital.frax;
-if(Number(btc.quantity)!==0.0334||Number(btc.costBasisUsd)!==2121.88)fail('YieldRing BTC canonical contract drift');
-if(Number(aero.quantity)!==678||Number(aero.costBasisUsd)!==274.464)fail('YieldRing AERO canonical contract drift');
-if(Number(frax?.quantity)!==1032||frax?.costBasisStatus!=='partial'||frax?.costBasisUsd!==null||Number(frax?.knownCostBasisUsd)!==210.24)fail('YieldRing FRAX canonical/UNKNOWN cost-basis contract drift');
+if(state.version!=='0.2-yieldring-canonical-state'||state.company!=='YieldRing.eth'||state.registry!=='002')fail('unexpected YieldRing canonical state');
+if(state.authority?.executionAuthority!=='none')fail('YieldRing authority drift');
+if(state.wallet?.address!=='0x90815314fB9e7F015AB5845572FE5BcC0Ba14669')fail('YieldRing wallet identity drift');
+if(state.wallet?.onchainReconciliationStatus!=='pending-independent-reproduction')fail('YieldRing onchain evidence must not be silently promoted');
 
-function replaceOnce(text,oldText,newText,label){
-  if(text.includes(newText))return text;
-  const count=text.split(oldText).length-1;
-  if(count!==1)fail(`${label}: expected exactly one old projection, found ${count}`);
-  return text.replace(oldText,() => newText);
-}
-function gitBlobSha(text){
-  const b=Buffer.from(text);
-  return crypto.createHash('sha1').update(Buffer.from(`blob ${b.length}\0`)).update(b).digest('hex');
-}
+const positions=Object.values(state.capital||{});
+validateCompleteBasis(positions,{company:'YieldRing.eth',expectedCount:4,expectedTotalUsd:state.portfolioCostBasis?.totalUsd});
+if(state.portfolioCostBasis?.status!=='complete'||Number(state.portfolioCostBasis?.coveredPositionCount)!==4||Number(state.portfolioCostBasis?.totalPositionCount)!==4)fail('YieldRing portfolio cost basis is not complete');
+const snapshot=completePerformanceEvidence(state.evidenceSnapshot,state.portfolioCostBasis.totalUsd,{label:'YieldRing screenshot evidence'});
+const frax=state.capital?.frax;
+if(Number(frax?.quantity)!==1032||Number(frax?.costBasisUsd)!==279.57||frax?.costBasisStatus!=='complete')fail('YieldRing complete FRAX acquisition basis drift');
+
+const rows=positions.map(position=>({
+  assetId:position.assetId,
+  quantity:Number(position.quantity),
+  entryPriceUsd:null,
+  costBasisUsd:Number(position.costBasisUsd),
+  evidenceStatus:position.evidenceStatus,
+  ...(position.assetId==='aerodrome-finance'?{relay:{
+    mode:state.aerodromeRelay.mode,
+    managerId:state.aerodromeRelay.managerId,
+    managerAddress:state.aerodromeRelay.managerAddress,
+    expectedUnderlyingLockCount:state.aerodromeRelay.expectedUnderlyingLockCount,
+    evidenceStatus:state.aerodromeRelay.evidenceStatus
+  }}:{})
+}));
 
 let html=fs.readFileSync(INDEX,'utf8');
-const oldBook=`    'YieldRing.eth': [\n        { id: 'bitcoin', qty: 0.0334, entry: 63442, costBasisUsd: 2121.88, acquisition: 'mixed', acquisitionLots: [\n            { qty: 0.03, entry: 63442, costBasisUsd: 1903.26, evidenceStatus: 'established' },\n            { qty: 0.0034, entry: 64300, costBasisUsd: 218.62, evidenceStatus: 'owner-provided' }\n        ] },\n        { id: 'aerodrome-finance', qty: 678, entry: 0.4068, costBasisUsd: 274.464, acquisition: 'mixed', acquisitionLots: [\n            { qty: 480, entry: 0.4068, costBasisUsd: 195.264, evidenceStatus: 'established' },\n            { qty: 198, entry: 0.4, costBasisUsd: 79.2, evidenceStatus: 'owner-provided' }\n        ], relay: { mode: 'veAERO Maxi', managerId: '10298', managerAddress: '0xc9814f18a8751214f719de15c54d01b3d78ef14f', expectedUnderlyingLockCount: 2, evidenceStatus: 'owner-provided-not-yet-independently-reproduced' } },\n        { id: 'convex-finance', qty: 240, entry: 1.28 },\n        { id: 'frax-share', qty: 800, entry: 0.2628 }\n    ],`;
-const newBook=`    'YieldRing.eth': [\n        { id: 'bitcoin', qty: 0.0334, entry: 63442, costBasisUsd: 2121.88, acquisition: 'mixed', acquisitionLots: [\n            { qty: 0.03, entry: 63442, costBasisUsd: 1903.26, evidenceStatus: 'established' },\n            { qty: 0.0034, entry: 64300, costBasisUsd: 218.62, evidenceStatus: 'owner-provided' }\n        ] },\n        { id: 'aerodrome-finance', qty: 678, entry: 0.4068, costBasisUsd: 274.464, acquisition: 'mixed', acquisitionLots: [\n            { qty: 480, entry: 0.4068, costBasisUsd: 195.264, evidenceStatus: 'established' },\n            { qty: 198, entry: 0.4, costBasisUsd: 79.2, evidenceStatus: 'owner-provided' }\n        ], relay: { mode: 'veAERO Maxi', managerId: '10298', managerAddress: '0xc9814f18a8751214f719de15c54d01b3d78ef14f', expectedUnderlyingLockCount: 2, evidenceStatus: 'owner-provided-not-yet-independently-reproduced' } },\n        { id: 'convex-finance', qty: 240, entry: 1.28 },\n        { id: 'frax-share', qty: 1032, entry: null, costBasisUsd: null, costBasisStatus: 'partial', knownCostBasisUsd: 210.24, acquisition: 'mixed', acquisitionLots: [\n            { qty: 800, entry: 0.2628, costBasisUsd: 210.24, evidenceStatus: 'established' },\n            { qty: 232, entry: null, costBasisUsd: null, evidenceStatus: 'owner-provided-current' }\n        ] }\n    ],`;
-html=replaceOnce(html,oldBook,newBook,'companies/index.html YieldRing Company Book');
-
-const oldBookFigures=`function bookFigures(nm, prices) {\n    const pos = COMPANY_BOOK[nm] || [];\n    let value = 0, cost = 0;\n    pos.forEach(p => {\n        if (p.productivityOnly) return;\n        const price = (p.fixed !== undefined) ? p.fixed : (prices[p.id] || 0);\n        value += p.qty * price;\n        const explicitCost = p.costBasisUsd !== null && p.costBasisUsd !== undefined && p.costBasisUsd !== ''\n            && Number.isFinite(Number(p.costBasisUsd)) ? Number(p.costBasisUsd) : null;\n        cost += explicitCost !== null ? explicitCost : p.qty * p.entry;\n    });\n    return { value: value, cost: cost, pnl: value - cost, pct: cost > 0 ? (value / cost - 1) * 100 : 0 };\n}\n\nconst fmtMoney  = v => '$' + Math.round(v).toLocaleString('en-US');\nconst fmtSigned = v => (v >= 0 ? '+' : '−') + '$' + Math.abs(Math.round(v)).toLocaleString('en-US');\nconst fmtPct    = v => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(1) + '%';`;
-const newBookFigures=`function bookFigures(nm, prices) {\n    const pos = COMPANY_BOOK[nm] || [];\n    let value = 0, knownCost = 0, costComplete = true;\n    pos.forEach(p => {\n        if (p.productivityOnly) return;\n        const price = (p.fixed !== undefined) ? p.fixed : (prices[p.id] || 0);\n        value += p.qty * price;\n        const explicitCost = p.costBasisUsd !== null && p.costBasisUsd !== undefined && p.costBasisUsd !== ''\n            && Number.isFinite(Number(p.costBasisUsd)) ? Number(p.costBasisUsd) : null;\n        const entry = p.entry !== null && p.entry !== undefined && p.entry !== '' && Number.isFinite(Number(p.entry))\n            ? Number(p.entry) : null;\n        if (explicitCost !== null) knownCost += explicitCost;\n        else if (entry !== null) knownCost += p.qty * entry;\n        else {\n            costComplete = false;\n            if (p.knownCostBasisUsd !== null && p.knownCostBasisUsd !== undefined && p.knownCostBasisUsd !== '' && Number.isFinite(Number(p.knownCostBasisUsd))) knownCost += Number(p.knownCostBasisUsd);\n        }\n    });\n    const cost = costComplete ? knownCost : null;\n    return { value: value, cost: cost, knownCostBasisUsd: knownCost, costBasisStatus: costComplete ? 'complete' : 'partial', pnl: costComplete ? value - knownCost : null, pct: costComplete && knownCost > 0 ? (value / knownCost - 1) * 100 : null };\n}\n\nconst finiteUiNumber = v => v !== null && v !== undefined && v !== '' && Number.isFinite(Number(v));\nconst fmtMoney  = v => finiteUiNumber(v) ? '$' + Math.round(Number(v)).toLocaleString('en-US') : '—';\nconst fmtSigned = v => finiteUiNumber(v) ? (Number(v) >= 0 ? '+' : '−') + '$' + Math.abs(Math.round(Number(v))).toLocaleString('en-US') : '—';\nconst fmtPct    = v => finiteUiNumber(v) ? (Number(v) >= 0 ? '+' : '−') + Math.abs(Number(v)).toFixed(1) + '%' : '—';`;
-const partialKnownBasisPerformanceMarker="performanceDisplayStatus: costComplete ? 'complete' : (partialPct !== null ? 'partial-known-basis' : 'unavailable')";
-if(!html.includes(partialKnownBasisPerformanceMarker)){
-  html=replaceOnce(html,oldBookFigures,newBookFigures,'companies/index.html partial cost basis guard');
-}
+const rendered=renderCompanyBookBlock('YieldRing.eth',rows);
+html=replaceCompanyBookBlock(html,'YieldRing.eth',rendered);
 fs.writeFileSync(INDEX,html);
-const indexBlob=gitBlobSha(html);
 
-let page=fs.readFileSync(PAGE,'utf8');
-page=replaceOnce(page,
-`    { id: 'frax-share', name: 'veFRAX', sub: 'Frax · locked', qty: 800 }`,
-`    { id: 'frax-share', name: 'veFRAX', sub: 'Frax · locked', qty: 1032 }`,
-'YieldRing dedicated veFRAX');
-page=replaceOnce(page,
-`    <p class="foot">Value is calculated from live market prices (CoinGecko). All figures are orientations, not a guarantee of return and not financial advice. These assets are volatile; the intended horizon is 3–5+ years.</p>`,
-`    <p class="foot">Value is calculated from The Holding’s canonical market-data snapshot. Market prices are selected onchain-first; external fallback is bounded upstream rather than requested by this page. Figures are not a guarantee of return or financial advice.</p>`,
-'YieldRing dedicated valuation provenance');
-const oldRuntime=`  var CACHE_KEY = 'yieldring_prices_v1';
-  var TTL = 10 * 60 * 1000;
-  function money(n, dec) { return '$' + n.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }); }
-  function render(prices) {
-    var total = 0, reserve = 0, engines = 0, rows = '';
-    ALL.forEach(function (h) { total += (prices[h.id] || 0) * h.qty; });
-    reserve = (prices[BTC.id] || 0) * BTC.qty;
-    engines = total - reserve;
-    ALL.forEach(function (h) {
-      var p = prices[h.id] || 0, v = p * h.qty;
-      var share = total ? Math.round(v / total * 100) : 0;
-      var dec = p >= 1000 ? 0 : (p < 1 ? 3 : 2);
-      rows += '<div class="asset">' +
-        '<div class="aName"><div class="aTitle">' + h.name + '</div><div class="aQty">' + h.sub + ' · ' + h.qty + '</div></div>' +
-        '<div class="aPrice">' + (p ? money(p, dec) : '—') + '</div>' +
-        '<div class="aVal">' + (p ? money(v, 0) : '—') + '</div>' +
-        '<div class="aShare">' + (p ? share + '%' : '—') + '</div></div>';
-    });
-    document.getElementById('assets').innerHTML = rows;
-    document.getElementById('tvl').textContent = total ? money(total, 0) : '—';
-    document.getElementById('reserveVal').textContent = reserve ? money(reserve, 0) : '—';
-    document.getElementById('engineVal').textContent = engines ? money(engines, 0) : '—';
-  }
-  function setUpdated(ts, cached) {
-    var d = new Date(ts), hh = ('0' + d.getHours()).slice(-2), mm = ('0' + d.getMinutes()).slice(-2);
-    document.getElementById('updated').textContent = 'updated ' + hh + ':' + mm + (cached ? ' · cached' : ' · CoinGecko');
-  }
-  function load() {
-    var cached = null;
-    try { cached = JSON.parse(localStorage.getItem(CACHE_KEY)); } catch (e) {}
-    if (cached && cached.prices) { render(cached.prices); setUpdated(cached.ts, true); }
-    if (cached && Date.now() - cached.ts < TTL) return;
-    var ids = ALL.map(function (h) { return h.id; }).join(',');
-    fetch('https://api.coingecko.com/api/v3/simple/price?ids=' + ids + '&vs_currencies=usd')
-      .then(function (r) { return r.json(); })
-      .then(function (data) {
-        var prices = {};
-        ALL.forEach(function (h) { if (data[h.id]) prices[h.id] = data[h.id].usd; });
-        if (!Object.keys(prices).length) return;
-        var payload = { prices: prices, ts: Date.now() };
-        try { localStorage.setItem(CACHE_KEY, JSON.stringify(payload)); } catch (e) {}
-        render(prices); setUpdated(payload.ts, false);
-      })
-      .catch(function () { if (!cached) document.getElementById('updated').textContent = 'market data temporarily unavailable'; });
-  }
-  load();`;
-const newRuntime=`  function money(n, dec) { return '$' + n.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }); }
-  function render(prices) {
-    var total = 0, reserve = 0, engines = 0, rows = '';
-    ALL.forEach(function (h) { total += (prices[h.id] || 0) * h.qty; });
-    reserve = (prices[BTC.id] || 0) * BTC.qty;
-    engines = total - reserve;
-    ALL.forEach(function (h) {
-      var p = prices[h.id] || 0, v = p * h.qty;
-      var share = total ? Math.round(v / total * 100) : 0;
-      var dec = p >= 1000 ? 0 : (p < 1 ? 3 : 2);
-      rows += '<div class="asset">' +
-        '<div class="aName"><div class="aTitle">' + h.name + '</div><div class="aQty">' + h.sub + ' · ' + h.qty + '</div></div>' +
-        '<div class="aPrice">' + (p ? money(p, dec) : '—') + '</div>' +
-        '<div class="aVal">' + (p ? money(v, 0) : '—') + '</div>' +
-        '<div class="aShare">' + (p ? share + '%' : '—') + '</div></div>';
-    });
-    document.getElementById('assets').innerHTML = rows;
-    document.getElementById('tvl').textContent = total ? money(total, 0) : '—';
-    document.getElementById('reserveVal').textContent = reserve ? money(reserve, 0) : '—';
-    document.getElementById('engineVal').textContent = engines ? money(engines, 0) : '—';
-  }
-  function load() {
-    fetch('/intelligence/market-data/public-capital-state.json?t=' + Date.now(), { cache: 'no-store' })
-      .then(function (r) { if (!r.ok) throw new Error('canonical public capital unavailable'); return r.json(); })
-      .then(function (data) {
-        var row = (data.companies || []).find(function (x) { return x && x.registry === '002'; });
-        if (!row) throw new Error('YieldRing canonical company row unavailable');
-        var prices = {};
-        (row.positions || []).forEach(function (p) { if (p && p.assetId && Number.isFinite(Number(p.priceUsd))) prices[p.assetId] = Number(p.priceUsd); });
-        render(prices);
-        var d = new Date(data.generatedAt || Date.now());
-        var hh = ('0' + d.getHours()).slice(-2), mm = ('0' + d.getMinutes()).slice(-2);
-        document.getElementById('updated').textContent = 'updated ' + hh + ':' + mm + ' · canonical onchain-first snapshot';
-      })
-      .catch(function () { document.getElementById('updated').textContent = 'canonical market data temporarily unavailable'; });
-  }
-  load();`;
-page=replaceOnce(page,oldRuntime,newRuntime,'YieldRing dedicated canonical market runtime');
-if(!page.includes('2 locks · Maxi relay'))fail('YieldRing dedicated veAERO relay label missing');
+const page=fs.readFileSync(PAGE,'utf8');
+if(!page.includes("{ id: 'frax-share', name: 'veFRAX', sub: 'Frax · locked', qty: 1032 }"))fail('YieldRing dedicated page current FRAX quantity missing');
 if(page.includes('api.coingecko.com'))fail('YieldRing dedicated page still performs direct browser CoinGecko requests');
-fs.writeFileSync(PAGE,page);
+if(!page.includes('/intelligence/market-data/public-capital-state.json'))fail('YieldRing dedicated page canonical market runtime missing');
+if(!page.includes('2 locks · Maxi relay'))fail('YieldRing dedicated veAERO relay label missing');
 
-let balance=fs.readFileSync(BALANCE,'utf8');
-if(!balance.includes("const YIELD_RING_STATE = 'companies/yieldring-canonical-state.json';"))fail('General Balance no longer binds canonical YieldRing state');
-balance=balance.replace(/const EXPECTED_UI_BLOB_SHA = '[0-9a-f]{40}';/,`const EXPECTED_UI_BLOB_SHA = '${indexBlob}';`);
-fs.writeFileSync(BALANCE,balance);
+for(const row of rows){
+  const basisToken=`costBasisUsd: ${row.costBasisUsd}`;
+  if(!html.includes(basisToken))fail(`YieldRing physical Company Book basis missing for ${row.assetId}`);
+}
+if(html.includes('knownCostBasisUsd: 210.24'))fail('retired YieldRing partial FRAX basis survived physical projection');
 
 console.log('YieldRing public/capital projection PASS',{
-  bitcoinQuantity:btc.quantity,
-  bitcoinCostBasisUsd:btc.costBasisUsd,
-  aeroQuantity:aero.quantity,
-  aeroCostBasisUsd:aero.costBasisUsd,
+  positions:rows.length,
+  totalCostBasisUsd:state.portfolioCostBasis.totalUsd,
   fraxQuantity:frax.quantity,
-  fraxCostBasisStatus:frax.costBasisStatus,
-  fraxKnownCostBasisUsd:frax.knownCostBasisUsd,
-  expectedIndexBlob:indexBlob,
-  dedicatedPageProjected:true,
-  directBrowserCoinGecko:false,
-  canonicalPublicCapitalRuntime:true,
-  partialCostBasisNullGuard:true,
-  partialKnownBasisPerformanceCompatible:true,
+  fraxCostBasisUsd:frax.costBasisUsd,
+  evidenceSnapshotMarketValueUsd:snapshot.market,
+  evidenceSnapshotPerformancePct:snapshot.pct,
+  onchainReconciliationStatus:state.wallet.onchainReconciliationStatus,
+  livePerformance:'dynamic-current-canonical-market-value-vs-complete-historical-cost-basis',
   relayMode:state.aerodromeRelay.mode,
-  expectedUnderlyingLockCount:state.aerodromeRelay.expectedUnderlyingLockCount,
   executionAuthority:'none'
 });
