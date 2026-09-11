@@ -302,7 +302,6 @@ balance=balance.replace(/const EXPECTED_UI_BLOB_SHA = '[0-9a-f]{40}';/,`const EX
 fs.writeFileSync(BALANCE,balance);
 
 await import('./public-page-market-runtime-projection.mjs');
-await import('./public-site-polish-projection.mjs');
 
 console.log('Owner balance site projection PASS',{
   company001BtcQuantity:btc.quantity,
@@ -322,6 +321,6 @@ console.log('Owner balance site projection PASS',{
   partialPerformanceStatePropagated:true,
   indexPerformanceMethodologyUnchanged:true,
   manualSnapshotIsNotOnchainObservation:true,
-  publicSitePolishProjected:true,
+  presentationMaterializationOwnedElsewhere:true,
   executionAuthority:'none'
 });
