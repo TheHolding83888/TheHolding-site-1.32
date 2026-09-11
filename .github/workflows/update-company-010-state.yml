@@ -16,6 +16,7 @@ on:
       - 'onboarding/company-010-gmx-reader.mjs'
       - 'onboarding/company-010-gmx-strategy-overlay.mjs'
       - 'onboarding/company-010-projectx-strategy-overlay.mjs'
+      - 'onboarding/company-010-projectx-reference-apr.mjs'
       - 'onboarding/company-010-reconciliation.mjs'
       - 'onboarding/company-010-stakedao-intelligence.mjs'
       - 'onboarding/company-010-production-baseline.mjs'
@@ -57,6 +58,7 @@ jobs:
           node --check onboarding/company-010-gmx-reader.mjs
           node --check onboarding/company-010-gmx-strategy-overlay.mjs
           node --check onboarding/company-010-projectx-strategy-overlay.mjs
+          node --check onboarding/company-010-projectx-reference-apr.mjs
           node --check onboarding/company-010-reconciliation.mjs
           node --check onboarding/company-010-stakedao-intelligence.mjs
           node --check onboarding/company-010-production-baseline.mjs
@@ -199,17 +201,37 @@ jobs:
           if(d.authority?.executionAuthority!=='none'||d.authority?.transactions!==false) throw new Error('authority drift');
           console.log('Company #010 complete production admission PASS',{totalCapitalUsd:d.capital.totalCapitalUsd,stakeDaoCurrentPositionActive:stakeActive,stakeDaoCurrentPositionUsd:stakeUsd,concentratorUsd:conc.principal.navUsd,cvxCrvUsd:cvx.principal.navUsd,cvxCrvAprPct:cvx.yield.referenceAprPct,cvxCrvClaimableUsd:cvx.claimable.usd,gmxNavUsd:g.totalStrategyNavUsd,projectXNavUsd:px.principal.navUsd,projectXNfts:px.nftCount,fluid:'out-of-scope',performance:d.performance.status});
           NODE
+      - name: Apply canonical Project X observed fee Reference APR
+        run: |
+          set -euo pipefail
+          node onboarding/company-010-projectx-reference-apr.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const s=JSON.parse(fs.readFileSync('companies/company-010-production-state.json','utf8'));
+          const h=JSON.parse(fs.readFileSync('companies/company-010-projectx-rate-history.json','utf8'));
+          const px=s.strategies?.projectX;
+          const prod=(s.productivity?.positions||[]).find(x=>x.id==='projectx-whype-usdc');
+          if(h.version!=='0.1-projectx-rate-history'||h.authority?.executionAuthority!=='none')throw new Error('Project X rate history contract missing');
+          if(!Array.isArray(h.observations)||!h.observations.length)throw new Error('Project X rate observation not recorded');
+          if(px?.yield?.status==='measured'){
+            if(!(Number(px.yield.referenceAprPct)>=0)||prod?.status!=='measured'||Number(prod.referenceAprPct)!==Number(px.yield.referenceAprPct))throw new Error('Project X measured APR promotion mismatch');
+          }else{
+            if(px?.yield?.status!=='warming'||px?.yield?.referenceAprPct!==null||prod?.status!=='warming'||prod?.referenceAprPct!==null)throw new Error('Project X Pending boundary mismatch');
+          }
+          if(s.epistemicBoundary?.projectXFeeTierIsNotApr!==true||s.epistemicBoundary?.projectXReferenceAprUsesObservedFeeGrowth!==true||s.authority?.executionAuthority!=='none')throw new Error('Project X APR epistemic/authority boundary missing');
+          console.log('Project X canonical Reference APR materialization PASS',{status:px.yield.status,referenceAprPct:px.yield.referenceAprPct,windowHours:px.yield.windowHours,observations:h.observations.length,executionAuthority:'none'});
+          NODE
       - name: Fingerprint source contract
         id: fingerprint
         run: |
           set -euo pipefail
-          sha256sum onboarding/company-010-{discovery,resolve,deep-resolve,closure,closure-review,gmx-reader,gmx-strategy-overlay,projectx-strategy-overlay,reconciliation,stakedao-intelligence,production-baseline,production-state,stakedao-overlay,crv-strategy-overlay,convex-cvxcrv-rate-overlay}.mjs | sha256sum | awk '{print "sha="$1}' >> "$GITHUB_OUTPUT"
+          sha256sum onboarding/company-010-{discovery,resolve,deep-resolve,closure,closure-review,gmx-reader,gmx-strategy-overlay,projectx-strategy-overlay,projectx-reference-apr,reconciliation,stakedao-intelligence,production-baseline,production-state,stakedao-overlay,crv-strategy-overlay,convex-cvxcrv-rate-overlay}.mjs | sha256sum | awk '{print "sha="$1}' >> "$GITHUB_OUTPUT"
       - name: Commit production state
         run: |
           set -euo pipefail
           git config user.name "The Holding Company State"
           git config user.email "company-state@theholding.ai"
-          git add companies/company-010-production-state.json companies/company-010-reconciliation.json
+          git add companies/company-010-production-state.json companies/company-010-reconciliation.json companies/company-010-projectx-rate-history.json
           if git diff --cached --quiet; then
             echo "No Company #010 state changes."
             exit 0
@@ -218,12 +240,23 @@ jobs:
           for attempt in 1 2 3; do
             git fetch origin main
             git rebase origin/main
-            AFTER=$(sha256sum onboarding/company-010-{discovery,resolve,deep-resolve,closure,closure-review,gmx-reader,gmx-strategy-overlay,projectx-strategy-overlay,reconciliation,stakedao-intelligence,production-baseline,production-state,stakedao-overlay,crv-strategy-overlay,convex-cvxcrv-rate-overlay}.mjs | sha256sum | awk '{print $1}')
+            AFTER=$(sha256sum onboarding/company-010-{discovery,resolve,deep-resolve,closure,closure-review,gmx-reader,gmx-strategy-overlay,projectx-strategy-overlay,projectx-reference-apr,reconciliation,stakedao-intelligence,production-baseline,production-state,stakedao-overlay,crv-strategy-overlay,convex-cvxcrv-rate-overlay}.mjs | sha256sum | awk '{print $1}')
             if [ "$AFTER" != "${{ steps.fingerprint.outputs.sha }}" ]; then
               echo "Company #010 source contract changed during publication; fresh collection required."
               exit 1
             fi
-            node -e "const fs=require('fs');const d=JSON.parse(fs.readFileSync('companies/company-010-production-state.json','utf8'));const c=d.strategies?.crv?.strategies?.find(x=>x.id==='convex-staked-cvxcrv');if(d.version!=='0.3-company-010-production-state-stakedao-complete'||d.engineVersion!=='0.4-cypher-crv-strategy-intelligence'||d.capital?.totalCapitalComplete!==true||d.strategies?.crv?.version!=='0.1-company-010-crv-strategy-intelligence'||c?.yield?.status!=='measured'||!(Number(c?.yield?.referenceAprPct)>0)||d.strategies?.gmx?.version!=='0.1.1-company-010-gmx-strategy-intelligence-pool-key-fix'||d.strategies?.projectX?.version!=='0.1-company-010-projectx-full-parity'||d.epistemicBoundary?.multiLegResolvedMustPromoteAllEconomicLegs!==true||d.authority?.executionAuthority!=='none')process.exit(1);"
+            node - <<'NODE'
+            const fs=require('fs');
+            const d=JSON.parse(fs.readFileSync('companies/company-010-production-state.json','utf8'));
+            const h=JSON.parse(fs.readFileSync('companies/company-010-projectx-rate-history.json','utf8'));
+            const c=d.strategies?.crv?.strategies?.find(x=>x.id==='convex-staked-cvxcrv');
+            const px=d.strategies?.projectX;
+            const p=(d.productivity?.positions||[]).find(x=>x.id==='projectx-whype-usdc');
+            const baseOk=d.version==='0.3-company-010-production-state-stakedao-complete'&&d.engineVersion==='0.4-cypher-crv-strategy-intelligence'&&d.capital?.totalCapitalComplete===true&&d.strategies?.crv?.version==='0.1-company-010-crv-strategy-intelligence'&&c?.yield?.status==='measured'&&Number(c?.yield?.referenceAprPct)>0&&d.strategies?.gmx?.version==='0.1.1-company-010-gmx-strategy-intelligence-pool-key-fix'&&px?.version==='0.1-company-010-projectx-full-parity'&&d.epistemicBoundary?.multiLegResolvedMustPromoteAllEconomicLegs===true&&d.authority?.executionAuthority==='none';
+            const historyOk=h.version==='0.1-projectx-rate-history'&&h.authority?.executionAuthority==='none'&&Array.isArray(h.observations)&&h.observations.length>0;
+            const aprOk=px?.yield?.status==='measured'?(Number(px.yield.referenceAprPct)>=0&&p?.status==='measured'&&Number(p.referenceAprPct)===Number(px.yield.referenceAprPct)):(px?.yield?.status==='warming'&&px?.yield?.referenceAprPct===null&&p?.status==='warming'&&p?.referenceAprPct===null);
+            if(!baseOk||!historyOk||!aprOk)process.exit(1);
+            NODE
             if git push origin HEAD:main; then exit 0; fi
             sleep $((attempt * 2))
           done

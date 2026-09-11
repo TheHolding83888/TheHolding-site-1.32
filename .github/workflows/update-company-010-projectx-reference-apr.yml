@@ -1,3 +1,4 @@
+# holding-workflow-definition-proof: intelligence/reliability/company-010-state-workflow-definition-proof.mjs
 name: "Update Company #010 · Project X Reference APR"
 
 on:
@@ -15,14 +16,14 @@ on:
       - '.github/workflows/update-company-010-projectx-reference-apr.yml'
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: company-010-projectx-reference-apr
   cancel-in-progress: false
 
 jobs:
-  update:
+  diagnose:
     if: >-
       ${{
         github.event_name != 'workflow_run' ||
@@ -43,7 +44,7 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Measure Project X observed fee Reference APR
+      - name: Replay Project X observed fee Reference APR ephemerally
         run: |
           set -euo pipefail
           node --check onboarding/company-010-projectx-reference-apr.mjs
@@ -62,35 +63,19 @@ jobs:
             if(px?.yield?.status!=='warming'||px?.yield?.referenceAprPct!==null||prod?.status!=='warming'||prod?.referenceAprPct!==null)throw new Error('Project X Pending boundary mismatch');
           }
           if(s.epistemicBoundary?.projectXFeeTierIsNotApr!==true||s.epistemicBoundary?.projectXReferenceAprUsesObservedFeeGrowth!==true||s.authority?.executionAuthority!=='none')throw new Error('Project X APR epistemic/authority boundary missing');
-          console.log('Project X Reference APR state PASS',{status:px.yield.status,referenceAprPct:px.yield.referenceAprPct,windowHours:px.yield.windowHours,observations:h.observations.length});
+          console.log('Project X Reference APR diagnostic PASS',{status:px.yield.status,referenceAprPct:px.yield.referenceAprPct,windowHours:px.yield.windowHours,observations:h.observations.length,repositoryMutationAuthority:false,executionAuthority:'none'});
           NODE
+          git diff --check
 
-      - name: Commit Project X rate state
+      - name: Prove diagnostic cannot publish canonical state
         run: |
           set -euo pipefail
-          git config user.name "The Holding Project X Rate"
-          git config user.email "projectx-rate@theholding.ai"
-          git add companies/company-010-production-state.json companies/company-010-projectx-rate-history.json
-          if git diff --cached --quiet; then
-            echo "No Project X rate changes to commit."
-            exit 0
+          changed="$(git status --short)"
+          echo "$changed"
+          if git diff --quiet -- companies/company-010-production-state.json companies/company-010-projectx-rate-history.json; then
+            echo 'Project X diagnostic produced no local delta.'
+          else
+            echo 'Project X diagnostic produced an ephemeral local replay only; canonical publication belongs to Company #010 state writer.'
           fi
-          git commit -m "data: update Project X observed fee APR"
-          for attempt in 1 2 3; do
-            git fetch origin main
-            if ! git rebase origin/main; then
-              git rebase --abort || true
-              echo "Safe writer guard: rebase conflict; refusing to guess."
-              exit 1
-            fi
-            node onboarding/company-010-projectx-reference-apr.mjs
-            git add companies/company-010-production-state.json companies/company-010-projectx-rate-history.json
-            git commit --amend --no-edit
-            if git push origin HEAD:main; then
-              exit 0
-            fi
-            echo "Safe writer guard: main moved during push; retrying ($attempt/3)..."
-            sleep $((attempt * 2))
-          done
-          echo "Safe writer guard: push failed after 3 attempts."
-          exit 1
+          git checkout -- companies/company-010-production-state.json companies/company-010-projectx-rate-history.json
+          test -z "$(git status --porcelain)"
