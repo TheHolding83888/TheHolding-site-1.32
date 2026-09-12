@@ -6,7 +6,7 @@ import { PROTOCOLS, blockAtOrBefore, decodeRewardClaimAttribution } from './ve33
 const EVIDENCE_FILE=process.env.VE33_DIAGNOSTIC_EVIDENCE_FILE||'./reporting/ve33-accounting-evidence.json';
 const REWARDS_FILE=process.env.REWARDS_DATA_FILE||'./companies/rewards-data.json';
 const LOOKBACK_DAYS=Math.max(1,Math.min(31,Number(process.env.VE33_TRANSIENT_LOOKBACK_DAYS||7)));
-const MAX_LOG_BLOCKS=7_500;
+const MAX_LOG_BLOCKS=Math.max(100,Math.min(1_900,Number(process.env.VE33_TRANSIENT_MAX_LOG_BLOCKS||1_800)));
 const ADDRESS_GROUP_SIZE=48;
 const REQUEST_SPACING_MS=100;
 const CLAIM_IFACE=new Interface(['event ClaimRewards(address indexed from,address indexed reward,uint256 amount)']);
@@ -187,7 +187,7 @@ for(const [protocolKey,cfg] of Object.entries(PROTOCOLS)){
 
   protocolStats[protocolKey]={
     positionCount:positions.length,rewardContractCount:index.size,addressGroupCount:groups.length,
-    fromBlock:Number(since.blockNumber),toBlock:latestBlock,sinceAt:since.blockTimestamp,
+    fromBlock:Number(since.blockNumber),toBlock:latestBlock,sinceAt:since.blockTimestamp,maxLogBlocks:MAX_LOG_BLOCKS,
     queryCount,claimLogCount,provenClaimCount,
     rpcCandidates:candidates.map(x=>{try{return new URL(x.url).hostname;}catch{return'configured-rpc';}})
   };
