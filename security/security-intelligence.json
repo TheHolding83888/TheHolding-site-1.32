@@ -1,7 +1,7 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-12T07:27:43.039Z",
+  "generatedAt": "2026-09-12T07:35:41.649Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
@@ -12,8 +12,8 @@
     "info": 0
   },
   "source": {
-    "filesScanned": 1241,
-    "bytesScanned": 31877175,
+    "filesScanned": 1242,
+    "bytesScanned": 31888839,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Thu, 10 Sep 2026 04:08:54 GMT",
+        "lastModified": "Wed, 09 Sep 2026 20:54:19 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -56,6 +56,22 @@
   },
   "whatChanged": {
     "newFindings": [
+      {
+        "id": "e736a7dd52b112ab1f0b393e9ac785623b85c24ad818f74c80c28bc75bfb95bd",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/verify-accounting-reconciliation-watch.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/verify-accounting-reconciliation-watch.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "0fab47a291cc6872569ffa9ff1b54a7d1fbd45dabbf75782aec6e7abcd5fce67",
+          "currentSha256": "1077b2ff51121ed71f6224a4eee612ca49f8a1da7656bf6d9479e857f7f0a606"
+        }
+      }
+    ],
+    "resolvedFindings": [
       {
         "id": "41bff18309b7d44733c1aa21f941c9d81c67cd9d6ce28c62085750470187535d",
         "severity": "medium",
@@ -70,8 +86,7 @@
           "currentSha256": "0fab47a291cc6872569ffa9ff1b54a7d1fbd45dabbf75782aec6e7abcd5fce67"
         }
       }
-    ],
-    "resolvedFindings": []
+    ]
   },
   "currentFindings": [
     {
@@ -97,7 +112,7 @@
       "evidence": null
     },
     {
-      "id": "41bff18309b7d44733c1aa21f941c9d81c67cd9d6ce28c62085750470187535d",
+      "id": "e736a7dd52b112ab1f0b393e9ac785623b85c24ad818f74c80c28bc75bfb95bd",
       "severity": "medium",
       "category": "critical-surface-change",
       "file": ".github/workflows/verify-accounting-reconciliation-watch.yml",
@@ -106,8 +121,8 @@
       "summary": "Security-sensitive surface changed: .github/workflows/verify-accounting-reconciliation-watch.yml.",
       "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
       "evidence": {
-        "previousSha256": "3094acf741a177ba18df3276d66278c5ee4af338d80f1d4c4bb071f5ec1a8080",
-        "currentSha256": "0fab47a291cc6872569ffa9ff1b54a7d1fbd45dabbf75782aec6e7abcd5fce67"
+        "previousSha256": "0fab47a291cc6872569ffa9ff1b54a7d1fbd45dabbf75782aec6e7abcd5fce67",
+        "currentSha256": "1077b2ff51121ed71f6224a4eee612ca49f8a1da7656bf6d9479e857f7f0a606"
       }
     },
     {
@@ -1096,12 +1111,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "7445d2cd114d7f82def66819038b29973045f1ea0730ddf00f106f7ff9e1f76b",
+    "snapshotHash": "7ed5e670c060635db30c69e233f01f3a1f352b3dc18de9bfd9274e586e05db7f",
     "securityVault": {
-      "runCount": 1008,
+      "runCount": 1009,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/09/2026-09-12T07-27-43-039Z-7445d2cd11.json",
-      "latestRecordHash": "fa0fac6f6e1d4dab63f504a8bf3068b5db88b7d39d7ca376f899631452f45ebc",
+      "latestRecordPath": "security/security-vault/2026/09/2026-09-12T07-35-41-649Z-7ed5e670c0.json",
+      "latestRecordHash": "afbfaed29c79a5a805c752738bc3243b42934ac612fcf27b36cf303dd7ae68e1",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
