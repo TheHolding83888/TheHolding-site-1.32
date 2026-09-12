@@ -1,6 +1,6 @@
 {
   "version": "0.1.1-accounting-reconciliation-watch-null-preserving",
-  "generatedAt": "2026-09-12T15:25:28.105Z",
+  "generatedAt": "2026-09-12T17:45:01.942Z",
   "status": "diagnostic-watch-no-accounting-authority",
   "currentMonth": "2026-09",
   "purpose": "Derived change watch across canonical accounting notices, historical evidence completeness, and non-factual reference reconciliation. It surfaces changes for review without creating income, closing periods, converting UNKNOWN to zero, or treating ordinary tracking-no-event as failure.",
@@ -35,13 +35,13 @@
     "accountingNoticeQueue": {
       "file": "reporting/accounting-notice-queue.json",
       "version": "0.2-accounting-notice-queue-boundary-evidence-pending",
-      "generatedAt": "2026-09-12T15:24:23.892Z",
+      "generatedAt": "2026-09-12T17:14:45.292Z",
       "status": "diagnostic-no-completion-authority"
     },
     "accountingReferenceReconciliation": {
       "file": "reporting/accounting-reference-reconciliation.json",
       "version": "0.2-accounting-reference-reconciliation-cross-month-attribution",
-      "generatedAt": "2026-09-12T15:24:23.973Z",
+      "generatedAt": "2026-09-12T17:14:45.377Z",
       "status": "diagnostic-no-completion-authority"
     },
     "historicalAccountingCompleteness": {
@@ -53,42 +53,49 @@
   },
   "baseline": false,
   "previousSnapshot": {
-    "generatedAt": "2026-09-12T12:10:33.370Z",
-    "semanticFingerprint": "e9c20a8d309ed238ea8352b041fa662aa71e931b208521dd05e296d8d5b2b9f4"
+    "generatedAt": "2026-09-12T15:25:28.105Z",
+    "semanticFingerprint": "6994480f884ce56efd64ee55ec4f07ceb7e82cc6e1b2025c4e998513cf5ba58f"
   },
-  "semanticFingerprint": "6994480f884ce56efd64ee55ec4f07ceb7e82cc6e1b2025c4e998513cf5ba58f",
+  "semanticFingerprint": "67663b8ea4fe954f148aacb28051531f1b2ebb83faf26148f84be9975e41f885",
   "summary": {
     "watchItemCount": 41,
-    "engineeringActionRequiredCount": 2,
+    "engineeringActionRequiredCount": 3,
     "evidencePendingCount": 4,
     "historicalForensicReviewCount": 26,
-    "referenceDiagnosticReviewCount": 9,
+    "referenceDiagnosticReviewCount": 8,
     "closedPeriodUnknownCount": 21,
     "closedPeriodPartialCount": 5,
     "closedPeriodTrackingNoEventCount": 6,
-    "highAttentionReferenceRowCount": 9,
-    "newCount": 2,
+    "highAttentionReferenceRowCount": 8,
+    "newCount": 1,
     "changedCount": 4,
-    "unchangedCount": 35,
+    "unchangedCount": 36,
     "baselineCount": 0,
-    "resolvedCount": 0,
+    "resolvedCount": 1,
     "alertCount": 3,
     "evidenceUpdateCount": 1,
-    "diagnosticUpdateCount": 2
+    "diagnosticUpdateCount": 1
   },
   "alerts": [
-    "historical:Cypher:2026-08:aerodrome_veaero",
     "notice:period-lifecycle-reconciliation:0x5860...83CA8.eth:2026-09:__company_period__",
+    "notice:period-lifecycle-reconciliation:Cypher:2026-09:__company_period__",
     "notice:period-lifecycle-reconciliation:defitea.eth:2026-09:__company_period__"
   ],
   "evidenceUpdates": [
     "notice:period-lifecycle-reconciliation:1milliondollar.eth:2026-09:__company_period__"
   ],
   "diagnosticUpdates": [
-    "reconciliation:company-period:Cypher:2026-08",
     "reconciliation:mechanism-base-reference:defitea.eth:2026-09:fx_vefxn"
   ],
-  "resolved": [],
+  "resolved": [
+    {
+      "id": "reconciliation:company-period:Cypher:2026-09",
+      "priorWatchClass": "reference-diagnostic-review",
+      "priorActionability": "diagnostic-only",
+      "priorFingerprint": "d17cf7f7d6f9446f7afafc49996e4beb9a94dfa83d7846584ecd6bd7dab5381e",
+      "resolutionSemantic": "watch-item-no-longer-present-in-derived-current-state; not accounting-close proof"
+    }
+  ],
   "items": [
     {
       "id": "historical:05081966.eth:2026-08:curve_vecrv",
@@ -499,7 +506,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "9159ce8b4f6eebf43745db883697dc0192c0a4d33a9aac5640f8ddc98a3f282f",
-      "transition": "new"
+      "transition": "unchanged"
     },
     {
       "id": "historical:Cypher:2026-08:concentrator_asdcrv",
@@ -1363,8 +1370,8 @@
         "engineeringActionable": true,
         "parked": false,
         "confirmedUsd": 10.35019882,
-        "estimatedUsd": 37.577953,
-        "deltaUsd": 27.22775418,
+        "estimatedUsd": 37.559382,
+        "deltaUsd": 27.20918318,
         "unresolvedEventCount": 1,
         "unresolvedReasons": [
           "canonical-event-usd-valuation-incomplete"
@@ -1381,8 +1388,8 @@
       "executionAuthority": "none",
       "capitalExecution": false,
       "walletAuthority": false,
-      "fingerprint": "33bf67e31342bb43737f540d03a2fa43487003769ada5c5918f81086da981698",
-      "transition": "new"
+      "fingerprint": "27a45ccbf3770533b56af8d6b655966a13b7f365e7ab4146ba86bdfb8234ac69",
+      "transition": "changed"
     },
     {
       "id": "notice:period-lifecycle-reconciliation:0x5860...83CA8.eth:2026-09:icp_nns",
@@ -1447,8 +1454,8 @@
         "engineeringActionable": false,
         "parked": true,
         "confirmedUsd": 1.53594179,
-        "estimatedUsd": 1.868481,
-        "deltaUsd": 0.33253921,
+        "estimatedUsd": 1.86526,
+        "deltaUsd": 0.32931821,
         "unresolvedEventCount": 1,
         "unresolvedReasons": [
           "period-boundary-evidence-pending-no-exact-month-cut"
@@ -1465,7 +1472,7 @@
       "executionAuthority": "none",
       "capitalExecution": false,
       "walletAuthority": false,
-      "fingerprint": "14cd8db3730233691ed8c2f16a44f1baea6cb0ebf0faea9c1223d3e0d6f949af",
+      "fingerprint": "ecdac5f0f3b11a25847aae82c36b51578538bc71727f461a2d6689a98e829e74",
       "transition": "changed"
     },
     {
@@ -1510,6 +1517,49 @@
       "transition": "unchanged"
     },
     {
+      "id": "notice:period-lifecycle-reconciliation:Cypher:2026-09:__company_period__",
+      "company": "Cypher",
+      "month": "2026-09",
+      "mechanism": "__company_period__",
+      "scope": "company-period",
+      "watchClass": "engineering-action-required",
+      "actionability": "engineering",
+      "source": "accounting-notice-queue",
+      "reasonCodes": [
+        "canonical-notice-engineering-actionable",
+        "period-lifecycle-reconciliation",
+        "unresolved-period-lifecycle-events"
+      ],
+      "detail": {
+        "category": "period-lifecycle-reconciliation",
+        "blocker": "unresolved-period-lifecycle-events",
+        "action": "reconcile-period-boundary-settlement-or-lifecycle-semantics",
+        "trackingState": "partial-observed",
+        "engineeringActionable": true,
+        "parked": false,
+        "confirmedUsd": 4.86694177,
+        "estimatedUsd": 17.846543,
+        "deltaUsd": 12.97960123,
+        "unresolvedEventCount": 1,
+        "unresolvedReasons": [
+          "canonical-event-usd-valuation-incomplete"
+        ],
+        "boundaryEvidencePending": false,
+        "prorationAllowed": false
+      },
+      "sourceOfTruth": false,
+      "factualIncomeAuthority": false,
+      "incomeCreationAuthority": false,
+      "accountingCompletionAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none",
+      "capitalExecution": false,
+      "walletAuthority": false,
+      "fingerprint": "98048aec497cdd359d1e7a6b408ef2159f0c0e79a0554a7b5569e4930193ceb7",
+      "transition": "new"
+    },
+    {
       "id": "notice:period-lifecycle-reconciliation:defitea.eth:2026-09:__company_period__",
       "company": "defitea.eth",
       "month": "2026-09",
@@ -1530,9 +1580,9 @@
         "trackingState": "partial-observed",
         "engineeringActionable": true,
         "parked": false,
-        "confirmedUsd": 31.63356156,
-        "estimatedUsd": 53.620039,
-        "deltaUsd": 21.98647744,
+        "confirmedUsd": 31.64588882,
+        "estimatedUsd": 53.632079,
+        "deltaUsd": 21.98619018,
         "unresolvedEventCount": 1,
         "unresolvedReasons": [
           "canonical-event-usd-valuation-incomplete"
@@ -1549,7 +1599,7 @@
       "executionAuthority": "none",
       "capitalExecution": false,
       "walletAuthority": false,
-      "fingerprint": "f6a462064b9276ab25e894367cc687c0bd2a4f6a356267077d89c0e5138c7f41",
+      "fingerprint": "8753f214eac847c84efc10d71d4ecbfecc48a13e623479d42d14cd648a4c8534",
       "transition": "changed"
     },
     {
@@ -1737,52 +1787,6 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "a983f25e90ebdc3bd7a536fc2bb668267df43f5faceccc9671845c24088e51f7",
-      "transition": "changed"
-    },
-    {
-      "id": "reconciliation:company-period:Cypher:2026-09",
-      "company": "Cypher",
-      "month": "2026-09",
-      "mechanism": null,
-      "scope": "company-period",
-      "watchClass": "reference-diagnostic-review",
-      "actionability": "diagnostic-only",
-      "source": "accounting-reference-reconciliation",
-      "reasonCodes": [
-        "reference-comparator-is-non-factual",
-        "wide-divergence"
-      ],
-      "detail": {
-        "scope": "company-period",
-        "signalBand": "wide-divergence",
-        "attention": "high",
-        "reconciliationStatus": "wide-divergence",
-        "referenceUsd": 17.846543,
-        "confirmedUsd": 4.86694177,
-        "deltaUsd": 12.97960123,
-        "captureRatio": 0.272711,
-        "modelVariancePossible": true,
-        "modelVarianceIsProven": false,
-        "factualPeriodComplete": false,
-        "partialPeriod": true,
-        "parked": false,
-        "engineeringActionable": false,
-        "reasonCodes": [
-          "factual-period-coverage-incomplete",
-          "partial-observation-window",
-          "reference-comparator-is-non-factual"
-        ]
-      },
-      "sourceOfTruth": false,
-      "factualIncomeAuthority": false,
-      "incomeCreationAuthority": false,
-      "accountingCompletionAuthority": false,
-      "monthClosingAuthority": false,
-      "canReplaceUnknown": false,
-      "executionAuthority": "none",
-      "capitalExecution": false,
-      "walletAuthority": false,
-      "fingerprint": "d17cf7f7d6f9446f7afafc49996e4beb9a94dfa83d7846584ecd6bd7dab5381e",
       "transition": "unchanged"
     },
     {
@@ -1992,10 +1996,10 @@
         "signalBand": "wide-divergence",
         "attention": "high",
         "reconciliationStatus": "wide-divergence",
-        "referenceUsd": 11.29578948,
+        "referenceUsd": 11.28621103,
         "confirmedUsd": 3.203909,
-        "deltaUsd": 8.09188048,
-        "captureRatio": 0.283637,
+        "deltaUsd": 8.08230203,
+        "captureRatio": 0.283878,
         "modelVariancePossible": true,
         "modelVarianceIsProven": false,
         "factualPeriodComplete": false,
@@ -2018,7 +2022,7 @@
       "executionAuthority": "none",
       "capitalExecution": false,
       "walletAuthority": false,
-      "fingerprint": "587cb6d2a2eae69ade5e2ed311b022a793931c756f8160cebf847a1fee49846b",
+      "fingerprint": "3c39f3288e8d5351beab2351dec709f239a2667d68aff3e43a5b5f70009ad11f",
       "transition": "changed"
     }
   ]
