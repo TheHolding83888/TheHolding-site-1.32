@@ -32,16 +32,16 @@ requireText('permissions:\n  contents: write','historical completeness writer co
 assert.doesNotMatch(workflow,/actions:\s*write|write-all/,'historical completeness writer gained broader Actions/repository authority');
 assert.doesNotMatch(workflow,/\n\s*pull_request:/,'production derived-data writer must not execute on pull_request');
 requireText('workflow_dispatch:','bounded manual recovery trigger missing');
-requireText('workflows:\n      - "Update Company Monthly Reports"','canonical Monthly Reports handoff missing');
-requireText("github.event.workflow_run.conclusion == 'success'",'Monthly Reports success gate missing');
-requireText("github.event.workflow_run.head_branch == 'main'",'Monthly Reports main gate missing');
+requireText('workflows:\n      - "Update Company Monthly Reports"\n      - "Update The Holding Reporting Data"','canonical Monthly Reports + Reporting Data handoff missing');
+requireText("github.event.workflow_run.conclusion == 'success'",'canonical upstream success gate missing');
+requireText("github.event.workflow_run.head_branch == 'main'",'canonical upstream main gate missing');
 requireText('ref: main','production writer must consume canonical main');
 requireText('group: historical-accounting-completeness-map','writer concurrency group drift');
 requireText('cancel-in-progress: false','writer must remain non-cancellable');
 requireText("- cron: '52 7 * * *'",'fallback heartbeat drift');
 requireText('timeout-minutes: 5','bounded writer runtime missing');
 
-// Only code/definition changes wake directly; factual data refresh arrives through the canonical Monthly Reports handoff.
+// Only code/definition changes wake directly; factual data refresh arrives through the canonical Monthly Reports / Reporting Data handoff.
 for(const path of [
   "- 'reporting/historical-accounting-completeness-map.mjs'",
   "- 'reporting/historical-accounting-completeness-map-validation.mjs'",
@@ -97,7 +97,9 @@ for(const forbidden of [
 console.log('Historical Accounting Completeness workflow definition paired proof PASS',{
   workflow:WORKFLOW_PATH,
   proofScope:'workflow-definition-and-derived-safe-writer-contract',
-  canonicalUpstream:'Update Company Monthly Reports',
+  canonicalUpstreams:['Update Company Monthly Reports','Update The Holding Reporting Data'],
+  monthlyReportWake:'Update Company Monthly Reports',
+  accountingCoverageWake:'Update The Holding Reporting Data',
   controlPlaneRole:'repository-writer',
   truthPlane:'derived-accounting-diagnostics',
   controlDomain:'reporting-historical-accounting-completeness',
