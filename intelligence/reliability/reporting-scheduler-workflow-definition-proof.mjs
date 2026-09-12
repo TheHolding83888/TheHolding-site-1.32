@@ -123,7 +123,7 @@ assert.equal(fraxEvidence.authority?.claimingAuthority,'none');
 assert.equal(fraxEvidence.authority?.capitalExecution,false);
 assert.match(fraxBuilder,/closing earned \+ YieldCollected settlements - opening earned/,'Frax factual accrual formula missing');
 assert.match(fraxBuilder,/currentClaimableBalanceIsPeriodIncome:false/,'Frax current state accounting boundary missing');
-assert.match(fraxBuilder,/claimIsSecondIncomeEvent:false/,'Frax claim settlement dedup missing');
+assert.match(fraxBuilder,/claimIsSecondIncomeEvent:false/,'Frax claim dedup missing');
 assert.match(fraxBuilder,/laterClaimOrPriceMoveDoesNotRewriteIncome:true/,'Frax frozen income invariant missing');
 assert.doesNotMatch(fraxBuilder,/referenceAprUsed\s*:\s*true|referenceApyUsed\s*:\s*true/i,'Frax builder gained APR/APY income authority');
 assert.match(fraxValidation,/claim-to-zero of the opening balance creates no new income/i,'Frax claim reset regression test missing');
@@ -146,7 +146,7 @@ assert.match(ybBuilder,/closing preview_claim \+ Claim settlements - opening pre
 assert.match(ybBuilder,/preview_claim\.staticCall\(walletRow\.wallet,50,false/,'Yield Basis exact FeeDistributor claimable state read missing');
 assert.match(ybBuilder,/contract\.filters\.Claim\(wallet\)/,'Yield Basis Claim settlement attribution missing');
 assert.match(ybBuilder,/currentClaimableBalanceIsPeriodIncome:false/,'Yield Basis current-state accounting boundary missing');
-assert.match(ybBuilder,/claimIsSecondIncomeEvent:false/,'Yield Basis claim settlement dedup missing');
+assert.match(ybBuilder,/claimIsSecondIncomeEvent:false/,'Yield Basis claim dedup missing');
 assert.match(ybBuilder,/laterClaimOrPriceMoveDoesNotRewriteIncome:true/,'Yield Basis frozen income invariant missing');
 assert.match(ybBuilder,/trackedWalletsFromRewards/,'Yield Basis canonical Rewards wallet-scope reuse missing');
 assert.match(ybBuilder,/priceIndexFromRewards/,'Yield Basis canonical Rewards valuation reuse missing');
@@ -198,8 +198,8 @@ assert.match(ve33Admission,/executionAuthority:'none'/,'ve33 admission authority
 assert.match(ve33Validations,/mutation detected/,'ve33 immutable event mutation regression test missing');
 assert.match(ve33Validations,/claim settlement semantics drift|claimIsSecondIncomeEvent/,'ve33 claim settlement regression coverage missing');
 
-assert.equal(lockedEvidence.version,'0.1-ve33-locked-managed-factual-accrual');
-assert.equal(lockedEvidence.fullAccountingStart,'2026-09-01T00:00:00.000Z');
+assert.equal(lockedEvidence.version,'0.2-ve33-locked-managed-historical-factual-accrual');
+assert.equal(lockedEvidence.fullAccountingStart,'2026-08-01T00:00:00.000Z');
 assert.equal(lockedEvidence.semantics?.openingBalanceCreatesIncome,false);
 assert.equal(lockedEvidence.semantics?.earnedIndependentOfWithdrawal,true);
 assert.equal(lockedEvidence.semantics?.withdrawalIsSettlementNotSecondIncome,true);
