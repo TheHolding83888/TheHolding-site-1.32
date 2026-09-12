@@ -550,7 +550,7 @@ async function probeHistoricalCandidate({url,cfg,protocolKey,lanes}){
         blockTimestamp:boundary.blockTimestamp,
         available:capability?.available===true,
         status:capability?.status||'unknown',
-        sampleTokenId:capability?.sampleTokenId||null,
+        sampleTokenId:capability.sampleTokenId||null,
         error:capability?.error||null
       });
       if(capability?.available!==true)throw new Error(`${protocolKey} ${label} cannot read historical state at ${boundaryAt}: ${capability?.error||capability?.status||'unknown'}`);
@@ -565,13 +565,22 @@ async function probeHistoricalCandidate({url,cfg,protocolKey,lanes}){
 export function attachHistoricalCallRouter({currentProvider,archiveProvider,currentBlockNumber,stats={}}){
   const currentCall=currentProvider.call.bind(currentProvider),archiveCall=archiveProvider.call.bind(archiveProvider);
   const currentGetCode=currentProvider.getCode.bind(currentProvider),archiveGetCode=archiveProvider.getCode.bind(archiveProvider);
-  Object.assign(stats,{historicalCalls:0,currentCalls:0,currentFallbackCalls:0,historicalCodeReads:0,currentCodeReads:0,currentCodeFallbackReads:0,historicalFailures:0,currentPrimaryFailures:0,marginBlocks:CURRENT_BLOCK_MARGIN});
+  Object.assign(stats,{
+    historicalCalls:0,currentCalls:0,currentFallbackCalls:0,historicalFallbackCalls:0,historicalFallbackFailures:0,
+    historicalCodeReads:0,currentCodeReads:0,currentCodeFallbackReads:0,historicalCodeFallbackReads:0,historicalCodeFallbackFailures:0,
+    historicalFailures:0,currentPrimaryFailures:0,marginBlocks:CURRENT_BLOCK_MARGIN
+  });
   currentProvider.call=async(...args)=>{
     const historicalBlock=historicalCallBlockTag(args,currentBlockNumber,CURRENT_BLOCK_MARGIN);
     if(historicalBlock!==null){
       stats.historicalCalls++;
       try{return await archiveCall(...args);}
-      catch(error){stats.historicalFailures++;throw error;}
+      catch(archiveError){
+        stats.historicalFailures++;
+        stats.historicalFallbackCalls++;
+        try{return await currentCall(...args);}
+        catch{stats.historicalFallbackFailures++;throw archiveError;}
+      }
     }
     stats.currentCalls++;
     try{return await currentCall(...args);}
@@ -587,7 +596,12 @@ export function attachHistoricalCallRouter({currentProvider,archiveProvider,curr
     if(historicalBlock!==null){
       stats.historicalCodeReads++;
       try{return await archiveGetCode(address,blockTag);}
-      catch(error){stats.historicalFailures++;throw error;}
+      catch(archiveError){
+        stats.historicalFailures++;
+        stats.historicalCodeFallbackReads++;
+        try{return await currentGetCode(address,blockTag);}
+        catch{stats.historicalCodeFallbackFailures++;throw archiveError;}
+      }
     }
     stats.currentCodeReads++;
     try{return await currentGetCode(address,blockTag);}
@@ -636,7 +650,7 @@ export async function selectHistoricalProviders({rewards,env=process.env}={}){
         status:'archive-capable-provider-selected',
         selectedProvider:selected.label,
         currentProvider:current.label,
-        routingMode:current.url===selected.url?'single-provider-current-and-history':'current-primary-with-archive-block-call-routing',
+        routingMode:current.url===selected.url?'single-provider-current-and-history':'current-primary-with-archive-block-call-routing-and-current-exact-block-fallback',
         routingStats,
         candidateProviders:urls.map(rpcLabel),
         requiredBoundaries:[...REQUIRED_HISTORICAL_BOUNDARIES],
@@ -686,7 +700,7 @@ export async function runVe33Accounting({rewards,recovery={},previous={},generat
   const output=await buildVe33Evidence({rewards:accountingRewards,previous:recoveredIntervals.previous,generatedAt,providers:selection.providers});
   output.runner={
     version:VERSION,
-    historicalRpcPolicy:'current-capable primary RPC with exact block-tagged eth_call/eth_getCode routing to a separately proven archive-capable provider',
+    historicalRpcPolicy:'current-capable primary RPC with exact block-tagged eth_call/eth_getCode routed archive-first for historical blocks and current exact-block fallback on archive failure',
     requiredHistoricalBoundaries:[...REQUIRED_HISTORICAL_BOUNDARIES],
     requireHistoricalRpc:requireHistoricalRpc(env),
     transientClaimRecovery:recoveryInput.diagnostics,
