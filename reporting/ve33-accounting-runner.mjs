@@ -253,6 +253,11 @@ export async function seedTransientPredeploymentZeroBaselines({previous={},recov
     createsIncome:false,
     executionAuthority:'none'
   };
+  if(!recoveryAuthorityValid(recovery)){
+    diagnostics.status='ignored-invalid-authority';
+    return{previous:{...previous,checkpoints},diagnostics};
+  }
+  diagnostics.status='valid-authority';
   const candidates=recoveryClaims(recovery).filter(claim=>
     claim?.classification==='transient-orphan-claim'&&claim?.alreadyRepresented!==true&&
     Number.isFinite(Number(claim?.blockNumber))&&claim?.rewardContract&&claim?.rewardToken
