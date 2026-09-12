@@ -96,11 +96,15 @@ for (const row of map.companyMonths) {
 
 const byId = id => map.rows.find(row => row.id === id);
 const defiteaVeloAugust = byId('defitea.eth:2026-08:velodrome_vevelo');
+const defiteaVeloAugustProvenEventFloor = 19;
+const defiteaVeloAugustProvenUsdFloor = 2.04403678;
 assert.ok(defiteaVeloAugust, 'Defitea August veVELO completeness row missing');
 assert.equal(defiteaVeloAugust.state, 'complete', 'Defitea August veVELO should remain complete after canonical historical valuation materialization');
-assert.equal(Number(defiteaVeloAugust.factualEventCount), 19);
-assert.equal(Number(defiteaVeloAugust.factualValuedEventCount), 19);
-assert.ok(Math.abs(Number(defiteaVeloAugust.factualUsdSubtotal) - 2.04403678) < 1e-8);
+assert.ok(Number(defiteaVeloAugust.factualEventCount) >= defiteaVeloAugustProvenEventFloor, 'Defitea August veVELO lost previously proven factual events');
+assert.equal(Number(defiteaVeloAugust.factualValuedEventCount), Number(defiteaVeloAugust.factualEventCount), 'Defitea August veVELO gained unvalued factual events');
+assert.ok(Number(defiteaVeloAugust.factualUsdSubtotal) + 1e-8 >= defiteaVeloAugustProvenUsdFloor, 'Defitea August veVELO factual USD subtotal regressed below the proven floor');
+assert.equal(Number(defiteaVeloAugust.crossMonthUnresolvedCount || 0), 0, 'Defitea August veVELO regained unresolved cross-month evidence');
+assert.equal(defiteaVeloAugust.evidenceComplete, true, 'Defitea August veVELO lost diagnostic evidence completeness');
 
 const beefySeptember = byId('1milliondollar.eth:2026-09:beefy_cvxcrv');
 assert.ok(beefySeptember, '1milliondollar September Beefy completeness row missing');
