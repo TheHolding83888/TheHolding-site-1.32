@@ -17,6 +17,7 @@ on:
       - 'onboarding/company-010-gmx-strategy-overlay.mjs'
       - 'onboarding/company-010-projectx-strategy-overlay.mjs'
       - 'onboarding/company-010-projectx-reference-apr.mjs'
+      - 'onboarding/company-010-hyperlend-income-overlay.mjs'
       - 'onboarding/company-010-reconciliation.mjs'
       - 'onboarding/company-010-stakedao-intelligence.mjs'
       - 'onboarding/company-010-production-baseline.mjs'
@@ -59,6 +60,7 @@ jobs:
           node --check onboarding/company-010-gmx-strategy-overlay.mjs
           node --check onboarding/company-010-projectx-strategy-overlay.mjs
           node --check onboarding/company-010-projectx-reference-apr.mjs
+          node --check onboarding/company-010-hyperlend-income-overlay.mjs
           node --check onboarding/company-010-reconciliation.mjs
           node --check onboarding/company-010-stakedao-intelligence.mjs
           node --check onboarding/company-010-production-baseline.mjs
@@ -221,11 +223,30 @@ jobs:
           if(s.epistemicBoundary?.projectXFeeTierIsNotApr!==true||s.epistemicBoundary?.projectXReferenceAprUsesObservedFeeGrowth!==true||s.authority?.executionAuthority!=='none')throw new Error('Project X APR epistemic/authority boundary missing');
           console.log('Project X canonical Reference APR materialization PASS',{status:px.yield.status,referenceAprPct:px.yield.referenceAprPct,windowHours:px.yield.windowHours,observations:h.observations.length,executionAuthority:'none'});
           NODE
+      - name: Apply canonical HyperLend income measurement
+        env:
+          HYPEREVM_RPC_URL: ${{ secrets.HYPEREVM_RPC_URL }}
+          REWARDS_DATA: /tmp/company-010-hyperlend-rewards-disabled.json
+        run: |
+          set -euo pipefail
+          node onboarding/company-010-hyperlend-income-overlay.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const s=JSON.parse(fs.readFileSync('companies/company-010-production-state.json','utf8'));
+          const h=s.strategies?.hyperlend;
+          if(h?.version!=='0.1-company-010-hyperlend-income-parity'||h.status!=='measured')throw new Error('HyperLend canonical income capability missing');
+          if(h.income?.primary?.state!=='Compounded'||h.income?.primary?.claimableApplicable!==false)throw new Error('HyperLend embedded income semantics drift');
+          if(h.accountingBoundary?.embeddedInterestAlreadyInPrincipalBalance!==true||h.accountingBoundary?.embeddedInterestNotAdditiveCapital!==true||h.accountingBoundary?.embeddedInterestNotClaimable!==true||h.accountingBoundary?.externalIncentivesSeparateFromSupplyApr!==true||h.accountingBoundary?.noDoubleCount!==true)throw new Error('HyperLend accounting boundary missing');
+          if(s.epistemicBoundary?.hyperlendSupplyInterestIsEmbedded!==true||s.epistemicBoundary?.hyperlendEmbeddedInterestIsNotClaimable!==true||s.epistemicBoundary?.hyperlendExternalIncentivesAreSeparate!==true||s.epistemicBoundary?.hyperlendAprIsNotRealisedIncome!==true)throw new Error('HyperLend epistemic boundary missing');
+          if(s.authority?.executionAuthority!=='none'||h.authority?.executionAuthority!=='none'||h.authority?.walletSigning!==false||h.authority?.transactions!==false)throw new Error('HyperLend authority drift');
+          if(fs.existsSync(process.env.REWARDS_DATA))throw new Error('Canonical Company State writer must not materialize shared Rewards aggregate');
+          console.log('HyperLend canonical Company State measurement PASS',{hToken:h.hToken,referenceAprPct:h.referenceAprPct,embeddedStatus:h.income.primary.measurementStatus,rewardAssetCount:h.income.externalIncentives.rewardAssetCount,rewardsMaterializedHere:false,executionAuthority:'none'});
+          NODE
       - name: Fingerprint source contract
         id: fingerprint
         run: |
           set -euo pipefail
-          sha256sum onboarding/company-010-{discovery,resolve,deep-resolve,closure,closure-review,gmx-reader,gmx-strategy-overlay,projectx-strategy-overlay,projectx-reference-apr,reconciliation,stakedao-intelligence,production-baseline,production-state,stakedao-overlay,crv-strategy-overlay,convex-cvxcrv-rate-overlay}.mjs | sha256sum | awk '{print "sha="$1}' >> "$GITHUB_OUTPUT"
+          sha256sum onboarding/company-010-{discovery,resolve,deep-resolve,closure,closure-review,gmx-reader,gmx-strategy-overlay,projectx-strategy-overlay,projectx-reference-apr,hyperlend-income-overlay,reconciliation,stakedao-intelligence,production-baseline,production-state,stakedao-overlay,crv-strategy-overlay,convex-cvxcrv-rate-overlay}.mjs | sha256sum | awk '{print "sha="$1}' >> "$GITHUB_OUTPUT"
       - name: Commit production state
         run: |
           set -euo pipefail
@@ -240,7 +261,7 @@ jobs:
           for attempt in 1 2 3; do
             git fetch origin main
             git rebase origin/main
-            AFTER=$(sha256sum onboarding/company-010-{discovery,resolve,deep-resolve,closure,closure-review,gmx-reader,gmx-strategy-overlay,projectx-strategy-overlay,projectx-reference-apr,reconciliation,stakedao-intelligence,production-baseline,production-state,stakedao-overlay,crv-strategy-overlay,convex-cvxcrv-rate-overlay}.mjs | sha256sum | awk '{print $1}')
+            AFTER=$(sha256sum onboarding/company-010-{discovery,resolve,deep-resolve,closure,closure-review,gmx-reader,gmx-strategy-overlay,projectx-strategy-overlay,projectx-reference-apr,hyperlend-income-overlay,reconciliation,stakedao-intelligence,production-baseline,production-state,stakedao-overlay,crv-strategy-overlay,convex-cvxcrv-rate-overlay}.mjs | sha256sum | awk '{print $1}')
             if [ "$AFTER" != "${{ steps.fingerprint.outputs.sha }}" ]; then
               echo "Company #010 source contract changed during publication; fresh collection required."
               exit 1
@@ -252,7 +273,8 @@ jobs:
             const c=d.strategies?.crv?.strategies?.find(x=>x.id==='convex-staked-cvxcrv');
             const px=d.strategies?.projectX;
             const p=(d.productivity?.positions||[]).find(x=>x.id==='projectx-whype-usdc');
-            const baseOk=d.version==='0.3-company-010-production-state-stakedao-complete'&&d.engineVersion==='0.4-cypher-crv-strategy-intelligence'&&d.capital?.totalCapitalComplete===true&&d.strategies?.crv?.version==='0.1-company-010-crv-strategy-intelligence'&&c?.yield?.status==='measured'&&Number(c?.yield?.referenceAprPct)>0&&d.strategies?.gmx?.version==='0.1.1-company-010-gmx-strategy-intelligence-pool-key-fix'&&px?.version==='0.1-company-010-projectx-full-parity'&&d.epistemicBoundary?.multiLegResolvedMustPromoteAllEconomicLegs===true&&d.authority?.executionAuthority==='none';
+            const hyper=d.strategies?.hyperlend;
+            const baseOk=d.version==='0.3-company-010-production-state-stakedao-complete'&&d.engineVersion==='0.4-cypher-crv-strategy-intelligence'&&d.capital?.totalCapitalComplete===true&&d.strategies?.crv?.version==='0.1-company-010-crv-strategy-intelligence'&&c?.yield?.status==='measured'&&Number(c?.yield?.referenceAprPct)>0&&d.strategies?.gmx?.version==='0.1.1-company-010-gmx-strategy-intelligence-pool-key-fix'&&px?.version==='0.1-company-010-projectx-full-parity'&&hyper?.version==='0.1-company-010-hyperlend-income-parity'&&hyper?.accountingBoundary?.noDoubleCount===true&&hyper?.authority?.executionAuthority==='none'&&d.epistemicBoundary?.multiLegResolvedMustPromoteAllEconomicLegs===true&&d.epistemicBoundary?.hyperlendAprIsNotRealisedIncome===true&&d.authority?.executionAuthority==='none';
             const historyOk=h.version==='0.1-projectx-rate-history'&&h.authority?.executionAuthority==='none'&&Array.isArray(h.observations)&&h.observations.length>0;
             const aprOk=px?.yield?.status==='measured'?(Number(px.yield.referenceAprPct)>=0&&p?.status==='measured'&&Number(p.referenceAprPct)===Number(px.yield.referenceAprPct)):(px?.yield?.status==='warming'&&px?.yield?.referenceAprPct===null&&p?.status==='warming'&&p?.referenceAprPct===null);
             if(!baseOk||!historyOk||!aprOk)process.exit(1);

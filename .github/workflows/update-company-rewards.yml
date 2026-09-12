@@ -8,6 +8,7 @@ on:
       - 'rewards/company-rewards-engine.mjs'
       - 'rewards/defitea-union-scrvusd-overlay.mjs'
       - 'rewards/company-010-rewards-overlay.mjs'
+      - 'rewards/company-010-hyperlend-rewards-overlay.mjs'
       - 'rewards/company-010-ve-rewards.mjs'
       - 'rewards/company-010-generic-ve-promotion.mjs'
       - 'rewards/vlcvx-registry-route-audit.mjs'
@@ -213,6 +214,28 @@ jobs:
           node --check rewards/forty-acres-received-ledger.mjs
           node rewards/forty-acres-received-ledger.mjs
 
+      - name: Project Company #010 HyperLend rewards from canonical state
+        run: |
+          set -euo pipefail
+          node --check rewards/company-010-hyperlend-rewards-overlay.mjs
+          node rewards/company-010-hyperlend-rewards-overlay.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('companies/rewards-data.json','utf8'));
+          const c=d.companies?.Cypher;
+          const src=(c?.sources||[]).find(x=>x.route==='hyperlend-khype');
+          const embedded=(c?.embeddedIncome||[]).find(x=>x.route==='hyperlend-khype');
+          const diag=d.diagnostics?.company010?.hyperlendIncome;
+          if(!src||!['ok','partial'].includes(src.status)||src.details?.rewardState!=='Compounded'||src.details?.claimableApplicable!==false)throw new Error('HyperLend canonical Rewards source missing');
+          if(!embedded||embedded.state!=='Compounded'||embedded.claimableApplicable!==false||embedded.usdValueIncludedInClaimableTotal!==false)throw new Error('HyperLend embedded Rewards row missing');
+          if(diag?.version!=='0.1-company-010-hyperlend-rewards-projection'||diag.repositoryMutationAuthority!=='Update Company Rewards'||diag.executionAuthority!=='none'||diag.noDoubleCount!==true)throw new Error('HyperLend Rewards writer ownership diagnostic missing');
+          const claimable=(c.rewards||[]).reduce((s,x)=>s+(Number.isFinite(Number(x.usdValue))?Number(x.usdValue):0),0);
+          const embeddedUsd=(c.embeddedIncome||[]).reduce((s,x)=>s+(Number.isFinite(Number(x.usdValue))?Number(x.usdValue):0),0);
+          if(Math.abs(Number(c.claimableUsd)-claimable)>0.00001)throw new Error('HyperLend projection changed claimable accounting boundary');
+          if(Math.abs(Number(c.measuredEarnedUsd)-(claimable+embeddedUsd))>0.00001)throw new Error('HyperLend measured-earned aggregate drift');
+          console.log('HyperLend canonical Rewards projection PASS',{claimableUsd:c.claimableUsd,measuredEmbeddedUsd:c.measuredEmbeddedUsd,measuredEarnedUsd:c.measuredEarnedUsd,rewardAssetCount:diag.rewardAssetCount,executionAuthority:'none'});
+          NODE
+
       - name: Apply current Rewards Passport route hygiene
         run: |
           set -euo pipefail
@@ -245,6 +268,9 @@ jobs:
           if(!stake.length||stake.some(x=>x.protocol!=='Stake DAO · vlCVX'))throw new Error('Cypher Stake DAO current vlCVX reward missing');
           const cyCvx=(cy?.rewards||[]).filter(x=>x.route==='convex-staked-cvxcrv');
           if(!cyCvx.length||cyCvx.some(x=>x.protocol!=='Convex · staked cvxCRV'||x.classification!=='unclaimed'))throw new Error('Cypher direct Convex reward identity drift');
+          const hyperSource=(cy?.sources||[]).find(x=>x.route==='hyperlend-khype');
+          const hyperEmbedded=(cy?.embeddedIncome||[]).find(x=>x.route==='hyperlend-khype');
+          if(!hyperSource||!hyperEmbedded||hyperEmbedded.state!=='Compounded'||hyperEmbedded.claimableApplicable!==false||d.diagnostics?.company010?.hyperlendIncome?.repositoryMutationAuthority!=='Update Company Rewards')throw new Error('Cypher HyperLend canonical writer projection missing');
           const nine=d.companies?.['1milliondollar.eth'];
           if((nine?.rewards||[]).some(x=>x.route==='convex-staked-cvxcrv'||x.route==='beefy-cvxcrv'))throw new Error('Company #009 embedded cvxCRV leaked into Claimable');
           if(!['warming-baseline','ok','needs-flow-reconciliation'].includes(nine?.embeddedIncomeStatus))throw new Error('Company #009 embedded income state missing');
@@ -262,8 +288,8 @@ jobs:
           if(!(Number(def?.receivedIncomeTransferCount)>0)||!(Number(def?.receivedIncomeUsd)>0))throw new Error('Defitea August Received proof is empty');
           if(defReceived.some(x=>x.claimableApplicable!==false||x.includedInClaimableTotal!==false||x.includedInMeasuredEarnedTotal!==false))throw new Error('Received leaked across accounting boundary');
           if((def?.rewards||[]).some(x=>x.classification==='received'||x.state==='Received'))throw new Error('Received leaked into current Claimable rewards array');
-          if(d.diagnostics?.vlCvxRoutePromotion?.executionAuthority!=='none'||d.diagnostics?.vlCvxRouteAggregateFinalize?.executionAuthority!=='none'||d.diagnostics?.rewardsPassportHygiene?.executionAuthority!=='none'||d.diagnostics?.company009BeefyCvxCrv?.executionAuthority!=='none')throw new Error('Rewards authority drift');
-          console.log('Final Rewards parity PASS',{routes:expected,cypherStakeDaoRows:stake.length,cypherCvxCrvRows:cyCvx.length,company009Embedded:nine.embeddedIncomeStatus,rookSettlement:rookCurrent.details.currentRewardSettlement,defiteaReceivedTransfers:def.receivedIncomeTransferCount,defiteaReceivedUsd:def.receivedIncomeUsd});
+          if(d.diagnostics?.vlCvxRoutePromotion?.executionAuthority!=='none'||d.diagnostics?.vlCvxRouteAggregateFinalize?.executionAuthority!=='none'||d.diagnostics?.rewardsPassportHygiene?.executionAuthority!=='none'||d.diagnostics?.company009BeefyCvxCrv?.executionAuthority!=='none'||d.diagnostics?.company010?.hyperlendIncome?.executionAuthority!=='none')throw new Error('Rewards authority drift');
+          console.log('Final Rewards parity PASS',{routes:expected,cypherStakeDaoRows:stake.length,cypherCvxCrvRows:cyCvx.length,cypherHyperLend:true,company009Embedded:nine.embeddedIncomeStatus,rookSettlement:rookCurrent.details.currentRewardSettlement,defiteaReceivedTransfers:def.receivedIncomeTransferCount,defiteaReceivedUsd:def.receivedIncomeUsd});
           NODE
 
       - name: Commit updated rewards snapshot
@@ -305,6 +331,7 @@ jobs:
             node rewards/vlcvx-route-rewards-guard.mjs
             node rewards/company-009-beefy-cvxcrv-income.mjs
             node rewards/forty-acres-received-ledger.mjs
+            node rewards/company-010-hyperlend-rewards-overlay.mjs
             node rewards/rewards-passport-hygiene.mjs
 
             git add companies/rewards-data.json companies/company-009-beefy-cvxcrv-income.json
