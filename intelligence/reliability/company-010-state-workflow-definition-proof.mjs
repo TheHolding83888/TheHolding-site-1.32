@@ -35,6 +35,17 @@ assert.ok(workflow.includes('node --check onboarding/company-010-projectx-refere
 assert.ok(workflow.includes('node onboarding/company-010-projectx-reference-apr.mjs'),'canonical writer does not materialize Project X APR');
 assert.ok(workflow.includes('companies/company-010-projectx-rate-history.json'),'canonical writer does not publish Project X rate history with final Cypher state');
 assert.ok(workflow.includes('projectXReferenceAprUsesObservedFeeGrowth'),'canonical writer Project X epistemic proof missing');
+
+// HyperLend is now materialized by the same canonical Company #010 state writer.
+// The state lane explicitly diverts the shared Rewards target so one workflow
+// cannot regain cross-artifact publication authority.
+assert.ok(workflow.includes("- 'onboarding/company-010-hyperlend-income-overlay.mjs'"),'canonical writer does not wake on HyperLend state source changes');
+assert.ok(workflow.includes('node --check onboarding/company-010-hyperlend-income-overlay.mjs'),'canonical writer does not syntax-check HyperLend state overlay');
+assert.ok(workflow.includes('node onboarding/company-010-hyperlend-income-overlay.mjs'),'canonical writer does not materialize HyperLend state');
+assert.ok(workflow.includes('REWARDS_DATA: /tmp/company-010-hyperlend-rewards-disabled.json'),'Company #010 writer does not isolate shared Rewards output');
+assert.ok(workflow.includes("if(fs.existsSync(process.env.REWARDS_DATA))throw new Error('Canonical Company State writer must not materialize shared Rewards aggregate')"),'Company #010 writer shared-Rewards fail-closed guard missing');
+assert.ok(workflow.includes('hyperlendAprIsNotRealisedIncome'),'HyperLend epistemic boundary missing from canonical Company #010 writer');
+
 assert.ok(workflow.includes('git fetch origin main'),'Company #010 moving-main publish guard missing');
 assert.ok(workflow.includes('git rebase origin/main'),'Company #010 moving-main rebase missing');
 assert.ok(workflow.includes('Company #010 source contract changed during publication; fresh collection required.'),'Company #010 code-race fail-closed guard missing');
@@ -79,6 +90,8 @@ console.log('Company #010 state workflow definition paired proof PASS',{
   canonicalProductionStateWriter:'Update Company #010 · Cypher Production State',
   projectXDiagnosticRepositoryMutationAuthority:false,
   projectXRateHistoryOwnedByCanonicalStateWriter:true,
+  hyperlendStateOwnedByCanonicalStateWriter:true,
+  hyperlendSharedRewardsWriteIsolated:true,
   knownZeroIsNotUnknown:true,
   inactivePrincipalPublishesCapital:false,
   inactivePrincipalPublishesProductivity:false,

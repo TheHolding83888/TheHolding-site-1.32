@@ -37,6 +37,15 @@ assert.match(workflow,/group:\s*company-rewards-daily/,'Rewards concurrency grou
 assert.match(workflow,/cancel-in-progress:\s*false/,'Rewards production writer must remain non-cancellable');
 assert.match(workflow,/node intelligence\/reliability\/rewards-scheduler-workflow-definition-proof\.mjs/,'Rewards scheduler contract preflight missing');
 
+// HyperLend Rewards projection is now owned by this canonical Rewards writer.
+// Company State provides the canonical measured HyperLend state; this lane only
+// projects it into the shared Rewards aggregate and remains the sole publisher.
+assert.ok(workflow.includes("- 'rewards/company-010-hyperlend-rewards-overlay.mjs'"),'Rewards writer must wake on HyperLend projection source changes');
+assert.ok(workflow.includes('node --check rewards/company-010-hyperlend-rewards-overlay.mjs'),'Rewards writer does not syntax-check HyperLend projection');
+assert.ok(workflow.includes('node rewards/company-010-hyperlend-rewards-overlay.mjs'),'Rewards writer does not materialize HyperLend projection');
+assert.ok(workflow.includes("repositoryMutationAuthority!=='Update Company Rewards'"),'Rewards writer HyperLend ownership assertion missing');
+assert.ok(workflow.includes('git add companies/rewards-data.json'),'Rewards writer bounded publication path missing');
+
 // #616 closed Rook's current Convex-Team vlCVX tracking boundary. The production
 // writer must accept only that bounded factual state and must not regress to the
 // former `unresolved` final-parity expectation or turn tracking proof into income.
@@ -60,6 +69,7 @@ console.log('Rewards workflow definition paired proof PASS',{
   cron:contract.cron,
   dailySnapshotUtc:contract.dailySnapshotUtc,
   cypherGenericPromotionNaturalTrigger:true,
+  hyperlendProjectionOwnedByRewardsWriter:true,
   rookConvexTeamSettlementBoundary:true,
   rookTrackingOnlyNoIncomeAuthority:true,
   productionWriterContentsAuthority:true,
