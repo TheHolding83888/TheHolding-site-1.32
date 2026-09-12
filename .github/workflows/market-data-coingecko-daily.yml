@@ -3,8 +3,19 @@ name: "The Holding Market Data · Daily CoinGecko Baseline"
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'intelligence/market-data/market-price-registry.json'
+      - 'intelligence/market-data/market-data-engine.mjs'
+      - 'intelligence/market-data/market-data-authority-policy.json'
+      - 'intelligence/market-data/market-data-authority-materializer.mjs'
+      - 'intelligence/market-data/market-data-scheduler-contract.json'
+      - 'intelligence/reliability/market-data-scheduler-workflow-definition-proof.mjs'
+      - '.github/workflows/market-data-coingecko-daily.yml'
   schedule:
     - cron: '12 3 * * *'
+    - cron: '12 7,11,15,19,23 * * *'
 
 permissions:
   contents: write
@@ -24,29 +35,93 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: Setup Node.js
+      - name: Determine scheduled CoinGecko source admission
+        id: cadence
+        shell: bash
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          ADMISSION_AGE_MINUTES: '960'
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import datetime
+          import json
+          import os
+
+          event = os.environ.get('GITHUB_EVENT_NAME', '')
+          threshold = float(os.environ['ADMISSION_AGE_MINUTES'])
+          due = True
+          reason = 'non-schedule-definition-or-manual-refresh'
+          age_minutes = None
+
+          if event == 'schedule':
+              try:
+                  with open('intelligence/market-data/market-data-coingecko.json', 'r', encoding='utf-8') as f:
+                      source = json.load(f)
+                  raw = source.get('observedAt') or source.get('generatedAt')
+                  if not raw:
+                      raise ValueError('source timestamp missing')
+                  observed = datetime.datetime.fromisoformat(raw.replace('Z', '+00:00'))
+                  now = datetime.datetime.now(datetime.timezone.utc)
+                  age_minutes = (now - observed).total_seconds() / 60.0
+                  if age_minutes < 0:
+                      due = True
+                      reason = 'source-timestamp-in-future-refresh-fail-closed'
+                  elif age_minutes >= threshold:
+                      due = True
+                      reason = 'scheduled-source-refresh-due'
+                  else:
+                      due = False
+                      reason = 'scheduled-source-still-fresh'
+              except Exception as error:
+                  due = True
+                  reason = 'source-freshness-unprovable-refresh-fail-closed'
+                  print(f'CoinGecko source freshness admission warning: {error}')
+
+          output = os.environ['GITHUB_OUTPUT']
+          with open(output, 'a', encoding='utf-8') as f:
+              f.write(f"due={'true' if due else 'false'}\n")
+              f.write(f"reason={reason}\n")
+              f.write(f"age_minutes={'unknown' if age_minutes is None else round(age_minutes, 2)}\n")
+          print(json.dumps({
+              'event': event,
+              'due': due,
+              'reason': reason,
+              'ageMinutes': None if age_minutes is None else round(age_minutes, 2),
+              'admissionAgeMinutes': threshold,
+          }, indent=2))
+          PY
+
+      - name: Set up Node.js
+        if: steps.cadence.outputs.due == 'true'
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
 
       - name: Validate Market Data engines
+        if: steps.cadence.outputs.due == 'true'
         run: |
           set -euo pipefail
           node --check intelligence/market-data/market-data-engine.mjs
           node --check intelligence/market-data/market-data-authority-materializer.mjs
+          node --check intelligence/reliability/market-data-scheduler-workflow-definition-proof.mjs
+          node intelligence/reliability/market-data-scheduler-workflow-definition-proof.mjs
 
       - name: Refresh CoinGecko baseline exactly once
+        if: steps.cadence.outputs.due == 'true'
         env:
           COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
           MARKET_DATA_DAILY_REFRESH: 'true'
         run: node intelligence/market-data/market-data-engine.mjs
 
       - name: Validate fresh baseline against production authority ephemerally
+        if: steps.cadence.outputs.due == 'true'
         env:
           MARKET_DATA_FORCE_COINGECKO_FAILBACK: 'false'
         run: node intelligence/market-data/market-data-authority-materializer.mjs
 
       - name: Validate daily baseline safety
+        if: steps.cadence.outputs.due == 'true'
         run: |
           set -euo pipefail
           node - <<'NODE'
@@ -85,6 +160,7 @@ jobs:
           git diff --check
 
       - name: Publish daily CoinGecko source lane safely
+        if: steps.cadence.outputs.due == 'true'
         run: |
           set -euo pipefail
           git config user.name "The Holding Market Data Orchestrator"
@@ -97,6 +173,7 @@ jobs:
             'intelligence/market-data/market-data-coingecko.json'
             'intelligence/market-data/market-data-authority-policy.json'
             'intelligence/market-data/market-data-authority-materializer.mjs'
+            'intelligence/market-data/market-data-scheduler-contract.json'
             'intelligence/reliability/market-data-scheduler-workflow-definition-proof.mjs'
             '.github/workflows/market-data-coingecko-daily.yml'
           )
