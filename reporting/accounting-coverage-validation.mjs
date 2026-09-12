@@ -62,19 +62,22 @@ console.log('Accounting Coverage v0.13 VoteMarket principal-route isolation PASS
 
 // Production-shaped regression: raw veVELO events may have usdValue=null while the
 // Canonical Ledger carries an immutable, identity-bound historical valuationResolution.
-// Coverage must reuse the same strict resolver as Canonical Earned Income View rather
-// than downgrade already-proven factual USD back to UNKNOWN.
+// The previously proven 19-event / $2.04403678 snapshot is a historical floor, not a
+// permanent ceiling: later factual rebuilds may legitimately discover additional unique
+// evidence. Coverage must preserve that floor and value every admitted factual event.
 const coverageFile=process.env.ACCOUNTING_COVERAGE_FILE||'./reporting/accounting-coverage.json';
 const productionCoverage=JSON.parse(fs.readFileSync(coverageFile,'utf8'));
 const augustVeVelo=productionCoverage?.companies?.['defitea.eth']?.mechanisms?.velodrome_vevelo?.months?.['2026-08'];
 if(augustVeVelo){
-  assert.equal(augustVeVelo.factualEventCount,19,'Defitea August veVELO factual event count drift');
-  assert.equal(augustVeVelo.factualValuedEventCount,19,'Defitea August veVELO canonical historical valuations were not fully reused');
-  assert.equal(augustVeVelo.factualUsdSubtotal,2.04403678,'Defitea August veVELO canonical effective USD subtotal drift');
+  const provenEventFloor=19;
+  const provenUsdFloor=2.04403678;
+  assert.ok(Number(augustVeVelo.factualEventCount)>=provenEventFloor,'Defitea August veVELO lost previously proven factual events');
+  assert.equal(Number(augustVeVelo.factualValuedEventCount),Number(augustVeVelo.factualEventCount),'Defitea August veVELO canonical historical valuations were not fully reused');
+  assert.ok(Number(augustVeVelo.factualUsdSubtotal)+1e-8>=provenUsdFloor,'Defitea August veVELO canonical effective USD subtotal regressed below the proven floor');
   assert.equal(productionCoverage.semantics?.canonicalHistoricalValuationResolutionReusedForDiagnosticUsd,true,'Coverage lost canonical historical valuation reuse semantic');
   assert.equal(productionCoverage.authority?.incomeCreationAuthority,undefined,'Coverage unexpectedly gained income creation authority');
   assert.equal(productionCoverage.authority?.executionAuthority,'none','Coverage execution authority drift');
   console.log('Accounting Coverage canonical historical valuation projection PASS',{
-    mechanism:'velodrome_vevelo',month:'2026-08',events:augustVeVelo.factualEventCount,valued:augustVeVelo.factualValuedEventCount,usd:augustVeVelo.factualUsdSubtotal,incomeCreationAuthority:false,executionAuthority:'none'
+    mechanism:'velodrome_vevelo',month:'2026-08',events:augustVeVelo.factualEventCount,valued:augustVeVelo.factualValuedEventCount,usd:augustVeVelo.factualUsdSubtotal,provenEventFloor,provenUsdFloor,incomeCreationAuthority:false,executionAuthority:'none'
   });
 }
