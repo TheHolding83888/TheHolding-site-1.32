@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { Interface, getAddress } from 'ethers';
 import { DIRECT_ACCOUNTING_START, PROTOCOLS, decodeRewardClaimAttribution, trackedPositionDescriptors } from './ve33-accounting-evidence.mjs';
+import { historicalRewardsTokenPriceFromGit } from './historical-rewards-token-price.mjs';
 
 export const VERSION='0.1-ve33-transient-claim-recovery';
 export const DEFAULT_SCAN_CHUNK_BLOCKS=9_500;
@@ -21,6 +22,7 @@ export const CLAIM_REWARDS_TOPIC=CLAIM_IFACE.getEvent('ClaimRewards').topicHash;
 const lower=value=>String(value||'').toLowerCase();
 const isAddress=value=>/^0x[0-9a-f]{40}$/i.test(String(value||''));
 const unique=values=>[...new Set((values||[]).filter(Boolean))];
+const validIso=value=>Number.isFinite(Date.parse(String(value||'')));
 
 export function indexedAddressTopic(address){
   if(!isAddress(address))throw new Error(`Invalid indexed address: ${address}`);
@@ -81,10 +83,44 @@ export function mergeRecoveryClaims(priorClaims=[],freshClaims=[]){
   return [...map.values()].sort((a,b)=>Number(a.blockNumber||0)-Number(b.blockNumber||0)||Number(a.logIndex||0)-Number(b.logIndex||0));
 }
 
-export function addRecoveryShadowRows(rewards,claims=[]){
+export async function attachClaimBlockTimestamps(claims=[],provider){
+  const out=[],unresolved=[],cache=new Map();
+  for(const claim of claims||[]){
+    if(validIso(claim?.blockTimestamp)){out.push(claim);continue;}
+    const blockNumber=Number(claim?.blockNumber);
+    if(!Number.isSafeInteger(blockNumber)||blockNumber<=0){
+      out.push(claim);
+      unresolved.push({...claim,reason:'claim-block-number-invalid-for-timestamp'});
+      continue;
+    }
+    try{
+      let work=cache.get(blockNumber);
+      if(!work){work=Promise.resolve(provider.getBlock(blockNumber));cache.set(blockNumber,work);}
+      const block=await work;
+      const timestampSeconds=Number(block?.timestamp);
+      if(!(Number.isFinite(timestampSeconds)&&timestampSeconds>0))throw new Error('block timestamp missing');
+      out.push({...claim,blockTimestamp:new Date(timestampSeconds*1000).toISOString()});
+    }catch(error){
+      out.push(claim);
+      unresolved.push({...claim,reason:'claim-block-timestamp-unavailable',error:error?.shortMessage||error?.message||String(error)});
+    }
+  }
+  return{claims:out,unresolved};
+}
+
+function recoveryPriceForClaim(claim,priceResolver){
+  if(!validIso(claim?.blockTimestamp))return{ok:false,status:'claim-block-timestamp-missing'};
+  try{
+    return priceResolver({token:claim.rewardToken,boundaryAt:claim.blockTimestamp});
+  }catch(error){
+    return{ok:false,status:'historical-rewards-price-resolver-error',error:error?.message||String(error)};
+  }
+}
+
+export function addRecoveryShadowRows(rewards,claims=[],{priceResolver=historicalRewardsTokenPriceFromGit}={}){
   const enriched=structuredClone(rewards||{});
   enriched.companies=enriched.companies||{};
-  let inserted=0;
+  let inserted=0,priced=0,unpriced=0;
   const seen=new Set();
   for(const [company,c] of Object.entries(enriched.companies||{})){
     for(const r of c?.rewards||[]){
@@ -99,13 +135,18 @@ export function addRecoveryShadowRows(rewards,claims=[]){
     if(!company)continue;
     const key=[claim.company,claim.route,String(claim.tokenId),lower(claim.rewardContract),lower(claim.rewardToken)].join('|');
     if(seen.has(key))continue;
+    const price=recoveryPriceForClaim(claim,priceResolver);
+    if(price?.ok===true)priced++;else unpriced++;
     company.rewards=Array.isArray(company.rewards)?company.rewards:[];
     company.rewards.push({
       route:claim.route,
       token:getAddress(claim.rewardToken),
-      symbol:claim.rewardSymbol||null,
+      symbol:claim.rewardSymbol||price?.symbol||null,
       amount:null,
       usdValue:null,
+      priceUsd:price?.ok===true?Number(price.priceUsd):null,
+      priceMethod:price?.ok===true?'historical-canonical-rewards-token-price':null,
+      priceObservedAt:price?.ok===true?(price.observedAt||null):null,
       status:'historical-claim-recovery-shadow',
       accountingAuthority:false,
       periodIncomeAuthority:false,
@@ -116,12 +157,30 @@ export function addRecoveryShadowRows(rewards,claims=[]){
         tokenId:String(claim.tokenId),
         rewardContract:getAddress(claim.rewardContract),
         historicalClaimRecovery:true,
-        sourceProof:claimProofKey(claim)
+        sourceProof:claimProofKey(claim),
+        claimBlockNumber:Number(claim.blockNumber||0)||null,
+        claimBlockTimestamp:claim.blockTimestamp||null,
+        historicalPriceRecovery:{
+          ok:price?.ok===true,
+          status:price?.status||'historical-rewards-price-unavailable',
+          sourceFamily:price?.sourceFamily||null,
+          priceUsd:price?.ok===true?Number(price.priceUsd):null,
+          observedAt:price?.observedAt||null,
+          priceMethod:price?.priceMethod||null,
+          sourceFile:price?.sourceFile||null,
+          sourceCommit:price?.commitSha||null,
+          policyVersion:price?.policyVersion||null,
+          exactTokenAddressMatch:price?.exactTokenAddressMatch===true,
+          symbolMatchingUsed:price?.symbolMatchingUsed===true,
+          currentPriceUsed:price?.currentPriceUsed===true,
+          referenceAprUsed:price?.referenceAprUsed===true,
+          executionAuthority:'none'
+        }
       }
     });
     seen.add(key);inserted++;
   }
-  return{rewards:enriched,inserted};
+  return{rewards:enriched,inserted,priced,unpriced};
 }
 
 function parseClaimLog(log){
@@ -197,7 +256,10 @@ export async function discoverProtocolTransientClaims({
     }
   }
 
-  const claims=mergeRecoveryClaims(priorProtocol.claims||[],fresh);
+  const mergedClaims=mergeRecoveryClaims(priorProtocol.claims||[],fresh);
+  const timestamped=await attachClaimBlockTimestamps(mergedClaims,provider);
+  unresolved.push(...timestamped.unresolved);
+  const claims=timestamped.claims;
   return{
     status:unresolved.length?'partial':'complete',claims,unresolved,
     scan:{fromBlock,toBlock:latest,lastScannedBlock:latest,queriedRanges,holderCount:holderTopics.length,positionCount:positions.length,complete:unresolved.length===0,overlapBlocks:scanOverlapBlocks},
