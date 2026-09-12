@@ -18,6 +18,24 @@
     "intelligence/capital-state/capital-state.json",
     "intelligence/market-data/public-capital-state.json"
   ],
+  "dailyCoinGeckoSourceLane": {
+    "workflow": "The Holding Market Data · Daily CoinGecko Baseline",
+    "canonicalCron": "12 3 * * *",
+    "recoveryCron": "12 7,11,15,19,23 * * *",
+    "schedulerAttemptCadenceMinutes": 240,
+    "scheduledRefreshAdmissionAgeMinutes": 960,
+    "plannedMaxAgeAtNextDueSlotMinutes": 1200,
+    "fallbackMaxAgeHours": 30,
+    "plannedSchedulerDeliverySafetyMarginMinutes": 600,
+    "sourceLaneOutput": "intelligence/market-data/market-data-coingecko.json",
+    "sameWriterRecoverySchedule": true,
+    "singleCanonicalWriter": true,
+    "secondWriter": false,
+    "freshRecoverySlotsSuppressed": true,
+    "nonScheduleDefinitionChangesAlwaysAdmitted": true,
+    "externalRequestOccursOnlyWhenAdmitted": true,
+    "onchainPrimaryAuthorityUnchanged": true
+  },
   "deliveryResilience": {
     "primaryThirtyMinuteHeartbeatPreserved": true,
     "sameWorkflowRecoverySchedule": true,
