@@ -7,7 +7,7 @@ const EVIDENCE_FILE=process.env.VE33_DIAGNOSTIC_EVIDENCE_FILE||'./reporting/ve33
 const REWARDS_FILE=process.env.REWARDS_DATA_FILE||'./companies/rewards-data.json';
 const LOOKBACK_DAYS=Math.max(1,Math.min(31,Number(process.env.VE33_TRANSIENT_LOOKBACK_DAYS||7)));
 const MAX_LOG_BLOCKS=Math.max(100,Math.min(1_900,Number(process.env.VE33_TRANSIENT_MAX_LOG_BLOCKS||1_800)));
-const REQUESTED_PROTOCOLS=new Set(String(process.env.VE33_TRANSIENT_PROTOCOLS||'').split(',').map(x=>x.trim()).filter(Boolean));
+const REQUESTED_PROTOCOLS=new Set(String(process.env.VE33_TRANSIENT_PROTOCOLS||'aerodrome').split(',').map(x=>x.trim()).filter(Boolean));
 const ADDRESS_GROUP_SIZE=48;
 const REQUEST_SPACING_MS=100;
 const CLAIM_IFACE=new Interface(['event ClaimRewards(address indexed from,address indexed reward,uint256 amount)']);
