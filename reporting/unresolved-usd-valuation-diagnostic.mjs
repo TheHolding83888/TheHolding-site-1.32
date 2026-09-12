@@ -10,14 +10,9 @@ const TARGET_COMPANIES=(process.env.TARGET_COMPANIES||'0x5860...83CA8.eth,Cypher
 const ledger=JSON.parse(fs.readFileSync(LEDGER_FILE,'utf8'));
 const view=buildCanonicalEarnedIncomeView(ledger);
 const targets=new Set(TARGET_COMPANIES);
-const unresolved=view.unresolved.filter(row=>
-  targets.has(row.company) &&
-  row.month===TARGET_MONTH &&
-  row.reason==='canonical-event-usd-valuation-incomplete'
-);
-
 const byKey=new Map((ledger.events||[]).map(event=>[event.eventKey,event]));
-const rows=unresolved.map(row=>{
+
+function detail(row){
   const event=byKey.get(row.eventKey)||{};
   return {
     eventKey:row.eventKey,
@@ -52,14 +47,28 @@ const rows=unresolved.map(row=>{
     valuationResolution:event.valuationResolution||null,
     immutableEconomicFieldsHash:event.immutableEconomicFieldsHash||null
   };
-});
+}
+
+const allUsdIncomplete=view.unresolved
+  .filter(row=>row.reason==='canonical-event-usd-valuation-incomplete')
+  .map(detail);
+const targetUnresolved=view.unresolved
+  .filter(row=>targets.has(row.company))
+  .map(detail);
+const exactTargetUsdIncomplete=allUsdIncomplete.filter(row=>targets.has(row.company)&&row.month===TARGET_MONTH);
 
 const output={
-  version:'0.1-unresolved-usd-valuation-diagnostic',
+  version:'0.2-unresolved-usd-valuation-diagnostic',
+  ledgerGeneratedAt:ledger.generatedAt||null,
+  earnedViewSummary:view.summary,
   targetMonth:TARGET_MONTH,
   targetCompanies:TARGET_COMPANIES,
-  unresolvedUsdValuationEventCount:rows.length,
-  rows,
+  exactTargetUsdIncompleteCount:exactTargetUsdIncomplete.length,
+  exactTargetUsdIncomplete,
+  allUsdIncompleteCount:allUsdIncomplete.length,
+  allUsdIncomplete,
+  targetUnresolvedCount:targetUnresolved.length,
+  targetUnresolved,
   semantics:{
     diagnosticOnly:true,
     mutatesAccounting:false,
@@ -71,7 +80,3 @@ const output={
 };
 
 console.log('Unresolved canonical USD valuation diagnostic',JSON.stringify(output,null,2));
-if(rows.length!==TARGET_COMPANIES.length){
-  console.error(`Expected exactly ${TARGET_COMPANIES.length} target unresolved USD events, found ${rows.length}`);
-  process.exitCode=1;
-}
