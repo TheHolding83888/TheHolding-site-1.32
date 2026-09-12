@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict';
 import { Interface } from 'ethers';
 import './historical-canonical-price-validation.mjs';
+import './ve33-transient-claim-recovery-validation.mjs';
 import { VERSION, DIRECT_ACCOUNTING_START, FULL_ACCOUNTING_START, PROTOCOLS, mapLimit, reconcileEntitlement, decodeRewardClaimTokenId, decodeRewardClaimAttribution, trackedPositionDescriptors, compactHistoricalCheckpoints, buildSettlementAddressGroups } from './ve33-accounting-evidence.mjs';
 
 assert.equal(VERSION,'0.1-ve33-factual-accrual-evidence');
