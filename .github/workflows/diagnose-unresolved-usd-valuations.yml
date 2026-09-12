@@ -1,0 +1,28 @@
+name: Diagnose Unresolved USD Valuations
+
+on:
+  pull_request:
+    paths:
+      - 'reporting/unresolved-usd-valuation-diagnostic.mjs'
+      - '.github/workflows/diagnose-unresolved-usd-valuations.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+      - name: Inspect unresolved canonical USD valuation events
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check reporting/unresolved-usd-valuation-diagnostic.mjs
+          node reporting/unresolved-usd-valuation-diagnostic.mjs
