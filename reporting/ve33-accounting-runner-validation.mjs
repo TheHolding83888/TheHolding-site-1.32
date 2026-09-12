@@ -113,8 +113,8 @@ assert.equal(shadow.details.sourceProof,'0xaad260eb97a2414e45dc5f105e8966932ca87
 
 const lapClaim=claims[0];
 assert.equal(isExactCodeAbsence('0x'),true);
-assert.equal(isExactCodeAbsence('0x0'),true);
-assert.equal(isExactCodeAbsence('0x00'),true);
+assert.equal(isExactCodeAbsence('0x0'),false);
+assert.equal(isExactCodeAbsence('0x00'),false);
 assert.equal(isExactCodeAbsence('0x01'),false);
 assert.equal(isExactCodeAbsence('0x6000'),false);
 assert.equal(historicalCodeBlockTag(50715726,51211957),50715726);
@@ -134,6 +134,7 @@ assert.equal(zeroCheckpoint.unknownIsNotZero,true);
 assert.equal(zeroCheckpoint.predeploymentZeroProof.proof,'eth_getCode-empty-at-exact-historical-boundary');
 assert.equal(zeroCheckpoint.predeploymentZeroProof.createsIncome,false);
 assert.equal(zeroCheckpoint.predeploymentZeroProof.executionAuthority,'none');
+assert.equal(buildPredeploymentZeroCheckpoint({claim:lapClaim,boundaryAt:'2026-09-01T00:00:00.000Z',blockNumber:50715726,code:'0x00'}),null,'non-empty bytecode must never fabricate a zero opening');
 assert.equal(buildPredeploymentZeroCheckpoint({claim:lapClaim,boundaryAt:'2026-09-01T00:00:00.000Z',blockNumber:50715726,code:'0x6000'}),null,'deployed contract must never fabricate a zero opening');
 
 const routingStats={};
