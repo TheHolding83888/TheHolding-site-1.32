@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-12T11:26:47.205Z",
+  "generatedAt": "2026-09-12T14:49:08.044Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 2,
-    "medium": 71,
+    "medium": 72,
     "low": 0,
     "info": 0
   },
   "source": {
-    "filesScanned": 1258,
-    "bytesScanned": 32479745,
+    "filesScanned": 1259,
+    "bytesScanned": 33097379,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -55,7 +55,22 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [],
+    "newFindings": [
+      {
+        "id": "c7585e978029df60e3a090af3e0a286c0778dbdd87e7be2f31d314664b01c6a5",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/verify-ve33-historical-rpc.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/verify-ve33-historical-rpc.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "5c061d15dba68f6dff80150d6af8ca40bf204c9185ce327f6a354a386890bc34",
+          "currentSha256": "b1ac48360c99e150c494800ba8e03a5a6c8888f4c9b186b5736103412e79731e"
+        }
+      }
+    ],
     "resolvedFindings": []
   },
   "currentFindings": [
@@ -80,6 +95,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "c7585e978029df60e3a090af3e0a286c0778dbdd87e7be2f31d314664b01c6a5",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/verify-ve33-historical-rpc.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-ve33-historical-rpc.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "5c061d15dba68f6dff80150d6af8ca40bf204c9185ce327f6a354a386890bc34",
+        "currentSha256": "b1ac48360c99e150c494800ba8e03a5a6c8888f4c9b186b5736103412e79731e"
+      }
     },
     {
       "id": "e0355b82064396fc141e48b5356209bc9cc44e7a4a2b15f7fe18f5dc61f03a0f",
@@ -1067,12 +1096,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "608fb17f97da6fc52f198be0ee0fafe171e4fab4a9128570fd7b5f17011ca6fe",
+    "snapshotHash": "2cfcc12a325e06bbbabdb24be14ab794a6103dc0aa1361612ab7b3645e4b2618",
     "securityVault": {
-      "runCount": 1017,
+      "runCount": 1018,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/09/2026-09-12T11-26-47-205Z-608fb17f97.json",
-      "latestRecordHash": "a957eff8aa55cbf3930e43de97d61a94dae5287ef587c42f80d79f25e9111cef",
+      "latestRecordPath": "security/security-vault/2026/09/2026-09-12T14-49-08-044Z-2cfcc12a32.json",
+      "latestRecordHash": "d2d60da2e5eb3975eb4ce750bfd7727549135a80ad485f7736ea1b90c33a4377",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }

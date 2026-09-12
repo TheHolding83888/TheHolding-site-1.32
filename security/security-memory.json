@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-12T11:26:47.205Z",
+  "generatedAt": "2026-09-12T14:49:08.044Z",
   "status": "watch",
-  "snapshotHash": "608fb17f97da6fc52f198be0ee0fafe171e4fab4a9128570fd7b5f17011ca6fe",
+  "snapshotHash": "2cfcc12a325e06bbbabdb24be14ab794a6103dc0aa1361612ab7b3645e4b2618",
   "repository": {
-    "filesScanned": 1258,
-    "bytesScanned": 32479745,
+    "filesScanned": 1259,
+    "bytesScanned": 33097379,
     "criticalHashes": {
       ".github/workflows/admit-company-010-public.yml": "bb4f80e7263e86c63c379b78d476e35e0f846d8d68172f048d44395c739e9cde",
       ".github/workflows/ask-experience.yml": "deb9c4e1025390563f8a866f6ddf1c7870e748cbd6aba13fdbd6da2d38e983d4",
@@ -155,7 +155,7 @@
       ".github/workflows/verify-security-eval-detector.yml": "2c89f39584deb768f4f5900489cd3ab9bfeec9434eb7e8c9c5445cf622bc17ad",
       ".github/workflows/verify-settlement-accounting-links.yml": "bf701ff6459048609eefd722cedabe71a1c5baf9b3c84a2a0951e35c971d50b6",
       ".github/workflows/verify-ve33-accounting.yml": "480fc941c0e996236d27436d340b304909fc4c338ddc31a51d559bbfe11484da",
-      ".github/workflows/verify-ve33-historical-rpc.yml": "5c061d15dba68f6dff80150d6af8ca40bf204c9185ce327f6a354a386890bc34",
+      ".github/workflows/verify-ve33-historical-rpc.yml": "b1ac48360c99e150c494800ba8e03a5a6c8888f4c9b186b5736103412e79731e",
       ".github/workflows/verify-ve33-locked-managed-accounting.yml": "891d001a298a6a9231cf1d8f11a36ee323c461a983aab4f51e2fec5b050517a6",
       ".github/workflows/verify-ve33-locked-managed-history.yml": "84ba3fd99c1e88e37509047bc6c143b87c1c9fbdcc6fe199aec6d0fb95028ab4",
       ".github/workflows/verify-ve33-volatile-pool-valuation.yml": "ebf84544a5c2a28d88595f4e150cf5d47c349cff2135283637a5767cae6b5ad3",
@@ -508,6 +508,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "c7585e978029df60e3a090af3e0a286c0778dbdd87e7be2f31d314664b01c6a5",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/verify-ve33-historical-rpc.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-ve33-historical-rpc.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "5c061d15dba68f6dff80150d6af8ca40bf204c9185ce327f6a354a386890bc34",
+        "currentSha256": "b1ac48360c99e150c494800ba8e03a5a6c8888f4c9b186b5736103412e79731e"
+      }
     },
     {
       "id": "e0355b82064396fc141e48b5356209bc9cc44e7a4a2b15f7fe18f5dc61f03a0f",
@@ -1485,10 +1499,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 1017,
+    "runCount": 1018,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/09/2026-09-12T11-26-47-205Z-608fb17f97.json",
-    "latestRecordHash": "a957eff8aa55cbf3930e43de97d61a94dae5287ef587c42f80d79f25e9111cef",
+    "latestRecordPath": "security/security-vault/2026/09/2026-09-12T14-49-08-044Z-2cfcc12a32.json",
+    "latestRecordHash": "d2d60da2e5eb3975eb4ce750bfd7727549135a80ad485f7736ea1b90c33a4377",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
