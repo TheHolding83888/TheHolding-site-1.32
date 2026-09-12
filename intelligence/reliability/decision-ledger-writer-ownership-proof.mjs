@@ -38,7 +38,8 @@ assert.match(owner,/group:\s*owner-economic-decision-entry/,'owner caller concur
 assert.ok(owner.includes('uses: ./.github/workflows/record-brain-decision.yml'),'owner economic entry must call canonical Decision writer');
 assert.ok(owner.includes('record_mode: owner-economic'),'owner economic entry mode binding missing');
 for(const input of ['entity','category','disposition','rationale','expected_outcome','evaluation_criterion','review_on_or_after','counterevidence','invalidation_condition','deferred_alternative','intended_use','confidence','evidence_note','supersedes_decision_id']){
-  assert.ok(owner.includes(`${input}: ${{ inputs.${input} }}`),`owner economic input not forwarded: ${input}`);
+  const expected=input+': ${{ inputs.'+input+' }}';
+  assert.ok(owner.includes(expected),`owner economic input not forwarded: ${input}`);
 }
 assert.doesNotMatch(owner,/\brun:\s|\bgit\s+add\b|\bgit\s+commit\b|\bgit\s+push\b|actions:\s*write|write-all|\/contents\//,'owner economic entry regained direct repository mutation/control behavior');
 assert.equal(owner.includes(LEDGER),false,'owner economic entry must not name/stage Decision Ledger directly');
