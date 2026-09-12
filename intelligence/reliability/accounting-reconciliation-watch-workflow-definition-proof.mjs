@@ -24,7 +24,7 @@ requireText('permissions:\n  contents: write','reconciliation watch writer conte
 assert.doesNotMatch(workflow,/actions:\s*write|write-all/,'reconciliation watch writer gained broader Actions/repository authority');
 assert.doesNotMatch(workflow,/\n\s*pull_request:/,'production reconciliation watch writer must not execute on pull_request');
 requireText('workflow_dispatch:','bounded manual recovery trigger missing');
-requireText('workflows:\n      - "Update Historical Accounting Completeness Map"','canonical completeness handoff missing');
+requireText('workflows:\n      - "Update Company Monthly Reports"\n      - "Update Historical Accounting Completeness Map"','canonical direct + completeness handoff missing');
 requireText("github.event.workflow_run.conclusion == 'success'",'upstream success gate missing');
 requireText("github.event.workflow_run.head_branch == 'main'",'upstream main gate missing');
 requireText('ref: main','production writer must consume canonical main');
@@ -89,7 +89,8 @@ for(const forbidden of [
 console.log('Accounting Reconciliation Watch workflow definition paired proof PASS',{
   workflow:WORKFLOW_PATH,
   proofScope:'workflow-definition-and-derived-safe-writer-contract',
-  canonicalUpstream:'Update Historical Accounting Completeness Map',
+  canonicalUpstreams:['Update Company Monthly Reports','Update Historical Accounting Completeness Map'],
+  directSourceWake:'Update Company Monthly Reports',
   controlPlaneRole:'repository-writer',
   truthPlane:'derived-accounting-diagnostics',
   controlDomain:'reporting-accounting-reconciliation-watch',
