@@ -35,7 +35,7 @@ jobs:
           node --check reporting/ve33-accounting-runner-validation.mjs
           node reporting/ve33-accounting-runner-validation.mjs
 
-      - name: Live August + September historical-state canary
+      - name: Live August + September historical-state and transient-recovery canary
         env:
           REWARDS_DATA_FILE: ./companies/rewards-data.json
           VE33_EVIDENCE_FILE: /tmp/ve33-accounting-evidence.json
@@ -67,11 +67,28 @@ jobs:
             }
             if(Number(d.currentStateFailureCount||0)!==0) throw new Error(`${protocol} current state regressed while selecting historical provider`);
           }
+
+          const laptopToken='0xb095274743941e953c746f9c228da9c18bb6ec29';
+          const laptopTx='0xaad260eb97a2414e45dc5f105e8966932ca8795eb267aacd9ce85b929cd37153';
+          const laptopCompany='0x5860...83CA8.eth';
+          const baseline=x.runner?.transientClaimPredeploymentBaselines;
+          if(!(Number(baseline?.seededCheckpointCount)>0)) throw new Error(`no transient predeployment zero baseline was physically proven: ${JSON.stringify(baseline)}`);
+          const zero=(x.checkpoints||[]).find(c=>c.company===laptopCompany&&String(c.rewardToken||'').toLowerCase()===laptopToken&&c.predeploymentZeroProof?.proof==='eth_getCode-empty-at-exact-historical-boundary');
+          if(!zero||zero.entitlementRaw!=='0'||Number(zero.entitlementAmount)!==0||zero.predeploymentZeroProof?.createsIncome!==false) throw new Error('exact LAPTOP predeployment zero checkpoint missing');
+          const event=(x.events||[]).find(e=>e.company===laptopCompany&&String(e.token||'').toLowerCase()===laptopToken&&(e.settlementProofs||[]).some(p=>String(p.transactionHash||'').toLowerCase()===laptopTx));
+          if(!event) throw new Error('LAPTOP transient reward did not become canonical ve33 earned event');
+          if(Math.abs(Number(event.amount)-67.61502017501584)>1e-9) throw new Error(`LAPTOP factual amount drift: ${event.amount}`);
+          if(event.usdValue!==null||event.valuationStatus!=='unvalued-fail-closed') throw new Error('LAPTOP USD must remain UNKNOWN until independent historical valuation exists');
+          if(event.claimIsSecondIncomeEvent!==false||event.laterClaimOrPriceMoveDoesNotRewriteIncome!==true||event.executionAuthority!=='none') throw new Error('LAPTOP lifecycle semantics drift');
+
           if(x.authority?.executionAuthority!=='none'||x.authority?.walletAuthority!=='none'||x.authority?.claimingAuthority!=='none'||x.authority?.capitalExecution!==false) throw new Error('ve33 authority expansion');
-          console.log('ve33 historical RPC capability PASS',{
+          console.log('ve33 historical RPC + transient recovery capability PASS',{
             selected:Object.fromEntries(Object.entries(x.runner.selection).map(([k,v])=>[k,v.selectedProvider])),
             boundaryFailures:Object.fromEntries(Object.entries(x.diagnostics.protocols).map(([k,v])=>[k,(v.boundaryFailures||[]).length])),
             skipped:Object.fromEntries(Object.entries(x.diagnostics.protocols).map(([k,v])=>[k,v.historicalBoundarySkippedLaneReads||0])),
+            transientZeroBaselines:baseline.seededCheckpointCount,
+            laptopAmount:event.amount,
+            laptopUsd:event.usdValue,
             accepted:x.diagnostics.acceptedPositiveIntervalCount,
             historicalPriceResolved:x.diagnostics.historicalPriceResolvedIntervalCount
           });

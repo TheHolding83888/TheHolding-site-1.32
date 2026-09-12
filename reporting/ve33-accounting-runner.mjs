@@ -42,6 +42,7 @@ export const TRANSIENT_RECOVERY_POLICY=Object.freeze({
   createsRealisedCashFlow:false,
   canonicalVe33EvidenceRemainsEconomicAuthority:true,
   invalidAuthorityInput:'ignore-fail-closed',
+  predeploymentZeroBaselineRequiresExactHistoricalCodeAbsence:true,
   executionAuthority:'none',
   capitalExecution:false
 });
@@ -52,6 +53,7 @@ const RPC_PROBE_TIMEOUT_MS=Math.max(2_000,Math.min(30_000,Number(process.env.VE3
 const CURRENT_BLOCK_MARGIN=Math.max(32,Math.min(8_192,Number(process.env.VE33_CURRENT_BLOCK_MARGIN||1_024)));
 
 const unique=values=>[...new Set((values||[]).filter(Boolean))];
+const lower=value=>String(value||'').toLowerCase();
 const waitTimeout=(promise,ms,label)=>Promise.race([
   promise,
   new Promise((_,reject)=>setTimeout(()=>reject(new Error(`${label} timeout after ${ms}ms`)),ms))
@@ -175,6 +177,140 @@ export function historicalCallBlockTag(args,currentBlockNumber,margin=CURRENT_BL
   return Number.isFinite(n)&&n<Number(currentBlockNumber)-Number(margin)?n:null;
 }
 
+export function historicalCodeBlockTag(blockTag,currentBlockNumber,margin=CURRENT_BLOCK_MARGIN){
+  const n=numericBlockTag(blockTag);
+  return Number.isFinite(n)&&n<Number(currentBlockNumber)-Number(margin)?n:null;
+}
+
+export function isExactCodeAbsence(code){
+  return String(code||'').toLowerCase()==='0x';
+}
+
+export function transientVotingLaneKey(claim={}){
+  if(!claim?.protocolKey||!claim?.company||!claim?.holder||!claim?.tokenId||!claim?.rewardContract||!claim?.rewardToken)return null;
+  return [claim.protocolKey,claim.company,lower(claim.holder),String(claim.tokenId),'voting-reward',lower(claim.rewardContract),lower(claim.rewardToken)].join('|');
+}
+
+export function buildPredeploymentZeroCheckpoint({claim,boundaryAt,blockNumber,blockTimestamp=null,code='0x'}={}){
+  if(!isExactCodeAbsence(code))return null;
+  const laneKey=transientVotingLaneKey(claim);
+  if(!laneKey||!Number.isFinite(Number(blockNumber))||Number(blockNumber)<=0)return null;
+  return{
+    ok:true,
+    checkpointKey:`${laneKey}|${Number(blockNumber)}`,
+    laneKey,
+    company:claim.company,
+    protocolKey:claim.protocolKey,
+    protocol:claim.protocol||PROTOCOLS[claim.protocolKey]?.protocol||null,
+    chain:claim.chain||PROTOCOLS[claim.protocolKey]?.chain||null,
+    chainId:claim.chainId||PROTOCOLS[claim.protocolKey]?.chainId||null,
+    route:claim.route,
+    holder:claim.holder,
+    tokenId:String(claim.tokenId),
+    custodyContext:claim.custodyContext||'direct-wallet',
+    kind:'voting-reward',
+    rewardContract:claim.rewardContract,
+    distributor:null,
+    rewardToken:claim.rewardToken,
+    rewardSymbol:claim.rewardSymbol||null,
+    decimals:Number.isInteger(Number(claim.rewardDecimals))?Number(claim.rewardDecimals):null,
+    observedAt:boundaryAt,
+    blockNumber:Number(blockNumber),
+    entitlementRaw:'0',
+    entitlementAmount:0,
+    monthBoundary:true,
+    exactBlockTaggedState:true,
+    accountingStart:DIRECT_ACCOUNTING_START,
+    periodIncomeAuthority:false,
+    unknownIsNotZero:true,
+    predeploymentZeroProof:{
+      proof:'eth_getCode-empty-at-exact-historical-boundary',
+      rewardContract:claim.rewardContract,
+      code,
+      boundaryAt,
+      blockNumber:Number(blockNumber),
+      blockTimestamp,
+      createsIncome:false,
+      executionAuthority:'none'
+    }
+  };
+}
+
+export async function seedTransientPredeploymentZeroBaselines({previous={},recovery={},providers={}}={}){
+  const checkpoints=[...(previous?.checkpoints||[])];
+  const existing=new Set(checkpoints.map(x=>x?.checkpointKey).filter(Boolean));
+  const diagnostics={
+    policy:'exact historical eth_getCode absence proves zero opening entitlement; RPC failure or deployed code never implies zero',
+    candidateClaimCount:0,
+    seededCheckpointCount:0,
+    skippedAlreadyRepresented:0,
+    skippedExistingCheckpoint:0,
+    skippedNoProvider:0,
+    skippedNoEligibleBoundary:0,
+    skippedContractAlreadyDeployed:0,
+    unresolvedCodeReadCount:0,
+    samples:[],
+    createsIncome:false,
+    executionAuthority:'none'
+  };
+  if(!recoveryAuthorityValid(recovery)){
+    diagnostics.status='ignored-invalid-authority';
+    return{previous:{...previous,checkpoints},diagnostics};
+  }
+  diagnostics.status='valid-authority';
+  const candidates=recoveryClaims(recovery).filter(claim=>
+    claim?.classification==='transient-orphan-claim'&&claim?.alreadyRepresented!==true&&
+    Number.isFinite(Number(claim?.blockNumber))&&claim?.rewardContract&&claim?.rewardToken
+  );
+  diagnostics.candidateClaimCount=candidates.length;
+  const boundaryCache=new Map();
+  const latestCache=new Map();
+
+  for(const claim of candidates){
+    const provider=providers[claim.protocolKey];
+    if(!provider){diagnostics.skippedNoProvider++;continue;}
+    if(claim.alreadyRepresented===true){diagnostics.skippedAlreadyRepresented++;continue;}
+    let latestNumber=latestCache.get(claim.protocolKey);
+    if(!latestNumber){
+      try{latestNumber=Number(await provider.getBlockNumber());latestCache.set(claim.protocolKey,latestNumber);}catch{diagnostics.skippedNoProvider++;continue;}
+    }
+    const eligible=[];
+    for(const boundaryAt of REQUIRED_HISTORICAL_BOUNDARIES){
+      const cacheKey=`${claim.protocolKey}|${boundaryAt}`;
+      let boundary=boundaryCache.get(cacheKey);
+      try{
+        if(!boundary){boundary=await blockAtOrBefore(provider,boundaryAt,latestNumber,new Map());boundaryCache.set(cacheKey,boundary);}
+      }catch{continue;}
+      if(Number(boundary.blockNumber)<Number(claim.blockNumber))eligible.push({boundaryAt,...boundary});
+    }
+    eligible.sort((a,b)=>Number(b.blockNumber)-Number(a.blockNumber));
+    if(!eligible.length){diagnostics.skippedNoEligibleBoundary++;continue;}
+    const boundary=eligible[0];
+    const laneKey=transientVotingLaneKey(claim);
+    const checkpointKey=`${laneKey}|${Number(boundary.blockNumber)}`;
+    if(existing.has(checkpointKey)){diagnostics.skippedExistingCheckpoint++;continue;}
+    let code;
+    try{code=await provider.getCode(claim.rewardContract,Number(boundary.blockNumber));}
+    catch(error){
+      diagnostics.unresolvedCodeReadCount++;
+      if(diagnostics.samples.length<12)diagnostics.samples.push({status:'historical-code-read-unavailable',protocolKey:claim.protocolKey,company:claim.company,tokenId:String(claim.tokenId),rewardContract:claim.rewardContract,boundaryAt:boundary.boundaryAt,error:error?.shortMessage||error?.message||String(error)});
+      continue;
+    }
+    if(!isExactCodeAbsence(code)){
+      diagnostics.skippedContractAlreadyDeployed++;
+      if(diagnostics.samples.length<12)diagnostics.samples.push({status:'contract-already-deployed-at-boundary',protocolKey:claim.protocolKey,company:claim.company,tokenId:String(claim.tokenId),rewardContract:claim.rewardContract,boundaryAt:boundary.boundaryAt,codeLength:String(code||'').length});
+      continue;
+    }
+    const checkpoint=buildPredeploymentZeroCheckpoint({claim,boundaryAt:boundary.boundaryAt,blockNumber:boundary.blockNumber,blockTimestamp:boundary.blockTimestamp,code});
+    if(!checkpoint)continue;
+    checkpoints.push(checkpoint);
+    existing.add(checkpoint.checkpointKey);
+    diagnostics.seededCheckpointCount++;
+    if(diagnostics.samples.length<12)diagnostics.samples.push({status:'predeployment-zero-baseline-proven',protocolKey:claim.protocolKey,company:claim.company,tokenId:String(claim.tokenId),rewardContract:claim.rewardContract,rewardToken:claim.rewardToken,boundaryAt:boundary.boundaryAt,blockNumber:Number(boundary.blockNumber)});
+  }
+  return{previous:{...previous,checkpoints},diagnostics};
+}
+
 async function probeCurrentCandidate({url,cfg,protocolKey,lanes}){
   const provider=new JsonRpcProvider(url,cfg.chainId,{staticNetwork:true}),label=rpcLabel(url);
   try{
@@ -227,7 +363,8 @@ async function probeHistoricalCandidate({url,cfg,protocolKey,lanes}){
 
 export function attachHistoricalCallRouter({currentProvider,archiveProvider,currentBlockNumber,stats={}}){
   const currentCall=currentProvider.call.bind(currentProvider),archiveCall=archiveProvider.call.bind(archiveProvider);
-  Object.assign(stats,{historicalCalls:0,currentCalls:0,currentFallbackCalls:0,historicalFailures:0,currentPrimaryFailures:0,marginBlocks:CURRENT_BLOCK_MARGIN});
+  const currentGetCode=currentProvider.getCode.bind(currentProvider),archiveGetCode=archiveProvider.getCode.bind(archiveProvider);
+  Object.assign(stats,{historicalCalls:0,currentCalls:0,currentFallbackCalls:0,historicalCodeReads:0,currentCodeReads:0,currentCodeFallbackReads:0,historicalFailures:0,currentPrimaryFailures:0,marginBlocks:CURRENT_BLOCK_MARGIN});
   currentProvider.call=async(...args)=>{
     const historicalBlock=historicalCallBlockTag(args,currentBlockNumber,CURRENT_BLOCK_MARGIN);
     if(historicalBlock!==null){
@@ -241,6 +378,22 @@ export function attachHistoricalCallRouter({currentProvider,archiveProvider,curr
       stats.currentPrimaryFailures++;
       stats.currentFallbackCalls++;
       try{return await archiveCall(...args);}
+      catch{throw primaryError;}
+    }
+  };
+  currentProvider.getCode=async(address,blockTag)=>{
+    const historicalBlock=historicalCodeBlockTag(blockTag,currentBlockNumber,CURRENT_BLOCK_MARGIN);
+    if(historicalBlock!==null){
+      stats.historicalCodeReads++;
+      try{return await archiveGetCode(address,blockTag);}
+      catch(error){stats.historicalFailures++;throw error;}
+    }
+    stats.currentCodeReads++;
+    try{return await currentGetCode(address,blockTag);}
+    catch(primaryError){
+      stats.currentPrimaryFailures++;
+      stats.currentCodeFallbackReads++;
+      try{return await archiveGetCode(address,blockTag);}
       catch{throw primaryError;}
     }
   };
@@ -327,13 +480,15 @@ export async function runVe33Accounting({rewards,recovery={},previous={},generat
   const missing=Object.entries(selection.diagnostics).filter(([,x])=>x.status!=='archive-capable-provider-selected'&&x.status!=='no-lanes').map(([k])=>k);
   if(missing.length&&requireHistoricalRpc(env))throw new Error(`ve33 historical RPC capability missing for: ${missing.join(', ')}`);
 
-  const output=await buildVe33Evidence({rewards:accountingRewards,previous,generatedAt,providers:selection.providers});
+  const baseline=await seedTransientPredeploymentZeroBaselines({previous,recovery,providers:selection.providers});
+  const output=await buildVe33Evidence({rewards:accountingRewards,previous:baseline.previous,generatedAt,providers:selection.providers});
   output.runner={
     version:VERSION,
-    historicalRpcPolicy:'current-capable primary RPC with exact block-tagged eth_call routing to a separately proven archive-capable provider',
+    historicalRpcPolicy:'current-capable primary RPC with exact block-tagged eth_call/eth_getCode routing to a separately proven archive-capable provider',
     requiredHistoricalBoundaries:[...REQUIRED_HISTORICAL_BOUNDARIES],
     requireHistoricalRpc:requireHistoricalRpc(env),
     transientClaimRecovery:recoveryInput.diagnostics,
+    transientClaimPredeploymentBaselines:baseline.diagnostics,
     selection:selection.diagnostics,
     executionAuthority:'none',
     capitalExecution:false
@@ -358,7 +513,8 @@ async function main(){
       runnerVersion:VERSION,
       recoveryPolicyVersion:TRANSIENT_RECOVERY_POLICY.version,
       requireHistoricalRpc:requireHistoricalRpc(process.env),
-      requiredHistoricalBoundaries:[...REQUIRED_HISTORICAL_BOUNDARIES]
+      requiredHistoricalBoundaries:[...REQUIRED_HISTORICAL_BOUNDARIES],
+      predeploymentZeroBaselineRequiresExactHistoricalCodeAbsence:true
     }
   });
 
@@ -381,6 +537,7 @@ async function main(){
     status:output.status,
     runnerVersion:output.runner?.version,
     transientClaimRecovery:output.runner?.transientClaimRecovery||null,
+    transientClaimPredeploymentBaselines:output.runner?.transientClaimPredeploymentBaselines||null,
     selectedProviders:Object.fromEntries(Object.entries(output.runner?.selection||{}).map(([k,v])=>[k,{current:v.currentProvider||null,archive:v.selectedProvider||null,mode:v.routingMode||null}])),
     boundaryFailures:Object.fromEntries(Object.entries(output.diagnostics?.protocols||{}).map(([k,v])=>[k,(v.boundaryFailures||[]).length])),
     currentStateFailures:Object.fromEntries(Object.entries(output.diagnostics?.protocols||{}).map(([k,v])=>[k,Number(v.currentStateFailureCount||0)])),
