@@ -1,7 +1,7 @@
 {
   "version": "0.1-vlcvx-votium-curve-gauge-flow",
   "engineVersion": "0.1-votium-convex-curve-execution-bridge",
-  "generatedAt": "2026-08-26T10:00:40.083Z",
+  "generatedAt": "2026-09-12T06:08:33.690Z",
   "status": "shadow-cross-protocol-flow-proven",
   "purpose": "Connect Votium incentive accounting and proven vlCVX voting power to Convex GaugeVotePlatform and actually executed Curve gauge BPS weights, without claiming incentives caused votes or downstream pool economics.",
   "authority": {
@@ -18,11 +18,14 @@
   },
   "sourceBinding": {
     "roundFlowFile": "intelligence/economic-graph/vlcvx-votium-round-flow.json",
-    "roundFlowSha256": "6a2ad4ab44a09efa9dbda24a21888605d1876a869c569fea00ea3500b18c15dd",
+    "roundFlowSha256": "e1c332829489e1093815442fbc5fd3dc42a23289e25f6c65cf21607307d49e07",
     "votingProvenanceFile": "intelligence/economic-graph/vlcvx-votium-snapshot-proof.json",
-    "votingProvenanceSha256": "97172d88117689f4d64477fc6743054e5d03580238083fd9738609a0fa979f06",
+    "votingProvenanceSha256": "d0a9dfa9580c3a0fb9f5a2ecc304855d66af9fb71c1e86136745bcb170885a83",
     "companyRegistry": "004",
-    "candidateId": "defitea-convex-vlcvx-votium"
+    "candidateId": "defitea-convex-vlcvx-votium",
+    "retainedHistoricalArtifactFile": "intelligence/economic-graph/vlcvx-votium-curve-gauge-flow.json",
+    "retainedHistoricalArtifactSha256": "200dfc9977a1d05fdd64f1d4c7733688f93592247a987ab5b3376d04de6f1d3d",
+    "retainedHistoricalGeneratedAt": "2026-08-26T10:00:40.083Z"
   },
   "protocolBridge": {
     "chain": "Ethereum",
@@ -35,12 +38,13 @@
     "executionEventSemantics": "GaugeVotePlatform getGaugeCount/getGaugeEntry enumerate gauges with votes. CurveGaugeExecutor counts only submitted gauges with gaugeTotal > 0, but GaugeVoteExecuted emits the complete caller-supplied gauge array; therefore event-only gauges are valid only when live gaugeTotal = 0 and emitted BPS = 0."
   },
   "observation": {
-    "ethereumBlock": 25838649,
-    "ethereumBlockHash": "0x86ef8f35a86ca7382fe35b717946b6a697c9402f75503678dda7d58ed1c052d5",
-    "observedAt": "2026-08-26T10:00:23.000Z",
+    "ethereumBlock": 25959435,
+    "ethereumBlockHash": "0xae96e16ded3c364621d20042db5b0061b3b4df50a46a16fe217b260780a86a23",
+    "observedAt": "2026-09-12T06:08:11.000Z",
     "rpcArchitecture": "split-current-state-and-historical-log-lanes",
     "stateRpcEndpointClass": "ethereum-rpc.publicnode.com",
-    "historicalLogRpcEndpointClassesUsed": [
+    "historicalLogRpcEndpointClassesUsed": [],
+    "retainedHistoricalLogRpcEndpointClasses": [
       "eth.drpc.org"
     ],
     "historicalLogScan": {
@@ -91,12 +95,20 @@
           "duplicateEventGaugeRows": 0
         }
       ],
-      "completionRule": "stop only after completed current executor state, every GaugeVotePlatform voted gauge is present in execution events, all event-only gauges have zero BPS, no event gauge is duplicated, and total executed BPS equals 10000 for both target proposals"
+      "completionRule": "stop only after completed current executor state, every GaugeVotePlatform voted gauge is present in execution events, all event-only gauges have zero BPS, no event gauge is duplicated, and total executed BPS equals 10000 for both target proposals",
+      "evidenceMode": "retained-last-verified-canonical-events",
+      "retainedArtifactSha256": "200dfc9977a1d05fdd64f1d4c7733688f93592247a987ab5b3376d04de6f1d3d",
+      "retainedGeneratedAt": "2026-08-26T10:00:40.083Z",
+      "freshRefreshAttempted": true,
+      "freshRefreshStatus": "unavailable-fell-back-to-retained-canonical",
+      "freshRefreshFailureRecorded": true,
+      "currentProposalStateRevalidated": true,
+      "eventOnlyZeroStateRevalidated": true
     },
     "rpcBatching": "disabled-for-public-endpoint-compatibility",
     "stateReadMode": "latest-persistent-finalized-proposal-state",
     "historicalStateReadsRequired": false,
-    "historicalExecutionEvidence": "GaugeVoteExecuted-event-logs"
+    "historicalExecutionEvidence": "retained-last-verified-canonical-GaugeVoteExecuted-evidence"
   },
   "coverage": {
     "roundCount": 2,
@@ -322,67 +334,78 @@
             "gauge": "0x4e227d29b33B77113F84bcC189a6F886755a1f24",
             "executedWeightBps": 0,
             "gaugeTotalRaw": "0",
-            "gaugeTotalIsZero": true
+            "gaugeTotalIsZero": true,
+            "retainedPriorZeroProof": true
           },
           {
             "gauge": "0x6a253c9fe5AaFF662e072Aa694CE53b917aDb278",
             "executedWeightBps": 0,
             "gaugeTotalRaw": "0",
-            "gaugeTotalIsZero": true
+            "gaugeTotalIsZero": true,
+            "retainedPriorZeroProof": true
           },
           {
             "gauge": "0x9E7641A394859860210203e6D9cb82044712421C",
             "executedWeightBps": 0,
             "gaugeTotalRaw": "0",
-            "gaugeTotalIsZero": true
+            "gaugeTotalIsZero": true,
+            "retainedPriorZeroProof": true
           },
           {
             "gauge": "0x87F791090B09069b3F9c64E3be3cBBc0b45Fc9b6",
             "executedWeightBps": 0,
             "gaugeTotalRaw": "0",
-            "gaugeTotalIsZero": true
+            "gaugeTotalIsZero": true,
+            "retainedPriorZeroProof": true
           },
           {
             "gauge": "0x26F7786de3E6D9Bd37Fcf47BE6F2bC455a21b74A",
             "executedWeightBps": 0,
             "gaugeTotalRaw": "0",
-            "gaugeTotalIsZero": true
+            "gaugeTotalIsZero": true,
+            "retainedPriorZeroProof": true
           },
           {
             "gauge": "0x1211B5cB09Ba1aDa8F11de757d5a13C5CA407162",
             "executedWeightBps": 0,
             "gaugeTotalRaw": "0",
-            "gaugeTotalIsZero": true
+            "gaugeTotalIsZero": true,
+            "retainedPriorZeroProof": true
           },
           {
             "gauge": "0x8C84B88562cED07F84aF488CC45d434186d07B6e",
             "executedWeightBps": 0,
             "gaugeTotalRaw": "0",
-            "gaugeTotalIsZero": true
+            "gaugeTotalIsZero": true,
+            "retainedPriorZeroProof": true
           },
           {
             "gauge": "0x65B8b0B7D62bdcA3Ed3c3002C49db315b0f8Eb37",
             "executedWeightBps": 0,
             "gaugeTotalRaw": "0",
-            "gaugeTotalIsZero": true
+            "gaugeTotalIsZero": true,
+            "retainedPriorZeroProof": true
           },
           {
             "gauge": "0x28a72343bFf5e10b36E72d86b1041ED2447Dc0Cc",
             "executedWeightBps": 0,
             "gaugeTotalRaw": "0",
-            "gaugeTotalIsZero": true
+            "gaugeTotalIsZero": true,
+            "retainedPriorZeroProof": true
           },
           {
             "gauge": "0x0C5fa0C51C63CE937C588225C202b04c30F3CEeE",
             "executedWeightBps": 0,
             "gaugeTotalRaw": "0",
-            "gaugeTotalIsZero": true
+            "gaugeTotalIsZero": true,
+            "retainedPriorZeroProof": true
           },
           {
             "gauge": "0x143f801bC6Aa4c3395379C9E28221BBaF45a69C8",
             "executedWeightBps": 0,
             "gaugeTotalRaw": "0",
-            "gaugeTotalIsZero": true
+            "gaugeTotalIsZero": true,
+            "retainedPriorZeroProof": true
           }
         ],
         "roundingProof": {
@@ -392,7 +415,9 @@
           "negativeDeltaCount": 0,
           "positiveDeltaCount": 1,
           "complete": true
-        }
+        },
+        "historicalExecutionEvidenceMode": "retained-last-verified-canonical-events",
+        "currentStateRevalidated": true
       },
       "coverage": {
         "votiumIncentivizedGaugeCount": 42,
@@ -449,7 +474,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -484,7 +509,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -519,7 +544,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -554,7 +579,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -589,7 +614,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -624,7 +649,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -659,7 +684,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -709,7 +734,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -744,7 +769,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -794,7 +819,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -829,7 +854,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -864,7 +889,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -899,7 +924,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -934,7 +959,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -969,7 +994,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -1019,7 +1044,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -1054,7 +1079,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -1089,7 +1114,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -1124,7 +1149,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -1159,7 +1184,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -1194,7 +1219,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -1229,7 +1254,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -1264,7 +1289,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -1299,7 +1324,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -1334,7 +1359,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -1369,7 +1394,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -1404,7 +1429,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -1439,7 +1464,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -1474,7 +1499,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -1509,7 +1534,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -1544,7 +1569,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -1579,7 +1604,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -1614,7 +1639,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -1649,7 +1674,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -1684,7 +1709,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -1719,7 +1744,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -1754,7 +1779,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -1789,7 +1814,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -1824,7 +1849,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -1859,7 +1884,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -1894,7 +1919,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -1929,7 +1954,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         }
@@ -1938,7 +1963,7 @@
         "incentiveState": "measured",
         "votingPower": "measured-and-cross-contract-proven",
         "curveWeightMechanics": "attributed-by-source-formula",
-        "curveExecution": "measured-by-GaugeVoteExecuted-events",
+        "curveExecution": "measured-by-retained-last-verified-GaugeVoteExecuted-evidence-with-live-state-revalidation",
         "eventOnlyGaugeMeaning": "source-and-live-proven-zero-vote-zero-bps-rows",
         "incentiveToVoteCausality": "unresolved",
         "downstreamLiquidityVolumeFeeEffect": "not-yet-measured-by-v0.1",
@@ -2142,43 +2167,50 @@
             "gauge": "0xFFf3e31fbAB60ea73ea4a11eA796877F73d77E0f",
             "executedWeightBps": 0,
             "gaugeTotalRaw": "0",
-            "gaugeTotalIsZero": true
+            "gaugeTotalIsZero": true,
+            "retainedPriorZeroProof": true
           },
           {
             "gauge": "0x8F4e42343AF1CBF4f364cE448252d801E3f73937",
             "executedWeightBps": 0,
             "gaugeTotalRaw": "0",
-            "gaugeTotalIsZero": true
+            "gaugeTotalIsZero": true,
+            "retainedPriorZeroProof": true
           },
           {
             "gauge": "0x543c88e9B7Bd90a4C14A31bdbf41dD509Ab666eD",
             "executedWeightBps": 0,
             "gaugeTotalRaw": "0",
-            "gaugeTotalIsZero": true
+            "gaugeTotalIsZero": true,
+            "retainedPriorZeroProof": true
           },
           {
             "gauge": "0xCFc25170633581Bf896CB6CDeE170e3E3Aa59503",
             "executedWeightBps": 0,
             "gaugeTotalRaw": "0",
-            "gaugeTotalIsZero": true
+            "gaugeTotalIsZero": true,
+            "retainedPriorZeroProof": true
           },
           {
             "gauge": "0x1eF8B6Ea6434e722C916314caF8Bf16C81cAF2f9",
             "executedWeightBps": 0,
             "gaugeTotalRaw": "0",
-            "gaugeTotalIsZero": true
+            "gaugeTotalIsZero": true,
+            "retainedPriorZeroProof": true
           },
           {
             "gauge": "0xeE624fCbb0C197E41ffc58999e6D35b9B893533E",
             "executedWeightBps": 0,
             "gaugeTotalRaw": "0",
-            "gaugeTotalIsZero": true
+            "gaugeTotalIsZero": true,
+            "retainedPriorZeroProof": true
           },
           {
             "gauge": "0x766752eFbE71Ba7897B205B53EfBd34EC85CA0Cf",
             "executedWeightBps": 0,
             "gaugeTotalRaw": "0",
-            "gaugeTotalIsZero": true
+            "gaugeTotalIsZero": true,
+            "retainedPriorZeroProof": true
           }
         ],
         "roundingProof": {
@@ -2188,7 +2220,9 @@
           "negativeDeltaCount": 0,
           "positiveDeltaCount": 1,
           "complete": true
-        }
+        },
+        "historicalExecutionEvidenceMode": "retained-last-verified-canonical-events",
+        "currentStateRevalidated": true
       },
       "coverage": {
         "votiumIncentivizedGaugeCount": 37,
@@ -2245,7 +2279,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -2295,7 +2329,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -2330,7 +2364,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -2365,7 +2399,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -2400,7 +2434,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -2435,7 +2469,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -2470,7 +2504,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -2505,7 +2539,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -2555,7 +2589,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -2605,7 +2639,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -2640,7 +2674,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -2675,7 +2709,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -2710,7 +2744,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -2745,7 +2779,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -2780,7 +2814,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -2815,7 +2849,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -2850,7 +2884,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -2885,7 +2919,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -2920,7 +2954,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -2955,7 +2989,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -2990,7 +3024,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -3025,7 +3059,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -3060,7 +3094,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -3095,7 +3129,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -3130,7 +3164,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -3165,7 +3199,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -3200,7 +3234,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -3235,7 +3269,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -3270,7 +3304,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -3305,7 +3339,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -3340,7 +3374,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -3375,7 +3409,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -3410,7 +3444,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -3445,7 +3479,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -3480,7 +3514,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -3515,7 +3549,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         },
@@ -3565,7 +3599,7 @@
           "semantics": {
             "incentives": "MEASURED-votium-contract",
             "votes": "MEASURED-votium-and-cross-contract-provenance",
-            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-execution-event",
+            "voteToCurveWeight": "ATTRIBUTED-mechanical-and-retained-canonical-execution-event",
             "incentiveToVote": "CORRELATED-same-round-only-not-causal"
           }
         }
@@ -3574,7 +3608,7 @@
         "incentiveState": "measured",
         "votingPower": "measured-and-cross-contract-proven",
         "curveWeightMechanics": "attributed-by-source-formula",
-        "curveExecution": "measured-by-GaugeVoteExecuted-events",
+        "curveExecution": "measured-by-retained-last-verified-GaugeVoteExecuted-evidence-with-live-state-revalidation",
         "eventOnlyGaugeMeaning": "source-and-live-proven-zero-vote-zero-bps-rows",
         "incentiveToVoteCausality": "unresolved",
         "downstreamLiquidityVolumeFeeEffect": "not-yet-measured-by-v0.1",
@@ -3586,7 +3620,7 @@
     "votiumIncentives": "MEASURED",
     "votiumVotes": "MEASURED",
     "convexToCurveWeightMechanics": "ATTRIBUTED",
-    "curveGaugeExecution": "MEASURED",
+    "curveGaugeExecution": "MEASURED-retained-canonical-event-evidence-live-revalidated",
     "executorEventExtraRows": "ATTRIBUTED-by-pinned-source-and-live-zero-total-proof",
     "incentiveToVoteRelationship": "CORRELATED-only-not-causal",
     "voteToExecutedCurveWeightRelationship": "ATTRIBUTED-and-execution-confirmed",
@@ -3600,6 +3634,7 @@
     "zeroVoteExecutorEventRowsAreNotVotedGauges": true,
     "executedGaugeWeightIsNotPoolRevenue": true,
     "protocolFlowIsNotRealisedCompanyIncome": true,
-    "correlationMustNotBePromotedToAttribution": true
+    "correlationMustNotBePromotedToAttribution": true,
+    "retainedHistoricalEvidenceMayOnlyBeUsedWithFreshCurrentStateRevalidation": true
   }
 }
