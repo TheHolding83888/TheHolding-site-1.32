@@ -2,13 +2,14 @@
 import assert from 'node:assert/strict';
 import { Interface } from 'ethers';
 import { CLAIM_REWARDS_TOPIC, indexedAddressTopic } from './ve33-transient-claim-recovery.mjs';
-import { VERSION, recoveryRpcUrls, createRpcOperationRouter, runRecoveryWriter } from './ve33-transient-claim-recovery-writer.mjs';
+import { VERSION, recoveryRpcUrls, safeRpcError, createRpcOperationRouter, runRecoveryWriter } from './ve33-transient-claim-recovery-writer.mjs';
 
-assert.equal(VERSION,'0.1-ve33-transient-claim-recovery-writer');
+assert.equal(VERSION,'0.2-ve33-transient-claim-recovery-writer');
 const cfg={protocol:'Test',chainId:1,rpcEnv:'TEST_RPC_URL',rpcFallbacks:['https://fallback-one.example','https://fallback-two.example']};
 assert.deepEqual(recoveryRpcUrls(cfg,{TEST_RPC_URL:'https://configured.example'}),[
   'https://configured.example','https://fallback-two.example','https://fallback-one.example'
 ]);
+assert.equal(safeRpcError(new Error('failed at https://secret-rpc.example/private-key-123')), 'failed at [rpc]');
 
 const providers={
   'https://configured.example':{
@@ -31,6 +32,36 @@ assert.equal(failoverStats.failoverCount,1);
 assert.equal(failoverStats.failures['configured.example'],1);
 assert.equal(failoverStats.successes['fallback-two.example'],1);
 failover.destroy();
+
+const splitProviders={
+  'https://configured.example':{
+    async getLogs(filter){
+      const from=Number(filter.fromBlock),to=Number(filter.toBlock);
+      if(to-from+1>600)throw new Error('query exceeds max block range at https://configured.example/private-key');
+      return [{blockNumber:from,transactionHash:'0x'+'ab'.repeat(32),index:from,address:'0x1111111111111111111111111111111111111111'}];
+    },destroy(){}
+  },
+  'https://fallback-two.example':{
+    async getLogs(){throw new Error('historical range unavailable');},destroy(){}
+  },
+  'https://fallback-one.example':{
+    async getLogs(){throw new Error('historical range unavailable');},destroy(){}
+  }
+};
+const adaptive=createRpcOperationRouter({
+  cfg,env:{TEST_RPC_URL:'https://configured.example'},requestSpacingMs:0,minLogSplitBlocks:64,maxLogSplitDepth:6,
+  providerFactory:url=>splitProviders[url]
+});
+const splitLogs=await adaptive.getLogs({fromBlock:1000,toBlock:1999,topics:[CLAIM_REWARDS_TOPIC]});
+assert.equal(splitLogs.length,2);
+assert.deepEqual(splitLogs.map(x=>x.blockNumber),[1000,1500]);
+const splitStats=adaptive.snapshot();
+assert.equal(splitStats.adaptiveSplitCount,1);
+assert.equal(splitStats.maxAdaptiveSplitDepth,1);
+assert.ok(splitStats.failureSamples.length>=3);
+assert.ok(splitStats.failureSamples.every(x=>!String(x.error).includes('private-key')));
+assert.ok(splitStats.splitSamples.every(x=>!String(x.error).includes('private-key')));
+adaptive.destroy();
 
 const holder='0x58603461149Fc2A800a56d421e77DcbBA2D83CA8';
 const voter='0x16613524e02ad97eDfeF371bC883F2F5d6C480A5';
@@ -61,7 +92,7 @@ const mockRouter={
     return[];
   },
   async getTransaction(hash){assert.equal(hash,txHash);return{to:voter,data};},
-  snapshot(){return{preferredProvider:'mock-archive',attempts:queries,failoverCount:0};}
+  snapshot(){return{preferredProvider:'mock-archive',attempts:queries,failoverCount:0,adaptiveSplitCount:0};}
 };
 const output=await runRecoveryWriter({
   rewards,previousEvidence:{checkpoints:[],events:[]},previousState:{},generatedAt:'2026-09-12T00:00:00.000Z',
@@ -87,6 +118,6 @@ assert.equal(claim.accountingAuthority,false);
 assert.equal(claim.executionAuthority,'none');
 
 console.log('ve33 transient ClaimRewards recovery writer validation OK',{
-  operationFailover:true,overlapCursor:true,exactLaptopAcceptanceShape:true,
-  createsIncome:false,executionAuthority:'none'
+  operationFailover:true,adaptiveHistoricalLogSplit:true,redactedRpcDiagnostics:true,
+  overlapCursor:true,exactLaptopAcceptanceShape:true,createsIncome:false,executionAuthority:'none'
 });
