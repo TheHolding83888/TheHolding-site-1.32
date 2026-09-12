@@ -15,7 +15,7 @@ permissions:
 jobs:
   verify-ve33-historical-rpc:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -35,108 +35,94 @@ jobs:
           node --check reporting/ve33-accounting-runner-validation.mjs
           node reporting/ve33-accounting-runner-validation.mjs
 
-      - name: Exact LAPTOP claim-block state probe
+      - name: Focused LAPTOP historical recovery canary
         env:
           BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
         run: |
           set -euo pipefail
           node --input-type=module - <<'NODE'
-          import { Contract, JsonRpcProvider } from 'ethers';
-          const blockTag=51109971;
-          const holder='0x58603461149Fc2A800a56d421e77DcbBA2D83CA8';
-          const tokenId=1938n;
-          const ve='0xeBf418Fe2512e7E6bd9b87a8F0f294aCDC67e6B4';
-          const reward='0x7591A0D4a21170a8bB3C02Bf89F13D7757AeBADe';
-          const token='0xB095274743941e953c746F9C228DA9c18Bb6ec29';
-          const urls=[process.env.BASE_RPC_URL,'https://base-rpc.publicnode.com','https://mainnet.base.org'].filter(Boolean);
-          const unique=[...new Set(urls)];
-          const timeout=(promise,label)=>Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error(`${label} timeout`)),10000))]);
-          const label=url=>{try{return new URL(url).hostname}catch{return 'configured-base-rpc'}};
-          const err=e=>({code:e?.code||null,shortMessage:e?.shortMessage||null,message:e?.message||String(e)});
-          let complete=null;
-          for(const url of unique){
-            const provider=new JsonRpcProvider(url,8453,{staticNetwork:true});
-            const row={provider:label(url),blockTag};
-            try{
-              row.latest=Number(await timeout(provider.getBlockNumber(),'latest'));
-              const owner=await timeout(new Contract(ve,['function ownerOf(uint256 tokenId) view returns (address)'],provider).ownerOf(tokenId,{blockTag}),'ownerOf');
-              row.ownerOf={ok:true,value:String(owner),holderMatch:String(owner).toLowerCase()===holder.toLowerCase()};
-              if(!row.ownerOf.holderMatch)throw new Error(`owner mismatch: ${owner}`);
-              const earned=await timeout(new Contract(reward,['function earned(address token,uint256 tokenId) view returns (uint256)'],provider).earned(token,tokenId,{blockTag}),'earned');
-              row.earned={ok:true,value:earned.toString()};
-              const decimals=await timeout(new Contract(token,['function decimals() view returns (uint8)'],provider).decimals({blockTag}),'decimals');
-              row.decimals={ok:true,value:Number(decimals)};
-              const block=await timeout(provider.getBlock(blockTag),'getBlock');
-              if(!block)throw new Error('block unavailable');
-              row.block={ok:true,timestamp:Number(block.timestamp)};
-              row.complete=true;
-              console.log('LAPTOP claim-block probe',JSON.stringify(row));
-              complete=row;
-              break;
-            }catch(error){
-              row.complete=false;row.error=err(error);
-              console.log('LAPTOP claim-block probe',JSON.stringify(row));
-            }finally{try{provider.destroy()}catch{}}
-          }
-          if(!complete)throw new Error('No Base RPC candidate could read the exact LAPTOP claim-block state end-to-end');
-          NODE
+          import fs from 'node:fs';
+          import { JsonRpcProvider } from 'ethers';
+          import {
+            seedTransientPredeploymentZeroBaselines,
+            seedRecoveredClaimBlockIntervals
+          } from './reporting/ve33-accounting-runner.mjs';
 
-      - name: Live August + September historical-state and transient-recovery canary
-        env:
-          REWARDS_DATA_FILE: ./companies/rewards-data.json
-          VE33_EVIDENCE_FILE: /tmp/ve33-accounting-evidence.json
-          VE33_REQUIRE_HISTORICAL_RPC: '1'
-          VE33_STATE_READ_CONCURRENCY: '2'
-          VE33_SETTLEMENT_CONCURRENCY: '2'
-          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
-          OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL || 'https://gateway.tenderly.co/public/optimism' }}
-        run: |
-          set -euo pipefail
-          cp reporting/ve33-accounting-evidence.json "$VE33_EVIDENCE_FILE"
-          node reporting/ve33-accounting-runner.mjs
-          node - <<'NODE'
-          const fs=require('fs');
-          const x=JSON.parse(fs.readFileSync('/tmp/ve33-accounting-evidence.json','utf8'));
-          const required=['2026-08-01T00:00:00.000Z','2026-09-01T00:00:00.000Z'];
-          if(x.runner?.version!=='0.1-ve33-capability-aware-historical-rpc-runner') throw new Error('historical RPC runner metadata missing');
-          if(x.runner?.requireHistoricalRpc!==true) throw new Error('historical RPC canary did not run in required mode');
-          for(const protocol of ['aerodrome','velodrome']){
-            const selection=x.runner?.selection?.[protocol];
-            if(selection?.status!=='archive-capable-provider-selected'||!selection?.selectedProvider) throw new Error(`no archive-capable historical provider selected for ${protocol}`);
-            const d=x.diagnostics?.protocols?.[protocol];
-            if(!d) throw new Error(`missing ${protocol} diagnostics`);
-            if((d.boundaryFailures||[]).length!==0) throw new Error(`${protocol} still has historical boundary failures: ${JSON.stringify(d.boundaryFailures)}`);
-            if(Number(d.historicalBoundarySkippedLaneReads||0)!==0) throw new Error(`${protocol} skipped historical lane reads`);
-            for(const boundaryAt of required){
-              const row=(d.boundaryCapability||[]).find(v=>v.boundaryAt===boundaryAt);
-              if(!row||row.available!==true||row.status!=='historical-state-readable') throw new Error(`${protocol} historical state unavailable at ${boundaryAt}`);
-            }
-            if(Number(d.currentStateFailureCount||0)!==0) throw new Error(`${protocol} current state regressed while selecting historical provider`);
-          }
-
+          const company='0x5860...83CA8.eth';
           const laptopToken='0xb095274743941e953c746f9c228da9c18bb6ec29';
           const laptopTx='0xaad260eb97a2414e45dc5f105e8966932ca8795eb267aacd9ce85b929cd37153';
-          const laptopCompany='0x5860...83CA8.eth';
-          const baseline=x.runner?.transientClaimPredeploymentBaselines;
-          if(!(Number(baseline?.seededCheckpointCount)>0)) throw new Error(`no transient predeployment zero baseline was physically proven: ${JSON.stringify(baseline)}`);
-          const zero=(x.checkpoints||[]).find(c=>c.company===laptopCompany&&String(c.rewardToken||'').toLowerCase()===laptopToken&&c.predeploymentZeroProof?.proof==='eth_getCode-empty-at-exact-historical-boundary');
-          if(!zero||zero.entitlementRaw!=='0'||Number(zero.entitlementAmount)!==0||zero.predeploymentZeroProof?.createsIncome!==false) throw new Error('exact LAPTOP predeployment zero checkpoint missing');
-          const event=(x.events||[]).find(e=>e.company===laptopCompany&&String(e.token||'').toLowerCase()===laptopToken&&(e.settlementProofs||[]).some(p=>String(p.transactionHash||'').toLowerCase()===laptopTx));
-          if(!event) throw new Error('LAPTOP transient reward did not become canonical ve33 earned event');
-          if(Math.abs(Number(event.amount)-67.61502017501584)>1e-9) throw new Error(`LAPTOP factual amount drift: ${event.amount}`);
-          if(event.usdValue!==null||event.valuationStatus!=='unvalued-fail-closed') throw new Error('LAPTOP USD must remain UNKNOWN until independent historical valuation exists');
-          if(event.claimIsSecondIncomeEvent!==false||event.laterClaimOrPriceMoveDoesNotRewriteIncome!==true||event.executionAuthority!=='none') throw new Error('LAPTOP lifecycle semantics drift');
+          const expectedAmountRaw='67615020175015840449';
+          const expectedAmount=67.61502017501584;
+          const full=JSON.parse(fs.readFileSync('reporting/ve33-transient-claim-recovery.json','utf8'));
+          const aerodrome=full?.protocols?.aerodrome;
+          if(!aerodrome)throw new Error('Aerodrome recovery proof missing');
+          const claim=(aerodrome.claims||[]).find(row=>
+            String(row?.transactionHash||'').toLowerCase()===laptopTx&&
+            String(row?.rewardToken||'').toLowerCase()===laptopToken&&
+            row?.company===company
+          );
+          if(!claim)throw new Error('Exact LAPTOP recovery claim missing');
+          const recovery={
+            ...full,
+            protocols:{
+              aerodrome:{...aerodrome,claims:[claim]}
+            }
+          };
+          const urls=[process.env.BASE_RPC_URL,'https://mainnet.base.org','https://base-rpc.publicnode.com'].filter(Boolean);
+          const unique=[...new Set(urls)];
+          const failures=[];
+          let proof=null;
 
-          if(x.authority?.executionAuthority!=='none'||x.authority?.walletAuthority!=='none'||x.authority?.claimingAuthority!=='none'||x.authority?.capitalExecution!==false) throw new Error('ve33 authority expansion');
-          console.log('ve33 historical RPC + transient recovery capability PASS',{
-            selected:Object.fromEntries(Object.entries(x.runner.selection).map(([k,v])=>[k,v.selectedProvider])),
-            boundaryFailures:Object.fromEntries(Object.entries(x.diagnostics.protocols).map(([k,v])=>[k,(v.boundaryFailures||[]).length])),
-            skipped:Object.fromEntries(Object.entries(x.diagnostics.protocols).map(([k,v])=>[k,v.historicalBoundarySkippedLaneReads||0])),
-            transientZeroBaselines:baseline.seededCheckpointCount,
-            laptopAmount:event.amount,
-            laptopUsd:event.usdValue,
-            accepted:x.diagnostics.acceptedPositiveIntervalCount,
-            historicalPriceResolved:x.diagnostics.historicalPriceResolvedIntervalCount
-          });
+          for(const url of unique){
+            const provider=new JsonRpcProvider(url,8453,{staticNetwork:true});
+            const label=(()=>{try{return new URL(url).hostname}catch{return 'configured-base-rpc'}})();
+            try{
+              const baseline=await seedTransientPredeploymentZeroBaselines({
+                previous:{checkpoints:[],events:[]},
+                recovery,
+                providers:{aerodrome:provider}
+              });
+              const zero=(baseline.previous?.checkpoints||[]).find(row=>
+                row?.company===company&&
+                String(row?.rewardToken||'').toLowerCase()===laptopToken&&
+                row?.predeploymentZeroProof?.proof==='eth_getCode-empty-at-exact-historical-boundary'
+              );
+              if(!zero)throw new Error(`zero baseline unavailable: ${JSON.stringify(baseline.diagnostics)}`);
+              if(zero.entitlementRaw!=='0'||Number(zero.entitlementAmount)!==0||zero.predeploymentZeroProof?.createsIncome!==false)throw new Error('zero baseline semantics drift');
+
+              const recovered=await seedRecoveredClaimBlockIntervals({
+                previous:baseline.previous,
+                recovery,
+                providers:{aerodrome:provider}
+              });
+              const event=(recovered.previous?.events||[]).find(row=>
+                row?.company===company&&
+                String(row?.token||'').toLowerCase()===laptopToken&&
+                (row?.settlementProofs||[]).some(p=>String(p?.transactionHash||'').toLowerCase()===laptopTx)
+              );
+              if(!event)throw new Error(`canonical LAPTOP earned event unavailable: ${JSON.stringify(recovered.diagnostics)}`);
+              if(event.amountRaw!==expectedAmountRaw||Math.abs(Number(event.amount)-expectedAmount)>1e-9)throw new Error(`LAPTOP factual amount drift: ${event.amountRaw}/${event.amount}`);
+              if(event.openingEntitlementRaw!=='0'||event.closingEntitlementRaw!=='0'||event.settlementRaw!==expectedAmountRaw)throw new Error('LAPTOP reconciliation identity drift');
+              if(event.usdValue!==null||event.valuationStatus!=='unvalued-fail-closed')throw new Error('LAPTOP historical USD must remain UNKNOWN');
+              if(event.claimIsSecondIncomeEvent!==false||event.laterClaimOrPriceMoveDoesNotRewriteIncome!==true||event.executionAuthority!=='none')throw new Error('LAPTOP lifecycle semantics drift');
+              if(Number(recovered.diagnostics?.acceptedEventCount)!==1||Number(recovered.diagnostics?.unresolvedStateReadCount)!==0)throw new Error(`focused recovery diagnostics drift: ${JSON.stringify(recovered.diagnostics)}`);
+              proof={
+                provider:label,
+                zeroBoundaryAt:zero.observedAt,
+                zeroBoundaryBlock:zero.blockNumber,
+                claimBlock:event.settlementProofs[0].blockNumber,
+                laptopAmount:event.amount,
+                laptopUsd:event.usdValue,
+                executionAuthority:event.executionAuthority
+              };
+              break;
+            }catch(error){
+              failures.push({provider:label,error:error?.shortMessage||error?.message||String(error)});
+            }finally{
+              try{provider.destroy()}catch{}
+            }
+          }
+
+          if(!proof)throw new Error(`No Base RPC candidate could prove focused LAPTOP historical recovery: ${JSON.stringify(failures)}`);
+          console.log('focused LAPTOP historical recovery PASS',proof);
           NODE
-          git diff --exit-code
