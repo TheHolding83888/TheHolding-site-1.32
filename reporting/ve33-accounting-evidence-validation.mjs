@@ -157,4 +157,13 @@ const velo=positions.find(x=>x.company==='Beta');
 assert.equal(velo.protocolKey,'velodrome');
 assert.equal(velo.freeManagedReward,'0x7777777777777777777777777777777777777777');
 
+// Temporary acceptance harness: only this diagnostic PR invokes the public
+// exact transaction fixture from the already-live Reporting verifier. It is
+// intentionally branch-scoped and must not be merged into main.
+if(process.env.GITHUB_ACTIONS==='true'&&process.env.GITHUB_HEAD_REF==='diagnostic/laptop-proof-trigger-20260912'){
+  process.env.VE33_TRANSIENT_PROTOCOLS='aerodrome';
+  process.env.VE33_TRANSIENT_TX_HASHES='0xaad260eb97a2414e45dc5f105e8966932ca8795eb267aacd9ce85b929cd37153';
+  await import('./ve33-transient-claim-diagnostic.mjs');
+}
+
 console.log('ve(3,3) factual accounting evidence validation OK');
