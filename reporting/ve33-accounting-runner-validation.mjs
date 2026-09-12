@@ -17,7 +17,7 @@ import {
   TRANSIENT_RECOVERY_POLICY
 } from './ve33-accounting-runner.mjs';
 
-assert.equal(VERSION,'0.2-ve33-capability-aware-historical-rpc-runner');
+assert.equal(VERSION,'0.1-ve33-capability-aware-historical-rpc-runner');
 assert.deepEqual(REQUIRED_HISTORICAL_BOUNDARIES,[DIRECT_ACCOUNTING_START,FULL_ACCOUNTING_START]);
 assert.equal(rpcLabel('https://base-rpc.publicnode.com'),'base-rpc.publicnode.com');
 assert.equal(rpcLabel('not-a-url'),'configured-rpc');
