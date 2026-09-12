@@ -48,7 +48,7 @@ export function historicalValuationSourceMatchesVe33Identity(event,resolution){
       Number(resolution?.sourceChainId)===Number(route.chainId)&&
       String(resolution?.sourceAssetId||'')===String(route.assetId)&&
       lower(resolution?.sourceContract)===lower(route.contract)&&
-      resolution?.stablecoinPegAssumptionUsed===false&&
+      resolution?.stablecoinPegAssumptionUsed!==true&&
       String(resolution?.sourceStatus||'')==='historical-onchain-chainlink-price';
   }
   if(family==='historical-onchain-velodrome-twap-chainlink-at-boundary'){
