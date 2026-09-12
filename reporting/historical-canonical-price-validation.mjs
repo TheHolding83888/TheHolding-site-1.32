@@ -2,8 +2,8 @@
 import assert from 'node:assert/strict';
 import { Interface } from 'ethers';
 import {
-  VERSION,HISTORICAL_TOKEN_ASSET_IDS,HISTORICAL_OPTIMISM_CHAINLINK_TOKEN_FEEDS,HISTORICAL_OPTIMISM_VELODROME_TWAP_TOKEN_ROUTES,
-  canonicalAssetIdForHistoricalToken,historicalOptimismChainlinkRouteForToken,historicalOptimismVelodromeTwapRouteForToken,closingBlockFromVe33Identity,
+  VERSION,HISTORICAL_TOKEN_ASSET_IDS,HISTORICAL_OPTIMISM_CHAINLINK_TOKEN_FEEDS,HISTORICAL_BASE_CHAINLINK_TOKEN_FEEDS,HISTORICAL_OPTIMISM_VELODROME_TWAP_TOKEN_ROUTES,
+  canonicalAssetIdForHistoricalToken,historicalOptimismChainlinkRouteForToken,historicalBaseChainlinkRouteForToken,historicalChainlinkRouteForToken,historicalOptimismVelodromeTwapRouteForToken,closingBlockFromVe33Identity,
   selectHistoricalCanonicalPrice,historicalCanonicalPriceAtBoundary
 } from './historical-canonical-price.mjs';
 import { annotateHistoricalValuationResolution } from './income-ledger.mjs';
@@ -13,6 +13,7 @@ import { ve33EventIdentity, historicalValuationSourceMatchesVe33Identity } from 
 assert.equal(VERSION,'0.2-historical-canonical-market-or-exact-chainlink-price');
 assert.equal(Object.keys(HISTORICAL_TOKEN_ASSET_IDS).length,4);
 assert.equal(Object.keys(HISTORICAL_OPTIMISM_CHAINLINK_TOKEN_FEEDS).length,4);
+assert.equal(Object.keys(HISTORICAL_BASE_CHAINLINK_TOKEN_FEEDS).length,1);
 assert.equal(Object.keys(HISTORICAL_OPTIMISM_VELODROME_TWAP_TOKEN_ROUTES).length,3);
 assert.equal(canonicalAssetIdForHistoricalToken('0x940181a94A35A4569E4529A3CDfB74e38FD98631'),'aerodrome-finance');
 assert.equal(canonicalAssetIdForHistoricalToken('0x9560e827aF36c94D2Ac33a39bCE1Fe78631088Db'),'velodrome-finance');
@@ -23,6 +24,14 @@ assert.equal(historicalOptimismChainlinkRouteForToken('0x0b2C639c533813f4Aa9D783
 assert.equal(historicalOptimismChainlinkRouteForToken('0x4200000000000000000000000000000000000042')?.assetId,'optimism');
 assert.equal(historicalOptimismChainlinkRouteForToken('0x94b008aa00579c1307B0ef2c499ad98a8ce58e58')?.assetId,'tether');
 assert.equal(historicalOptimismChainlinkRouteForToken('0x1F32b1c2345538c0c6f582fCB022739c4A194Ebb')?.assetId,'wrapped-steth');
+const baseUsdcToken='0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
+const baseUsdcRoute=historicalBaseChainlinkRouteForToken(baseUsdcToken);
+assert.equal(baseUsdcRoute?.assetId,'usd-coin');
+assert.equal(baseUsdcRoute?.network,'base');
+assert.equal(baseUsdcRoute?.chainId,8453);
+assert.equal(baseUsdcRoute?.contract.toLowerCase(),'0x7e860098f58bbfc8648a4311b374b1d669a2bc6b');
+assert.equal(historicalChainlinkRouteForToken(baseUsdcToken,8453)?.contract.toLowerCase(),baseUsdcRoute.contract.toLowerCase());
+assert.equal(historicalChainlinkRouteForToken(baseUsdcToken,10),null,'Base USDC proof must not cross chain identity');
 const msUsdToken='0x9dAbAE7274D28A45F0B65Bf8ED201A5731492ca0';
 const alUsdToken='0xCB8FA9a76b8e203D8C3797bF438d8FB81Ea3326A';
 const tarotToken='0x1F514A61bcde34F94Bc39731235690ab9da737F7';
@@ -70,9 +79,11 @@ assert.equal(selectHistoricalCanonicalPrice({snapshot:futureSnapshot,token:'0x94
 const boundary='2026-09-01T00:00:00.000Z';
 const boundarySeconds=Math.floor(Date.parse(boundary)/1000);
 const openingBlock=154971811,closingBlock=156311011,blockTag=`0x${BigInt(closingBlock).toString(16)}`;
+const baseOpeningBlock=49376526,baseClosingBlock=50715726,baseBlockTag=`0x${BigInt(baseClosingBlock).toString(16)}`;
 const abiWord=value=>BigInt(value).toString(16).padStart(64,'0');
 const encodeRoundData=({roundId,answer,startedAt,updatedAt,answeredInRound})=>`0x${abiWord(roundId)}${abiWord(answer)}${abiWord(startedAt)}${abiWord(updatedAt)}${abiWord(answeredInRound)}`;
 const registry={networks:{optimism:{chainId:10,rpcFailover:[{id:'test-optimism',url:'https://optimism.example'}]}}};
+const baseRegistry={networks:{base:{chainId:8453,rpcFailover:[{id:'test-base',url:'https://base.example'}]}}};
 const poolIface=new Interface([
   'function token0() view returns (address)','function token1() view returns (address)','function stable() view returns (bool)',
   'function observationLength() view returns (uint256)','function quote(address tokenIn,uint256 amountIn,uint256 granularity) view returns (uint256 amountOut)'
@@ -102,9 +113,24 @@ function exactHistoricalRpc({usdcAnswer=99990000n,quoteRaw=850000n,observationLe
     throw new Error(`unexpected historical eth_call ${to} ${data}`);
   };
 }
+function exactBaseHistoricalRpc({usdcAnswer=99980000n,blockTimestamp=boundarySeconds-2,updatedAt=BigInt(boundarySeconds-240)}={}){
+  return async({endpoint,method,params})=>{
+    assert.equal(endpoint.id,'test-base');
+    if(method==='eth_getBlockByNumber'){assert.equal(params[0],baseBlockTag);assert.equal(params[1],false);return{number:baseBlockTag,timestamp:`0x${BigInt(blockTimestamp).toString(16)}`};}
+    if(method!=='eth_call')throw new Error(`unexpected Base RPC method ${method}`);
+    assert.equal(params[1],baseBlockTag,'Base historical call escaped exact ve33 closing block');
+    const to=String(params[0]?.to||'').toLowerCase(),data=String(params[0]?.data||'').toLowerCase();
+    assert.equal(to,baseUsdcRoute.contract.toLowerCase(),'Base USDC historical proof used wrong Chainlink feed');
+    if(data==='0x313ce567')return`0x${abiWord(8)}`;
+    if(data==='0xfeaf968c')return encodeRoundData({roundId:77n,answer:usdcAnswer,startedAt:updatedAt-60n,updatedAt,answeredInRound:77n});
+    throw new Error(`unexpected Base historical eth_call ${to} ${data}`);
+  };
+}
 
 const historicalUsdc=await historicalCanonicalPriceAtBoundary({token:usdcToken,boundaryAt:boundary,eventKey:`ve33:synthetic:${openingBlock}:${closingBlock}`,onchainRegistry:registry,rpcCall:exactHistoricalRpc()});
 assert.equal(historicalUsdc.ok,true);assert.equal(historicalUsdc.sourceFamily,'historical-onchain-chainlink-at-boundary');assert.equal(historicalUsdc.priceUsd,0.9999);assert.equal(historicalUsdc.sourceBlockNumber,closingBlock);
+const historicalBaseUsdc=await historicalCanonicalPriceAtBoundary({token:baseUsdcToken,boundaryAt:boundary,eventKey:`ve33:synthetic:${baseOpeningBlock}:${baseClosingBlock}`,onchainRegistry:baseRegistry,rpcCall:exactBaseHistoricalRpc()});
+assert.equal(historicalBaseUsdc.ok,true);assert.equal(historicalBaseUsdc.sourceFamily,'historical-onchain-chainlink-at-boundary');assert.equal(historicalBaseUsdc.priceUsd,0.9998);assert.equal(historicalBaseUsdc.sourceBlockNumber,baseClosingBlock);assert.equal(historicalBaseUsdc.chainId,8453);assert.equal(historicalBaseUsdc.sourceContract.toLowerCase(),baseUsdcRoute.contract.toLowerCase());assert.equal(historicalBaseUsdc.stablecoinPegAssumptionUsed,false);assert.equal(historicalBaseUsdc.currentPriceUsed,false);assert.equal(historicalBaseUsdc.referenceAprUsed,false);
 const historicalMsUsd=await historicalCanonicalPriceAtBoundary({token:msUsdToken,boundaryAt:boundary,eventKey:`ve33:synthetic:${openingBlock}:${closingBlock}`,onchainRegistry:registry,rpcCall:exactHistoricalRpc()});
 assert.equal(historicalMsUsd.ok,true);assert.equal(historicalMsUsd.status,'historical-onchain-velodrome-twap-chainlink-price');assert.equal(historicalMsUsd.sourceFamily,'historical-onchain-velodrome-twap-chainlink-at-boundary');assert.equal(historicalMsUsd.sourceBlockNumber,closingBlock);assert.equal(historicalMsUsd.sourceContract.toLowerCase(),msUsdRoute.pool.toLowerCase());assert.equal(historicalMsUsd.quoteChainlinkContract.toLowerCase(),msUsdRoute.quoteChainlinkFeed.toLowerCase());assert.equal(historicalMsUsd.quoteToken.toLowerCase(),usdcToken.toLowerCase());assert.equal(historicalMsUsd.quoteTokenAmount,0.85);assert.equal(historicalMsUsd.quotePriceUsd,0.9999);assert.ok(Math.abs(historicalMsUsd.priceUsd-0.849915)<1e-12);assert.equal(historicalMsUsd.stablecoinPegAssumptionUsed,false);assert.equal(historicalMsUsd.currentPriceUsed,false);assert.equal(historicalMsUsd.referenceAprUsed,false);
 const insufficientObservations=await historicalCanonicalPriceAtBoundary({token:msUsdToken,boundaryAt:boundary,eventKey:`ve33:synthetic:${openingBlock}:${closingBlock}`,onchainRegistry:registry,rpcCall:exactHistoricalRpc({observationLength:48})});
@@ -115,10 +141,23 @@ function ve33Fixture({token,asset,amount,immutable='immutable-sentinel',mutableT
   const identityToken=String(token).toLowerCase();const lane=`velodrome|defitea.eth|${holder}|32671|voting-reward|${rewardContract}|${identityToken}`;
   return{eventKey:`ve33:${lane}:${openingBlock}:${closingBlock}`,company:'defitea.eth',family:'accrued-entitlement',route:'velodrome-ve',protocol:'Velodrome',chain:'Optimism',chainId:10,economicDate:'2026-08-31',periodStart:'2026-08-01T00:00:00.000Z',periodEnd:boundary,asset,token:mutableToken,amount,amountRaw:String(Math.round(Number(amount)*1e12)),usdValue:null,valuationStatus:'unvalued-fail-closed',sourceFile:'reporting/ve33-accounting-evidence.json',sourceFamily:'ve(3,3) factual accrual evidence',sourceIdentity:`${lane}|${openingBlock}->${lane}|${closingBlock}`,unknownIsNotZero:true,executionAuthority:'none',immutableEconomicFieldsHash:immutable};
 }
+function baseVe33Fixture({amount=2.494371,chainId=8453,chain='Base'}){
+  const holder='0xa641752824d512fa8683758c6b2d8a04ea46dcd0',reward='0x25dc2a616288e79bb3de121070a1bcf01fc8a82b',token=baseUsdcToken.toLowerCase();
+  const lane=`aerodrome|aerocvxyb.eth|${holder}|64985|voting-reward|${reward}|${token}`;
+  return{eventKey:`ve33:${lane}:${baseOpeningBlock}:${baseClosingBlock}`,company:'aerocvxyb.eth',family:'accrued-entitlement',route:'aerodrome-ve',protocol:'Aerodrome',chain,chainId,economicDate:'2026-08-31',periodStart:'2026-08-01T00:00:00.000Z',periodEnd:boundary,asset:'USDC',token:baseUsdcToken,amount,amountRaw:'2494371',usdValue:null,valuationStatus:'unvalued-fail-closed',sourceFile:'reporting/ve33-accounting-evidence.json',sourceFamily:'ve(3,3) factual accrual evidence',sourceIdentity:`${lane}|${baseOpeningBlock}->${lane}|${baseClosingBlock}`,unknownIsNotZero:true,executionAuthority:'none',immutableEconomicFieldsHash:'immutable-base-usdc-sentinel'};
+}
 
 const immutableUsdcEvent=ve33Fixture({token:usdcToken,asset:'USDC',amount:0.3,immutable:'immutable-usdc-sentinel'});
 const usdcLedger=await annotateHistoricalValuationResolution({version:'0.1-canonical-income-ledger',events:[immutableUsdcEvent]},{resolver:async()=>historicalUsdc});
 assert.equal(usdcLedger.resolvedEventCount,1);assert.equal(historicalValuationSourceMatchesVe33Identity(usdcLedger.ledger.events[0],usdcLedger.ledger.events[0].valuationResolution),true);assert.equal(recognitionDecision(usdcLedger.ledger.events[0]).status,'recognized');
+
+const baseUsdcEvent=baseVe33Fixture({});
+const baseUsdcLedger=await annotateHistoricalValuationResolution({version:'0.1-canonical-income-ledger',events:[baseUsdcEvent]},{resolver:async({token})=>{assert.equal(token.toLowerCase(),baseUsdcToken.toLowerCase());return historicalBaseUsdc;}});
+assert.equal(baseUsdcLedger.resolvedEventCount,1);assert.equal(baseUsdcLedger.unresolvedEventCount,0);
+const baseResolution=baseUsdcLedger.ledger.events[0].valuationResolution;
+assert.equal(baseResolution.sourceChainId,8453);assert.equal(baseResolution.sourceBlockNumber,baseClosingBlock);assert.equal(baseResolution.sourceContract.toLowerCase(),baseUsdcRoute.contract.toLowerCase());assert.equal(baseResolution.stablecoinPegAssumptionUsed,false);assert.equal(historicalValuationSourceMatchesVe33Identity(baseUsdcLedger.ledger.events[0],baseResolution),true);assert.equal(recognitionDecision(baseUsdcLedger.ledger.events[0]).status,'recognized');
+const wrongChainBaseUsdc={...baseUsdcEvent,chain:'Optimism',chainId:10};
+assert.equal(historicalValuationSourceMatchesVe33Identity(wrongChainBaseUsdc,baseResolution),false,'Base Chainlink proof must fail closed on wrong event chain');
 
 const msUsdEvent=ve33Fixture({token:msUsdToken,asset:'msUSD',amount:0.003,immutable:'immutable-msusd-sentinel'});
 const wrongMsUsdPrior={...msUsdEvent,valuationResolution:{...structuredClone(usdcLedger.ledger.events[0].valuationResolution),resolvedUsdValue:0.0029997,identityBound:false,identityToken:undefined}};
@@ -133,4 +172,4 @@ assert.equal(ve33EventIdentity(staleMutableUsdc).eventTokenMatchesIdentity,false
 const identityBoundRepair=await annotateHistoricalValuationResolution({version:'0.1-canonical-income-ledger',events:[staleMutableUsdc]},{resolver:async({token})=>{assert.equal(token.toLowerCase(),usdcToken.toLowerCase());return historicalUsdc;}});
 assert.equal(identityBoundRepair.resolvedEventCount,1);assert.equal(identityBoundRepair.identityMismatchEventCount,1);assert.equal(identityBoundRepair.ledger.events[0].token,msUsdToken);assert.equal(identityBoundRepair.ledger.events[0].valuationResolution.identityToken,usdcToken.toLowerCase());assert.equal(recognitionDecision(identityBoundRepair.ledger.events[0]).status,'recognized');
 
-console.log('Historical canonical + exact-block Chainlink + Velodrome TWAP route identity binding validation OK');
+console.log('Historical canonical + multi-chain exact-block Chainlink + Velodrome TWAP route identity binding validation OK');
