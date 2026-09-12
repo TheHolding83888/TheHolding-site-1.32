@@ -1,3 +1,4 @@
+# holding-workflow-definition-proof: intelligence/reliability/decision-ledger-writer-ownership-proof.mjs
 name: "The Holding Brain · Record Decision"
 
 on:
@@ -54,6 +55,68 @@ on:
         required: false
         default: ""
         type: string
+  workflow_call:
+    inputs:
+      record_mode:
+        description: "Canonical recorder mode"
+        required: true
+        type: string
+      entity:
+        required: false
+        default: ""
+        type: string
+      category:
+        required: false
+        default: ""
+        type: string
+      disposition:
+        required: false
+        default: "defer"
+        type: string
+      rationale:
+        required: false
+        default: ""
+        type: string
+      expected_outcome:
+        required: false
+        default: ""
+        type: string
+      evaluation_criterion:
+        required: false
+        default: ""
+        type: string
+      review_on_or_after:
+        required: false
+        default: ""
+        type: string
+      counterevidence:
+        required: false
+        default: ""
+        type: string
+      invalidation_condition:
+        required: false
+        default: ""
+        type: string
+      deferred_alternative:
+        required: false
+        default: ""
+        type: string
+      intended_use:
+        required: false
+        default: ""
+        type: string
+      confidence:
+        required: false
+        default: ""
+        type: string
+      evidence_note:
+        required: false
+        default: ""
+        type: string
+      supersedes_decision_id:
+        required: false
+        default: ""
+        type: string
 
 permissions:
   contents: write
@@ -78,6 +141,17 @@ jobs:
           node-version: "22"
           package-manager-cache: false
 
+      - name: Validate canonical recorder mode
+        shell: bash
+        env:
+          DECISION_RECORD_MODE: ${{ inputs.record_mode || 'brain-case' }}
+        run: |
+          set -euo pipefail
+          case "$DECISION_RECORD_MODE" in
+            brain-case|owner-economic) ;;
+            *) echo "Unsupported Decision Memory recorder mode: $DECISION_RECORD_MODE"; exit 1 ;;
+          esac
+
       - name: Preflight release coherence
         shell: bash
         run: |
@@ -85,7 +159,8 @@ jobs:
           node intelligence/cognitive-release-guard.mjs
           node intelligence/learning/learning-release-guard.mjs
 
-      - name: Preflight decision recorder
+      - name: Preflight Brain case recorder
+        if: ${{ inputs.record_mode != 'owner-economic' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -93,8 +168,18 @@ jobs:
           node intelligence/learning/decision-recorder.mjs --self-test
           node -e "JSON.parse(require('fs').readFileSync('intelligence/learning/decision-policy.json','utf8')); JSON.parse(require('fs').readFileSync('intelligence/learning/decision-ledger.json','utf8'));"
 
-      - name: Append owner decision to immutable ledger
-        id: record
+      - name: Preflight owner economic recorder
+        if: ${{ inputs.record_mode == 'owner-economic' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check intelligence/learning/owner-initiated-decision-recorder.mjs
+          node intelligence/learning/owner-initiated-decision-recorder.mjs --self-test
+          node -e "JSON.parse(require('fs').readFileSync('intelligence/learning/decision-ledger.json','utf8'));"
+
+      - name: Append Brain case decision to immutable ledger
+        if: ${{ inputs.record_mode != 'owner-economic' }}
+        id: record_brain
         env:
           DECISION_CASE_ID: ${{ inputs.case_id }}
           DECISION_DISPOSITION: ${{ inputs.disposition }}
@@ -107,10 +192,33 @@ jobs:
           DECISION_SUPERSEDES_ID: ${{ inputs.supersedes_decision_id }}
         run: node intelligence/learning/decision-recorder.mjs
 
-      - name: Validate inert decision boundary
+      - name: Append owner economic decision to immutable ledger
+        if: ${{ inputs.record_mode == 'owner-economic' }}
+        id: record_owner
+        env:
+          DECISION_DOMAIN: economic
+          DECISION_RECOMMENDATION_CLASS: owner-capital-allocation
+          DECISION_ENTITY: ${{ inputs.entity }}
+          DECISION_CATEGORY: ${{ inputs.category }}
+          DECISION_DISPOSITION: ${{ inputs.disposition }}
+          DECISION_RATIONALE: ${{ inputs.rationale }}
+          DECISION_EXPECTED_OUTCOME: ${{ inputs.expected_outcome }}
+          DECISION_EVALUATION_CRITERION: ${{ inputs.evaluation_criterion }}
+          DECISION_REVIEW_ON_OR_AFTER: ${{ inputs.review_on_or_after }}
+          DECISION_COUNTEREVIDENCE: ${{ inputs.counterevidence }}
+          DECISION_INVALIDATION_CONDITION: ${{ inputs.invalidation_condition }}
+          DECISION_DEFERRED_ALTERNATIVE: ${{ inputs.deferred_alternative }}
+          DECISION_INTENDED_USE: ${{ inputs.intended_use }}
+          DECISION_CONFIDENCE: ${{ inputs.confidence }}
+          DECISION_EVIDENCE_NOTE: ${{ inputs.evidence_note }}
+          DECISION_SUPERSEDES_ID: ${{ inputs.supersedes_decision_id }}
+        run: node intelligence/learning/owner-initiated-decision-recorder.mjs
+
+      - name: Validate Brain case decision boundary
+        if: ${{ inputs.record_mode != 'owner-economic' }}
         shell: bash
         env:
-          DECISION_VERIFY_ID: ${{ steps.record.outputs.decision_id }}
+          DECISION_VERIFY_ID: ${{ steps.record_brain.outputs.decision_id }}
         run: |
           set -euo pipefail
           node intelligence/learning/decision-recorder.mjs --verify-bound-decision
@@ -125,12 +233,34 @@ jobs:
           NODE
           git diff --check
 
-      - name: Publish decision memory safely
+      - name: Validate owner economic decision boundary
+        if: ${{ inputs.record_mode == 'owner-economic' }}
         shell: bash
         env:
-          DECISION_VERIFY_ID: ${{ steps.record.outputs.decision_id }}
+          DECISION_VERIFY_ID: ${{ steps.record_owner.outputs.decision_id }}
         run: |
           set -euo pipefail
+          node intelligence/learning/owner-initiated-decision-recorder.mjs --verify-bound-decision
+          node - <<'NODE'
+          const fs = require('fs');
+          const ledger = JSON.parse(fs.readFileSync('intelligence/learning/decision-ledger.json','utf8'));
+          const d = ledger.decisions.at(-1);
+          if (!d) throw new Error('owner decision missing');
+          if (d.experience?.status !== 'open' || d.experience?.preOutcomeCaptured !== true) throw new Error('owner decision did not enter as open pre-outcome experience');
+          if (d.authority?.executable !== false || d.authority?.executionAuthority !== 'none') throw new Error('owner decision escaped inert authority');
+          if (d.source?.provenance?.peerOwnerStatement !== false) throw new Error('owner decision provenance drift');
+          console.log('Owner Decision boundary PASS', { decisionId: d.decisionId, status: d.experience.status, executionAuthority: d.authority.executionAuthority });
+          NODE
+          git diff --check
+
+      - name: Publish Decision Memory safely
+        shell: bash
+        env:
+          DECISION_RECORD_MODE: ${{ inputs.record_mode || 'brain-case' }}
+          DECISION_VERIFY_ID: ${{ steps.record_brain.outputs.decision_id || steps.record_owner.outputs.decision_id }}
+        run: |
+          set -euo pipefail
+          test -n "$DECISION_VERIFY_ID"
           git config user.name "The Holding Decision Memory"
           git config user.email "decision-memory@theholding.ai"
           git add intelligence/learning/decision-ledger.json
@@ -153,11 +283,13 @@ jobs:
               exit 1
             fi
 
-            # A decision is valid only against the exact reviewed release and
-            # Brain/Stack bytes it saw. Any movement is fail-closed.
             node intelligence/cognitive-release-guard.mjs
             node intelligence/learning/learning-release-guard.mjs
-            node intelligence/learning/decision-recorder.mjs --verify-bound-decision
+            if [ "$DECISION_RECORD_MODE" = "owner-economic" ]; then
+              DECISION_VERIFY_ID="$DECISION_VERIFY_ID" node intelligence/learning/owner-initiated-decision-recorder.mjs --verify-bound-decision
+            else
+              DECISION_VERIFY_ID="$DECISION_VERIFY_ID" node intelligence/learning/decision-recorder.mjs --verify-bound-decision
+            fi
 
             if git push origin HEAD:main; then
               exit 0
@@ -171,14 +303,25 @@ jobs:
       - name: Decision summary
         if: always()
         shell: bash
+        env:
+          DECISION_RECORD_MODE: ${{ inputs.record_mode || 'brain-case' }}
+          DECISION_ID: ${{ steps.record_brain.outputs.decision_id || steps.record_owner.outputs.decision_id }}
         run: |
           {
             echo "# The Holding Brain · Decision Memory"
             echo
-            echo "Decision ID: \`${{ steps.record.outputs.decision_id }}\`"
+            echo "Decision ID: \`$DECISION_ID\`"
+            echo "Recorder mode: \`$DECISION_RECORD_MODE\`"
             echo "Disposition: \`${{ inputs.disposition }}\`"
-            echo "Prediction: \`${{ inputs.prediction_event }}\`"
+            if [ "$DECISION_RECORD_MODE" = "owner-economic" ]; then
+              echo "Entity: \`${{ inputs.entity }}\`"
+              echo "Category: \`${{ inputs.category }}\`"
+              echo "Review on/after: \`${{ inputs.review_on_or_after }}\`"
+              echo "Experience status: \`open\`"
+            else
+              echo "Prediction: \`${{ inputs.prediction_event }}\`"
+            fi
             echo "Execution authority: \`none\`"
             echo
-            echo "The record is append-only memory. The Learning Loop will wake automatically from the ledger push."
+            echo "The record is append-only Decision Memory. The Learning Loop will wake automatically from the ledger push."
           } >> "$GITHUB_STEP_SUMMARY"
