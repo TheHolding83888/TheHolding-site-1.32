@@ -12,6 +12,8 @@ import {
   transientVotingLaneKey,
   buildPredeploymentZeroCheckpoint,
   seedTransientPredeploymentZeroBaselines,
+  recoveryProtocolCoverage,
+  buildRecoveredClaimBlockInterval,
   attachHistoricalCallRouter,
   canReuseEvidence,
   evidenceFreshEnough,
@@ -58,6 +60,9 @@ assert.equal(TRANSIENT_RECOVERY_POLICY.createsIncome,false);
 assert.equal(TRANSIENT_RECOVERY_POLICY.createsRealisedCashFlow,false);
 assert.equal(TRANSIENT_RECOVERY_POLICY.canonicalVe33EvidenceRemainsEconomicAuthority,true);
 assert.equal(TRANSIENT_RECOVERY_POLICY.predeploymentZeroBaselineRequiresExactHistoricalCodeAbsence,true);
+assert.equal(TRANSIENT_RECOVERY_POLICY.exactClaimBlockStateRequiredBeforeCanonicalAdmission,true);
+assert.equal(TRANSIENT_RECOVERY_POLICY.claimSettlementAloneCreatesIncome,false);
+assert.equal(TRANSIENT_RECOVERY_POLICY.historicalUsdRemainsUnknownUntilIndependentValuation,true);
 assert.equal(TRANSIENT_RECOVERY_POLICY.executionAuthority,'none');
 
 const company='0x5860...83CA8.eth';
@@ -71,19 +76,24 @@ const recovery={
     discoveryOnly:true,
     createsIncome:false,
     createsRealisedCashFlow:false,
+    claimIsSettlementNotSecondIncome:true,
     executionAuthority:'none',
     capitalExecution:false
   },
   authority:{executionAuthority:'none',capitalExecution:false},
   protocols:{
-    aerodrome:{claims:[{
-      protocolKey:'aerodrome',protocol:'Aerodrome',chain:'Base',chainId:8453,company,route:'aerodrome-ve',
-      holder:'0x58603461149Fc2A800a56d421e77DcbBA2D83CA8',tokenId:'1938',
-      rewardContract,rewardToken,rewardSymbol:'LAPTOP',amountRaw:'67615020175015840449',blockNumber:51109971,
-      transactionHash:'0xaad260eb97a2414e45dc5f105e8966932ca8795eb267aacd9ce85b929cd37153',
-      logIndex:28,classification:'transient-orphan-claim',alreadyRepresented:false,knownHistoricalLane:false,
-      accountingAuthority:false,periodIncomeAuthority:false,executionAuthority:'none'
-    }]}
+    aerodrome:{
+      status:'complete',lastScannedBlock:51210099,unresolved:[],
+      scan:{complete:true,accountingStartBlock:49376526,lastScannedBlock:51210099},
+      claims:[{
+        protocolKey:'aerodrome',protocol:'Aerodrome',chain:'Base',chainId:8453,company,route:'aerodrome-ve',
+        holder:'0x58603461149Fc2A800a56d421e77DcbBA2D83CA8',tokenId:'1938',
+        rewardContract,rewardToken,rewardSymbol:'LAPTOP',amountRaw:'67615020175015840449',blockNumber:51109971,
+        transactionHash:'0xaad260eb97a2414e45dc5f105e8966932ca8795eb267aacd9ce85b929cd37153',
+        logIndex:28,decodePath:'voter-claimBribes',classification:'transient-orphan-claim',alreadyRepresented:false,knownHistoricalLane:false,
+        accountingAuthority:false,periodIncomeAuthority:false,executionAuthority:'none'
+      }]
+    }
   }
 };
 const rewards={companies:{[company]:{rewards:[]}}};
@@ -138,6 +148,38 @@ assert.equal(zeroCheckpoint.predeploymentZeroProof.executionAuthority,'none');
 assert.equal(buildPredeploymentZeroCheckpoint({claim:lapClaim,boundaryAt:'2026-09-01T00:00:00.000Z',blockNumber:50715726,code:'0x00'}),null,'non-empty bytecode must never fabricate a zero opening');
 assert.equal(buildPredeploymentZeroCheckpoint({claim:lapClaim,boundaryAt:'2026-09-01T00:00:00.000Z',blockNumber:50715726,code:'0x6000'}),null,'deployed contract must never fabricate a zero opening');
 
+const coverage=recoveryProtocolCoverage(recovery,'aerodrome');
+assert.equal(coverage.usable,true);
+assert.equal(coverage.startBlock,49376526);
+assert.equal(coverage.lastScannedBlock,51210099);
+assert.equal(coverage.createsIncome,false);
+const claimBlockInterval=buildRecoveredClaimBlockInterval({
+  opening:zeroCheckpoint,claims:[lapClaim],closingRaw:'0',closingBlockNumber:51109971,
+  closingAt:'2026-09-10T00:00:00.000Z',decimals:18,rewardSymbol:'LAPTOP'
+});
+assert.equal(claimBlockInterval.accepted,true);
+assert.equal(claimBlockInterval.status,'positive-factual-accrual');
+assert.equal(claimBlockInterval.checkpoint.entitlementRaw,'0');
+assert.equal(claimBlockInterval.checkpoint.recoveredClaimBlockProof.proof,'exact-historical-claim-block-post-state');
+assert.ok(claimBlockInterval.event);
+assert.equal(claimBlockInterval.event.amountRaw,'67615020175015840449');
+assert.ok(Math.abs(Number(claimBlockInterval.event.amount)-67.61502017501584)<1e-9);
+assert.equal(claimBlockInterval.event.usdValue,null);
+assert.equal(claimBlockInterval.event.valuationStatus,'unvalued-fail-closed');
+assert.equal(claimBlockInterval.event.claimIsSecondIncomeEvent,false);
+assert.equal(claimBlockInterval.event.executionAuthority,'none');
+assert.equal(claimBlockInterval.event.settlementProofs[0].transactionHash.toLowerCase(),lapClaim.transactionHash.toLowerCase());
+assert.equal(claimBlockInterval.event.settlementProofs[0].proofSource,'ve33-transient-claim-recovery-sidecar');
+const noOpeningProof=buildRecoveredClaimBlockInterval({
+  opening:{...zeroCheckpoint,predeploymentZeroProof:null},claims:[lapClaim],closingRaw:'0',closingBlockNumber:51109971,
+  closingAt:'2026-09-10T00:00:00.000Z',decimals:18,rewardSymbol:'LAPTOP'
+});
+assert.equal(noOpeningProof.accepted,false,'settlement proof alone must never create income');
+assert.equal(noOpeningProof.status,'opening-proof-unavailable');
+const incompleteRecovery=structuredClone(recovery);
+incompleteRecovery.protocols.aerodrome.scan.complete=false;
+assert.equal(recoveryProtocolCoverage(incompleteRecovery,'aerodrome').usable,false,'incomplete recovery coverage must fail closed');
+
 const routingStats={};
 const currentProvider={
   call:async()=> 'current-call',
@@ -170,6 +212,7 @@ assert.equal(invalidBaseline.diagnostics.status,'ignored-invalid-authority');
 assert.equal(invalidBaseline.diagnostics.candidateClaimCount,0);
 assert.equal(invalidBaseline.diagnostics.seededCheckpointCount,0);
 assert.equal(invalidBaseline.previous.checkpoints.length,0);
+assert.equal(recoveryProtocolCoverage(invalidRecovery,'aerodrome').usable,false);
 
 const noRecovery=applyTransientClaimRecovery(rewards,{});
 assert.equal(noRecovery.diagnostics.status,'not-provided');
@@ -193,6 +236,10 @@ console.log('ve33 capability-aware historical RPC runner validation OK',{
   transientClaimRecovery:true,
   exactLaptopShadowLane:true,
   exactHistoricalCodeAbsenceCanProveZeroOpening:true,
+  exactClaimBlockStateReconcilesRecoveredSettlement:true,
+  settlementProofAloneCannotCreateIncome:true,
+  incompleteRecoveryCoverageFailsClosed:true,
+  recoveredHistoricalUsdRemainsUnknown:true,
   deployedContractCannotFabricateZeroOpening:true,
   historicalCodeReadsRouteToArchiveProvider:true,
   invalidRecoveryAuthorityFailsClosed:true,
