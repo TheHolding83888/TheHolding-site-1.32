@@ -35,6 +35,52 @@ jobs:
           node --check reporting/ve33-accounting-runner-validation.mjs
           node reporting/ve33-accounting-runner-validation.mjs
 
+      - name: Exact LAPTOP claim-block state probe
+        env:
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+        run: |
+          set -euo pipefail
+          node --input-type=module - <<'NODE'
+          import { Contract, JsonRpcProvider } from 'ethers';
+          const blockTag=51109971;
+          const holder='0x58603461149Fc2A800a56d421e77DcbBA2D83CA8';
+          const tokenId=1938n;
+          const ve='0xeBf418Fe2512e7E6bd9b87a8F0f294aCDC67e6B4';
+          const reward='0x7591A0D4a21170a8bB3C02Bf89F13D7757AeBADe';
+          const token='0xB095274743941e953c746F9C228DA9c18Bb6ec29';
+          const urls=[process.env.BASE_RPC_URL,'https://base-rpc.publicnode.com','https://mainnet.base.org'].filter(Boolean);
+          const unique=[...new Set(urls)];
+          const timeout=(promise,label)=>Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error(`${label} timeout`)),10000))]);
+          const label=url=>{try{return new URL(url).hostname}catch{return 'configured-base-rpc'}};
+          const err=e=>({code:e?.code||null,shortMessage:e?.shortMessage||null,message:e?.message||String(e)});
+          let complete=null;
+          for(const url of unique){
+            const provider=new JsonRpcProvider(url,8453,{staticNetwork:true});
+            const row={provider:label(url),blockTag};
+            try{
+              row.latest=Number(await timeout(provider.getBlockNumber(),'latest'));
+              const owner=await timeout(new Contract(ve,['function ownerOf(uint256 tokenId) view returns (address)'],provider).ownerOf(tokenId,{blockTag}),'ownerOf');
+              row.ownerOf={ok:true,value:String(owner),holderMatch:String(owner).toLowerCase()===holder.toLowerCase()};
+              if(!row.ownerOf.holderMatch)throw new Error(`owner mismatch: ${owner}`);
+              const earned=await timeout(new Contract(reward,['function earned(address token,uint256 tokenId) view returns (uint256)'],provider).earned(token,tokenId,{blockTag}),'earned');
+              row.earned={ok:true,value:earned.toString()};
+              const decimals=await timeout(new Contract(token,['function decimals() view returns (uint8)'],provider).decimals({blockTag}),'decimals');
+              row.decimals={ok:true,value:Number(decimals)};
+              const block=await timeout(provider.getBlock(blockTag),'getBlock');
+              if(!block)throw new Error('block unavailable');
+              row.block={ok:true,timestamp:Number(block.timestamp)};
+              row.complete=true;
+              console.log('LAPTOP claim-block probe',JSON.stringify(row));
+              complete=row;
+              break;
+            }catch(error){
+              row.complete=false;row.error=err(error);
+              console.log('LAPTOP claim-block probe',JSON.stringify(row));
+            }finally{try{provider.destroy()}catch{}}
+          }
+          if(!complete)throw new Error('No Base RPC candidate could read the exact LAPTOP claim-block state end-to-end');
+          NODE
+
       - name: Live August + September historical-state and transient-recovery canary
         env:
           REWARDS_DATA_FILE: ./companies/rewards-data.json
