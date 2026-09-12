@@ -47,7 +47,7 @@ const runner=fs.readFileSync(RUNNER_PATH,'utf8');
 const ratePolicy=JSON.parse(fs.readFileSync(RATE_POLICY_PATH,'utf8'));
 const incomePolicy=JSON.parse(fs.readFileSync(INCOME_POLICY_PATH,'utf8'));
 const coverageBuilder=fs.readFileSync(COVERAGE_BUILDER_PATH,'utf8');
-const coverageValidation=fs.readFileSync(COVERAGE_VALIDATION_PATH,'utf8');
+const coverageValidation=fs.readFileSync(COVERAGE_VALIDATION_PATH,'utf8')+'\n'+fs.readFileSync('reporting/accounting-coverage-validation-v012-core.mjs','utf8');
 const fraxEvidence=JSON.parse(fs.readFileSync(FRAX_EVIDENCE_PATH,'utf8'));
 const fraxBuilder=fs.readFileSync(FRAX_BUILDER_PATH,'utf8');
 const fraxValidation=fs.readFileSync(FRAX_VALIDATION_PATH,'utf8');
@@ -98,7 +98,7 @@ assert.equal(incomePolicy.authority?.claimingAuthority,'none');
 assert.equal(incomePolicy.authority?.capitalExecution,false);
 assert.equal(incomePolicy.authority?.methodologyMutationAuthority,'none');
 
-assert.match(coverageBuilder,/Accounting Coverage Registry v0\.10/,'Coverage Registry builder identity drift');
+assert.match(coverageBuilder,/Accounting Coverage Registry v0\.13/,'Coverage Registry builder identity drift');
 assert.match(coverageBuilder,/Canonical Income Ledger is the sole authority for/,'Coverage Registry lost Canonical Ledger sole-authority boundary');
 assert.match(coverageBuilder,/Tracking proof never creates period income/,'Coverage tracking proof gained income authority');
 assert.match(coverageBuilder,/zeroPeriodEventDoesNotImplyCoverageGap:true/,'Coverage zero-event semantics missing');
@@ -122,8 +122,8 @@ assert.equal(fraxEvidence.authority?.walletAuthority,'none');
 assert.equal(fraxEvidence.authority?.claimingAuthority,'none');
 assert.equal(fraxEvidence.authority?.capitalExecution,false);
 assert.match(fraxBuilder,/closing earned \+ YieldCollected settlements - opening earned/,'Frax factual accrual formula missing');
-assert.match(fraxBuilder,/currentClaimableBalanceIsPeriodIncome:false/,'Frax current-state accounting boundary missing');
-assert.match(fraxBuilder,/claimIsSecondIncomeEvent:false/,'Frax claim settlement dedup missing');
+assert.match(fraxBuilder,/currentClaimableBalanceIsPeriodIncome:false/,'Frax current state accounting boundary missing');
+assert.match(fraxBuilder,/claimIsSecondIncomeEvent:false/,'Frax claim dedup missing');
 assert.match(fraxBuilder,/laterClaimOrPriceMoveDoesNotRewriteIncome:true/,'Frax frozen income invariant missing');
 assert.doesNotMatch(fraxBuilder,/referenceAprUsed\s*:\s*true|referenceApyUsed\s*:\s*true/i,'Frax builder gained APR/APY income authority');
 assert.match(fraxValidation,/claim-to-zero of the opening balance creates no new income/i,'Frax claim reset regression test missing');
@@ -146,7 +146,7 @@ assert.match(ybBuilder,/closing preview_claim \+ Claim settlements - opening pre
 assert.match(ybBuilder,/preview_claim\.staticCall\(walletRow\.wallet,50,false/,'Yield Basis exact FeeDistributor claimable state read missing');
 assert.match(ybBuilder,/contract\.filters\.Claim\(wallet\)/,'Yield Basis Claim settlement attribution missing');
 assert.match(ybBuilder,/currentClaimableBalanceIsPeriodIncome:false/,'Yield Basis current-state accounting boundary missing');
-assert.match(ybBuilder,/claimIsSecondIncomeEvent:false/,'Yield Basis claim settlement dedup missing');
+assert.match(ybBuilder,/claimIsSecondIncomeEvent:false/,'Yield Basis claim dedup missing');
 assert.match(ybBuilder,/laterClaimOrPriceMoveDoesNotRewriteIncome:true/,'Yield Basis frozen income invariant missing');
 assert.match(ybBuilder,/trackedWalletsFromRewards/,'Yield Basis canonical Rewards wallet-scope reuse missing');
 assert.match(ybBuilder,/priceIndexFromRewards/,'Yield Basis canonical Rewards valuation reuse missing');
@@ -198,8 +198,8 @@ assert.match(ve33Admission,/executionAuthority:'none'/,'ve33 admission authority
 assert.match(ve33Validations,/mutation detected/,'ve33 immutable event mutation regression test missing');
 assert.match(ve33Validations,/claim settlement semantics drift|claimIsSecondIncomeEvent/,'ve33 claim settlement regression coverage missing');
 
-assert.equal(lockedEvidence.version,'0.1-ve33-locked-managed-factual-accrual');
-assert.equal(lockedEvidence.fullAccountingStart,'2026-09-01T00:00:00.000Z');
+assert.equal(lockedEvidence.version,'0.2-ve33-locked-managed-historical-factual-accrual');
+assert.equal(lockedEvidence.fullAccountingStart,'2026-08-01T00:00:00.000Z');
 assert.equal(lockedEvidence.semantics?.openingBalanceCreatesIncome,false);
 assert.equal(lockedEvidence.semantics?.earnedIndependentOfWithdrawal,true);
 assert.equal(lockedEvidence.semantics?.withdrawalIsSettlementNotSecondIncome,true);
@@ -358,7 +358,7 @@ console.log('Reporting workflow definition paired proof PASS',{
   canonicalDataWakeCount:7,
   rateContinuityPolicy:ratePolicy.version,
   canonicalIncomeLedgerPolicy:incomePolicy.version,
-  accountingCoverageRegistry:'0.10-explicit-settlement-link-accounting-mechanism-coverage-registry',
+  accountingCoverageRegistry:'0.13-supplementary-route-principal-isolation-accounting-mechanism-coverage-registry',
   accountingCoveragePersistedByExistingWriter:true,
   accountingCoverageHasIncomeCreationAuthority:false,
   accountingCoverageHasMonthClosingAuthority:false,
