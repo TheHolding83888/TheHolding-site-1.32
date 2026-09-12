@@ -10,12 +10,14 @@ on:
     branches: [main]
     paths:
       - "intelligence/economic-graph/vlcvx-votium-curve-gauge-flow.mjs"
+      - "intelligence/economic-graph/vlcvx-votium-curve-gauge-flow-retained-history.mjs"
       - "scripts/verify-vlcvx-votium-curve-gauge-flow.mjs"
       - "scripts/verify-vlcvx-votium-evidence-handoff.mjs"
       - ".github/workflows/update-vlcvx-votium-curve-gauge-flow.yml"
   pull_request:
     paths:
       - "intelligence/economic-graph/vlcvx-votium-curve-gauge-flow.mjs"
+      - "intelligence/economic-graph/vlcvx-votium-curve-gauge-flow-retained-history.mjs"
       - "scripts/verify-vlcvx-votium-curve-gauge-flow.mjs"
       - "scripts/verify-vlcvx-votium-evidence-handoff.mjs"
       - ".github/workflows/update-vlcvx-votium-curve-gauge-flow.yml"
@@ -53,11 +55,13 @@ jobs:
         run: |
           set -euo pipefail
           node --check intelligence/economic-graph/vlcvx-votium-curve-gauge-flow.mjs
+          node --check intelligence/economic-graph/vlcvx-votium-curve-gauge-flow-retained-history.mjs
           node --check scripts/verify-vlcvx-votium-curve-gauge-flow.mjs
           node --check scripts/verify-vlcvx-votium-evidence-handoff.mjs
           node scripts/verify-vlcvx-votium-evidence-handoff.mjs
           test -s intelligence/economic-graph/vlcvx-votium-round-flow.json
           test -s intelligence/economic-graph/vlcvx-votium-snapshot-proof.json
+          test -s intelligence/economic-graph/vlcvx-votium-curve-gauge-flow.json
           git diff --check
 
       - name: Determine PR live-probe requirement
@@ -67,7 +71,7 @@ jobs:
         run: |
           set -euo pipefail
           BASE="${{ github.event.pull_request.base.sha }}"
-          if git diff --name-only "$BASE"...HEAD | grep -Eq '^(intelligence/economic-graph/vlcvx-votium-curve-gauge-flow\.mjs|scripts/verify-vlcvx-votium-curve-gauge-flow\.mjs)$'; then
+          if git diff --name-only "$BASE"...HEAD | grep -Eq '^(intelligence/economic-graph/vlcvx-votium-curve-gauge-flow(-retained-history)?\.mjs|scripts/verify-vlcvx-votium-curve-gauge-flow\.mjs)$'; then
             echo "live_probe_needed=true" >> "$GITHUB_OUTPUT"
           else
             echo "live_probe_needed=false" >> "$GITHUB_OUTPUT"
@@ -95,13 +99,20 @@ jobs:
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
         run: |
           set -euo pipefail
+          PRIOR="intelligence/economic-graph/vlcvx-votium-curve-gauge-flow.json"
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             TMP="$(mktemp)"
-            VLCVX_VOTIUM_CURVE_GAUGE_FLOW_FILE="$TMP" node intelligence/economic-graph/vlcvx-votium-curve-gauge-flow.mjs
+            if ! VLCVX_VOTIUM_CURVE_GAUGE_FLOW_FILE="$TMP" node intelligence/economic-graph/vlcvx-votium-curve-gauge-flow.mjs; then
+              echo "Fresh historical GaugeVoteExecuted reconstruction unavailable; attempting strict retained canonical fallback."
+              VLCVX_VOTIUM_CURVE_GAUGE_FLOW_FILE="$TMP" VLCVX_VOTIUM_CURVE_GAUGE_FLOW_PRIOR_FILE="$PRIOR" node intelligence/economic-graph/vlcvx-votium-curve-gauge-flow-retained-history.mjs
+            fi
             cp "$TMP" /tmp/vlcvx-votium-curve-gauge-flow.json
             rm -f "$TMP"
           else
-            node intelligence/economic-graph/vlcvx-votium-curve-gauge-flow.mjs
+            if ! node intelligence/economic-graph/vlcvx-votium-curve-gauge-flow.mjs; then
+              echo "Fresh historical GaugeVoteExecuted reconstruction unavailable; attempting strict retained canonical fallback."
+              VLCVX_VOTIUM_CURVE_GAUGE_FLOW_PRIOR_FILE="$PRIOR" node intelligence/economic-graph/vlcvx-votium-curve-gauge-flow-retained-history.mjs
+            fi
             cp intelligence/economic-graph/vlcvx-votium-curve-gauge-flow.json /tmp/vlcvx-votium-curve-gauge-flow.json
           fi
 
