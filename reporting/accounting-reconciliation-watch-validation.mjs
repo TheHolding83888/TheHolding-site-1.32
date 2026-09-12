@@ -163,18 +163,28 @@ assert.equal(historicalCurve.detail?.factualUsdSubtotal, null, 'veCRV historical
 
 assert.equal(item('historical:05081966.eth:2026-08:aerodrome_veaero'), undefined, 'tracking-no-event veAERO must not become forensic backlog');
 
-// Defitea August veVELO now has additive factual history beyond the earlier proven
-// snapshot, but one event still has UNKNOWN historical USD valuation. The correct
-// fail-closed state is therefore Partial + forensic review, not silent completion.
+// Historical watch acceptance follows the current completeness source instead of
+// freezing one transient snapshot forever. Unknown/Partial must remain forensic;
+// Complete/tracking-no-event must leave the forensic backlog without treating
+// resolution of the watch item as independent accounting-close proof.
+const velodromeSource = (completeness.rows || []).find(row => row.id === 'defitea.eth:2026-08:velodrome_vevelo');
+assert.ok(velodromeSource, 'Defitea veVELO completeness source row missing');
 const historicalVelodrome = item('historical:defitea.eth:2026-08:velodrome_vevelo');
-assert.ok(historicalVelodrome, 'Partial Defitea veVELO forensic watch missing');
-assert.equal(historicalVelodrome.watchClass, 'historical-forensic-review');
-assert.equal(historicalVelodrome.actionability, 'forensic-evidence');
-assert.equal(historicalVelodrome.detail?.sourceState, 'partial');
-assert.equal(historicalVelodrome.detail?.evidenceComplete, false);
-assert.ok(Number(historicalVelodrome.detail?.factualEventCount) > Number(historicalVelodrome.detail?.factualValuedEventCount), 'Partial Defitea veVELO must retain at least one unvalued factual event');
-assert.equal(historicalVelodrome.detail?.factualUsdSubtotal, null, 'Partial Defitea veVELO UNKNOWN USD became zero');
-assert.ok((historicalVelodrome.detail?.reasonCodes || []).includes('factual-event-valuation-incomplete'), 'Partial Defitea veVELO missing valuation-incomplete reason');
+if (velodromeSource.state === 'unknown' || velodromeSource.state === 'partial') {
+  assert.ok(historicalVelodrome, `Defitea veVELO ${velodromeSource.state} forensic watch missing`);
+  assert.equal(historicalVelodrome.watchClass, 'historical-forensic-review');
+  assert.equal(historicalVelodrome.actionability, 'forensic-evidence');
+  assert.equal(historicalVelodrome.detail?.sourceState, velodromeSource.state);
+  assert.equal(historicalVelodrome.detail?.evidenceComplete, false);
+  if (velodromeSource.state === 'partial' && Number(velodromeSource.factualEventCount) > Number(velodromeSource.factualValuedEventCount)) {
+    assert.ok(Number(historicalVelodrome.detail?.factualEventCount) > Number(historicalVelodrome.detail?.factualValuedEventCount), 'Partial Defitea veVELO must retain the unvalued factual-event gap');
+    assert.equal(historicalVelodrome.detail?.factualUsdSubtotal, null, 'Partial Defitea veVELO UNKNOWN USD became valued/zero');
+    assert.ok((historicalVelodrome.detail?.reasonCodes || []).includes('factual-event-valuation-incomplete'), 'Partial Defitea veVELO missing valuation-incomplete reason');
+  }
+} else {
+  assert.ok(['complete', 'tracking-no-event'].includes(velodromeSource.state), `Defitea veVELO unexpected completeness state: ${velodromeSource.state}`);
+  assert.equal(historicalVelodrome, undefined, `Defitea veVELO ${velodromeSource.state} must not remain forensic backlog`);
+}
 
 if (watch.baseline === true) {
   assert.equal(watch.summary.newCount, 0);
