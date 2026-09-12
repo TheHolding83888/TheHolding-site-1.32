@@ -435,7 +435,7 @@ async function readRecoveryClaimBlockState({provider,claim,blockNumber}){
   if(!block)throw new Error(`recovery block ${tag} unavailable`);
   return{
     closingRaw:BigInt(closingRaw).toString(),decimals,rewardSymbol,
-    blockNumber:tag,closingAt:new Date(Number(block.timestamp)*1000).toISOString()
+    blockNumber:tag,closingBlockNumber:tag,closingAt:new Date(Number(block.timestamp)*1000).toISOString()
   };
 }
 
