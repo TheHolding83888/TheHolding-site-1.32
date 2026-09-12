@@ -17,6 +17,16 @@ assert.deepEqual(reconcileEntitlement('100','5','120'),{accepted:true,status:'po
 assert.equal(reconcileEntitlement('100','5','10').accepted,false);
 assert.equal(reconcileEntitlement('oops','5','10').accepted,false);
 
+// A reward may be created, claimed and removed from the wallet before either
+// boundary snapshot sees a positive claimable balance. A proven ClaimRewards
+// settlement must preserve that factual earned amount instead of collapsing it
+// to zero. Conversely, claiming an amount already present at the opening
+// boundary is settlement only and must not create a second income event.
+const shortLivedClaim=reconcileEntitlement('0','0','1379616700000000000000');
+assert.deepEqual(shortLivedClaim,{accepted:true,status:'positive-factual-accrual',earnedRaw:'1379616700000000000000'});
+const alreadyAccruedThenClaimed=reconcileEntitlement('100','0','100');
+assert.deepEqual(alreadyAccruedThenClaimed,{accepted:true,status:'zero-new-earned',earnedRaw:'0'});
+
 const history={
   checkpoints:[
     {checkpointKey:'a|1',laneKey:'a',blockNumber:1,monthBoundary:true},

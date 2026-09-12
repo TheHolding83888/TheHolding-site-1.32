@@ -41,7 +41,7 @@ jobs:
             git fetch --no-tags --depth=1 origin "$base_sha"
             changed="$(git diff --name-only "$base_sha" HEAD)"
             printf '%s\n' "$changed"
-            if printf '%s\n' "$changed" | grep -Eq '^(reporting/ve33-(accounting-evidence|accounting-evidence-validation|income-candidates|income-candidates-validation|ledger-admission|ledger-admission-validation|settlement-query-diagnostic|unresolved-settlement-diagnostic)\.mjs|reporting/ve33-accounting-evidence\.json|\.github/workflows/update-reporting\.yml)$'; then
+            if printf '%s\n' "$changed" | grep -Eq '^(reporting/ve33-(accounting-evidence|income-candidates|ledger-admission|settlement-query-diagnostic|unresolved-settlement-diagnostic)\.mjs|reporting/ve33-accounting-evidence\.json|\.github/workflows/update-reporting\.yml)$'; then
               collector_sensitive=true
             else
               collector_sensitive=false
