@@ -127,6 +127,14 @@ Reporting/cash flow:
 - live Reporting ledger/data;
 - exact writer evidence.
 
+### Post-2026-09-12 architecture / Reporting closure route
+
+For Reporting architecture, canonical-writer ownership, Historical Completeness, Accounting Reconciliation Watch, Final Audit, or any question about whether the September architecture-refactor phase is still active, additionally load:
+
+- `THE_HOLDING_ARCHITECTURE_REPORTING_GREEN_CLOSURE_2026-09-12_1035_MSK.md`.
+
+This closure supersedes the September 11 architecture handoff and September 12 urgent intermediate handoff for **resume state**. Those older handoffs remain historical/audit evidence only. The closure's stop rule is binding unless fresh live evidence demonstrates a new concrete architecture failure.
+
 Hard boundary:
 Reference APR != realised cash flow. Base lending interest and external incentives remain separate economic lanes unless a protocol-specific canon proves otherwise.
 
@@ -235,6 +243,11 @@ Load:
 - live Control Plane / Runtime Reliability state;
 - affected workflow YAML only;
 - exact head/run/log evidence.
+
+For writer ownership, Reporting materialization, or architecture-stop questions after the September 12 closure, also load:
+- `THE_HOLDING_ARCHITECTURE_REPORTING_GREEN_CLOSURE_2026-09-12_1035_MSK.md`.
+
+Architecture cleanup is **closed** at that checkpoint. Do not reopen old writer/fan-out work from historical handoffs unless fresh live evidence shows a real duplicate writer, unresolved edge/cycle, publication race, authority expansion, physical materialization failure, or demonstrated new reliability/scale gap.
 
 Hard law:
 `GREEN workflow != physically materialized production artifact`.
