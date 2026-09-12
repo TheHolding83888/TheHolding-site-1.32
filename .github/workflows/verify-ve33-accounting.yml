@@ -111,6 +111,9 @@ jobs:
         run: |
           set -euo pipefail
           node reporting/ve33-transient-claim-diagnostic.mjs | tee /tmp/ve33-transient-claims.log
+          grep -Fq '0xaad260eb97a2414e45dc5f105e8966932ca8795eb267aacd9ce85b929cd37153' /tmp/ve33-transient-claims.log
+          grep -Eq '"provenClaimCount": [1-9][0-9]*' /tmp/ve33-transient-claims.log
+          grep -Eq '"classification": "(already-represented|known-lane-pending-or-unsettled|transient-orphan-claim)"' /tmp/ve33-transient-claims.log
 
       - name: Read-only live Base + Optimism accounting canary
         if: steps.scope.outputs.collector_sensitive == 'true'
