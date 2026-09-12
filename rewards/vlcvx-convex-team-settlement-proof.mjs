@@ -74,20 +74,30 @@ export function applyVlCvxConvexTeamSettlementProof(data,proof){
   if(!company)throw new Error('Rook canonical Rewards company missing');
   if(company?.vlCvxRoute?.principalAsset!=='vlCVX'||company?.vlCvxRoute?.currentRoute?.routeId!==ROUTE_ID)throw new Error('Rook canonical vlCVX route drift');
   const current=(company.sources||[]).find(x=>x?.route==='vlcvx-current-route');
-  if(!current||current.protocol!==ROUTE_LABEL||current.status!=='partial'||current?.details?.currentRewardSettlement!=='unresolved'||current?.details?.unknownIsNotZero!==true)throw new Error('Rook unresolved current route prerequisite missing');
+  const unresolved=current?.protocol===ROUTE_LABEL&&current?.status==='partial'&&current?.details?.currentRewardSettlement==='unresolved'&&current?.details?.unknownIsNotZero===true;
+  const alreadyResolved=current?.protocol===ROUTE_LABEL&&current?.status==='ok'&&current?.details?.currentRewardSettlement===SETTLEMENT_STATE&&current?.details?.settlement?.periodIncomeAuthority===false&&current?.details?.settlement?.universalExternalRewardZeroAsserted===false&&current?.details?.unknownIsNotZero===true;
+  if(!unresolved&&!alreadyResolved)throw new Error('Rook current route prerequisite missing');
   const platform=(company.sources||[]).find(x=>x?.route==='vlcvx-locker-platform-rewards');
   if(platform?.status!=='ok'||platform?.details?.periodIncomeAuthority!==false||platform?.details?.delegateIncentiveSettlementAuthority!==false)throw new Error('Rook locker platform component proof missing');
   const extra=(company.sources||[]).find(x=>x?.route==='vlcvx-extra-reward-distribution');
-  if(extra?.status!=='ok'||extra?.details?.periodIncomeAuthority!==false)throw new Error('Rook current extra reward distribution proof missing');
+  const extraFresh=extra?.status==='ok'&&extra?.details?.rewardInventoryScanComplete===true&&extra?.details?.periodIncomeAuthority===false&&extra?.details?.unknownIsNotZero===true;
+  const extraPartial=extra?.status==='partial'&&extra?.details?.rewardInventoryScanComplete===false&&extra?.details?.retainedLastVerifiedScanComplete===true&&extra?.details?.currentInventoryStatus==='unknown-current-inventory'&&extra?.details?.freshHistoryVerificationAvailable===false&&extra?.details?.partial===true&&extra?.details?.periodIncomeAuthority===false&&extra?.details?.unknownIsNotZero===true;
+  if(!extraFresh&&!extraPartial)throw new Error('Rook current extra reward distribution proof missing');
 
   const rewardsBefore=JSON.stringify(company.rewards||[]);
   const claimableBefore=company.claimableUsd??company.totalUsd??null;
   current.status='ok';
-  current.note='Current delegate is Convex Team. The audited weighted Curve/f(x) proposal set is fully Convex-Team delegated with no Rook manual/surrogate override; under the reviewed Votium eligibility paths, no current Votium incentive entitlement path is observed. Locker platform, current extra-distribution, and legacy residual reward state remain separately tracked. This is a tracking boundary only, not a zero-income assertion.';
+  current.note=extraPartial
+    ?'Current delegate is Convex Team. The audited weighted Curve/f(x) proposal set is fully Convex-Team delegated with no Rook manual/surrogate override; under the reviewed Votium eligibility paths, no current Votium incentive entitlement path is observed. Locker platform and legacy residual rewards remain separately tracked. Extra-distribution history is currently retained-last-verified and its current inventory completeness remains unknown. This is a tracking boundary only, not a zero-income assertion.'
+    :'Current delegate is Convex Team. The audited weighted Curve/f(x) proposal set is fully Convex-Team delegated with no Rook manual/surrogate override; under the reviewed Votium eligibility paths, no current Votium incentive entitlement path is observed. Locker platform, current extra-distribution, and legacy residual reward state remain separately tracked. This is a tracking boundary only, not a zero-income assertion.';
   current.details={
     ...(current.details||{}),
     currentRewardSettlement:SETTLEMENT_STATE,
-    settlement:p.settlement,
+    settlement:{
+      ...p.settlement,
+      extraRewardDistributionHistoryPartial:extraPartial,
+      extraRewardDistributionFreshHistoryVerificationAvailable:extraFresh
+    },
     settlementObservedBlock:p.observedBlock,
     settlementGeneratedAt:p.generatedAt,
     periodIncomeAuthority:false,
@@ -108,6 +118,8 @@ export function applyVlCvxConvexTeamSettlementProof(data,proof){
     currentRoute:ROUTE_ID,
     currentRewardSettlement:SETTLEMENT_STATE,
     scope:'tracking-proof-only',
+    replayMode:alreadyResolved?'idempotent-refresh':'first-resolution',
+    extraRewardDistributionHistoryPartial:extraPartial,
     periodIncomeAuthority:false,
     rewardRowsCreated:false,
     universalExternalRewardZeroAsserted:false,
