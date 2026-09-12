@@ -22,10 +22,17 @@ export const HISTORICAL_TOKEN_ASSET_IDS=Object.freeze({
 });
 
 export const HISTORICAL_OPTIMISM_CHAINLINK_TOKEN_FEEDS=Object.freeze({
-  '0x0b2c639c533813f4aa9d7837caf62653d097ff85':Object.freeze({assetId:'usd-coin',symbol:'USDC',chainId:10,contract:'0x16a9FA2FDa030272Ce99B29CF780dFA30361E0f3',maxAgeSeconds:90000}),
-  '0x4200000000000000000000000000000000000042':Object.freeze({assetId:'optimism',symbol:'OP',chainId:10,contract:'0x0D276FC14719f9292D5C1eA2198673d1f4269246',maxAgeSeconds:7200}),
-  '0x94b008aa00579c1307b0ef2c499ad98a8ce58e58':Object.freeze({assetId:'tether',symbol:'USDT',chainId:10,contract:'0xECef79E109e997bCA29c1c0897ec9d7b03647F5E',maxAgeSeconds:90000}),
-  '0x1f32b1c2345538c0c6f582fcb022739c4a194ebb':Object.freeze({assetId:'wrapped-steth',symbol:'wstETH',chainId:10,contract:'0x698B585CbC4407e2D54aa898B2600B53C68958f7',maxAgeSeconds:90000})
+  '0x0b2c639c533813f4aa9d7837caf62653d097ff85':Object.freeze({assetId:'usd-coin',symbol:'USDC',network:'optimism',chainId:10,contract:'0x16a9FA2FDa030272Ce99B29CF780dFA30361E0f3',maxAgeSeconds:90000}),
+  '0x4200000000000000000000000000000000000042':Object.freeze({assetId:'optimism',symbol:'OP',network:'optimism',chainId:10,contract:'0x0D276FC14719f9292D5C1eA2198673d1f4269246',maxAgeSeconds:7200}),
+  '0x94b008aa00579c1307b0ef2c499ad98a8ce58e58':Object.freeze({assetId:'tether',symbol:'USDT',network:'optimism',chainId:10,contract:'0xECef79E109e997bCA29c1c0897ec9d7b03647F5E',maxAgeSeconds:90000}),
+  '0x1f32b1c2345538c0c6f582fcb022739c4a194ebb':Object.freeze({assetId:'wrapped-steth',symbol:'wstETH',network:'optimism',chainId:10,contract:'0x698B585CbC4407e2D54aa898B2600B53C68958f7',maxAgeSeconds:90000})
+});
+
+// Exact historical Base routes are deliberately evidence-backed feeds, not
+// stablecoin peg assumptions. USDC/USD is the official Chainlink Base Mainnet
+// reference feed; its answer is read at the ve33 closing block.
+export const HISTORICAL_BASE_CHAINLINK_TOKEN_FEEDS=Object.freeze({
+  '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913':Object.freeze({assetId:'usd-coin',symbol:'USDC',network:'base',chainId:8453,contract:'0x7e860098F58bBFC8648a4311b374B1D669a2bc6B',maxAgeSeconds:90000})
 });
 
 export const HISTORICAL_OPTIMISM_VELODROME_TWAP_TOKEN_ROUTES=Object.freeze({
@@ -67,6 +74,15 @@ function decodeBoolResult(hex){return decodeUint256(hex)!==0n;}
 
 export function canonicalAssetIdForHistoricalToken(token){return HISTORICAL_TOKEN_ASSET_IDS[lower(token)]||null;}
 export function historicalOptimismChainlinkRouteForToken(token){return HISTORICAL_OPTIMISM_CHAINLINK_TOKEN_FEEDS[lower(token)]||null;}
+export function historicalBaseChainlinkRouteForToken(token){return HISTORICAL_BASE_CHAINLINK_TOKEN_FEEDS[lower(token)]||null;}
+export function historicalChainlinkRouteForToken(token,chainId=null){
+  const candidates=[historicalOptimismChainlinkRouteForToken(token),historicalBaseChainlinkRouteForToken(token)].filter(Boolean);
+  if(chainId!==null&&chainId!==undefined){
+    const matching=candidates.filter(route=>Number(route.chainId)===Number(chainId));
+    return matching.length===1?matching[0]:null;
+  }
+  return candidates.length===1?candidates[0]:null;
+}
 export function historicalOptimismVelodromeTwapRouteForToken(token){return HISTORICAL_OPTIMISM_VELODROME_TWAP_TOKEN_ROUTES[lower(token)]||null;}
 
 export function closingBlockFromVe33Identity({eventKey,sourceIdentity}={}){
@@ -109,12 +125,13 @@ export async function defaultHistoricalRpcCall({endpoint,method,params,fetchImpl
   if(body?.result===undefined||body?.result===null)throw new Error(`historical RPC ${method} result missing`);return body.result;
 }
 
-export async function historicalOptimismChainlinkPriceAtBoundary({token,boundaryAt,eventKey=null,sourceIdentity=null,root=ROOT,onchainRegistry=null,rpcCall=defaultHistoricalRpcCall,fetchImpl=fetch}={}){
-  const route=historicalOptimismChainlinkRouteForToken(token);if(!route)return{ok:false,status:'token-not-historical-chainlink-mapped',assetId:null};
+async function historicalChainlinkPriceAtBoundaryForRoute({route,boundaryAt,eventKey=null,sourceIdentity=null,root=ROOT,onchainRegistry=null,rpcCall=defaultHistoricalRpcCall,fetchImpl=fetch}={}){
+  if(!route)return{ok:false,status:'token-not-historical-chainlink-mapped',assetId:null};
   const boundaryMs=Date.parse(boundaryAt||'');if(!Number.isFinite(boundaryMs))return{ok:false,status:'invalid-accounting-boundary',assetId:route.assetId};
   const sourceBlockNumber=closingBlockFromVe33Identity({eventKey,sourceIdentity});if(!sourceBlockNumber)return{ok:false,status:'ve33-closing-block-proof-missing',assetId:route.assetId};
   let registry=onchainRegistry;try{if(!registry)registry=await readOnchainPriceRegistry(root);}catch(error){return{ok:false,status:'onchain-price-registry-unavailable',assetId:route.assetId,error:error?.message||String(error)};}
-  const network=registry?.networks?.optimism;if(Number(network?.chainId)!==route.chainId||!Array.isArray(network?.rpcFailover)||!network.rpcFailover.length)return{ok:false,status:'optimism-historical-rpc-fabric-unavailable',assetId:route.assetId};
+  const networkKey=String(route.network||'');
+  const network=registry?.networks?.[networkKey];if(Number(network?.chainId)!==route.chainId||!Array.isArray(network?.rpcFailover)||!network.rpcFailover.length)return{ok:false,status:`${networkKey||'unknown-network'}-historical-rpc-fabric-unavailable`,assetId:route.assetId};
   const blockTag=hexQuantity(sourceBlockNumber),attempts=[];
   for(const endpoint of network.rpcFailover){try{
     const block=await rpcCall({endpoint,method:'eth_getBlockByNumber',params:[blockTag,false],fetchImpl});
@@ -129,9 +146,19 @@ export async function historicalOptimismChainlinkPriceAtBoundary({token,boundary
     const updatedAtSeconds=Number(round.updatedAt),observedAtMs=updatedAtSeconds*1000;if(!(Number.isFinite(observedAtMs)&&observedAtMs>0)||observedAtMs>blockTimestampMs||observedAtMs>boundaryMs)return{ok:false,status:'historical-chainlink-observation-time-invalid',assetId:route.assetId,sourceBlockNumber};
     const ageSeconds=(boundaryMs-observedAtMs)/1000;if(ageSeconds>Number(route.maxAgeSeconds))return{ok:false,status:'historical-onchain-chainlink-price-stale',assetId:route.assetId,sourceBlockNumber,observedAt:new Date(observedAtMs).toISOString(),ageSeconds:Number(ageSeconds.toFixed(3)),maxAgeSeconds:route.maxAgeSeconds};
     const priceUsd=Number(round.answer)/10**decimals;if(!(Number.isFinite(priceUsd)&&priceUsd>0))return{ok:false,status:'historical-chainlink-price-not-finite-positive',assetId:route.assetId,sourceBlockNumber};
-    return{ok:true,status:'historical-onchain-chainlink-price',sourceFamily:'historical-onchain-chainlink-at-boundary',assetId:route.assetId,symbol:route.symbol,priceUsd,observedAt:new Date(observedAtMs).toISOString(),ageMinutes:Number((ageSeconds/60).toFixed(6)),maxAgeMinutes:Number((route.maxAgeSeconds/60).toFixed(6)),chainId:route.chainId,sourceBlockNumber,sourceBlockTimestamp:new Date(blockTimestampMs).toISOString(),sourceContract:route.contract,roundId:round.roundId.toString(),answeredInRound:round.answeredInRound.toString(),rpcEndpointId:endpoint?.id||null,sourceFile:'reporting/historical-canonical-price.mjs#HISTORICAL_OPTIMISM_CHAINLINK_TOKEN_FEEDS',priceSource:'onchain-chainlink-v3-exact-historical-block',exactHistoricalBlock:true,currentPriceUsed:false,referenceAprUsed:false,executionAuthority:'none'};
+    return{ok:true,status:'historical-onchain-chainlink-price',sourceFamily:'historical-onchain-chainlink-at-boundary',assetId:route.assetId,symbol:route.symbol,priceUsd,observedAt:new Date(observedAtMs).toISOString(),ageMinutes:Number((ageSeconds/60).toFixed(6)),maxAgeMinutes:Number((route.maxAgeSeconds/60).toFixed(6)),chainId:route.chainId,sourceBlockNumber,sourceBlockTimestamp:new Date(blockTimestampMs).toISOString(),sourceContract:route.contract,roundId:round.roundId.toString(),answeredInRound:round.answeredInRound.toString(),rpcEndpointId:endpoint?.id||null,sourceFile:`reporting/historical-canonical-price.mjs#HISTORICAL_${networkKey.toUpperCase()}_CHAINLINK_TOKEN_FEEDS`,priceSource:'onchain-chainlink-v3-exact-historical-block',exactHistoricalBlock:true,stablecoinPegAssumptionUsed:false,currentPriceUsed:false,referenceAprUsed:false,executionAuthority:'none'};
   }catch(error){attempts.push({endpointId:endpoint?.id||null,error:error?.message||String(error)});}}
   return{ok:false,status:'historical-onchain-chainlink-rpc-unavailable',assetId:route.assetId,sourceBlockNumber,attempts};
+}
+
+export async function historicalOptimismChainlinkPriceAtBoundary({token,boundaryAt,eventKey=null,sourceIdentity=null,root=ROOT,onchainRegistry=null,rpcCall=defaultHistoricalRpcCall,fetchImpl=fetch}={}){
+  const route=historicalOptimismChainlinkRouteForToken(token);
+  return historicalChainlinkPriceAtBoundaryForRoute({route,boundaryAt,eventKey,sourceIdentity,root,onchainRegistry,rpcCall,fetchImpl});
+}
+
+export async function historicalBaseChainlinkPriceAtBoundary({token,boundaryAt,eventKey=null,sourceIdentity=null,root=ROOT,onchainRegistry=null,rpcCall=defaultHistoricalRpcCall,fetchImpl=fetch}={}){
+  const route=historicalBaseChainlinkRouteForToken(token);
+  return historicalChainlinkPriceAtBoundaryForRoute({route,boundaryAt,eventKey,sourceIdentity,root,onchainRegistry,rpcCall,fetchImpl});
 }
 
 export async function historicalOptimismVelodromeTwapPriceAtBoundary({token,boundaryAt,eventKey=null,sourceIdentity=null,root=ROOT,onchainRegistry=null,rpcCall=defaultHistoricalRpcCall,fetchImpl=fetch}={}){
@@ -169,7 +196,8 @@ export async function historicalOptimismVelodromeTwapPriceAtBoundary({token,boun
 export async function historicalCanonicalPriceAtBoundary({token,boundaryAt,eventKey=null,sourceIdentity=null,root=ROOT,gitRun=defaultGitRun,schedulerContract=null,maxHistoryCommits=96,onchainRegistry=null,rpcCall=defaultHistoricalRpcCall,fetchImpl=fetch}={}){
   const assetId=canonicalAssetIdForHistoricalToken(token);
   if(!assetId){
-    if(historicalOptimismChainlinkRouteForToken(token))return historicalOptimismChainlinkPriceAtBoundary({token,boundaryAt,eventKey,sourceIdentity,root,onchainRegistry,rpcCall,fetchImpl});
+    const exactChainlinkRoute=historicalChainlinkRouteForToken(token);
+    if(exactChainlinkRoute)return historicalChainlinkPriceAtBoundaryForRoute({route:exactChainlinkRoute,boundaryAt,eventKey,sourceIdentity,root,onchainRegistry,rpcCall,fetchImpl});
     if(historicalOptimismVelodromeTwapRouteForToken(token))return historicalOptimismVelodromeTwapPriceAtBoundary({token,boundaryAt,eventKey,sourceIdentity,root,onchainRegistry,rpcCall,fetchImpl});
     return{ok:false,status:'token-not-canonical-market-data-mapped',assetId:null};
   }
