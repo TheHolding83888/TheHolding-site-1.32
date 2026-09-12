@@ -12,6 +12,7 @@ const PROPOSAL_WINDOW_SECONDS=3*86400;
 const TITLE_PREFIX='Gauge Weight for Week';
 const LEGACY_ROUND=127;
 const FIRST_ONCHAIN_ROUND=128;
+const TRANSITION_ROUNDS=[127,128,129];
 const CURRENT_CURVE_GAUGE_VOTING='0x64D9B5AC386B70af9EDCD20A58cE9262D2EAC278';
 const OLD_CURVE_GAUGE_VOTING='0x21F304a9DF75E087A035B4c5792bD4e6BB7AF8aF';
 const VLCVX_SCALE=10n**18n;
@@ -82,7 +83,10 @@ function compareVotiumToOnchain(round,proposal){
 
 async function main(){
   const roundFlow=readJson(ROUND_FLOW_FILE);if(roundFlow.version!=='0.1-vlcvx-votium-round-flow'||!Array.isArray(roundFlow.completedRounds)||roundFlow.completedRounds.length<3)fail('Unexpected Votium round-flow source');
-  const recent=roundFlow.completedRounds.slice(-3);if(recent.map(r=>Number(r.roundId)).join(',')!=='127,128,129')fail('Expected completed Votium rounds 127-129 for transition proof');
+  if(Number(roundFlow?.roundState?.lastRoundProcessed)<129)fail('Votium round-flow has not reached the proven voting-source transition');
+  if(roundFlow?.coverage?.transitionAnchorComplete!==true||!Array.isArray(roundFlow?.coverage?.transitionAnchorRounds)||roundFlow.coverage.transitionAnchorRounds.join(',')!=='127,128,129')fail('Votium transition anchor missing from canonical round-flow');
+  const byRound=new Map(roundFlow.completedRounds.map(r=>[Number(r.roundId),r]));
+  const recent=TRANSITION_ROUNDS.map(id=>byRound.get(id)||null);if(recent.some(x=>!x))fail('Expected retained Votium transition rounds 127-129');
   const snapshotProposals=await loadRecentCvxProposals(),{provider,endpointClass}=await providerWithFallback();
   try{
     const blockTag=await provider.getBlockNumber();
@@ -101,7 +105,7 @@ async function main(){
       version:'0.2-vlcvx-votium-voting-provenance',engineVersion:'0.2-transition-aware-snapshot-to-convex-onchain',generatedAt:new Date().toISOString(),status:complete?'shadow-voting-provenance-proven':'shadow-partial-proof',
       purpose:'Prove the Votium vlCVX voting-source transition from legacy cvx.eth Snapshot to Convex onchain GaugeVotePlatform and bind post-migration Votium votesReceived to exact onchain vlCVX gauge totals.',
       authority:{readOnly:true,executionAuthority:'none',capitalExecution:false,walletAuthority:false,allocationAuthority:false,recommendationAuthority:false,predictionAuthority:false,causalClaimAuthority:'none',promotionAuthority:'none',methodologyMutationAuthority:false},
-      sourceBinding:{roundFlowFile:'intelligence/economic-graph/vlcvx-votium-round-flow.json',roundFlowSha256:sha256File(ROUND_FLOW_FILE),companyRegistry:'004',candidateId:'defitea-convex-vlcvx-votium'},
+      sourceBinding:{roundFlowFile:'intelligence/economic-graph/vlcvx-votium-round-flow.json',roundFlowSha256:sha256File(ROUND_FLOW_FILE),transitionAnchorRounds:TRANSITION_ROUNDS,roundFlowLastProcessedRound:Number(roundFlow.roundState.lastRoundProcessed),companyRegistry:'004',candidateId:'defitea-convex-vlcvx-votium'},
       observation:{ethereumBlock:blockTag,rpcEndpointClass:endpointClass,snapshotEndpoint:SNAPSHOT_ENDPOINT},
       sourceAuthority:{
         legacyVotium:{contractRepo:'oo-00/Votium',contractCommit:'e01cf1401c67cb81cfbd5158654b878bd9db1102',toolingRepo:'oo-00/votium.js',toolingCommit:'f7f02dccbcff65acf6a35fe692481f1119452a8a',method:'cvx.eth Gauge Weight for Week proposal matched inside official 72-hour round window'},
@@ -111,11 +115,11 @@ async function main(){
       coverage:{roundCount:rows.length,provenRoundCount:rows.filter(r=>r.status==='proven').length,legacySnapshotRoundCount:rows.filter(r=>r.regime==='legacy-snapshot').length,convexOnchainRoundCount:onchainRows.length,onchainVotiumGaugeCount:onchainRows.reduce((s,r)=>s+r.currentOnchainProposal.comparison.votiumGaugeCount,0),onchainExactGaugeMatchCount:onchainRows.reduce((s,r)=>s+r.currentOnchainProposal.comparison.exactCeilMatchCount,0),complete},
       rounds:rows,
       voteUnitSemantics:{status:complete?'proven-human-scale-vlcvx-voting-power':'partial',legacyClass:'official-votium-snapshot-voting-power',postMigrationClass:'ceil-of-convex-onchain-18dp-vlcvx-gauge-total',decimalRule:'Votium votesReceived = ceil(Convex GaugeVotePlatform gaugeTotal / 1e18) after migration',proofClass:'official-source-mechanics-plus-live-cross-contract-gauge-equality'},
-      epistemic:{votingSourceTransition:complete?'attributed-by-live-cross-source-mechanics':'unresolved',postMigrationGaugeEquality:complete?'measured-exact-integer-ceiling-equality':'partial',incentiveToVoteCausality:'not-claimed',downstreamCurveEconomicCausality:'not-claimed',companyIncomeConnection:'not-attributed-by-this-layer',primaryDriver:null},
-      semantics:{unknownIsNotZero:true,missingSnapshotAfterMigrationIsExpected:true,proposalAssociationIsNotEconomicCausation:true,votingSourceProofIsNotIncentiveCausality:true,protocolVotingPowerIsNotRealisedCompanyIncome:true}
+      epistemic:{votingSourceTransition:complete?'attributed-by-live-cross-source-mechanics':'unresolved',transitionAnchorRetention:'canonical-round-flow-source-native-history',postMigrationGaugeEquality:complete?'measured-exact-integer-ceiling-equality':'partial',incentiveToVoteCausality:'not-claimed',downstreamCurveEconomicCausality:'not-claimed',companyIncomeConnection:'not-attributed-by-this-layer',primaryDriver:null},
+      semantics:{unknownIsNotZero:true,transitionAnchorIsHistoricalEvidenceNotCurrentIncome:true,missingSnapshotAfterMigrationIsExpected:true,proposalAssociationIsNotEconomicCausation:true,votingSourceProofIsNotIncentiveCausality:true,protocolVotingPowerIsNotRealisedCompanyIncome:true}
     };
     fs.writeFileSync(OUTPUT_FILE,JSON.stringify(state,null,2)+'\n');
-    console.log('VLCVX VOTIUM VOTING PROVENANCE PASS',{block:blockTag,status:state.status,transition:state.transition,coverage:state.coverage,voteUnitSemantics:state.voteUnitSemantics.status,executionAuthority:state.authority.executionAuthority});
+    console.log('VLCVX VOTIUM VOTING PROVENANCE PASS',{block:blockTag,status:state.status,transition:state.transition,anchor:state.sourceBinding.transitionAnchorRounds,roundFlowLastProcessedRound:state.sourceBinding.roundFlowLastProcessedRound,coverage:state.coverage,voteUnitSemantics:state.voteUnitSemantics.status,executionAuthority:state.authority.executionAuthority});
   }finally{try{provider.destroy();}catch{}}
 }
 main().catch(error=>{console.error(error);process.exit(1);});
