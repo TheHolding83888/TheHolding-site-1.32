@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-12T06:51:24.161Z",
+  "generatedAt": "2026-09-12T07:27:43.039Z",
   "status": "watch",
-  "snapshotHash": "389ee82f50ad4acc99728908457f20b845bba025cf4393f6e430b14efb592f3c",
+  "snapshotHash": "7445d2cd114d7f82def66819038b29973045f1ea0730ddf00f106f7ff9e1f76b",
   "repository": {
-    "filesScanned": 1240,
-    "bytesScanned": 31704535,
+    "filesScanned": 1241,
+    "bytesScanned": 31877175,
     "criticalHashes": {
       ".github/workflows/admit-company-010-public.yml": "bb4f80e7263e86c63c379b78d476e35e0f846d8d68172f048d44395c739e9cde",
       ".github/workflows/ask-experience.yml": "deb9c4e1025390563f8a866f6ddf1c7870e748cbd6aba13fdbd6da2d38e983d4",
@@ -112,7 +112,7 @@
       ".github/workflows/value-company-010-gmx-reader.yml": "eacf1a60777e9758fe48fcdc21d57796174fe6dac0a73fa0dbbb4d1606dc6ad1",
       ".github/workflows/verify-accounting-coverage.yml": "65bcbf480feac24eef2cac72f848a586d353fa38989282796e1cf7e4211513c8",
       ".github/workflows/verify-accounting-income-lifecycle-contract.yml": "ca3a6cdcbeee382dcbbc33cfef1b1118c7d9924b3c42da37685d5ba5b1ab91db",
-      ".github/workflows/verify-accounting-reconciliation-watch.yml": "3094acf741a177ba18df3276d66278c5ee4af338d80f1d4c4bb071f5ec1a8080",
+      ".github/workflows/verify-accounting-reconciliation-watch.yml": "0fab47a291cc6872569ffa9ff1b54a7d1fbd45dabbf75782aec6e7abcd5fce67",
       ".github/workflows/verify-aerodrome-economic-candidate.yml": "9ff993e99d253b47e29e2a63115b138cf729cbbddec015d6d0aec33ca0669763",
       ".github/workflows/verify-ask-conversation-gauntlet.yml": "cc5410dd7b90a8041200d6d6f04bd64696c4ccbd51f248f16d3146432b571858",
       ".github/workflows/verify-brain-explanatory-context.yml": "4b63d5cbc68c6ddc67f1c96f57c48fea1e9068629717691073f3b953cde91081",
@@ -471,7 +471,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Thu, 10 Sep 2026 01:53:50 GMT",
+        "lastModified": "Thu, 10 Sep 2026 04:08:54 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -507,6 +507,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "41bff18309b7d44733c1aa21f941c9d81c67cd9d6ce28c62085750470187535d",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/verify-accounting-reconciliation-watch.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-accounting-reconciliation-watch.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "3094acf741a177ba18df3276d66278c5ee4af338d80f1d4c4bb071f5ec1a8080",
+        "currentSha256": "0fab47a291cc6872569ffa9ff1b54a7d1fbd45dabbf75782aec6e7abcd5fce67"
+      }
     },
     {
       "id": "e0355b82064396fc141e48b5356209bc9cc44e7a4a2b15f7fe18f5dc61f03a0f",
@@ -1484,10 +1498,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 1007,
+    "runCount": 1008,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/09/2026-09-12T06-51-24-161Z-389ee82f50.json",
-    "latestRecordHash": "c59a72fb574cdb34baeb81a87fb823674f2174956cc759962e1c95bba7118db2",
+    "latestRecordPath": "security/security-vault/2026/09/2026-09-12T07-27-43-039Z-7445d2cd11.json",
+    "latestRecordHash": "fa0fac6f6e1d4dab63f504a8bf3068b5db88b7d39d7ca376f899631452f45ebc",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
