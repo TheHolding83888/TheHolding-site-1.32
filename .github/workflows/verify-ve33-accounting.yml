@@ -12,6 +12,7 @@ on:
       - 'reporting/ve33-accounting-evidence.json'
       - 'reporting/ve33-settlement-query-diagnostic.mjs'
       - 'reporting/ve33-unresolved-settlement-diagnostic.mjs'
+      - 'reporting/ve33-transient-claim-diagnostic.mjs'
       - 'reporting/income-ledger.mjs'
       - 'reporting/income-ledger-validation.mjs'
       - '.github/workflows/update-reporting.yml'
@@ -36,6 +37,7 @@ jobs:
         run: |
           set -euo pipefail
           collector_sensitive=true
+          transient_diagnostic_sensitive=false
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             base_sha="${{ github.event.pull_request.base.sha }}"
             git fetch --no-tags --depth=1 origin "$base_sha"
@@ -46,9 +48,14 @@ jobs:
             else
               collector_sensitive=false
             fi
+            if printf '%s\n' "$changed" | grep -Eq '^reporting/ve33-transient-claim-diagnostic\.mjs$'; then
+              transient_diagnostic_sensitive=true
+            fi
           fi
           echo "collector_sensitive=$collector_sensitive" >> "$GITHUB_OUTPUT"
+          echo "transient_diagnostic_sensitive=$transient_diagnostic_sensitive" >> "$GITHUB_OUTPUT"
           echo "ve33 collector-sensitive change: $collector_sensitive"
+          echo "ve33 transient-diagnostic change: $transient_diagnostic_sensitive"
 
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
@@ -69,6 +76,7 @@ jobs:
           node --check reporting/ve33-ledger-admission-validation.mjs
           node --check reporting/ve33-settlement-query-diagnostic.mjs
           node --check reporting/ve33-unresolved-settlement-diagnostic.mjs
+          node --check reporting/ve33-transient-claim-diagnostic.mjs
           node reporting/ve33-accounting-evidence-validation.mjs
           node reporting/ve33-income-candidates-validation.mjs
           node reporting/ve33-ledger-admission-validation.mjs
@@ -88,8 +96,21 @@ jobs:
       - name: Unrelated-change live-canary boundary
         if: steps.scope.outputs.collector_sensitive != 'true'
         run: |
-          echo 'Full live Base + Optimism ve33 collector canary intentionally skipped: this PR does not change ve33 collection, admission, diagnostics, persisted evidence, or production wiring.'
+          echo 'Full live Base + Optimism ve33 collector canary intentionally skipped: this PR does not change ve33 collection, admission, persisted evidence, or production wiring.'
           echo 'Deterministic ve33 invariants remain mandatory here; Canonical Ledger/Reporting integration is verified by the Reporting workflow.'
+
+      - name: Read-only exact-tx transient ClaimRewards diagnostic
+        if: steps.scope.outputs.transient_diagnostic_sensitive == 'true'
+        env:
+          REWARDS_DATA_FILE: ./companies/rewards-data.json
+          VE33_DIAGNOSTIC_EVIDENCE_FILE: ./reporting/ve33-accounting-evidence.json
+          VE33_TRANSIENT_PROTOCOLS: aerodrome
+          # Public Base transaction supplied by the owner as the factual LAPTOP quick-claim fixture.
+          VE33_TRANSIENT_TX_HASHES: 0xaad260eb97a2414e45dc5f105e8966932ca8795eb267aacd9ce85b929cd37153
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+        run: |
+          set -euo pipefail
+          node reporting/ve33-transient-claim-diagnostic.mjs | tee /tmp/ve33-transient-claims.log
 
       - name: Read-only live Base + Optimism accounting canary
         if: steps.scope.outputs.collector_sensitive == 'true'
@@ -127,8 +148,6 @@ jobs:
           if(!(Number(e.diagnostics?.laneCount)>0)) throw new Error('live ve33 discovered no accounting lanes');
           const runtimeMs=Number(e.diagnostics?.runtimeMs);
           if(!Number.isFinite(runtimeMs)||runtimeMs<=0) throw new Error('live ve33 runtime diagnostic missing');
-          // Public RPC timing is network-sensitive. Keep a bounded 7.5 minute canary budget
-          // while preserving the strict accounting/reconciliation invariants below.
           if(runtimeMs>450000) throw new Error(`live ve33 runtime budget exceeded: ${runtimeMs}ms > 450000ms`);
           let totalCurrentCheckpoints=0;
           let totalIntervals=0;
