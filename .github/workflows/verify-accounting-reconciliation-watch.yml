@@ -79,6 +79,7 @@ jobs:
           node - <<'NODE'
           const fs=require('fs');
           const x=JSON.parse(fs.readFileSync('/tmp/accounting-reconciliation-watch.json','utf8'));
+          const completeness=JSON.parse(fs.readFileSync('reporting/historical-accounting-completeness-map.json','utf8'));
           if(x.status!=='diagnostic-watch-no-accounting-authority') throw new Error('watch status authority drift');
           if(x.authority?.sourceOfTruth!==false||x.authority?.factualIncomeAuthority!==false||x.authority?.incomeCreationAuthority!==false||x.authority?.accountingCompletionAuthority!==false||x.authority?.monthClosingAuthority!==false||x.authority?.canReplaceUnknown!==false||x.authority?.executionAuthority!=='none'||x.authority?.capitalExecution!==false||x.authority?.walletAuthority!==false) throw new Error('watch authority expanded');
           if(x.semantics?.unknownIsNotZero!==true||x.semantics?.crossMonthProrationAllowed!==false||x.semantics?.referenceDeltaIsMissingIncome!==false||x.semantics?.trackingNoEventIsFailure!==false) throw new Error('watch epistemic boundary drift');
@@ -88,11 +89,21 @@ jobs:
           if(!ids.has('notice:period-lifecycle-reconciliation:Monetra.eth:2026-09:__company_period__')) throw new Error('Monetra boundary pending anchor missing');
           if(!ids.has('historical:05081966.eth:2026-08:curve_vecrv')) throw new Error('closed veCRV Unknown forensic anchor missing');
           if(ids.has('historical:05081966.eth:2026-08:aerodrome_veaero')) throw new Error('tracking-no-event became forensic alert');
+
+          const source=(completeness.rows||[]).find(r=>r.id==='defitea.eth:2026-08:velodrome_vevelo');
+          if(!source) throw new Error('Defitea veVELO completeness source row missing');
           const vevelo=items.find(r=>r.id==='historical:defitea.eth:2026-08:velodrome_vevelo');
-          if(!vevelo) throw new Error('Partial Defitea veVELO forensic anchor missing');
-          if(vevelo.watchClass!=='historical-forensic-review'||vevelo.actionability!=='forensic-evidence'||vevelo.detail?.sourceState!=='partial'||vevelo.detail?.evidenceComplete!==false) throw new Error('Partial Defitea veVELO forensic semantics drift');
-          if(!(Number(vevelo.detail?.factualEventCount)>Number(vevelo.detail?.factualValuedEventCount))) throw new Error('Partial Defitea veVELO no longer proves an unvalued factual event');
-          if(vevelo.detail?.factualUsdSubtotal!==null) throw new Error('Partial Defitea veVELO UNKNOWN USD became valued/zero');
-          if(!(vevelo.detail?.reasonCodes||[]).includes('factual-event-valuation-incomplete')) throw new Error('Partial Defitea veVELO valuation-incomplete reason missing');
+          if(source.state==='unknown'||source.state==='partial') {
+            if(!vevelo) throw new Error(`Defitea veVELO ${source.state} forensic anchor missing`);
+            if(vevelo.watchClass!=='historical-forensic-review'||vevelo.actionability!=='forensic-evidence'||vevelo.detail?.sourceState!==source.state||vevelo.detail?.evidenceComplete!==false) throw new Error('Defitea veVELO forensic semantics drift');
+            if(source.state==='partial'&&Number(source.factualEventCount)>Number(source.factualValuedEventCount)) {
+              if(!(Number(vevelo.detail?.factualEventCount)>Number(vevelo.detail?.factualValuedEventCount))) throw new Error('Partial Defitea veVELO lost unvalued factual-event gap');
+              if(vevelo.detail?.factualUsdSubtotal!==null) throw new Error('Partial Defitea veVELO UNKNOWN USD became valued/zero');
+              if(!(vevelo.detail?.reasonCodes||[]).includes('factual-event-valuation-incomplete')) throw new Error('Partial Defitea veVELO valuation-incomplete reason missing');
+            }
+          } else {
+            if(!['complete','tracking-no-event'].includes(source.state)) throw new Error(`Defitea veVELO unexpected completeness state: ${source.state}`);
+            if(vevelo) throw new Error(`Defitea veVELO ${source.state} remained forensic`);
+          }
           console.log('Accounting Reconciliation Watch authority guard PASS',x.summary);
           NODE

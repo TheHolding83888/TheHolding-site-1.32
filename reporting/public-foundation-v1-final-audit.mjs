@@ -157,11 +157,15 @@ assert.equal(reconciliation.sourceState?.accountingCoverage?.generatedAt, covera
 assert.equal(reconciliation.sourceState?.accountingNoticeQueue?.generatedAt, notice.generatedAt, 'Reconciliation/Notice generation drift');
 for (const row of reconciliation.rows || []) assert.notEqual(row.engineeringActionable, true, `${row.id} reconciliation remains engineering-actionable`);
 
-// Automatic watch must preserve all accepted classifications without fabricating alerts or zeroes.
+// Automatic watch must preserve accepted classifications without fabricating authority or zeroes.
+// A changed historical-forensic item is a review alert by design; it is not an engineering blocker.
 assert.equal(watch.version, '0.1.1-accounting-reconciliation-watch-null-preserving');
 assert.equal(watch.status, 'diagnostic-watch-no-accounting-authority');
 assert.equal(watch.summary?.engineeringActionRequiredCount, 0, 'Reconciliation Watch has engineering action required');
-assert.equal(watch.summary?.alertCount, 0, 'Reconciliation Watch has active baseline alerts');
+assert.equal((watch.items || []).filter(item => item.watchClass === 'engineering-action-required').length, 0, 'Reconciliation Watch contains hidden engineering-action-required item');
+assert.equal(watch.summary?.alertCount, (watch.alerts || []).length, 'Reconciliation Watch alert summary drift');
+assert.equal(watch.semantics?.baselineCreatesAlerts, false);
+if (watch.baseline === true) assert.equal(watch.summary?.alertCount, 0, 'Reconciliation Watch baseline created alerts');
 assert.equal(watch.semantics?.referenceDeltaIsMissingIncome, false);
 assert.equal(watch.semantics?.trackingNoEventIsFailure, false);
 assert.equal(watch.semantics?.evidencePendingIsEngineeringFailure, false);
@@ -170,6 +174,14 @@ assert.equal(watch.semantics?.unknownIsNotZero, true);
 assert.equal(watch.sourceState?.accountingNoticeQueue?.generatedAt, notice.generatedAt, 'Watch/Notice generation drift');
 assert.equal(watch.sourceState?.accountingReferenceReconciliation?.generatedAt, reconciliation.generatedAt, 'Watch/Reconciliation generation drift');
 assert.equal(watch.sourceState?.historicalAccountingCompleteness?.generatedAt, completeness.generatedAt, 'Watch/Completeness generation drift');
+const watchItemsById = new Map((watch.items || []).map(item => [item.id, item]));
+for (const alertId of watch.alerts || []) {
+  const alertItem = watchItemsById.get(alertId);
+  assert.ok(alertItem, `${alertId} watch alert has no current item`);
+  assert.equal(alertItem.watchClass, 'historical-forensic-review', `${alertId} unexpected alert class while engineering action count is zero`);
+  assert.equal(alertItem.actionability, 'forensic-evidence', `${alertId} forensic alert actionability drift`);
+  assert.ok(['new', 'changed'].includes(alertItem.transition), `${alertId} alert is not a material transition`);
+}
 for (const item of watch.items || []) {
   assert.equal(item.sourceOfTruth, false, `${item.id} watch gained truth authority`);
   assert.equal(item.incomeCreationAuthority, false, `${item.id} watch gained income authority`);
@@ -212,6 +224,7 @@ console.log('PUBLIC FOUNDATION v1 final acceptance audit PASS', {
   noticeParked: notice.summary.parkedCount,
   reconciliationEngineeringActionableCompanyPeriods: reconciliation.summary.engineeringActionableCompanyPeriodCount,
   watchEngineeringActionRequired: watch.summary.engineeringActionRequiredCount,
+  watchAlerts: watch.summary.alertCount,
   watchEvidencePending: watch.summary.evidencePendingCount,
   watchHistoricalForensicReview: watch.summary.historicalForensicReviewCount,
   lifecycleVersion: lifecycle.version,
