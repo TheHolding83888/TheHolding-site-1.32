@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import { buildCanonicalEarnedIncomeView } from './canonical-earned-income-view.mjs';
 
 const LEDGER_FILE=process.env.INCOME_LEDGER_FILE||'./reporting/income-ledger.json';
+const TARGET_MONTH=process.env.TARGET_MONTH||'2026-09';
 const TARGET_COMPANIES=(process.env.TARGET_COMPANIES||'0x5860...83CA8.eth,Cypher,defitea.eth')
   .split(',').map(x=>x.trim()).filter(Boolean);
 
@@ -11,64 +12,57 @@ const view=buildCanonicalEarnedIncomeView(ledger);
 const targets=new Set(TARGET_COMPANIES);
 const rawEvents=Array.isArray(ledger.events)?ledger.events:[];
 const byKey=new Map(rawEvents.map(event=>[event.eventKey,event]));
-const finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v));
-
-function candidateRawEvents(row){
-  const exact=byKey.get(row.eventKey);
-  if(exact)return[exact];
-  const rowTime=Date.parse(row.economicDate||'');
-  return rawEvents.filter(event=>{
-    if(String(event.company||'')!==String(row.company||''))return false;
-    if(String(event.asset||event.symbol||'').toUpperCase()!==String(row.asset||'').toUpperCase())return false;
-    if(finite(row.amount)&&finite(event.amount)&&Math.abs(Number(event.amount)-Number(row.amount))>1e-12)return false;
-    const eventTime=Date.parse(event.economicDate||event.periodEnd||event.observedAt||'');
-    if(Number.isFinite(rowTime)&&Number.isFinite(eventTime)&&Math.abs(eventTime-rowTime)>5*60_000)return false;
-    return true;
-  }).slice(0,5);
-}
-
-function summarizeRaw(event){
-  if(!event)return null;
-  return {
-    ...event,
-    _rawKeys:Object.keys(event).sort()
-  };
-}
 
 function detail(row){
-  const candidates=candidateRawEvents(row);
+  const event=byKey.get(row.eventKey)||null;
   return {
-    normalized:{
-      eventKey:row.eventKey,
-      company:row.company,
-      month:row.month,
-      family:row.family,
-      protocol:row.protocol,
-      route:row.route,
-      asset:row.asset,
-      amount:row.amount,
-      usdValue:row.usdValue,
-      economicDate:row.economicDate,
-      periodStart:row.periodStart,
-      periodEnd:row.periodEnd,
-      reason:row.reason
-    },
-    rawCandidateCount:candidates.length,
-    rawCandidates:candidates.map(summarizeRaw)
+    eventKey:row.eventKey,
+    company:row.company,
+    family:row.family,
+    protocol:row.protocol,
+    route:row.route,
+    asset:row.asset,
+    amount:row.amount,
+    usdValue:row.usdValue,
+    economicDate:row.economicDate,
+    periodStart:row.periodStart,
+    periodEnd:row.periodEnd,
+    reason:row.reason,
+    periodAttributionMonth:event?.periodAttributionMonth||null,
+    chain:event?.chain||null,
+    chainId:event?.chainId??null,
+    token:event?.token||event?.rewardToken||null,
+    tokenId:event?.tokenId??null,
+    rewardContract:event?.rewardContract||null,
+    valuationAt:event?.valuationAt||null,
+    valuationStatus:event?.valuationStatus||null,
+    valuationSourceStatus:event?.valuationSourceStatus||null,
+    settlementProofs:event?.settlementProofs||[],
+    sourceFile:event?.sourceFile||null,
+    sourceFamily:event?.sourceFamily||null,
+    evidenceStatus:event?.evidenceStatus||null,
+    immutableEconomicFieldsHash:event?.immutableEconomicFieldsHash||null
   };
 }
 
-const targetUnresolved=view.unresolved
+const currentMonthBlockers=view.unresolved
   .filter(row=>targets.has(row.company)&&row.reason==='canonical-event-usd-valuation-incomplete')
-  .map(detail);
+  .map(detail)
+  .filter(row=>row.periodAttributionMonth===TARGET_MONTH);
+
+const grouped=Object.fromEntries(TARGET_COMPANIES.map(company=>[
+  company,
+  currentMonthBlockers.filter(row=>row.company===company)
+]));
 
 const output={
-  version:'0.3-unresolved-usd-valuation-diagnostic',
+  version:'0.4-current-month-unresolved-usd-valuation-diagnostic',
   ledgerGeneratedAt:ledger.generatedAt||null,
-  earnedViewSummary:view.summary,
+  targetMonth:TARGET_MONTH,
   targetCompanies:TARGET_COMPANIES,
-  targetUsdIncompleteCount:targetUnresolved.length,
-  targetUnresolved,
+  currentMonthBlockerCount:currentMonthBlockers.length,
+  countsByCompany:Object.fromEntries(TARGET_COMPANIES.map(company=>[company,grouped[company].length])),
+  grouped,
   semantics:{
     diagnosticOnly:true,
     mutatesAccounting:false,
@@ -79,4 +73,4 @@ const output={
   }
 };
 
-console.log('Unresolved canonical USD valuation diagnostic',JSON.stringify(output,null,2));
+console.log('Current-month unresolved canonical USD valuation blockers',JSON.stringify(output,null,2));
