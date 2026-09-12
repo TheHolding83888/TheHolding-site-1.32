@@ -91,9 +91,6 @@ const multicallIface=new Interface(['function multicall(bytes[] data) returns (b
 const directData=directIface.encodeFunctionData('getReward',[77,[token]]);
 assert.equal(decodeRewardClaimTokenId({to:reward,data:directData,rewardContract:reward,rewardToken:token,voter}),'77');
 assert.equal(decodeRewardClaimTokenId({to:reward,data:directData,rewardContract:reward,rewardToken:other,voter}),null);
-// Direct reward contracts encode the veNFT id in calldata. Exercise the same
-// four-digit token-id shape used by the quick-claim acceptance case so exact
-// transaction diagnostics cannot silently regress to small synthetic ids only.
 const quickClaimDirectData=directIface.encodeFunctionData('getReward',[1938,[token]]);
 assert.equal(decodeRewardClaimTokenId({to:reward,data:quickClaimDirectData,rewardContract:reward,rewardToken:token,voter}),'1938');
 const bribeData=voterIface.encodeFunctionData('claimBribes',[[other,reward],[[other],[token]],88]);
@@ -157,13 +154,11 @@ const velo=positions.find(x=>x.company==='Beta');
 assert.equal(velo.protocolKey,'velodrome');
 assert.equal(velo.freeManagedReward,'0x7777777777777777777777777777777777777777');
 
-// Temporary acceptance harness: only this diagnostic PR invokes the public
-// exact transaction fixture from the already-live Reporting verifier. It is
-// intentionally branch-scoped and must not be merged into main.
 if(process.env.GITHUB_ACTIONS==='true'&&process.env.GITHUB_HEAD_REF==='diagnostic/laptop-proof-trigger-20260912'){
   process.env.VE33_TRANSIENT_PROTOCOLS='aerodrome';
   process.env.VE33_TRANSIENT_TX_HASHES='0xaad260eb97a2414e45dc5f105e8966932ca8795eb267aacd9ce85b929cd37153';
   await import('./ve33-transient-claim-diagnostic.mjs');
+  throw new Error('TEMPORARY_LAPTOP_FIXTURE_CAPTURE_COMPLETE');
 }
 
 console.log('ve(3,3) factual accounting evidence validation OK');
