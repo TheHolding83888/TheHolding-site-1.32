@@ -41,7 +41,11 @@ async function rpc(endpoint,method,params){
 async function call(endpoint,to,data,block){return rpc(endpoint,'eth_call',[{to,data},blockTag(block)]);}
 function laptopUsdcFromTick(avgTick,token0){
   const rawToken1PerToken0=Math.pow(1.0001,avgTick);
-  return lower(token0)===LAPTOP?rawToken1PerToken0*1e12:(1/rawToken1PerToken0)/1e12;
+  // sqrt/tick math is in raw token units. Here token0=USDC(6), token1=LAPTOP(18).
+  // human token1/token0 = raw * 10^(token0Decimals-token1Decimals); invert for USDC/LAPTOP.
+  return lower(token0)===LAPTOP
+    ? rawToken1PerToken0*1e12
+    : (1/rawToken1PerToken0)*1e12;
 }
 
 const registry=JSON.parse(await fs.readFile('intelligence/market-data/onchain-price-source-registry.json','utf8'));
@@ -81,5 +85,5 @@ for(const endpoint of endpoints){
     break;
   }catch(error){attempts.push({endpointId:endpoint.id,error:error.message});}
 }
-console.log(JSON.stringify({version:'0.2-laptop-slipstream-historical-diagnostic',success,attempts,semantics:{diagnosticOnly:true,spotPriceAuthority:false,twapOnly:true,twapSeconds:TWAP_SECONDS,currentPriceUsed:false,executionAuthority:'none'}},null,2));
+console.log(JSON.stringify({version:'0.3-laptop-slipstream-historical-diagnostic',success,attempts,semantics:{diagnosticOnly:true,spotPriceAuthority:false,twapOnly:true,twapSeconds:TWAP_SECONDS,currentPriceUsed:false,executionAuthority:'none'}},null,2));
 if(!success||success.identityMatches!==true||success.observations.length!==CLAIM_BLOCKS.length)process.exitCode=1;
