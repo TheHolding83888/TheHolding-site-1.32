@@ -79,6 +79,15 @@ function eventMonth(event) {
   return monthKey(event?.economicDate || event?.periodEnd);
 }
 
+function exactBlockPegMetadataValid(family, resolution) {
+  if (family === 'historical-onchain-chainlink-at-boundary') {
+    // Legacy direct Chainlink resolutions predate this explicit provenance field.
+    // Missing is accepted only for those already-proven records; explicit true is never valid.
+    return resolution?.stablecoinPegAssumptionUsed !== true;
+  }
+  return resolution?.stablecoinPegAssumptionUsed === false;
+}
+
 function historicalValuationSourceValid(event, resolution, boundaryMs, observedMs) {
   const family = resolution?.sourceFamily;
   if (!HISTORICAL_VALUATION_SOURCE_FAMILIES.has(family)) return false;
@@ -94,7 +103,7 @@ function historicalValuationSourceValid(event, resolution, boundaryMs, observedM
     !Number.isSafeInteger(Number(resolution?.sourceBlockNumber)) || Number(resolution.sourceBlockNumber) <= 0 ||
     Number(resolution.sourceBlockNumber) !== Number(identity.closeBlock) ||
     resolution?.exactHistoricalBlock !== true ||
-    resolution?.stablecoinPegAssumptionUsed !== false ||
+    !exactBlockPegMetadataValid(family, resolution) ||
     !/^0x[0-9a-f]{40}$/i.test(String(resolution?.sourceContract || ''))
   ) return false;
   const blockMs = Date.parse(resolution?.sourceBlockTimestamp || '');
@@ -346,6 +355,8 @@ function buildCanonicalEarnedIncomeView(ledger) {
       historicalValuationMustMatchImmutableVe33TokenIdentity: true,
       exactHistoricalOnchainChainlinkResolutionAllowed: true,
       exactHistoricalOnchainVelodromeTwapChainlinkResolutionAllowed: true,
+      legacyDirectChainlinkMissingPegMetadataAccepted: true,
+      explicitStablecoinPegAssumptionRejected: true,
       unknownIsNotZero: true
     },
     recognized,
