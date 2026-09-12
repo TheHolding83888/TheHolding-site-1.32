@@ -25,12 +25,10 @@ export const HISTORICAL_OPTIMISM_CHAINLINK_TOKEN_FEEDS=Object.freeze({
   '0x0b2c639c533813f4aa9d7837caf62653d097ff85':Object.freeze({assetId:'usd-coin',symbol:'USDC',network:'optimism',chainId:10,contract:'0x16a9FA2FDa030272Ce99B29CF780dFA30361E0f3',maxAgeSeconds:90000}),
   '0x4200000000000000000000000000000000000042':Object.freeze({assetId:'optimism',symbol:'OP',network:'optimism',chainId:10,contract:'0x0D276FC14719f9292D5C1eA2198673d1f4269246',maxAgeSeconds:7200}),
   '0x94b008aa00579c1307b0ef2c499ad98a8ce58e58':Object.freeze({assetId:'tether',symbol:'USDT',network:'optimism',chainId:10,contract:'0xECef79E109e997bCA29c1c0897ec9d7b03647F5E',maxAgeSeconds:90000}),
-  '0x1f32b1c2345538c0c6f582fcb022739c4a194ebb':Object.freeze({assetId:'wrapped-steth',symbol:'wstETH',network:'optimism',chainId:10,contract:'0x698B585CbC4407e2D54aa898B2600B53C68958f7',maxAgeSeconds:90000})
+  '0x1f32b1c2345538c0c6f582fcb022739c4a194ebb':Object.freeze({assetId:'wrapped-steth',symbol:'wstETH',network:'optimism',chainId:10,contract:'0x698B585CbC4407e2D54aa898B2600B53C68958f7',maxAgeSeconds:90000}),
+  '0x8700daec35af8ff88c16bdf0418774cb3d7599b4':Object.freeze({assetId:'synthetix-network-token',symbol:'SNX',network:'optimism',chainId:10,contract:'0x2FCF37343e916eAEd1f1DdaaF84458a359b53877',maxAgeSeconds:90000})
 });
 
-// Exact historical Base routes are deliberately evidence-backed feeds, not
-// stablecoin peg assumptions. USDC/USD is the official Chainlink Base Mainnet
-// reference feed; its answer is read at the ve33 closing block.
 export const HISTORICAL_BASE_CHAINLINK_TOKEN_FEEDS=Object.freeze({
   '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913':Object.freeze({assetId:'usd-coin',symbol:'USDC',network:'base',chainId:8453,contract:'0x7e860098F58bBFC8648a4311b374B1D669a2bc6B',maxAgeSeconds:90000})
 });
@@ -45,7 +43,7 @@ export const HISTORICAL_OPTIMISM_VELODROME_TWAP_TOKEN_ROUTES=Object.freeze({
   }),
   '0xcb8fa9a76b8e203d8c3797bf438d8fb81ea3326a':Object.freeze({
     assetId:'alchemix-usd',symbol:'alUSD',chainId:10,
-    token:'0xCB8FA9a76b8e203D8C3797bF438d8FB81Ea3326A',tokenDecimals:18,
+    token:'0xCB8FA9a76b8e203d8c3797bf438d8fb81ea3326a',tokenDecimals:18,
     pool:'0x124D69DaeDA338b1b31fFC8e429e39c9A991164e',poolStable:true,
     quoteToken:'0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',quoteTokenSymbol:'USDC',quoteTokenDecimals:6,
     quoteChainlinkFeed:'0x16a9FA2FDa030272Ce99B29CF780dFA30361E0f3',twapGranularity:48
@@ -59,9 +57,20 @@ export const HISTORICAL_OPTIMISM_VELODROME_TWAP_TOKEN_ROUTES=Object.freeze({
   })
 });
 
+export const HISTORICAL_BASE_SLIPSTREAM_TWAP_TOKEN_ROUTES=Object.freeze({
+  '0xb095274743941e953c746f9c228da9c18bb6ec29':Object.freeze({
+    assetId:'laptop',symbol:'LAPTOP',network:'base',chainId:8453,
+    token:'0xb095274743941e953c746f9c228da9c18bb6ec29',tokenDecimals:18,
+    pool:'0x99cf3e8bfb02c300312c53aac5d0b082e3d5975c',
+    quoteToken:'0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',quoteTokenSymbol:'USDC',quoteTokenDecimals:6,
+    quoteChainlinkFeed:'0x7e860098F58bBFC8648a4311b374B1D669a2bc6B',twapSeconds:300
+  })
+});
+
 const VELODROME_SELECTORS=Object.freeze({
   token0:'0x0dfe1681',token1:'0xd21220a7',stable:'0x22be3de1',observationLength:'0xebeb31db',quote:'0x9e8cc04b'
 });
+const SLIPSTREAM_SELECTORS=Object.freeze({token0:'0x0dfe1681',token1:'0xd21220a7',observe:'0x883bdbfd'});
 const lower=v=>String(v||'').toLowerCase();
 const finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v));
 const RPC_TIMEOUT_MS=10_000;
@@ -69,21 +78,43 @@ const MAX_BOUNDARY_BLOCK_LAG_SECONDS=120;
 const abiWord=value=>BigInt(value).toString(16).padStart(64,'0');
 const abiAddress=value=>lower(value).replace(/^0x/,'').padStart(64,'0');
 function encodeVelodromeQuote(tokenIn,amountIn,granularity){return`${VELODROME_SELECTORS.quote}${abiAddress(tokenIn)}${abiWord(amountIn)}${abiWord(granularity)}`;}
+function encodeSlipstreamObserve(secondsAgo){return`${SLIPSTREAM_SELECTORS.observe}${abiWord(32)}${abiWord(2)}${abiWord(secondsAgo)}${abiWord(0)}`;}
 function decodeAddressResult(hex){const raw=String(hex||'').replace(/^0x/,'');if(raw.length<64)throw new Error('ABI address result missing');const out=`0x${raw.slice(-40)}`;if(!/^0x[0-9a-f]{40}$/i.test(out))throw new Error('ABI address result invalid');return out;}
 function decodeBoolResult(hex){return decodeUint256(hex)!==0n;}
+function signedBits(value,bits){const b=BigInt(bits),mask=(1n<<b)-1n,raw=BigInt(value)&mask,sign=1n<<(b-1n);return raw>=sign?raw-(1n<<b):raw;}
+function decodeSlipstreamTickCumulatives(hex){
+  const raw=String(hex||'').replace(/^0x/,'');
+  if(raw.length<128)throw new Error('Slipstream observe result missing');
+  const offset=Number(BigInt(`0x${raw.slice(0,64)}`)),base=offset*2;
+  if(!Number.isSafeInteger(offset)||offset<0||raw.length<base+64)throw new Error('Slipstream observe offset invalid');
+  const len=Number(BigInt(`0x${raw.slice(base,base+64)}`));
+  if(!Number.isSafeInteger(len)||len<0||raw.length<base+64+len*64)throw new Error('Slipstream observe length invalid');
+  const out=[];
+  for(let i=0;i<len;i++)out.push(signedBits(BigInt(`0x${raw.slice(base+64+i*64,base+128+i*64)}`),56));
+  return out;
+}
+function averageTickFromCumulatives(cumulatives,secondsAgo){
+  if(!Array.isArray(cumulatives)||cumulatives.length!==2||!Number.isSafeInteger(Number(secondsAgo))||Number(secondsAgo)<=0)throw new Error('Slipstream TWAP inputs invalid');
+  const seconds=BigInt(secondsAgo),delta=cumulatives[1]-cumulatives[0];let avg=delta/seconds;if(delta<0n&&delta%seconds!==0n)avg-=1n;const n=Number(avg);if(!Number.isSafeInteger(n))throw new Error('Slipstream average tick invalid');return n;
+}
+function humanQuotePerTokenFromTick({avgTick,tokenIsToken0,tokenDecimals,quoteDecimals}){
+  const rawToken1PerToken0=Math.pow(1.0001,Number(avgTick));
+  if(!(Number.isFinite(rawToken1PerToken0)&&rawToken1PerToken0>0))return null;
+  const decimalScale=10**(Number(tokenDecimals)-Number(quoteDecimals));
+  const quotePerToken=tokenIsToken0?rawToken1PerToken0*decimalScale:(1/rawToken1PerToken0)*decimalScale;
+  return Number.isFinite(quotePerToken)&&quotePerToken>0?quotePerToken:null;
+}
 
 export function canonicalAssetIdForHistoricalToken(token){return HISTORICAL_TOKEN_ASSET_IDS[lower(token)]||null;}
 export function historicalOptimismChainlinkRouteForToken(token){return HISTORICAL_OPTIMISM_CHAINLINK_TOKEN_FEEDS[lower(token)]||null;}
 export function historicalBaseChainlinkRouteForToken(token){return HISTORICAL_BASE_CHAINLINK_TOKEN_FEEDS[lower(token)]||null;}
 export function historicalChainlinkRouteForToken(token,chainId=null){
   const candidates=[historicalOptimismChainlinkRouteForToken(token),historicalBaseChainlinkRouteForToken(token)].filter(Boolean);
-  if(chainId!==null&&chainId!==undefined){
-    const matching=candidates.filter(route=>Number(route.chainId)===Number(chainId));
-    return matching.length===1?matching[0]:null;
-  }
+  if(chainId!==null&&chainId!==undefined){const matching=candidates.filter(route=>Number(route.chainId)===Number(chainId));return matching.length===1?matching[0]:null;}
   return candidates.length===1?candidates[0]:null;
 }
 export function historicalOptimismVelodromeTwapRouteForToken(token){return HISTORICAL_OPTIMISM_VELODROME_TWAP_TOKEN_ROUTES[lower(token)]||null;}
+export function historicalBaseSlipstreamTwapRouteForToken(token){return HISTORICAL_BASE_SLIPSTREAM_TWAP_TOKEN_ROUTES[lower(token)]||null;}
 
 export function closingBlockFromVe33Identity({eventKey,sourceIdentity}={}){
   const eventMatch=String(eventKey||'').match(/:(\d+):(\d+)$/);
@@ -193,12 +224,50 @@ export async function historicalOptimismVelodromeTwapPriceAtBoundary({token,boun
   return{ok:false,status:'historical-onchain-velodrome-twap-rpc-unavailable',assetId:route.assetId,sourceBlockNumber,attempts};
 }
 
-export async function historicalCanonicalPriceAtBoundary({token,boundaryAt,eventKey=null,sourceIdentity=null,root=ROOT,gitRun=defaultGitRun,schedulerContract=null,maxHistoryCommits=96,onchainRegistry=null,rpcCall=defaultHistoricalRpcCall,fetchImpl=fetch}={}){
+export async function historicalBaseSlipstreamTwapPriceAtBoundary({token,boundaryAt,eventKey=null,sourceIdentity=null,root=ROOT,onchainRegistry=null,rpcCall=defaultHistoricalRpcCall,fetchImpl=fetch}={}){
+  const route=historicalBaseSlipstreamTwapRouteForToken(token);if(!route)return{ok:false,status:'token-not-historical-slipstream-twap-mapped',assetId:null};
+  const boundaryMs=Date.parse(boundaryAt||'');if(!Number.isFinite(boundaryMs))return{ok:false,status:'invalid-accounting-boundary',assetId:route.assetId};
+  const sourceBlockNumber=closingBlockFromVe33Identity({eventKey,sourceIdentity});if(!sourceBlockNumber)return{ok:false,status:'ve33-closing-block-proof-missing',assetId:route.assetId};
+  let registry=onchainRegistry;try{if(!registry)registry=await readOnchainPriceRegistry(root);}catch(error){return{ok:false,status:'onchain-price-registry-unavailable',assetId:route.assetId,error:error?.message||String(error)};}
+  const network=registry?.networks?.base;if(Number(network?.chainId)!==route.chainId||!Array.isArray(network?.rpcFailover)||!network.rpcFailover.length)return{ok:false,status:'base-historical-rpc-fabric-unavailable',assetId:route.assetId};
+  const blockTag=hexQuantity(sourceBlockNumber),attempts=[];
+  for(const endpoint of network.rpcFailover){try{
+    const block=await rpcCall({endpoint,method:'eth_getBlockByNumber',params:[blockTag,false],fetchImpl});
+    if(lower(block?.number)!==lower(blockTag))return{ok:false,status:'ve33-closing-block-rpc-mismatch',assetId:route.assetId,sourceBlockNumber};
+    const blockTimestampSeconds=Number(BigInt(block?.timestamp||'0x0')),blockTimestampMs=blockTimestampSeconds*1000;
+    if(!(Number.isFinite(blockTimestampMs)&&blockTimestampMs>0))return{ok:false,status:'historical-slipstream-block-time-invalid',assetId:route.assetId,sourceBlockNumber};
+    if(blockTimestampMs>boundaryMs)return{ok:false,status:'historical-slipstream-block-after-accounting-boundary',assetId:route.assetId,sourceBlockNumber};
+    const boundaryLagSeconds=(boundaryMs-blockTimestampMs)/1000;if(boundaryLagSeconds>MAX_BOUNDARY_BLOCK_LAG_SECONDS)return{ok:false,status:'historical-slipstream-block-too-far-from-accounting-boundary',assetId:route.assetId,sourceBlockNumber,boundaryLagSeconds:Number(boundaryLagSeconds.toFixed(3))};
+    const[token0Hex,token1Hex,observeHex]=await Promise.all([
+      rpcCall({endpoint,method:'eth_call',params:[{to:route.pool,data:SLIPSTREAM_SELECTORS.token0},blockTag],fetchImpl}),
+      rpcCall({endpoint,method:'eth_call',params:[{to:route.pool,data:SLIPSTREAM_SELECTORS.token1},blockTag],fetchImpl}),
+      rpcCall({endpoint,method:'eth_call',params:[{to:route.pool,data:encodeSlipstreamObserve(route.twapSeconds)},blockTag],fetchImpl})
+    ]);
+    const token0=decodeAddressResult(token0Hex),token1=decodeAddressResult(token1Hex),pair=new Set([lower(token0),lower(token1)]);
+    if(pair.size!==2||!pair.has(lower(route.token))||!pair.has(lower(route.quoteToken)))return{ok:false,status:'historical-slipstream-pool-token-identity-mismatch',assetId:route.assetId,sourceBlockNumber};
+    const avgTick=averageTickFromCumulatives(decodeSlipstreamTickCumulatives(observeHex),route.twapSeconds);
+    const tokenIsToken0=lower(token0)===lower(route.token);
+    const quoteTokenAmount=humanQuotePerTokenFromTick({avgTick,tokenIsToken0,tokenDecimals:route.tokenDecimals,quoteDecimals:route.quoteTokenDecimals});
+    if(!(Number.isFinite(quoteTokenAmount)&&quoteTokenAmount>0))return{ok:false,status:'historical-slipstream-twap-quote-not-positive',assetId:route.assetId,sourceBlockNumber};
+    const quoteRoute=historicalChainlinkRouteForToken(route.quoteToken,route.chainId);
+    const quoteUsd=await historicalChainlinkPriceAtBoundaryForRoute({route:quoteRoute,boundaryAt,eventKey,sourceIdentity,root,onchainRegistry:registry,rpcCall,fetchImpl});
+    if(quoteUsd?.ok!==true)return{ok:false,status:'historical-slipstream-quote-token-usd-unavailable',assetId:route.assetId,sourceBlockNumber,quoteStatus:quoteUsd?.status||null,quoteAssetId:quoteUsd?.assetId||null};
+    if(lower(quoteUsd.sourceContract)!==lower(route.quoteChainlinkFeed)||Number(quoteUsd.sourceBlockNumber)!==sourceBlockNumber)return{ok:false,status:'historical-slipstream-quote-token-proof-mismatch',assetId:route.assetId,sourceBlockNumber};
+    const priceUsd=quoteTokenAmount*Number(quoteUsd.priceUsd);
+    if(!(Number.isFinite(priceUsd)&&priceUsd>0))return{ok:false,status:'historical-slipstream-derived-price-not-finite-positive',assetId:route.assetId,sourceBlockNumber};
+    return{ok:true,status:'historical-onchain-slipstream-twap-chainlink-price',sourceFamily:'historical-onchain-slipstream-twap-chainlink-at-boundary',assetId:route.assetId,symbol:route.symbol,priceUsd,observedAt:quoteUsd.observedAt,ageMinutes:quoteUsd.ageMinutes,maxAgeMinutes:quoteUsd.maxAgeMinutes,chainId:route.chainId,sourceBlockNumber,sourceBlockTimestamp:new Date(blockTimestampMs).toISOString(),sourceContract:route.pool,rpcEndpointId:endpoint?.id||null,exactHistoricalBlock:true,poolToken0:token0,poolToken1:token1,quoteToken:route.quoteToken,quoteTokenSymbol:route.quoteTokenSymbol,quoteTokenAmount,twapSeconds:route.twapSeconds,avgTick,quoteChainlinkContract:quoteUsd.sourceContract,quoteRoundId:quoteUsd.roundId,quoteAnsweredInRound:quoteUsd.answeredInRound,quoteObservedAt:quoteUsd.observedAt,quotePriceUsd:quoteUsd.priceUsd,sourceFile:'reporting/historical-canonical-price.mjs#HISTORICAL_BASE_SLIPSTREAM_TWAP_TOKEN_ROUTES',priceSource:'onchain-aerodrome-slipstream-twap-plus-chainlink-quote-exact-historical-block',stablecoinPegAssumptionUsed:false,currentPriceUsed:false,referenceAprUsed:false,executionAuthority:'none'};
+  }catch(error){attempts.push({endpointId:endpoint?.id||null,error:error?.message||String(error)});}}
+  return{ok:false,status:'historical-onchain-slipstream-twap-rpc-unavailable',assetId:route.assetId,sourceBlockNumber,attempts};
+}
+
+export async function historicalCanonicalPriceAtBoundary({token,boundaryAt,eventKey=null,sourceIdentity=null,chainId=null,root=ROOT,gitRun=defaultGitRun,schedulerContract=null,maxHistoryCommits=96,onchainRegistry=null,rpcCall=defaultHistoricalRpcCall,fetchImpl=fetch}={}){
   const assetId=canonicalAssetIdForHistoricalToken(token);
   if(!assetId){
-    const exactChainlinkRoute=historicalChainlinkRouteForToken(token);
+    const exactChainlinkRoute=historicalChainlinkRouteForToken(token,chainId);
     if(exactChainlinkRoute)return historicalChainlinkPriceAtBoundaryForRoute({route:exactChainlinkRoute,boundaryAt,eventKey,sourceIdentity,root,onchainRegistry,rpcCall,fetchImpl});
-    if(historicalOptimismVelodromeTwapRouteForToken(token))return historicalOptimismVelodromeTwapPriceAtBoundary({token,boundaryAt,eventKey,sourceIdentity,root,onchainRegistry,rpcCall,fetchImpl});
+    const slipstreamRoute=historicalBaseSlipstreamTwapRouteForToken(token);
+    if(slipstreamRoute&&(!chainId||Number(chainId)===Number(slipstreamRoute.chainId)))return historicalBaseSlipstreamTwapPriceAtBoundary({token,boundaryAt,eventKey,sourceIdentity,root,onchainRegistry,rpcCall,fetchImpl});
+    if(historicalOptimismVelodromeTwapRouteForToken(token)&&(!chainId||Number(chainId)===10))return historicalOptimismVelodromeTwapPriceAtBoundary({token,boundaryAt,eventKey,sourceIdentity,root,onchainRegistry,rpcCall,fetchImpl});
     return{ok:false,status:'token-not-canonical-market-data-mapped',assetId:null};
   }
   let scheduler=schedulerContract;try{if(!scheduler)scheduler=await readSchedulerContract(root);}catch(error){return{ok:false,status:'market-data-scheduler-contract-unavailable',assetId,error:error?.message||String(error)};}
