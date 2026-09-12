@@ -6,6 +6,7 @@ const file=process.env.VLCVX_VOTIUM_ROUND_FLOW_FILE||'intelligence/economic-grap
 const graphFile=process.env.ECONOMIC_GRAPH_FILE||'intelligence/economic-graph/economic-graph.json';
 const x=JSON.parse(fs.readFileSync(file,'utf8'));
 const graphHash=crypto.createHash('sha256').update(fs.readFileSync(graphFile)).digest('hex');
+const TRANSITION_ANCHOR_ROUNDS=[127,128,129];
 function fail(message){throw new Error(message);}
 
 if(x.version!=='0.1-vlcvx-votium-round-flow')fail('Votium round-flow version mismatch');
@@ -20,6 +21,16 @@ if(!Number.isInteger(Number(x.roundState?.lastRoundProcessed))||Number(x.roundSt
 if(!Array.isArray(x.completedRounds)||x.completedRounds.length<2)fail('Votium completed round depth insufficient');
 if(Number(x.coverage?.measuredCompletedRounds)!==x.completedRounds.length||x.coverage?.latestProcessedRoundIncluded!==true)fail('Votium completed round coverage mismatch');
 if(Number(x.latestCompletedRound?.roundId)!==Number(x.roundState.lastRoundProcessed))fail('Latest processed Votium round not materialized');
+if(Number(x.roundState.lastRoundProcessed)>=129){
+  if(x.coverage?.transitionAnchorComplete!==true)fail('Votium transition anchor coverage not complete');
+  if(!Array.isArray(x.coverage?.transitionAnchorRounds)||x.coverage.transitionAnchorRounds.join(',')!=='127,128,129')fail('Votium transition anchor coverage drift');
+  const ids=new Set(x.completedRounds.map(r=>Number(r.roundId)));
+  for(const id of TRANSITION_ANCHOR_ROUNDS)if(!ids.has(id))fail(`Votium transition anchor round ${id} missing`);
+  if(x.epistemic?.transitionAnchorRetention!=='source-native-measured-historical-state')fail('Votium transition anchor epistemic class missing');
+  if(x.semantics?.transitionAnchorIsHistoricalEvidenceNotCurrentIncome!==true)fail('Votium transition anchor income boundary missing');
+}
+if(Number(x.coverage?.rollingLastRound)!==Number(x.roundState.lastRoundProcessed))fail('Votium rolling window does not reach latest processed round');
+if(!Number.isInteger(Number(x.coverage?.rollingFirstRound))||Number(x.coverage.rollingFirstRound)>Number(x.coverage.rollingLastRound))fail('Votium rolling window boundary invalid');
 
 for(const round of x.completedRounds){
   if(round.status!=='completed-processed')fail(`Round ${round.roundId} status mismatch`);
@@ -43,6 +54,11 @@ for(const round of x.completedRounds){
   }
   if(round.epistemic?.voteUnitSemantics!=='contract-native-unit-scale-unresolved'||round.epistemic?.causalAttribution!=='unresolved'||round.epistemic?.primaryDriver!==null)fail(`Round ${round.roundId} epistemic boundary weakened`);
 }
+for(const comparison of x.comparisons||[]){
+  if(comparison?.comparable===true&&Number(comparison.priorRoundId)+1!==Number((x.completedRounds||[]).find(r=>Number(r.roundId)===Number(comparison.priorRoundId)+1)?.roundId)){
+    fail('Votium comparison incorrectly marked a non-consecutive round pair comparable');
+  }
+}
 if(x.epistemic?.voteUnitSemantics!=='contract-native-unit-scale-unresolved'||x.epistemic?.usdValuation!=='unknown-in-v0.1'||x.epistemic?.companyIncomeConnection!=='not-attributed-by-this-layer'||x.epistemic?.primaryDriver!==null)fail('Votium epistemic boundary weakened');
 if(x.semantics?.unknownIsNotZero!==true||x.semantics?.contractAccountingIsNotUsdValuation!==true||x.semantics?.voteUnitScaleUnresolved!==true||x.semantics?.incentiveAndVoteCoexistenceIsNotCausation!==true||x.semantics?.protocolRoundFlowIsNotRealisedCompanyIncome!==true)fail('Votium semantic invariants missing');
 
@@ -52,6 +68,8 @@ console.log('VLCVX VOTIUM ROUND FLOW VERIFY PASS',{
   activeRound:x.roundState.activeRound,
   lastRoundProcessed:x.roundState.lastRoundProcessed,
   measuredRounds:x.completedRounds.length,
+  transitionAnchor:x.coverage.transitionAnchorRounds,
+  rollingWindow:`${x.coverage.rollingFirstRound}-${x.coverage.rollingLastRound}`,
   latestGaugeCount:x.latestCompletedRound.gaugeCount,
   latestIncentiveCount:x.latestCompletedRound.incentiveCount,
   latestVotesContractUnits:x.latestCompletedRound.totalVotesReceivedContractUnits,
