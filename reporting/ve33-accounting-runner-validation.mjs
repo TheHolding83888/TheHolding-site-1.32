@@ -11,6 +11,7 @@ import {
   isExactCodeAbsence,
   transientVotingLaneKey,
   buildPredeploymentZeroCheckpoint,
+  seedTransientPredeploymentZeroBaselines,
   attachHistoricalCallRouter,
   canReuseEvidence,
   evidenceFreshEnough,
@@ -160,6 +161,15 @@ assert.equal(ignored.diagnostics.status,'ignored-invalid-authority');
 assert.equal(ignored.diagnostics.shadowRowsInserted,0);
 assert.equal(ignored.rewards,rewards);
 assert.equal(ignored.rewards.companies[company].rewards.length,0);
+const invalidBaseline=await seedTransientPredeploymentZeroBaselines({
+  previous:{checkpoints:[]},
+  recovery:invalidRecovery,
+  providers:{aerodrome:{getBlockNumber:async()=>51211957,getCode:async()=>{throw new Error('invalid recovery must not reach RPC');}}}
+});
+assert.equal(invalidBaseline.diagnostics.status,'ignored-invalid-authority');
+assert.equal(invalidBaseline.diagnostics.candidateClaimCount,0);
+assert.equal(invalidBaseline.diagnostics.seededCheckpointCount,0);
+assert.equal(invalidBaseline.previous.checkpoints.length,0);
 
 const noRecovery=applyTransientClaimRecovery(rewards,{});
 assert.equal(noRecovery.diagnostics.status,'not-provided');
@@ -186,6 +196,7 @@ console.log('ve33 capability-aware historical RPC runner validation OK',{
   deployedContractCannotFabricateZeroOpening:true,
   historicalCodeReadsRouteToArchiveProvider:true,
   invalidRecoveryAuthorityFailsClosed:true,
+  invalidRecoveryCannotSeedZeroBaseline:true,
   recoveryFingerprintInvalidatesReuse:true,
   createsIncome:false,
   executionAuthority:'none'
