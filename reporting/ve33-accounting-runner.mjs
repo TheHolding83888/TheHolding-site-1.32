@@ -213,7 +213,7 @@ async function probeHistoricalCandidate({url,cfg,protocolKey,lanes}){
         blockTimestamp:boundary.blockTimestamp,
         available:capability?.available===true,
         status:capability?.status||'unknown',
-        sampleTokenId:capability.sampleTokenId||null,
+        sampleTokenId:capability?.sampleTokenId||null,
         error:capability?.error||null
       });
       if(capability?.available!==true)throw new Error(`${protocolKey} ${label} cannot read historical state at ${boundaryAt}: ${capability?.error||capability?.status||'unknown'}`);
