@@ -3,7 +3,8 @@ import './accounting-coverage-validation-v012-core.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import process from 'node:process';
-import { buildAccountingCoverage, SUPPLEMENTARY_ROUTE_PRINCIPAL_HINT, VERSION } from './accounting-coverage.mjs';
+import { buildAccountingCoverage, canonicalCompanyName, SUPPLEMENTARY_ROUTE_PRINCIPAL_HINT, VERSION } from './accounting-coverage.mjs';
+import { resolvedUsdValue as canonicalResolvedUsdValue } from './canonical-earned-income-view.mjs';
 
 assert.equal(VERSION,'0.13-supplementary-route-principal-isolation-accounting-mechanism-coverage-registry');
 assert.deepEqual(SUPPLEMENTARY_ROUTE_PRINCIPAL_HINT,{
@@ -63,21 +64,53 @@ console.log('Accounting Coverage v0.13 VoteMarket principal-route isolation PASS
 // Production-shaped regression: raw veVELO events may have usdValue=null while the
 // Canonical Ledger carries an immutable, identity-bound historical valuationResolution.
 // The previously proven 19-event / $2.04403678 snapshot is a historical floor, not a
-// permanent ceiling: later factual rebuilds may legitimately discover additional unique
-// evidence. Coverage must preserve that floor and value every admitted factual event.
+// permanent ceiling. Later factual rebuilds may discover additional unique evidence before
+// every new event has a canonical historical USD resolution. In that state Coverage must
+// preserve the factual event, keep the unresolved USD unknown, retain every previously
+// proven valued event, and refuse to manufacture a complete subtotal.
 const coverageFile=process.env.ACCOUNTING_COVERAGE_FILE||'./reporting/accounting-coverage.json';
+const incomeLedgerFile=process.env.INCOME_LEDGER_FILE||'./reporting/income-ledger.json';
 const productionCoverage=JSON.parse(fs.readFileSync(coverageFile,'utf8'));
+const productionLedger=JSON.parse(fs.readFileSync(incomeLedgerFile,'utf8'));
 const augustVeVelo=productionCoverage?.companies?.['defitea.eth']?.mechanisms?.velodrome_vevelo?.months?.['2026-08'];
 if(augustVeVelo){
   const provenEventFloor=19;
+  const provenValuedEventFloor=19;
   const provenUsdFloor=2.04403678;
-  assert.ok(Number(augustVeVelo.factualEventCount)>=provenEventFloor,'Defitea August veVELO lost previously proven factual events');
-  assert.equal(Number(augustVeVelo.factualValuedEventCount),Number(augustVeVelo.factualEventCount),'Defitea August veVELO canonical historical valuations were not fully reused');
-  assert.ok(Number(augustVeVelo.factualUsdSubtotal)+1e-8>=provenUsdFloor,'Defitea August veVELO canonical effective USD subtotal regressed below the proven floor');
+  const lower=value=>String(value||'').trim().toLowerCase();
+  const monthKey=value=>{const t=Date.parse(value||'');return Number.isFinite(t)?new Date(t).toISOString().slice(0,7):null;};
+  const eventText=event=>[event?.route,event?.protocol,event?.asset,event?.token,event?.sourceFamily,event?.sourceIdentity,event?.sourceFile,event?.mechanismKind].map(lower).join(' ');
+  const augustLedgerEvents=(productionLedger?.events||[]).filter(event=>
+    canonicalCompanyName(event?.company)==='defitea.eth'&&
+    event?.family==='accrued-entitlement'&&
+    monthKey(event?.economicDate||event?.periodEnd)==='2026-08'&&
+    ['velodrome','vevelo','forty-acres'].some(hint=>eventText(event).includes(hint))
+  );
+  const valuedAugustLedgerEvents=augustLedgerEvents.map(event=>canonicalResolvedUsdValue(event)).filter(value=>value!==null&&value!==undefined&&value!==''&&Number.isFinite(Number(value))).map(Number);
+  const knownValuedUsd=Number(valuedAugustLedgerEvents.reduce((sum,value)=>sum+value,0).toFixed(8));
+  const eventCount=Number(augustVeVelo.factualEventCount);
+  const valuedEventCount=Number(augustVeVelo.factualValuedEventCount);
+
+  assert.ok(eventCount>=provenEventFloor,'Defitea August veVELO lost previously proven factual events');
+  assert.ok(valuedEventCount>=provenValuedEventFloor,'Defitea August veVELO lost previously proven canonical historical valuations');
+  assert.ok(valuedEventCount<=eventCount,'Defitea August veVELO valued-event count exceeds factual-event count');
+  assert.equal(augustLedgerEvents.length,eventCount,'Defitea August veVELO Coverage/Ledger factual-event parity drift');
+  assert.equal(valuedAugustLedgerEvents.length,valuedEventCount,'Defitea August veVELO Coverage/Ledger valued-event parity drift');
+  assert.ok(knownValuedUsd+1e-8>=provenUsdFloor,'Defitea August veVELO known canonical historical USD value regressed below the proven floor');
+
+  if(valuedEventCount===eventCount){
+    assert.ok(Number.isFinite(Number(augustVeVelo.factualUsdSubtotal)),'Defitea August veVELO complete valuation lost factual USD subtotal');
+    assert.ok(Number(augustVeVelo.factualUsdSubtotal)+1e-8>=provenUsdFloor,'Defitea August veVELO canonical effective USD subtotal regressed below the proven floor');
+    assert.ok(Math.abs(Number(augustVeVelo.factualUsdSubtotal)-knownValuedUsd)<=1e-8,'Defitea August veVELO complete subtotal drifted from canonical resolved valuations');
+  }else{
+    assert.equal(augustVeVelo.factualUsdSubtotal,null,'Defitea August veVELO incomplete valuation fabricated a complete USD subtotal');
+  }
+
   assert.equal(productionCoverage.semantics?.canonicalHistoricalValuationResolutionReusedForDiagnosticUsd,true,'Coverage lost canonical historical valuation reuse semantic');
+  assert.equal(productionCoverage.semantics?.unknownIsNotZero,true,'Coverage lost UNKNOWN-is-not-zero semantic');
   assert.equal(productionCoverage.authority?.incomeCreationAuthority,undefined,'Coverage unexpectedly gained income creation authority');
   assert.equal(productionCoverage.authority?.executionAuthority,'none','Coverage execution authority drift');
   console.log('Accounting Coverage canonical historical valuation projection PASS',{
-    mechanism:'velodrome_vevelo',month:'2026-08',events:augustVeVelo.factualEventCount,valued:augustVeVelo.factualValuedEventCount,usd:augustVeVelo.factualUsdSubtotal,provenEventFloor,provenUsdFloor,incomeCreationAuthority:false,executionAuthority:'none'
+    mechanism:'velodrome_vevelo',month:'2026-08',events:eventCount,valued:valuedEventCount,knownValuedUsd,completeUsd:augustVeVelo.factualUsdSubtotal,provenEventFloor,provenValuedEventFloor,provenUsdFloor,partialValuation:valuedEventCount<eventCount,incomeCreationAuthority:false,executionAuthority:'none'
   });
 }
