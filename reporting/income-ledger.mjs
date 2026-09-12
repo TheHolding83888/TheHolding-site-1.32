@@ -90,7 +90,10 @@ function reusableIdentityBoundResolution(event,identity){
   const observedMs=Date.parse(r.observedAt||''),boundaryMs=Date.parse(r.boundaryAt||'');
   if(!Number.isFinite(observedMs)||!Number.isFinite(boundaryMs)||observedMs>boundaryMs)return false;
   if(EXACT_BLOCK_SOURCE_FAMILIES.has(r.sourceFamily)){
-    if(r?.exactHistoricalBlock!==true||r?.stablecoinPegAssumptionUsed!==false||Number(r?.sourceBlockNumber)!==Number(identity.closeBlock))return false;
+    const pegMetadataValid=r.sourceFamily==='historical-onchain-chainlink-at-boundary'
+      ? r?.stablecoinPegAssumptionUsed!==true
+      : r?.stablecoinPegAssumptionUsed===false;
+    if(r?.exactHistoricalBlock!==true||!pegMetadataValid||Number(r?.sourceBlockNumber)!==Number(identity.closeBlock))return false;
     const blockMs=Date.parse(r?.sourceBlockTimestamp||'');
     if(!Number.isFinite(blockMs)||blockMs>boundaryMs||observedMs>blockMs)return false;
   }
