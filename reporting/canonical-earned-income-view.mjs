@@ -89,10 +89,12 @@ function historicalValuationSourceValid(event, resolution, boundaryMs, observedM
   if (family === 'canonical-market-data-git-history') return true;
 
   if (
-    Number(resolution?.sourceChainId) !== 10 ||
+    !Number.isSafeInteger(Number(event?.chainId)) || Number(event.chainId) <= 0 ||
+    Number(resolution?.sourceChainId) !== Number(event.chainId) ||
     !Number.isSafeInteger(Number(resolution?.sourceBlockNumber)) || Number(resolution.sourceBlockNumber) <= 0 ||
     Number(resolution.sourceBlockNumber) !== Number(identity.closeBlock) ||
     resolution?.exactHistoricalBlock !== true ||
+    resolution?.stablecoinPegAssumptionUsed !== false ||
     !/^0x[0-9a-f]{40}$/i.test(String(resolution?.sourceContract || ''))
   ) return false;
   const blockMs = Date.parse(resolution?.sourceBlockTimestamp || '');
