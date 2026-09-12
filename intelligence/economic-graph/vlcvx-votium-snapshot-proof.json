@@ -1,7 +1,7 @@
 {
   "version": "0.2-vlcvx-votium-voting-provenance",
   "engineVersion": "0.2-transition-aware-snapshot-to-convex-onchain",
-  "generatedAt": "2026-08-26T10:00:04.131Z",
+  "generatedAt": "2026-09-12T05:25:48.610Z",
   "status": "shadow-voting-provenance-proven",
   "purpose": "Prove the Votium vlCVX voting-source transition from legacy cvx.eth Snapshot to Convex onchain GaugeVotePlatform and bind post-migration Votium votesReceived to exact onchain vlCVX gauge totals.",
   "authority": {
@@ -18,12 +18,18 @@
   },
   "sourceBinding": {
     "roundFlowFile": "intelligence/economic-graph/vlcvx-votium-round-flow.json",
-    "roundFlowSha256": "6a2ad4ab44a09efa9dbda24a21888605d1876a869c569fea00ea3500b18c15dd",
+    "roundFlowSha256": "e1c332829489e1093815442fbc5fd3dc42a23289e25f6c65cf21607307d49e07",
+    "transitionAnchorRounds": [
+      127,
+      128,
+      129
+    ],
+    "roundFlowLastProcessedRound": 130,
     "companyRegistry": "004",
     "candidateId": "defitea-convex-vlcvx-votium"
   },
   "observation": {
-    "ethereumBlock": 25838645,
+    "ethereumBlock": 25959224,
     "rpcEndpointClass": "ethereum-rpc.publicnode.com",
     "snapshotEndpoint": "https://hub.snapshot.org/graphql"
   },
@@ -1057,6 +1063,7 @@
   },
   "epistemic": {
     "votingSourceTransition": "attributed-by-live-cross-source-mechanics",
+    "transitionAnchorRetention": "canonical-round-flow-source-native-history",
     "postMigrationGaugeEquality": "measured-exact-integer-ceiling-equality",
     "incentiveToVoteCausality": "not-claimed",
     "downstreamCurveEconomicCausality": "not-claimed",
@@ -1065,6 +1072,7 @@
   },
   "semantics": {
     "unknownIsNotZero": true,
+    "transitionAnchorIsHistoricalEvidenceNotCurrentIncome": true,
     "missingSnapshotAfterMigrationIsExpected": true,
     "proposalAssociationIsNotEconomicCausation": true,
     "votingSourceProofIsNotIncentiveCausality": true,
