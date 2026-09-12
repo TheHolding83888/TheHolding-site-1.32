@@ -45,15 +45,20 @@ assert.ok(workflow.includes("repositoryMutationAuthority!=='Update Company Rewar
 
 // ICP/NNS owns domain state/history only. Update Company Rewards is the sole
 // publisher of the ICP projection inside companies/rewards-data.json. Keep the
-// path trigger for human/code changes, and explicitly consume the successful
-// ICP workflow completion because GITHUB_TOKEN-generated state commits do not
-// recursively emit ordinary push workflows.
+// path trigger for human/code changes, and explicitly consume only successful
+// same-repository main-branch workflow completions because GITHUB_TOKEN-generated
+// state commits do not recursively emit ordinary push workflows. PR validation
+// runs must never wake this production writer.
 assert.ok(workflow.includes("- 'rewards/icp-nns-rewards-projection.mjs'"),'Rewards writer must wake on ICP projection source changes');
 assert.ok(workflow.includes("- 'companies/icp-nns-rewards-state.json'"),'Rewards writer must retain the canonical ICP state path trigger');
 const icpWorkflowRun='- "Update ICP NNS Rewards"';
 assert.equal(workflow.split(icpWorkflowRun).length-1,1,'ICP NNS workflow_run handoff must exist exactly once');
-assert.match(workflow,/workflow_run:\n\s+workflows:[\s\S]*- "Update ICP NNS Rewards"[\s\S]*types: \[completed\]/,'Rewards writer must consume ICP workflow completion');
+assert.match(workflow,/workflow_run:\n\s+workflows:[\s\S]*- "Update ICP NNS Rewards"[\s\S]*types: \[completed\]\n\s+branches: \[main\]/,'Rewards writer must consume only main-branch ICP workflow completion');
 assert.match(workflow,/github\.event\.workflow_run\.conclusion == 'success'/,'Rewards workflow_run handoffs must fail closed on unsuccessful upstream runs');
+assert.match(workflow,/github\.event\.workflow_run\.head_branch == 'main'/,'Rewards workflow_run handoffs must fail closed outside main');
+assert.match(workflow,/github\.event\.workflow_run\.head_repository\.full_name == github\.repository/,'Rewards workflow_run handoffs must fail closed outside the canonical repository');
+assert.match(workflow,/github\.event\.workflow_run\.event != 'pull_request'/,'Rewards workflow_run handoffs must reject pull_request validation runs');
+assert.match(workflow,/github\.event\.workflow_run\.event != 'pull_request_target'/,'Rewards workflow_run handoffs must reject pull_request_target validation runs');
 assert.ok(workflow.includes('node --check rewards/icp-nns-rewards-projection.mjs'),'Rewards writer does not syntax-check ICP projection');
 assert.ok(workflow.includes('node rewards/icp-nns-rewards-projection.mjs'),'Rewards writer does not materialize ICP projection');
 assert.ok(workflow.includes("sourceStateRepositoryMutationAuthority!=='Update ICP NNS Rewards'"),'Rewards writer ICP source ownership assertion missing');
@@ -86,6 +91,9 @@ console.log('Rewards workflow definition paired proof PASS',{
   hyperlendProjectionOwnedByRewardsWriter:true,
   icpNnsStatePathTriggerRetained:true,
   icpNnsWorkflowRunHandoff:true,
+  workflowRunMainBranchOnly:true,
+  workflowRunCanonicalRepositoryOnly:true,
+  workflowRunPrValidationRejected:true,
   icpNnsProjectionOwnedByRewardsWriter:true,
   githubTokenRecursivePushAssumed:false,
   rookConvexTeamSettlementBoundary:true,
