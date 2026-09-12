@@ -129,6 +129,20 @@ export async function runRecoveryWriter({
       result.scan={...result.scan,accountingStartBlock,rpc:router.snapshot?.()||null};
       protocolResults[protocolKey]=result;
       rpcDiagnostics[protocolKey]={status:'complete',...(router.snapshot?.()||{})};
+    }catch(error){
+      const prior=previousState?.protocols?.[protocolKey]||{};
+      const message=error?.shortMessage||error?.message||String(error);
+      protocolResults[protocolKey]={
+        status:'partial',claims:prior.claims||[],
+        unresolved:[...(prior.unresolved||[]),{reason:'protocol-scan-failed',error:message}],
+        scan:{
+          fromBlock:null,toBlock:null,lastScannedBlock:prior.lastScannedBlock??null,queriedRanges:0,
+          holderCount:new Set(positions.map(x=>String(x.holder).toLowerCase())).size,positionCount:positions.length,
+          complete:false,overlapBlocks:SCAN_OVERLAP_BLOCKS,rpc:router.snapshot?.()||null
+        },
+        semantics:RECOVERY_SEMANTICS
+      };
+      rpcDiagnostics[protocolKey]={status:'partial-scan-failed',error:message,...(router.snapshot?.()||{})};
     }finally{
       if(!providerRouters[protocolKey])router.destroy?.();
     }
@@ -137,7 +151,7 @@ export async function runRecoveryWriter({
   const output=buildRecoveryState({previousState,protocolResults,generatedAt});
   output.writer={
     version:VERSION,recoveryVersion:RECOVERY_VERSION,
-    policy:'tracked-holder ClaimRewards discovery only; no economic admission; overlap cursor persisted per protocol',
+    policy:'tracked-holder ClaimRewards discovery only; no economic admission; overlap cursor persisted per protocol; failed protocol scans preserve prior cursor and remain partial',
     scanChunkBlocks:SCAN_CHUNK_BLOCKS,scanOverlapBlocks:SCAN_OVERLAP_BLOCKS,
     rpc:rpcDiagnostics,executionAuthority:'none',capitalExecution:false
   };
