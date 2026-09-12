@@ -19,13 +19,15 @@ const __filename=fileURLToPath(import.meta.url);
 const __dirname=path.dirname(__filename);
 const ROOT=path.resolve(__dirname,'..');
 
-export const VERSION='0.1-ve33-transient-claim-recovery-writer';
+export const VERSION='0.2-ve33-transient-claim-recovery-writer';
 const DEFAULT_REWARDS=process.env.REWARDS_DATA_FILE||path.join(ROOT,'companies','rewards-data.json');
 const DEFAULT_EVIDENCE=process.env.VE33_EVIDENCE_FILE||path.join(ROOT,'reporting','ve33-accounting-evidence.json');
 const DEFAULT_RECOVERY=process.env.VE33_TRANSIENT_RECOVERY_FILE||path.join(ROOT,'reporting','ve33-transient-claim-recovery.json');
 const REQUEST_SPACING_MS=Math.max(0,Math.min(2_000,Number(process.env.VE33_RECOVERY_REQUEST_SPACING_MS||220)));
 const SCAN_CHUNK_BLOCKS=Math.max(100,Math.min(20_000,Number(process.env.VE33_RECOVERY_SCAN_CHUNK_BLOCKS||DEFAULT_SCAN_CHUNK_BLOCKS)));
 const SCAN_OVERLAP_BLOCKS=Math.max(0,Math.min(50_000,Number(process.env.VE33_RECOVERY_SCAN_OVERLAP_BLOCKS||DEFAULT_SCAN_OVERLAP_BLOCKS)));
+const MIN_LOG_SPLIT_BLOCKS=Math.max(16,Math.min(2_000,Number(process.env.VE33_RECOVERY_MIN_LOG_SPLIT_BLOCKS||128)));
+const MAX_LOG_SPLIT_DEPTH=Math.max(1,Math.min(12,Number(process.env.VE33_RECOVERY_MAX_LOG_SPLIT_DEPTH||8)));
 
 const unique=values=>[...new Set((values||[]).filter(Boolean))];
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -33,6 +35,23 @@ async function readJson(file,fallback={}){try{return JSON.parse(await fs.readFil
 async function writeJson(file,data){await fs.mkdir(path.dirname(file),{recursive:true});await fs.writeFile(file,JSON.stringify(data,null,2)+'\n');}
 
 export function rpcLabel(url){try{return new URL(String(url)).hostname||'configured-rpc';}catch{return'configured-rpc';}}
+export function safeRpcError(error){
+  const raw=String(error?.shortMessage||error?.message||error||'unknown RPC error');
+  return raw.replace(/https?:\/\/[^\s"'`]+/gi,'[rpc]').slice(0,500);
+}
+function numericBlock(value){
+  if(typeof value==='number'&&Number.isFinite(value))return Math.trunc(value);
+  if(typeof value==='bigint')return Number(value);
+  if(typeof value==='string'&&/^0x[0-9a-f]+$/i.test(value))return Number.parseInt(value,16);
+  if(typeof value==='string'&&/^\d+$/.test(value))return Number(value);
+  return null;
+}
+function logIdentity(log){return `${String(log?.transactionHash||'').toLowerCase()}:${Number(log?.index??log?.logIndex??-1)}:${String(log?.address||'').toLowerCase()}`;}
+function mergeLogs(left=[],right=[]){
+  const byId=new Map();
+  for(const log of [...left,...right])byId.set(logIdentity(log),log);
+  return [...byId.values()].sort((a,b)=>Number(a?.blockNumber||0)-Number(b?.blockNumber||0)||Number(a?.index??a?.logIndex??0)-Number(b?.index??b?.logIndex??0));
+}
 
 export function recoveryRpcUrls(cfg,env=process.env){
   // Configured infrastructure is first. For public fallbacks prefer the second
@@ -42,14 +61,20 @@ export function recoveryRpcUrls(cfg,env=process.env){
   return unique([env?.[cfg.rpcEnv],...[...(cfg.rpcFallbacks||[])].reverse()]);
 }
 
-export function createRpcOperationRouter({cfg,env=process.env,providerFactory=null,requestSpacingMs=REQUEST_SPACING_MS}={}){
+export function createRpcOperationRouter({
+  cfg,env=process.env,providerFactory=null,requestSpacingMs=REQUEST_SPACING_MS,
+  minLogSplitBlocks=MIN_LOG_SPLIT_BLOCKS,maxLogSplitDepth=MAX_LOG_SPLIT_DEPTH
+}={}){
   if(!cfg)throw new Error('Recovery RPC router requires protocol config');
   const urls=recoveryRpcUrls(cfg,env);
   if(!urls.length)throw new Error(`No RPC candidates configured for ${cfg.protocol||'ve33 protocol'}`);
   const make=providerFactory||((url)=>new JsonRpcProvider(url,cfg.chainId,{staticNetwork:true}));
   const candidates=urls.map(url=>({url,label:rpcLabel(url),provider:make(url,cfg)}));
   let preferredIndex=0,nextRequestAt=0,gateTail=Promise.resolve();
-  const stats={attempts:0,successes:{},failures:{},failoverCount:0,nullFallbackCount:0,lastProvider:null,failureSamples:[]};
+  const stats={
+    attempts:0,successes:{},failures:{},failoverCount:0,nullFallbackCount:0,lastProvider:null,
+    adaptiveSplitCount:0,maxAdaptiveSplitDepth:0,failureSamples:[],splitSamples:[]
+  };
   const pace=async()=>{
     let release;
     const prior=gateTail;
@@ -81,21 +106,38 @@ export function createRpcOperationRouter({cfg,env=process.env,providerFactory=nu
       }catch(error){
         last=error;
         stats.failures[candidate.label]=(stats.failures[candidate.label]||0)+1;
-        if(stats.failureSamples.length<20)stats.failureSamples.push({provider:candidate.label,method,error:error?.shortMessage||error?.message||String(error)});
+        if(stats.failureSamples.length<20)stats.failureSamples.push({provider:candidate.label,method,error:safeRpcError(error)});
       }
     }
     throw last||new Error(`${method} failed on all recovery RPC candidates`);
   };
+  const getLogsAdaptive=async(filter,depth=0)=>{
+    try{return await call('getLogs',[filter]);}
+    catch(error){
+      const from=numericBlock(filter?.fromBlock),to=numericBlock(filter?.toBlock);
+      const span=from===null||to===null?null:to-from+1;
+      if(from===null||to===null||from>=to||depth>=Number(maxLogSplitDepth)||span<=Number(minLogSplitBlocks))throw error;
+      const mid=Math.floor((from+to)/2);
+      stats.adaptiveSplitCount++;
+      stats.maxAdaptiveSplitDepth=Math.max(stats.maxAdaptiveSplitDepth,depth+1);
+      if(stats.splitSamples.length<20)stats.splitSamples.push({fromBlock:from,toBlock:to,midBlock:mid,depth:depth+1,error:safeRpcError(error)});
+      const left=await getLogsAdaptive({...filter,fromBlock:from,toBlock:mid},depth+1);
+      const right=await getLogsAdaptive({...filter,fromBlock:mid+1,toBlock:to},depth+1);
+      return mergeLogs(left,right);
+    }
+  };
   return{
     getBlockNumber:()=>call('getBlockNumber',[],{nullIsFailure:true}),
     getBlock:(blockTag)=>call('getBlock',[blockTag],{nullIsFailure:true}),
-    getLogs:(filter)=>call('getLogs',[filter]),
+    getLogs:(filter)=>getLogsAdaptive(filter,0),
     getTransaction:(hash)=>call('getTransaction',[hash],{nullIsFailure:true}),
     snapshot:()=>({
       candidateProviders:candidates.map(x=>x.label),preferredProvider:candidates[preferredIndex]?.label||null,
       requestSpacingMs:Number(requestSpacingMs)||0,attempts:stats.attempts,successes:{...stats.successes},failures:{...stats.failures},
       failoverCount:stats.failoverCount,nullFallbackCount:stats.nullFallbackCount,lastProvider:stats.lastProvider,
-      failureSamples:[...stats.failureSamples]
+      adaptiveSplitCount:stats.adaptiveSplitCount,maxAdaptiveSplitDepth:stats.maxAdaptiveSplitDepth,
+      minLogSplitBlocks:Number(minLogSplitBlocks),maxLogSplitDepth:Number(maxLogSplitDepth),
+      failureSamples:[...stats.failureSamples],splitSamples:[...stats.splitSamples]
     }),
     destroy:()=>{for(const c of candidates)try{c.provider?.destroy?.();}catch{}}
   };
@@ -131,7 +173,7 @@ export async function runRecoveryWriter({
       rpcDiagnostics[protocolKey]={status:'complete',...(router.snapshot?.()||{})};
     }catch(error){
       const prior=previousState?.protocols?.[protocolKey]||{};
-      const message=error?.shortMessage||error?.message||String(error);
+      const message=safeRpcError(error);
       protocolResults[protocolKey]={
         status:'partial',claims:prior.claims||[],
         unresolved:[...(prior.unresolved||[]),{reason:'protocol-scan-failed',error:message}],
@@ -151,8 +193,9 @@ export async function runRecoveryWriter({
   const output=buildRecoveryState({previousState,protocolResults,generatedAt});
   output.writer={
     version:VERSION,recoveryVersion:RECOVERY_VERSION,
-    policy:'tracked-holder ClaimRewards discovery only; no economic admission; overlap cursor persisted per protocol; failed protocol scans preserve prior cursor and remain partial',
+    policy:'tracked-holder ClaimRewards discovery only; no economic admission; overlap cursor persisted per protocol; failed protocol scans preserve prior cursor and remain partial; historical getLogs ranges adaptively split after provider failover',
     scanChunkBlocks:SCAN_CHUNK_BLOCKS,scanOverlapBlocks:SCAN_OVERLAP_BLOCKS,
+    minLogSplitBlocks:MIN_LOG_SPLIT_BLOCKS,maxLogSplitDepth:MAX_LOG_SPLIT_DEPTH,
     rpc:rpcDiagnostics,executionAuthority:'none',capitalExecution:false
   };
   return output;
@@ -168,9 +211,11 @@ async function main(){
     status:output.status,
     claims:Object.fromEntries(Object.entries(output.protocols||{}).map(([k,v])=>[k,(v.claims||[]).length])),
     unresolved:Object.fromEntries(Object.entries(output.protocols||{}).map(([k,v])=>[k,(v.unresolved||[]).length])),
+    errors:Object.fromEntries(Object.entries(output.protocols||{}).map(([k,v])=>[k,(v.unresolved||[]).slice(-3).map(x=>({reason:x.reason,error:x.error||null}))])),
+    adaptiveSplits:Object.fromEntries(Object.entries(output.writer?.rpc||{}).map(([k,v])=>[k,Number(v.adaptiveSplitCount||0)])),
     lastScannedBlock:Object.fromEntries(Object.entries(output.protocols||{}).map(([k,v])=>[k,v.lastScannedBlock||null])),
     executionAuthority:output.authority?.executionAuthority
   });
 }
 
-if(process.argv[1]&&path.resolve(process.argv[1])===__filename)main().catch(error=>{console.error(error);process.exitCode=1;});
+if(process.argv[1]&&path.resolve(process.argv[1])===__filename)main().catch(error=>{console.error(safeRpcError(error));process.exitCode=1;});
