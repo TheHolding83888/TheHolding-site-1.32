@@ -15,12 +15,13 @@ import {
   trackedPositionDescriptors,
   buildVe33Evidence
 } from './ve33-accounting-evidence.mjs';
+import { addRecoveryShadowRows } from './ve33-transient-claim-recovery.mjs';
 
 const __filename=fileURLToPath(import.meta.url);
 const __dirname=path.dirname(__filename);
 const ROOT=path.resolve(__dirname,'..');
 
-export const VERSION='0.1-ve33-capability-aware-historical-rpc-runner';
+export const VERSION='0.2-ve33-capability-aware-historical-rpc-runner';
 export const REQUIRED_HISTORICAL_BOUNDARIES=Object.freeze([DIRECT_ACCOUNTING_START,FULL_ACCOUNTING_START]);
 export const SAFE_WRITER_EVIDENCE_REUSE=Object.freeze({
   version:'0.1-bounded-publication-reuse',
@@ -34,7 +35,18 @@ export const SAFE_WRITER_EVIDENCE_REUSE=Object.freeze({
     executionAuthority:'none'
   }
 });
+export const TRANSIENT_RECOVERY_POLICY=Object.freeze({
+  version:'0.1-discovery-input-only',
+  discoveryOnly:true,
+  createsIncome:false,
+  createsRealisedCashFlow:false,
+  canonicalVe33EvidenceRemainsEconomicAuthority:true,
+  invalidAuthorityInput:'ignore-fail-closed',
+  executionAuthority:'none',
+  capitalExecution:false
+});
 const DEFAULT_REWARDS=process.env.REWARDS_DATA_FILE||path.join(ROOT,'companies','rewards-data.json');
+const DEFAULT_RECOVERY=process.env.VE33_TRANSIENT_RECOVERY_FILE||path.join(ROOT,'reporting','ve33-transient-claim-recovery.json');
 const DEFAULT_OUTPUT=process.env.VE33_EVIDENCE_FILE||path.join(ROOT,'reporting','ve33-accounting-evidence.json');
 const RPC_PROBE_TIMEOUT_MS=Math.max(2_000,Math.min(30_000,Number(process.env.VE33_HISTORICAL_RPC_PROBE_TIMEOUT_MS||10_000)));
 const CURRENT_BLOCK_MARGIN=Math.max(32,Math.min(8_192,Number(process.env.VE33_CURRENT_BLOCK_MARGIN||1_024)));
@@ -56,18 +68,68 @@ export function safeWriterPublishContext({root=process.cwd(),env=process.env}={}
   catch{return false;}
 }
 
+export function recoveryClaims(recovery={}){
+  const claims=[];
+  for(const[protocolKey,protocol]of Object.entries(recovery?.protocols||{})){
+    for(const claim of protocol?.claims||[])claims.push({...claim,protocolKey:claim?.protocolKey||protocolKey});
+  }
+  return claims;
+}
+
+export function recoveryAuthorityValid(recovery={}){
+  const semantics=recovery?.semantics||{},authority=recovery?.authority||{};
+  return semantics.discoveryOnly===true&&
+    semantics.createsIncome===false&&
+    semantics.createsRealisedCashFlow===false&&
+    semantics.executionAuthority==='none'&&
+    (authority.executionAuthority===undefined||authority.executionAuthority==='none')&&
+    (authority.capitalExecution===undefined||authority.capitalExecution===false);
+}
+
+export function applyTransientClaimRecovery(rewards,recovery={}){
+  const provided=Boolean(recovery&&typeof recovery==='object'&&Object.keys(recovery).length);
+  const claims=recoveryClaims(recovery);
+  const base={
+    policyVersion:TRANSIENT_RECOVERY_POLICY.version,
+    sidecarVersion:recovery?.version||null,
+    sourceStatus:recovery?.status||null,
+    sourceGeneratedAt:recovery?.generatedAt||null,
+    claimCount:claims.length,
+    shadowRowsInserted:0,
+    discoveryOnly:true,
+    createsIncome:false,
+    createsRealisedCashFlow:false,
+    economicAuthority:'canonical-ve33-accounting-evidence',
+    executionAuthority:'none',
+    capitalExecution:false
+  };
+  if(!provided)return{rewards,diagnostics:{...base,status:'not-provided'}};
+  if(!recoveryAuthorityValid(recovery))return{rewards,diagnostics:{...base,status:'ignored-invalid-authority'}};
+  const enriched=addRecoveryShadowRows(rewards,claims);
+  return{
+    rewards:enriched.rewards,
+    diagnostics:{...base,status:claims.length?'applied':'valid-no-claims',shadowRowsInserted:enriched.inserted}
+  };
+}
+
 export function evidenceInputFingerprint({
   rewards,
+  recovery,
   root=process.cwd(),
   extra={},
-  repoPaths=['companies/rewards-data.json','intelligence/market-data/market-data.json','intelligence/market-data/market-data-scheduler-contract.json']
+  repoPaths=['companies/rewards-data.json','reporting/ve33-transient-claim-recovery.json','intelligence/market-data/market-data.json','intelligence/market-data/market-data-scheduler-contract.json']
 }={}){
   const blobs={};
   for(const repoPath of repoPaths){
     try{blobs[repoPath]=git(['rev-parse',`HEAD:${repoPath}`],{root});}
     catch{blobs[repoPath]=null;}
   }
-  return sha256(JSON.stringify({rewardsHash:sha256(JSON.stringify(rewards||{})),blobs,extra}));
+  return sha256(JSON.stringify({
+    rewardsHash:sha256(JSON.stringify(rewards||{})),
+    recoveryHash:sha256(JSON.stringify(recovery||{})),
+    blobs,
+    extra
+  }));
 }
 
 export function evidenceFreshEnough(generatedAt,{now=Date.now(),maxAgeMinutes=SAFE_WRITER_EVIDENCE_REUSE.maxAgeMinutes}={}){
@@ -258,17 +320,20 @@ export async function selectHistoricalProviders({rewards,env=process.env}={}){
   return{providers,diagnostics};
 }
 
-export async function runVe33Accounting({rewards,previous={},generatedAt=new Date().toISOString(),env=process.env}={}){
-  const selection=await selectHistoricalProviders({rewards,env});
+export async function runVe33Accounting({rewards,recovery={},previous={},generatedAt=new Date().toISOString(),env=process.env}={}){
+  const recoveryInput=applyTransientClaimRecovery(rewards,recovery);
+  const accountingRewards=recoveryInput.rewards;
+  const selection=await selectHistoricalProviders({rewards:accountingRewards,env});
   const missing=Object.entries(selection.diagnostics).filter(([,x])=>x.status!=='archive-capable-provider-selected'&&x.status!=='no-lanes').map(([k])=>k);
   if(missing.length&&requireHistoricalRpc(env))throw new Error(`ve33 historical RPC capability missing for: ${missing.join(', ')}`);
 
-  const output=await buildVe33Evidence({rewards,previous,generatedAt,providers:selection.providers});
+  const output=await buildVe33Evidence({rewards:accountingRewards,previous,generatedAt,providers:selection.providers});
   output.runner={
     version:VERSION,
     historicalRpcPolicy:'current-capable primary RPC with exact block-tagged eth_call routing to a separately proven archive-capable provider',
     requiredHistoricalBoundaries:[...REQUIRED_HISTORICAL_BOUNDARIES],
     requireHistoricalRpc:requireHistoricalRpc(env),
+    transientClaimRecovery:recoveryInput.diagnostics,
     selection:selection.diagnostics,
     executionAuthority:'none',
     capitalExecution:false
@@ -280,12 +345,18 @@ export async function runVe33Accounting({rewards,previous={},generatedAt=new Dat
 }
 
 async function main(){
-  const[rewards,previous]=await Promise.all([readJson(DEFAULT_REWARDS),readJson(DEFAULT_OUTPUT,{})]);
+  const[rewards,recovery,previous]=await Promise.all([
+    readJson(DEFAULT_REWARDS),
+    readJson(DEFAULT_RECOVERY,{}),
+    readJson(DEFAULT_OUTPUT,{})
+  ]);
   const fingerprint=evidenceInputFingerprint({
     rewards,
+    recovery,
     root:ROOT,
     extra:{
       runnerVersion:VERSION,
+      recoveryPolicyVersion:TRANSIENT_RECOVERY_POLICY.version,
       requireHistoricalRpc:requireHistoricalRpc(process.env),
       requiredHistoricalBoundaries:[...REQUIRED_HISTORICAL_BOUNDARIES]
     }
@@ -301,7 +372,7 @@ async function main(){
     return previous;
   }
 
-  const output=await runVe33Accounting({rewards,previous});
+  const output=await runVe33Accounting({rewards,recovery,previous});
   output.runner.safeWriterInputFingerprint=fingerprint;
   output.runner.safeWriterEvidenceReuseVersion=SAFE_WRITER_EVIDENCE_REUSE.version;
   output.runner.safeWriterEvidenceReuseMaxAgeMinutes=SAFE_WRITER_EVIDENCE_REUSE.maxAgeMinutes;
@@ -309,6 +380,7 @@ async function main(){
   console.log('ve33 capability-aware accounting runner built',{
     status:output.status,
     runnerVersion:output.runner?.version,
+    transientClaimRecovery:output.runner?.transientClaimRecovery||null,
     selectedProviders:Object.fromEntries(Object.entries(output.runner?.selection||{}).map(([k,v])=>[k,{current:v.currentProvider||null,archive:v.selectedProvider||null,mode:v.routingMode||null}])),
     boundaryFailures:Object.fromEntries(Object.entries(output.diagnostics?.protocols||{}).map(([k,v])=>[k,(v.boundaryFailures||[]).length])),
     currentStateFailures:Object.fromEntries(Object.entries(output.diagnostics?.protocols||{}).map(([k,v])=>[k,Number(v.currentStateFailureCount||0)])),
