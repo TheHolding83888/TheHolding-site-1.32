@@ -1,0 +1,49 @@
+name: Temporary Rebuild Accounting Watch
+
+on:
+  push:
+    branches:
+      - accounting/intraperiod-historical-reward-valuation-v2-20260912
+    paths:
+      - '.github/workflows/tmp-rebuild-accounting-watch.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout staging branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+          ref: accounting/intraperiod-historical-reward-valuation-v2-20260912
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: Rebuild and validate reconciliation watch
+        shell: bash
+        run: |
+          set -euo pipefail
+          node reporting/accounting-reconciliation-watch.mjs
+          node reporting/accounting-reconciliation-watch-validation.mjs
+          git diff --check
+
+      - name: Commit rebuilt derived watch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Accounting Reconciliation Watch"
+          git config user.email "accounting-reconciliation-watch@theholding.ai"
+          git add reporting/accounting-reconciliation-watch.json
+          if git diff --cached --quiet; then
+            echo "No reconciliation watch changes."
+            exit 0
+          fi
+          git commit -m "data: refresh reconciliation watch for intraperiod valuation"
+          git push origin HEAD:accounting/intraperiod-historical-reward-valuation-v2-20260912
