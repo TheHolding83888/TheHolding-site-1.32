@@ -5,6 +5,7 @@ on:
     paths:
       - 'intelligence/icp-nns/company-005-006-neuron-pool.json'
       - 'rewards/icp-nns-rewards-overlay.mjs'
+      - 'rewards/icp-nns-rewards-projection.mjs'
       - 'rewards/icp-nns-factual-evidence-probe.mjs'
       - 'rewards/icp-nns-governance-direct-probe.mjs'
       - '.github/workflows/update-icp-nns-rewards.yml'
@@ -14,10 +15,6 @@ on:
       - 'intelligence/icp-nns/company-005-006-neuron-pool.json'
       - 'rewards/icp-nns-rewards-overlay.mjs'
       - '.github/workflows/update-icp-nns-rewards.yml'
-  workflow_run:
-    workflows:
-      - "Update Company Rewards"
-    types: [completed]
   schedule:
     - cron: '17 5 * * *'
   workflow_dispatch:
@@ -31,7 +28,6 @@ concurrency:
 
 jobs:
   update-icp-nns-rewards:
-    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -46,11 +42,33 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Collect public ICP NNS state and overlay rewards
+      - name: Collect public ICP NNS state ephemerally
         run: |
           set -euo pipefail
           node --check rewards/icp-nns-rewards-overlay.mjs
           node rewards/icp-nns-rewards-overlay.mjs
+          cp companies/rewards-data.json /tmp/icp-nns-overlay-rewards.json
+          git checkout -- companies/rewards-data.json
+
+      - name: Prove canonical Rewards projection from ICP state
+        run: |
+          set -euo pipefail
+          cp companies/rewards-data.json /tmp/icp-nns-projected-rewards.json
+          REWARDS_DATA=/tmp/icp-nns-projected-rewards.json node --check rewards/icp-nns-rewards-projection.mjs
+          REWARDS_DATA=/tmp/icp-nns-projected-rewards.json node rewards/icp-nns-rewards-projection.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const overlay=JSON.parse(fs.readFileSync('/tmp/icp-nns-overlay-rewards.json','utf8'));
+          const projected=JSON.parse(fs.readFileSync('/tmp/icp-nns-projected-rewards.json','utf8'));
+          for(const name of ['0x5860...83CA8.eth','aerocvxyb.eth']){
+            const pick=d=>(d.companies?.[name]?.rewards||[]).filter(x=>x.route==='icp-nns-governance').map(x=>({symbol:x.symbol,amount:x.amount,usdValue:x.usdValue,classification:x.classification}));
+            if(JSON.stringify(pick(overlay))!==JSON.stringify(pick(projected)))throw new Error('ICP canonical state projection parity drift '+name);
+          }
+          const diag=projected.diagnostics?.icpNns;
+          if(diag?.projectionVersion!=='0.1-icp-nns-canonical-rewards-projection'||diag.repositoryMutationAuthority!=='Update Company Rewards'||diag.sourceStateRepositoryMutationAuthority!=='Update ICP NNS Rewards')throw new Error('ICP writer ownership diagnostic missing');
+          if(diag.executionAuthority!=='none'||diag.claimTransactionAuthority!=='none'||diag.unknownIsNotZero!==true)throw new Error('ICP projection authority/epistemic drift');
+          console.log('ICP NNS state -> canonical Rewards projection parity PASS',{sourceStateGeneratedAt:diag.sourceStateGeneratedAt,repositoryMutationAuthority:diag.repositoryMutationAuthority,executionAuthority:'none'});
+          NODE
 
       - name: Probe factual NNS accounting evidence
         if: github.event_name == 'pull_request'
@@ -72,7 +90,7 @@ jobs:
           set -euo pipefail
           node - <<'NODE'
           const fs=require('fs');
-          const r=JSON.parse(fs.readFileSync('companies/rewards-data.json','utf8'));
+          const r=JSON.parse(fs.readFileSync('/tmp/icp-nns-projected-rewards.json','utf8'));
           const s=JSON.parse(fs.readFileSync('companies/icp-nns-rewards-state.json','utf8'));
           const five=r.companies?.['0x5860...83CA8.eth'];
           const six=r.companies?.['aerocvxyb.eth'];
@@ -94,11 +112,13 @@ jobs:
             unclaimedPerCompany:a[0].amount,
             apr:s.rewards?.referenceAprPct,
             dissolving:s.publicNeuronObservation?.dissolvingNeuronCount,
-            voting:s.publicNeuronObservation?.voting
+            voting:s.publicNeuronObservation?.voting,
+            repositoryOutput:['companies/icp-nns-rewards-state.json','companies/icp-nns-rewards-history.json'],
+            rewardsRepositoryMutationAuthority:'Update Company Rewards'
           });
           NODE
 
-      - name: Publish generated ICP NNS rewards state
+      - name: Publish generated ICP NNS state safely
         if: github.event_name != 'pull_request'
         run: |
           set -euo pipefail
@@ -110,12 +130,13 @@ jobs:
             git reset --hard origin/main
 
             node rewards/icp-nns-rewards-overlay.mjs
-            git add companies/rewards-data.json companies/icp-nns-rewards-state.json companies/icp-nns-rewards-history.json
+            git checkout -- companies/rewards-data.json
+            git add companies/icp-nns-rewards-state.json companies/icp-nns-rewards-history.json
             if git diff --cached --quiet; then
-              echo "No ICP NNS rewards changes to publish."
+              echo "No ICP NNS state changes to publish."
               exit 0
             fi
-            git commit -m "data: update ICP NNS accrued rewards"
+            git commit -m "data: update ICP NNS state"
             if git push origin HEAD:main; then
               exit 0
             fi

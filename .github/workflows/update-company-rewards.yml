@@ -9,6 +9,8 @@ on:
       - 'rewards/defitea-union-scrvusd-overlay.mjs'
       - 'rewards/company-010-rewards-overlay.mjs'
       - 'rewards/company-010-hyperlend-rewards-overlay.mjs'
+      - 'rewards/icp-nns-rewards-projection.mjs'
+      - 'companies/icp-nns-rewards-state.json'
       - 'rewards/company-010-ve-rewards.mjs'
       - 'rewards/company-010-generic-ve-promotion.mjs'
       - 'rewards/vlcvx-registry-route-audit.mjs'
@@ -236,6 +238,30 @@ jobs:
           console.log('HyperLend canonical Rewards projection PASS',{claimableUsd:c.claimableUsd,measuredEmbeddedUsd:c.measuredEmbeddedUsd,measuredEarnedUsd:c.measuredEarnedUsd,rewardAssetCount:diag.rewardAssetCount,executionAuthority:'none'});
           NODE
 
+      - name: Project ICP NNS rewards from canonical state
+        run: |
+          set -euo pipefail
+          node --check rewards/icp-nns-rewards-projection.mjs
+          node rewards/icp-nns-rewards-projection.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('companies/rewards-data.json','utf8'));
+          const names=['0x5860...83CA8.eth','aerocvxyb.eth'];
+          for(const name of names){
+            const c=d.companies?.[name];
+            const rows=(c?.rewards||[]).filter(x=>x.route==='icp-nns-governance');
+            if(rows.length!==1||rows[0].classification!=='unclaimed'||rows[0].symbol!=='ICP')throw new Error('ICP NNS canonical reward row missing '+name);
+            if(!(Number(rows[0].amount)>=0)||!(Number(rows[0].usdValue)>=0)||rows[0].details?.principalIncludedInTvlAgain!==false)throw new Error('ICP NNS accounting boundary drift '+name);
+          }
+          const a=d.companies[names[0]].rewards.find(x=>x.route==='icp-nns-governance');
+          const b=d.companies[names[1]].rewards.find(x=>x.route==='icp-nns-governance');
+          if(Math.abs(Number(a.amount)-Number(b.amount))>1e-8)throw new Error('ICP NNS 50/50 allocation drift');
+          const diag=d.diagnostics?.icpNns;
+          if(diag?.projectionVersion!=='0.1-icp-nns-canonical-rewards-projection'||diag.repositoryMutationAuthority!=='Update Company Rewards'||diag.sourceStateRepositoryMutationAuthority!=='Update ICP NNS Rewards')throw new Error('ICP NNS canonical writer ownership diagnostic missing');
+          if(diag.executionAuthority!=='none'||diag.claimTransactionAuthority!=='none'||diag.unknownIsNotZero!==true||diag.principalAddedToTvl!==false)throw new Error('ICP NNS authority/epistemic boundary drift');
+          console.log('ICP NNS canonical Rewards projection PASS',{sourceStateGeneratedAt:diag.sourceStateGeneratedAt,repositoryMutationAuthority:diag.repositoryMutationAuthority,executionAuthority:'none'});
+          NODE
+
       - name: Apply current Rewards Passport route hygiene
         run: |
           set -euo pipefail
@@ -271,6 +297,12 @@ jobs:
           const hyperSource=(cy?.sources||[]).find(x=>x.route==='hyperlend-khype');
           const hyperEmbedded=(cy?.embeddedIncome||[]).find(x=>x.route==='hyperlend-khype');
           if(!hyperSource||!hyperEmbedded||hyperEmbedded.state!=='Compounded'||hyperEmbedded.claimableApplicable!==false||d.diagnostics?.company010?.hyperlendIncome?.repositoryMutationAuthority!=='Update Company Rewards')throw new Error('Cypher HyperLend canonical writer projection missing');
+          const icpDiag=d.diagnostics?.icpNns;
+          if(icpDiag?.projectionVersion!=='0.1-icp-nns-canonical-rewards-projection'||icpDiag.repositoryMutationAuthority!=='Update Company Rewards'||icpDiag.sourceStateRepositoryMutationAuthority!=='Update ICP NNS Rewards'||icpDiag.executionAuthority!=='none')throw new Error('ICP NNS canonical writer projection missing');
+          for(const name of ['0x5860...83CA8.eth','aerocvxyb.eth']){
+            const rows=(d.companies?.[name]?.rewards||[]).filter(x=>x.route==='icp-nns-governance');
+            if(rows.length!==1||rows[0].classification!=='unclaimed'||rows[0].details?.principalIncludedInTvlAgain!==false)throw new Error('ICP NNS final parity drift '+name);
+          }
           const nine=d.companies?.['1milliondollar.eth'];
           if((nine?.rewards||[]).some(x=>x.route==='convex-staked-cvxcrv'||x.route==='beefy-cvxcrv'))throw new Error('Company #009 embedded cvxCRV leaked into Claimable');
           if(!['warming-baseline','ok','needs-flow-reconciliation'].includes(nine?.embeddedIncomeStatus))throw new Error('Company #009 embedded income state missing');
@@ -288,8 +320,8 @@ jobs:
           if(!(Number(def?.receivedIncomeTransferCount)>0)||!(Number(def?.receivedIncomeUsd)>0))throw new Error('Defitea August Received proof is empty');
           if(defReceived.some(x=>x.claimableApplicable!==false||x.includedInClaimableTotal!==false||x.includedInMeasuredEarnedTotal!==false))throw new Error('Received leaked across accounting boundary');
           if((def?.rewards||[]).some(x=>x.classification==='received'||x.state==='Received'))throw new Error('Received leaked into current Claimable rewards array');
-          if(d.diagnostics?.vlCvxRoutePromotion?.executionAuthority!=='none'||d.diagnostics?.vlCvxRouteAggregateFinalize?.executionAuthority!=='none'||d.diagnostics?.rewardsPassportHygiene?.executionAuthority!=='none'||d.diagnostics?.company009BeefyCvxCrv?.executionAuthority!=='none'||d.diagnostics?.company010?.hyperlendIncome?.executionAuthority!=='none')throw new Error('Rewards authority drift');
-          console.log('Final Rewards parity PASS',{routes:expected,cypherStakeDaoRows:stake.length,cypherCvxCrvRows:cyCvx.length,cypherHyperLend:true,company009Embedded:nine.embeddedIncomeStatus,rookSettlement:rookCurrent.details.currentRewardSettlement,defiteaReceivedTransfers:def.receivedIncomeTransferCount,defiteaReceivedUsd:def.receivedIncomeUsd});
+          if(d.diagnostics?.vlCvxRoutePromotion?.executionAuthority!=='none'||d.diagnostics?.vlCvxRouteAggregateFinalize?.executionAuthority!=='none'||d.diagnostics?.rewardsPassportHygiene?.executionAuthority!=='none'||d.diagnostics?.company009BeefyCvxCrv?.executionAuthority!=='none'||d.diagnostics?.company010?.hyperlendIncome?.executionAuthority!=='none'||d.diagnostics?.icpNns?.executionAuthority!=='none')throw new Error('Rewards authority drift');
+          console.log('Final Rewards parity PASS',{routes:expected,cypherStakeDaoRows:stake.length,cypherCvxCrvRows:cyCvx.length,cypherHyperLend:true,icpNnsCanonicalWriter:true,company009Embedded:nine.embeddedIncomeStatus,rookSettlement:rookCurrent.details.currentRewardSettlement,defiteaReceivedTransfers:def.receivedIncomeTransferCount,defiteaReceivedUsd:def.receivedIncomeUsd});
           NODE
 
       - name: Commit updated rewards snapshot
@@ -332,6 +364,7 @@ jobs:
             node rewards/company-009-beefy-cvxcrv-income.mjs
             node rewards/forty-acres-received-ledger.mjs
             node rewards/company-010-hyperlend-rewards-overlay.mjs
+            node rewards/icp-nns-rewards-projection.mjs
             node rewards/rewards-passport-hygiene.mjs
 
             git add companies/rewards-data.json companies/company-009-beefy-cvxcrv-income.json
