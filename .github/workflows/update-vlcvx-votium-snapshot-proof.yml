@@ -94,6 +94,7 @@ jobs:
         if: github.event_name != 'pull_request' || steps.evidence_mode.outputs.live_probe_needed == 'true'
         run: ln -sfn productivity/node_modules node_modules
 
+      # PR code changes must prove the downstream artifact against the same rebuilt upstream bytes.
       - name: Build PR upstream round flow
         if: github.event_name == 'pull_request' && steps.evidence_mode.outputs.live_probe_needed == 'true' && steps.evidence_mode.outputs.round_flow_rebuild_needed == 'true'
         env:
