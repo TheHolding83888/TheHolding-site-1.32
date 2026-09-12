@@ -183,7 +183,7 @@ export function historicalCodeBlockTag(blockTag,currentBlockNumber,margin=CURREN
 }
 
 export function isExactCodeAbsence(code){
-  return /^0x0*$/i.test(String(code||''));
+  return String(code||'').toLowerCase()==='0x';
 }
 
 export function transientVotingLaneKey(claim={}){
