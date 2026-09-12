@@ -38,6 +38,25 @@ jobs:
           node --check rewards/vlcvx-registry-route-audit.mjs
           node rewards/vlcvx-registry-route-audit.mjs
 
+      - name: Verify retained-history admission contract
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          (async()=>{
+            const {retainedVlCvxRewardInventory}=await import('./rewards/vlcvx-extra-reward-distribution-proof.mjs');
+            const d=JSON.parse(fs.readFileSync('companies/rewards-data.json','utf8'));
+            const retained=retainedVlCvxRewardInventory(d);
+            if(!retained)throw new Error('canonical Rewards must expose a validated last-verified vlCVX inventory for outage recovery');
+            if(retained.scanFromBlock!==14356209||!(retained.scanThroughBlock>=retained.scanFromBlock))throw new Error('retained scan boundary invalid');
+            if(retained.inventoryStatus==='complete-empty-rewardadded-history'&&(retained.eventCount!==0||retained.tokenCount!==0))throw new Error('retained empty inventory counters drift');
+            const bad=structuredClone(d);
+            bad.diagnostics.vlCvxExtraRewardDistributionProof.executionAuthority='expanded';
+            if(retainedVlCvxRewardInventory(bad)!==null)throw new Error('retained history accepted authority drift');
+            console.log('vlCVX retained-history admission PASS',{generatedAt:retained.generatedAt,inventory:retained.inventoryStatus,eventCount:retained.eventCount,tokenCount:retained.tokenCount,scanThroughBlock:retained.scanThroughBlock});
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+
       - name: Prove generic extra reward distribution component
         env:
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
@@ -55,20 +74,25 @@ jobs:
           if(x.contract?.address?.toLowerCase()!=='0x9b622f2c40b80ef5efb14c2b2239511ffbfab702')throw new Error('distribution identity drift');
           if(x.contract?.locker?.toLowerCase()!=='0x72a19342e8f1838460ebfccef09f6585e32db86e')throw new Error('locker identity drift');
           if(x.summary?.companyCount!==4||x.companies?.length!==4)throw new Error('all four live vlCVX companies required');
-          if(x.source?.rewardInventoryScanComplete!==true||x.semantics?.rewardInventoryScanComplete!==true)throw new Error('reward inventory scan must be complete');
+          const fresh=x.historicalEvidence?.status==='fresh-verified'&&x.historicalEvidence?.freshVerificationAvailable===true&&x.historicalEvidence?.partial===false;
+          const retained=x.historicalEvidence?.status==='retained-last-verified'&&x.historicalEvidence?.freshVerificationAvailable===false&&x.historicalEvidence?.freshness==='unknown'&&x.historicalEvidence?.partial===true;
+          if(!fresh&&!retained)throw new Error('historical evidence must be either fresh verified or explicit retained partial');
+          if(fresh&&(x.status!=='ok'||x.source?.rewardInventoryScanComplete!==true||x.semantics?.rewardInventoryScanComplete!==true))throw new Error('fresh reward inventory scan must be complete');
+          if(retained&&(x.status!=='partial'||x.source?.rewardInventoryScanComplete!==false||x.source?.retainedLastVerifiedScanComplete!==true||x.semantics?.rewardInventoryScanComplete!==false||x.semantics?.retainedLastVerifiedInventoryAvailable!==true||x.summary?.currentInventoryStatus!=='unknown-current-inventory'))throw new Error('retained history must remain explicit partial/unknown current inventory');
           if(x.summary?.rewardAddedEventCount<0||x.summary?.rewardTokenCount<0)throw new Error('invalid reward inventory counters');
-          if(x.summary?.rewardTokenCount===0&&x.summary?.rewardAddedEventCount!==0)throw new Error('empty token inventory with non-empty RewardAdded history');
-          if(x.summary?.rewardAddedEventCount===0&&x.summary?.rewardInventoryStatus!=='complete-empty-rewardadded-history')throw new Error('empty history must be explicit complete-empty state');
+          if(x.summary?.rewardTokenCount===0&&x.summary?.rewardAddedEventCount!==0)throw new Error('empty token inventory with non-empty last-verified RewardAdded history');
+          if(x.summary?.rewardAddedEventCount===0&&x.summary?.rewardInventoryStatus!=='complete-empty-rewardadded-history')throw new Error('empty last-verified history state drift');
           const regs=x.companies.map(c=>c.registry).sort().join(',');
           if(regs!=='002,004,007,010')throw new Error('vlCVX company set drift');
-          if(x.semantics?.rewardInventoryIsEventDerived!==true||x.semantics?.currentRewardStateIsNotPeriodIncome!==true||x.semantics?.delegateIncentiveSettlementIsSeparate!==true||x.semantics?.doesNotByItselfResolveCurrentDelegateSettlement!==true)throw new Error('semantic boundary drift');
+          if(x.semantics?.rewardInventoryIsEventDerived!==true||x.semantics?.currentRewardStateIsNotPeriodIncome!==true||x.semantics?.delegateIncentiveSettlementIsSeparate!==true||x.semantics?.doesNotByItselfResolveCurrentDelegateSettlement!==true||x.semantics?.unknownIsNotZero!==true)throw new Error('semantic boundary drift');
           for(const c of x.companies){
-            if(c.evidenceClass!=='observed-current-state'||c.component!=='locked-cvx-extra-reward-distribution'||c.periodIncomeAuthority!==false||c.delegateIncentiveSettlementAuthority!==false||c.unknownIsNotZero!==true)throw new Error('company evidence boundary drift '+c.registry);
+            const expectedEvidence=fresh?'observed-current-state':'observed-current-state-with-retained-historical-inventory';
+            if(c.evidenceClass!==expectedEvidence||c.component!=='locked-cvx-extra-reward-distribution'||c.periodIncomeAuthority!==false||c.delegateIncentiveSettlementAuthority!==false||c.unknownIsNotZero!==true)throw new Error('company evidence boundary drift '+c.registry);
             if(c.claimableRewardCount!==x.summary.rewardTokenCount)throw new Error('reward token coverage drift '+c.registry);
-            if(x.summary.rewardTokenCount===0&&c.rewardInventoryStatus!=='complete-empty-rewardadded-history')throw new Error('company empty inventory state drift '+c.registry);
+            if(retained&&(c.currentInventoryStatus!=='unknown-current-inventory'||c.freshHistoryVerificationAvailable!==false||c.partial!==true))throw new Error('retained company inventory claimed current completeness '+c.registry);
             for(const r of c.rewards||[])if(!r.token||!r.symbol||!Number.isFinite(Number(r.amount))||BigInt(r.amountRaw)<0n)throw new Error('invalid reward row '+c.registry);
           }
-          console.log('vlCVX EXTRA REWARD DISTRIBUTION PASS',{inventory:x.summary.rewardInventoryStatus,tokens:x.tokens.map(t=>({symbol:t.symbol,epochs:t.rewardEpochCount})),companies:x.companies.map(c=>({registry:c.registry,name:c.name,positiveRewards:c.positiveClaimableRewardCount}))});
+          console.log('vlCVX EXTRA REWARD DISTRIBUTION PASS',{status:x.status,historyStatus:x.historicalEvidence.status,inventory:x.summary.rewardInventoryStatus,currentInventory:x.summary.currentInventoryStatus,tokens:x.tokens.map(t=>({symbol:t.symbol,epochs:t.rewardEpochCount})),companies:x.companies.map(c=>({registry:c.registry,name:c.name,positiveRewards:c.positiveClaimableRewardCount}))});
           NODE
 
       - name: Simulate canonical Rewards component materialization
@@ -89,13 +113,19 @@ jobs:
           const diag=d.diagnostics?.vlCvxRouteAggregateFinalize;
           if(diag?.version!=='0.4-vlcvx-route-aggregate-finalize-with-convex-team-settlement-boundary'||diag?.executionAuthority!=='none'||diag?.extraRewardDistributionComponentMaterialized!==true||diag?.convexTeamSettlementBoundaryMaterialized!==true)throw new Error('aggregate finalizer diagnostic drift');
           const proofDiag=d.diagnostics?.vlCvxExtraRewardDistributionProof;
-          if(!proofDiag||proofDiag.executionAuthority!=='none'||proofDiag.component!=='locked-cvx-extra-reward-distribution')throw new Error('extra reward proof diagnostic missing');
+          if(!proofDiag||proofDiag.executionAuthority!=='none'||proofDiag.component!=='locked-cvx-extra-reward-distribution'||proofDiag.unknownIsNotZero!==true||proofDiag.periodIncomeAuthority!==false)throw new Error('extra reward proof diagnostic missing');
+          const fresh=proofDiag.historyStatus==='fresh-verified'&&proofDiag.freshHistoryVerificationAvailable===true&&proofDiag.partial===false;
+          const retained=proofDiag.historyStatus==='retained-last-verified'&&proofDiag.freshHistoryVerificationAvailable===false&&proofDiag.historyFreshness==='unknown'&&proofDiag.partial===true;
+          if(!fresh&&!retained)throw new Error('materialized historical evidence state invalid');
+          if(retained&&(proofDiag.currentInventoryStatus!=='unknown-current-inventory'||diag.extraRewardDistributionProofStatus!=='partial'||diag.extraRewardDistributionFreshHistoryVerificationAvailable!==false))throw new Error('materialized retained history claimed fresh completeness');
           for(const key of expected){
             const c=d.companies?.[key];if(!c)throw new Error('company missing '+key);
             const src=(c.sources||[]).find(x=>x.route==='vlcvx-extra-reward-distribution');
-            if(!src||src.status!=='ok'||src.protocol!=='Convex · vlCVX extra reward distribution')throw new Error('extra distribution source missing '+key);
+            if(!src||src.status!==(fresh?'ok':'partial')||src.protocol!=='Convex · vlCVX extra reward distribution')throw new Error('extra distribution source state drift '+key);
             const x=src.details||{};
-            if(x.component!=='locked-cvx-extra-reward-distribution'||x.rewardInventoryScanComplete!==true||x.periodIncomeAuthority!==false||x.delegateIncentiveSettlementAuthority!==false||x.currentRewardStateIsNotPeriodIncome!==true||x.unknownIsNotZero!==true)throw new Error('extra distribution source boundary drift '+key);
+            if(x.component!=='locked-cvx-extra-reward-distribution'||x.periodIncomeAuthority!==false||x.delegateIncentiveSettlementAuthority!==false||x.currentRewardStateIsNotPeriodIncome!==true||x.unknownIsNotZero!==true)throw new Error('extra distribution source boundary drift '+key);
+            if(fresh&&x.rewardInventoryScanComplete!==true)throw new Error('fresh source lost complete history '+key);
+            if(retained&&(x.rewardInventoryScanComplete!==false||x.retainedLastVerifiedScanComplete!==true||x.currentInventoryStatus!=='unknown-current-inventory'||x.freshHistoryVerificationAvailable!==false||x.partial!==true))throw new Error('retained source represented as fresh '+key);
             if((c.rewards||[]).some(r=>r.route==='vlcvx-extra-reward-distribution'))throw new Error('component current state leaked into reward-income rows '+key);
             const claimable=(c.rewards||[]).reduce((s,r)=>s+(finite(r.usdValue)?Number(r.usdValue):0),0);
             const aggregate=Number(c.claimableUsd??c.totalUsd);
@@ -107,7 +137,7 @@ jobs:
           if(route?.protocol!=='Convex Finance · vlCVX'||route?.status!=='ok'||route?.details?.currentRewardSettlement!=='no-votium-incentive-eligibility-observed-current-route'||route?.details?.unknownIsNotZero!==true)throw new Error('Rook bounded delegate settlement missing');
           if(settlement?.periodIncomeAuthority!==false||settlement?.universalExternalRewardZeroAsserted!==false||settlement?.extraRewardDistributionTrackedSeparately!==true||settlement?.unknownIsNotZero!==true)throw new Error('Rook delegate settlement blurred extra-distribution boundary');
           if(d.diagnostics?.vlCvxConvexTeamSettlement?.scope!=='tracking-proof-only'||d.diagnostics?.vlCvxConvexTeamSettlement?.rewardRowsCreated!==false)throw new Error('separate Convex-Team tracking proof missing');
-          console.log('vlCVX EXTRA REWARD MATERIALIZATION PASS',{inventory:proofDiag.rewardInventoryStatus,companies:expected,rookSettlement:route.details.currentRewardSettlement});
+          console.log('vlCVX EXTRA REWARD MATERIALIZATION PASS',{proofStatus:proofDiag.status,historyStatus:proofDiag.historyStatus,inventory:proofDiag.rewardInventoryStatus,currentInventory:proofDiag.currentInventoryStatus,companies:expected,rookSettlement:route.details.currentRewardSettlement});
           NODE
 
       - name: Static no-execution guard
@@ -120,5 +150,7 @@ jobs:
           if(!s.includes("executionAuthority:'none'"))throw new Error('execution authority guard missing');
           if(!s.includes('doesNotByItselfResolveCurrentDelegateSettlement:true'))throw new Error('delegate settlement boundary missing');
           if(!s.includes('applyVlCvxExtraRewardDistributionProof'))throw new Error('canonical Rewards materialization adapter missing');
-          console.log('vlCVX extra reward no-execution guard PASS');
+          if(!s.includes("currentInventoryStatus:freshHistory?inventoryStatus:'unknown-current-inventory'"))throw new Error('retained history current-inventory UNKNOWN guard missing');
+          if(!s.includes("status:'retained-last-verified'"))throw new Error('retained history provenance marker missing');
+          console.log('vlCVX extra reward no-execution/unknown guard PASS');
           NODE
