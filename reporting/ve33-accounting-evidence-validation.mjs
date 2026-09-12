@@ -91,6 +91,11 @@ const multicallIface=new Interface(['function multicall(bytes[] data) returns (b
 const directData=directIface.encodeFunctionData('getReward',[77,[token]]);
 assert.equal(decodeRewardClaimTokenId({to:reward,data:directData,rewardContract:reward,rewardToken:token,voter}),'77');
 assert.equal(decodeRewardClaimTokenId({to:reward,data:directData,rewardContract:reward,rewardToken:other,voter}),null);
+// Direct reward contracts encode the veNFT id in calldata. Exercise the same
+// four-digit token-id shape used by the quick-claim acceptance case so exact
+// transaction diagnostics cannot silently regress to small synthetic ids only.
+const quickClaimDirectData=directIface.encodeFunctionData('getReward',[1938,[token]]);
+assert.equal(decodeRewardClaimTokenId({to:reward,data:quickClaimDirectData,rewardContract:reward,rewardToken:token,voter}),'1938');
 const bribeData=voterIface.encodeFunctionData('claimBribes',[[other,reward],[[other],[token]],88]);
 assert.equal(decodeRewardClaimTokenId({to:voter,data:bribeData,rewardContract:reward,rewardToken:token,voter}),'88');
 const feeData=voterIface.encodeFunctionData('claimFees',[[reward],[[token]],99]);
