@@ -27,7 +27,7 @@ async function main(){
   const platformProof=await collectVlCvxLockerPlatformProof();
   const platformObservedBlock=validatePlatformProof(platformProof);
   applyVlCvxLockerPlatformProof(d,platformProof);
-  const extraRewardProof=await collectVlCvxExtraRewardDistributionProof();
+  const extraRewardProof=await collectVlCvxExtraRewardDistributionProof({previousData:d});
   applyVlCvxExtraRewardDistributionProof(d,extraRewardProof);
   const convexTeamSettlementProof=await collectVlCvxConvexTeamSettlementProof();
   applyVlCvxConvexTeamSettlementProof(d,convexTeamSettlementProof);
@@ -42,10 +42,14 @@ async function main(){
     lockerPlatformObservedBlock:platformObservedBlock,
     exactBlockPlatformGuard:true,
     extraRewardDistributionComponentMaterialized:true,
+    extraRewardDistributionProofStatus:extraRewardProof.status,
+    extraRewardDistributionHistoryStatus:extraRewardProof.historicalEvidence?.status||null,
+    extraRewardDistributionFreshHistoryVerificationAvailable:extraRewardProof.historicalEvidence?.freshVerificationAvailable===true,
     extraRewardDistributionInventoryStatus:extraRewardProof.summary.rewardInventoryStatus,
+    extraRewardDistributionCurrentInventoryStatus:extraRewardProof.summary.currentInventoryStatus,
     convexTeamSettlementBoundaryMaterialized:true,
     convexTeamSettlementObservedBlock:convexTeamSettlementProof.observedBlock,
-    semanticBoundary:'CvxLockerV2 platform and vlCvxExtraRewardDistribution current state remain component evidence only. Rook Convex-Team proof closes only the current Votium eligibility/tracking boundary under reviewed eligibility paths; it creates no period income, no zero-income event, and no universal external-reward-zero assertion.'
+    semanticBoundary:'CvxLockerV2 platform and vlCvxExtraRewardDistribution current state remain component evidence only. If archival RewardAdded history is temporarily unavailable, the last verified inventory is retained only as partial provenance and current inventory completeness stays unknown. Rook Convex-Team proof closes only the current Votium eligibility/tracking boundary under reviewed eligibility paths; it creates no period income, no zero-income event, and no universal external-reward-zero assertion.'
   };
   fs.writeFileSync(OUTPUT,JSON.stringify(d,null,2)+'\n');
   console.log('vlCVX aggregate finalize PASS',TARGETS.map(k=>({
@@ -57,7 +61,8 @@ async function main(){
     platformSource:(d.companies?.[k]?.sources||[]).find(x=>x.route==='vlcvx-locker-platform-rewards')?.status||null,
     platformObservedBlock:(d.companies?.[k]?.sources||[]).find(x=>x.route==='vlcvx-locker-platform-rewards')?.details?.observedBlock||null,
     extraRewardSource:(d.companies?.[k]?.sources||[]).find(x=>x.route==='vlcvx-extra-reward-distribution')?.status||null,
-    extraRewardInventory:(d.companies?.[k]?.sources||[]).find(x=>x.route==='vlcvx-extra-reward-distribution')?.details?.rewardInventoryStatus||null
+    extraRewardInventory:(d.companies?.[k]?.sources||[]).find(x=>x.route==='vlcvx-extra-reward-distribution')?.details?.rewardInventoryStatus||null,
+    extraRewardCurrentInventory:(d.companies?.[k]?.sources||[]).find(x=>x.route==='vlcvx-extra-reward-distribution')?.details?.currentInventoryStatus||null
   })));
 }
 
