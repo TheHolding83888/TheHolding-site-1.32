@@ -155,8 +155,8 @@ const deduped=[...new Map(results.map(row=>[`${row.protocolKey}|${row.company}|$
 const classes=['already-represented','known-lane-pending-or-unsettled','transient-orphan-claim'];
 const byClass=Object.fromEntries(classes.map(key=>[key,deduped.filter(x=>x.classification===key).length]));
 const output={
-  version:'0.2-ve33-transient-claim-diagnostic',requestedProtocols:[...REQUESTED_PROTOCOLS],transactionHashes:TX_HASHES,
-  semantics:{diagnosticOnly:true,createsIncome:false,mutatesCanonicalEvidence:false,claimIsSettlementNotSecondIncome:true,unknownIsNotZero:true,executionAuthority:'none'},
+  version:'0.2.1-ve33-transient-claim-diagnostic',requestedProtocols:[...REQUESTED_PROTOCOLS],transactionHashes:TX_HASHES,
+  semantics:{diagnosticOnly:true,fixtureMode:'exact-transaction-receipt',createsIncome:false,mutatesCanonicalEvidence:false,claimIsSettlementNotSecondIncome:true,unknownIsNotZero:true,executionAuthority:'none'},
   protocolStats,summary:{provenClaimCount:deduped.length,...byClass},claims:deduped
 };
 console.log('ve33 transient ClaimRewards diagnostic JSON',JSON.stringify(output,null,2));
