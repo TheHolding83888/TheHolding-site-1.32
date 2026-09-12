@@ -40,10 +40,10 @@ const FORTY_ACRES_SETTLEMENT_VERSION='0.1-40acres-actual-received-replaces-velod
 const FORTY_ACRES_SETTLEMENT_OF='canonical-accrued-income:velodrome_vevelo:defitea.eth';
 const HISTORICAL_VALUATION_RESOLUTION_VERSION='0.1-canonical-historical-valuation-resolution';
 const VE33_SOURCE_FILE='reporting/ve33-accounting-evidence.json';
-const MONTH_BOUNDARY=/^\d{4}-\d{2}-01T00:00:00\.000Z$/;
 const EXACT_BLOCK_SOURCE_FAMILIES=new Set([
   'historical-onchain-chainlink-at-boundary',
-  'historical-onchain-velodrome-twap-chainlink-at-boundary'
+  'historical-onchain-velodrome-twap-chainlink-at-boundary',
+  'historical-onchain-slipstream-twap-chainlink-at-boundary'
 ]);
 
 const EXPECTED_CORE_GIT_BLOB='3a1c26a22c08d98257fea83a8a513a987ef75d39';
@@ -90,7 +90,10 @@ function reusableIdentityBoundResolution(event,identity){
   const observedMs=Date.parse(r.observedAt||''),boundaryMs=Date.parse(r.boundaryAt||'');
   if(!Number.isFinite(observedMs)||!Number.isFinite(boundaryMs)||observedMs>boundaryMs)return false;
   if(EXACT_BLOCK_SOURCE_FAMILIES.has(r.sourceFamily)){
-    if(r?.exactHistoricalBlock!==true||Number(r?.sourceBlockNumber)!==Number(identity.closeBlock))return false;
+    const pegMetadataValid=r.sourceFamily==='historical-onchain-chainlink-at-boundary'
+      ? r?.stablecoinPegAssumptionUsed!==true
+      : r?.stablecoinPegAssumptionUsed===false;
+    if(r?.exactHistoricalBlock!==true||!pegMetadataValid||Number(r?.sourceBlockNumber)!==Number(identity.closeBlock))return false;
     const blockMs=Date.parse(r?.sourceBlockTimestamp||'');
     if(!Number.isFinite(blockMs)||blockMs>boundaryMs||observedMs>blockMs)return false;
   }
@@ -104,7 +107,7 @@ export async function annotateHistoricalValuationResolution(ledger,{resolver=his
   const unresolvedStatuses={};const events=[];
   for(const event of ledger?.events||[]){
     const boundaryAt=String(event?.periodEnd||'');
-    const isEligible=event?.family==='accrued-entitlement'&&event?.sourceFile===VE33_SOURCE_FILE&&event?.usdValue===null&&event?.valuationStatus==='unvalued-fail-closed'&&MONTH_BOUNDARY.test(boundaryAt)&&finite(event?.amount)&&Number(event.amount)>0&&event?.unknownIsNotZero===true&&event?.executionAuthority==='none';
+    const isEligible=event?.family==='accrued-entitlement'&&event?.sourceFile===VE33_SOURCE_FILE&&event?.usdValue===null&&event?.valuationStatus==='unvalued-fail-closed'&&Number.isFinite(Date.parse(boundaryAt))&&finite(event?.amount)&&Number(event.amount)>0&&event?.unknownIsNotZero===true&&event?.executionAuthority==='none';
     if(!isEligible){events.push(event);continue;}
     eligible++;
     const identity=ve33EventIdentity(event),prior=event?.valuationResolution||null,cleanEvent=withoutValuationResolution(event);
@@ -119,17 +122,18 @@ export async function annotateHistoricalValuationResolution(ledger,{resolver=his
     const resolvedUsdValue=round(Number(event.amount)*price,8);
     if(!(finite(resolvedUsdValue)&&Number(resolvedUsdValue)>0)){unresolved++;unresolvedStatuses['resolved-usd-value-invalid']=(unresolvedStatuses['resolved-usd-value-invalid']||0)+1;if(prior)invalidPriorResolutionClearedCount++;events.push(cleanEvent);continue;}
     const sourceFamily=valuation.sourceFamily||'canonical-market-data-git-history';
-    const onchainCommon=EXACT_BLOCK_SOURCE_FAMILIES.has(sourceFamily)?{sourceChainId:Number(valuation.chainId),sourceBlockNumber:Number(valuation.sourceBlockNumber),sourceBlockTimestamp:valuation.sourceBlockTimestamp||null,sourceContract:valuation.sourceContract||null,sourceRpcEndpointId:valuation.rpcEndpointId||null,exactHistoricalBlock:valuation.exactHistoricalBlock===true}:{};
+    const onchainCommon=EXACT_BLOCK_SOURCE_FAMILIES.has(sourceFamily)?{sourceChainId:Number(valuation.chainId),sourceBlockNumber:Number(valuation.sourceBlockNumber),sourceBlockTimestamp:valuation.sourceBlockTimestamp||null,sourceContract:valuation.sourceContract||null,sourceRpcEndpointId:valuation.rpcEndpointId||null,exactHistoricalBlock:valuation.exactHistoricalBlock===true,stablecoinPegAssumptionUsed:valuation.stablecoinPegAssumptionUsed}:{};
     const chainlinkFields=sourceFamily==='historical-onchain-chainlink-at-boundary'?{sourceRoundId:valuation.roundId||null,sourceAnsweredInRound:valuation.answeredInRound||null}:{};
-    const twapFields=sourceFamily==='historical-onchain-velodrome-twap-chainlink-at-boundary'?{quoteToken:valuation.quoteToken||null,quoteTokenSymbol:valuation.quoteTokenSymbol||null,quoteAmountOutRaw:valuation.quoteAmountOutRaw||null,quoteTokenAmount:finite(valuation.quoteTokenAmount)?round(valuation.quoteTokenAmount,12):null,twapGranularity:Number(valuation.twapGranularity),observationLength:Number(valuation.observationLength),poolStable:valuation.poolStable===true,quoteChainlinkContract:valuation.quoteChainlinkContract||null,quoteRoundId:valuation.quoteRoundId||null,quoteAnsweredInRound:valuation.quoteAnsweredInRound||null,quoteObservedAt:valuation.quoteObservedAt||null,quotePriceUsd:finite(valuation.quotePriceUsd)?round(valuation.quotePriceUsd,12):null,stablecoinPegAssumptionUsed:valuation.stablecoinPegAssumptionUsed}:{};
-    const resolution={version:HISTORICAL_VALUATION_RESOLUTION_VERSION,resolvesUsdValue:true,resolvedUsdValue,valuationUnitUsd:round(price,12),boundaryAt,observedAt:valuation.observedAt,sourceFile:valuation.sourceFile||null,sourceCommit:valuation.commitSha||null,sourceAssetId:valuation.assetId||null,sourceStatus:valuation.status||'historical-canonical-market-price',snapshotAgeMinutes:finite(valuation.ageMinutes)?round(valuation.ageMinutes,6):null,sourceFamily,...onchainCommon,...chainlinkFields,...twapFields,identityBound:true,identityToken:identity.token,identityOpenBlock:identity.openBlock,identityCloseBlock:identity.closeBlock,eventTokenMatchesIdentity:identity.eventTokenMatchesIdentity===true,identitySource:'ve33-eventKey+sourceIdentity',originalUsdValue:null,economicFieldsMutated:false,referenceAprUsed:false,currentPriceUsed:false,unknownIsNotZero:true,executionAuthority:'none'};
+    const twapFields=sourceFamily==='historical-onchain-velodrome-twap-chainlink-at-boundary'?{quoteToken:valuation.quoteToken||null,quoteTokenSymbol:valuation.quoteTokenSymbol||null,quoteAmountOutRaw:valuation.quoteAmountOutRaw||null,quoteTokenAmount:finite(valuation.quoteTokenAmount)?round(valuation.quoteTokenAmount,12):null,twapGranularity:Number(valuation.twapGranularity),observationLength:Number(valuation.observationLength),poolStable:valuation.poolStable===true,quoteChainlinkContract:valuation.quoteChainlinkContract||null,quoteRoundId:valuation.quoteRoundId||null,quoteAnsweredInRound:valuation.quoteAnsweredInRound||null,quoteObservedAt:valuation.quoteObservedAt||null,quotePriceUsd:finite(valuation.quotePriceUsd)?round(valuation.quotePriceUsd,12):null}:{};
+    const slipstreamFields=sourceFamily==='historical-onchain-slipstream-twap-chainlink-at-boundary'?{poolToken0:valuation.poolToken0||null,poolToken1:valuation.poolToken1||null,quoteToken:valuation.quoteToken||null,quoteTokenSymbol:valuation.quoteTokenSymbol||null,quoteTokenAmount:finite(valuation.quoteTokenAmount)?round(valuation.quoteTokenAmount,12):null,twapSeconds:Number(valuation.twapSeconds),averageTick:Number(valuation.averageTick),quoteChainlinkContract:valuation.quoteChainlinkContract||null,quoteRoundId:valuation.quoteRoundId||null,quoteAnsweredInRound:valuation.quoteAnsweredInRound||null,quoteObservedAt:valuation.quoteObservedAt||null,quotePriceUsd:finite(valuation.quotePriceUsd)?round(valuation.quotePriceUsd,12):null}:{};
+    const resolution={version:HISTORICAL_VALUATION_RESOLUTION_VERSION,resolvesUsdValue:true,resolvedUsdValue,valuationUnitUsd:round(price,12),boundaryAt,observedAt:valuation.observedAt,sourceFile:valuation.sourceFile||null,sourceCommit:valuation.commitSha||null,sourceAssetId:valuation.assetId||null,sourceStatus:valuation.status||'historical-canonical-market-price',snapshotAgeMinutes:finite(valuation.ageMinutes)?round(valuation.ageMinutes,6):null,sourceFamily,...onchainCommon,...chainlinkFields,...twapFields,...slipstreamFields,identityBound:true,identityToken:identity.token,identityOpenBlock:identity.openBlock,identityCloseBlock:identity.closeBlock,eventTokenMatchesIdentity:identity.eventTokenMatchesIdentity===true,identitySource:'ve33-eventKey+sourceIdentity',originalUsdValue:null,economicFieldsMutated:false,referenceAprUsed:false,currentPriceUsed:false,unknownIsNotZero:true,executionAuthority:'none'};
     if(!historicalValuationSourceMatchesVe33Identity(event,resolution)){unresolved++;unresolvedStatuses['historical-valuation-source-identity-mismatch']=(unresolvedStatuses['historical-valuation-source-identity-mismatch']||0)+1;if(prior)invalidPriorResolutionClearedCount++;events.push(cleanEvent);continue;}
     if(EXACT_BLOCK_SOURCE_FAMILIES.has(sourceFamily)&&Number(resolution.sourceBlockNumber)!==Number(identity.closeBlock)){unresolved++;unresolvedStatuses['historical-onchain-block-identity-mismatch']=(unresolvedStatuses['historical-onchain-block-identity-mismatch']||0)+1;if(prior)invalidPriorResolutionClearedCount++;events.push(cleanEvent);continue;}
     if(prior&&JSON.stringify(prior)!==JSON.stringify(resolution))legacyResolutionReplacedCount++;
     resolved++;events.push({...cleanEvent,valuationResolution:resolution});
   }
   const summary={version:HISTORICAL_VALUATION_RESOLUTION_VERSION,eligibleEventCount:eligible,resolvedEventCount:resolved,unresolvedEventCount:unresolved,unresolvedStatuses,identityMismatchEventCount,legacyResolutionReplacedCount,invalidPriorResolutionClearedCount,reusedIdentityBoundResolutionCount,identityBinding:'ve33-eventKey+sourceIdentity',economicFieldsMutated:false,referenceAprUsed:false,currentPriceUsed:false,unknownIsNotZero:true,executionAuthority:'none'};
-  return{ledger:{...ledger,events,sourceState:{...(ledger?.sourceState||{}),historicalValuationResolution:{...summary,source:'canonical Market Data Git history, exact historical onchain Chainlink, or exact-block Velodrome TWAP plus Chainlink quote at original accounting boundary'}},accountingExtensions:{...(ledger?.accountingExtensions||{}),historicalValuationResolution:{...summary,immutableEventUsdValueRewritten:false,resolvedValueLivesInNonEconomicMetadata:true,mutableEventTokenMetadataIsNotValuationAuthority:true,stablecoinPegAssumptionUsed:false}}},...summary};
+  return{ledger:{...ledger,events,sourceState:{...(ledger?.sourceState||{}),historicalValuationResolution:{...summary,source:'canonical Market Data Git history, exact historical onchain Chainlink, exact-block Velodrome TWAP plus Chainlink quote, or exact-block Slipstream TWAP plus Chainlink quote at original accounting boundary'}},accountingExtensions:{...(ledger?.accountingExtensions||{}),historicalValuationResolution:{...summary,immutableEventUsdValueRewritten:false,resolvedValueLivesInNonEconomicMetadata:true,mutableEventTokenMetadataIsNotValuationAuthority:true,stablecoinPegAssumptionUsed:false}}},...summary};
 }
 
 function annotateProjectX(rebuilt,history,built,newEventsAdmitted,integrity,generatedAt){
