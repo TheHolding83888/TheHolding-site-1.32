@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'reporting/unresolved-usd-valuation-diagnostic.mjs'
+      - 'reporting/laptop-slipstream-historical-diagnostic.mjs'
       - '.github/workflows/diagnose-unresolved-usd-valuations.yml'
 
 permissions:
@@ -12,7 +13,7 @@ permissions:
 jobs:
   diagnose:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
       - name: Checkout exact candidate
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -26,3 +27,9 @@ jobs:
           set -euo pipefail
           node --check reporting/unresolved-usd-valuation-diagnostic.mjs
           node reporting/unresolved-usd-valuation-diagnostic.mjs
+      - name: Probe LAPTOP exact historical Slipstream TWAP capability
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check reporting/laptop-slipstream-historical-diagnostic.mjs
+          node reporting/laptop-slipstream-historical-diagnostic.mjs
