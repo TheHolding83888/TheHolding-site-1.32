@@ -43,11 +43,17 @@ assert.ok(workflow.includes('node --check rewards/company-010-hyperlend-rewards-
 assert.ok(workflow.includes('node rewards/company-010-hyperlend-rewards-overlay.mjs'),'Rewards writer does not materialize HyperLend projection');
 assert.ok(workflow.includes("repositoryMutationAuthority!=='Update Company Rewards'"),'Rewards writer HyperLend ownership assertion missing');
 
-// ICP/NNS owns domain state/history only. Its canonical state naturally wakes
-// this one shared Rewards writer, which is the sole repository publisher of the
-// ICP projection inside companies/rewards-data.json.
+// ICP/NNS owns domain state/history only. Update Company Rewards is the sole
+// publisher of the ICP projection inside companies/rewards-data.json. Keep the
+// path trigger for human/code changes, and explicitly consume the successful
+// ICP workflow completion because GITHUB_TOKEN-generated state commits do not
+// recursively emit ordinary push workflows.
 assert.ok(workflow.includes("- 'rewards/icp-nns-rewards-projection.mjs'"),'Rewards writer must wake on ICP projection source changes');
-assert.ok(workflow.includes("- 'companies/icp-nns-rewards-state.json'"),'Rewards writer must naturally wake on canonical ICP state changes');
+assert.ok(workflow.includes("- 'companies/icp-nns-rewards-state.json'"),'Rewards writer must retain the canonical ICP state path trigger');
+const icpWorkflowRun='- "Update ICP NNS Rewards"';
+assert.equal(workflow.split(icpWorkflowRun).length-1,1,'ICP NNS workflow_run handoff must exist exactly once');
+assert.match(workflow,/workflow_run:\n\s+workflows:[\s\S]*- "Update ICP NNS Rewards"[\s\S]*types: \[completed\]/,'Rewards writer must consume ICP workflow completion');
+assert.match(workflow,/github\.event\.workflow_run\.conclusion == 'success'/,'Rewards workflow_run handoffs must fail closed on unsuccessful upstream runs');
 assert.ok(workflow.includes('node --check rewards/icp-nns-rewards-projection.mjs'),'Rewards writer does not syntax-check ICP projection');
 assert.ok(workflow.includes('node rewards/icp-nns-rewards-projection.mjs'),'Rewards writer does not materialize ICP projection');
 assert.ok(workflow.includes("sourceStateRepositoryMutationAuthority!=='Update ICP NNS Rewards'"),'Rewards writer ICP source ownership assertion missing');
@@ -78,8 +84,10 @@ console.log('Rewards workflow definition paired proof PASS',{
   dailySnapshotUtc:contract.dailySnapshotUtc,
   cypherGenericPromotionNaturalTrigger:true,
   hyperlendProjectionOwnedByRewardsWriter:true,
-  icpNnsStateNaturalTrigger:true,
+  icpNnsStatePathTriggerRetained:true,
+  icpNnsWorkflowRunHandoff:true,
   icpNnsProjectionOwnedByRewardsWriter:true,
+  githubTokenRecursivePushAssumed:false,
   rookConvexTeamSettlementBoundary:true,
   rookTrackingOnlyNoIncomeAuthority:true,
   productionWriterContentsAuthority:true,
