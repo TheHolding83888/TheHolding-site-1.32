@@ -42,6 +42,8 @@ export function historicalValuationSourceMatchesVe33Identity(event,resolution){
       String(resolution?.sourceStatus||'')==='historical-canonical-market-price';
   }
   if(family==='historical-onchain-chainlink-at-boundary'){
+    // Exact Chainlink proofs are chain-bound as well as token-bound: a proof
+    // produced on one network can never satisfy the same token identity on another.
     const route=historicalChainlinkRouteForToken(identity.token,event?.chainId);
     return Boolean(route)&&
       Number(event?.chainId)===Number(route.chainId)&&
