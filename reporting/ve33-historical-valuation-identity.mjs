@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import {
   canonicalAssetIdForHistoricalToken,
-  historicalOptimismChainlinkRouteForToken,
+  historicalChainlinkRouteForToken,
   historicalOptimismVelodromeTwapRouteForToken
 } from './historical-canonical-price.mjs';
 
@@ -42,8 +42,9 @@ export function historicalValuationSourceMatchesVe33Identity(event,resolution){
       String(resolution?.sourceStatus||'')==='historical-canonical-market-price';
   }
   if(family==='historical-onchain-chainlink-at-boundary'){
-    const route=historicalOptimismChainlinkRouteForToken(identity.token);
+    const route=historicalChainlinkRouteForToken(identity.token,event?.chainId);
     return Boolean(route)&&
+      Number(event?.chainId)===Number(route.chainId)&&
       Number(resolution?.sourceChainId)===Number(route.chainId)&&
       String(resolution?.sourceAssetId||'')===String(route.assetId)&&
       lower(resolution?.sourceContract)===lower(route.contract)&&
@@ -52,6 +53,7 @@ export function historicalValuationSourceMatchesVe33Identity(event,resolution){
   if(family==='historical-onchain-velodrome-twap-chainlink-at-boundary'){
     const route=historicalOptimismVelodromeTwapRouteForToken(identity.token);
     return Boolean(route)&&
+      Number(event?.chainId)===Number(route.chainId)&&
       Number(resolution?.sourceChainId)===Number(route.chainId)&&
       String(resolution?.sourceAssetId||'')===String(route.assetId)&&
       lower(resolution?.sourceContract)===lower(route.pool)&&
