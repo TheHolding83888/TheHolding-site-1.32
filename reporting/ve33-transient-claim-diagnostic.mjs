@@ -7,6 +7,7 @@ const EVIDENCE_FILE=process.env.VE33_DIAGNOSTIC_EVIDENCE_FILE||'./reporting/ve33
 const REWARDS_FILE=process.env.REWARDS_DATA_FILE||'./companies/rewards-data.json';
 const LOOKBACK_DAYS=Math.max(1,Math.min(31,Number(process.env.VE33_TRANSIENT_LOOKBACK_DAYS||7)));
 const MAX_LOG_BLOCKS=Math.max(100,Math.min(1_900,Number(process.env.VE33_TRANSIENT_MAX_LOG_BLOCKS||1_800)));
+const REQUESTED_PROTOCOLS=new Set(String(process.env.VE33_TRANSIENT_PROTOCOLS||'').split(',').map(x=>x.trim()).filter(Boolean));
 const ADDRESS_GROUP_SIZE=48;
 const REQUEST_SPACING_MS=100;
 const CLAIM_IFACE=new Interface(['event ClaimRewards(address indexed from,address indexed reward,uint256 amount)']);
@@ -119,8 +120,10 @@ const represented=representedSettlementProofs();
 const knownLanes=knownLaneSet();
 const results=[];
 const protocolStats={};
+const selectedProtocols=Object.entries(PROTOCOLS).filter(([protocolKey])=>!REQUESTED_PROTOCOLS.size||REQUESTED_PROTOCOLS.has(protocolKey));
+if(!selectedProtocols.length)throw new Error(`No matching ve33 protocol for VE33_TRANSIENT_PROTOCOLS=${[...REQUESTED_PROTOCOLS].join(',')}`);
 
-for(const [protocolKey,cfg] of Object.entries(PROTOCOLS)){
+for(const [protocolKey,cfg] of selectedProtocols){
   const {positions,index}=contractPositionIndex(protocolKey,cfg);
   if(!positions.length||!index.size){
     protocolStats[protocolKey]={positionCount:positions.length,rewardContractCount:index.size,queryCount:0,claimLogCount:0,provenClaimCount:0};
@@ -201,6 +204,7 @@ const pendingClaims=deduped.filter(x=>x.classification==='known-lane-pending-or-
 
 console.log('ve33 transient ClaimRewards diagnostic JSON',JSON.stringify({
   version:'0.1-ve33-transient-claim-diagnostic',lookbackDays:LOOKBACK_DAYS,
+  requestedProtocols:[...REQUESTED_PROTOCOLS],selectedProtocols:selectedProtocols.map(([key])=>key),
   semantics:{diagnosticOnly:true,createsIncome:false,mutatesCanonicalEvidence:false,unknownIsNotZero:true,executionAuthority:'none'},
   protocolStats,summary:{provenClaimCount:deduped.length,...byClass},
   transientOrphanClaims:orphanClaims,
