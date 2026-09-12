@@ -14,6 +14,8 @@
     "eventIdentityRequired": true,
     "eventEconomicFieldsImmutableAfterAdmission": true,
     "claimOrWalletMovementDoesNotErasePriorIncome": true,
+    "claimedRewardLeavesCurrentClaimableStateButNotIncomeHistory": true,
+    "passportCurrentRewardsMustRepresentCurrentClaimableStateOnly": true,
     "currentClaimableBalanceIsStateNotPeriodIncome": true,
     "claimableDecreaseDoesNotProveRealisedCashFlow": true,
     "claimableIncreaseWithoutMechanismIdentityDoesNotProvePeriodIncome": true,
@@ -21,12 +23,40 @@
     "embeddedIncomeRequiresAcceptedCanonicalInterval": true,
     "realisedCashFlowRequiresMechanismSpecificProof": true,
     "referenceAprCanNeverBackfillEarnedIncome": true,
+    "historicalIncomeValuationMustUseEvidenceAlignedTimestamp": true,
+    "priceObservedAfterEconomicBoundaryCannotValuePriorIncome": true,
+    "currentSpotPriceCannotRewriteClosedHistoricalIncome": true,
+    "unprovenHistoricalPriceRemainsUnknown": true,
     "stablePriceEffectIsSeparateFromEmbeddedIncome": true,
     "unknownIsNotZero": true,
     "crossFamilySummationForbidden": true,
     "canonicalCompanyOwnsIncomeExclusively": true,
     "crossCompanyEarnedIncomeReattributionForbidden": true,
     "foreignCompanyReferenceIncomeIsContextOnly": true
+  },
+  "rewardLifecycle": {
+    "livePassportRewards": "current claimable/unclaimed reward state only",
+    "claim": "settlement of prior entitlement unless mechanism-specific evidence proves a distinct new income event",
+    "afterClaim": "remove settled amount from current claimable state after canonical refresh while retaining immutable earned-income and settlement evidence",
+    "receivedOrWalletBalance": "separate state/evidence family; never a replacement for earned-income history",
+    "compounded": "embedded-income family when independently proven; not current claimable",
+    "scope": "system-wide across all companies, protocols and reward tokens"
+  },
+  "historicalValuation": {
+    "economicBoundary": "value factual income at the evidence-aligned earning/closing boundary used by the admitted accounting event",
+    "preferredEvidence": [
+      "exact canonical historical onchain price proof at or before the economic boundary",
+      "canonical Market Data history at or before the economic boundary",
+      "canonical historical Rewards price observation at or before the economic boundary"
+    ],
+    "forbidden": [
+      "price observed after the economic boundary",
+      "today/current spot price used to backfill a prior closed event",
+      "sale proceeds or later swap price treated as the original earned-income price without explicit mechanism-specific accounting proof",
+      "reference APR/APY used as factual reward valuation"
+    ],
+    "fallback": "UNKNOWN, never zero and never invented",
+    "closedIncomeRevaluation": false
   },
   "ownership": {
     "authoritativeField": "company",
