@@ -69,6 +69,7 @@ const rewardContract='0x7591A0D4a21170a8bB3C02Bf89F13D7757AeBADe';
 const rewardToken='0xB095274743941e953c746F9C228DA9c18Bb6ec29';
 const txHash='0xaad260eb97a2414e45dc5f105e8966932ca8795eb267aacd9ce85b929cd37153';
 const amountRaw=67615020175015840449n;
+const claimTimestamp='2026-09-10T00:26:40.000Z';
 const rewards={
   companies:{
     '0x5860...83CA8.eth':{
@@ -81,7 +82,7 @@ const claimIface=new Interface(['event ClaimRewards(address indexed from,address
 const encoded=claimIface.encodeEventLog(claimIface.getEvent('ClaimRewards'),[holder,rewardToken,amountRaw]);
 const voterIface=new Interface(['function claimBribes(address[] bribes,address[][] tokens,uint256 tokenId)']);
 const data=voterIface.encodeFunctionData('claimBribes',[[rewardContract],[[rewardToken]],1938]);
-let queries=0;
+let queries=0,blockQueries=0;
 const mockRouter={
   async getBlockNumber(){return 20000;},
   async getLogs(filter){
@@ -92,6 +93,7 @@ const mockRouter={
     return[];
   },
   async getTransaction(hash){assert.equal(hash,txHash);return{to:voter,data};},
+  async getBlock(blockNumber){blockQueries++;assert.equal(Number(blockNumber),18000);return{number:18000,timestamp:1789000000};},
   snapshot(){return{preferredProvider:'mock-archive',attempts:queries,failoverCount:0,adaptiveSplitCount:0};}
 };
 const output=await runRecoveryWriter({
@@ -112,6 +114,8 @@ assert.equal(claim.tokenId,'1938');
 assert.equal(claim.rewardContract.toLowerCase(),rewardContract.toLowerCase());
 assert.equal(claim.rewardToken.toLowerCase(),rewardToken.toLowerCase());
 assert.equal(claim.amountRaw,amountRaw.toString());
+assert.equal(claim.blockTimestamp,claimTimestamp);
+assert.equal(blockQueries,1);
 assert.equal(claim.classification,'transient-orphan-claim');
 assert.equal(claim.decodePath,'voter-claimBribes');
 assert.equal(claim.accountingAuthority,false);
@@ -119,5 +123,5 @@ assert.equal(claim.executionAuthority,'none');
 
 console.log('ve33 transient ClaimRewards recovery writer validation OK',{
   operationFailover:true,adaptiveHistoricalLogSplit:true,redactedRpcDiagnostics:true,
-  overlapCursor:true,exactLaptopAcceptanceShape:true,createsIncome:false,executionAuthority:'none'
+  overlapCursor:true,exactLaptopAcceptanceShape:true,claimBlockTimestamp:true,createsIncome:false,executionAuthority:'none'
 });
