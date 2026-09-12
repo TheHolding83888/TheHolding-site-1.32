@@ -5,6 +5,8 @@ import { Contract, Interface, JsonRpcProvider, formatUnits, getAddress } from 'e
 const VERSION='0.1-vlcvx-extra-reward-distribution-proof';
 const AUDIT=process.env.VLCVX_AUDIT_OUTPUT||'/tmp/vlcvx-route-audit.json';
 const OUTPUT=process.env.VLCVX_EXTRA_REWARD_OUTPUT||'/tmp/vlcvx-extra-reward-distribution-proof.json';
+const CANONICAL_REWARDS=process.env.REWARDS_OUTPUT||path.resolve('companies/rewards-data.json');
+const TARGETS=['YieldRing.eth','defitea.eth',"Rook's portfolio",'Cypher'];
 const RPCS=[...new Set([
   process.env.ETH_RPC_URL,
   'https://ethereum-rpc.publicnode.com',
@@ -30,6 +32,8 @@ const ERC20_ABI=['function symbol() view returns (string)','function decimals() 
 const eventInterface=new Interface(DISTRIBUTION_ABI);
 const rewardAddedTopic=eventInterface.getEvent('RewardAdded').topicHash;
 const round=(n,d=12)=>Number(Number(n).toFixed(d));
+const nonNegativeInt=v=>Number.isSafeInteger(Number(v))&&Number(v)>=0?Number(v):null;
+const boundedError=e=>String(e?.shortMessage||e?.message||e||'unknown error').replace(/https?:\/\/[^\s|]+/g,'<provider>').slice(0,1600);
 
 export async function vlCvxExtraRewardProvider(){
   let last;
@@ -121,7 +125,54 @@ async function collectRewardAddedHistory(toBlock){
   throw new Error(`RewardAdded history unavailable: ${errors.join(' | ')}`);
 }
 
-export async function buildVlCvxExtraRewardDistributionProof({audit,provider}){
+export function retainedVlCvxRewardInventory(previousData){
+  const diag=previousData?.diagnostics?.vlCvxExtraRewardDistributionProof;
+  if(diag?.version!==VERSION||diag?.executionAuthority!=='none'||diag?.component!=='locked-cvx-extra-reward-distribution')return null;
+  const inventory=diag.rewardInventoryStatus;
+  if(!['event-derived-token-inventory','complete-empty-rewardadded-history'].includes(inventory))return null;
+  const eventCount=nonNegativeInt(diag.rewardAddedEventCount),tokenCount=nonNegativeInt(diag.rewardTokenCount);
+  if(eventCount===null||tokenCount===null)return null;
+  if(inventory==='complete-empty-rewardadded-history'&&(eventCount!==0||tokenCount!==0))return null;
+
+  const sources=[];
+  for(const name of TARGETS){
+    const source=(previousData?.companies?.[name]?.sources||[]).find(x=>x.route==='vlcvx-extra-reward-distribution');
+    if(!source?.details||source.details.component!=='locked-cvx-extra-reward-distribution'||source.details.unknownIsNotZero!==true||source.details.periodIncomeAuthority!==false)return null;
+    sources.push(source);
+  }
+  const first=sources[0].details;
+  const scanFrom=nonNegativeInt(first.rewardInventoryScanFromBlock),scanThrough=nonNegativeInt(first.rewardInventoryScanThroughBlock);
+  if(scanFrom!==EVENT_SCAN_FROM_BLOCK||scanThrough===null||scanThrough<scanFrom)return null;
+  for(const source of sources){
+    const x=source.details;
+    if(x.rewardInventoryStatus!==inventory||nonNegativeInt(x.rewardAddedEventCount)!==eventCount||nonNegativeInt(x.rewardTokenCount)!==tokenCount||nonNegativeInt(x.rewardInventoryScanFromBlock)!==scanFrom||nonNegativeInt(x.rewardInventoryScanThroughBlock)!==scanThrough)return null;
+  }
+
+  const tokenMap=new Map();
+  const diagTokens=Array.isArray(diag.tokens)?diag.tokens:[];
+  for(const row of [...diagTokens,...sources.flatMap(x=>Array.isArray(x.details.rewards)?x.details.rewards:[])]){
+    try{
+      const token=getAddress(row.token);
+      if(!tokenMap.has(token.toLowerCase()))tokenMap.set(token.toLowerCase(),{token,symbol:String(row.symbol||token),decimals:Number(row.decimals??18),rewardEpochCount:nonNegativeInt(row.rewardEpochCount)});
+    }catch{}
+  }
+  if(tokenCount!==tokenMap.size)return null;
+  if(tokenCount>0&&[...tokenMap.values()].some(x=>x.rewardEpochCount===null||x.rewardEpochCount<=0))return null;
+
+  return{
+    generatedAt:String(diag.generatedAt||previousData.generatedAt||''),
+    inventoryStatus:inventory,
+    eventCount,
+    tokenCount,
+    tokens:[...tokenMap.values()],
+    transport:String(first.rewardInventoryTransport||diag.rewardInventoryTransport||'retained-canonical-rewards'),
+    scanFromBlock:scanFrom,
+    scanThroughBlock:scanThrough,
+    firstObservedRewardAddedBlock:diag.firstObservedRewardAddedBlock??null
+  };
+}
+
+export async function buildVlCvxExtraRewardDistributionProof({audit,provider,previousData=null}){
   if(audit?.version!=='0.2-vlcvx-full-registry-route-audit')throw new Error('vlCVX route audit version drift');
   if(String(audit?.contracts?.vlCVX||'').toLowerCase()!==LOCKER.toLowerCase())throw new Error('route audit locker != extra reward locker');
   const live=(audit.companies||[]).filter(x=>x.hasVlCvx);
@@ -138,10 +189,38 @@ export async function buildVlCvxExtraRewardDistributionProof({audit,provider}){
   const boundLocker=getAddress(await distribution.cvxlocker());
   if(boundLocker.toLowerCase()!==LOCKER.toLowerCase())throw new Error('extra reward distribution locker binding drift');
 
-  const history=await collectRewardAddedHistory(latestBlock);
-  if(history.scanComplete!==true||history.fromBlock!==EVENT_SCAN_FROM_BLOCK||history.toBlock!==latestBlock)throw new Error('RewardAdded history completeness drift');
-  const logs=history.logs;
-  const tokenAddresses=[...new Set(logs.map(log=>getAddress(eventInterface.parseLog(log).args._token)).map(x=>x.toLowerCase()))].map(lower=>getAddress(lower));
+  let history=null,retained=null,freshHistoryError=null;
+  try{
+    history=await collectRewardAddedHistory(latestBlock);
+    if(history.scanComplete!==true||history.fromBlock!==EVENT_SCAN_FROM_BLOCK||history.toBlock!==latestBlock)throw new Error('RewardAdded history completeness drift');
+  }catch(e){
+    freshHistoryError=boundedError(e);
+    retained=retainedVlCvxRewardInventory(previousData);
+    if(!retained)throw new Error(`${freshHistoryError}; no validated retained canonical RewardAdded inventory available`);
+  }
+  const freshHistory=Boolean(history);
+  const logs=freshHistory?history.logs:[];
+  const historicalEvidence=freshHistory?{
+    status:'fresh-verified',
+    freshness:'current-run',
+    freshVerificationAvailable:true,
+    partial:false,
+    retainedFromGeneratedAt:null,
+    lastVerifiedScanThroughBlock:latestBlock,
+    freshVerificationError:null
+  }:{
+    status:'retained-last-verified',
+    freshness:'unknown',
+    freshVerificationAvailable:false,
+    partial:true,
+    retainedFromGeneratedAt:retained.generatedAt||null,
+    lastVerifiedScanThroughBlock:retained.scanThroughBlock,
+    freshVerificationError:freshHistoryError
+  };
+
+  const tokenAddresses=freshHistory
+    ?[...new Set(logs.map(log=>getAddress(eventInterface.parseLog(log).args._token)).map(x=>x.toLowerCase()))].map(lower=>getAddress(lower))
+    :retained.tokens.map(x=>x.token);
 
   const tokens=[];
   for(const address of tokenAddresses){
@@ -150,6 +229,12 @@ export async function buildVlCvxExtraRewardDistributionProof({audit,provider}){
     if(!Number.isSafeInteger(epochCount)||epochCount<=0)throw new Error(`invalid reward epoch count for ${meta.token}`);
     tokens.push({...meta,rewardEpochCount:epochCount});
   }
+
+  const inventoryStatus=freshHistory
+    ?(tokens.length?'event-derived-token-inventory':'complete-empty-rewardadded-history')
+    :retained.inventoryStatus;
+  const rewardAddedEventCount=freshHistory?logs.length:retained.eventCount;
+  if(!freshHistory&&tokens.length!==retained.tokenCount)throw new Error('retained reward token inventory reconstruction drift');
 
   const companies=[];
   for(const company of live){
@@ -168,9 +253,13 @@ export async function buildVlCvxExtraRewardDistributionProof({audit,provider}){
       claimableRewardCount:rewards.length,
       positiveClaimableRewardCount:rewards.filter(x=>BigInt(x.amountRaw)>0n).length,
       rewards,
-      evidenceClass:'observed-current-state',
+      evidenceClass:freshHistory?'observed-current-state':'observed-current-state-with-retained-historical-inventory',
       component:'locked-cvx-extra-reward-distribution',
-      rewardInventoryStatus:tokens.length?'event-derived-token-inventory':'complete-empty-rewardadded-history',
+      rewardInventoryStatus:inventoryStatus,
+      currentInventoryStatus:freshHistory?inventoryStatus:'unknown-current-inventory',
+      freshHistoryVerificationAvailable:freshHistory,
+      historyFreshness:freshHistory?'current-run':'unknown',
+      partial:!freshHistory,
       periodIncomeAuthority:false,
       delegateIncentiveSettlementAuthority:false,
       zeroIsObservedZero:true,
@@ -181,17 +270,22 @@ export async function buildVlCvxExtraRewardDistributionProof({audit,provider}){
   return{
     version:VERSION,
     generatedAt:new Date().toISOString(),
+    status:freshHistory?'ok':'partial',
     executionAuthority:'none',
     claimTransactionAuthority:'none',
+    historicalEvidence,
     source:{
       implementation:'convex-eth/platform/contracts/contracts/vlCvxExtraRewardDistribution.sol',
       knownCreationTransaction:KNOWN_CREATION_TX,
       eventBoundaryReference:'convex-community/convex-stats-subgraph vlCvxExtraRewardDistributionV2 startBlock',
       rewardInventoryMethod:'RewardAdded(address,uint256,uint256) event history',
-      rewardInventoryTransport:history.transport,
-      rewardInventoryScanComplete:history.scanComplete,
-      rewardInventoryScanFromBlock:history.fromBlock,
-      rewardInventoryScanThroughBlock:history.toBlock,
+      rewardInventoryTransport:freshHistory?history.transport:`retained-last-verified:${retained.transport}`,
+      rewardInventoryScanComplete:freshHistory,
+      retainedLastVerifiedScanComplete:!freshHistory,
+      rewardInventoryScanFromBlock:freshHistory?history.fromBlock:retained.scanFromBlock,
+      rewardInventoryScanThroughBlock:freshHistory?history.toBlock:retained.scanThroughBlock,
+      currentStateObservedBlock:latestBlock,
+      freshHistoryVerificationAvailable:freshHistory,
       archivalReceiptRequired:false
     },
     contract:{
@@ -199,15 +293,20 @@ export async function buildVlCvxExtraRewardDistributionProof({audit,provider}){
       address:DISTRIBUTION,
       locker:boundLocker,
       eventScanFromBlock:EVENT_SCAN_FROM_BLOCK,
-      firstObservedRewardAddedBlock:logs.length?Math.min(...logs.map(x=>x.blockNumber)):null,
-      observedThroughBlock:latestBlock,
+      firstObservedRewardAddedBlock:freshHistory
+        ?(logs.length?Math.min(...logs.map(x=>x.blockNumber)):null)
+        :(retained.firstObservedRewardAddedBlock??null),
+      observedThroughBlock:freshHistory?latestBlock:retained.scanThroughBlock,
+      currentStateObservedBlock:latestBlock,
       claimableMethod:'claimableRewards(address,address)'
     },
     semantics:{
       component:'locked-cvx-extra-reward-distribution',
       rewardInventoryIsEventDerived:true,
-      rewardInventoryScanComplete:true,
-      emptyRewardAddedHistoryMeansNoKnownRewardEpochs:true,
+      rewardInventoryScanComplete:freshHistory,
+      retainedLastVerifiedInventoryAvailable:!freshHistory,
+      emptyRewardAddedHistoryMeansNoKnownRewardEpochs:freshHistory,
+      currentInventoryMayHaveChangedWhenHistoryIsRetained:!freshHistory,
       holderEpochDistributionComponent:true,
       currentRewardStateIsNotPeriodIncome:true,
       delegateIncentiveSettlementIsSeparate:true,
@@ -216,10 +315,16 @@ export async function buildVlCvxExtraRewardDistributionProof({audit,provider}){
       unknownIsNotZero:true
     },
     summary:{
+      proofStatus:freshHistory?'ok':'partial',
       companyCount:companies.length,
       rewardTokenCount:tokens.length,
-      rewardAddedEventCount:logs.length,
-      rewardInventoryStatus:tokens.length?'event-derived-token-inventory':'complete-empty-rewardadded-history',
+      rewardAddedEventCount,
+      rewardInventoryStatus:inventoryStatus,
+      currentInventoryStatus:freshHistory?inventoryStatus:'unknown-current-inventory',
+      historyStatus:historicalEvidence.status,
+      historyFreshness:historicalEvidence.freshness,
+      freshHistoryVerificationAvailable:freshHistory,
+      partial:!freshHistory,
       positiveRewardCompanyCount:companies.filter(x=>x.positiveClaimableRewardCount>0).length
     },
     tokens,
@@ -229,25 +334,33 @@ export async function buildVlCvxExtraRewardDistributionProof({audit,provider}){
 
 export function applyVlCvxExtraRewardDistributionProof(data,proof){
   if(proof?.version!==VERSION||proof?.executionAuthority!=='none'||proof?.claimTransactionAuthority!=='none')throw new Error('invalid vlCVX extra reward distribution proof');
-  if(proof?.source?.rewardInventoryScanComplete!==true||proof?.semantics?.rewardInventoryScanComplete!==true)throw new Error('vlCVX extra reward inventory is not complete');
+  const fresh=proof?.historicalEvidence?.status==='fresh-verified'&&proof?.historicalEvidence?.freshVerificationAvailable===true&&proof?.historicalEvidence?.partial===false;
+  const retained=proof?.historicalEvidence?.status==='retained-last-verified'&&proof?.historicalEvidence?.freshVerificationAvailable===false&&proof?.historicalEvidence?.freshness==='unknown'&&proof?.historicalEvidence?.partial===true;
+  if(!fresh&&!retained)throw new Error('vlCVX historical evidence state invalid');
+  if(fresh&&(proof?.source?.rewardInventoryScanComplete!==true||proof?.semantics?.rewardInventoryScanComplete!==true))throw new Error('fresh vlCVX extra reward inventory is not complete');
+  if(retained&&(proof?.source?.rewardInventoryScanComplete!==false||proof?.source?.retainedLastVerifiedScanComplete!==true||proof?.semantics?.rewardInventoryScanComplete!==false||proof?.semantics?.retainedLastVerifiedInventoryAvailable!==true))throw new Error('retained vlCVX history must remain explicit partial evidence');
   if(proof?.semantics?.currentRewardStateIsNotPeriodIncome!==true||proof?.semantics?.delegateIncentiveSettlementIsSeparate!==true||proof?.semantics?.doesNotByItselfResolveCurrentDelegateSettlement!==true||proof?.semantics?.unknownIsNotZero!==true)throw new Error('vlCVX extra reward semantic boundary drift');
   const inventory=proof?.summary?.rewardInventoryStatus;
   if(!['event-derived-token-inventory','complete-empty-rewardadded-history'].includes(inventory))throw new Error('vlCVX extra reward inventory status invalid');
   if(inventory==='complete-empty-rewardadded-history'&&(Number(proof?.summary?.rewardTokenCount)!==0||Number(proof?.summary?.rewardAddedEventCount)!==0))throw new Error('vlCVX complete-empty inventory counters drift');
+  if(retained&&proof?.summary?.currentInventoryStatus!=='unknown-current-inventory')throw new Error('retained history must not assert current inventory completeness');
   for(const row of proof.companies||[]){
     const c=data.companies?.[row.name];if(!c)throw new Error(`canonical Rewards company missing ${row.name}`);
     if(row.component!=='locked-cvx-extra-reward-distribution'||row.periodIncomeAuthority!==false||row.delegateIncentiveSettlementAuthority!==false||row.unknownIsNotZero!==true)throw new Error(`vlCVX extra reward company boundary drift ${row.registry}`);
     if(row.rewardInventoryStatus!==inventory)throw new Error(`vlCVX extra reward inventory parity drift ${row.registry}`);
+    if(retained&&(row.currentInventoryStatus!=='unknown-current-inventory'||row.partial!==true||row.freshHistoryVerificationAvailable!==false))throw new Error(`vlCVX retained history epistemic drift ${row.registry}`);
     c.sources=c.sources||[];
     const source={
       protocol:'Convex · vlCVX extra reward distribution',
       route:'vlcvx-extra-reward-distribution',
-      status:'ok',
+      status:fresh?'ok':'partial',
       chain:'Ethereum',
       metric:'vlCvxExtraRewardDistribution RewardAdded inventory + claimableRewards(address,token) current state',
-      note:inventory==='complete-empty-rewardadded-history'
-        ?'Complete bounded RewardAdded history contains no reward epochs for this distribution component. This is factual component tracking only: no period income is created and the separate delegate-incentive settlement lane remains unresolved where applicable.'
-        :'Reward-token inventory is derived from complete RewardAdded history and current claimable state is observed per token. This is factual component tracking only: no period income is created and delegate-incentive settlement remains separate.',
+      note:fresh
+        ?(inventory==='complete-empty-rewardadded-history'
+          ?'Complete bounded RewardAdded history contains no reward epochs for this distribution component. This is factual component tracking only: no period income is created and the separate delegate-incentive settlement lane remains unresolved where applicable.'
+          :'Reward-token inventory is derived from complete RewardAdded history and current claimable state is observed per token. This is factual component tracking only: no period income is created and delegate-incentive settlement remains separate.')
+        :'Fresh RewardAdded history is unavailable. The token inventory is retained only from the last verified canonical snapshot; current inventory completeness is unknown. Current contract identity and claimable state for retained tokens were re-read. No zero-income or period-income conclusion is created.',
       details:{
         principalAsset:'vlCVX',
         component:'locked-cvx-extra-reward-distribution',
@@ -256,11 +369,19 @@ export function applyVlCvxExtraRewardDistributionProof(data,proof){
         locker:proof.contract.locker,
         claimableRewardsMethod:proof.contract.claimableMethod,
         rewardInventoryStatus:inventory,
+        currentInventoryStatus:proof.summary.currentInventoryStatus,
         rewardInventoryMethod:proof.source.rewardInventoryMethod,
         rewardInventoryTransport:proof.source.rewardInventoryTransport,
-        rewardInventoryScanComplete:true,
+        rewardInventoryScanComplete:fresh,
+        retainedLastVerifiedScanComplete:retained,
         rewardInventoryScanFromBlock:proof.source.rewardInventoryScanFromBlock,
         rewardInventoryScanThroughBlock:proof.source.rewardInventoryScanThroughBlock,
+        currentStateObservedBlock:proof.source.currentStateObservedBlock,
+        historyStatus:proof.historicalEvidence.status,
+        historyFreshness:proof.historicalEvidence.freshness,
+        freshHistoryVerificationAvailable:proof.historicalEvidence.freshVerificationAvailable,
+        retainedFromGeneratedAt:proof.historicalEvidence.retainedFromGeneratedAt,
+        partial:proof.historicalEvidence.partial,
         rewardAddedEventCount:proof.summary.rewardAddedEventCount,
         rewardTokenCount:proof.summary.rewardTokenCount,
         rewards:row.rewards,
@@ -278,32 +399,53 @@ export function applyVlCvxExtraRewardDistributionProof(data,proof){
   data.diagnostics.vlCvxExtraRewardDistributionProof={
     version:proof.version,
     generatedAt:proof.generatedAt,
+    status:proof.status,
     executionAuthority:'none',
     component:'locked-cvx-extra-reward-distribution',
     companyCount:proof.summary.companyCount,
     rewardInventoryStatus:inventory,
+    currentInventoryStatus:proof.summary.currentInventoryStatus,
     rewardAddedEventCount:proof.summary.rewardAddedEventCount,
     rewardTokenCount:proof.summary.rewardTokenCount,
-    semanticBoundary:'component factual state only; does not close delegate-incentive settlement or create period income'
+    rewardInventoryTransport:proof.source.rewardInventoryTransport,
+    rewardInventoryScanFromBlock:proof.source.rewardInventoryScanFromBlock,
+    rewardInventoryScanThroughBlock:proof.source.rewardInventoryScanThroughBlock,
+    currentStateObservedBlock:proof.source.currentStateObservedBlock,
+    firstObservedRewardAddedBlock:proof.contract.firstObservedRewardAddedBlock,
+    historyStatus:proof.historicalEvidence.status,
+    historyFreshness:proof.historicalEvidence.freshness,
+    freshHistoryVerificationAvailable:proof.historicalEvidence.freshVerificationAvailable,
+    retainedFromGeneratedAt:proof.historicalEvidence.retainedFromGeneratedAt,
+    partial:proof.historicalEvidence.partial,
+    tokens:proof.tokens.map(t=>({token:t.token,symbol:t.symbol,decimals:t.decimals,rewardEpochCount:t.rewardEpochCount})),
+    unknownIsNotZero:true,
+    periodIncomeAuthority:false,
+    semanticBoundary:'component factual state only; retained historical inventory never becomes current completeness, zero-income evidence, delegate-incentive settlement, or period income'
   };
   return data;
 }
 
-export async function collectVlCvxExtraRewardDistributionProof({auditFile=AUDIT}={}){
+export async function collectVlCvxExtraRewardDistributionProof({auditFile=AUDIT,previousData=null}={}){
   const audit=JSON.parse(fs.readFileSync(auditFile,'utf8'));
   const provider=await vlCvxExtraRewardProvider();
-  return buildVlCvxExtraRewardDistributionProof({audit,provider});
+  let canonical=previousData;
+  if(!canonical&&fs.existsSync(CANONICAL_REWARDS))canonical=JSON.parse(fs.readFileSync(CANONICAL_REWARDS,'utf8'));
+  return buildVlCvxExtraRewardDistributionProof({audit,provider,previousData:canonical});
 }
 
 async function main(){
   const out=await collectVlCvxExtraRewardDistributionProof();
   fs.writeFileSync(path.resolve(OUTPUT),JSON.stringify(out,null,2)+'\n');
   console.log('vlCVX EXTRA REWARD DISTRIBUTION PROOF PASS',JSON.stringify({
+    status:out.status,
+    historyStatus:out.historicalEvidence.status,
+    historyFreshness:out.historicalEvidence.freshness,
+    freshHistoryVerificationAvailable:out.historicalEvidence.freshVerificationAvailable,
     transport:out.source.rewardInventoryTransport,
     contract:out.contract,
     summary:out.summary,
     tokens:out.tokens.map(t=>({symbol:t.symbol,token:t.token,rewardEpochCount:t.rewardEpochCount})),
-    companies:out.companies.map(c=>({registry:c.registry,name:c.name,route:c.currentRoute,rewardInventoryStatus:c.rewardInventoryStatus,positiveRewards:c.positiveClaimableRewardCount,rewards:c.rewards.filter(r=>!r.observedZero).map(r=>({symbol:r.symbol,amount:r.amount}))}))
+    companies:out.companies.map(c=>({registry:c.registry,name:c.name,route:c.currentRoute,rewardInventoryStatus:c.rewardInventoryStatus,currentInventoryStatus:c.currentInventoryStatus,positiveRewards:c.positiveClaimableRewardCount,rewards:c.rewards.filter(r=>!r.observedZero).map(r=>({symbol:r.symbol,amount:r.amount}))}))
   },null,2));
 }
 
