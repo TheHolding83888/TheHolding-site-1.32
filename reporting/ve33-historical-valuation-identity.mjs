@@ -2,7 +2,8 @@
 import {
   canonicalAssetIdForHistoricalToken,
   historicalChainlinkRouteForToken,
-  historicalOptimismVelodromeTwapRouteForToken
+  historicalOptimismVelodromeTwapRouteForToken,
+  historicalBaseSlipstreamTwapRouteForToken
 } from './historical-canonical-price.mjs';
 
 const lower=v=>String(v||'').toLowerCase();
@@ -66,6 +67,22 @@ export function historicalValuationSourceMatchesVe33Identity(event,resolution){
       resolution?.poolStable===route.poolStable&&
       resolution?.stablecoinPegAssumptionUsed===false&&
       String(resolution?.sourceStatus||'')==='historical-onchain-velodrome-twap-chainlink-price';
+  }
+  if(family==='historical-onchain-slipstream-twap-chainlink-at-boundary'){
+    const route=historicalBaseSlipstreamTwapRouteForToken(identity.token);
+    const pair=new Set([lower(resolution?.poolToken0),lower(resolution?.poolToken1)]);
+    return Boolean(route)&&
+      Number(event?.chainId)===Number(route.chainId)&&
+      Number(resolution?.sourceChainId)===Number(route.chainId)&&
+      String(resolution?.sourceAssetId||'')===String(route.assetId)&&
+      lower(resolution?.sourceContract)===lower(route.pool)&&
+      lower(resolution?.quoteToken)===lower(route.quoteToken)&&
+      lower(resolution?.quoteChainlinkContract)===lower(route.quoteChainlinkFeed)&&
+      Number(resolution?.twapSeconds)===Number(route.twapSeconds)&&
+      Number.isSafeInteger(Number(resolution?.averageTick))&&
+      pair.size===2&&pair.has(lower(route.token))&&pair.has(lower(route.quoteToken))&&
+      resolution?.stablecoinPegAssumptionUsed===false&&
+      String(resolution?.sourceStatus||'')==='historical-onchain-slipstream-twap-chainlink-price';
   }
   return false;
 }

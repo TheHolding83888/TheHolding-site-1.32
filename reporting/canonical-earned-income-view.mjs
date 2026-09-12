@@ -17,7 +17,8 @@ const HISTORICAL_VALUATION_RESOLUTION_VERSION = '0.1-canonical-historical-valuat
 const HISTORICAL_VALUATION_SOURCE_FAMILIES = new Set([
   'canonical-market-data-git-history',
   'historical-onchain-chainlink-at-boundary',
-  'historical-onchain-velodrome-twap-chainlink-at-boundary'
+  'historical-onchain-velodrome-twap-chainlink-at-boundary',
+  'historical-onchain-slipstream-twap-chainlink-at-boundary'
 ]);
 const finite = v => v !== null && v !== undefined && v !== '' && Number.isFinite(Number(v));
 const round = (v, d = 8) => finite(v) ? Math.round(Number(v) * 10 ** d) / 10 ** d : null;
@@ -131,6 +132,31 @@ function historicalValuationSourceValid(event, resolution, boundaryMs, observedM
       !Number.isSafeInteger(Number(resolution?.twapGranularity)) || Number(resolution.twapGranularity) <= 0 ||
       !Number.isSafeInteger(Number(resolution?.observationLength)) || Number(resolution.observationLength) <= Number(resolution.twapGranularity) ||
       typeof resolution?.poolStable !== 'boolean' ||
+      resolution?.stablecoinPegAssumptionUsed !== false ||
+      !finite(resolution?.quoteTokenAmount) || Number(resolution.quoteTokenAmount) <= 0 ||
+      !finite(resolution?.quotePriceUsd) || Number(resolution.quotePriceUsd) <= 0
+    ) return false;
+    const quoteObservedMs = Date.parse(resolution?.quoteObservedAt || '');
+    if (!Number.isFinite(quoteObservedMs) || quoteObservedMs !== observedMs || quoteObservedMs > blockMs) return false;
+    try {
+      if (BigInt(resolution.quoteRoundId) <= 0n || BigInt(resolution.quoteAnsweredInRound) < BigInt(resolution.quoteRoundId)) return false;
+    } catch { return false; }
+    const derived = round(Number(resolution.quoteTokenAmount) * Number(resolution.quotePriceUsd), 12);
+    if (!finite(derived) || Math.abs(Number(derived) - Number(resolution.valuationUnitUsd)) > 0.00000002) return false;
+    return true;
+  }
+
+  if (family === 'historical-onchain-slipstream-twap-chainlink-at-boundary') {
+    if (
+      resolution?.sourceStatus !== 'historical-onchain-slipstream-twap-chainlink-price' ||
+      !/^0x[0-9a-f]{40}$/i.test(String(resolution?.poolToken0 || '')) ||
+      !/^0x[0-9a-f]{40}$/i.test(String(resolution?.poolToken1 || '')) ||
+      !/^0x[0-9a-f]{40}$/i.test(String(resolution?.quoteToken || '')) ||
+      !/^0x[0-9a-f]{40}$/i.test(String(resolution?.quoteChainlinkContract || '')) ||
+      !/^\d+$/.test(String(resolution?.quoteRoundId || '')) ||
+      !/^\d+$/.test(String(resolution?.quoteAnsweredInRound || '')) ||
+      !Number.isSafeInteger(Number(resolution?.twapSeconds)) || Number(resolution.twapSeconds) <= 0 ||
+      !Number.isSafeInteger(Number(resolution?.averageTick)) ||
       resolution?.stablecoinPegAssumptionUsed !== false ||
       !finite(resolution?.quoteTokenAmount) || Number(resolution.quoteTokenAmount) <= 0 ||
       !finite(resolution?.quotePriceUsd) || Number(resolution.quotePriceUsd) <= 0
@@ -355,6 +381,7 @@ function buildCanonicalEarnedIncomeView(ledger) {
       historicalValuationMustMatchImmutableVe33TokenIdentity: true,
       exactHistoricalOnchainChainlinkResolutionAllowed: true,
       exactHistoricalOnchainVelodromeTwapChainlinkResolutionAllowed: true,
+      exactHistoricalOnchainSlipstreamTwapChainlinkResolutionAllowed: true,
       legacyDirectChainlinkMissingPegMetadataAccepted: true,
       explicitStablecoinPegAssumptionRejected: true,
       unknownIsNotZero: true
