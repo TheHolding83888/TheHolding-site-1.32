@@ -66,10 +66,16 @@ jobs:
         run: |
           set -euo pipefail
           BASE="${{ github.event.pull_request.base.sha }}"
-          if git diff --name-only "$BASE"...HEAD | grep -Eq '^(intelligence/economic-graph/vlcvx-votium-snapshot-proof\.mjs|scripts/verify-vlcvx-votium-snapshot-proof\.mjs)$'; then
+          CHANGED="$(git diff --name-only "$BASE"...HEAD)"
+          if printf '%s\n' "$CHANGED" | grep -Eq '^(intelligence/economic-graph/vlcvx-votium-snapshot-proof\.mjs|scripts/verify-vlcvx-votium-snapshot-proof\.mjs)$'; then
             echo "live_probe_needed=true" >> "$GITHUB_OUTPUT"
           else
             echo "live_probe_needed=false" >> "$GITHUB_OUTPUT"
+          fi
+          if printf '%s\n' "$CHANGED" | grep -Eq '^(intelligence/economic-graph/vlcvx-votium-round-flow\.mjs|scripts/verify-vlcvx-votium-round-flow\.mjs)$'; then
+            echo "round_flow_rebuild_needed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "round_flow_rebuild_needed=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Orchestration-only PR proof
@@ -88,6 +94,16 @@ jobs:
         if: github.event_name != 'pull_request' || steps.evidence_mode.outputs.live_probe_needed == 'true'
         run: ln -sfn productivity/node_modules node_modules
 
+      # PR code changes must prove the downstream artifact against the same rebuilt upstream bytes.
+      - name: Build PR upstream round flow
+        if: github.event_name == 'pull_request' && steps.evidence_mode.outputs.live_probe_needed == 'true' && steps.evidence_mode.outputs.round_flow_rebuild_needed == 'true'
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+        run: |
+          set -euo pipefail
+          VLCVX_VOTIUM_ROUND_FLOW_FILE=/tmp/vlcvx-votium-round-flow.json node intelligence/economic-graph/vlcvx-votium-round-flow.mjs
+          VLCVX_VOTIUM_ROUND_FLOW_FILE=/tmp/vlcvx-votium-round-flow.json node scripts/verify-vlcvx-votium-round-flow.mjs
+
       - name: Build live voting provenance proof
         if: github.event_name != 'pull_request' || steps.evidence_mode.outputs.live_probe_needed == 'true'
         env:
@@ -96,7 +112,11 @@ jobs:
           set -euo pipefail
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             TMP="$(mktemp)"
-            VLCVX_VOTIUM_SNAPSHOT_PROOF_FILE="$TMP" node intelligence/economic-graph/vlcvx-votium-snapshot-proof.mjs
+            ROUND_FLOW_INPUT="intelligence/economic-graph/vlcvx-votium-round-flow.json"
+            if [ "${{ steps.evidence_mode.outputs.round_flow_rebuild_needed }}" = "true" ]; then
+              ROUND_FLOW_INPUT="/tmp/vlcvx-votium-round-flow.json"
+            fi
+            VLCVX_VOTIUM_ROUND_FLOW_FILE="$ROUND_FLOW_INPUT" VLCVX_VOTIUM_SNAPSHOT_PROOF_FILE="$TMP" node intelligence/economic-graph/vlcvx-votium-snapshot-proof.mjs
             cp "$TMP" /tmp/vlcvx-votium-snapshot-proof.json
             rm -f "$TMP"
           else
@@ -108,7 +128,11 @@ jobs:
         if: github.event_name != 'pull_request' || steps.evidence_mode.outputs.live_probe_needed == 'true'
         run: |
           set -euo pipefail
-          VLCVX_VOTIUM_SNAPSHOT_PROOF_FILE=/tmp/vlcvx-votium-snapshot-proof.json node scripts/verify-vlcvx-votium-snapshot-proof.mjs
+          ROUND_FLOW_INPUT="intelligence/economic-graph/vlcvx-votium-round-flow.json"
+          if [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ steps.evidence_mode.outputs.round_flow_rebuild_needed }}" = "true" ]; then
+            ROUND_FLOW_INPUT="/tmp/vlcvx-votium-round-flow.json"
+          fi
+          VLCVX_VOTIUM_ROUND_FLOW_FILE="$ROUND_FLOW_INPUT" VLCVX_VOTIUM_SNAPSHOT_PROOF_FILE=/tmp/vlcvx-votium-snapshot-proof.json node scripts/verify-vlcvx-votium-snapshot-proof.mjs
           git diff --check
 
       - name: Publish generated voting provenance atomically

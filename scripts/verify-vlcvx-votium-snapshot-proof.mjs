@@ -5,6 +5,7 @@ import crypto from 'node:crypto';
 const file=process.env.VLCVX_VOTIUM_SNAPSHOT_PROOF_FILE||'intelligence/economic-graph/vlcvx-votium-snapshot-proof.json';
 const roundFlowFile=process.env.VLCVX_VOTIUM_ROUND_FLOW_FILE||'intelligence/economic-graph/vlcvx-votium-round-flow.json';
 const x=JSON.parse(fs.readFileSync(file,'utf8'));
+const roundFlow=JSON.parse(fs.readFileSync(roundFlowFile,'utf8'));
 const roundFlowHash=crypto.createHash('sha256').update(fs.readFileSync(roundFlowFile)).digest('hex');
 function fail(message){throw new Error(message);}
 
@@ -14,6 +15,9 @@ if(x.status!=='shadow-voting-provenance-proven')fail(`Votium voting provenance i
 if(x.authority?.readOnly!==true||x.authority?.executionAuthority!=='none'||x.authority?.causalClaimAuthority!=='none'||x.authority?.promotionAuthority!=='none')fail('Votium voting provenance authority regression');
 if(x.sourceBinding?.roundFlowSha256!==roundFlowHash)fail('Votium voting provenance not bound to exact round-flow bytes');
 if(x.sourceBinding?.candidateId!=='defitea-convex-vlcvx-votium'||x.sourceBinding?.companyRegistry!=='004')fail('Votium voting provenance candidate binding mismatch');
+if(!Array.isArray(x.sourceBinding?.transitionAnchorRounds)||x.sourceBinding.transitionAnchorRounds.join(',')!=='127,128,129')fail('Votium voting provenance transition anchor binding missing');
+if(Number(x.sourceBinding?.roundFlowLastProcessedRound)!==Number(roundFlow?.roundState?.lastRoundProcessed))fail('Votium voting provenance rolling source currentness drift');
+if(roundFlow?.coverage?.transitionAnchorComplete!==true||!Array.isArray(roundFlow?.coverage?.transitionAnchorRounds)||roundFlow.coverage.transitionAnchorRounds.join(',')!=='127,128,129')fail('Canonical Votium round-flow transition anchor missing');
 if(x.sourceAuthority?.legacyVotium?.contractCommit!=='e01cf1401c67cb81cfbd5158654b878bd9db1102'||x.sourceAuthority?.legacyVotium?.toolingCommit!=='f7f02dccbcff65acf6a35fe692481f1119452a8a')fail('Legacy Votium source pin drift');
 if(x.sourceAuthority?.convexOnchain?.commit!=='242b592718ff939e0a15e490a7df9730267f0999')fail('Convex onchain voting source pin drift');
 if(String(x.sourceAuthority?.convexOnchain?.currentCurveGaugeVoting||'').toLowerCase()!=='0x64d9b5ac386b70af9edcd20a58ce9262d2eac278')fail('Current Curve GaugeVotePlatform address drift');
@@ -45,12 +49,14 @@ for(const row of x.rounds.slice(1)){
 }
 
 if(x.voteUnitSemantics?.status!=='proven-human-scale-vlcvx-voting-power'||x.voteUnitSemantics?.postMigrationClass!=='ceil-of-convex-onchain-18dp-vlcvx-gauge-total')fail('Votium vote-unit semantics not proven');
-if(x.epistemic?.votingSourceTransition!=='attributed-by-live-cross-source-mechanics'||x.epistemic?.postMigrationGaugeEquality!=='measured-exact-integer-ceiling-equality')fail('Votium voting provenance epistemics incomplete');
+if(x.epistemic?.votingSourceTransition!=='attributed-by-live-cross-source-mechanics'||x.epistemic?.transitionAnchorRetention!=='canonical-round-flow-source-native-history'||x.epistemic?.postMigrationGaugeEquality!=='measured-exact-integer-ceiling-equality')fail('Votium voting provenance epistemics incomplete');
 if(x.epistemic?.incentiveToVoteCausality!=='not-claimed'||x.epistemic?.downstreamCurveEconomicCausality!=='not-claimed'||x.epistemic?.companyIncomeConnection!=='not-attributed-by-this-layer'||x.epistemic?.primaryDriver!==null)fail('Votium voting provenance causal boundary weakened');
-if(x.semantics?.unknownIsNotZero!==true||x.semantics?.missingSnapshotAfterMigrationIsExpected!==true||x.semantics?.proposalAssociationIsNotEconomicCausation!==true||x.semantics?.votingSourceProofIsNotIncentiveCausality!==true||x.semantics?.protocolVotingPowerIsNotRealisedCompanyIncome!==true)fail('Votium voting provenance semantic invariants missing');
+if(x.semantics?.unknownIsNotZero!==true||x.semantics?.transitionAnchorIsHistoricalEvidenceNotCurrentIncome!==true||x.semantics?.missingSnapshotAfterMigrationIsExpected!==true||x.semantics?.proposalAssociationIsNotEconomicCausation!==true||x.semantics?.votingSourceProofIsNotIncentiveCausality!==true||x.semantics?.protocolVotingPowerIsNotRealisedCompanyIncome!==true)fail('Votium voting provenance semantic invariants missing');
 
 console.log('VLCVX VOTIUM VOTING PROVENANCE VERIFY PASS',{
   roundFlowHash,
+  roundFlowLastProcessedRound:x.sourceBinding.roundFlowLastProcessedRound,
+  transitionAnchor:x.sourceBinding.transitionAnchorRounds,
   transition:`${x.transition.lastLegacyRound}->${x.transition.firstConvexOnchainRound}`,
   provenRounds:x.coverage.provenRoundCount,
   exactPostMigrationGauges:`${x.coverage.onchainExactGaugeMatchCount}/${x.coverage.onchainVotiumGaugeCount}`,

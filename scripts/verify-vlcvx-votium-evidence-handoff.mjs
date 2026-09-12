@@ -25,6 +25,13 @@ requireIncludes('Voting Provenance', text.voting, 'The Holding · Votium vlCVX R
 if (/\n\s*schedule:\s*\n/.test(text.voting)) throw new Error('Voting Provenance must not retain an independent schedule; Round Flow is the cadence root');
 requireWorkflowRunGuard('Voting Provenance', text.voting);
 requirePrNetworkBoundary('Voting Provenance', text.voting);
+requireIncludes('Voting Provenance', text.voting, 'round_flow_rebuild_needed=true');
+requireIncludes('Voting Provenance', text.voting, 'Build PR upstream round flow');
+requireIncludes('Voting Provenance', text.voting, 'VLCVX_VOTIUM_ROUND_FLOW_FILE=/tmp/vlcvx-votium-round-flow.json node intelligence/economic-graph/vlcvx-votium-round-flow.mjs');
+requireIncludes('Voting Provenance', text.voting, 'VLCVX_VOTIUM_ROUND_FLOW_FILE=/tmp/vlcvx-votium-round-flow.json node scripts/verify-vlcvx-votium-round-flow.mjs');
+requireIncludes('Voting Provenance', text.voting, 'ROUND_FLOW_INPUT="/tmp/vlcvx-votium-round-flow.json"');
+requireIncludes('Voting Provenance', text.voting, 'VLCVX_VOTIUM_ROUND_FLOW_FILE="$ROUND_FLOW_INPUT" VLCVX_VOTIUM_SNAPSHOT_PROOF_FILE="$TMP" node intelligence/economic-graph/vlcvx-votium-snapshot-proof.mjs');
+requireIncludes('Voting Provenance', text.voting, 'VLCVX_VOTIUM_ROUND_FLOW_FILE="$ROUND_FLOW_INPUT" VLCVX_VOTIUM_SNAPSHOT_PROOF_FILE=/tmp/vlcvx-votium-snapshot-proof.json node scripts/verify-vlcvx-votium-snapshot-proof.mjs');
 
 requireIncludes('Curve Gauge Flow', text.gauge, 'The Holding · Votium vlCVX Voting Provenance');
 requireWorkflowRunGuard('Curve Gauge Flow', text.gauge);
@@ -43,6 +50,7 @@ for (const [label, source] of Object.entries(text)) {
 console.log('VLCVX / VOTIUM EVIDENCE HANDOFF CANARY PASS', {
   chain: 'Round Flow -> Voting Provenance -> Curve Gauge Flow -> Curve Pool Context',
   rootCadenceOnly: true,
+  prUpstreamRebuildBoundToDownstreamProof: true,
   poolIndependentFreshness: '6h-preserved',
   orchestrationOnlyPrNetworkCalls: false,
   productionLiveEvidenceBuilds: true,
