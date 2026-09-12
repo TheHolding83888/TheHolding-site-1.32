@@ -34,7 +34,30 @@ assert.equal(policy.rules.claimableIncreaseWithoutMechanismIdentityDoesNotProveP
 assert.equal(policy.rules.missingClaimableRouteDoesNotMeanZero,true);
 assert.equal(policy.rules.crossFamilySummationForbidden,true);
 assert.equal(policy.rules.referenceAprCanNeverBackfillEarnedIncome,true);
+assert.equal(policy.rules.claimedRewardLeavesCurrentClaimableStateButNotIncomeHistory,true);
+assert.equal(policy.rules.passportCurrentRewardsMustRepresentCurrentClaimableStateOnly,true);
+assert.equal(policy.rules.historicalIncomeValuationMustUseEvidenceAlignedTimestamp,true);
+assert.equal(policy.rules.priceObservedAfterEconomicBoundaryCannotValuePriorIncome,true);
+assert.equal(policy.rules.currentSpotPriceCannotRewriteClosedHistoricalIncome,true);
+assert.equal(policy.rules.unprovenHistoricalPriceRemainsUnknown,true);
+assert.equal(policy.rewardLifecycle?.livePassportRewards,'current claimable/unclaimed reward state only');
+assert.match(policy.rewardLifecycle?.claim||'',/settlement of prior entitlement/i);
+assert.match(policy.rewardLifecycle?.afterClaim||'',/retaining immutable earned-income and settlement evidence/i);
+assert.equal(policy.rewardLifecycle?.scope,'system-wide across all companies, protocols and reward tokens');
+assert.match(policy.historicalValuation?.economicBoundary||'',/evidence-aligned earning\/closing boundary/i);
+assert.equal(Array.isArray(policy.historicalValuation?.preferredEvidence),true);
+assert.equal(policy.historicalValuation.preferredEvidence.some(x=>/at or before the economic boundary/i.test(x)),true);
+assert.equal(Array.isArray(policy.historicalValuation?.forbidden),true);
+assert.equal(policy.historicalValuation.forbidden.some(x=>/current spot price/i.test(x)),true);
+assert.equal(policy.historicalValuation.forbidden.some(x=>/price observed after the economic boundary/i.test(x)),true);
+assert.equal(policy.historicalValuation.forbidden.some(x=>/sale proceeds or later swap price/i.test(x)),true);
+assert.equal(policy.historicalValuation.forbidden.some(x=>/reference APR\/APY/i.test(x)),true);
+assert.match(policy.historicalValuation?.fallback||'',/UNKNOWN/i);
+assert.equal(policy.historicalValuation?.closedIncomeRevaluation,false);
 assert.equal(policy.authority.executionAuthority,'none');
+assert.equal(policy.authority.walletAuthority,'none');
+assert.equal(policy.authority.claimingAuthority,'none');
+assert.equal(policy.authority.capitalExecution,false);
 
 const dc=defiteaCandidates(defitea,at);
 const ec=embeddedCandidates(embedded,at);
@@ -203,5 +226,7 @@ console.log('Canonical Income Ledger validation PASS',{
   incompleteShardUnknownPreserved:true,
   claimableDecreaseRealisedAuthority:false,
   crossFamilySummation:false,
-  unknownIsNotZero:true
+  unknownIsNotZero:true,
+  rewardLifecycleLaw:true,
+  historicalValuationLaw:true
 });
