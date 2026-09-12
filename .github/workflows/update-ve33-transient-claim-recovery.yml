@@ -6,6 +6,8 @@ name: Update ve33 Transient Claim Recovery
 on:
   pull_request:
     paths:
+      - 'reporting/historical-rewards-token-price.mjs'
+      - 'reporting/historical-rewards-token-price-validation.mjs'
       - 'reporting/ve33-transient-claim-recovery.mjs'
       - 'reporting/ve33-transient-claim-recovery-validation.mjs'
       - 'reporting/ve33-transient-claim-recovery-writer.mjs'
@@ -14,6 +16,8 @@ on:
   push:
     branches: [main]
     paths:
+      - 'reporting/historical-rewards-token-price.mjs'
+      - 'reporting/historical-rewards-token-price-validation.mjs'
       - 'reporting/ve33-transient-claim-recovery.mjs'
       - 'reporting/ve33-transient-claim-recovery-validation.mjs'
       - 'reporting/ve33-transient-claim-recovery-writer.mjs'
@@ -53,16 +57,63 @@ jobs:
       - name: Install runtime dependency
         run: npm install --no-save --no-package-lock ethers@6
 
-      - name: Validate recovery discovery and writer contracts
+      - name: Validate recovery discovery, price fallback, and writer contracts
         run: |
           set -euo pipefail
+          node --check reporting/historical-rewards-token-price.mjs
+          node --check reporting/historical-rewards-token-price-validation.mjs
           node --check reporting/ve33-transient-claim-recovery.mjs
           node --check reporting/ve33-transient-claim-recovery-validation.mjs
           node --check reporting/ve33-transient-claim-recovery-writer.mjs
           node --check reporting/ve33-transient-claim-recovery-writer-validation.mjs
+          node reporting/historical-rewards-token-price-validation.mjs
           node reporting/ve33-transient-claim-recovery-validation.mjs
           node reporting/ve33-transient-claim-recovery-writer-validation.mjs
           git diff --check
+
+      - name: Prove real LAPTOP historical price from committed Rewards history
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module - <<'NODE'
+          import assert from 'node:assert/strict';
+          import { JsonRpcProvider } from 'ethers';
+          import { historicalRewardsTokenPriceFromGit } from './reporting/historical-rewards-token-price.mjs';
+
+          const blockNumber=51109971;
+          const token='0xB095274743941e953c746F9C228DA9c18Bb6ec29';
+          const endpoints=['https://base-rpc.publicnode.com','https://1rpc.io/base','https://mainnet.base.org'];
+          let block=null,endpointUsed=null,lastError=null;
+          for(const endpoint of endpoints){
+            const provider=new JsonRpcProvider(endpoint,8453,{staticNetwork:true});
+            try{
+              block=await Promise.race([
+                provider.getBlock(blockNumber),
+                new Promise((_,reject)=>setTimeout(()=>reject(new Error('block lookup timeout')),10000))
+              ]);
+              if(block){endpointUsed=endpoint;break;}
+            }catch(error){lastError=error;}
+            finally{try{provider.destroy();}catch{}}
+          }
+          if(!block)throw lastError||new Error('LAPTOP claim block unavailable from Base RPC failover');
+          const boundaryAt=new Date(Number(block.timestamp)*1000).toISOString();
+          const price=historicalRewardsTokenPriceFromGit({token,boundaryAt});
+          assert.equal(price.ok,true,'LAPTOP committed historical Rewards price unavailable: '+JSON.stringify(price));
+          assert.equal(price.sourceFamily,'canonical-rewards-git-history');
+          assert.equal(price.exactTokenAddressMatch,true);
+          assert.equal(price.symbolMatchingUsed,false);
+          assert.equal(price.currentPriceUsed,false);
+          assert.equal(price.referenceAprUsed,false);
+          assert.equal(price.executionAuthority,'none');
+          assert.ok(Number(price.priceUsd)>0);
+          assert.ok(Date.parse(price.observedAt)<=Date.parse(boundaryAt));
+          console.log('Real LAPTOP historical Rewards price PASS',{
+            blockNumber,boundaryAt,endpointUsed,
+            token,priceUsd:price.priceUsd,observedAt:price.observedAt,
+            priceMethod:price.priceMethod,commit:price.commitSha,
+            sourceFamily:price.sourceFamily,executionAuthority:price.executionAuthority
+          });
+          NODE
 
   update-recovery:
     if: >-
@@ -93,10 +144,13 @@ jobs:
       - name: Validate recovery contracts
         run: |
           set -euo pipefail
+          node --check reporting/historical-rewards-token-price.mjs
+          node --check reporting/historical-rewards-token-price-validation.mjs
           node --check reporting/ve33-transient-claim-recovery.mjs
           node --check reporting/ve33-transient-claim-recovery-validation.mjs
           node --check reporting/ve33-transient-claim-recovery-writer.mjs
           node --check reporting/ve33-transient-claim-recovery-writer-validation.mjs
+          node reporting/historical-rewards-token-price-validation.mjs
           node reporting/ve33-transient-claim-recovery-validation.mjs
           node reporting/ve33-transient-claim-recovery-writer-validation.mjs
 
@@ -112,12 +166,14 @@ jobs:
           VE33_RECOVERY_SCAN_OVERLAP_BLOCKS: '4096'
         run: node reporting/ve33-transient-claim-recovery-writer.mjs
 
-      - name: Validate factual recovery state and LAPTOP regression proof
+      - name: Validate factual recovery state and LAPTOP historical valuation
         run: |
           set -euo pipefail
-          node - <<'NODE'
-          const fs=require('fs');
+          node --input-type=module - <<'NODE'
+          import fs from 'node:fs';
+          import { addRecoveryShadowRows } from './reporting/ve33-transient-claim-recovery.mjs';
           const x=JSON.parse(fs.readFileSync('reporting/ve33-transient-claim-recovery.json','utf8'));
+          const rewards=JSON.parse(fs.readFileSync('companies/rewards-data.json','utf8'));
           if(x.version!=='0.1-ve33-transient-claim-recovery') throw new Error('recovery version drift');
           if(!['discovery-complete','partial'].includes(x.status)) throw new Error('recovery state not materialized: '+x.status);
           if(x.semantics?.discoveryOnly!==true||x.semantics?.createsIncome!==false||x.semantics?.createsRealisedCashFlow!==false||x.semantics?.claimIsSettlementNotSecondIncome!==true||x.semantics?.unknownIsNotZero!==true) throw new Error('recovery accounting boundary drift');
@@ -131,10 +187,22 @@ jobs:
           if(String(laptop.rewardContract||'').toLowerCase()!=='0x7591a0d4a21170a8bb3c02bf89f13d7757aebade') throw new Error('LAPTOP reward contract drift');
           if(String(laptop.rewardToken||'').toLowerCase()!=='0xb095274743941e953c746f9c228da9c18bb6ec29') throw new Error('LAPTOP reward token drift');
           if(String(laptop.amountRaw)!=='67615020175015840449'||laptop.decodePath!=='voter-claimBribes') throw new Error('LAPTOP factual proof drift');
-          console.log('ve33 recovery factual state PASS',{
-            status:x.status,
-            claims:claims.length,
-            laptop:{tokenId:laptop.tokenId,amountRaw:laptop.amountRaw,classification:laptop.classification},
+          if(!Number.isFinite(Date.parse(laptop.blockTimestamp||''))) throw new Error('LAPTOP exact claim block timestamp missing');
+          const shadows=addRecoveryShadowRows(rewards,claims);
+          const row=(shadows.rewards?.companies?.['0x5860...83CA8.eth']?.rewards||[]).find(r=>
+            r?.status==='historical-claim-recovery-shadow'&&
+            String(r?.token||'').toLowerCase()==='0xb095274743941e953c746f9c228da9c18bb6ec29'&&
+            String(r?.details?.tokenId||'')==='1938'
+          );
+          if(!row) throw new Error('LAPTOP recovery shadow missing');
+          if(!(Number(row.priceUsd)>0)) throw new Error('LAPTOP historical Rewards price did not resolve');
+          const p=row.details?.historicalPriceRecovery||{};
+          if(p.ok!==true||p.sourceFamily!=='canonical-rewards-git-history'||p.exactTokenAddressMatch!==true||p.symbolMatchingUsed!==false||p.currentPriceUsed!==false||p.referenceAprUsed!==false||p.executionAuthority!=='none') throw new Error('LAPTOP historical price provenance/authority drift');
+          if(row.periodIncomeAuthority!==false||row.accountingAuthority!==false) throw new Error('historical price incorrectly granted accounting authority');
+          console.log('ve33 recovery factual state + historical valuation PASS',{
+            status:x.status,claims:claims.length,
+            laptop:{tokenId:laptop.tokenId,amountRaw:laptop.amountRaw,blockTimestamp:laptop.blockTimestamp,priceUsd:row.priceUsd,priceObservedAt:row.priceObservedAt,priceSourceCommit:p.sourceCommit},
+            pricedShadows:shadows.priced,unpricedShadows:shadows.unpriced,
             executionAuthority:x.authority.executionAuthority
           });
           NODE
@@ -157,6 +225,8 @@ jobs:
 
           critical_fingerprint() {
             sha256sum \
+              reporting/historical-rewards-token-price.mjs \
+              reporting/historical-rewards-token-price-validation.mjs \
               reporting/ve33-transient-claim-recovery.mjs \
               reporting/ve33-transient-claim-recovery-validation.mjs \
               reporting/ve33-transient-claim-recovery-writer.mjs \
@@ -171,7 +241,9 @@ jobs:
           if(x.semantics?.createsIncome!==false||x.semantics?.createsRealisedCashFlow!==false||x.authority?.executionAuthority!=='none') throw new Error('recovery authority/semantics invalid');
           const claims=Object.values(x.protocols||{}).flatMap(p=>p.claims||[]);
           const expectedTx='0xaad260eb97a2414e45dc5f105e8966932ca8795eb267aacd9ce85b929cd37153';
-          if(!claims.some(c=>String(c.transactionHash||'').toLowerCase()===expectedTx)) throw new Error('LAPTOP recovery proof missing after rebuild');
+          const laptop=claims.find(c=>String(c.transactionHash||'').toLowerCase()===expectedTx);
+          if(!laptop) throw new Error('LAPTOP recovery proof missing after rebuild');
+          if(!Number.isFinite(Date.parse(laptop.blockTimestamp||''))) throw new Error('LAPTOP claim block timestamp missing after rebuild');
           NODE
           }
 
