@@ -21,7 +21,7 @@ const __filename=fileURLToPath(import.meta.url);
 const __dirname=path.dirname(__filename);
 const ROOT=path.resolve(__dirname,'..');
 
-export const VERSION='0.2-ve33-capability-aware-historical-rpc-runner';
+export const VERSION='0.1-ve33-capability-aware-historical-rpc-runner';
 export const REQUIRED_HISTORICAL_BOUNDARIES=Object.freeze([DIRECT_ACCOUNTING_START,FULL_ACCOUNTING_START]);
 export const SAFE_WRITER_EVIDENCE_REUSE=Object.freeze({
   version:'0.1-bounded-publication-reuse',
@@ -213,7 +213,7 @@ async function probeHistoricalCandidate({url,cfg,protocolKey,lanes}){
         blockTimestamp:boundary.blockTimestamp,
         available:capability?.available===true,
         status:capability?.status||'unknown',
-        sampleTokenId:capability?.sampleTokenId||null,
+        sampleTokenId:capability.sampleTokenId||null,
         error:capability?.error||null
       });
       if(capability?.available!==true)throw new Error(`${protocolKey} ${label} cannot read historical state at ${boundaryAt}: ${capability?.error||capability?.status||'unknown'}`);
