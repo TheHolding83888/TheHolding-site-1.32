@@ -3,6 +3,9 @@
  * The Holding · Votium vlCVX Round Flow v0.1
  * Read-only protocol-native accounting for completed Votium v2 rounds.
  * Contract vote units remain contract-native until their scale is independently proven.
+ * The historical voting-source transition rounds 127–129 are retained as a small durable
+ * source-native anchor beside the normal rolling window so downstream provenance does not
+ * silently expire as time advances.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -16,6 +19,7 @@ const OUT=process.env.VLCVX_VOTIUM_ROUND_FLOW_FILE||path.join(ROOT,'intelligence
 const CANDIDATE_ID='defitea-convex-vlcvx-votium';
 const VOTIUM_V2='0x63942E31E98f1833A234077f47880A66136a2D1e';
 const ROUND_DEPTH=Math.max(2,Math.min(6,Number(process.env.VOTIUM_ROUND_DEPTH||3)));
+const TRANSITION_ANCHOR_ROUNDS=[127,128,129];
 const MAX_SAFE=BigInt(Number.MAX_SAFE_INTEGER);
 
 const VOTIUM_ABI=[
@@ -104,6 +108,7 @@ async function readRound(votium,provider,roundId,blockTag){
 
 function compareRounds(current,prior){
   if(!prior)return{priorRoundId:null,comparable:false};
+  if(Number(current.roundId)!==Number(prior.roundId)+1)return{priorRoundId:prior.roundId,comparable:false,reason:'non-consecutive-transition-anchor-to-rolling-gap'};
   const previous=new Map(prior.gauges.map(x=>[x.gauge.toLowerCase(),x])),currentSet=new Set(current.gauges.map(x=>x.gauge.toLowerCase()));
   const gaugeVoteShareChanges=current.gauges.map(x=>{const p=previous.get(x.gauge.toLowerCase());return{gauge:x.gauge,priorVoteSharePct:p?.voteSharePct??null,currentVoteSharePct:x.voteSharePct,deltaPctPoints:p?round(x.voteSharePct-p.voteSharePct,8):null,state:p?'continued':'new-in-round'};});
   for(const x of prior.gauges)if(!currentSet.has(x.gauge.toLowerCase()))gaugeVoteShareChanges.push({gauge:x.gauge,priorVoteSharePct:x.voteSharePct,currentVoteSharePct:0,deltaPctPoints:round(-Number(x.voteSharePct||0),8),state:'absent-in-current-round'});
@@ -118,25 +123,31 @@ async function buildState(){
     const blockTag=blockNumber,votium=new Contract(VOTIUM_V2,VOTIUM_ABI,provider);
     const [activeRoundRaw,currentEpochRaw,lastProcessedRaw,platformFeeRaw,denominatorRaw]=await Promise.all([votium.activeRound({blockTag}),votium.currentEpoch({blockTag}),votium.lastRoundProcessed({blockTag}),votium.platformFee({blockTag}),votium.DENOMINATOR({blockTag})]);
     const activeRound=Number(activeRoundRaw),lastRoundProcessed=Number(lastProcessedRaw),denominator=Number(denominatorRaw);if(!Number.isSafeInteger(lastRoundProcessed)||lastRoundProcessed<1)throw new Error('Votium lastRoundProcessed unavailable');
-    const start=Math.max(1,lastRoundProcessed-ROUND_DEPTH+1),completedRounds=[];
-    for(let id=start;id<=lastRoundProcessed;id++)completedRounds.push(await readRound(votium,provider,id,blockTag));
-    const latest=completedRounds.at(-1),comparisons=completedRounds.map((x,i)=>compareRounds(x,completedRounds[i-1]||null));
+    const start=Math.max(1,lastRoundProcessed-ROUND_DEPTH+1);
+    const rollingIds=Array.from({length:lastRoundProcessed-start+1},(_,i)=>start+i);
+    const anchorIds=TRANSITION_ANCHOR_ROUNDS.filter(id=>id<=lastRoundProcessed);
+    const selectedIds=[...new Set([...anchorIds,...rollingIds])].sort((a,b)=>a-b);
+    const completedRounds=[];
+    for(const id of selectedIds)completedRounds.push(await readRound(votium,provider,id,blockTag));
+    const latest=completedRounds.find(x=>Number(x.roundId)===lastRoundProcessed)||null;
+    if(!latest)throw new Error('Latest processed Votium round not retained');
+    const comparisons=completedRounds.map((x,i)=>compareRounds(x,completedRounds[i-1]||null));
     return{
       version:'0.1-vlcvx-votium-round-flow',engineVersion:'0.1.1-votium-v2-contract-unit-safe-round-accounting',generatedAt:new Date().toISOString(),status:'shadow-measured-not-promoted',
-      purpose:'Measure completed Votium vlCVX round incentive accounting and contract-native vote totals directly from Votium v2, without assuming vote-unit scale or causal/execution authority.',
+      purpose:'Measure completed Votium vlCVX round incentive accounting and contract-native vote totals directly from Votium v2, retaining the proven voting-source transition anchor without assuming vote-unit scale or causal/execution authority.',
       authority:{readOnly:true,executionAuthority:'none',capitalExecution:false,walletAuthority:false,allocationAuthority:false,recommendationAuthority:false,predictionAuthority:false,causalClaimAuthority:'none',promotionAuthority:'none',methodologyMutationAuthority:false},
       sourceBinding:{economicGraphFile:'intelligence/economic-graph/economic-graph.json',economicGraphSha256:sha256File(GRAPH_FILE),candidateId:CANDIDATE_ID,candidateObservationId:candidateObs.id,companyRegistry:'004',currentRouteId:candidateObs.companyRoute.routeId},
       protocol:{name:'Votium',version:'v2',chain:'Ethereum',contract:VOTIUM_V2,contractAuthority:'official-votium-documented-v2-address-and-verified-contract-interface',observationBlock:blockNumber,observationBlockHash:block.hash,observedAt:new Date(Number(block.timestamp)*1000).toISOString(),rpcEndpointClass:endpointClass,sameBlockRead:true},
       roundState:{activeRound,currentEpochRaw:currentEpochRaw.toString(),currentEpoch:isoFromSeconds(currentEpochRaw),lastRoundProcessed,platformFeeRaw:platformFeeRaw.toString(),denominatorRaw:denominatorRaw.toString(),platformFeePct:denominator>0?round(Number(platformFeeRaw)/denominator*100,8):null},
-      coverage:{requestedCompletedRounds:ROUND_DEPTH,measuredCompletedRounds:completedRounds.length,firstRound:completedRounds[0]?.roundId??null,lastRound:latest?.roundId??null,latestProcessedRoundIncluded:latest?.roundId===lastRoundProcessed},
+      coverage:{requestedCompletedRounds:ROUND_DEPTH,rollingRoundDepth:ROUND_DEPTH,rollingFirstRound:start,rollingLastRound:lastRoundProcessed,transitionAnchorRounds:anchorIds,transitionAnchorComplete:TRANSITION_ANCHOR_ROUNDS.every(id=>anchorIds.includes(id)),measuredCompletedRounds:completedRounds.length,firstRound:completedRounds[0]?.roundId??null,lastRound:latest.roundId,latestProcessedRoundIncluded:true},
       completedRounds,comparisons,latestCompletedRound:latest,
-      marketBreath:{measuredAtoms:['Votium processed round identity','round gauges','contract-native votesReceived by gauge','incentive token/accounting rows','distributed/recycled accounting','round-to-round gauge vote-share migration'],missingAtoms:['proven Votium vote-unit scale / Snapshot score mapping','historical USD valuation at round settlement','Convex Snapshot proposal choice identity mapping','Curve gauge emission response','downstream pool liquidity/volume/fee response','proven incentive→vote causal attribution'],nextUnlock:'Prove vote-unit semantics and historical valuation/proposal identity, then join round movement to Curve gauge and pool economics without causal overclaim.'},
-      epistemic:{roundAccounting:'measured-protocol-native-contract-state',voteUnitSemantics:'contract-native-unit-scale-unresolved',usdValuation:'unknown-in-v0.1',companyIncomeConnection:'not-attributed-by-this-layer',referenceAprConnection:'context-only-not-reconstructed-by-this-layer',causalAttribution:'unresolved-between-incentives-votes-gauge-emissions-pool-economics-and-company-outcome',primaryDriver:null,recommendationAuthority:'none',predictionAuthority:'none',promotionAuthority:'none'},
-      semantics:{unknownIsNotZero:true,contractAccountingIsNotUsdValuation:true,voteUnitScaleUnresolved:true,incentiveAndVoteCoexistenceIsNotCausation:true,protocolRoundFlowIsNotRealisedCompanyIncome:true,candidateNotCanonical:true}
+      marketBreath:{measuredAtoms:['Votium processed round identity','round gauges','contract-native votesReceived by gauge','incentive token/accounting rows','distributed/recycled accounting','durable voting-source transition anchor 127–129','round-to-round gauge vote-share migration'],missingAtoms:['proven Votium vote-unit scale / Snapshot score mapping','historical USD valuation at round settlement','Convex Snapshot proposal choice identity mapping','Curve gauge emission response','downstream pool liquidity/volume/fee response','proven incentive→vote causal attribution'],nextUnlock:'Prove vote-unit semantics and historical valuation/proposal identity, then join round movement to Curve gauge and pool economics without causal overclaim.'},
+      epistemic:{roundAccounting:'measured-protocol-native-contract-state',transitionAnchorRetention:'source-native-measured-historical-state',voteUnitSemantics:'contract-native-unit-scale-unresolved',usdValuation:'unknown-in-v0.1',companyIncomeConnection:'not-attributed-by-this-layer',referenceAprConnection:'context-only-not-reconstructed-by-this-layer',causalAttribution:'unresolved-between-incentives-votes-gauge-emissions-pool-economics-and-company-outcome',primaryDriver:null,recommendationAuthority:'none',predictionAuthority:'none',promotionAuthority:'none'},
+      semantics:{unknownIsNotZero:true,contractAccountingIsNotUsdValuation:true,voteUnitScaleUnresolved:true,incentiveAndVoteCoexistenceIsNotCausation:true,protocolRoundFlowIsNotRealisedCompanyIncome:true,transitionAnchorIsHistoricalEvidenceNotCurrentIncome:true,candidateNotCanonical:true}
     };
   }finally{try{provider.destroy();}catch{}}
 }
 
-async function main(){const state=await buildState();fs.mkdirSync(path.dirname(OUT),{recursive:true});fs.writeFileSync(OUT,JSON.stringify(state,null,2)+'\n');console.log('VLCVX VOTIUM ROUND FLOW PASS',{generatedAt:state.generatedAt,block:state.protocol.observationBlock,activeRound:state.roundState.activeRound,lastRoundProcessed:state.roundState.lastRoundProcessed,measuredRounds:state.coverage.measuredCompletedRounds,latestGaugeCount:state.latestCompletedRound.gaugeCount,latestIncentiveCount:state.latestCompletedRound.incentiveCount,latestVotesContractUnits:state.latestCompletedRound.totalVotesReceivedContractUnits,voteUnitSemantics:state.epistemic.voteUnitSemantics,primaryDriver:state.epistemic.primaryDriver,promotionAuthority:state.authority.promotionAuthority,executionAuthority:state.authority.executionAuthority});}
+async function main(){const state=await buildState();fs.mkdirSync(path.dirname(OUT),{recursive:true});fs.writeFileSync(OUT,JSON.stringify(state,null,2)+'\n');console.log('VLCVX VOTIUM ROUND FLOW PASS',{generatedAt:state.generatedAt,block:state.protocol.observationBlock,activeRound:state.roundState.activeRound,lastRoundProcessed:state.roundState.lastRoundProcessed,measuredRounds:state.coverage.measuredCompletedRounds,transitionAnchor:state.coverage.transitionAnchorRounds,latestGaugeCount:state.latestCompletedRound.gaugeCount,latestIncentiveCount:state.latestCompletedRound.incentiveCount,latestVotesContractUnits:state.latestCompletedRound.totalVotesReceivedContractUnits,voteUnitSemantics:state.epistemic.voteUnitSemantics,primaryDriver:state.epistemic.primaryDriver,promotionAuthority:state.authority.promotionAuthority,executionAuthority:state.authority.executionAuthority});}
 if(path.resolve(process.argv[1]||'')===path.resolve(new URL(import.meta.url).pathname))main().catch(error=>{console.error(error?.stack||error);process.exit(1);});
 export{buildState};
