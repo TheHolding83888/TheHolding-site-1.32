@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import {
   canonicalAssetIdForHistoricalToken,
-  historicalOptimismChainlinkRouteForToken,
+  historicalChainlinkRouteForToken,
   historicalOptimismVelodromeTwapRouteForToken
 } from './historical-canonical-price.mjs';
 
@@ -42,16 +42,21 @@ export function historicalValuationSourceMatchesVe33Identity(event,resolution){
       String(resolution?.sourceStatus||'')==='historical-canonical-market-price';
   }
   if(family==='historical-onchain-chainlink-at-boundary'){
-    const route=historicalOptimismChainlinkRouteForToken(identity.token);
+    // Exact Chainlink proofs are chain-bound as well as token-bound: a proof
+    // produced on one network can never satisfy the same token identity on another.
+    const route=historicalChainlinkRouteForToken(identity.token,event?.chainId);
     return Boolean(route)&&
+      Number(event?.chainId)===Number(route.chainId)&&
       Number(resolution?.sourceChainId)===Number(route.chainId)&&
       String(resolution?.sourceAssetId||'')===String(route.assetId)&&
       lower(resolution?.sourceContract)===lower(route.contract)&&
+      resolution?.stablecoinPegAssumptionUsed!==true&&
       String(resolution?.sourceStatus||'')==='historical-onchain-chainlink-price';
   }
   if(family==='historical-onchain-velodrome-twap-chainlink-at-boundary'){
     const route=historicalOptimismVelodromeTwapRouteForToken(identity.token);
     return Boolean(route)&&
+      Number(event?.chainId)===Number(route.chainId)&&
       Number(resolution?.sourceChainId)===Number(route.chainId)&&
       String(resolution?.sourceAssetId||'')===String(route.assetId)&&
       lower(resolution?.sourceContract)===lower(route.pool)&&
