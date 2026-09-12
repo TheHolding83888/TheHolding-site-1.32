@@ -1,0 +1,219 @@
+name: Update ve33 Transient Claim Recovery
+# holding-control-plane: repository-writer
+# holding-truth-plane: reporting/ve33-transient-claim-recovery.json
+# holding-control-domain: ve33-transient-claim-recovery
+
+on:
+  pull_request:
+    paths:
+      - 'reporting/ve33-transient-claim-recovery.mjs'
+      - 'reporting/ve33-transient-claim-recovery-validation.mjs'
+      - 'reporting/ve33-transient-claim-recovery-writer.mjs'
+      - 'reporting/ve33-transient-claim-recovery-writer-validation.mjs'
+      - '.github/workflows/update-ve33-transient-claim-recovery.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'reporting/ve33-transient-claim-recovery.mjs'
+      - 'reporting/ve33-transient-claim-recovery-validation.mjs'
+      - 'reporting/ve33-transient-claim-recovery-writer.mjs'
+      - 'reporting/ve33-transient-claim-recovery-writer-validation.mjs'
+      - '.github/workflows/update-ve33-transient-claim-recovery.yml'
+  workflow_run:
+    workflows:
+      - "Update Company Rewards"
+    types: [completed]
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ve33-transient-claim-recovery
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: Install runtime dependency
+        run: npm install --no-save --no-package-lock ethers@6
+
+      - name: Validate recovery discovery and writer contracts
+        run: |
+          set -euo pipefail
+          node --check reporting/ve33-transient-claim-recovery.mjs
+          node --check reporting/ve33-transient-claim-recovery-validation.mjs
+          node --check reporting/ve33-transient-claim-recovery-writer.mjs
+          node --check reporting/ve33-transient-claim-recovery-writer-validation.mjs
+          node reporting/ve33-transient-claim-recovery-validation.mjs
+          node reporting/ve33-transient-claim-recovery-writer-validation.mjs
+          git diff --check
+
+  update-recovery:
+    if: >-
+      ${{
+        github.event_name != 'pull_request' &&
+        (github.event_name != 'workflow_run' ||
+          (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main'))
+      }}
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout canonical main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: Install runtime dependency
+        run: npm install --no-save --no-package-lock ethers@6
+
+      - name: Validate recovery contracts
+        run: |
+          set -euo pipefail
+          node --check reporting/ve33-transient-claim-recovery.mjs
+          node --check reporting/ve33-transient-claim-recovery-validation.mjs
+          node --check reporting/ve33-transient-claim-recovery-writer.mjs
+          node --check reporting/ve33-transient-claim-recovery-writer-validation.mjs
+          node reporting/ve33-transient-claim-recovery-validation.mjs
+          node reporting/ve33-transient-claim-recovery-writer-validation.mjs
+
+      - name: Discover tracked transient ClaimRewards
+        env:
+          REWARDS_DATA_FILE: ./companies/rewards-data.json
+          VE33_EVIDENCE_FILE: ./reporting/ve33-accounting-evidence.json
+          VE33_TRANSIENT_RECOVERY_FILE: ./reporting/ve33-transient-claim-recovery.json
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
+          VE33_RECOVERY_REQUEST_SPACING_MS: '220'
+          VE33_RECOVERY_SCAN_CHUNK_BLOCKS: '9500'
+          VE33_RECOVERY_SCAN_OVERLAP_BLOCKS: '4096'
+        run: node reporting/ve33-transient-claim-recovery-writer.mjs
+
+      - name: Validate factual recovery state and LAPTOP regression proof
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('reporting/ve33-transient-claim-recovery.json','utf8'));
+          if(x.version!=='0.1-ve33-transient-claim-recovery') throw new Error('recovery version drift');
+          if(!['discovery-complete','partial'].includes(x.status)) throw new Error('recovery state not materialized: '+x.status);
+          if(x.semantics?.discoveryOnly!==true||x.semantics?.createsIncome!==false||x.semantics?.createsRealisedCashFlow!==false||x.semantics?.claimIsSettlementNotSecondIncome!==true||x.semantics?.unknownIsNotZero!==true) throw new Error('recovery accounting boundary drift');
+          if(x.authority?.executionAuthority!=='none'||x.authority?.walletAuthority!=='none'||x.authority?.claimingAuthority!=='none'||x.authority?.capitalExecution!==false) throw new Error('recovery authority expansion');
+          const claims=Object.values(x.protocols||{}).flatMap(p=>p.claims||[]);
+          if(claims.some(c=>c.accountingAuthority!==false||c.periodIncomeAuthority!==false||c.executionAuthority!=='none')) throw new Error('recovery proof escaped discovery-only authority');
+          const expectedTx='0xaad260eb97a2414e45dc5f105e8966932ca8795eb267aacd9ce85b929cd37153';
+          const laptop=claims.find(c=>String(c.transactionHash||'').toLowerCase()===expectedTx);
+          if(!laptop) throw new Error('exact LAPTOP regression proof missing from recovery state');
+          if(String(laptop.company)!=='0x5860...83CA8.eth'||String(laptop.tokenId)!=='1938') throw new Error('LAPTOP company/tokenId attribution drift');
+          if(String(laptop.rewardContract||'').toLowerCase()!=='0x7591a0d4a21170a8bb3c02bf89f13d7757aebade') throw new Error('LAPTOP reward contract drift');
+          if(String(laptop.rewardToken||'').toLowerCase()!=='0xb095274743941e953c746f9c228da9c18bb6ec29') throw new Error('LAPTOP reward token drift');
+          if(String(laptop.amountRaw)!=='67615020175015840449'||laptop.decodePath!=='voter-claimBribes') throw new Error('LAPTOP factual proof drift');
+          console.log('ve33 recovery factual state PASS',{
+            status:x.status,
+            claims:claims.length,
+            laptop:{tokenId:laptop.tokenId,amountRaw:laptop.amountRaw,classification:laptop.classification},
+            executionAuthority:x.authority.executionAuthority
+          });
+          NODE
+
+      - name: Publish recovery sidecar only
+        env:
+          REWARDS_DATA_FILE: ./companies/rewards-data.json
+          VE33_EVIDENCE_FILE: ./reporting/ve33-accounting-evidence.json
+          VE33_TRANSIENT_RECOVERY_FILE: ./reporting/ve33-transient-claim-recovery.json
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
+          VE33_RECOVERY_REQUEST_SPACING_MS: '220'
+          VE33_RECOVERY_SCAN_CHUNK_BLOCKS: '9500'
+          VE33_RECOVERY_SCAN_OVERLAP_BLOCKS: '4096'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "The Holding Data Engine"
+          git config user.email "data-engine@theholding.ai"
+
+          critical_fingerprint() {
+            sha256sum \
+              reporting/ve33-transient-claim-recovery.mjs \
+              reporting/ve33-transient-claim-recovery-validation.mjs \
+              reporting/ve33-transient-claim-recovery-writer.mjs \
+              reporting/ve33-transient-claim-recovery-writer-validation.mjs \
+              .github/workflows/update-ve33-transient-claim-recovery.yml
+          }
+          validate_sidecar() {
+            node - <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('reporting/ve33-transient-claim-recovery.json','utf8'));
+          if(!['discovery-complete','partial'].includes(x.status)) throw new Error('recovery state invalid: '+x.status);
+          if(x.semantics?.createsIncome!==false||x.semantics?.createsRealisedCashFlow!==false||x.authority?.executionAuthority!=='none') throw new Error('recovery authority/semantics invalid');
+          const claims=Object.values(x.protocols||{}).flatMap(p=>p.claims||[]);
+          const expectedTx='0xaad260eb97a2414e45dc5f105e8966932ca8795eb267aacd9ce85b929cd37153';
+          if(!claims.some(c=>String(c.transactionHash||'').toLowerCase()===expectedTx)) throw new Error('LAPTOP recovery proof missing after rebuild');
+          NODE
+          }
+
+          critical_before="$(critical_fingerprint)"
+          git add reporting/ve33-transient-claim-recovery.json
+          if git diff --cached --quiet; then
+            echo "No transient-claim recovery changes."
+            exit 0
+          fi
+          git commit -m "data: refresh ve33 transient claim recovery"
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "Recovery writer guard: rebase conflict; refusing to guess."
+              exit 1
+            fi
+            critical_after="$(critical_fingerprint)"
+            if [ "$critical_after" != "$critical_before" ]; then
+              echo "Recovery code changed during publish rebase; require a fresh canonical run."
+              exit 1
+            fi
+
+            node reporting/ve33-transient-claim-recovery-writer.mjs
+            validate_sidecar
+            git add reporting/ve33-transient-claim-recovery.json
+            git commit --amend --no-edit
+
+            mapfile -t ahead < <(git diff --name-only origin/main...HEAD)
+            for f in "${ahead[@]}"; do
+              case "$f" in
+                reporting/ve33-transient-claim-recovery.json) ;;
+                *) echo "Unexpected transient-recovery publish delta: $f"; exit 1 ;;
+              esac
+            done
+
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Recovery writer guard: main moved during push; rebuilding on next canonical state ($attempt/3)..."
+            sleep $((attempt * 2))
+          done
+          echo "Recovery writer guard: push failed after 3 attempts."
+          exit 1
