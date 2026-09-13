@@ -38,6 +38,39 @@ function requireIdentity(x,label){
   if(x?.sourceBinding?.candidateId!==CANDIDATE_ID)fail(`${label} candidate identity drift`);
   if(String(x?.sourceBinding?.companyRegistry)!==COMPANY_REGISTRY)fail(`${label} company identity drift`);
 }
+function requireRoundCoverage(roundFlow,votingProof){
+  const coverage=roundFlow?.coverage??{};
+  const completed=Array.isArray(roundFlow?.completedRounds)?roundFlow.completedRounds:[];
+  const completedIds=completed.map(row=>Number(row?.roundId));
+  const uniqueCompletedIds=new Set(completedIds);
+  const requested=Number(coverage.requestedCompletedRounds);
+  const rollingDepth=Number(coverage.rollingRoundDepth);
+  const rollingFirst=Number(coverage.rollingFirstRound);
+  const rollingLast=Number(coverage.rollingLastRound);
+  const measured=Number(coverage.measuredCompletedRounds);
+  const lastProcessed=Number(roundFlow?.roundState?.lastRoundProcessed);
+  const transitionIds=Array.isArray(coverage.transitionAnchorRounds)?coverage.transitionAnchorRounds.map(Number):[];
+  const provenTransitionIds=Array.isArray(votingProof?.sourceBinding?.transitionAnchorRounds)?votingProof.sourceBinding.transitionAnchorRounds.map(Number):[];
+
+  if(!Number.isInteger(requested)||requested<2||requested!==rollingDepth)fail('Votium rolling-round coverage contract drift');
+  if(!Number.isInteger(rollingFirst)||!Number.isInteger(rollingLast)||!Number.isInteger(lastProcessed)||rollingLast!==lastProcessed||coverage.latestProcessedRoundIncluded!==true){
+    fail('Votium latest processed round coverage incomplete');
+  }
+  if(rollingLast-rollingFirst+1!==rollingDepth)fail('Votium rolling-round interval incomplete');
+  if(coverage.transitionAnchorComplete!==true||provenTransitionIds.length===0||provenTransitionIds.some(id=>!transitionIds.includes(id))){
+    fail('Votium transition-anchor coverage incomplete');
+  }
+  if(completedIds.some(id=>!Number.isInteger(id))||uniqueCompletedIds.size!==completedIds.length||measured!==completedIds.length){
+    fail('Votium measured-round cardinality inconsistent');
+  }
+
+  const requiredIds=new Set(provenTransitionIds);
+  for(let id=rollingFirst;id<=rollingLast;id++)requiredIds.add(id);
+  if([...requiredIds].some(id=>!uniqueCompletedIds.has(id))||!uniqueCompletedIds.has(lastProcessed)){
+    fail('Votium completed-round coverage incomplete');
+  }
+  return {measuredCompletedRounds:measured,requiredCompletedRounds:requiredIds.size};
+}
 
 export function buildVlCvxVotiumDeepEvidence({root=process.cwd()}={}){
   const roundFlow=load(root,FILES.roundFlow);
@@ -54,10 +87,7 @@ export function buildVlCvxVotiumDeepEvidence({root=process.cwd()}={}){
   if(gaugeFlow.json?.sourceBinding?.votingProvenanceSha256!==votingProof.sha256)fail('Curve gauge flow lost exact voting-provenance SHA-256 binding');
   if(poolContext.json?.sourceBinding?.gaugeFlowSha256!==gaugeFlow.sha256)fail('Curve pool context lost exact gauge-flow SHA-256 binding');
 
-  const roundCoverage=roundFlow.json?.coverage??{};
-  if(Number(roundCoverage.requestedCompletedRounds)!==3||Number(roundCoverage.measuredCompletedRounds)!==3||roundCoverage.latestProcessedRoundIncluded!==true){
-    fail('Votium completed-round coverage incomplete');
-  }
+  const roundCoverage=requireRoundCoverage(roundFlow.json,votingProof.json);
   const votingCoverage=votingProof.json?.coverage??{};
   if(votingCoverage.complete!==true||Number(votingCoverage.provenRoundCount)!==3||Number(votingCoverage.onchainVotiumGaugeCount)!==79||Number(votingCoverage.onchainExactGaugeMatchCount)!==79){
     fail('Votium voting provenance is not fully proven');
@@ -83,7 +113,7 @@ export function buildVlCvxVotiumDeepEvidence({root=process.cwd()}={}){
       curvePoolContext:{file:poolContext.file,sha256:poolContext.sha256,generatedAt:poolContext.json.generatedAt??null}
     },
     coverage:{
-      completedVotiumRoundsMeasured:3,
+      completedVotiumRoundsMeasured:roundCoverage.measuredCompletedRounds,
       votingProvenanceRoundsProven:3,
       onchainVotiumGaugesExactMatched:79,
       curveExecutedVotiumGaugeRows:79,
@@ -100,7 +130,7 @@ export function buildVlCvxVotiumDeepEvidence({root=process.cwd()}={}){
       historicalVoteToCurrentPoolState:'CORRELATED-temporal-context-only-not-causal'
     },
     resolvedAtoms:[
-      'three completed Votium rounds measured in source-native token/vote units',
+      `${roundCoverage.measuredCompletedRounds} completed Votium rounds retained in source-native token/vote units, including the proven transition anchor and rolling window`,
       'legacy Snapshot → Convex onchain voting provenance transition proven',
       '79/79 post-migration Votium gauge rows exact-matched to Convex onchain vote totals',
       '79/79 Votium gauge rows mechanically bridged to executed Curve gauge BPS',
