@@ -1,6 +1,6 @@
 {
   "version": "0.1.1-accounting-reconciliation-watch-null-preserving",
-  "generatedAt": "2026-09-12T22:11:15.039Z",
+  "generatedAt": "2026-09-13T07:41:36.186Z",
   "status": "diagnostic-watch-no-accounting-authority",
   "currentMonth": "2026-09",
   "purpose": "Derived change watch across canonical accounting notices, historical evidence completeness, and non-factual reference reconciliation. It surfaces changes for review without creating income, closing periods, converting UNKNOWN to zero, or treating ordinary tracking-no-event as failure.",
@@ -35,87 +35,59 @@
     "accountingNoticeQueue": {
       "file": "reporting/accounting-notice-queue.json",
       "version": "0.2-accounting-notice-queue-boundary-evidence-pending",
-      "generatedAt": "2026-09-12T22:10:47.033Z",
+      "generatedAt": "2026-09-13T07:41:14.826Z",
       "status": "diagnostic-no-completion-authority"
     },
     "accountingReferenceReconciliation": {
       "file": "reporting/accounting-reference-reconciliation.json",
       "version": "0.2-accounting-reference-reconciliation-cross-month-attribution",
-      "generatedAt": "2026-09-12T22:10:47.123Z",
+      "generatedAt": "2026-09-13T07:41:14.921Z",
       "status": "diagnostic-no-completion-authority"
     },
     "historicalAccountingCompleteness": {
       "file": "reporting/historical-accounting-completeness-map.json",
       "version": "0.1-historical-accounting-completeness-map",
-      "generatedAt": "2026-09-12T22:10:42.074Z",
+      "generatedAt": "2026-09-13T07:41:08.876Z",
       "status": "diagnostic-no-completion-authority"
     }
   },
   "baseline": false,
   "previousSnapshot": {
-    "generatedAt": "2026-09-12T20:56:45.817Z",
-    "semanticFingerprint": "9129593f537a5a99420b4fafefda474b6cb49ae83e28b8e3948f1c3422434b0c"
+    "generatedAt": "2026-09-12T22:11:15.039Z",
+    "semanticFingerprint": "cc2cb558c4fd3daf47a71d4c3361c23a0c2f2f4cc469da23b055185279018063"
   },
-  "semanticFingerprint": "cc2cb558c4fd3daf47a71d4c3361c23a0c2f2f4cc469da23b055185279018063",
+  "semanticFingerprint": "792d9a05e8fdeb20ccb3245b1d3fb1b2b20b270e40a4deeec8ea5eb220b1c0ba",
   "summary": {
-    "watchItemCount": 37,
+    "watchItemCount": 36,
     "engineeringActionRequiredCount": 0,
     "evidencePendingCount": 4,
     "historicalForensicReviewCount": 26,
-    "referenceDiagnosticReviewCount": 7,
+    "referenceDiagnosticReviewCount": 6,
     "closedPeriodUnknownCount": 21,
     "closedPeriodPartialCount": 5,
     "closedPeriodTrackingNoEventCount": 6,
-    "highAttentionReferenceRowCount": 7,
+    "highAttentionReferenceRowCount": 6,
     "newCount": 0,
-    "changedCount": 7,
-    "unchangedCount": 30,
+    "changedCount": 2,
+    "unchangedCount": 34,
     "baselineCount": 0,
-    "resolvedCount": 4,
-    "alertCount": 3,
-    "evidenceUpdateCount": 1,
-    "diagnosticUpdateCount": 3
+    "resolvedCount": 1,
+    "alertCount": 0,
+    "evidenceUpdateCount": 2,
+    "diagnosticUpdateCount": 0
   },
-  "alerts": [
-    "historical:0x5860...83CA8.eth:2026-08:aerodrome_veaero",
-    "historical:aerocvxyb.eth:2026-08:aerodrome_veaero",
-    "historical:Cypher:2026-08:aerodrome_veaero"
-  ],
+  "alerts": [],
   "evidenceUpdates": [
-    "notice:period-lifecycle-reconciliation:1milliondollar.eth:2026-09:__company_period__"
+    "notice:period-lifecycle-reconciliation:1milliondollar.eth:2026-09:__company_period__",
+    "notice:period-lifecycle-reconciliation:Monetra.eth:2026-09:__company_period__"
   ],
-  "diagnosticUpdates": [
-    "reconciliation:company-period:0x5860...83CA8.eth:2026-08",
-    "reconciliation:company-period:Cypher:2026-08",
-    "reconciliation:mechanism-base-reference:defitea.eth:2026-09:fx_vefxn"
-  ],
+  "diagnosticUpdates": [],
   "resolved": [
     {
-      "id": "notice:period-lifecycle-reconciliation:0x5860...83CA8.eth:2026-09:__company_period__",
-      "priorWatchClass": "engineering-action-required",
-      "priorActionability": "engineering",
-      "priorFingerprint": "4a1b6a7c64f29a3ff716907de700db8bb8bf160d280393a39010b210a5bd8add",
-      "resolutionSemantic": "watch-item-no-longer-present-in-derived-current-state; not accounting-close proof"
-    },
-    {
-      "id": "notice:period-lifecycle-reconciliation:Cypher:2026-09:__company_period__",
-      "priorWatchClass": "engineering-action-required",
-      "priorActionability": "engineering",
-      "priorFingerprint": "98048aec497cdd359d1e7a6b408ef2159f0c0e79a0554a7b5569e4930193ceb7",
-      "resolutionSemantic": "watch-item-no-longer-present-in-derived-current-state; not accounting-close proof"
-    },
-    {
-      "id": "notice:period-lifecycle-reconciliation:defitea.eth:2026-09:__company_period__",
-      "priorWatchClass": "engineering-action-required",
-      "priorActionability": "engineering",
-      "priorFingerprint": "294ddc0844da820afd9604e4bfe9118bcc37563fd70403e982978614c9fae123",
-      "resolutionSemantic": "watch-item-no-longer-present-in-derived-current-state; not accounting-close proof"
-    },
-    {
-      "id": "reconciliation:company-period:aerocvxyb.eth:2026-08",
+      "id": "reconciliation:mechanism-base-reference:defitea.eth:2026-09:fx_vefxn",
       "priorWatchClass": "reference-diagnostic-review",
       "priorActionability": "diagnostic-only",
-      "priorFingerprint": "dfcb07f33984b3ccf09d3488f800907ce82fe1ff0d270a6564f9bb1f0bf0449d",
+      "priorFingerprint": "d0fabb2b6de03db0fcb2f2f588b8e70f1f1bac6bbb88b3f707c5d9d2e83545b4",
       "resolutionSemantic": "watch-item-no-longer-present-in-derived-current-state; not accounting-close proof"
     }
   ],
@@ -208,7 +180,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "aa0dbb28de21fa4c47ed74c9f432a13adc43c4866954d22b64e4d6df81826fae",
-      "transition": "changed"
+      "transition": "unchanged"
     },
     {
       "id": "historical:0x5860...83CA8.eth:2026-08:icp_nns",
@@ -349,7 +321,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "f8cfb396912a63a2d4bd6b36fd4bc44d5b55038c840911eedf71ed12b2c3d0eb",
-      "transition": "changed"
+      "transition": "unchanged"
     },
     {
       "id": "historical:aerocvxyb.eth:2026-08:icp_nns",
@@ -529,7 +501,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "2dbeb89d36c6344401ae7d81471d474d862e6b089c9850b15c390f0968c96160",
-      "transition": "changed"
+      "transition": "unchanged"
     },
     {
       "id": "historical:Cypher:2026-08:concentrator_asdcrv",
@@ -1433,9 +1405,9 @@
         "trackingState": "partial-observed",
         "engineeringActionable": false,
         "parked": true,
-        "confirmedUsd": 1.53594179,
-        "estimatedUsd": 1.865769,
-        "deltaUsd": 0.32982721,
+        "confirmedUsd": 1.63592375,
+        "estimatedUsd": 2.025455,
+        "deltaUsd": 0.38953125,
         "unresolvedEventCount": 1,
         "unresolvedReasons": [
           "period-boundary-evidence-pending-no-exact-month-cut"
@@ -1452,7 +1424,7 @@
       "executionAuthority": "none",
       "capitalExecution": false,
       "walletAuthority": false,
-      "fingerprint": "47724cc4cebe9302359ff579115ff62798ed7ab21ed1873118bdc4a4e7257450",
+      "fingerprint": "5ddd28b332858baef77b06f12a9e733a0f84bdb93defc3696ee3e7048067506b",
       "transition": "changed"
     },
     {
@@ -1518,8 +1490,8 @@
         "engineeringActionable": false,
         "parked": true,
         "confirmedUsd": 0.05314667,
-        "estimatedUsd": 0.1506,
-        "deltaUsd": 0.09745333,
+        "estimatedUsd": 0.1653,
+        "deltaUsd": 0.11215333,
         "unresolvedEventCount": 8,
         "unresolvedReasons": [
           "period-boundary-evidence-pending-no-exact-month-cut"
@@ -1536,8 +1508,8 @@
       "executionAuthority": "none",
       "capitalExecution": false,
       "walletAuthority": false,
-      "fingerprint": "8e0343b4fb2184994d0e8b09ed38208d1116a45c11028bd605e54f283dfa7eb5",
-      "transition": "unchanged"
+      "fingerprint": "f0b80674e45200df384c25b30d122014f6b82590fea754d235e85ffabaec963e",
+      "transition": "changed"
     },
     {
       "id": "reconciliation:company-period:0x5860...83CA8.eth:2026-08",
@@ -1585,7 +1557,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "bbf800334fb33d81e96e5079f74ebb336a530cf226d7aebe869c953ee252731f",
-      "transition": "changed"
+      "transition": "unchanged"
     },
     {
       "id": "reconciliation:company-period:Cypher:2026-08",
@@ -1633,7 +1605,7 @@
       "capitalExecution": false,
       "walletAuthority": false,
       "fingerprint": "b5e96721fb1c2650d38fab0afa2a5eab79f82fd7e040ceffcb69d8f5b78bd4eb",
-      "transition": "changed"
+      "transition": "unchanged"
     },
     {
       "id": "reconciliation:company-period:defitea.eth:2026-08",
@@ -1823,53 +1795,6 @@
       "walletAuthority": false,
       "fingerprint": "a4aa44cfed01479ffe0a32e6c968a8ff3438e004edc5114a5f7428d6a3fb3c49",
       "transition": "unchanged"
-    },
-    {
-      "id": "reconciliation:mechanism-base-reference:defitea.eth:2026-09:fx_vefxn",
-      "company": "defitea.eth",
-      "month": "2026-09",
-      "mechanism": "fx_vefxn",
-      "scope": "mechanism-base-reference",
-      "watchClass": "reference-diagnostic-review",
-      "actionability": "diagnostic-only",
-      "source": "accounting-reference-reconciliation",
-      "reasonCodes": [
-        "reference-comparator-is-non-factual",
-        "wide-divergence"
-      ],
-      "detail": {
-        "scope": "mechanism-base-reference",
-        "signalBand": "wide-divergence",
-        "attention": "high",
-        "reconciliationStatus": "wide-divergence",
-        "referenceUsd": 11.28281019,
-        "confirmedUsd": 3.203909,
-        "deltaUsd": 8.07890119,
-        "captureRatio": 0.283964,
-        "modelVariancePossible": true,
-        "modelVarianceIsProven": false,
-        "factualPeriodComplete": false,
-        "partialPeriod": true,
-        "parked": false,
-        "engineeringActionable": false,
-        "reasonCodes": [
-          "factual-period-events-observed",
-          "factual-tracking-active",
-          "partial-reference-window",
-          "principal-position-reference-comparator-is-non-factual"
-        ]
-      },
-      "sourceOfTruth": false,
-      "factualIncomeAuthority": false,
-      "incomeCreationAuthority": false,
-      "accountingCompletionAuthority": false,
-      "monthClosingAuthority": false,
-      "canReplaceUnknown": false,
-      "executionAuthority": "none",
-      "capitalExecution": false,
-      "walletAuthority": false,
-      "fingerprint": "d0fabb2b6de03db0fcb2f2f588b8e70f1f1bac6bbb88b3f707c5d9d2e83545b4",
-      "transition": "changed"
     }
   ]
 }
