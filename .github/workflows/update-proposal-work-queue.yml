@@ -85,10 +85,60 @@ jobs:
           node -e "JSON.parse(require('fs').readFileSync('intelligence/proposals/proposal-schema.json','utf8'))"
           node -e "JSON.parse(require('fs').readFileSync('intelligence/proposals/proposal-decision-policy.json','utf8'))"
           node -e "JSON.parse(require('fs').readFileSync('intelligence/proposals/proposal-release.json','utf8'))"
+
+      - name: Classify Proposal input readiness
+        id: input_readiness
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('fs');
+          const crypto = require('crypto');
+          const sha = p => crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
+          const output = process.env.GITHUB_OUTPUT;
+          const brainPath = 'intelligence/brain-intelligence.json';
+          const stack = JSON.parse(fs.readFileSync('intelligence/cognitive-stack-state.json','utf8'));
+          const learning = JSON.parse(fs.readFileSync('intelligence/learning-state/learning-context.json','utf8'));
+          const ledger = JSON.parse(fs.readFileSync('intelligence/learning/decision-ledger.json','utf8'));
+
+          const reasons = [];
+          if (stack.readyForManualInterpretation !== true) reasons.push('cognitive-stack-not-ready');
+          if (stack.operatingContract?.executionAuthority !== 'none') reasons.push('execution-authority-changed');
+          if (learning.status !== 'ready') reasons.push(`learning-status-${learning.status ?? 'missing'}`);
+          if (learning.source?.cognitiveChainHash !== stack.integrity?.chainHash) reasons.push('learning-cognitive-chain-mismatch');
+          if (learning.source?.decisionLedgerHash !== ledger.integrity?.ledgerHash) reasons.push('learning-decision-ledger-mismatch');
+          if (stack.chain?.groundedBrain?.sha256 && stack.chain.groundedBrain.sha256 !== sha(brainPath)) reasons.push('brain-cognitive-byte-mismatch');
+
+          if (reasons.length) {
+            fs.appendFileSync(output, 'ready=false\n');
+            fs.appendFileSync(output, `reason=${reasons.join(',')}\n`);
+            console.log('Proposal skipped safely: coherent Learning input is not available yet.', {
+              reasons,
+              learningGeneratedAt: learning.generatedAt ?? null,
+              learningCognitiveChainHash: learning.source?.cognitiveChainHash ?? null,
+              currentCognitiveChainHash: stack.integrity?.chainHash ?? null
+            });
+          } else {
+            fs.appendFileSync(output, 'ready=true\n');
+            fs.appendFileSync(output, 'reason=coherent-input\n');
+            console.log('Proposal input readiness PASS', {
+              learningGeneratedAt: learning.generatedAt,
+              cognitiveChainHash: stack.integrity.chainHash,
+              decisionLedgerHash: ledger.integrity?.ledgerHash ?? null
+            });
+          }
+          NODE
+
+      - name: Verify exact Proposal release and material-change contract
+        if: ${{ steps.input_readiness.outputs.ready == 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
           node intelligence/proposals/proposal-release-guard.mjs
           node intelligence/reliability/proposal-material-change-definition-proof.mjs
 
       - name: Verify exact Learning → Cognitive binding
+        if: ${{ steps.input_readiness.outputs.ready == 'true' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -116,6 +166,7 @@ jobs:
           NODE
 
       - name: Snapshot prior reviewed Proposal packet
+        if: ${{ steps.input_readiness.outputs.ready == 'true' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -129,18 +180,23 @@ jobs:
           test -s /tmp/proposal-decision-eval.previous.json
 
       - name: Build machine-readable Proposal Work Queue
+        if: ${{ steps.input_readiness.outputs.ready == 'true' }}
         run: node intelligence/proposals/proposal-engine.mjs
 
       - name: Reflect owner Decision Memory into Proposal states
+        if: ${{ steps.input_readiness.outputs.ready == 'true' }}
         run: node intelligence/proposals/proposal-decision-bridge.mjs
 
       - name: Independent Proposal reviewer
+        if: ${{ steps.input_readiness.outputs.ready == 'true' }}
         run: node intelligence/proposals/independent-proposal-reviewer.mjs
 
       - name: Independent Decision → Proposal reviewer
+        if: ${{ steps.input_readiness.outputs.ready == 'true' }}
         run: node intelligence/proposals/independent-proposal-decision-reviewer.mjs
 
       - name: Verify queue remains non-executable
+        if: ${{ steps.input_readiness.outputs.ready == 'true' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -170,6 +226,7 @@ jobs:
           git diff --check
 
       - name: Apply Proposal material-change gate
+        if: ${{ steps.input_readiness.outputs.ready == 'true' }}
         shell: bash
         run: |
           set +e
@@ -184,6 +241,7 @@ jobs:
           fi
 
       - name: Publish Proposal state safely
+        if: ${{ steps.input_readiness.outputs.ready == 'true' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -259,3 +317,26 @@ jobs:
 
           echo "ERROR: unable to publish Proposal Work Queue after retries"
           exit 1
+
+      - name: Proposal readiness summary
+        if: always()
+        shell: bash
+        env:
+          INPUT_READY: ${{ steps.input_readiness.outputs.ready }}
+          INPUT_REASON: ${{ steps.input_readiness.outputs.reason }}
+        run: |
+          {
+            echo "# The Holding Brain · Proposal Work Queue"
+            echo
+            if [ "$INPUT_READY" = "true" ]; then
+              echo "Input readiness: \`coherent\`"
+              echo "Exact fail-closed Learning/Cognitive/Decision guards remained active."
+            elif [ -n "$INPUT_REASON" ]; then
+              echo "Input readiness: \`skipped safely\`"
+              echo "Reason: \`$INPUT_REASON\`"
+              echo "No Proposal state was rebuilt or published from stale Learning input."
+            else
+              echo "Input readiness: \`not reached\`"
+              echo "A prior preflight step failed before readiness classification."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
