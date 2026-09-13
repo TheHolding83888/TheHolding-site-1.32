@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-13T06:23:43.741Z",
+  "generatedAt": "2026-09-13T09:40:14.733Z",
   "status": "watch",
-  "snapshotHash": "65c8de837d194ba1cf12713f11336d02e184a4217d2d44ad2412125b02dff481",
+  "snapshotHash": "d98495cdf52f6b60910bbcf1f335645973453986a39e7361bf13a51c87f705dc",
   "repository": {
-    "filesScanned": 1266,
-    "bytesScanned": 33843988,
+    "filesScanned": 1267,
+    "bytesScanned": 34036133,
     "criticalHashes": {
       ".github/workflows/admit-company-010-public.yml": "bb4f80e7263e86c63c379b78d476e35e0f846d8d68172f048d44395c739e9cde",
       ".github/workflows/ask-experience.yml": "deb9c4e1025390563f8a866f6ddf1c7870e748cbd6aba13fdbd6da2d38e983d4",
@@ -165,7 +165,7 @@
       ".github/workflows/verify-vlcvx-full-registry-audit.yml": "081de675595f800658992f96f34e2412a0ff61424f9ae8991b151733efaff06a",
       ".github/workflows/verify-vlcvx-legacy-extra-reward.yml": "67d1999e638a9c4aa7414a8208b39c84e37b90661aed4f87cc0f8f2b3f39cd04",
       ".github/workflows/verify-vlcvx-platform-accounting.yml": "72e042aa2af941baf01e9c497bb2338d410ebcaab0f67d87e1d97396ed65eba9",
-      ".github/workflows/verify-vlcvx-votium-economic-candidate.yml": "45b319c29efac35fbfaf305da3f3ce153fd2e1bd733c53cf6787a5a19d08f694",
+      ".github/workflows/verify-vlcvx-votium-economic-candidate.yml": "6fc6bc7437232c19280ea8c91938d5a8066b470fe9aac21baaa7bdc9c8eefac1",
       ".github/workflows/workflow-control-plane.yml": "ee1603b549f0379dfbecbc28c46f60a59bd0b0d2491169e848575281626d01d8",
       "agents/index.html": "54530f3799b289c08b30e5a7f4010957bce22d9a768b1908f5896e4bee0fa915",
       "companies/index.html": "30845af58c028424b3483f265f029c38c161879ad1ee367bb681af6864450559",
@@ -472,7 +472,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Thu, 10 Sep 2026 01:53:50 GMT",
+        "lastModified": "Thu, 10 Sep 2026 04:08:54 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -508,6 +508,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "0c73da222cab5b3d7cabd30c504760f8e2dac4759baf8032740e2781311d9518",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/verify-vlcvx-votium-economic-candidate.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-vlcvx-votium-economic-candidate.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "45b319c29efac35fbfaf305da3f3ce153fd2e1bd733c53cf6787a5a19d08f694",
+        "currentSha256": "6fc6bc7437232c19280ea8c91938d5a8066b470fe9aac21baaa7bdc9c8eefac1"
+      }
     },
     {
       "id": "e0355b82064396fc141e48b5356209bc9cc44e7a4a2b15f7fe18f5dc61f03a0f",
@@ -1485,10 +1499,10 @@
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 1024,
+    "runCount": 1025,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/09/2026-09-13T06-23-43-741Z-65c8de837d.json",
-    "latestRecordHash": "42de29aaf77b68242ee0348054ab951c21dd4bbb9010c6218ca2602d396a6459",
+    "latestRecordPath": "security/security-vault/2026/09/2026-09-13T09-40-14-733Z-d98495cdf5.json",
+    "latestRecordHash": "4a5866ab55457c825962b9c18098a3acfaf75c13577cfcc161a27b69701949c9",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
