@@ -15,6 +15,7 @@ const WEEK = 7 * 24 * 60 * 60;
 const VOTER = '0x16613524e02ad97eDfeF371bC883F2F5d6C480A5';
 const SOURCE_REPO = 'aerodrome-finance/contracts';
 const SOURCE_COMMIT = '1ba30815bba620f7e9faa34769ffd00c214c9b82';
+const BLOCKSCOUT_LOGS_API = 'https://base.blockscout.com/api';
 // Base targets ~2s blocks. This conservative range covers the four-week
 // pre-history plus the partial current epoch without historical block reads.
 const LOOKBACK_BLOCKS = 1_600_000;
@@ -39,9 +40,9 @@ function bigPct(part, whole, digits = 8) {
 }
 function rpcCandidates() {
   // Historical logs need a different capability profile than current-state
-  // Pulse reads. Prefer Base's public archive-capable endpoint, then LlamaRPC;
-  // PublicNode remains a last fallback because its anonymous endpoint may
-  // require a personal token for historical requests.
+  // Pulse reads. Prefer configured/archive RPCs first. If every RPC refuses
+  // historical eth_getLogs, a bounded Base Blockscout event-index fallback is
+  // used for the exact same official Voter events.
   return [...new Set([
     process.env.BASE_ARCHIVE_RPC_URL,
     process.env.BASE_RPC_URL,
@@ -56,6 +57,10 @@ function rpcLabel(url) {
   try { return new URL(url).hostname; } catch { return 'configured'; }
 }
 function makeProvider(url) { return new JsonRpcProvider(url, 8453, { staticNetwork: true }); }
+function numericLogField(value, fallback = 0) {
+  if (value === null || value === undefined || value === '') return fallback;
+  try { return Number(BigInt(value)); } catch { return Number(value) || fallback; }
+}
 
 async function getLogsChunked(provider, filter, fromBlock, toBlock) {
   const out = [];
@@ -78,6 +83,74 @@ async function getLogsChunked(provider, filter, fromBlock, toBlock) {
   return out;
 }
 
+async function fetchJson(url, timeoutMs = 30_000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, {
+      headers: { accept: 'application/json', 'user-agent': 'The-Holding-Aerodrome-Vote-History/0.1' },
+      signal: controller.signal,
+      cache: 'no-store'
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return await response.json();
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function normalizeBlockscoutLog(row) {
+  if (!Array.isArray(row?.topics) || !row?.transactionHash) throw new Error('Blockscout returned malformed Voter log');
+  return {
+    address: row.address || VOTER,
+    topics: row.topics,
+    data: row.data || '0x',
+    blockNumber: numericLogField(row.blockNumber),
+    transactionHash: row.transactionHash,
+    transactionIndex: numericLogField(row.transactionIndex),
+    index: numericLogField(row.logIndex)
+  };
+}
+
+async function blockscoutTopicLogs(topic0, tokenTopic, fromBlock, toBlock, depth = 0) {
+  if (depth > 12) throw new Error('Blockscout Voter log pagination exceeded bounded split depth');
+  const params = new URLSearchParams({
+    module: 'logs', action: 'getLogs',
+    fromBlock: String(fromBlock), toBlock: String(toBlock),
+    address: VOTER,
+    topic0,
+    topic3: tokenTopic,
+    topic0_3_opr: 'and'
+  });
+  const payload = await fetchJson(`${BLOCKSCOUT_LOGS_API}?${params}`);
+  if (payload?.status === '0' && /no records/i.test(String(payload?.message || payload?.result || ''))) return [];
+  if (!Array.isArray(payload?.result)) throw new Error(`Blockscout logs response invalid: ${String(payload?.message || payload?.result || 'unknown').slice(0, 160)}`);
+  // Legacy Blockscout Logs API caps a response at 1,000 rows. Never accept a
+  // boundary-sized response as complete: split deterministically and re-read.
+  if (payload.result.length >= 1000) {
+    if (Number(fromBlock) >= Number(toBlock)) throw new Error('Blockscout single-block Voter log response reached truncation boundary');
+    const mid = Math.floor((Number(fromBlock) + Number(toBlock)) / 2);
+    const left = await blockscoutTopicLogs(topic0, tokenTopic, fromBlock, mid, depth + 1);
+    const right = await blockscoutTopicLogs(topic0, tokenTopic, mid + 1, toBlock, depth + 1);
+    return [...left, ...right];
+  }
+  return payload.result.map(normalizeBlockscoutLog);
+}
+
+async function blockscoutLogsFallback(filter, fromBlock, toBlock) {
+  const tokenTopic = filter?.topics?.[3];
+  if (!tokenTopic || Array.isArray(tokenTopic)) throw new Error('Blockscout fallback requires exact managed tokenId topic');
+  const [voted, abstained] = await Promise.all([
+    blockscoutTopicLogs(VOTED_TOPIC, tokenTopic, fromBlock, toBlock),
+    blockscoutTopicLogs(ABSTAINED_TOPIC, tokenTopic, fromBlock, toBlock)
+  ]);
+  const logs = [...voted, ...abstained].sort((a, b) =>
+    a.blockNumber - b.blockNumber || a.transactionIndex - b.transactionIndex || a.index - b.index
+  );
+  if (!logs.length) throw new Error('Blockscout returned no managed-token Voter logs in required lookback');
+  return logs;
+}
+
 async function historicalLogsWithFallback(filter, fromBlock, toBlock) {
   let lastError = null;
   const failures = [];
@@ -91,15 +164,22 @@ async function historicalLogsWithFallback(filter, fromBlock, toBlock) {
       const probeEnd = Math.min(toBlock, fromBlock + 9);
       await provider.getLogs({ ...filter, fromBlock, toBlock: probeEnd });
       const logs = await getLogsChunked(provider, filter, fromBlock, toBlock);
-      return { provider, logs, endpointClass: rpcLabel(url), failedEndpointClasses: failures };
+      return { provider, logs, endpointClass: rpcLabel(url), sourceMethod: 'rpc-historical-event-logs', failedEndpointClasses: failures };
     } catch (error) {
       lastError = error;
       failures.push({ endpointClass: rpcLabel(url), error: String(error?.shortMessage || error?.message || error).slice(0, 240) });
       try { provider.destroy(); } catch {}
     }
   }
+  try {
+    const logs = await blockscoutLogsFallback(filter, fromBlock, toBlock);
+    return { provider: null, logs, endpointClass: 'base.blockscout.com', sourceMethod: 'blockscout-indexed-onchain-event-logs', failedEndpointClasses: failures };
+  } catch (error) {
+    lastError = error;
+    failures.push({ endpointClass: 'base.blockscout.com', error: String(error?.message || error).slice(0, 240) });
+  }
   const detail = failures.map(x => `${x.endpointClass}: ${x.error}`).join(' | ');
-  throw new Error(`No Base RPC with historical Voter log capability. ${detail}`, { cause: lastError });
+  throw new Error(`No Base historical Voter event source available. ${detail}`, { cause: lastError });
 }
 
 function decodeLog(log) {
@@ -228,7 +308,7 @@ async function main() {
   const fromBlock = Math.max(1, blockTag - LOOKBACK_BLOCKS);
   const tokenTopic = zeroPadValue(toBeHex(managedTokenId), 32);
   const filter = { address: VOTER, topics: [[VOTED_TOPIC, ABSTAINED_TOPIC], null, null, tokenTopic] };
-  const { provider, logs, endpointClass, failedEndpointClasses } = await historicalLogsWithFallback(filter, fromBlock, blockTag);
+  const { provider, logs, endpointClass, sourceMethod, failedEndpointClasses } = await historicalLogsWithFallback(filter, fromBlock, blockTag);
   try {
     const events = logs.map(decodeLog).filter(Boolean)
       .sort((a, b) => a.blockNumber - b.blockNumber || a.transactionIndex - b.transactionIndex || a.logIndex - b.logIndex);
@@ -285,7 +365,7 @@ async function main() {
       generatedAt: new Date().toISOString(),
       managedTokenId: managedTokenId.toString(),
       sourceCoverage: {
-        method: 'capability-selected-historical-event-logs-no-archive-state-read',
+        method: sourceMethod,
         minimumRequiredTimestamp: iso(activePeriodSec - 4 * WEEK),
         fromBlock,
         lookbackBlocks: LOOKBACK_BLOCKS,
@@ -295,7 +375,8 @@ async function main() {
         transactionCount: txGroups.length,
         firstObservedEventTimestamp: iso(events[0].timestamp),
         lastObservedEventTimestamp: iso(events.at(-1).timestamp),
-        rpcEndpointClass: endpointClass,
+        eventSourceClass: endpointClass,
+        rpcEndpointClass: sourceMethod === 'rpc-historical-event-logs' ? endpointClass : null,
         failedEndpointClasses
       },
       currentStateParity: currentParity,
@@ -319,6 +400,7 @@ async function main() {
       semantics: {
         reconstructionBasis: 'ordered-onchain-Voted-and-Abstained-events',
         noHistoricalArchiveStateRequired: true,
+        indexedExplorerFallbackDoesNotCreateStateAuthority: true,
         endOfEpochStateIsStorageAllocationSnapshot: true,
         voteTimestampDoesNotByItselfIdentifyRewardCausality: true,
         currentIncompleteEpochIsNotCompletedOutcome: true,
@@ -351,12 +433,12 @@ async function main() {
       completedComparable: true, reallocatedPct: completedComparison.reallocatedPct,
       retainedAllocationPct: completedComparison.retainedAllocationPct,
       currentEpochMutationCount: current.sourceTransactionCountWithinEpoch,
-      currentParity: currentParity.status, rpcEndpointClass: endpointClass,
+      currentParity: currentParity.status, eventSourceClass: endpointClass, sourceMethod,
       primaryDriver: pulse.voteEpochHistory.epistemic.primaryDriver,
       promotionAuthority: pulse.voteEpochHistory.epistemic.promotionAuthority
     });
   } finally {
-    try { provider.destroy(); } catch {}
+    try { provider?.destroy(); } catch {}
   }
 }
 
