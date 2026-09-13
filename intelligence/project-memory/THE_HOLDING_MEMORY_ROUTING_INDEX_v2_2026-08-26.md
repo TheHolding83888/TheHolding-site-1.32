@@ -90,6 +90,16 @@ Load:
 - this router;
 - `build-current-memory.mjs` + `verify-current-memory.mjs` only when changing memory behavior.
 
+### Active public-phase roadmap / pre-private recovery
+
+While the canonical repository remains public and the owner-approved public-phase finalization is not yet GREEN, additionally load:
+
+- `THE_HOLDING_PUBLIC_GREEN_TO_PRIVATE_ROADMAP_2026-09-13.md`.
+
+This roadmap is the durable ordered work queue for the remaining functional/reliability/accounting packages, deferred bounded cosmetics, pre-private cleanup/checks, final public checkpoint, backup and private migration. It does **not** override live machine evidence or `THE_HOLDING_PRIVATE_MIGRATION_GATE_2026-09-08.md`; it composes the current work sequence and must be re-verified against live `main` before execution.
+
+For the active package, follow the roadmap's small-package rule: **one primary objective → bounded fix/proof → write-back → next package**.
+
 Cold references, load only when directly relevant:
 - `README.md`;
 - `THE_HOLDING_OWNER_COLLABORATION_OPERATING_STYLE_2026-08-18.md`;
