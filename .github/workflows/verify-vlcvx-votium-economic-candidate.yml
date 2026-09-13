@@ -10,6 +10,7 @@ on:
       - 'intelligence/economic-graph/vlcvx-votium-curve-gauge-flow.json'
       - 'intelligence/economic-graph/vlcvx-votium-curve-pool-context.json'
       - 'intelligence/economic-graph/economic-graph-canonical-runner.mjs'
+      - '.github/workflows/verify-vlcvx-votium-economic-candidate.yml'
   workflow_dispatch:
 
 permissions:
@@ -57,6 +58,7 @@ jobs:
           const fs=require('fs');
           const crypto=require('crypto');
           const x=JSON.parse(fs.readFileSync(process.argv[2],'utf8'));
+          const roundFlow=JSON.parse(fs.readFileSync('intelligence/economic-graph/vlcvx-votium-round-flow.json','utf8'));
           const id='defitea-convex-vlcvx-votium';
           const c=x.candidateCohorts?.[id];
           const o=c?.latest?.observation;
@@ -100,7 +102,7 @@ jobs:
           if(deep.sourceBinding?.votingProvenance?.sha256!==hash('intelligence/economic-graph/vlcvx-votium-snapshot-proof.json'))throw new Error('voting provenance exact binding mismatch');
           if(deep.sourceBinding?.curveGaugeFlow?.sha256!==hash('intelligence/economic-graph/vlcvx-votium-curve-gauge-flow.json'))throw new Error('gauge flow exact binding mismatch');
           if(deep.sourceBinding?.curvePoolContext?.sha256!==hash('intelligence/economic-graph/vlcvx-votium-curve-pool-context.json'))throw new Error('pool context exact binding mismatch');
-          if(deep.coverage?.complete!==true||Number(deep.coverage?.completedVotiumRoundsMeasured)!==3||Number(deep.coverage?.votingProvenanceRoundsProven)!==3)throw new Error('Votium round/provenance completeness drift');
+          if(deep.coverage?.complete!==true||Number(deep.coverage?.completedVotiumRoundsMeasured)!==Number(roundFlow.coverage?.measuredCompletedRounds)||Number(deep.coverage?.votingProvenanceRoundsProven)!==3)throw new Error('Votium round/provenance completeness drift');
           if(Number(deep.coverage?.onchainVotiumGaugesExactMatched)!==79||Number(deep.coverage?.curveExecutedVotiumGaugeRows)!==79)throw new Error('Votium/Curve gauge proof coverage drift');
           if(Number(deep.coverage?.currentCurveGaugeUniverseClassified)!==47||Number(deep.coverage?.currentCurvePoolEligibleGauges)!==31||Number(deep.coverage?.currentCurvePoolContextsComplete)!==31||Number(deep.coverage?.unresolvedEligiblePoolContexts)!==0)throw new Error('Curve pool context coverage drift');
           if(Number(deep.coverage?.exactFeeUsdResolved)!==0)throw new Error('Exact fee USD must remain unresolved');
@@ -125,9 +127,10 @@ jobs:
           console.log('VLCVX VOTIUM → CURVE DEEP SHADOW CANDIDATE PASS',{
             canonicalCohorts:x.coverage.cohortCount,
             candidateCount:x.candidateLayer.candidateCount,
+            retainedRounds:deep.coverage.completedVotiumRoundsMeasured,
+            provenRounds:deep.coverage.votingProvenanceRoundsProven,
             referenceApr:o.referenceProductivity.canonicalAprPct,
             route:o.companyRoute.routeId,
-            provenRounds:deep.coverage.votingProvenanceRoundsProven,
             gaugeMatches:deep.coverage.onchainVotiumGaugesExactMatched,
             curveExecutedGaugeRows:deep.coverage.curveExecutedVotiumGaugeRows,
             currentPoolContexts:deep.coverage.currentCurvePoolContextsComplete,
