@@ -50,6 +50,12 @@ assert.ok(workflow.includes('git fetch origin main'),'Company #010 moving-main p
 assert.ok(workflow.includes('git rebase origin/main'),'Company #010 moving-main rebase missing');
 assert.ok(workflow.includes('Company #010 source contract changed during publication; fresh collection required.'),'Company #010 code-race fail-closed guard missing');
 assert.ok(workflow.includes('git push origin HEAD:main'),'Company #010 bounded writer publish missing');
+const publishLoopStart=workflow.indexOf('for attempt in 1 2 3; do');
+const publishLoopEnd=workflow.indexOf('echo "Safe writer guard: push failed after 3 attempts."');
+assert.ok(publishLoopStart>=0&&publishLoopEnd>publishLoopStart,'Company #010 bounded publication loop missing');
+const publishLoop=workflow.slice(publishLoopStart,publishLoopEnd);
+assert.ok(publishLoop.includes('node -e "const fs=require(\'fs\');'),'Company #010 publication guard must use shell-stable node -e validation');
+assert.doesNotMatch(publishLoop,/node\s+-\s+<<['"]?NODE['"]?/,'Company #010 publication retry loop must not use indentation-sensitive heredoc');
 
 // The old Project X workflow remains useful as a replay diagnostic, but it no
 // longer owns repository mutation for either the canonical Cypher state or its
@@ -98,6 +104,8 @@ console.log('Company #010 state workflow definition paired proof PASS',{
   currentRewardsMayRemainMeasured:true,
   movingMainRebuild:true,
   sourceRaceFailClosed:true,
+  publicationGuardShellStable:true,
+  retryLoopHeredocForbidden:true,
   executionAuthority:'none',
   walletAuthority:false,
   claimingAuthority:false,
