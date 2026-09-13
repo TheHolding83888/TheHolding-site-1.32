@@ -5,6 +5,7 @@ import crypto from 'node:crypto';
 const WORKFLOW_PATH = '.github/workflows/update-proposal-work-queue.yml';
 const PROOF_PATH = 'intelligence/reliability/proposal-material-change-definition-proof.mjs';
 const NO_MATERIAL_CHANGE_EXIT = 10;
+const READINESS_GATE_TOKEN = "input_readiness.outputs.ready == 'true'";
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -96,6 +97,42 @@ function syntheticQueue() {
   };
 }
 
+function assertSafeSkipWorkflowContract(workflow) {
+  for (const required of [
+    'id: input_readiness',
+    'Proposal skipped safely: coherent Learning input is not available yet.',
+    READINESS_GATE_TOKEN,
+    'No Proposal state was rebuilt or published from stale Learning input.',
+  ]) assert(workflow.includes(required), `Workflow Proposal stale-input contract missing: ${required}`);
+
+  const readinessIndex = workflow.indexOf('id: input_readiness');
+  const releaseGuardIndex = workflow.indexOf('node intelligence/proposals/proposal-release-guard.mjs');
+  const publishIndex = workflow.indexOf('- name: Publish Proposal state safely');
+  assert(readinessIndex >= 0, 'Proposal input readiness classifier missing');
+  assert(releaseGuardIndex > readinessIndex, 'Proposal release verification must occur after input readiness classification');
+  assert(publishIndex > releaseGuardIndex, 'Proposal publication must occur after release verification');
+
+  const gatedStepNames = [
+    'Verify exact Proposal release and material-change contract',
+    'Verify exact Learning → Cognitive binding',
+    'Snapshot prior reviewed Proposal packet',
+    'Build machine-readable Proposal Work Queue',
+    'Reflect owner Decision Memory into Proposal states',
+    'Independent Proposal reviewer',
+    'Independent Decision → Proposal reviewer',
+    'Verify queue remains non-executable',
+    'Apply Proposal material-change gate',
+    'Publish Proposal state safely'
+  ];
+  for (const stepName of gatedStepNames) {
+    const stepIndex = workflow.indexOf(`- name: ${stepName}`);
+    assert(stepIndex >= 0, `Proposal stale-input proof missing step: ${stepName}`);
+    const nextStep = workflow.indexOf('\n      - name:', stepIndex + 1);
+    const stepText = workflow.slice(stepIndex, nextStep < 0 ? workflow.length : nextStep);
+    assert(stepText.includes(READINESS_GATE_TOKEN), `Proposal stale-input gate missing from step: ${stepName}`);
+  }
+}
+
 function runSelfTest() {
   const base = syntheticQueue();
   assertCanonicalContract(base, 'base');
@@ -139,11 +176,13 @@ function runSelfTest() {
     'git restore --source=HEAD -- intelligence/proposals/proposal-queue.json intelligence/proposals/proposal-brief.md intelligence/proposals/proposal-eval.json intelligence/proposals/proposal-decision-eval.json',
     'No material Proposal delta; preserving prior reviewed artifact bytes.'
   ]) assert(workflow.includes(required), `Workflow Proposal material-change contract missing: ${required}`);
+  assertSafeSkipWorkflowContract(workflow);
 
   console.log('PROPOSAL MATERIAL-CHANGE DEFINITION PROOF PASS', {
     workflow: WORKFLOW_PATH,
     ignoredVolatileFields: ['generatedAt', 'proposals[*].updatedAt', 'integrity.queueHash'],
     preservedMaterialClasses: ['source-provenance', 'state', 'priority', 'decision-binding', 'proposal-content', 'constraints', 'authority'],
+    staleInputBehavior: 'skip-without-rebuild-or-publication',
     executionAuthority: 'none'
   });
 }
