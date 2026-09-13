@@ -16,6 +16,10 @@ const VOTER = '0x16613524e02ad97eDfeF371bC883F2F5d6C480A5';
 const SOURCE_REPO = 'aerodrome-finance/contracts';
 const SOURCE_COMMIT = '1ba30815bba620f7e9faa34769ffd00c214c9b82';
 const BLOCKSCOUT_LOGS_API = 'https://base.blockscout.com/api';
+const BLOCKSCOUT_MAX_ATTEMPTS = 5;
+const BLOCKSCOUT_REQUEST_SPACING_MS = 750;
+const BLOCKSCOUT_MAX_RETRY_DELAY_MS = 15_000;
+const BLOCKSCOUT_TRANSIENT_STATUSES = new Set([408, 425, 429, 500, 502, 503, 504]);
 // Base targets ~2s blocks. This conservative range covers the four-week
 // pre-history plus the partial current epoch without historical block reads.
 const LOOKBACK_BLOCKS = 1_600_000;
@@ -32,6 +36,15 @@ function round(value, digits = 8) {
   return Number(Number(value).toFixed(digits));
 }
 function iso(seconds) { return new Date(Number(seconds) * 1000).toISOString(); }
+function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+function retryAfterMs(value) {
+  if (!value) return null;
+  const seconds = Number(value);
+  if (Number.isFinite(seconds) && seconds >= 0) return Math.min(BLOCKSCOUT_MAX_RETRY_DELAY_MS, seconds * 1000);
+  const retryAt = Date.parse(value);
+  if (!Number.isFinite(retryAt)) return null;
+  return Math.min(BLOCKSCOUT_MAX_RETRY_DELAY_MS, Math.max(0, retryAt - Date.now()));
+}
 function bigPct(part, whole, digits = 8) {
   const p = BigInt(part), w = BigInt(whole);
   if (w === 0n) return null;
@@ -84,19 +97,34 @@ async function getLogsChunked(provider, filter, fromBlock, toBlock) {
 }
 
 async function fetchJson(url, timeoutMs = 30_000) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const response = await fetch(url, {
-      headers: { accept: 'application/json', 'user-agent': 'The-Holding-Aerodrome-Vote-History/0.1' },
-      signal: controller.signal,
-      cache: 'no-store'
-    });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    return await response.json();
-  } finally {
-    clearTimeout(timer);
+  let lastError = null;
+  for (let attempt = 1; attempt <= BLOCKSCOUT_MAX_ATTEMPTS; attempt++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetch(url, {
+        headers: { accept: 'application/json', 'user-agent': 'The-Holding-Aerodrome-Vote-History/0.2' },
+        signal: controller.signal,
+        cache: 'no-store'
+      });
+      if (response.ok) return await response.json();
+      const failure = new Error(`HTTP ${response.status}`);
+      failure.httpStatus = response.status;
+      failure.retryAfter = response.headers.get('retry-after');
+      throw failure;
+    } catch (error) {
+      lastError = error;
+      const status = Number(error?.httpStatus || 0);
+      const retryable = error?.name === 'AbortError' || error instanceof TypeError || BLOCKSCOUT_TRANSIENT_STATUSES.has(status);
+      if (!retryable || attempt >= BLOCKSCOUT_MAX_ATTEMPTS) throw error;
+      const requestedDelay = retryAfterMs(error?.retryAfter);
+      const exponentialDelay = Math.min(8_000, 1_000 * (2 ** (attempt - 1)));
+      await sleep(requestedDelay ?? exponentialDelay);
+    } finally {
+      clearTimeout(timer);
+    }
   }
+  throw lastError || new Error('Blockscout request failed without diagnostic');
 }
 
 function normalizeBlockscoutLog(row) {
@@ -122,6 +150,9 @@ async function blockscoutTopicLogs(topic0, tokenTopic, fromBlock, toBlock, depth
     topic3: tokenTopic,
     topic0_3_opr: 'and'
   });
+  // Pace every indexed-log request, including recursive truncation splits, so
+  // the public explorer fallback never creates its own burst against the rate limit.
+  await sleep(BLOCKSCOUT_REQUEST_SPACING_MS);
   const payload = await fetchJson(`${BLOCKSCOUT_LOGS_API}?${params}`);
   if (payload?.status === '0' && /no records/i.test(String(payload?.message || payload?.result || ''))) return [];
   if (!Array.isArray(payload?.result)) throw new Error(`Blockscout logs response invalid: ${String(payload?.message || payload?.result || 'unknown').slice(0, 160)}`);
@@ -140,10 +171,10 @@ async function blockscoutTopicLogs(topic0, tokenTopic, fromBlock, toBlock, depth
 async function blockscoutLogsFallback(filter, fromBlock, toBlock) {
   const tokenTopic = filter?.topics?.[3];
   if (!tokenTopic || Array.isArray(tokenTopic)) throw new Error('Blockscout fallback requires exact managed tokenId topic');
-  const [voted, abstained] = await Promise.all([
-    blockscoutTopicLogs(VOTED_TOPIC, tokenTopic, fromBlock, toBlock),
-    blockscoutTopicLogs(ABSTAINED_TOPIC, tokenTopic, fromBlock, toBlock)
-  ]);
+  // Intentionally sequential: concurrent Voted/Abstained reads caused public
+  // Blockscout 429s in production and provided no correctness benefit.
+  const voted = await blockscoutTopicLogs(VOTED_TOPIC, tokenTopic, fromBlock, toBlock);
+  const abstained = await blockscoutTopicLogs(ABSTAINED_TOPIC, tokenTopic, fromBlock, toBlock);
   const logs = [...voted, ...abstained].sort((a, b) =>
     a.blockNumber - b.blockNumber || a.transactionIndex - b.transactionIndex || a.index - b.index
   );
