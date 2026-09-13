@@ -104,8 +104,42 @@ jobs:
           node --check intelligence/proposals/proposal-decision-bridge.mjs
           node --check intelligence/proposals/independent-proposal-reviewer.mjs
           node --check intelligence/proposals/independent-proposal-decision-reviewer.mjs
+          node --check intelligence/reliability/proposal-material-change-definition-proof.mjs
+          node intelligence/reliability/proposal-material-change-definition-proof.mjs
+
+      - name: Classify current Proposal source coherence
+        id: source_coherence
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('fs');
+          const crypto = require('crypto');
+          const sha = p => crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
+          const stack = JSON.parse(fs.readFileSync('intelligence/cognitive-stack-state.json','utf8'));
+          const learning = JSON.parse(fs.readFileSync('intelligence/learning-state/learning-context.json','utf8'));
+          const ledger = JSON.parse(fs.readFileSync('intelligence/learning/decision-ledger.json','utf8'));
+          const reasons = [];
+          if (stack.readyForManualInterpretation !== true) reasons.push('cognitive-stack-not-ready');
+          if (stack.operatingContract?.executionAuthority !== 'none') reasons.push('execution-authority-changed');
+          if (learning.status !== 'ready') reasons.push(`learning-status-${learning.status ?? 'missing'}`);
+          if (learning.source?.cognitiveChainHash !== stack.integrity?.chainHash) reasons.push('learning-cognitive-chain-mismatch');
+          if (learning.source?.decisionLedgerHash !== ledger.integrity?.ledgerHash) reasons.push('learning-decision-ledger-mismatch');
+          if (stack.chain?.groundedBrain?.sha256 && stack.chain.groundedBrain.sha256 !== sha('intelligence/brain-intelligence.json')) reasons.push('brain-cognitive-byte-mismatch');
+          const coherent = reasons.length === 0;
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `coherent=${coherent ? 'true' : 'false'}\n`);
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `reason=${coherent ? 'coherent-input' : reasons.join(',')}\n`);
+          console.log('Proposal source coherence', {
+            coherent,
+            reasons,
+            learningGeneratedAt: learning.generatedAt ?? null,
+            learningCognitiveChainHash: learning.source?.cognitiveChainHash ?? null,
+            currentCognitiveChainHash: stack.integrity?.chainHash ?? null,
+          });
+          NODE
 
       - name: Build current Proposal state in read-only workspace
+        if: ${{ steps.source_coherence.outputs.coherent == 'true' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -115,6 +149,7 @@ jobs:
           node intelligence/proposals/independent-proposal-decision-reviewer.mjs
 
       - name: Verify current-variant and no-execution invariants
+        if: ${{ steps.source_coherence.outputs.coherent == 'true' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -154,6 +189,56 @@ jobs:
             historicalDecisionBound: q.summary?.historicalDecisionBoundCount,
             ownerApprovedCurrent: q.summary?.ownerApprovedCount,
             executionAuthority: q.decisionBridge?.executionAuthority
+          });
+          NODE
+          git diff --check
+
+      - name: Verify stale-source lifecycle remains fail-closed
+        if: ${{ steps.source_coherence.outputs.coherent != 'true' }}
+        shell: bash
+        env:
+          STALE_REASON: ${{ steps.source_coherence.outputs.reason }}
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('fs');
+          const q = JSON.parse(fs.readFileSync('intelligence/proposals/proposal-queue.json','utf8'));
+          const workflow = fs.readFileSync('.github/workflows/update-proposal-work-queue.yml','utf8');
+          const gateToken = "input_readiness.outputs.ready == 'true'";
+          if (q.constraints?.noProductionExecution !== true || q.constraints?.noAutomaticCodeChanges !== true || q.constraints?.noAutomaticApprovals !== true) throw new Error('Persisted Proposal execution boundary changed');
+          if (q.decisionBridge?.productionMutationAuthorized !== false || q.decisionBridge?.executionAuthority !== 'none') throw new Error('Persisted Proposal authority boundary changed');
+          for (const token of [
+            'id: input_readiness',
+            gateToken,
+            'Proposal skipped safely: coherent Learning input is not available yet.',
+            'No Proposal state was rebuilt or published from stale Learning input.',
+          ]) {
+            if (!workflow.includes(token)) throw new Error(`Proposal stale-source contract missing: ${token}`);
+          }
+          const gatedStepNames = [
+            'Verify exact Proposal release and material-change contract',
+            'Verify exact Learning → Cognitive binding',
+            'Snapshot prior reviewed Proposal packet',
+            'Build machine-readable Proposal Work Queue',
+            'Reflect owner Decision Memory into Proposal states',
+            'Independent Proposal reviewer',
+            'Independent Decision → Proposal reviewer',
+            'Verify queue remains non-executable',
+            'Apply Proposal material-change gate',
+            'Publish Proposal state safely'
+          ];
+          for (const stepName of gatedStepNames) {
+            const stepIndex = workflow.indexOf(`- name: ${stepName}`);
+            if (stepIndex < 0) throw new Error(`Proposal stale-source contract missing step: ${stepName}`);
+            const nextStep = workflow.indexOf('\n      - name:', stepIndex + 1);
+            const stepText = workflow.slice(stepIndex, nextStep < 0 ? workflow.length : nextStep);
+            if (!stepText.includes(gateToken)) throw new Error(`Proposal stale-source gate missing from ${stepName}`);
+          }
+          console.log('Proposal lifecycle stale-source safe-skip PASS', {
+            reason: process.env.STALE_REASON || 'unknown',
+            rebuildAuthorized: false,
+            publicationAuthorized: false,
+            executionAuthority: 'none'
           });
           NODE
           git diff --check
