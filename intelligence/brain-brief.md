@@ -1,19 +1,19 @@
 # The Holding Brain — Grounded Reasoning Brief
 
-Generated: 2026-09-13T13:24:58.981Z
+Generated: 2026-09-13T14:54:07.702Z
 Mode: delta
 Status: watch
 
-## 17 evidence-bound reasoning case(s) are active across economic and security memory.
+## 20 evidence-bound reasoning case(s) are active across economic and security memory.
 
 ### What changed
-Current canonical inputs contain 1 material Observer change(s), 0 new security finding event(s), and 0 resolved security finding event(s). Canonical protocol-economic context is available across 2 cohorts (f(x) veFXN Locker; Curve veCRV Fee Distributor). f(x) remains measured context with unresolved causality; Curve exposes a proven APR mechanical identity while the upstream cause of fee-distribution changes remains unresolved.
+Current canonical inputs contain 4 material Observer change(s), 0 new security finding event(s), and 0 resolved security finding event(s). Canonical protocol-economic context is available across 2 cohorts (f(x) veFXN Locker; Curve veCRV Fee Distributor). f(x) remains measured context with unresolved causality; Curve exposes a proven APR mechanical identity while the upstream cause of fee-distribution changes remains unresolved.
 
 ### Protocol economic contexts · 2 cohorts
 
 #### defitea.eth · f(x) · veFXN Locker
 - Cohort ID: defitea-fxn-vefxn
-- Canonical APR: 21.42%
+- Canonical APR: 21.43%
 - Context status: context-available-causal-attribution-unresolved
 - Mechanical attribution: not proven
 - Causal attribution: unresolved
@@ -94,7 +94,7 @@ Current canonical inputs contain 1 material Observer change(s), 0 new security f
 - Evidence: intelligence/change-intelligence.json/watchNext/4
 
 #### 9. defitea.eth
-- Signal: defitea.eth Productivity coverage is 91.8%.
+- Signal: defitea.eth Productivity coverage is 91.6%.
 - Why it matters: Unknown productive capital is excluded rather than fabricated as zero; coverage shows exactly what is currently understood.
 - What follows: The covered productive rate remains useful only within its stated coverage; unresolved productive capital must stay excluded rather than be fabricated.
 - Proposed next step: Prioritize the unresolved adapter(s) contributing to the coverage gap, preserve covered-rate semantics, and promote to full coverage only after reproducible evidence exists.
@@ -134,7 +134,7 @@ Current canonical inputs contain 1 material Observer change(s), 0 new security f
 - Evidence: intelligence/change-intelligence.json/watchNext/9
 
 #### 14. embeddedLedger
-- Signal: embeddedLedger source freshness is stale (171.7h old).
+- Signal: embeddedLedger source freshness is stale (173.18h old).
 - Why it matters: The Observer should reason from current, reproducible data rather than silently carrying stale state.
 - What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
 - Proposed next step: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
@@ -142,7 +142,7 @@ Current canonical inputs contain 1 material Observer change(s), 0 new security f
 - Evidence: intelligence/change-intelligence.json/watchNext/10
 
 #### 15. stableCapital
-- Signal: stableCapital source freshness is stale (171.7h old).
+- Signal: stableCapital source freshness is stale (173.18h old).
 - Why it matters: The Observer should reason from current, reproducible data rather than silently carrying stale state.
 - What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
 - Proposed next step: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
@@ -150,20 +150,44 @@ Current canonical inputs contain 1 material Observer change(s), 0 new security f
 - Evidence: intelligence/change-intelligence.json/watchNext/11
 
 #### 16. stableIndex
-- Signal: stableIndex source freshness is stale (171.7h old).
+- Signal: stableIndex source freshness is stale (173.18h old).
 - Why it matters: The Observer should reason from current, reproducible data rather than silently carrying stale state.
 - What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
 - Proposed next step: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 - Action mode: proposal-only
 - Evidence: intelligence/change-intelligence.json/watchNext/12
 
-#### 17. Cypher
-- Signal: Cypher Reference APR moved 25.32% → 24.73% (-0.59 pp).
-- Why it matters: Meaningful changes in productive capacity are part of the company’s operating history.
+#### 17. aerocvxyb.eth
+- Signal: aerocvxyb.eth accrued rewards moved $105.04 → $105.95 (+$0.91).
+- Why it matters: Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.
 - What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
 - Proposed next step: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
 - Action mode: proposal-only
 - Evidence: intelligence/change-intelligence.json/whatChanged/0
+
+#### 18. Cypher
+- Signal: Cypher accrued rewards moved $7.39 → $7.97 (+$0.59).
+- Why it matters: Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.
+- What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
+- Proposed next step: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
+- Action mode: proposal-only
+- Evidence: intelligence/change-intelligence.json/whatChanged/1
+
+#### 19. defitea.eth
+- Signal: defitea.eth accrued rewards moved $217.19 → $214.48 ($-2.71).
+- Why it matters: Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.
+- What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
+- Proposed next step: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
+- Action mode: proposal-only
+- Evidence: intelligence/change-intelligence.json/whatChanged/2
+
+#### 20. Rook's portfolio
+- Signal: Rook's portfolio accrued rewards moved $255.47 → $254.50 ($-0.97).
+- Why it matters: Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.
+- What follows: The signal is real, but the current deterministic policy has no category-specific consequence beyond continued observation.
+- Proposed next step: Inspect the cited evidence before proposing any change. Do not invent a remediation path that is not supported by canonical data.
+- Action mode: proposal-only
+- Evidence: intelligence/change-intelligence.json/whatChanged/3
 
 ---
 
