@@ -13,6 +13,7 @@ on:
     paths:
       - "intelligence/economic-graph/aerodrome-managed-strategy-pulse.mjs"
       - "intelligence/economic-graph/aerodrome-epoch-flow-overlay.mjs"
+      - "intelligence/economic-graph/aerodrome-vote-epoch-history-overlay.mjs"
       - "intelligence/economic-graph/aerodrome-veaero-candidate.mjs"
       - "intelligence/economic-graph/economic-graph-canonical-runner.mjs"
       - ".github/workflows/update-aerodrome-managed-pulse.yml"
@@ -20,8 +21,10 @@ on:
     paths:
       - "intelligence/economic-graph/aerodrome-managed-strategy-pulse.mjs"
       - "intelligence/economic-graph/aerodrome-epoch-flow-overlay.mjs"
+      - "intelligence/economic-graph/aerodrome-vote-epoch-history-overlay.mjs"
       - "intelligence/economic-graph/aerodrome-veaero-candidate.mjs"
       - "intelligence/economic-graph/economic-graph-canonical-runner.mjs"
+      - ".github/workflows/update-aerodrome-managed-pulse.yml"
 
 permissions:
   contents: write
@@ -64,6 +67,7 @@ jobs:
           set -euo pipefail
           node --check intelligence/economic-graph/aerodrome-managed-strategy-pulse.mjs
           node --check intelligence/economic-graph/aerodrome-epoch-flow-overlay.mjs
+          node --check intelligence/economic-graph/aerodrome-vote-epoch-history-overlay.mjs
           test -s intelligence/economic-graph/economic-graph.json
           git diff --check
 
@@ -93,6 +97,20 @@ jobs:
             AERODROME_PULSE_FILE=/tmp/aerodrome-managed-pulse.json node intelligence/economic-graph/aerodrome-epoch-flow-overlay.mjs
           else
             AERODROME_PULSE_FILE=intelligence/economic-graph/aerodrome-managed-pulse.json node intelligence/economic-graph/aerodrome-epoch-flow-overlay.mjs
+            cp intelligence/economic-graph/aerodrome-managed-pulse.json /tmp/aerodrome-managed-pulse.json
+          fi
+
+      - name: Reconstruct managed vote epoch history
+        env:
+          BASE_ARCHIVE_RPC_URL: ${{ secrets.BASE_ARCHIVE_RPC_URL }}
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            AERODROME_PULSE_FILE=/tmp/aerodrome-managed-pulse.json node intelligence/economic-graph/aerodrome-vote-epoch-history-overlay.mjs
+          else
+            AERODROME_PULSE_FILE=intelligence/economic-graph/aerodrome-managed-pulse.json node intelligence/economic-graph/aerodrome-vote-epoch-history-overlay.mjs
             cp intelligence/economic-graph/aerodrome-managed-pulse.json /tmp/aerodrome-managed-pulse.json
           fi
 
@@ -138,6 +156,13 @@ jobs:
           if(e.officialContractSource?.repository!=='aerodrome-finance/contracts'||e.officialContractSource?.commit!=='1ba30815bba620f7e9faa34769ffd00c214c9b82')throw new Error('Official Aerodrome accounting source pin missing');
           if(e.epistemic?.contractWideInflowsAreNotCompanyEarnedShare!==true||e.epistemic?.referenceAprConnection!=='not-attributed-by-this-overlay'||e.epistemic?.primaryDriver!==null||e.epistemic?.promotionAuthority!=='none')throw new Error('Epoch flow epistemic boundary weakened');
           if(x.semantics?.epochFlowAccounting!==true||x.semantics?.rewardContractInflowsAreNotCompanyEarnedShare!==true)throw new Error('Epoch flow semantic boundary missing');
+          const h=x.voteEpochHistory;
+          if(h?.version!=='0.1-aerodrome-managed-vote-event-reconstruction')throw new Error('Managed vote epoch history missing');
+          if(!['rpc-historical-event-logs','blockscout-indexed-onchain-event-logs'].includes(h.sourceCoverage?.method))throw new Error('Managed vote history source method invalid');
+          if(h.currentStateParity?.status!=='exact-current-state-parity'||h.currentStateParity?.allPoolWeightsMatch!==true)throw new Error('Managed vote history current-state parity missing');
+          if(h.completedEpochComparison?.comparable!==true)throw new Error('Two completed managed vote epochs are not comparable');
+          if(h.epistemic?.primaryDriver!==null||h.epistemic?.promotionAuthority!=='none'||h.epistemic?.causalAttribution!=='unresolved-beyond-voter-state-transition-accounting')throw new Error('Managed vote history causal/authority boundary weakened');
+          if(x.semantics?.managedVoteEpochHistory!==true||x.semantics?.managedVoteHistoryIsEventReconstructed!==true||x.semantics?.voteAllocationChangeIsNotCausalAttribution!==true)throw new Error('Managed vote history semantic boundary missing');
           console.log('AERODROME MANAGED STRATEGY PULSE semantic PASS',{
             block:o.blockNumber,
             managedTokenId:o.identity.managedTokenId,
@@ -149,6 +174,9 @@ jobs:
             feeEpochTokens:e.lanes.feeVotingRewards.byToken.length,
             bribeEpochTokens:e.lanes.bribeVotingRewards.byToken.length,
             lockedEpochTokens:e.lanes.lockedManagedRewards.byToken.length,
+            voteHistorySource:h.sourceCoverage.method,
+            voteHistoryEvents:h.sourceCoverage.eventCount,
+            completedVoteEpochsComparable:h.completedEpochComparison.comparable,
             graphHash,
             primaryDriver:o.epistemic.primaryDriver,
             promotionAuthority:o.epistemic.promotionAuthority,
@@ -161,6 +189,7 @@ jobs:
         if: github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
+          BASE_ARCHIVE_RPC_URL: ${{ secrets.BASE_ARCHIVE_RPC_URL }}
           BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
           BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
         shell: bash
@@ -190,6 +219,8 @@ jobs:
           if(pulse.authority?.executionAuthority!=='none'||pulse.authority?.promotionAuthority!=='none'||pulse.latest?.epistemic?.primaryDriver!==null)throw new Error('Pulse authority boundary regression');
           if(pulse.epochFlowAccounting?.version!=='0.1-aerodrome-reward-epoch-accounting'||Number(pulse.epochFlowAccounting?.blockNumber)!==Number(pulse.latest?.blockNumber))throw new Error('Pulse epoch-flow enrichment missing');
           if(pulse.epochFlowAccounting?.epistemic?.contractWideInflowsAreNotCompanyEarnedShare!==true||pulse.epochFlowAccounting?.epistemic?.primaryDriver!==null)throw new Error('Pulse epoch-flow authority boundary regression');
+          if(pulse.voteEpochHistory?.version!=='0.1-aerodrome-managed-vote-event-reconstruction'||pulse.voteEpochHistory?.currentStateParity?.status!=='exact-current-state-parity'||pulse.voteEpochHistory?.completedEpochComparison?.comparable!==true)throw new Error('Pulse managed vote history enrichment missing');
+          if(pulse.voteEpochHistory?.epistemic?.primaryDriver!==null||pulse.voteEpochHistory?.epistemic?.promotionAuthority!=='none')throw new Error('Pulse managed vote history authority boundary regression');
           NODE
           }
 
@@ -216,8 +247,8 @@ jobs:
 
           # Publish exactly one generated file through the repository Contents API.
           # Unrelated main churn cannot invalidate an already measured same-block
-          # Pulse. A genuine Economic Graph byte change forces a full re-measure
-          # and epoch-accounting enrichment before publication.
+          # Pulse. A genuine Economic Graph byte change forces a full re-measure,
+          # epoch-accounting enrichment and vote-history reconstruction before publication.
           for attempt in 1 2 3 4 5 6; do
             fetch_remote_graph
             REMOTE_GRAPH_HASH="$(sha256sum /tmp/remote-economic-graph.json | awk '{print $1}')"
@@ -233,6 +264,7 @@ jobs:
               fetch_remote_pulse_if_present || true
               node intelligence/economic-graph/aerodrome-managed-strategy-pulse.mjs
               AERODROME_PULSE_FILE="$GENERATED" node intelligence/economic-graph/aerodrome-epoch-flow-overlay.mjs
+              AERODROME_PULSE_FILE="$GENERATED" node intelligence/economic-graph/aerodrome-vote-epoch-history-overlay.mjs
               validate_binding
               continue
             fi
@@ -286,7 +318,9 @@ jobs:
           if(x.latest?.epistemic?.primaryDriver!==null)throw new Error('Remote pulse unearned primaryDriver');
           if(x.epochFlowAccounting?.version!=='0.1-aerodrome-reward-epoch-accounting'||Number(x.epochFlowAccounting?.blockNumber)!==Number(x.latest?.blockNumber))throw new Error('Remote epoch-flow accounting missing');
           if(x.epochFlowAccounting?.epistemic?.contractWideInflowsAreNotCompanyEarnedShare!==true||x.epochFlowAccounting?.epistemic?.primaryDriver!==null||x.epochFlowAccounting?.epistemic?.promotionAuthority!=='none')throw new Error('Remote epoch-flow boundary weakened');
-          console.log('Verified Aerodrome Managed Strategy Pulse + epoch flow accounting on remote main.');
+          if(x.voteEpochHistory?.version!=='0.1-aerodrome-managed-vote-event-reconstruction'||x.voteEpochHistory?.currentStateParity?.status!=='exact-current-state-parity'||x.voteEpochHistory?.completedEpochComparison?.comparable!==true)throw new Error('Remote managed vote history missing');
+          if(x.voteEpochHistory?.epistemic?.primaryDriver!==null||x.voteEpochHistory?.epistemic?.promotionAuthority!=='none'||x.semantics?.voteAllocationChangeIsNotCausalAttribution!==true)throw new Error('Remote managed vote history boundary weakened');
+          console.log('Verified Aerodrome Managed Strategy Pulse + epoch flow accounting + vote epoch history on remote main.');
           NODE
               exit 0
             fi
