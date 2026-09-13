@@ -266,19 +266,7 @@ jobs:
               echo "Company #010 source contract changed during publication; fresh collection required."
               exit 1
             fi
-            node - <<'NODE'
-            const fs=require('fs');
-            const d=JSON.parse(fs.readFileSync('companies/company-010-production-state.json','utf8'));
-            const h=JSON.parse(fs.readFileSync('companies/company-010-projectx-rate-history.json','utf8'));
-            const c=d.strategies?.crv?.strategies?.find(x=>x.id==='convex-staked-cvxcrv');
-            const px=d.strategies?.projectX;
-            const p=(d.productivity?.positions||[]).find(x=>x.id==='projectx-whype-usdc');
-            const hyper=d.strategies?.hyperlend;
-            const baseOk=d.version==='0.3-company-010-production-state-stakedao-complete'&&d.engineVersion==='0.4-cypher-crv-strategy-intelligence'&&d.capital?.totalCapitalComplete===true&&d.strategies?.crv?.version==='0.1-company-010-crv-strategy-intelligence'&&c?.yield?.status==='measured'&&Number(c?.yield?.referenceAprPct)>0&&d.strategies?.gmx?.version==='0.1.1-company-010-gmx-strategy-intelligence-pool-key-fix'&&px?.version==='0.1-company-010-projectx-full-parity'&&hyper?.version==='0.1-company-010-hyperlend-income-parity'&&hyper?.accountingBoundary?.noDoubleCount===true&&hyper?.authority?.executionAuthority==='none'&&d.epistemicBoundary?.multiLegResolvedMustPromoteAllEconomicLegs===true&&d.epistemicBoundary?.hyperlendAprIsNotRealisedIncome===true&&d.authority?.executionAuthority==='none';
-            const historyOk=h.version==='0.1-projectx-rate-history'&&h.authority?.executionAuthority==='none'&&Array.isArray(h.observations)&&h.observations.length>0;
-            const aprOk=px?.yield?.status==='measured'?(Number(px.yield.referenceAprPct)>=0&&p?.status==='measured'&&Number(p.referenceAprPct)===Number(px.yield.referenceAprPct)):(px?.yield?.status==='warming'&&px?.yield?.referenceAprPct===null&&p?.status==='warming'&&p?.referenceAprPct===null);
-            if(!baseOk||!historyOk||!aprOk)process.exit(1);
-            NODE
+            node -e "const fs=require('fs');const d=JSON.parse(fs.readFileSync('companies/company-010-production-state.json','utf8'));const h=JSON.parse(fs.readFileSync('companies/company-010-projectx-rate-history.json','utf8'));const c=d.strategies?.crv?.strategies?.find(x=>x.id==='convex-staked-cvxcrv');const px=d.strategies?.projectX;const p=(d.productivity?.positions||[]).find(x=>x.id==='projectx-whype-usdc');const hyper=d.strategies?.hyperlend;const baseOk=d.version==='0.3-company-010-production-state-stakedao-complete'&&d.engineVersion==='0.4-cypher-crv-strategy-intelligence'&&d.capital?.totalCapitalComplete===true&&d.strategies?.crv?.version==='0.1-company-010-crv-strategy-intelligence'&&c?.yield?.status==='measured'&&Number(c?.yield?.referenceAprPct)>0&&d.strategies?.gmx?.version==='0.1.1-company-010-gmx-strategy-intelligence-pool-key-fix'&&px?.version==='0.1-company-010-projectx-full-parity'&&hyper?.version==='0.1-company-010-hyperlend-income-parity'&&hyper?.accountingBoundary?.noDoubleCount===true&&hyper?.authority?.executionAuthority==='none'&&d.epistemicBoundary?.multiLegResolvedMustPromoteAllEconomicLegs===true&&d.epistemicBoundary?.hyperlendAprIsNotRealisedIncome===true&&d.authority?.executionAuthority==='none';const historyOk=h.version==='0.1-projectx-rate-history'&&h.authority?.executionAuthority==='none'&&Array.isArray(h.observations)&&h.observations.length>0;const aprOk=px?.yield?.status==='measured'?(Number(px.yield.referenceAprPct)>=0&&p?.status==='measured'&&Number(p.referenceAprPct)===Number(px.yield.referenceAprPct)):(px?.yield?.status==='warming'&&px?.yield?.referenceAprPct===null&&p?.status==='warming'&&p?.referenceAprPct===null);if(!baseOk||!historyOk||!aprOk)process.exit(1);"
             if git push origin HEAD:main; then exit 0; fi
             sleep $((attempt * 2))
           done
