@@ -1,6 +1,6 @@
 {
   "version": "0.2-company-010-capital-reconciliation-stakedao-base",
-  "generatedAt": "2026-09-11T09:16:25.201Z",
+  "generatedAt": "2026-09-13T13:10:26.190Z",
   "company": {
     "registry": "010",
     "name": "Cypher"
@@ -10,22 +10,22 @@
     "result": {
       "protocol": "Aave",
       "chain": "Arbitrum",
-      "wstEthPerEth": 1.243714506052,
+      "wstEthPerEth": 1.243945528954,
       "oraclePricesUsd": {
-        "wstETH": 3076.17777169,
-        "WETH": 2473.37934608
+        "wstETH": 3078.6081413,
+        "WETH": 2474.87375423
       },
       "wallets": [
         {
           "wallet": "0xd90d1e395DE36e1e59C42F5dF537801C26BbC03f",
           "walletAlias": "Wallet 1",
           "wstETH": {
-            "supplied": 0.833700622206,
-            "ethEquivalent": 1.036885557543,
+            "supplied": 0.833700623379,
+            "ethEquivalent": 1.037078162939,
             "usageAsCollateralEnabled": true
           },
           "WBTC": {
-            "supplied": 0.0097419,
+            "supplied": 0.00974192,
             "usageAsCollateralEnabled": true
           }
         },
@@ -43,9 +43,9 @@
           }
         }
       ],
-      "totalWstETH": 0.833700622206,
-      "totalEthEquivalent": 1.036885557543,
-      "totalWBTC": 0.0099124,
+      "totalWstETH": 0.833700623379,
+      "totalEthEquivalent": 1.037078162939,
+      "totalWBTC": 0.00991242,
       "source": "Aave V3 official ProtocolDataProvider + Aave Oracle wstETH/WETH price ratio",
       "treatment": "supplied collateral is gross company capital; liabilities remain diagnostic-only under current Holding public-gross policy"
     },
@@ -63,10 +63,10 @@
           "walletAlias": "Wallet 2",
           "asset": "0x5555555555555555555555555555555555555555",
           "symbol": "WHYPE",
-          "supplied": 1.5126e-7,
-          "priceUsd": 80.062962,
+          "supplied": 1.51265e-7,
+          "priceUsd": 77.36465533,
           "valueUsd": 0,
-          "referenceAprPct": 59.792084,
+          "referenceAprPct": 56.594176,
           "referenceAprStatus": "measured",
           "usageAsCollateralEnabled": true
         },
@@ -75,10 +75,10 @@
           "walletAlias": "Wallet 2",
           "asset": "0xfD739d4e423301CE9385c1fb8850539D657C296D",
           "symbol": "kHYPE",
-          "supplied": 3.745119919216,
-          "priceUsd": 82.02942844,
-          "valueUsd": 307.21,
-          "referenceAprPct": 59.792084,
+          "supplied": 3.745119919292,
+          "priceUsd": 79.27336593,
+          "valueUsd": 296.89,
+          "referenceAprPct": 56.594176,
           "referenceAprStatus": "measured",
           "usageAsCollateralEnabled": true
         }
@@ -89,13 +89,13 @@
           "walletAlias": "Wallet 2",
           "asset": "0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb",
           "symbol": "USD₮0",
-          "variableDebt": 130.547637,
+          "variableDebt": 130.610462,
           "stableDebt": 0,
           "treatment": "diagnostic-only; not subtracted from public gross capital under current Holding policy"
         }
       ],
       "positionCount": 2,
-      "totalSuppliedValueUsd": 307.21,
+      "totalSuppliedValueUsd": 296.89,
       "source": "HyperLend official ProtocolDataProvider + Oracle + /data/markets/rates",
       "ratesStatus": "available",
       "ratesError": null
@@ -141,11 +141,11 @@
       "strategy": "Curve 4pool · USDC/USDbC/axlUSDC/crvUSD",
       "vault": "0x6f6533b7e0730d150E617001e331ff2FAA41fDe4",
       "pool": "0xf6C5F01C7F3148891ad0e19DF78743D31E390D1f",
-      "poolUsdTotal": 241227.62,
-      "baseApyPct": 0.13,
-      "baseApyStatus": "measured",
+      "poolUsdTotal": 248515.02,
+      "baseApyPct": null,
+      "baseApyStatus": "not-applicable-current-principal-zero",
       "vaultTotalAssets": 56297.64645083934,
-      "vaultTotalUsd": 57424.06,
+      "vaultTotalUsd": 57427.28,
       "wallets": [
         {
           "wallet": "0xd90d1e395DE36e1e59C42F5dF537801C26BbC03f",
@@ -254,7 +254,7 @@
         }
       ],
       "crvClaimable": 0,
-      "source": "Stake DAO RewardVault + Stake DAO verified Accountant + Curve official Base APY + Curve pool onchain balances",
+      "source": "Stake DAO RewardVault + Stake DAO verified Accountant; current principal proven zero by reconciliation",
       "apiErrors": [],
       "capitalRule": "count the Stake DAO vault position once in company capital; underlying stablecoins are decomposition only and must never be added again",
       "rewardAccounting": {
@@ -286,22 +286,11 @@
         "source": "Stake DAO verified Accountant integral state on Base",
         "formula": "pendingRewards + max(vaultIntegral-accountIntegral,0) * balance / 1e27"
       },
-      "referenceAprPct": 0.13,
-      "referenceAprStatus": "measured-base-yield",
-      "referenceAprSource": "Curve official /v1/getBaseApys/base",
-      "referenceAprScope": "Curve trading/base APY only; Stake DAO boosted CRV reward APR is intentionally separate until exact annualisation is proven",
-      "curveYield": {
-        "pool": "0xf6C5F01C7F3148891ad0e19DF78743D31E390D1f",
-        "gauge": "0x79edc58C471Acf2244B8f93d6f425fD06A439407",
-        "baseApyPct": 0.13,
-        "baseApyPath": "latestDailyApyPcent",
-        "unboostedCrvAprPct": null,
-        "unboostedCrvAprPath": null,
-        "referenceAprPct": 0.13,
-        "referenceAprScope": "Curve trading/base APY only; Stake DAO boosted CRV reward APR is intentionally separate until exact annualisation is proven",
-        "source": "Curve official /v1/getBaseApys/base",
-        "crvAprSource": null
-      }
+      "referenceAprPct": null,
+      "referenceAprStatus": "not-applicable-current-principal-zero",
+      "referenceAprSource": null,
+      "referenceAprScope": "No current Stake DAO principal; Reference APR is not applicable until the position becomes active.",
+      "curveYield": null
     },
     "provider": "base-rpc.publicnode.com",
     "failures": []
@@ -330,7 +319,7 @@
   "stakeDaoIntelligence": {
     "version": "0.2-stakedao-accountant-curve-base-yield",
     "claimableMethod": "verified-accountant-integral",
-    "yieldMethod": "curve-official-base-apy",
+    "yieldMethod": "curve-official-base-apy-when-principal-active",
     "boostedRewardAprStatus": "warming"
   }
 }
