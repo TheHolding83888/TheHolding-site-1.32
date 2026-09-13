@@ -1,10 +1,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 import { applyVlCvxLockerPlatformProof, collectVlCvxLockerPlatformProof } from './vlcvx-locker-platform-proof.mjs';
 import { applyVlCvxExtraRewardDistributionProof, collectVlCvxExtraRewardDistributionProof } from './vlcvx-extra-reward-distribution-proof.mjs';
 import { applyVlCvxConvexTeamSettlementProof, collectVlCvxConvexTeamSettlementProof } from './vlcvx-convex-team-settlement-proof.mjs';
 
 const OUTPUT=process.env.REWARDS_OUTPUT||path.resolve('companies/rewards-data.json');
+const CANONICAL_REWARDS_PATH='companies/rewards-data.json';
 const TARGETS=['YieldRing.eth','defitea.eth',"Rook's portfolio",'Cypher'];
 const finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v));
 const round=(v,d=6)=>finite(v)?Number(Number(v).toFixed(d)):null;
@@ -22,12 +24,28 @@ function validatePlatformProof(proof){
   return block;
 }
 
+function loadPreviousCanonicalRewards(currentData){
+  try{
+    const raw=execFileSync('git',['show',`HEAD:${CANONICAL_REWARDS_PATH}`],{
+      encoding:'utf8',
+      maxBuffer:32*1024*1024,
+      stdio:['ignore','pipe','ignore']
+    });
+    const data=JSON.parse(raw);
+    if(!data||typeof data!=='object')throw new Error('git HEAD canonical Rewards payload is not an object');
+    return{data,source:'git-head-canonical',error:null};
+  }catch(e){
+    return{data:currentData,source:'current-output-fallback',error:String(e?.message||e||'unknown error').slice(0,400)};
+  }
+}
+
 async function main(){
   const d=JSON.parse(fs.readFileSync(OUTPUT,'utf8'));
+  const previousCanonical=loadPreviousCanonicalRewards(d);
   const platformProof=await collectVlCvxLockerPlatformProof();
   const platformObservedBlock=validatePlatformProof(platformProof);
   applyVlCvxLockerPlatformProof(d,platformProof);
-  const extraRewardProof=await collectVlCvxExtraRewardDistributionProof({previousData:d});
+  const extraRewardProof=await collectVlCvxExtraRewardDistributionProof({previousData:previousCanonical.data});
   applyVlCvxExtraRewardDistributionProof(d,extraRewardProof);
   const convexTeamSettlementProof=await collectVlCvxConvexTeamSettlementProof();
   applyVlCvxConvexTeamSettlementProof(d,convexTeamSettlementProof);
@@ -47,6 +65,8 @@ async function main(){
     extraRewardDistributionFreshHistoryVerificationAvailable:extraRewardProof.historicalEvidence?.freshVerificationAvailable===true,
     extraRewardDistributionInventoryStatus:extraRewardProof.summary.rewardInventoryStatus,
     extraRewardDistributionCurrentInventoryStatus:extraRewardProof.summary.currentInventoryStatus,
+    retainedCanonicalRewardsSource:previousCanonical.source,
+    retainedCanonicalRewardsLoadError:previousCanonical.error,
     convexTeamSettlementBoundaryMaterialized:true,
     convexTeamSettlementObservedBlock:convexTeamSettlementProof.observedBlock,
     semanticBoundary:'CvxLockerV2 platform and vlCvxExtraRewardDistribution current state remain component evidence only. If archival RewardAdded history is temporarily unavailable, the last verified inventory is retained only as partial provenance and current inventory completeness stays unknown. Rook Convex-Team proof closes only the current Votium eligibility/tracking boundary under reviewed eligibility paths; it creates no period income, no zero-income event, and no universal external-reward-zero assertion.'
