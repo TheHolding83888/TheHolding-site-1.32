@@ -1,9 +1,9 @@
 {
   "version": "0.2.1-autonomous-change-intelligence-memory-vault",
   "observerVersion": "0.2.1-deterministic-memory-vault-corrections",
-  "generatedAt": "2026-09-12T11:03:26.269Z",
+  "generatedAt": "2026-09-13T09:52:33.202Z",
   "mode": "delta",
-  "headline": "8 material changes detected across The Holding.",
+  "headline": "18 material changes detected across The Holding, including 1 high-signal event.",
   "sourceHealth": {
     "allFresh": false,
     "freshCount": 3,
@@ -14,9 +14,9 @@
         "version": "1.16",
         "methodologyVersion": "1.1-simple-safe",
         "collectorVersion": "1.16-company-010-state-backed-productivity-admission",
-        "generatedAt": "2026-09-12T09:17:39.028Z",
-        "sha256": "df7ebd0cf1f46e2b02c957b773341ef2e5fdc7518a672aaf6b332efd664d211c",
-        "ageHours": 1.76,
+        "generatedAt": "2026-09-13T09:35:40.493Z",
+        "sha256": "3569a7ce5484e8159ae59d94bc34c7f9effd0c277986a38c34c2c54899979440",
+        "ageHours": 0.28,
         "freshness": "fresh",
         "expectedMaxAgeHours": 192
       },
@@ -25,9 +25,9 @@
         "version": "0.3.10",
         "methodologyVersion": "0.2.2-earned-inside-protocols-multiwallet",
         "collectorVersion": "0.3.10-company-010-stakedao-state-admission",
-        "generatedAt": "2026-09-11T09:46:54.040Z",
-        "sha256": "7386fb1838ac894a0f47bad1a2db9d52bd7df47f633740dea518a07e8a7b5608",
-        "ageHours": 25.28,
+        "generatedAt": "2026-09-13T06:37:10.209Z",
+        "sha256": "6735813df71789b00f286617702b0c299e0542efea6ff016e4f1d54ba0b34d01",
+        "ageHours": 3.26,
         "freshness": "fresh",
         "expectedMaxAgeHours": 36
       },
@@ -38,7 +38,7 @@
         "collectorVersion": null,
         "generatedAt": "2026-09-06T09:42:27.811Z",
         "sha256": "b8fbe45d1d3a74ce81df69abdb692671ad3367e832df858cad934cfe5d08c549",
-        "ageHours": 145.35,
+        "ageHours": 168.17,
         "freshness": "stale",
         "expectedMaxAgeHours": 36
       },
@@ -49,7 +49,7 @@
         "collectorVersion": null,
         "generatedAt": "2026-09-06T09:42:28.036Z",
         "sha256": "7604c021c89474a2989a90e0efc9116c8113f6ce1f9b9e849ec43024f5ded469",
-        "ageHours": 145.35,
+        "ageHours": 168.17,
         "freshness": "stale",
         "expectedMaxAgeHours": 36
       },
@@ -60,7 +60,7 @@
         "collectorVersion": null,
         "generatedAt": "2026-09-06T09:42:27.811Z",
         "sha256": "9257111cb9c8faa0e921427d774b8d8d7c95c10999827f35ce6b1c43e2f7c390",
-        "ageHours": 145.35,
+        "ageHours": 168.17,
         "freshness": "stale",
         "expectedMaxAgeHours": 36
       },
@@ -69,9 +69,9 @@
         "version": "1.2.1-resilient-rate-coverage",
         "methodologyVersion": "1.2.1-dual-fund-canonical-market-data-resilient-reference-model",
         "collectorVersion": null,
-        "generatedAt": "2026-09-12T10:17:19.295Z",
-        "sha256": "f4b2329c2b3b77b7c5f3c5a6cf6d5c5c2c1402c6432ab41df632f48f9581bfc8",
-        "ageHours": 0.77,
+        "generatedAt": "2026-09-13T07:46:41.096Z",
+        "sha256": "228db6523af98e72eef86ab57588c1b28390d0f05b96af4b3270b755157eea28",
+        "ageHours": 2.1,
         "freshness": "fresh",
         "expectedMaxAgeHours": 36
       }
@@ -79,131 +79,303 @@
   },
   "whatChanged": [
     {
-      "id": "4aee340819b0e51ebb6a",
-      "detectedAt": "2026-09-12T11:03:26.269Z",
+      "id": "a2e49bd8d23e247b9557",
+      "detectedAt": "2026-09-13T09:52:33.202Z",
+      "category": "rewards",
+      "entity": "defitea.eth",
+      "metric": "status",
+      "previousValue": "partial",
+      "currentValue": "ok",
+      "unit": null,
+      "severity": "important",
+      "summary": "defitea.eth Rewards status changed partial → ok.",
+      "whyItMatters": "Reward measurement completeness affects the reliability of current earned-but-unclaimed value.",
+      "sourceKeys": [
+        "rewards"
+      ]
+    },
+    {
+      "id": "3f02f79d838f3f1918bf",
+      "detectedAt": "2026-09-13T09:52:33.202Z",
+      "category": "rewards",
+      "entity": "Cypher",
+      "metric": "completeness",
+      "previousValue": {
+        "pendingRoutes": 1,
+        "unpricedRewards": 0
+      },
+      "currentValue": {
+        "pendingRoutes": 2,
+        "unpricedRewards": 0
+      },
+      "unit": null,
+      "severity": "watch",
+      "summary": "Cypher Rewards completeness changed: pending routes 1 → 2, unpriced 0 → 0.",
+      "whyItMatters": "Completeness improvements turn previously partial observations into reusable verified intelligence.",
+      "sourceKeys": [
+        "rewards"
+      ]
+    },
+    {
+      "id": "83521723df6aba80182a",
+      "detectedAt": "2026-09-13T09:52:33.202Z",
+      "category": "rewards",
+      "entity": "defitea.eth",
+      "metric": "completeness",
+      "previousValue": {
+        "pendingRoutes": 2,
+        "unpricedRewards": 0
+      },
+      "currentValue": {
+        "pendingRoutes": 3,
+        "unpricedRewards": 0
+      },
+      "unit": null,
+      "severity": "watch",
+      "summary": "defitea.eth Rewards completeness changed: pending routes 2 → 3, unpriced 0 → 0.",
+      "whyItMatters": "Completeness improvements turn previously partial observations into reusable verified intelligence.",
+      "sourceKeys": [
+        "rewards"
+      ]
+    },
+    {
+      "id": "484519dc80d90f16ff20",
+      "detectedAt": "2026-09-13T09:52:33.202Z",
       "category": "productivity",
-      "entity": "05081966.eth",
+      "entity": "defitea.eth",
       "metric": "aprLatestPct",
-      "previousValue": 10.329,
-      "currentValue": 10.5537,
+      "previousValue": 15.405,
+      "currentValue": 15.6162,
       "unit": "percentage-points",
       "severity": "info",
-      "summary": "05081966.eth Reference APR moved 10.33% → 10.55% (+0.22 pp).",
+      "summary": "defitea.eth Reference APR moved 15.40% → 15.62% (+0.21 pp).",
       "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
       "sourceKeys": [
         "productivity"
       ]
     },
     {
-      "id": "47825557cac948059209",
-      "detectedAt": "2026-09-12T11:03:26.269Z",
-      "category": "productivity",
-      "entity": "0x5860...83CA8.eth",
-      "metric": "aprLatestPct",
-      "previousValue": 16.1181,
-      "currentValue": 16.3211,
-      "unit": "percentage-points",
-      "severity": "info",
-      "summary": "0x5860...83CA8.eth Reference APR moved 16.12% → 16.32% (+0.20 pp).",
-      "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
-      "sourceKeys": [
-        "productivity"
-      ]
-    },
-    {
-      "id": "0dc1a57f535848e53290",
-      "detectedAt": "2026-09-12T11:03:26.269Z",
-      "category": "productivity",
-      "entity": "aerocvxyb.eth",
-      "metric": "aprLatestPct",
-      "previousValue": 17.2479,
-      "currentValue": 17.4767,
-      "unit": "percentage-points",
-      "severity": "info",
-      "summary": "aerocvxyb.eth Reference APR moved 17.25% → 17.48% (+0.23 pp).",
-      "whyItMatters": "Meaningful changes in productive capacity are part of the company’s operating history.",
-      "sourceKeys": [
-        "productivity"
-      ]
-    },
-    {
-      "id": "c7d4806be11d6fa5ff29",
-      "detectedAt": "2026-09-12T11:03:26.269Z",
+      "id": "6983db36c8daec918c1a",
+      "detectedAt": "2026-09-13T09:52:33.202Z",
       "category": "reporting",
       "entity": "defitea.eth",
       "metric": "new-daily-snapshot",
-      "previousValue": "2026-09-09",
-      "currentValue": "2026-09-12",
+      "previousValue": "2026-09-12",
+      "currentValue": "2026-09-13",
       "unit": null,
       "severity": "info",
-      "summary": "defitea.eth recorded a new daily reporting observation for 2026-09-12.",
+      "summary": "defitea.eth recorded a new daily reporting observation for 2026-09-13.",
       "whyItMatters": "Every new daily observation extends the operating memory used by future analytics and decision support.",
       "sourceKeys": [
         "reporting"
       ]
     },
     {
-      "id": "3f0a7b59369cbee22138",
-      "detectedAt": "2026-09-12T11:03:26.269Z",
+      "id": "4b16c2ec6ab6ca0ac88b",
+      "detectedAt": "2026-09-13T09:52:33.202Z",
       "category": "reporting",
       "entity": "defitea.eth",
       "metric": "currentMonthCashFlowUsd",
-      "previousValue": 41.7,
-      "currentValue": 46.55,
+      "previousValue": 46.55,
+      "currentValue": 58.48,
       "unit": "USD",
       "severity": "info",
-      "summary": "defitea.eth current-month cash-flow/reference-income counter moved $41.70 → $46.55.",
+      "summary": "defitea.eth current-month cash-flow/reference-income counter moved $46.55 → $58.48.",
       "whyItMatters": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
       "sourceKeys": [
         "reporting"
       ]
     },
     {
-      "id": "903e7d5aaa62c95c9ad0",
-      "detectedAt": "2026-09-12T11:03:26.269Z",
+      "id": "19c8cc6ffd7f9a265294",
+      "detectedAt": "2026-09-13T09:52:33.202Z",
       "category": "reporting",
       "entity": "Monetra.eth",
       "metric": "new-daily-snapshot",
-      "previousValue": "2026-09-09",
-      "currentValue": "2026-09-12",
+      "previousValue": "2026-09-12",
+      "currentValue": "2026-09-13",
       "unit": null,
       "severity": "info",
-      "summary": "Monetra.eth recorded a new daily reporting observation for 2026-09-12.",
+      "summary": "Monetra.eth recorded a new daily reporting observation for 2026-09-13.",
       "whyItMatters": "Every new daily observation extends the operating memory used by future analytics and decision support.",
       "sourceKeys": [
         "reporting"
       ]
     },
     {
-      "id": "3f3bf78a2902ae641a9c",
-      "detectedAt": "2026-09-12T11:03:26.269Z",
+      "id": "545a42127f814293a084",
+      "detectedAt": "2026-09-13T09:52:33.202Z",
       "category": "reporting",
       "entity": "Monetra.eth",
       "metric": "currentMonthCashFlowUsd",
-      "previousValue": 0.1359,
-      "currentValue": 0.1506,
+      "previousValue": 0.1506,
+      "currentValue": 0.1653,
       "unit": "USD",
       "severity": "info",
-      "summary": "Monetra.eth current-month cash-flow/reference-income counter moved $0.14 → $0.15.",
+      "summary": "Monetra.eth current-month cash-flow/reference-income counter moved $0.15 → $0.17.",
       "whyItMatters": "Autonomous reporting is turning recurring observations into a continuously growing economic history.",
       "sourceKeys": [
         "reporting"
       ]
     },
     {
-      "id": "eacd482afb34df2fb93e",
-      "detectedAt": "2026-09-12T11:03:26.269Z",
+      "id": "7b6da3d0990eee041688",
+      "detectedAt": "2026-09-13T09:52:33.202Z",
       "category": "reporting",
       "entity": "Monetra.eth",
       "metric": "currentMonthGeneratedIncomeUsd",
-      "previousValue": 0.1359,
-      "currentValue": 0.1506,
+      "previousValue": 0.1506,
+      "currentValue": 0.1653,
       "unit": "USD",
       "severity": "info",
-      "summary": "Monetra.eth current-month generated income moved $0.1359 → $0.1506.",
+      "summary": "Monetra.eth current-month generated income moved $0.1506 → $0.1653.",
       "whyItMatters": "Generated income is a distinct history stream for capital that may compound inside positions rather than arrive as realised cash.",
       "sourceKeys": [
         "reporting"
+      ]
+    },
+    {
+      "id": "fb79cc33e9871d446206",
+      "detectedAt": "2026-09-13T09:52:33.202Z",
+      "category": "rewards",
+      "entity": "05081966.eth",
+      "metric": "totalUsd",
+      "previousValue": 3.758236,
+      "currentValue": 4.632569,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "05081966.eth accrued rewards moved $3.76 → $4.63 (+$0.87).",
+      "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+      "sourceKeys": [
+        "rewards"
+      ]
+    },
+    {
+      "id": "e5ddb771d003dc8c0101",
+      "detectedAt": "2026-09-13T09:52:33.202Z",
+      "category": "rewards",
+      "entity": "0x5860...83CA8.eth",
+      "metric": "totalUsd",
+      "previousValue": 169.679472,
+      "currentValue": 173.35583,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "0x5860...83CA8.eth accrued rewards moved $169.68 → $173.36 (+$3.68).",
+      "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+      "sourceKeys": [
+        "rewards"
+      ]
+    },
+    {
+      "id": "fc4d6ca0ae2873c3eef8",
+      "detectedAt": "2026-09-13T09:52:33.202Z",
+      "category": "rewards",
+      "entity": "1milliondollar.eth",
+      "metric": "totalUsd",
+      "previousValue": 35.611233,
+      "currentValue": 37.857018,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "1milliondollar.eth accrued rewards moved $35.61 → $37.86 (+$2.25).",
+      "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+      "sourceKeys": [
+        "rewards"
+      ]
+    },
+    {
+      "id": "5af0984c9342a6f0f54c",
+      "detectedAt": "2026-09-13T09:52:33.202Z",
+      "category": "rewards",
+      "entity": "aerocvxyb.eth",
+      "metric": "totalUsd",
+      "previousValue": 231.480468,
+      "currentValue": 105.040486,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "aerocvxyb.eth accrued rewards moved $231.48 → $105.04 ($-126.44).",
+      "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+      "sourceKeys": [
+        "rewards"
+      ]
+    },
+    {
+      "id": "8655a18c8a1959be55a0",
+      "detectedAt": "2026-09-13T09:52:33.202Z",
+      "category": "rewards",
+      "entity": "Cypher",
+      "metric": "totalUsd",
+      "previousValue": 4.86457,
+      "currentValue": 7.385431,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "Cypher accrued rewards moved $4.86 → $7.39 (+$2.52).",
+      "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+      "sourceKeys": [
+        "rewards"
+      ]
+    },
+    {
+      "id": "4df7460033da009450c9",
+      "detectedAt": "2026-09-13T09:52:33.202Z",
+      "category": "rewards",
+      "entity": "defitea.eth",
+      "metric": "totalUsd",
+      "previousValue": 187.972359,
+      "currentValue": 217.18987,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "defitea.eth accrued rewards moved $187.97 → $217.19 (+$29.22).",
+      "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+      "sourceKeys": [
+        "rewards"
+      ]
+    },
+    {
+      "id": "a57308a6051cb2f6ecfe",
+      "detectedAt": "2026-09-13T09:52:33.202Z",
+      "category": "rewards",
+      "entity": "dinaz.eth",
+      "metric": "totalUsd",
+      "previousValue": 8.264276,
+      "currentValue": 9.224144,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "dinaz.eth accrued rewards moved $8.26 → $9.22 (+$0.96).",
+      "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+      "sourceKeys": [
+        "rewards"
+      ]
+    },
+    {
+      "id": "c7e24489dc899b01d481",
+      "detectedAt": "2026-09-13T09:52:33.202Z",
+      "category": "rewards",
+      "entity": "Rook's portfolio",
+      "metric": "totalUsd",
+      "previousValue": 234.284462,
+      "currentValue": 255.46805,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "Rook's portfolio accrued rewards moved $234.28 → $255.47 (+$21.18).",
+      "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+      "sourceKeys": [
+        "rewards"
+      ]
+    },
+    {
+      "id": "975804d537e586fcef5a",
+      "detectedAt": "2026-09-13T09:52:33.202Z",
+      "category": "rewards",
+      "entity": "YieldRing.eth",
+      "metric": "totalUsd",
+      "previousValue": 10.821856,
+      "currentValue": 13.462197,
+      "unit": "USD",
+      "severity": "info",
+      "summary": "YieldRing.eth accrued rewards moved $10.82 → $13.46 (+$2.64).",
+      "whyItMatters": "Accrued rewards are a separate economic state and their changes help explain the path from productive capital to realised cash flow.",
+      "sourceKeys": [
+        "rewards"
       ]
     }
   ],
@@ -247,7 +419,7 @@
       "severity": "watch",
       "category": "productivity-coverage",
       "entity": "defitea.eth",
-      "summary": "defitea.eth Productivity coverage is 91.8%.",
+      "summary": "defitea.eth Productivity coverage is 91.7%.",
       "whyItMatters": "Unknown productive capital is excluded rather than fabricated as zero; coverage shows exactly what is currently understood."
     },
     {
@@ -268,53 +440,53 @@
       "severity": "watch",
       "category": "rewards-completeness",
       "entity": "Cypher",
-      "summary": "Cypher Rewards needs attention: status=partial, pendingRoutes=1, unpricedRewards=0.",
+      "summary": "Cypher Rewards needs attention: status=partial, pendingRoutes=2, unpricedRewards=0.",
       "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory."
     },
     {
       "severity": "watch",
       "category": "rewards-completeness",
       "entity": "defitea.eth",
-      "summary": "defitea.eth Rewards needs attention: status=partial, pendingRoutes=2, unpricedRewards=0.",
+      "summary": "defitea.eth Rewards needs attention: status=ok, pendingRoutes=3, unpricedRewards=0.",
       "whyItMatters": "Unresolved reward routes reduce the completeness of earned-value memory."
     },
     {
       "severity": "watch",
       "category": "source-freshness",
       "entity": "embeddedLedger",
-      "summary": "embeddedLedger source freshness is stale (145.35h old).",
+      "summary": "embeddedLedger source freshness is stale (168.17h old).",
       "whyItMatters": "The Observer should reason from current, reproducible data rather than silently carrying stale state."
     },
     {
       "severity": "watch",
       "category": "source-freshness",
       "entity": "stableCapital",
-      "summary": "stableCapital source freshness is stale (145.35h old).",
+      "summary": "stableCapital source freshness is stale (168.17h old).",
       "whyItMatters": "The Observer should reason from current, reproducible data rather than silently carrying stale state."
     },
     {
       "severity": "watch",
       "category": "source-freshness",
       "entity": "stableIndex",
-      "summary": "stableIndex source freshness is stale (145.35h old).",
+      "summary": "stableIndex source freshness is stale (168.17h old).",
       "whyItMatters": "The Observer should reason from current, reproducible data rather than silently carrying stale state."
     }
   ],
   "bridge": {
     "purpose": "Compact canonical handoff for human/AI reasoning. Read this file first before opening large source artifacts.",
-    "snapshotHash": "0f167b88764a231c90eeef1782b1d7af068dd92d6e2c5a69700d2829b9101c0c",
-    "sourceCompositeHash": "abced5d53a21e323c5700deefe125fa7cb43d8c7e20faf0d725f2d650de6e84e",
-    "previousSnapshotAt": "2026-09-11T11:39:13.628Z",
+    "snapshotHash": "a84c3ae65a5aec3783039ad240fadff159f340d8b16638d549208258a4a71ed6",
+    "sourceCompositeHash": "49eda28d907085677e631e7f61c614f285711ffa11333e9f8772a6dec33f64eb",
+    "previousSnapshotAt": "2026-09-12T11:03:26.269Z",
     "memoryVault": {
       "version": "0.2-memory-vault-manifest",
       "policy": "append-only-hash-chained",
-      "runCount": 67,
-      "eventCount": 472,
+      "runCount": 68,
+      "eventCount": 490,
       "startedAt": "2026-08-13T15:19:01.108Z",
-      "latestRecordPath": "intelligence/memory-vault/2026/09/2026-09-12T11-03-26-269Z-0f167b8876.json",
+      "latestRecordPath": "intelligence/memory-vault/2026/09/2026-09-13T09-52-33-202Z-a84c3ae65a.json",
       "chainRootHash": "8273065c54b63b99e8fc60ab91eca385d7a5a2354a2c1a6b38ef578de4d60105",
-      "latestRecordHash": "f73760563206a253fc106936edf255ef0e610c914c7f9b7b8b531810f5040834",
-      "previousRecordHash": "cc9c353aaa00cd6042b1aa9a9a90273cb80c6f20207d3b9fe43b23b6d777bb6c",
+      "latestRecordHash": "32909cd099872a43b0f1dccd4074af837b732d60c2cf817c005227da7b343913",
+      "previousRecordHash": "f73760563206a253fc106936edf255ef0e610c914c7f9b7b8b531810f5040834",
       "corrections": {
         "version": "0.2.1-memory-vault-corrections",
         "policy": "append-only-annotation-ledger",
