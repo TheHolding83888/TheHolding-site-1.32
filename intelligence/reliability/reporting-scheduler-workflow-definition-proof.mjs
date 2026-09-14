@@ -309,7 +309,8 @@ assert.match(workflow,/VE33_LOCKED_MANAGED_EVIDENCE_FILE:\s*\.\/reporting\/ve33-
 assert.match(workflow,/INCOME_LEDGER_FILE:\s*\.\/reporting\/income-ledger\.json/,'Canonical Income Ledger runtime output binding missing');
 assert.match(workflow,/git add reporting\/reporting-data\.json reporting\/defitea-income-ledger\.json reporting\/frax-yield-accounting-evidence\.json reporting\/ve33-accounting-evidence\.json reporting\/ve33-locked-managed-accounting-evidence\.json reporting\/income-ledger\.json reporting\/yield-basis-accounting-evidence\.json reporting\/accounting-coverage\.json/,'Canonical Reporting + Coverage publication staging missing');
 assert.match(workflow,/critical_fingerprint\(\)/,'Reporting race critical fingerprint missing');
-const HISTORICAL_DISCOVERY_WAKE_DEPS=[
+const CANONICAL_VALUATION_WAKE_DEPS=[
+  'reporting/canonical-earned-income-view.mjs',
   'reporting/historical-aerodrome-discovered-price.mjs',
   'reporting/historical-aerodrome-usdc-route.mjs',
   'reporting/historical-velodrome-discovered-price.mjs',
@@ -317,11 +318,11 @@ const HISTORICAL_DISCOVERY_WAKE_DEPS=[
 ];
 const HISTORICAL_VALUATION_CRITICAL_DEPS=[
   'reporting/historical-canonical-price.mjs',
-  ...HISTORICAL_DISCOVERY_WAKE_DEPS,
+  ...CANONICAL_VALUATION_WAKE_DEPS,
   'reporting/ve33-historical-valuation-identity.mjs'
 ];
 assert.ok(workflow.startsWith('# holding-workflow-definition-proof: intelligence/reliability/reporting-scheduler-workflow-definition-proof.mjs\n'),'Reporting paired workflow-definition proof marker missing');
-for(const dep of HISTORICAL_DISCOVERY_WAKE_DEPS) assert.ok(workflow.includes(`      - '${dep}'`),`Reporting historical discovery wake dependency missing: ${dep}`);
+for(const dep of CANONICAL_VALUATION_WAKE_DEPS) assert.ok(workflow.includes(`      - '${dep}'`),`Reporting canonical valuation wake dependency missing: ${dep}`);
 for(const dep of HISTORICAL_VALUATION_CRITICAL_DEPS) assert.ok(workflow.includes('              '+dep),`Reporting historical valuation critical fingerprint dependency missing: ${dep}`);
 assert.match(workflow,/reporting\/accounting-coverage\.mjs/,'Coverage builder missing from critical fingerprint');
 assert.match(workflow,/reporting\/accounting-coverage-validation\.mjs/,'Coverage validation missing from critical fingerprint');
