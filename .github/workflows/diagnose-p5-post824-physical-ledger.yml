@@ -1,0 +1,48 @@
+name: Diagnose P5 post-824 physical ledger
+
+on:
+  push:
+    branches:
+      - diagnostic/p5-post824-physical-ledger-20260914
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Inspect physically persisted canonical ledger
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module - <<'NODE'
+          import fs from 'node:fs';
+          import { buildCanonicalEarnedIncomeView } from './reporting/canonical-earned-income-view.mjs';
+          const ledger=JSON.parse(fs.readFileSync('reporting/income-ledger.json','utf8'));
+          const view=buildCanonicalEarnedIncomeView(ledger);
+          const blockers=view.unresolved.filter(row=>row.reason==='canonical-event-usd-valuation-incomplete');
+          const ve33=(ledger.events||[]).filter(e=>e?.sourceFile==='reporting/ve33-accounting-evidence.json');
+          const resolutions=ve33.filter(e=>e?.valuationResolution?.resolvesUsdValue===true);
+          const summary=ledger.sourceState?.historicalValuationResolution||{};
+          const countBy=(rows,fn)=>rows.reduce((o,x)=>{const k=String(fn(x)??'null');o[k]=(o[k]||0)+1;return o;},{});
+          console.log('P5_PHYSICAL_LEDGER_JSON_START');
+          console.log(JSON.stringify({
+            ledgerGeneratedAt:ledger.generatedAt??null,
+            eventCount:(ledger.events||[]).length,
+            ve33EventCount:ve33.length,
+            ve33ResolvedValuationCount:resolutions.length,
+            resolvedBySourceFamily:countBy(resolutions,e=>e.valuationResolution?.sourceFamily),
+            historicalValuationSummary:summary,
+            canonicalUsdValuationBlockerCount:blockers.length,
+            blockersByProtocol:countBy(blockers,e=>e.protocol),
+            blockersByAsset:countBy(blockers,e=>e.asset),
+            semantics:{physicalPersistedLedger:true,mutatesProduction:false,unknownIsNotZero:ledger.semantics?.unknownIsNotZero===true}
+          },null,2));
+          console.log('P5_PHYSICAL_LEDGER_JSON_END');
+          NODE
