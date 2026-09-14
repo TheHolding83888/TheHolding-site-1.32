@@ -6,6 +6,7 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { decodeChainlinkRoundData, decodeUint256 } from '../intelligence/market-data/onchain-price-resolver-core.mjs';
 import { isHistoricalVelodromeVe33Identity, historicalOptimismVelodromeDiscoveredPriceAtBoundary } from './historical-velodrome-discovered-price.mjs';
+import { isHistoricalAerodromeVe33Identity, historicalBaseAerodromeDiscoveredPriceAtBoundary } from './historical-aerodrome-discovered-price.mjs';
 
 const __filename=fileURLToPath(import.meta.url);
 const __dirname=path.dirname(__filename);
@@ -42,7 +43,7 @@ export const HISTORICAL_BASE_SLIPSTREAM_TWAP_TOKEN_ROUTES=Object.freeze({
     assetId:'laptop',symbol:'LAPTOP',network:'base',chainId:8453,
     token:'0xB095274743941e953c746F9C228DA9c18Bb6ec29',tokenDecimals:18,
     pool:'0x99cf3e8bfb02c300312c53aac5d0b082e3d5975c',
-    quoteToken:'0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',quoteTokenSymbol:'USDC',quoteTokenDecimals:6,
+    quoteToken:'0x833589fCD6eDb6E08f4C7C32D4f71b54bdA02913',quoteTokenSymbol:'USDC',quoteTokenDecimals:6,
     quoteChainlinkFeed:'0x7e860098F58bBFC8648a4311b374B1D669a2bc6B',twapSeconds:300
   })
 });
@@ -265,6 +266,7 @@ export async function historicalCanonicalPriceAtBoundary({token,boundaryAt,event
     if(exactChainlinkRoute)return historicalChainlinkPriceAtBoundaryForRoute({route:exactChainlinkRoute,boundaryAt,eventKey,sourceIdentity,root,onchainRegistry,rpcCall,fetchImpl});
     if(historicalOptimismVelodromeTwapRouteForToken(token))return historicalOptimismVelodromeTwapPriceAtBoundary({token,boundaryAt,eventKey,sourceIdentity,root,onchainRegistry,rpcCall,fetchImpl});
     if(historicalBaseSlipstreamTwapRouteForToken(token))return historicalBaseSlipstreamTwapPriceAtBoundary({token,boundaryAt,eventKey,sourceIdentity,root,onchainRegistry,rpcCall,fetchImpl});
+    if(isHistoricalAerodromeVe33Identity({eventKey,sourceIdentity}))return historicalBaseAerodromeDiscoveredPriceAtBoundary({token,boundaryAt,eventKey,sourceIdentity,root,onchainRegistry,rpcCall,fetchImpl,usdcUsdResolver:historicalBaseChainlinkPriceAtBoundary});
     if(isHistoricalVelodromeVe33Identity({eventKey,sourceIdentity}))return historicalOptimismVelodromeDiscoveredPriceAtBoundary({token,boundaryAt,eventKey,sourceIdentity,root,onchainRegistry,rpcCall,fetchImpl,usdcUsdResolver:historicalOptimismChainlinkPriceAtBoundary});
     return{ok:false,status:'token-not-canonical-market-data-mapped',assetId:null};
   }
