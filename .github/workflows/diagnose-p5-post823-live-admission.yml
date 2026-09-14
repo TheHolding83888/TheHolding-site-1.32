@@ -52,10 +52,13 @@ jobs:
             ve33EventCount:ve33.length,
             ve33ResolvedValuationCount:resolutions.length,
             resolvedBySourceFamily:countBy(resolutions,e=>e.valuationResolution?.sourceFamily),
+            historicalValuationResolvedEvents:ledger.run?.historicalValuationResolvedEvents??null,
+            historicalValuationUnresolvedEvents:ledger.run?.historicalValuationUnresolvedEvents??null,
+            historicalValuationUnresolvedStatuses:ledger.run?.historicalValuationUnresolvedStatuses??null,
+            historicalValuationIdentityMismatchEventCount:ledger.run?.historicalValuationIdentityMismatchEventCount??null,
             canonicalUsdValuationBlockerCount:blockers.length,
             blockersByProtocol:countBy(blockers,e=>e.protocol),
             blockersByAsset:countBy(blockers,e=>e.asset),
-            blockers: blockers.map(row=>({eventKey:row.eventKey,company:row.company,protocol:row.protocol,route:row.route,asset:row.asset,amount:row.amount,economicDate:row.economicDate})),
             semantics:{diagnosticOnly:true,mutatesProduction:false,currentPriceBackfillAllowed:false,unknownIsNotZero:true,executionAuthority:'none'}
           };
           console.log('P5_POST823_LIVE_ADMISSION_JSON_START');
