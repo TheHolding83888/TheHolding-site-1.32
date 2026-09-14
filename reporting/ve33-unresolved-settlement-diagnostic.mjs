@@ -4,7 +4,10 @@ import { Interface, JsonRpcProvider, getAddress } from 'ethers';
 import { decodeRewardClaimAttribution } from './ve33-accounting-evidence.mjs';
 
 const EVIDENCE_FILE=process.env.VE33_DIAGNOSTIC_EVIDENCE_FILE||'./reporting/ve33-accounting-evidence.json';
-const MAX_LOG_BLOCKS=9_500;
+// Diagnostic reads must work across the strictest public fallback currently in
+// rotation. Base mainnet RPC advertises a 2,000-block eth_getLogs ceiling, so
+// stay below that boundary rather than depending on provider-specific retries.
+const MAX_LOG_BLOCKS=1_900;
 const ADDRESS_GROUP_SIZE=48;
 const CLAIM_IFACE=new Interface(['event ClaimRewards(address indexed from,address indexed reward,uint256 amount)']);
 const DIRECT_IFACE=new Interface(['function getReward(uint256 tokenId,address[] tokens)']);
