@@ -4,10 +4,7 @@ import { Interface, JsonRpcProvider, getAddress } from 'ethers';
 import { decodeRewardClaimAttribution } from './ve33-accounting-evidence.mjs';
 
 const EVIDENCE_FILE=process.env.VE33_DIAGNOSTIC_EVIDENCE_FILE||'./reporting/ve33-accounting-evidence.json';
-// Diagnostic reads must work across the strictest public fallback currently in
-// rotation. Base mainnet RPC advertises a 2,000-block eth_getLogs ceiling, so
-// stay below that boundary rather than depending on provider-specific retries.
-const MAX_LOG_BLOCKS=1_900;
+const MAX_LOG_BLOCKS=9_500;
 const ADDRESS_GROUP_SIZE=48;
 const CLAIM_IFACE=new Interface(['event ClaimRewards(address indexed from,address indexed reward,uint256 amount)']);
 const DIRECT_IFACE=new Interface(['function getReward(uint256 tokenId,address[] tokens)']);
@@ -74,13 +71,26 @@ async function providerFor(protocol){
   throw last||new Error(`No ${protocol} RPC available`);
 }
 
+function errorText(error){
+  return[
+    error?.error?.message,error?.info?.error?.message,error?.shortMessage,error?.message,String(error||'')
+  ].filter(Boolean).join(' | ').toLowerCase();
+}
+
+function isRangeError(error){
+  return /block range is too large|limited to (?:a )?[0-9,]+ range|range.*too large|exceed.*block.*range/.test(errorText(error));
+}
+
 async function queryLogs(provider,addresses,fromBlock,toBlock){
-  const logs=[];
-  for(let from=fromBlock;from<=toBlock;from+=MAX_LOG_BLOCKS){
-    const to=Math.min(toBlock,from+MAX_LOG_BLOCKS-1);
-    logs.push(...await provider.getLogs({address:addresses.length===1?addresses[0]:addresses,topics:[CLAIM_TOPIC],fromBlock:from,toBlock:to}));
+  try{
+    return await provider.getLogs({address:addresses.length===1?addresses[0]:addresses,topics:[CLAIM_TOPIC],fromBlock,toBlock});
+  }catch(error){
+    if(!isRangeError(error)||fromBlock>=toBlock)throw error;
+    const mid=Math.floor((fromBlock+toBlock)/2);
+    const left=await queryLogs(provider,addresses,fromBlock,mid);
+    const right=await queryLogs(provider,addresses,mid+1,toBlock);
+    return[...left,...right];
   }
-  return logs;
 }
 
 function positions(data,needle){
