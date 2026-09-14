@@ -75,7 +75,7 @@ const usdcUsdResolver=async args=>{
 };
 
 const result=await historicalOptimismVelodromeDiscoveredPriceAtBoundary({
-  token:reward,boundaryAt,eventKey,onchainRegistry:registry,rpcCall,usdcUsdResolver
+  token:reward,boundaryAt:boundary,eventKey,onchainRegistry:registry,rpcCall,usdcUsdResolver
 });
 assert.equal(result.ok,true);
 assert.equal(result.status,'historical-onchain-velodrome-discovered-twap-chainlink-price');
@@ -93,7 +93,7 @@ assert.equal(resolverCalls,1);
 
 resolverCalls=0;
 const ineligible=await historicalOptimismVelodromeDiscoveredPriceAtBoundary({
-  token:reward,boundaryAt,eventKey:`ve33:aerodrome|owner|token|lane|reward:${block-100}:${block}`,
+  token:reward,boundaryAt:boundary,eventKey:`ve33:aerodrome|owner|token|lane|reward:${block-100}:${block}`,
   onchainRegistry:registry,rpcCall,usdcUsdResolver
 });
 assert.equal(ineligible.ok,false);
@@ -101,7 +101,7 @@ assert.equal(ineligible.status,'historical-velodrome-discovery-identity-not-elig
 assert.equal(resolverCalls,0,'non-Velodrome identities must never enter discovered historical pricing');
 
 const mismatchedQuote=await historicalOptimismVelodromeDiscoveredPriceAtBoundary({
-  token:reward,boundaryAt,eventKey,onchainRegistry:registry,rpcCall,
+  token:reward,boundaryAt:boundary,eventKey,onchainRegistry:registry,rpcCall,
   usdcUsdResolver:async()=>({ok:true,priceUsd:1,chainId:10,sourceBlockNumber:block-1,sourceContract:OPTIMISM_NATIVE_USDC_CHAINLINK_FEED})
 });
 assert.equal(mismatchedQuote.ok,false);
