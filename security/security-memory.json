@@ -1,12 +1,12 @@
 {
   "version": "0.1-security-memory",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-14T08:36:52.745Z",
+  "generatedAt": "2026-09-14T11:23:20.537Z",
   "status": "watch",
-  "snapshotHash": "d45dc026861aecb7fede5232f28e7403a34380016c0770a92f1b007d3ab50eeb",
+  "snapshotHash": "e2fc6f8eafbfaa33edad7ee4a82a232f5321d52b8bc58356a1087ad7cc951ca1",
   "repository": {
-    "filesScanned": 1288,
-    "bytesScanned": 35679930,
+    "filesScanned": 1293,
+    "bytesScanned": 35783143,
     "criticalHashes": {
       ".github/workflows/admit-company-010-public.yml": "bb4f80e7263e86c63c379b78d476e35e0f846d8d68172f048d44395c739e9cde",
       ".github/workflows/ask-experience.yml": "deb9c4e1025390563f8a866f6ddf1c7870e748cbd6aba13fdbd6da2d38e983d4",
@@ -136,6 +136,7 @@
       ".github/workflows/verify-fxn-locker-apr-guard.yml": "6fe412570d9e1d12d415c9aae6e38ac5c02eb9c31d36d43411a848e22add735b",
       ".github/workflows/verify-gmx-accounting-tracking.yml": "ecf2fdb84be2c4f245cddc1ae7fd1165c5496632814a974ea5923cb971505ee6",
       ".github/workflows/verify-historical-accounting-completeness.yml": "8208cda9269b9c3ef25f5e7068f5cba04d9bba9f612636a5884813051601aae9",
+      ".github/workflows/verify-historical-aerodrome-discovered-price.yml": "cb16df02e830382fe75177e51f8754f95ecb225bd6e2e8862c8c34596b71a0d3",
       ".github/workflows/verify-historical-velodrome-discovered-price.yml": "25ab16115bc678b5c845bb092937f2c2a2a6c18fb65a3787395d355d22cc7ae1",
       ".github/workflows/verify-hyperlend-accounting-tracking.yml": "2ad17b84bc537c48698910a9d45d2cb646005ce952b706cef00a845657b0cc2a",
       ".github/workflows/verify-income-ledger-company-009-beefy.yml": "5cc9798c580cea5d6bc960e6f77fd3af042f43928e11c8c3098ecf668c34b362",
@@ -1482,14 +1483,36 @@
         "expectedCount": 1,
         "currentCount": 1
       }
+    },
+    {
+      "id": "03efad5c0a95a389378f645c19fa37f5e2daf47dce7f9d035780e1cfe9201aab",
+      "severity": "medium",
+      "category": "unpinned-action",
+      "file": ".github/workflows/verify-historical-aerodrome-discovered-price.yml",
+      "line": 20,
+      "entity": "actions/checkout@v4",
+      "summary": "GitHub Action is referenced by mutable ref: actions/checkout@v4.",
+      "whyItMatters": "Full commit-SHA pinning makes the executed action immutable and reviewable.",
+      "evidence": null
+    },
+    {
+      "id": "3ee4b1124298ab60ec91ae73a3b9c8438629ee2745d5ad6ef366e3e1a437ab61",
+      "severity": "medium",
+      "category": "unpinned-action",
+      "file": ".github/workflows/verify-historical-aerodrome-discovered-price.yml",
+      "line": 21,
+      "entity": "actions/setup-node@v4",
+      "summary": "GitHub Action is referenced by mutable ref: actions/setup-node@v4.",
+      "whyItMatters": "Full commit-SHA pinning makes the executed action immutable and reviewable.",
+      "evidence": null
     }
   ],
   "securityVault": {
     "version": "0.1-security-vault-manifest",
-    "runCount": 1038,
+    "runCount": 1039,
     "startedAt": "2026-08-13T16:56:02.005Z",
-    "latestRecordPath": "security/security-vault/2026/09/2026-09-14T08-36-52-745Z-d45dc02686.json",
-    "latestRecordHash": "cc7b00f8f8a84fc80e9e0aea2a424d89f89d9496aebd92ad89ba1df4d7e482fd",
+    "latestRecordPath": "security/security-vault/2026/09/2026-09-14T11-23-20-537Z-e2fc6f8eaf.json",
+    "latestRecordHash": "df042bdbf51aad1f833e0d90165b7542d94a431ee40c0bb6ef352bb6f1a610be",
     "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
   }
 }
