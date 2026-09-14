@@ -44,7 +44,8 @@ jobs:
               rateLimitRetryCount:Number(v.settlementRpc.rateLimitRetryCount||0),
               failoverCount:Number(v.settlementRpc.failoverCount||0),
               providerSuccessCounts:v.settlementRpc.providerSuccessCounts||{},
-              providerFailureCounts:v.settlementRpc.providerFailureCounts||{}
+              providerFailureCounts:v.settlementRpc.providerFailureCounts||{},
+              failureSamples:(v.settlementRpc.failureSamples||[]).slice(0,20)
             }:null
           }]));
           const out={
