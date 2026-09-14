@@ -14,6 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
@@ -31,8 +33,6 @@ jobs:
           VE33_EVIDENCE_FILE: ./reporting/ve33-accounting-evidence.json
           VE33_LOCKED_MANAGED_EVIDENCE_FILE: ./reporting/ve33-locked-managed-accounting-evidence.json
           INCOME_LEDGER_FILE: /tmp/p5-income-ledger.json
-          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
-          OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
         shell: bash
         run: |
           set -euo pipefail
