@@ -14,32 +14,38 @@ jobs:
     timeout-minutes: 3
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-      - name: Measure Base historical log request cadence
+      - name: Verify Base two-worker request cadence
         shell: bash
         run: |
           set -euo pipefail
           node - <<'NODE'
           const url='https://mainnet.base.org';
           const address='0x227f65131A261548b057215bB1D5Ab2997964C7d';
-          const hex=n=>'0x'+n.toString(16);
-          const base=50715727;
-          let ok=0,failed=0,totalMs=0;
-          const failures=[];
-          for(let i=0;i<24;i++){
-            const fromBlock=base+i*2000,toBlock=fromBlock+1999;
-            const started=Date.now();
-            try{
-              const controller=new AbortController();
-              const timer=setTimeout(()=>controller.abort(),15000);
-              const response=await fetch(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:i+1,method:'eth_getLogs',params:[{address,fromBlock:hex(fromBlock),toBlock:hex(toBlock)}]}),signal:controller.signal});
-              clearTimeout(timer);
-              const text=await response.text();
-              let body=null;try{body=JSON.parse(text);}catch{}
-              const elapsed=Date.now()-started;totalMs+=elapsed;
-              if(response.ok&&!body?.error)ok++;else{failed++;failures.push({i,httpStatus:response.status,error:body?.error?.message||text.slice(0,180)});}
-            }catch(error){failed++;failures.push({i,error:error?.message||String(error)});}
-          }
+          const hex=n=>'0x'+n.toString(16),base=50715727;
+          let cursor=0,nextStart=0,gate=Promise.resolve();
+          const results=[];
+          const pace=async()=>{
+            let release;const prior=gate;gate=new Promise(r=>release=r);await prior;
+            const delay=Math.max(0,nextStart-Date.now());if(delay)await new Promise(r=>setTimeout(r,delay));
+            nextStart=Date.now()+100;release();
+          };
+          const worker=async()=>{
+            while(true){
+              const i=cursor++;if(i>=48)return;
+              await pace();
+              const fromBlock=base+i*2000,toBlock=fromBlock+1999,started=Date.now();
+              try{
+                const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),15000);
+                const response=await fetch(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:i+1,method:'eth_getLogs',params:[{address,fromBlock:hex(fromBlock),toBlock:hex(toBlock)}]}),signal:controller.signal});
+                clearTimeout(timer);const text=await response.text();let body=null;try{body=JSON.parse(text);}catch{}
+                results.push({i,ok:response.ok&&!body?.error,runtimeMs:Date.now()-started,httpStatus:response.status,error:body?.error?.message||(!response.ok?text.slice(0,180):null)});
+              }catch(error){results.push({i,ok:false,runtimeMs:Date.now()-started,error:error?.message||String(error)});}
+            }
+          };
+          const started=Date.now();await Promise.all([worker(),worker()]);
+          const failed=results.filter(x=>!x.ok);
           console.log('BASE_CADENCE_JSON_START');
-          console.log(JSON.stringify({requests:24,ok,failed,totalMs,avgMs:Math.round(totalMs/24),failures},null,2));
+          console.log(JSON.stringify({requests:48,ok:results.length-failed.length,failed:failed.length,totalWallMs:Date.now()-started,avgResponseMs:Math.round(results.reduce((s,x)=>s+x.runtimeMs,0)/results.length),failures:failed},null,2));
           console.log('BASE_CADENCE_JSON_END');
+          if(failed.length)process.exitCode=1;
           NODE
