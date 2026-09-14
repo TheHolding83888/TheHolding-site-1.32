@@ -1,0 +1,60 @@
+name: Run ve33 Settlement Router Fix
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/run-ve33-settlement-router-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/ve33-generic-rpc-range-limit-20260914
+          fetch-depth: 0
+
+      - name: Execute saved deterministic patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          src=Path('.github/workflows/apply-ve33-settlement-router-fix.yml').read_text()
+          start=src.index('      - name: Apply measured settlement router fix')
+          run_start=src.index('        run: |\n', start)+len('        run: |\n')
+          end=src.index('\n      - name: Validate patched branch', run_start)
+          lines=src[run_start:end].splitlines()
+          script='\n'.join((line[10:] if line.startswith('          ') else line) for line in lines)+'\n'
+          Path('/tmp/apply-ve33-router.sh').write_text(script)
+          PY
+          bash /tmp/apply-ve33-router.sh
+          rm -f .github/workflows/run-ve33-settlement-router-fix.yml
+
+      - name: Validate patched branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --no-save --no-package-lock ethers@6
+          node --check reporting/ve33-accounting-evidence.mjs
+          node --check reporting/ve33-unresolved-settlement-diagnostic.mjs
+          node reporting/ve33-accounting-evidence-validation.mjs
+          node reporting/ve33-income-candidates-validation.mjs
+          node reporting/ve33-ledger-admission-validation.mjs
+          git diff --check
+
+      - name: Commit clean production patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'TheHolding83888'
+          git config user.email '270993406+TheHolding83888@users.noreply.github.com'
+          git add -A
+          git diff --cached --quiet && exit 0
+          git commit -m 'reliability: bound and pool ve33 settlement log scans'
+          git push origin HEAD:fix/ve33-generic-rpc-range-limit-20260914
