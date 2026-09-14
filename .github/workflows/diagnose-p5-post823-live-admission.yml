@@ -45,17 +45,20 @@ jobs:
           const view=buildCanonicalEarnedIncomeView(ledger);
           const blockers=view.unresolved.filter(row=>row.reason==='canonical-event-usd-valuation-incomplete');
           const ve33=(ledger.events||[]).filter(e=>e?.sourceFile==='reporting/ve33-accounting-evidence.json');
-          const resolutions=ve33.filter(e=>e?.valuationResolution?.resolved===true);
+          const resolutions=ve33.filter(e=>e?.valuationResolution?.resolvesUsdValue===true);
+          const valuationSummary=ledger.sourceState?.historicalValuationResolution||{};
           const countBy=(rows,fn)=>rows.reduce((o,x)=>{const k=String(fn(x)??'null');o[k]=(o[k]||0)+1;return o;},{});
           const out={
             ledgerGeneratedAt:ledger.generatedAt??null,
             ve33EventCount:ve33.length,
             ve33ResolvedValuationCount:resolutions.length,
             resolvedBySourceFamily:countBy(resolutions,e=>e.valuationResolution?.sourceFamily),
-            historicalValuationResolvedEvents:ledger.run?.historicalValuationResolvedEvents??null,
-            historicalValuationUnresolvedEvents:ledger.run?.historicalValuationUnresolvedEvents??null,
-            historicalValuationUnresolvedStatuses:ledger.run?.historicalValuationUnresolvedStatuses??null,
-            historicalValuationIdentityMismatchEventCount:ledger.run?.historicalValuationIdentityMismatchEventCount??null,
+            historicalValuationEligibleEventCount:valuationSummary.eligibleEventCount??null,
+            historicalValuationResolvedEventCount:valuationSummary.resolvedEventCount??null,
+            historicalValuationUnresolvedEventCount:valuationSummary.unresolvedEventCount??null,
+            historicalValuationUnresolvedStatuses:valuationSummary.unresolvedStatuses??null,
+            historicalValuationIdentityMismatchEventCount:valuationSummary.identityMismatchEventCount??null,
+            reusedIdentityBoundResolutionCount:valuationSummary.reusedIdentityBoundResolutionCount??null,
             canonicalUsdValuationBlockerCount:blockers.length,
             blockersByProtocol:countBy(blockers,e=>e.protocol),
             blockersByAsset:countBy(blockers,e=>e.asset),
