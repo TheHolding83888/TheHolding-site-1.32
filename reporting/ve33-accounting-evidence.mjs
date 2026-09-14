@@ -284,7 +284,7 @@ function settlementRouterFor(cfg,lanes=[]){
     error?.error?.message,error?.info?.error?.message,error?.shortMessage,error?.message,String(error||'')
   ].filter(Boolean).join(' | ').toLowerCase();
   const isRateLimitError=error=>/rate limit|requests per second|too many requests|http 429|status 429|rps capacity|exceeded.*capacity/.test(errorText(error));
-  const isRangeError=error=>/block range is too large|limited to a 10,000 range|range.*too large|exceed.*block.*range/.test(errorText(error));
+  const isRangeError=error=>/block range is too large|limited to (?:a )?[0-9,]+ range|range.*too large|exceed.*block.*range/.test(errorText(error));
   const isAddressFilterError=error=>/too many addresses|address.*limit|filter.*address|invalid.*address.*array|address array/.test(errorText(error));
   const pace=async()=>{
     let release;
