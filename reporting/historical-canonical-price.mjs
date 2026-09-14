@@ -70,17 +70,30 @@ export const HISTORICAL_OPTIMISM_VELODROME_TWAP_TOKEN_ROUTES=Object.freeze({
   })
 });
 
+// Generic historical fallback for already-supported Velodrome reward lanes.
+// The factory is used only to discover the exact reward-token/native-USDC pool
+// at the proven ve33 closing block. Both stable and volatile candidates are
+// evaluated fail-closed; more than one valid historical route is ambiguous.
+export const HISTORICAL_OPTIMISM_VELODROME_FACTORY_ROUTE=Object.freeze({
+  network:'optimism',chainId:10,
+  factory:'0xF1046053aa5682b4F9a81b5481394DA16BE5FF5a',
+  quoteToken:'0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',quoteTokenSymbol:'USDC',quoteTokenDecimals:6,
+  quoteChainlinkFeed:'0x16a9FA2FDa030272Ce99B29CF780dFA30361E0f3',twapGranularity:48
+});
+
 const VELODROME_SELECTORS=Object.freeze({
-  token0:'0x0dfe1681',token1:'0xd21220a7',stable:'0x22be3de1',observationLength:'0xebeb31db',quote:'0x9e8cc04b'
+  token0:'0x0dfe1681',token1:'0xd21220a7',stable:'0x22be3de1',observationLength:'0xebeb31db',quote:'0x9e8cc04b',getPool:'0x6801cc30',decimals:'0x313ce567'
 });
 const SLIPSTREAM_SELECTORS=Object.freeze({token0:'0x0dfe1681',token1:'0xd21220a7',observe:'0x883bdbfd'});
 const lower=v=>String(v||'').toLowerCase();
 const finite=v=>v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v));
 const RPC_TIMEOUT_MS=10_000;
 const MAX_BOUNDARY_BLOCK_LAG_SECONDS=120;
+const ZERO_ADDRESS='0x0000000000000000000000000000000000000000';
 const abiWord=value=>BigInt(value).toString(16).padStart(64,'0');
 const abiAddress=value=>lower(value).replace(/^0x/,'').padStart(64,'0');
 function encodeVelodromeQuote(tokenIn,amountIn,granularity){return`${VELODROME_SELECTORS.quote}${abiAddress(tokenIn)}${abiWord(amountIn)}${abiWord(granularity)}`;}
+function encodeVelodromeGetPool(tokenA,tokenB,stable){return`${VELODROME_SELECTORS.getPool}${abiAddress(tokenA)}${abiAddress(tokenB)}${abiWord(stable?1:0)}`;}
 function decodeAddressResult(hex){const raw=String(hex||'').replace(/^0x/,'');if(raw.length<64)throw new Error('ABI address result missing');const out=`0x${raw.slice(-40)}`;if(!/^0x[0-9a-f]{40}$/i.test(out))throw new Error('ABI address result invalid');return out;}
 function decodeBoolResult(hex){return decodeUint256(hex)!==0n;}
 function encodeSlipstreamObserve(secondsAgo){return`${SLIPSTREAM_SELECTORS.observe}${abiWord(32)}${abiWord(2)}${abiWord(secondsAgo)}${abiWord(0)}`;}
@@ -100,6 +113,12 @@ function slipstreamQuoteTokenPerReward({avgTick,token0,route}){
   const quotePerReward=lower(token0)===lower(route.token)?rawToken1PerToken0*scale:scale/rawToken1PerToken0;
   if(!(Number.isFinite(quotePerReward)&&quotePerReward>0))throw new Error('Slipstream derived quote invalid');
   return quotePerReward;
+}
+function ve33ProtocolFromIdentity({eventKey,sourceIdentity}={}){
+  const event=String(eventKey||'').toLowerCase(),source=String(sourceIdentity||'').toLowerCase();
+  if(event.startsWith('ve33:velodrome|')||source.startsWith('velodrome|'))return'velodrome';
+  if(event.startsWith('ve33:aerodrome|')||source.startsWith('aerodrome|'))return'aerodrome';
+  return null;
 }
 
 export function canonicalAssetIdForHistoricalToken(token){return HISTORICAL_TOKEN_ASSET_IDS[lower(token)]||null;}
@@ -224,6 +243,51 @@ export async function historicalOptimismVelodromeTwapPriceAtBoundary({token,boun
   return{ok:false,status:'historical-onchain-velodrome-twap-rpc-unavailable',assetId:route.assetId,sourceBlockNumber,attempts};
 }
 
+export async function historicalOptimismVelodromeDiscoveredTwapPriceAtBoundary({token,boundaryAt,eventKey=null,sourceIdentity=null,root=ROOT,onchainRegistry=null,rpcCall=defaultHistoricalRpcCall,fetchImpl=fetch}={}){
+  const cfg=HISTORICAL_OPTIMISM_VELODROME_FACTORY_ROUTE;
+  if(ve33ProtocolFromIdentity({eventKey,sourceIdentity})!=='velodrome')return{ok:false,status:'historical-velodrome-discovery-identity-not-eligible',assetId:null};
+  if(!/^0x[0-9a-f]{40}$/i.test(String(token||''))||lower(token)===lower(cfg.quoteToken))return{ok:false,status:'historical-velodrome-discovery-token-invalid',assetId:null};
+  const boundaryMs=Date.parse(boundaryAt||'');if(!Number.isFinite(boundaryMs))return{ok:false,status:'invalid-accounting-boundary',assetId:null};
+  const sourceBlockNumber=closingBlockFromVe33Identity({eventKey,sourceIdentity});if(!sourceBlockNumber)return{ok:false,status:'ve33-closing-block-proof-missing',assetId:null};
+  let registry=onchainRegistry;try{if(!registry)registry=await readOnchainPriceRegistry(root);}catch(error){return{ok:false,status:'onchain-price-registry-unavailable',assetId:null,error:error?.message||String(error)};}
+  const network=registry?.networks?.optimism;if(Number(network?.chainId)!==cfg.chainId||!Array.isArray(network?.rpcFailover)||!network.rpcFailover.length)return{ok:false,status:'optimism-historical-rpc-fabric-unavailable',assetId:null};
+  const blockTag=hexQuantity(sourceBlockNumber),attempts=[];
+  for(const endpoint of network.rpcFailover){try{
+    const block=await rpcCall({endpoint,method:'eth_getBlockByNumber',params:[blockTag,false],fetchImpl});
+    if(lower(block?.number)!==lower(blockTag))return{ok:false,status:'ve33-closing-block-rpc-mismatch',assetId:null,sourceBlockNumber};
+    const blockTimestampSeconds=Number(BigInt(block?.timestamp||'0x0')),blockTimestampMs=blockTimestampSeconds*1000;
+    if(!(Number.isFinite(blockTimestampMs)&&blockTimestampMs>0))return{ok:false,status:'historical-velodrome-block-time-invalid',assetId:null,sourceBlockNumber};
+    if(blockTimestampMs>boundaryMs)return{ok:false,status:'historical-velodrome-block-after-accounting-boundary',assetId:null,sourceBlockNumber};
+    const boundaryLagSeconds=(boundaryMs-blockTimestampMs)/1000;if(boundaryLagSeconds>MAX_BOUNDARY_BLOCK_LAG_SECONDS)return{ok:false,status:'historical-velodrome-block-too-far-from-accounting-boundary',assetId:null,sourceBlockNumber,boundaryLagSeconds:Number(boundaryLagSeconds.toFixed(3))};
+    const decimalsHex=await rpcCall({endpoint,method:'eth_call',params:[{to:token,data:VELODROME_SELECTORS.decimals},blockTag],fetchImpl});
+    const tokenDecimals=Number(decodeUint256(decimalsHex));if(!Number.isInteger(tokenDecimals)||tokenDecimals<0||tokenDecimals>36)return{ok:false,status:'historical-velodrome-discovered-token-decimals-invalid',assetId:null,sourceBlockNumber};
+    const amountIn=10n**BigInt(tokenDecimals),valid=[];
+    for(const poolStable of [false,true]){
+      try{
+        const poolHex=await rpcCall({endpoint,method:'eth_call',params:[{to:cfg.factory,data:encodeVelodromeGetPool(token,cfg.quoteToken,poolStable)},blockTag],fetchImpl});
+        const pool=decodeAddressResult(poolHex);if(lower(pool)===ZERO_ADDRESS)continue;
+        const callData={token0:VELODROME_SELECTORS.token0,token1:VELODROME_SELECTORS.token1,stable:VELODROME_SELECTORS.stable,observationLength:VELODROME_SELECTORS.observationLength,quote:encodeVelodromeQuote(token,amountIn,cfg.twapGranularity)};
+        const[token0Hex,token1Hex,stableHex,observationLengthHex,quoteHex]=await Promise.all([
+          rpcCall({endpoint,method:'eth_call',params:[{to:pool,data:callData.token0},blockTag],fetchImpl}),rpcCall({endpoint,method:'eth_call',params:[{to:pool,data:callData.token1},blockTag],fetchImpl}),rpcCall({endpoint,method:'eth_call',params:[{to:pool,data:callData.stable},blockTag],fetchImpl}),rpcCall({endpoint,method:'eth_call',params:[{to:pool,data:callData.observationLength},blockTag],fetchImpl}),rpcCall({endpoint,method:'eth_call',params:[{to:pool,data:callData.quote},blockTag],fetchImpl})]);
+        const token0=decodeAddressResult(token0Hex),token1=decodeAddressResult(token1Hex),stable=decodeBoolResult(stableHex),observationLength=Number(decodeUint256(observationLengthHex)),quoteAmountOutRaw=decodeUint256(quoteHex),pair=new Set([lower(token0),lower(token1)]);
+        if(pair.size!==2||!pair.has(lower(token))||!pair.has(lower(cfg.quoteToken))||stable!==poolStable||!Number.isSafeInteger(observationLength)||observationLength<=Number(cfg.twapGranularity)||quoteAmountOutRaw<=0n)continue;
+        valid.push({pool,poolStable,observationLength,quoteAmountOutRaw});
+      }catch(error){attempts.push({endpointId:endpoint?.id||null,poolStable,error:error?.message||String(error)});}
+    }
+    const unique=new Map(valid.map(row=>[lower(row.pool),row]));const candidates=[...unique.values()];
+    if(candidates.length===0)continue;
+    if(candidates.length!==1)return{ok:false,status:'historical-velodrome-discovered-usdc-route-ambiguous',assetId:null,sourceBlockNumber,candidatePools:candidates.map(x=>({pool:x.pool,poolStable:x.poolStable,observationLength:x.observationLength}))};
+    const candidate=candidates[0];
+    const quoteUsd=await historicalOptimismChainlinkPriceAtBoundary({token:cfg.quoteToken,boundaryAt,eventKey,sourceIdentity,root,onchainRegistry:registry,rpcCall,fetchImpl});
+    if(quoteUsd?.ok!==true)return{ok:false,status:'historical-velodrome-quote-token-usd-unavailable',assetId:null,sourceBlockNumber,quoteStatus:quoteUsd?.status||null,quoteAssetId:quoteUsd?.assetId||null};
+    if(lower(quoteUsd.sourceContract)!==lower(cfg.quoteChainlinkFeed)||Number(quoteUsd.sourceBlockNumber)!==sourceBlockNumber||Number(quoteUsd.chainId)!==cfg.chainId)return{ok:false,status:'historical-velodrome-quote-token-proof-mismatch',assetId:null,sourceBlockNumber};
+    const quoteTokenAmount=Number(candidate.quoteAmountOutRaw)/10**Number(cfg.quoteTokenDecimals),priceUsd=quoteTokenAmount*Number(quoteUsd.priceUsd);
+    if(!(Number.isFinite(priceUsd)&&priceUsd>0))return{ok:false,status:'historical-velodrome-derived-price-not-finite-positive',assetId:null,sourceBlockNumber};
+    return{ok:true,status:'historical-onchain-velodrome-discovered-twap-chainlink-price',sourceFamily:'historical-onchain-velodrome-twap-chainlink-at-boundary',assetId:null,symbol:null,priceUsd,observedAt:quoteUsd.observedAt,ageMinutes:quoteUsd.ageMinutes,maxAgeMinutes:quoteUsd.maxAgeMinutes,chainId:cfg.chainId,sourceBlockNumber,sourceBlockTimestamp:new Date(blockTimestampMs).toISOString(),sourceContract:candidate.pool,rpcEndpointId:endpoint?.id||null,exactHistoricalBlock:true,quoteToken:cfg.quoteToken,quoteTokenSymbol:cfg.quoteTokenSymbol,quoteAmountOutRaw:candidate.quoteAmountOutRaw.toString(),quoteTokenAmount,twapGranularity:cfg.twapGranularity,observationLength:candidate.observationLength,poolStable:candidate.poolStable,quoteChainlinkContract:quoteUsd.sourceContract,quoteRoundId:quoteUsd.roundId,quoteAnsweredInRound:quoteUsd.answeredInRound,quoteObservedAt:quoteUsd.observedAt,quotePriceUsd:quoteUsd.priceUsd,sourceFile:'reporting/historical-canonical-price.mjs#HISTORICAL_OPTIMISM_VELODROME_FACTORY_ROUTE',priceSource:'onchain-velodrome-v2-factory-discovered-twap-plus-chainlink-quote-exact-historical-block',stablecoinPegAssumptionUsed:false,currentPriceUsed:false,referenceAprUsed:false,executionAuthority:'none'};
+  }catch(error){attempts.push({endpointId:endpoint?.id||null,error:error?.message||String(error)});}}
+  return{ok:false,status:'historical-velodrome-discovered-usdc-route-unavailable',assetId:null,sourceBlockNumber,attempts};
+}
+
 export async function historicalBaseSlipstreamTwapPriceAtBoundary({token,boundaryAt,eventKey=null,sourceIdentity=null,root=ROOT,onchainRegistry=null,rpcCall=defaultHistoricalRpcCall,fetchImpl=fetch}={}){
   const route=historicalBaseSlipstreamTwapRouteForToken(token);if(!route)return{ok:false,status:'token-not-historical-slipstream-twap-mapped',assetId:null};
   const boundaryMs=Date.parse(boundaryAt||'');if(!Number.isFinite(boundaryMs))return{ok:false,status:'invalid-accounting-boundary',assetId:route.assetId};
@@ -264,6 +328,7 @@ export async function historicalCanonicalPriceAtBoundary({token,boundaryAt,event
     if(exactChainlinkRoute)return historicalChainlinkPriceAtBoundaryForRoute({route:exactChainlinkRoute,boundaryAt,eventKey,sourceIdentity,root,onchainRegistry,rpcCall,fetchImpl});
     if(historicalOptimismVelodromeTwapRouteForToken(token))return historicalOptimismVelodromeTwapPriceAtBoundary({token,boundaryAt,eventKey,sourceIdentity,root,onchainRegistry,rpcCall,fetchImpl});
     if(historicalBaseSlipstreamTwapRouteForToken(token))return historicalBaseSlipstreamTwapPriceAtBoundary({token,boundaryAt,eventKey,sourceIdentity,root,onchainRegistry,rpcCall,fetchImpl});
+    if(ve33ProtocolFromIdentity({eventKey,sourceIdentity})==='velodrome')return historicalOptimismVelodromeDiscoveredTwapPriceAtBoundary({token,boundaryAt,eventKey,sourceIdentity,root,onchainRegistry,rpcCall,fetchImpl});
     return{ok:false,status:'token-not-canonical-market-data-mapped',assetId:null};
   }
   let scheduler=schedulerContract;try{if(!scheduler)scheduler=await readSchedulerContract(root);}catch(error){return{ok:false,status:'market-data-scheduler-contract-unavailable',assetId,error:error?.message||String(error)};}
