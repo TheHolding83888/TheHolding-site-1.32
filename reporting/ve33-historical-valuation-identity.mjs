@@ -5,6 +5,14 @@ import {
   historicalOptimismVelodromeTwapRouteForToken,
   historicalBaseSlipstreamTwapRouteForToken
 } from './historical-canonical-price.mjs';
+import {
+  AERODROME_SLIPSTREAM_FACTORIES, CANONICAL_TICK_SPACINGS, BASE_NATIVE_USDC, DEFAULT_TWAP_SECONDS
+} from './historical-aerodrome-usdc-route.mjs';
+import { BASE_NATIVE_USDC_CHAINLINK_FEED } from './historical-aerodrome-discovered-price.mjs';
+import {
+  OPTIMISM_VELODROME_V2_FACTORY, OPTIMISM_NATIVE_USDC, DEFAULT_TWAP_GRANULARITY
+} from './historical-velodrome-usdc-route.mjs';
+import { OPTIMISM_NATIVE_USDC_CHAINLINK_FEED } from './historical-velodrome-discovered-price.mjs';
 
 const lower=v=>String(v||'').toLowerCase();
 const address=/^0x[0-9a-f]{40}$/i;
@@ -83,6 +91,34 @@ export function historicalValuationSourceMatchesVe33Identity(event,resolution){
       pair.size===2&&pair.has(lower(route.token))&&pair.has(lower(route.quoteToken))&&
       resolution?.stablecoinPegAssumptionUsed===false&&
       String(resolution?.sourceStatus||'')==='historical-onchain-slipstream-twap-chainlink-price';
+  }
+  if(family==='historical-onchain-aerodrome-twap-chainlink-at-boundary'){
+    const pair=new Set([lower(resolution?.poolToken0),lower(resolution?.poolToken1)]);
+    const factoryOk=AERODROME_SLIPSTREAM_FACTORIES.map(lower).includes(lower(resolution?.poolFactory));
+    const spacingOk=CANONICAL_TICK_SPACINGS.includes(Number(resolution?.tickSpacing));
+    return Number(event?.chainId)===8453&&Number(resolution?.sourceChainId)===8453&&
+      lower(resolution?.rewardToken)===identity.token&&factoryOk&&spacingOk&&
+      String(resolution?.routeSelection||'')==='highest-active-liquidity-at-historical-boundary'&&
+      Number.isInteger(Number(resolution?.routeCandidateCount))&&Number(resolution?.routeCandidateCount)>=1&&
+      pair.size===2&&pair.has(identity.token)&&pair.has(lower(BASE_NATIVE_USDC))&&
+      lower(resolution?.quoteToken)===lower(BASE_NATIVE_USDC)&&
+      lower(resolution?.quoteChainlinkContract)===lower(BASE_NATIVE_USDC_CHAINLINK_FEED)&&
+      Number(resolution?.twapSeconds)===Number(DEFAULT_TWAP_SECONDS)&&Number.isSafeInteger(Number(resolution?.averageTick))&&
+      resolution?.stablecoinPegAssumptionUsed===false&&
+      String(resolution?.sourceStatus||'')==='historical-onchain-aerodrome-discovered-twap-chainlink-price';
+  }
+  if(family==='historical-onchain-velodrome-discovered-twap-chainlink-at-boundary'){
+    const pair=new Set([lower(resolution?.poolToken0),lower(resolution?.poolToken1)]);
+    return Number(event?.chainId)===10&&Number(resolution?.sourceChainId)===10&&
+      lower(resolution?.rewardToken)===identity.token&&
+      lower(resolution?.poolFactory)===lower(OPTIMISM_VELODROME_V2_FACTORY)&&
+      pair.size===2&&pair.has(identity.token)&&pair.has(lower(OPTIMISM_NATIVE_USDC))&&
+      lower(resolution?.quoteToken)===lower(OPTIMISM_NATIVE_USDC)&&
+      lower(resolution?.quoteChainlinkContract)===lower(OPTIMISM_NATIVE_USDC_CHAINLINK_FEED)&&
+      Number(resolution?.twapGranularity)===Number(DEFAULT_TWAP_GRANULARITY)&&
+      Number.isSafeInteger(Number(resolution?.observationLength))&&Number(resolution?.observationLength)>Number(DEFAULT_TWAP_GRANULARITY)&&
+      typeof resolution?.poolStable==='boolean'&&resolution?.stablecoinPegAssumptionUsed===false&&
+      String(resolution?.sourceStatus||'')==='historical-onchain-velodrome-discovered-twap-chainlink-price';
   }
   return false;
 }
