@@ -5,6 +5,7 @@ import process from 'node:process';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { decodeChainlinkRoundData, decodeUint256 } from '../intelligence/market-data/onchain-price-resolver-core.mjs';
+import { isHistoricalVelodromeVe33Identity, historicalOptimismVelodromeDiscoveredPriceAtBoundary } from './historical-velodrome-discovered-price.mjs';
 
 const __filename=fileURLToPath(import.meta.url);
 const __dirname=path.dirname(__filename);
@@ -264,6 +265,7 @@ export async function historicalCanonicalPriceAtBoundary({token,boundaryAt,event
     if(exactChainlinkRoute)return historicalChainlinkPriceAtBoundaryForRoute({route:exactChainlinkRoute,boundaryAt,eventKey,sourceIdentity,root,onchainRegistry,rpcCall,fetchImpl});
     if(historicalOptimismVelodromeTwapRouteForToken(token))return historicalOptimismVelodromeTwapPriceAtBoundary({token,boundaryAt,eventKey,sourceIdentity,root,onchainRegistry,rpcCall,fetchImpl});
     if(historicalBaseSlipstreamTwapRouteForToken(token))return historicalBaseSlipstreamTwapPriceAtBoundary({token,boundaryAt,eventKey,sourceIdentity,root,onchainRegistry,rpcCall,fetchImpl});
+    if(isHistoricalVelodromeVe33Identity({eventKey,sourceIdentity}))return historicalOptimismVelodromeDiscoveredPriceAtBoundary({token,boundaryAt,eventKey,sourceIdentity,root,onchainRegistry,rpcCall,fetchImpl,usdcUsdResolver:historicalOptimismChainlinkPriceAtBoundary});
     return{ok:false,status:'token-not-canonical-market-data-mapped',assetId:null};
   }
   let scheduler=schedulerContract;try{if(!scheduler)scheduler=await readSchedulerContract(root);}catch(error){return{ok:false,status:'market-data-scheduler-contract-unavailable',assetId,error:error?.message||String(error)};}
