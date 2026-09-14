@@ -1,0 +1,41 @@
+name: Verify P5 Discovered Valuation Admission
+
+on:
+  pull_request:
+    paths:
+      - 'reporting/income-ledger.mjs'
+      - 'reporting/ve33-historical-valuation-identity.mjs'
+      - 'reporting/historical-aerodrome-discovered-price.mjs'
+      - 'reporting/historical-velodrome-discovered-price.mjs'
+      - 'reporting/historical-aerodrome-usdc-route.mjs'
+      - 'reporting/historical-velodrome-usdc-route.mjs'
+      - 'reporting/verify-p5-discovered-valuation-admission.mjs'
+      - '.github/workflows/verify-p5-discovered-valuation-admission.yml'
+  push:
+    branches:
+      - fix/p5-discovered-valuation-admission-20260914
+    paths:
+      - 'reporting/income-ledger.mjs'
+      - 'reporting/ve33-historical-valuation-identity.mjs'
+      - 'reporting/verify-p5-discovered-valuation-admission.mjs'
+      - '.github/workflows/verify-p5-discovered-valuation-admission.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Syntax check canonical valuation admission
+        run: |
+          node --check reporting/income-ledger.mjs
+          node --check reporting/ve33-historical-valuation-identity.mjs
+          node --check reporting/verify-p5-discovered-valuation-admission.mjs
+      - name: Verify discovered valuation admission and fail-closed identity
+        run: node reporting/verify-p5-discovered-valuation-admission.mjs
