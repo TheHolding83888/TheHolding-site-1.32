@@ -13,13 +13,17 @@ jobs:
   diagnose:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout diagnostic branch
+      - name: Checkout fresh main for read-only diagnosis
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: main
+          fetch-depth: 0
 
       - name: Enumerate unresolved historical USD events
         shell: bash
         run: |
           set -euo pipefail
+          echo "DIAGNOSTIC_SOURCE_MAIN_SHA=$(git rev-parse HEAD)"
           node --input-type=module - <<'NODE'
           import fs from 'node:fs';
           import { buildCanonicalEarnedIncomeView } from './reporting/canonical-earned-income-view.mjs';
@@ -74,7 +78,7 @@ jobs:
           });
 
           const output = {
-            version: '0.2-p5-generic-unresolved-historical-usd-diagnostic',
+            version: '0.3-p5-fresh-main-unresolved-historical-usd-diagnostic',
             ledgerGeneratedAt: ledger.generatedAt ?? null,
             canonicalViewUnresolvedCount: view.unresolved.length,
             canonicalUsdValuationBlockerCount: blockers.length,
