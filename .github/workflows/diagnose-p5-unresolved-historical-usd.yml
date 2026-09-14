@@ -1,0 +1,100 @@
+name: Diagnose P5 unresolved historical USD
+
+on:
+  push:
+    branches:
+      - diagnostic/p5-unresolved-historical-usd-20260914
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout diagnostic branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Enumerate unresolved historical USD events
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module - <<'NODE'
+          import fs from 'node:fs';
+
+          const ledger = JSON.parse(fs.readFileSync('reporting/income-ledger.json', 'utf8'));
+          const events = Array.isArray(ledger.events) ? ledger.events : [];
+          const unresolved = events.filter(event => event?.metricState === 'unvalued-fail-closed');
+
+          const countBy = (rows, keyFn) => {
+            const out = {};
+            for (const row of rows) {
+              const key = String(keyFn(row) ?? 'null');
+              out[key] = (out[key] || 0) + 1;
+            }
+            return Object.fromEntries(Object.entries(out).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])));
+          };
+
+          const details = unresolved.map(event => ({
+            eventKey: event.eventKey ?? null,
+            company: event.company ?? null,
+            mechanism: event.mechanism ?? event.mechanismId ?? null,
+            protocol: event.protocol ?? null,
+            route: event.route ?? null,
+            chain: event.chain ?? null,
+            chainId: event.chainId ?? null,
+            token: event.token ?? event.rewardToken ?? null,
+            amount: event.amount ?? null,
+            periodAttributionMonth: event.periodAttributionMonth ?? null,
+            economicDate: event.economicDate ?? null,
+            periodStart: event.periodStart ?? null,
+            periodEnd: event.periodEnd ?? null,
+            valuationAt: event.valuationAt ?? null,
+            valuationStatus: event.valuationStatus ?? null,
+            valuationSourceStatus: event.valuationSourceStatus ?? null,
+            valuationSource: event.valuationSource ?? null,
+            sourceIdentity: event.sourceIdentity ?? event.source ?? null,
+            sourceFile: event.sourceFile ?? null,
+            sourceFamily: event.sourceFamily ?? null,
+            blockStart: event.blockStart ?? event.openingBlock ?? null,
+            blockEnd: event.blockEnd ?? event.closingBlock ?? null,
+            txHash: event.txHash ?? null
+          }));
+
+          const output = {
+            version: '0.1-p5-generic-unresolved-historical-usd-diagnostic',
+            ledgerGeneratedAt: ledger.generatedAt ?? null,
+            ledgerRun: {
+              historicalValuationResolvedEvents: ledger.run?.historicalValuationResolvedEvents ?? null,
+              historicalValuationUnresolvedEvents: ledger.run?.historicalValuationUnresolvedEvents ?? null,
+              historicalValuationUnresolvedStatuses: ledger.run?.historicalValuationUnresolvedStatuses ?? null
+            },
+            unresolvedEventCount: unresolved.length,
+            byValuationStatus: countBy(unresolved, e => e.valuationStatus),
+            byChain: countBy(unresolved, e => e.chain ?? e.chainId),
+            byProtocol: countBy(unresolved, e => e.protocol),
+            byRoute: countBy(unresolved, e => e.route),
+            byToken: countBy(unresolved, e => e.token ?? e.rewardToken),
+            byCompany: countBy(unresolved, e => e.company),
+            events: details,
+            semantics: {
+              diagnosticOnly: true,
+              mutatesAccounting: false,
+              createsIncome: false,
+              currentPriceBackfillAllowed: false,
+              unknownIsNotZero: true,
+              executionAuthority: 'none'
+            }
+          };
+
+          console.log('P5_UNRESOLVED_HISTORICAL_USD_JSON_START');
+          console.log(JSON.stringify(output, null, 2));
+          console.log('P5_UNRESOLVED_HISTORICAL_USD_JSON_END');
+
+          const expected = Number(ledger.run?.historicalValuationUnresolvedEvents);
+          if (Number.isFinite(expected) && expected !== unresolved.length) {
+            console.error(`Diagnostic count mismatch: ledger run says ${expected}, direct unvalued event scan found ${unresolved.length}`);
+            process.exitCode = 2;
+          }
+          NODE
