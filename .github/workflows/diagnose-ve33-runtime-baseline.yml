@@ -1,0 +1,70 @@
+name: Diagnose ve33 Runtime Baseline
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/diagnose-ve33-runtime-baseline.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Print persisted ve33 runtime diagnostics
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const e=JSON.parse(fs.readFileSync('reporting/ve33-accounting-evidence.json','utf8'));
+          const protocol=Object.fromEntries(Object.entries(e.diagnostics?.protocols||{}).map(([k,v])=>[k,{
+            latestBlockNumber:v.latestBlockNumber||null,
+            observedAt:v.observedAt||null,
+            laneCount:Number(v.laneCount||0),
+            currentCheckpointCount:Number(v.currentCheckpointCount||0),
+            currentStateFailureCount:Number(v.currentStateFailureCount||0),
+            intervalCount:Number(v.intervalCount||0),
+            settlementEventCount:Number(v.settlementEventCount||0),
+            settlementQueryFailureCount:Number(v.settlementQueryFailureCount||0),
+            boundaryFailureCount:(v.boundaryFailures||[]).length,
+            historicalBoundarySkippedLaneReads:Number(v.historicalBoundarySkippedLaneReads||0),
+            runtimeMs:Number(v.runtimeMs||0),
+            settlementRpc:v.settlementRpc?{
+              preferredProvider:v.settlementRpc.preferredProvider||null,
+              candidateProviders:v.settlementRpc.candidateProviders||[],
+              queryAttempts:Number(v.settlementRpc.queryAttempts||0),
+              cacheHits:Number(v.settlementRpc.cacheHits||0),
+              cacheEntries:Number(v.settlementRpc.cacheEntries||0),
+              adaptiveSplitCount:Number(v.settlementRpc.adaptiveSplitCount||0),
+              addressSplitCount:Number(v.settlementRpc.addressSplitCount||0),
+              rateLimitRetryCount:Number(v.settlementRpc.rateLimitRetryCount||0),
+              failoverCount:Number(v.settlementRpc.failoverCount||0),
+              providerSuccessCounts:v.settlementRpc.providerSuccessCounts||{},
+              providerFailureCounts:v.settlementRpc.providerFailureCounts||{}
+            }:null
+          }]));
+          const out={
+            version:e.version,
+            generatedAt:e.generatedAt,
+            status:e.status,
+            checkpointCount:(e.checkpoints||[]).length,
+            eventCount:(e.events||[]).length,
+            laneCount:Number(e.diagnostics?.laneCount||0),
+            runtimeMs:Number(e.diagnostics?.runtimeMs||0),
+            stateReadConcurrency:Number(e.diagnostics?.stateReadConcurrency||0),
+            settlementConcurrency:Number(e.diagnostics?.settlementConcurrency||0),
+            reconciliationCount:Number(e.diagnostics?.reconciliationCount||0),
+            settlementQueryFailureCount:Number(e.diagnostics?.settlementQueryFailureCount||0),
+            unresolvedSettlementCount:Number(e.diagnostics?.unresolvedSettlementCount||0),
+            historicalPriceCacheEntries:Number(e.diagnostics?.historicalPriceCacheEntries||0),
+            historyCompaction:e.diagnostics?.historyCompaction||null,
+            protocol
+          };
+          console.log('VE33_RUNTIME_BASELINE_JSON_START');
+          console.log(JSON.stringify(out,null,2));
+          console.log('VE33_RUNTIME_BASELINE_JSON_END');
+          NODE
