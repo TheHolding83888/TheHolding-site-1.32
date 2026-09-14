@@ -31,12 +31,10 @@ jobs:
           end=src.index('\n      - name: Validate patched branch', run_start)
           lines=src[run_start:end].splitlines()
           script='\n'.join((line[10:] if line.startswith('          ') else line) for line in lines)+'\n'
-          # Normalize the saved patch anchors to the exact current production shape.
-          script=script.replace(
-            "rpcEnv:'BASE_RPC_URL',rpcFallbacks:['https://base-rpc.publicnode.com','https://mainnet.base.org']",
-            "rpcEnv:'BASE_RPC_URL',rpcFallbacks:['https://mainnet.base.org','https://base-rpc.publicnode.com']"
-          )
-          script=script.replace('\n            votingEscrow:', '\n    votingEscrow:')
+          # YAML block indentation removes ten spaces. Restore the two spaces
+          # that belong to the Python triple-quoted config fragments themselves.
+          script=script.replace('\n  settlementRangeHints:', '\n    settlementRangeHints:')
+          script=script.replace('\n  votingEscrow:', '\n    votingEscrow:')
           Path('/tmp/apply-ve33-router.sh').write_text(script)
           PY
           bash /tmp/apply-ve33-router.sh
