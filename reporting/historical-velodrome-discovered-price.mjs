@@ -103,7 +103,7 @@ export async function historicalOptimismVelodromeDiscoveredPriceAtBoundary({
   return{
     ok:true,
     status:'historical-onchain-velodrome-discovered-twap-chainlink-price',
-    sourceFamily:'historical-onchain-velodrome-twap-chainlink-at-boundary',
+    sourceFamily:'historical-onchain-velodrome-discovered-twap-chainlink-at-boundary',
     assetId:null,
     symbol:null,
     priceUsd,

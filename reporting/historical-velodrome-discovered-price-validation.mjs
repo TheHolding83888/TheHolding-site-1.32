@@ -79,6 +79,7 @@ const result=await historicalOptimismVelodromeDiscoveredPriceAtBoundary({
 });
 assert.equal(result.ok,true);
 assert.equal(result.status,'historical-onchain-velodrome-discovered-twap-chainlink-price');
+assert.equal(result.sourceFamily,'historical-onchain-velodrome-discovered-twap-chainlink-at-boundary');
 assert.equal(result.sourceContract.toLowerCase(),pool.toLowerCase());
 assert.equal(result.quoteTokenAmount,1.25);
 assert.equal(result.priceUsd,1.25*0.9998);
