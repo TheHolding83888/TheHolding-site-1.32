@@ -1,0 +1,64 @@
+name: Diagnose P5 post-823 live admission
+
+on:
+  push:
+    branches:
+      - diagnostic/p5-post823-live-admission-20260914
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm install --no-save --no-package-lock ethers@6
+
+      - name: Build isolated base ledger and admit persisted live ve33 evidence
+        env:
+          INCOME_LEDGER_POLICY_FILE: ./reporting/income-ledger-policy.json
+          REPORTING_DATA_FILE: ./reporting/reporting-data.json
+          DEFITEA_INCOME_LEDGER_FILE: ./reporting/defitea-income-ledger.json
+          EMBEDDED_YIELD_LEDGER_FILE: ./companies/embedded-yield-ledger.json
+          REWARDS_DATA_FILE: ./companies/rewards-data.json
+          REALISED_CASH_FLOW_FILE: ./intelligence/realised-cash-flow/realised-cash-flow.json
+          FRAX_YIELD_EVIDENCE_FILE: ./reporting/frax-yield-accounting-evidence.json
+          VE33_EVIDENCE_FILE: ./reporting/ve33-accounting-evidence.json
+          VE33_LOCKED_MANAGED_EVIDENCE_FILE: ./reporting/ve33-locked-managed-accounting-evidence.json
+          INCOME_LEDGER_FILE: /tmp/p5-income-ledger.json
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node reporting/income-ledger.mjs
+          node reporting/ve33-ledger-admission.mjs
+          node --input-type=module - <<'NODE'
+          import fs from 'node:fs';
+          import { buildCanonicalEarnedIncomeView } from './reporting/canonical-earned-income-view.mjs';
+          const ledger=JSON.parse(fs.readFileSync('/tmp/p5-income-ledger.json','utf8'));
+          const view=buildCanonicalEarnedIncomeView(ledger);
+          const blockers=view.unresolved.filter(row=>row.reason==='canonical-event-usd-valuation-incomplete');
+          const ve33=(ledger.events||[]).filter(e=>e?.sourceFile==='reporting/ve33-accounting-evidence.json');
+          const resolutions=ve33.filter(e=>e?.valuationResolution?.resolved===true);
+          const countBy=(rows,fn)=>rows.reduce((o,x)=>{const k=String(fn(x)??'null');o[k]=(o[k]||0)+1;return o;},{});
+          const out={
+            ledgerGeneratedAt:ledger.generatedAt??null,
+            ve33EventCount:ve33.length,
+            ve33ResolvedValuationCount:resolutions.length,
+            resolvedBySourceFamily:countBy(resolutions,e=>e.valuationResolution?.sourceFamily),
+            canonicalUsdValuationBlockerCount:blockers.length,
+            blockersByProtocol:countBy(blockers,e=>e.protocol),
+            blockersByAsset:countBy(blockers,e=>e.asset),
+            blockers: blockers.map(row=>({eventKey:row.eventKey,company:row.company,protocol:row.protocol,route:row.route,asset:row.asset,amount:row.amount,economicDate:row.economicDate})),
+            semantics:{diagnosticOnly:true,mutatesProduction:false,currentPriceBackfillAllowed:false,unknownIsNotZero:true,executionAuthority:'none'}
+          };
+          console.log('P5_POST823_LIVE_ADMISSION_JSON_START');
+          console.log(JSON.stringify(out,null,2));
+          console.log('P5_POST823_LIVE_ADMISSION_JSON_END');
+          NODE
