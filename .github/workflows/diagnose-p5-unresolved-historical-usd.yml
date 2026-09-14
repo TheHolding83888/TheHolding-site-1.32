@@ -7,40 +7,99 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  patch-canonical-consumer:
+  diagnose:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout diagnostic tooling
+      - name: Checkout fresh main for read-only diagnosis
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
+          ref: main
           fetch-depth: 0
-      - name: Patch and prove isolated consumer branch
+
+      - name: Enumerate unresolved historical USD events
         shell: bash
         run: |
           set -euo pipefail
-          cp diagnostics/p5-patch-canonical-consumer.py /tmp/p5-patch-canonical-consumer.py
-          git fetch origin fix/p5-canonical-discovered-valuation-consumer-20260914
-          git checkout -B fix/p5-canonical-discovered-valuation-consumer-20260914 origin/fix/p5-canonical-discovered-valuation-consumer-20260914
-          python3 /tmp/p5-patch-canonical-consumer.py
-          node --check reporting/canonical-earned-income-view.mjs
-          node --check reporting/verify-p5-discovered-valuation-admission.mjs
-          node reporting/verify-p5-discovered-valuation-admission.mjs
+          echo "DIAGNOSTIC_SOURCE_MAIN_SHA=$(git rev-parse HEAD)"
           node --input-type=module - <<'NODE'
           import fs from 'node:fs';
           import { buildCanonicalEarnedIncomeView } from './reporting/canonical-earned-income-view.mjs';
-          const ledger=JSON.parse(fs.readFileSync('reporting/income-ledger.json','utf8'));
-          const view=buildCanonicalEarnedIncomeView(ledger);
-          const blockers=view.unresolved.filter(row=>row.reason==='canonical-event-usd-valuation-incomplete');
-          console.log('P5 canonical consumer fresh-ledger proof',{blockers:blockers.length,recognized:view.recognized.length,totalUnresolved:view.unresolved.length});
-          if(blockers.length!==15) throw new Error(`expected 15 true historical USD blockers after consuming proven discovered valuations, got ${blockers.length}`);
+
+          const ledger = JSON.parse(fs.readFileSync('reporting/income-ledger.json', 'utf8'));
+          const rawEvents = Array.isArray(ledger.events) ? ledger.events : [];
+          const byKey = new Map(rawEvents.map(event => [event.eventKey, event]));
+          const view = buildCanonicalEarnedIncomeView(ledger);
+          const blockers = view.unresolved.filter(row => row.reason === 'canonical-event-usd-valuation-incomplete');
+
+          const countBy = (rows, keyFn) => {
+            const out = {};
+            for (const row of rows) {
+              const key = String(keyFn(row) ?? 'null');
+              out[key] = (out[key] || 0) + 1;
+            }
+            return Object.fromEntries(Object.entries(out).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])));
+          };
+
+          const details = blockers.map(row => {
+            const event = byKey.get(row.eventKey) || {};
+            return {
+              eventKey: row.eventKey ?? null,
+              company: row.company ?? event.company ?? null,
+              mechanism: row.mechanism ?? event.mechanism ?? event.mechanismId ?? null,
+              family: row.family ?? event.family ?? null,
+              protocol: row.protocol ?? event.protocol ?? null,
+              route: row.route ?? event.route ?? null,
+              asset: row.asset ?? null,
+              chain: event.chain ?? null,
+              chainId: event.chainId ?? null,
+              token: event.token ?? event.rewardToken ?? null,
+              amount: row.amount ?? event.amount ?? null,
+              periodAttributionMonth: event.periodAttributionMonth ?? null,
+              economicDate: row.economicDate ?? event.economicDate ?? null,
+              periodStart: row.periodStart ?? event.periodStart ?? null,
+              periodEnd: row.periodEnd ?? event.periodEnd ?? null,
+              reason: row.reason ?? null,
+              valuationAt: event.valuationAt ?? null,
+              valuationStatus: event.valuationStatus ?? null,
+              valuationSourceStatus: event.valuationSourceStatus ?? null,
+              valuationSource: event.valuationSource ?? null,
+              sourceIdentity: event.sourceIdentity ?? event.source ?? null,
+              sourceFile: event.sourceFile ?? null,
+              sourceFamily: event.sourceFamily ?? null,
+              blockStart: event.blockStart ?? event.openingBlock ?? null,
+              blockEnd: event.blockEnd ?? event.closingBlock ?? null,
+              txHash: event.txHash ?? null,
+              metricState: event.metricState ?? null,
+              evidenceStatus: event.evidenceStatus ?? null
+            };
+          });
+
+          const output = {
+            version: '0.3-p5-fresh-main-unresolved-historical-usd-diagnostic',
+            ledgerGeneratedAt: ledger.generatedAt ?? null,
+            canonicalViewUnresolvedCount: view.unresolved.length,
+            canonicalUsdValuationBlockerCount: blockers.length,
+            byValuationStatus: countBy(details, e => e.valuationStatus),
+            byChain: countBy(details, e => e.chain ?? e.chainId),
+            byProtocol: countBy(details, e => e.protocol),
+            byRoute: countBy(details, e => e.route),
+            byToken: countBy(details, e => e.token),
+            byCompany: countBy(details, e => e.company),
+            events: details,
+            semantics: {
+              diagnosticOnly: true,
+              mutatesAccounting: false,
+              createsIncome: false,
+              currentPriceBackfillAllowed: false,
+              unknownIsNotZero: true,
+              executionAuthority: 'none'
+            }
+          };
+
+          console.log('P5_UNRESOLVED_HISTORICAL_USD_JSON_START');
+          console.log(JSON.stringify(output, null, 2));
+          console.log('P5_UNRESOLVED_HISTORICAL_USD_JSON_END');
           NODE
-          git diff --check
-          git config user.name "The Holding P5 Diagnostic"
-          git config user.email "p5-diagnostic@theholding.ai"
-          git add reporting/canonical-earned-income-view.mjs reporting/verify-p5-discovered-valuation-admission.mjs
-          test "$(git diff --cached --name-only | tr '\n' ' ')" = "reporting/canonical-earned-income-view.mjs reporting/verify-p5-discovered-valuation-admission.mjs "
-          git commit -m "Accounting: consume discovered historical valuations canonically"
-          git push origin HEAD:fix/p5-canonical-discovered-valuation-consumer-20260914
