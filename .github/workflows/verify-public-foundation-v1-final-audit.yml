@@ -93,6 +93,7 @@ jobs:
             git checkout -- "${generated[@]}"
           }
           trap restore_generated EXIT
+          cp reporting/accounting-reconciliation-watch.json /tmp/accounting-reconciliation-watch-previous.json
 
           # Rebuild the complete deterministic downstream projection from the
           # exact PR checkout. The reference scaffold is regenerated first,
@@ -103,7 +104,7 @@ jobs:
           node reporting/accounting-notice-queue.mjs
           node reporting/accounting-reference-reconciliation.mjs
           node reporting/historical-accounting-completeness-map.mjs
-          node reporting/accounting-reconciliation-watch.mjs
+          ACCOUNTING_RECONCILIATION_WATCH_PREVIOUS_FILE=/tmp/accounting-reconciliation-watch-previous.json node reporting/accounting-reconciliation-watch.mjs
 
           node reporting/company-monthly-earned-income-validation.mjs
           node reporting/accounting-coverage-validation.mjs
