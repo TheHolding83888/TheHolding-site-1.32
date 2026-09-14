@@ -8,7 +8,7 @@ on:
       - 'reporting/income-lifecycle-contract-validation.mjs'
       - 'reporting/canonical-earned-income-view.mjs'
       - 'reporting/income-ledger.json'
-      - 'reporting/company-monthly-reports.mjs'
+      - 'reporting/company-monthly-earned-income.mjs'
       - 'reporting/company-monthly-reports.json'
       - 'reporting/company-monthly-earned-income-validation.mjs'
       - 'reporting/accounting-coverage.mjs'
@@ -52,7 +52,7 @@ jobs:
         run: |
           set -euo pipefail
           node --check reporting/public-foundation-v1-final-audit.mjs
-          node --check reporting/company-monthly-reports.mjs
+          node --check reporting/company-monthly-earned-income.mjs
           node --check reporting/company-monthly-earned-income-validation.mjs
           node --check reporting/accounting-coverage.mjs
           node --check reporting/accounting-coverage-validation.mjs
@@ -95,7 +95,7 @@ jobs:
           # Rebuild the complete deterministic downstream projection from the
           # exact PR checkout. The final audit must never compare fresh consumer
           # code against a mixture of stale generated artifacts.
-          node reporting/company-monthly-reports.mjs
+          node reporting/company-monthly-earned-income.mjs
           node reporting/accounting-coverage.mjs
           node reporting/accounting-notice-queue.mjs
           node reporting/accounting-reference-reconciliation.mjs
