@@ -27,7 +27,7 @@ jobs:
           const pace=async()=>{
             let release;const prior=gate;gate=new Promise(r=>release=r);await prior;
             const delay=Math.max(0,nextStart-Date.now());if(delay)await new Promise(r=>setTimeout(r,delay));
-            nextStart=Date.now()+100;release();
+            nextStart=Date.now()+150;release();
           };
           const worker=async()=>{
             while(true){
@@ -45,7 +45,7 @@ jobs:
           const started=Date.now();await Promise.all([worker(),worker()]);
           const failed=results.filter(x=>!x.ok);
           console.log('BASE_CADENCE_JSON_START');
-          console.log(JSON.stringify({requests:48,ok:results.length-failed.length,failed:failed.length,totalWallMs:Date.now()-started,avgResponseMs:Math.round(results.reduce((s,x)=>s+x.runtimeMs,0)/results.length),failures:failed},null,2));
+          console.log(JSON.stringify({requestSpacingMs:150,requests:48,ok:results.length-failed.length,failed:failed.length,totalWallMs:Date.now()-started,avgResponseMs:Math.round(results.reduce((s,x)=>s+x.runtimeMs,0)/results.length),failures:failed},null,2));
           console.log('BASE_CADENCE_JSON_END');
           if(failed.length)process.exitCode=1;
           NODE
