@@ -17,8 +17,18 @@ const DIRECT_SELECTOR=DIRECT_IFACE.getFunction('getReward').selector;
 const CLAIM_BRIBES_SELECTOR=VOTER_IFACE.getFunction('claimBribes').selector;
 const CLAIM_FEES_SELECTOR=VOTER_IFACE.getFunction('claimFees').selector;
 const CONFIG={
-  aerodrome:{chainId:8453,voter:'0x16613524e02ad97eDfeF371bC883F2F5d6C480A5',rpc:[process.env.BASE_RPC_URL,'https://mainnet.base.org','https://base-rpc.publicnode.com']},
-  velodrome:{chainId:10,voter:'0x41C914ee0c7E1A5edCD0295623e6dC557B5aBf3C',rpc:[process.env.OPTIMISM_RPC_URL,'https://gateway.tenderly.co/public/optimism','https://mainnet.optimism.io','https://optimism-rpc.publicnode.com']}
+  aerodrome:{
+    chainId:8453,
+    voter:'0x16613524e02ad97eDfeF371bC883F2F5d6C480A5',
+    rpc:[process.env.BASE_RPC_URL,'https://mainnet.base.org','https://base-rpc.publicnode.com'],
+    rangeHints:{'mainnet.base.org':2000}
+  },
+  velodrome:{
+    chainId:10,
+    voter:'0x41C914ee0c7E1A5edCD0295623e6dC557B5aBf3C',
+    rpc:[process.env.OPTIMISM_RPC_URL,'https://gateway.tenderly.co/public/optimism','https://mainnet.optimism.io','https://optimism-rpc.publicnode.com'],
+    rangeHints:{}
+  }
 };
 const lower=v=>String(v||'').toLowerCase();
 const unique=v=>[...new Set((v||[]).filter(Boolean))];
@@ -58,6 +68,27 @@ function intervalsForProtocol(protocol,groupIndex){
   return out;
 }
 
+function providerLabel(url){
+  try{return new URL(url).hostname||'configured-rpc';}
+  catch{return'configured-rpc';}
+}
+
+async function providerPoolFor(protocol){
+  const cfg=CONFIG[protocol],candidates=[],startupFailures=[];
+  for(const url of unique(cfg.rpc)){
+    const label=providerLabel(url);
+    try{
+      const provider=new JsonRpcProvider(url,cfg.chainId,{staticNetwork:true});
+      await Promise.race([provider.getBlockNumber(),new Promise((_,reject)=>setTimeout(()=>reject(new Error('RPC timeout')),8_000))]);
+      candidates.push({url,label,provider,maxLogRange:Number(cfg.rangeHints?.[label]||0)||null});
+    }catch(error){
+      startupFailures.push({provider:label,error:error?.shortMessage||error?.message||String(error)});
+    }
+  }
+  if(!candidates.length)throw new Error(`No ${protocol} RPC available: ${JSON.stringify(startupFailures)}`);
+  return{protocol,cfg,candidates,preferredIndex:0,startupFailures,queryFailures:[],failoverCount:0};
+}
+
 function errorText(error){
   return[
     error?.error?.message,error?.info?.error?.message,error?.shortMessage,error?.message,String(error||'')
@@ -69,12 +100,12 @@ function isRangeError(error){
 }
 
 function numericRangeLimit(error){
-  const s=errorText(error);
+  const text=errorText(error);
   for(const pattern of [
     /limited to (?:a )?([0-9,]+) range/,
     /limited to\s*0\s*-\s*([0-9,]+)\s*blocks?\s*range/
   ]){
-    const match=s.match(pattern);
+    const match=text.match(pattern);
     if(!match)continue;
     const value=Number(String(match[1]).replace(/,/g,''));
     if(Number.isFinite(value)&&value>0)return value;
@@ -82,77 +113,65 @@ function numericRangeLimit(error){
   return null;
 }
 
-function providerLabel(url){
-  try{return new URL(url).hostname||'configured-rpc';}
-  catch{return'configured-rpc';}
+async function queryLogsOnCandidate(candidate,addresses,fromBlock,toBlock){
+  const span=Number(toBlock)-Number(fromBlock)+1;
+  if(Number(candidate.maxLogRange)>0&&span>Number(candidate.maxLogRange)){
+    const logs=[];
+    for(let from=fromBlock;from<=toBlock;from+=Number(candidate.maxLogRange)){
+      const to=Math.min(toBlock,from+Number(candidate.maxLogRange)-1);
+      logs.push(...await queryLogsOnCandidate(candidate,addresses,from,to));
+    }
+    return logs;
+  }
+  try{
+    return await candidate.provider.getLogs({address:addresses.length===1?addresses[0]:addresses,topics:[CLAIM_TOPIC],fromBlock,toBlock});
+  }catch(error){
+    const learned=numericRangeLimit(error);
+    if(learned&&(!candidate.maxLogRange||learned<Number(candidate.maxLogRange)))candidate.maxLogRange=learned;
+    if(!isRangeError(error)||fromBlock>=toBlock)throw error;
+    if(Number(candidate.maxLogRange)>0&&span>Number(candidate.maxLogRange))return queryLogsOnCandidate(candidate,addresses,fromBlock,toBlock);
+    const mid=Math.floor((fromBlock+toBlock)/2);
+    const left=await queryLogsOnCandidate(candidate,addresses,fromBlock,mid);
+    const right=await queryLogsOnCandidate(candidate,addresses,mid+1,toBlock);
+    return[...left,...right];
+  }
 }
 
-function providerPoolFor(protocol){
-  const cfg=CONFIG[protocol];
-  const candidates=unique(cfg.rpc).map(url=>({url,label:providerLabel(url),provider:new JsonRpcProvider(url,cfg.chainId,{staticNetwork:true})}));
-  let preferredIndex=0;
-  const telemetry={queryAttempts:0,rangeSplits:0,failovers:0,transactionFailovers:0,providerSuccessCounts:{},providerFailureCounts:{},failureSamples:[]};
-  const recordFailure=(candidate,error,operation,fromBlock=null,toBlock=null)=>{
-    telemetry.providerFailureCounts[candidate.label]=(telemetry.providerFailureCounts[candidate.label]||0)+1;
-    if(telemetry.failureSamples.length<12)telemetry.failureSamples.push({provider:candidate.label,operation,fromBlock,toBlock,error:error?.error?.message||error?.info?.error?.message||error?.shortMessage||error?.message||String(error)});
-  };
-  const queryCandidate=async(candidate,addresses,fromBlock,toBlock)=>{
-    telemetry.queryAttempts++;
+async function queryLogsWithFailover(pool,addresses,fromBlock,toBlock){
+  let last=null;
+  const order=[pool.preferredIndex,...pool.candidates.map((_,i)=>i).filter(i=>i!==pool.preferredIndex)];
+  for(const index of order){
+    const candidate=pool.candidates[index];
     try{
-      const logs=await candidate.provider.getLogs({address:addresses.length===1?addresses[0]:addresses,topics:[CLAIM_TOPIC],fromBlock,toBlock});
-      telemetry.providerSuccessCounts[candidate.label]=(telemetry.providerSuccessCounts[candidate.label]||0)+1;
+      const logs=await queryLogsOnCandidate(candidate,addresses,fromBlock,toBlock);
+      if(index!==pool.preferredIndex){pool.preferredIndex=index;pool.failoverCount++;}
       return logs;
     }catch(error){
-      recordFailure(candidate,error,'getLogs',fromBlock,toBlock);
-      if(!isRangeError(error)||fromBlock>=toBlock)throw error;
-      telemetry.rangeSplits++;
-      const limit=numericRangeLimit(error);
-      if(limit&&toBlock-fromBlock+1>limit){
-        const logs=[];
-        for(let from=fromBlock;from<=toBlock;from+=limit){
-          const to=Math.min(toBlock,from+limit-1);
-          logs.push(...await queryCandidate(candidate,addresses,from,to));
-        }
-        return logs;
+      last=error;
+      if(pool.queryFailures.length<20)pool.queryFailures.push({
+        provider:candidate.label,fromBlock,toBlock,
+        error:error?.shortMessage||error?.error?.message||error?.info?.error?.message||error?.message||String(error)
+      });
+    }
+  }
+  throw last||new Error(`All ${pool.protocol} settlement RPCs failed for ${fromBlock}-${toBlock}`);
+}
+
+async function getTransactionWithFailover(pool,hash){
+  let last=null;
+  const order=[pool.preferredIndex,...pool.candidates.map((_,i)=>i).filter(i=>i!==pool.preferredIndex)];
+  for(const index of order){
+    const candidate=pool.candidates[index];
+    try{
+      const tx=await candidate.provider.getTransaction(hash);
+      if(tx){
+        if(index!==pool.preferredIndex){pool.preferredIndex=index;pool.failoverCount++;}
+        return tx;
       }
-      const mid=Math.floor((fromBlock+toBlock)/2);
-      const left=await queryCandidate(candidate,addresses,fromBlock,mid);
-      const right=await queryCandidate(candidate,addresses,mid+1,toBlock);
-      return[...left,...right];
-    }
-  };
-  const order=()=>[preferredIndex,...candidates.map((_,i)=>i).filter(i=>i!==preferredIndex)];
-  const queryLogs=async(addresses,fromBlock,toBlock)=>{
-    let last=null;
-    for(const index of order()){
-      const candidate=candidates[index];
-      try{
-        const logs=await queryCandidate(candidate,addresses,fromBlock,toBlock);
-        if(index!==preferredIndex){preferredIndex=index;telemetry.failovers++;}
-        return logs;
-      }catch(error){last=error;}
-    }
-    throw last||new Error(`No ${protocol} RPC available for settlement diagnostic`);
-  };
-  const getTransaction=async hash=>{
-    let last=null;
-    for(const index of order()){
-      const candidate=candidates[index];
-      try{
-        const tx=await candidate.provider.getTransaction(hash);
-        if(tx){
-          if(index!==preferredIndex){preferredIndex=index;telemetry.transactionFailovers++;}
-          return tx;
-        }
-      }catch(error){last=error;recordFailure(candidate,error,'getTransaction');}
-    }
-    if(last)throw last;
-    return null;
-  };
-  return{
-    queryLogs,getTransaction,
-    snapshot:()=>({preferredProvider:candidates[preferredIndex]?.label||null,candidateProviders:candidates.map(x=>x.label),...telemetry})
-  };
+    }catch(error){last=error;}
+  }
+  if(last)throw last;
+  return null;
 }
 
 function positions(data,needle){
@@ -194,7 +213,7 @@ const stats={};
 for(const protocol of ['aerodrome','velodrome']){
   const {groups,index}=groupsForProtocol(protocol);
   const intervals=intervalsForProtocol(protocol,index);
-  const pool=providerPoolFor(protocol);
+  const pool=await providerPoolFor(protocol);
   const cache=new Map();
   let matchingClaimLogs=0;
   for(const lane of intervals){
@@ -203,7 +222,7 @@ for(const protocol of ['aerodrome','velodrome']){
     for(let from=lane.fromBlock;from<=lane.toBlock;from+=MAX_LOG_BLOCKS){
       const to=Math.min(lane.toBlock,from+MAX_LOG_BLOCKS-1);
       const cacheKey=`${groupNo}|${from}|${to}`;
-      if(!cache.has(cacheKey))cache.set(cacheKey,pool.queryLogs(addresses,from,to));
+      if(!cache.has(cacheKey))cache.set(cacheKey,queryLogsWithFailover(pool,addresses,from,to));
       const logs=await cache.get(cacheKey);
       for(const log of logs){
         if(lower(log.address)!==lower(lane.rewardContract))continue;
@@ -212,12 +231,12 @@ for(const protocol of ['aerodrome','velodrome']){
         const holder=getAddress(parsed.args[0]),rewardToken=getAddress(parsed.args[1]),amount=BigInt(parsed.args[2]);
         if(lower(holder)!==lower(lane.holder)||lower(rewardToken)!==lower(lane.rewardToken)||amount===0n)continue;
         matchingClaimLogs++;
-        let tx=null;
-        try{tx=await pool.getTransaction(log.transactionHash);}catch{}
+        let tx=null,transactionError=null;
+        try{tx=await getTransactionWithFailover(pool,log.transactionHash);}catch(error){transactionError=error?.shortMessage||error?.message||String(error);}
         const attribution=tx?decodeRewardClaimAttribution({
           to:tx.to,data:tx.data,rewardContract:lane.rewardContract,rewardToken:lane.rewardToken,
           voter:CONFIG[protocol].voter,holder:lane.holder
-        }):{tokenId:null,path:'transaction-unavailable'};
+        }):{tokenId:null,path:'transaction-unavailable',error:transactionError};
         const proof={
           protocol,laneKey:lane.laneKey,tokenId:lane.tokenId,rewardContract:lane.rewardContract,rewardToken:lane.rewardToken,holder:lane.holder,
           fromBlock:lane.fromBlock,toBlock:lane.toBlock,blockNumber:Number(log.blockNumber),transactionHash:String(log.transactionHash),logIndex:Number(log.index??0),
@@ -229,7 +248,12 @@ for(const protocol of ['aerodrome','velodrome']){
       }
     }
   }
-  stats[protocol]={laneIntervals:intervals.length,addressGroups:groups.length,cacheEntries:cache.size,matchingClaimLogs,rpc:pool.snapshot()};
+  stats[protocol]={
+    laneIntervals:intervals.length,addressGroups:groups.length,cacheEntries:cache.size,matchingClaimLogs,
+    preferredProvider:pool.candidates[pool.preferredIndex]?.label||null,
+    candidateProviders:pool.candidates.map(x=>({provider:x.label,maxLogRange:x.maxLogRange||null})),
+    startupFailures:pool.startupFailures,queryFailures:pool.queryFailures,failoverCount:pool.failoverCount
+  };
 }
 
 const dedupe=rows=>[...new Map(rows.map(x=>[`${x.laneKey}|${x.transactionHash}|${x.logIndex}`,x])).values()];
