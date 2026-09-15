@@ -1,0 +1,72 @@
+name: Diagnose PR830 ve33 Runtime Matrix
+on:
+  push:
+    branches:
+      - diagnostic/pr830-runtime-matrix-20260915
+    paths:
+      - '.github/workflows/diagnose-pr830-runtime-matrix.yml'
+permissions:
+  contents: read
+jobs:
+  benchmark:
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: base-mainnet-c4
+            base_rpc: https://mainnet.base.org
+            state_concurrency: '4'
+            settlement_concurrency: '4'
+          - label: base-publicnode-c4
+            base_rpc: https://base-rpc.publicnode.com
+            state_concurrency: '4'
+            settlement_concurrency: '4'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm install --no-save --no-package-lock ethers@6
+      - name: Run production-shaped builder benchmark
+        env:
+          REWARDS_DATA_FILE: ./companies/rewards-data.json
+          VE33_EVIDENCE_FILE: /tmp/ve33-accounting-evidence.json
+          VE33_STATE_READ_CONCURRENCY: ${{ matrix.state_concurrency }}
+          VE33_SETTLEMENT_CONCURRENCY: ${{ matrix.settlement_concurrency }}
+          VE33_SETTLEMENT_ADDRESS_GROUP_SIZE: '96'
+          BASE_RPC_URL: ${{ matrix.base_rpc }}
+          OPTIMISM_RPC_URL: https://gateway.tenderly.co/public/optimism
+          MATRIX_LABEL: ${{ matrix.label }}
+        run: |
+          set -euo pipefail
+          cp reporting/ve33-accounting-evidence.json "$VE33_EVIDENCE_FILE"
+          started=$(date +%s)
+          node reporting/ve33-accounting-evidence.mjs
+          ended=$(date +%s)
+          node - <<'NODE'
+          const fs=require('fs');
+          const e=JSON.parse(fs.readFileSync('/tmp/ve33-accounting-evidence.json','utf8'));
+          const protocols=Object.fromEntries(Object.entries(e.diagnostics?.protocols||{}).map(([k,v])=>[k,{
+            runtimeMs:v.runtimeMs,
+            lanes:v.laneCount,
+            intervals:v.intervalCount,
+            settlementQueryFailures:v.settlementQueryFailureCount,
+            currentStateFailures:v.currentStateFailureCount,
+            boundaryFailures:(v.boundaryFailures||[]).length,
+            skippedHistoricalLaneReads:v.historicalBoundarySkippedLaneReads,
+            settlementRpc:v.settlementRpc
+          }]));
+          console.log('PR830_RUNTIME_MATRIX='+JSON.stringify({
+            label:process.env.MATRIX_LABEL,
+            runtimeMs:e.diagnostics?.runtimeMs,
+            reconciliationCount:e.diagnostics?.reconciliationCount,
+            settlementQueryFailureCount:e.diagnostics?.settlementQueryFailureCount,
+            unresolvedSettlementCount:e.diagnostics?.unresolvedSettlementCount,
+            protocols
+          },null,2));
+          NODE
+          echo "wallSeconds=$((ended-started))"
