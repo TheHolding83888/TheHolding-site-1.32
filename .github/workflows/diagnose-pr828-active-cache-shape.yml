@@ -1,0 +1,70 @@
+name: Diagnose PR828 Active Settlement Cache Shape
+on:
+  push:
+    branches:
+      - diagnostic/pr828-ve33-runtime-telemetry-20260915
+    paths:
+      - '.github/workflows/diagnose-pr828-active-cache-shape.yml'
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm install --no-save --no-package-lock ethers@6
+      - name: Calculate active settlement interval/cache shape
+        run: |
+          node --input-type=module - <<'NODE'
+          import fs from 'node:fs';
+          import { trackedPositionDescriptors } from './reporting/ve33-accounting-evidence.mjs';
+          const rewards=JSON.parse(fs.readFileSync('companies/rewards-data.json','utf8'));
+          const e=JSON.parse(fs.readFileSync('reporting/ve33-accounting-evidence.json','utf8'));
+          const desc=trackedPositionDescriptors(rewards);
+          const MAX=9500,GROUP=96,lower=x=>String(x||'').toLowerCase();
+          const out={};
+          for(const protocol of ['aerodrome','velodrome']){
+            const d=desc.filter(x=>x.protocolKey===protocol);
+            const direct=new Set(),managed=new Set(),holders=new Set();
+            for(const x of d){
+              const base=`${x.company}|${lower(x.holder)}|${x.tokenId}`;
+              holders.add(base);
+              if(x.mode==='direct')for(const rc of x.rewardContracts||[])direct.add(`${base}|${lower(rc)}`);
+              if(x.mode==='managed'&&x.freeManagedReward)managed.add(`${base}|${lower(x.freeManagedReward)}`);
+            }
+            const rows=(e.checkpoints||[]).filter(r=>{
+              if(r.protocolKey!==protocol)return false;
+              const base=`${r.company}|${lower(r.holder)}|${r.tokenId}`;
+              if(r.kind==='rebase-distributor')return holders.has(base)&&d.some(x=>x.mode==='direct'&&`${x.company}|${lower(x.holder)}|${x.tokenId}`===base);
+              if(r.kind==='voting-reward')return direct.has(`${base}|${lower(r.rewardContract)}`);
+              if(r.kind==='free-managed-reward')return managed.has(`${base}|${lower(r.rewardContract)}`);
+              return false;
+            });
+            const addresses=[...new Set(rows.map(x=>x.kind==='rebase-distributor'?x.distributor:x.rewardContract).filter(Boolean).map(lower))].sort();
+            const groupBy=new Map();for(let i=0;i<addresses.length;i+=GROUP)for(const a of addresses.slice(i,i+GROUP))groupBy.set(a,Math.floor(i/GROUP));
+            const eventKeys=new Set((e.events||[]).map(x=>x.eventKey));
+            const byLane=new Map();for(const r of rows){if(!byLane.has(r.laneKey))byLane.set(r.laneKey,[]);byLane.get(r.laneKey).push(r);}
+            const all=[],unique=new Set();let pendingIntervals=0,priorIntervals=0;
+            for(const [laneKey,laneRows] of byLane){
+              laneRows.sort((a,b)=>Number(a.blockNumber)-Number(b.blockNumber));
+              for(let i=1;i<laneRows.length;i++){
+                const open=laneRows[i-1],close=laneRows[i];
+                if(Number(close.blockNumber)<=Number(open.blockNumber))continue;
+                const eventKey=`ve33:${laneKey}:${open.blockNumber}:${close.blockNumber}`;
+                if(eventKeys.has(eventKey)){priorIntervals++;continue;}
+                pendingIntervals++;
+                const address=lower(open.kind==='rebase-distributor'?open.distributor:open.rewardContract),group=groupBy.get(address);
+                for(let from=Number(open.blockNumber)+1;from<=Number(close.blockNumber);from+=MAX){
+                  const to=Math.min(Number(close.blockNumber),from+MAX-1),key=`${group}|${from}|${to}`;all.push(key);unique.add(key);
+                }
+              }
+            }
+            const counts=new Map();for(const k of all)counts.set(k,(counts.get(k)||0)+1);
+            const dup=[...counts.values()].filter(x=>x>1).sort((a,b)=>b-a);
+            out[protocol]={descriptorCount:d.length,checkpointRows:rows.length,activePersistedLaneCount:byLane.size,settlementAddressCount:addresses.length,settlementGroupCount:Math.ceil(addresses.length/GROUP),pendingIntervals,priorIntervals,totalLaneChunkRequests:all.length,uniqueCacheKeys:unique.size,theoreticalCacheHits:all.length-unique.size,duplicateKeyCount:dup.length,maxConsumersPerKey:dup[0]||1};
+          }
+          console.log('PR828_ACTIVE_CACHE_SHAPE='+JSON.stringify(out,null,2));
+          NODE
