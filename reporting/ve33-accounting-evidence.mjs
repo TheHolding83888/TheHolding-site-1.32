@@ -29,6 +29,8 @@ export const PROTOCOLS=Object.freeze({
   aerodrome:{
     protocol:'Aerodrome',providerKey:'base',chain:'Base',chainId:8453,
     rpcEnv:'BASE_RPC_URL',rpcFallbacks:['https://base-rpc.publicnode.com','https://mainnet.base.org'],
+    historicalReadFallbacks:['https://mainnet.base.org'],
+    settlementRpcOrder:['https://mainnet.base.org','https://base-rpc.publicnode.com'],
     settlementRangeHints:{'mainnet.base.org':2000},settlementRequestSpacingMs:200,
     votingEscrow:'0xeBf418Fe2512e7E6bd9b87a8F0f294aCDC67e6B4',
     rewardsDistributor:'0x227f65131A261548b057215bB1D5Ab2997964C7d',
@@ -269,8 +271,15 @@ function providerLabel(url){
   catch{return'configured-rpc';}
 }
 
+function historicalReadProvidersFor(cfg,primaryProvider){
+  return[
+    primaryProvider,
+    ...unique(cfg.historicalReadFallbacks||[]).map(url=>new JsonRpcProvider(url,cfg.chainId))
+  ];
+}
+
 function settlementRouterFor(cfg,lanes=[],latestBlockNumber=null){
-  const urls=unique([process.env[cfg.rpcEnv],...[...cfg.rpcFallbacks].reverse()]);
+  const urls=unique([...(cfg.settlementRpcOrder||[]),process.env[cfg.rpcEnv],...[...cfg.rpcFallbacks].reverse()]);
   const candidates=urls.map(url=>{
     const label=providerLabel(url);
     const hinted=Number(cfg.settlementRangeHints?.[label]||0);
@@ -299,13 +308,14 @@ function settlementRouterFor(cfg,lanes=[],latestBlockNumber=null){
   const REQUEST_SPACING_MS=Math.max(180,Number(cfg.settlementRequestSpacingMs||220));
   const stats={
     queryAttempts:0,cacheHits:0,adaptiveSplitCount:0,proactiveRangeSplitCount:0,rangeLimitLearnedCount:0,
-    addressSplitCount:0,rateLimitRetryCount:0,failoverCount:0,providerDisableCount:0,canonicalBucketMisses:0,
+    addressSplitCount:0,rateLimitRetryCount:0,transientRetryCount:0,failoverCount:0,providerDisableCount:0,canonicalBucketMisses:0,
     providerSuccessCounts:{},providerFailureCounts:{},failureSamples:[]
   };
   const errorText=error=>[
     error?.error?.message,error?.info?.error?.message,error?.shortMessage,error?.message,String(error||'')
   ].filter(Boolean).join(' | ').toLowerCase();
   const isRateLimitError=error=>/rate limit|over rate limit|requests per second|too many requests|http 429|status 429|rps capacity|exceeded.*capacity/.test(errorText(error));
+  const isTransientProviderError=error=>/503 service unavailable|502 bad gateway|504 gateway timeout|no backend is currently healthy|temporarily unavailable|service unavailable|gateway timeout/.test(errorText(error));
   const isRangeError=error=>/block range is too large|limited to (?:a )?[0-9,]+ range|limited to\s*0\s*-\s*[0-9,]+\s*blocks?\s*range|range.*too large|exceed.*block.*range/.test(errorText(error));
   const isAddressFilterError=error=>/too many addresses|address.*limit|filter.*address|invalid.*address.*array|address array/.test(errorText(error));
   const isPayloadTooLargeError=error=>/payload too large|413 payload too large|server response 413/.test(errorText(error));
@@ -425,8 +435,9 @@ function settlementRouterFor(cfg,lanes=[],latestBlockNumber=null){
           const right=await queryCandidate({candidate,index,isRebase,kind,lane,fromBlock,toBlock,addresses:rightAddresses});
           return[...left,...right];
         }
-        if(isRateLimitError(error)&&attempt<attempts){
-          stats.rateLimitRetryCount++;
+        if((isRateLimitError(error)||isTransientProviderError(error))&&attempt<attempts){
+          if(isRateLimitError(error))stats.rateLimitRetryCount++;
+          else stats.transientRetryCount++;
           await wait(500*Math.pow(2,attempt-1));
           continue;
         }
@@ -489,7 +500,7 @@ function settlementRouterFor(cfg,lanes=[],latestBlockNumber=null){
       pooledSettlementAddressCount:settlementAddresses.length,pooledSettlementAddressGroupCount:settlementGroups.length,
       settlementAddressGroupSize:SETTLEMENT_ADDRESS_GROUP_SIZE,
       adaptiveSplitCount:stats.adaptiveSplitCount,proactiveRangeSplitCount:stats.proactiveRangeSplitCount,rangeLimitLearnedCount:stats.rangeLimitLearnedCount,
-      addressSplitCount:stats.addressSplitCount,rateLimitRetryCount:stats.rateLimitRetryCount,failoverCount:stats.failoverCount,providerDisableCount:stats.providerDisableCount,
+      addressSplitCount:stats.addressSplitCount,rateLimitRetryCount:stats.rateLimitRetryCount,transientRetryCount:stats.transientRetryCount,failoverCount:stats.failoverCount,providerDisableCount:stats.providerDisableCount,
       providerRangeLimits:Object.fromEntries(candidates.map(x=>[x.label,{maxLogRange:x.maxLogRange||null,source:x.rangeLimitSource||null}])),
       disabledProviders:candidates.filter(x=>x.disabledForSettlement).map(x=>({provider:x.label,reason:x.disableReason})),
       providerSuccessCounts:{...stats.providerSuccessCounts},providerFailureCounts:{...stats.providerFailureCounts},
@@ -761,8 +772,8 @@ async function buildProtocolLanes({rewards,cfg,protocolKey,provider,latestNumber
   });
 }
 
-async function ownerAt({provider,cfg,lane,blockNumber,ownerCache}){
-  const key=`${lower(cfg.votingEscrow)}:${blockNumber}:${lane.tokenId}`;
+async function ownerAt({provider,cfg,lane,blockNumber,ownerCache,providerKey='primary'}){
+  const key=`${providerKey}:${lower(cfg.votingEscrow)}:${blockNumber}:${lane.tokenId}`;
   if(!ownerCache.has(key)){
     const ve=new Contract(cfg.votingEscrow,VE_ABI,provider);
     ownerCache.set(key,ve.ownerOf(BigInt(lane.tokenId),{blockTag:blockNumber}).then(getAddress));
@@ -770,34 +781,43 @@ async function ownerAt({provider,cfg,lane,blockNumber,ownerCache}){
   return ownerCache.get(key);
 }
 
-async function readLaneState({provider,cfg,lane,blockNumber,observedAt,monthBoundary=false,ownerCache=new Map()}){
-  try{
-    const owner=await ownerAt({provider,cfg,lane,blockNumber,ownerCache});
-    if(lower(owner)!==lower(lane.holder))return{ok:false,status:'holder-mismatch',owner};
-    let raw;
-    if(lane.kind==='rebase-distributor')raw=await new Contract(cfg.rewardsDistributor,REWARDS_DISTRIBUTOR_ABI,provider).claimable(BigInt(lane.tokenId),{blockTag:blockNumber});
-    else raw=await new Contract(lane.rewardContract,REWARD_ABI,provider).earned(lane.rewardToken,BigInt(lane.tokenId),{blockTag:blockNumber});
-    return{
-      ok:true,checkpointKey:checkpointKey(lane,blockNumber),laneKey:lane.laneKey,company:lane.company,
-      protocolKey:lane.protocolKey,protocol:lane.protocol,chain:lane.chain,chainId:lane.chainId,route:lane.route,
-      holder:lane.holder,tokenId:lane.tokenId,custodyContext:lane.custodyContext,kind:lane.kind,
-      rewardContract:lane.rewardContract,distributor:lane.distributor,rewardToken:lane.rewardToken,rewardSymbol:lane.rewardSymbol,
-      decimals:lane.decimals,observedAt,blockNumber,entitlementRaw:BigInt(raw).toString(),
-      entitlementAmount:round(Number(formatUnits(raw,lane.decimals)),12),monthBoundary,exactBlockTaggedState:true,
-      accountingStart:lane.accountingStart||FULL_ACCOUNTING_START,periodIncomeAuthority:false,unknownIsNotZero:true
-    };
-  }catch(error){return{ok:false,status:'state-read-unavailable',error:error?.shortMessage||error?.message||String(error)};}
+async function readLaneState({provider,providers=null,cfg,lane,blockNumber,observedAt,monthBoundary=false,ownerCache=new Map()}){
+  const candidates=Array.isArray(providers)&&providers.length?providers:[provider];
+  let last=null;
+  for(let providerIndex=0;providerIndex<candidates.length;providerIndex++){
+    const candidate=candidates[providerIndex];
+    try{
+      const owner=await ownerAt({provider:candidate,cfg,lane,blockNumber,ownerCache,providerKey:`provider-${providerIndex}`});
+      if(lower(owner)!==lower(lane.holder))return{ok:false,status:'holder-mismatch',owner};
+      let raw;
+      if(lane.kind==='rebase-distributor')raw=await new Contract(cfg.rewardsDistributor,REWARDS_DISTRIBUTOR_ABI,candidate).claimable(BigInt(lane.tokenId),{blockTag:blockNumber});
+      else raw=await new Contract(lane.rewardContract,REWARD_ABI,candidate).earned(lane.rewardToken,BigInt(lane.tokenId),{blockTag:blockNumber});
+      return{
+        ok:true,checkpointKey:checkpointKey(lane,blockNumber),laneKey:lane.laneKey,company:lane.company,
+        protocolKey:lane.protocolKey,protocol:lane.protocol,chain:lane.chain,chainId:lane.chainId,route:lane.route,
+        holder:lane.holder,tokenId:lane.tokenId,custodyContext:lane.custodyContext,kind:lane.kind,
+        rewardContract:lane.rewardContract,distributor:lane.distributor,rewardToken:lane.rewardToken,rewardSymbol:lane.rewardSymbol,
+        decimals:lane.decimals,observedAt,blockNumber,entitlementRaw:BigInt(raw).toString(),
+        entitlementAmount:round(Number(formatUnits(raw,lane.decimals)),12),monthBoundary,exactBlockTaggedState:true,
+        accountingStart:lane.accountingStart||FULL_ACCOUNTING_START,periodIncomeAuthority:false,unknownIsNotZero:true
+      };
+    }catch(error){last=error;}
+  }
+  return{ok:false,status:'state-read-unavailable',error:last?.shortMessage||last?.message||String(last||'state read unavailable')};
 }
 
-export async function probeHistoricalBoundary({provider,cfg,lanes,blockNumber}){
+export async function probeHistoricalBoundary({provider,providers=null,cfg,lanes,blockNumber}){
   const sample=lanes.find(x=>x.kind==='rebase-distributor')||lanes[0];
   if(!sample)return{available:true,status:'no-lanes'};
-  try{
-    await new Contract(cfg.rewardsDistributor,REWARDS_DISTRIBUTOR_ABI,provider).claimable(BigInt(sample.tokenId),{blockTag:blockNumber});
-    return{available:true,status:'historical-state-readable',sampleTokenId:sample.tokenId};
-  }catch(error){
-    return{available:false,status:'historical-state-unavailable',sampleTokenId:sample.tokenId,error:error?.shortMessage||error?.message||String(error)};
+  const candidates=Array.isArray(providers)&&providers.length?providers:[provider];
+  let last=null;
+  for(const candidate of candidates){
+    try{
+      await new Contract(cfg.rewardsDistributor,REWARDS_DISTRIBUTOR_ABI,candidate).claimable(BigInt(sample.tokenId),{blockTag:blockNumber});
+      return{available:true,status:'historical-state-readable',sampleTokenId:sample.tokenId};
+    }catch(error){last=error;}
   }
+  return{available:false,status:'historical-state-unavailable',sampleTokenId:sample.tokenId,error:last?.shortMessage||last?.message||String(last||'historical state unavailable')};
 }
 
 function bump(map,key){map[key]=(map[key]||0)+1;}
@@ -883,6 +903,7 @@ export async function buildVe33Evidence({rewards,previous={},generatedAt=new Dat
   for(const[protocolKey,cfg]of Object.entries(PROTOCOLS)){
     const protocolStartedAt=Date.now();
     const provider=providers[protocolKey]||await providerFor(cfg);
+    const historicalReadProviders=providers[protocolKey]?[provider]:historicalReadProvidersFor(cfg,provider);
     const latestNumber=await provider.getBlockNumber(),latestBlock=await getBlockReliable(provider,latestNumber);
     const observedAt=new Date(Number(latestBlock.timestamp)*1000).toISOString(),blockCache=new Map(),ownerCache=new Map();
     const lanes=await buildProtocolLanes({rewards,cfg,protocolKey,provider,latestNumber,prices});
@@ -901,7 +922,7 @@ export async function buildVe33Evidence({rewards,previous={},generatedAt=new Dat
       if(!eligibleLanes.length)continue;
       try{
         const block=await blockAtOrBefore(provider,boundaryAt,latestNumber,blockCache);
-        const capability=await probeHistoricalBoundary({provider,cfg,lanes:eligibleLanes,blockNumber:block.blockNumber});
+        const capability=await probeHistoricalBoundary({provider,providers:historicalReadProviders,cfg,lanes:eligibleLanes,blockNumber:block.blockNumber});
         pd.boundaryCapability.push({boundaryAt,blockNumber:block.blockNumber,status:capability.status,available:capability.available,eligibleLaneCount:eligibleLanes.length});
         if(capability.available){
           boundaryBlocks.set(boundaryAt,{...block,eligibleLanes});
@@ -917,14 +938,14 @@ export async function buildVe33Evidence({rewards,previous={},generatedAt=new Dat
 
     for(const[boundaryAt,b]of boundaryBlocks){
       const pending=b.eligibleLanes.filter(lane=>!existing.has(checkpointKey(lane,b.blockNumber)));
-      const results=await mapLimit(pending,STATE_READ_CONCURRENCY,async lane=>({lane,state:await readLaneState({provider,cfg,lane,blockNumber:b.blockNumber,observedAt:boundaryAt,monthBoundary:true,ownerCache})}));
+      const results=await mapLimit(pending,STATE_READ_CONCURRENCY,async lane=>({lane,state:await readLaneState({provider,providers:historicalReadProviders,cfg,lane,blockNumber:b.blockNumber,observedAt:boundaryAt,monthBoundary:true,ownerCache})}));
       for(const{lane,state}of results){
         if(state.ok)existing.set(state.checkpointKey,state);
         else sampleFailure(pd,{laneKey:lane.laneKey,boundaryAt,state,scope:'historical-boundary'});
       }
     }
 
-    const currentResults=await mapLimit(lanes,STATE_READ_CONCURRENCY,async lane=>({lane,state:await readLaneState({provider,cfg,lane,blockNumber:latestNumber,observedAt,monthBoundary:false,ownerCache})}));
+    const currentResults=await mapLimit(lanes,STATE_READ_CONCURRENCY,async lane=>({lane,state:await readLaneState({provider,providers:historicalReadProviders,cfg,lane,blockNumber:latestNumber,observedAt,monthBoundary:false,ownerCache})}));
     for(const{lane,state}of currentResults){
       if(state.ok){existing.set(state.checkpointKey,state);pd.currentCheckpointCount++;}
       else{pd.currentStateFailureCount++;sampleFailure(pd,{laneKey:lane.laneKey,boundaryAt:observedAt,state,scope:'current-state'});}
