@@ -1,0 +1,36 @@
+name: Stage PR830 Hybrid Routing v2
+on:
+  push:
+    branches:
+      - diagnostic/pr830-runtime-matrix-20260915
+    paths:
+      - 'tools/pr830-hybrid-routing-patch.py'
+      - '.github/workflows/stage-pr830-hybrid-routing-v2.yml'
+permissions:
+  contents: write
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/ve33-rpc-runtime-fresh-20260915
+          fetch-depth: 0
+      - name: Apply bounded hybrid routing patch
+        run: |
+          set -euo pipefail
+          git show origin/diagnostic/pr830-runtime-matrix-20260915:tools/pr830-hybrid-routing-patch.py > /tmp/pr830-patch.py
+          python /tmp/pr830-patch.py
+          node --check reporting/ve33-accounting-evidence.mjs
+          git diff --check
+          test "$(git diff --name-only | wc -l)" -eq 1
+          test "$(git diff --name-only)" = "reporting/ve33-accounting-evidence.mjs"
+      - name: Commit to PR830 branch
+        run: |
+          set -euo pipefail
+          git config user.name 'TheHolding83888'
+          git config user.email '270993406+TheHolding83888@users.noreply.github.com'
+          git add reporting/ve33-accounting-evidence.mjs
+          git commit -m 'reliability: route ve33 reads by operation'
+          git push origin HEAD:fix/ve33-rpc-runtime-fresh-20260915
