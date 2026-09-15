@@ -25,57 +25,23 @@ jobs:
           from pathlib import Path
           p=Path('reporting/ve33-accounting-evidence.mjs')
           s=p.read_text()
-          old="""export function decodeRewardClaimTokenId(args){return decodeRewardClaimAttribution(args).tokenId;}
-
-async function rewardClaimSettlements({provider,settlementRouter,cfg,lane,fromBlock,toBlock}){"""
-          new="""export function decodeRewardClaimTokenId(args){return decodeRewardClaimAttribution(args).tokenId;}
-
-export function classifyRewardSettlementAttribution(attribution,expectedTokenId){
-  const decoded=attribution?.tokenId==null?null:String(attribution.tokenId);
-  if(decoded===null)return'unresolved';
-  return decoded===String(expectedTokenId)?'matched':'proven-other-token-id';
-}
-
-async function rewardClaimSettlements({provider,settlementRouter,cfg,lane,fromBlock,toBlock}){"""
+          old="export function decodeRewardClaimTokenId(args){return decodeRewardClaimAttribution(args).tokenId;}\n\nasync function rewardClaimSettlements({provider,settlementRouter,cfg,lane,fromBlock,toBlock}){"
+          new="export function decodeRewardClaimTokenId(args){return decodeRewardClaimAttribution(args).tokenId;}\n\nexport function classifyRewardSettlementAttribution(attribution,expectedTokenId){\n  const decoded=attribution?.tokenId==null?null:String(attribution.tokenId);\n  if(decoded===null)return'unresolved';\n  return decoded===String(expectedTokenId)?'matched':'proven-other-token-id';\n}\n\nasync function rewardClaimSettlements({provider,settlementRouter,cfg,lane,fromBlock,toBlock}){"
           assert s.count(old)==1, s.count(old)
           s=s.replace(old,new,1)
-          old="""      const proof={
-        blockNumber:Number(log.blockNumber),transactionHash:String(log.transactionHash||''),logIndex:Number(log.index??0),
-        recipient,rewardToken:lane.rewardToken,amountRaw:amount.toString(),decodedTokenId:attribution.tokenId,
-        decodePath:attribution.path
-      };
-      if(attribution.tokenId!==String(lane.tokenId)){unresolved.push(proof);continue;}
-      total+=amount;
-      events.push(proof);"""
-          new="""      const proof={
-        blockNumber:Number(log.blockNumber),transactionHash:String(log.transactionHash||''),logIndex:Number(log.index??0),
-        recipient,rewardToken:lane.rewardToken,amountRaw:amount.toString(),decodedTokenId:attribution.tokenId,
-        decodePath:attribution.path
-      };
-      const disposition=classifyRewardSettlementAttribution(attribution,lane.tokenId);
-      if(disposition==='unresolved'){unresolved.push(proof);continue;}
-      if(disposition==='proven-other-token-id')continue;
-      total+=amount;
-      events.push(proof);"""
+          old="      const proof={\n        blockNumber:Number(log.blockNumber),transactionHash:String(log.transactionHash||''),logIndex:Number(log.index??0),\n        recipient,rewardToken:lane.rewardToken,amountRaw:amount.toString(),decodedTokenId:attribution.tokenId,\n        decodePath:attribution.path\n      };\n      if(attribution.tokenId!==String(lane.tokenId)){unresolved.push(proof);continue;}\n      total+=amount;\n      events.push(proof);"
+          new="      const proof={\n        blockNumber:Number(log.blockNumber),transactionHash:String(log.transactionHash||''),logIndex:Number(log.index??0),\n        recipient,rewardToken:lane.rewardToken,amountRaw:amount.toString(),decodedTokenId:attribution.tokenId,\n        decodePath:attribution.path\n      };\n      const disposition=classifyRewardSettlementAttribution(attribution,lane.tokenId);\n      if(disposition==='unresolved'){unresolved.push(proof);continue;}\n      if(disposition==='proven-other-token-id')continue;\n      total+=amount;\n      events.push(proof);"
           assert s.count(old)==1, s.count(old)
           s=s.replace(old,new,1)
           p.write_text(s)
-
           p=Path('reporting/ve33-accounting-evidence-validation.mjs')
           s=p.read_text()
           old="decodeRewardClaimTokenId, decodeRewardClaimAttribution, trackedPositionDescriptors"
           new="decodeRewardClaimTokenId, decodeRewardClaimAttribution, classifyRewardSettlementAttribution, trackedPositionDescriptors"
           assert s.count(old)==1, s.count(old)
           s=s.replace(old,new,1)
-          anchor="""assert.equal(conflictingAttribution.tokenId,null);
-assert.equal(conflictingAttribution.path,'holder-multicall-conflicting-token-ids');
-"""
-          addition="""assert.equal(conflictingAttribution.tokenId,null);
-assert.equal(conflictingAttribution.path,'holder-multicall-conflicting-token-ids');
-assert.equal(classifyRewardSettlementAttribution({tokenId:'64985',path:'voter-claimBribes'},'64985'),'matched');
-assert.equal(classifyRewardSettlementAttribution({tokenId:'69194',path:'voter-claimBribes'},'64985'),'proven-other-token-id');
-assert.equal(classifyRewardSettlementAttribution({tokenId:null,path:'voter-unmatched-calldata'},'64985'),'unresolved');
-"""
+          anchor="assert.equal(conflictingAttribution.tokenId,null);\nassert.equal(conflictingAttribution.path,'holder-multicall-conflicting-token-ids');\n"
+          addition="assert.equal(conflictingAttribution.tokenId,null);\nassert.equal(conflictingAttribution.path,'holder-multicall-conflicting-token-ids');\nassert.equal(classifyRewardSettlementAttribution({tokenId:'64985',path:'voter-claimBribes'},'64985'),'matched');\nassert.equal(classifyRewardSettlementAttribution({tokenId:'69194',path:'voter-claimBribes'},'64985'),'proven-other-token-id');\nassert.equal(classifyRewardSettlementAttribution({tokenId:null,path:'voter-unmatched-calldata'},'64985'),'unresolved');\n"
           assert s.count(anchor)==1, s.count(anchor)
           s=s.replace(anchor,addition,1)
           p.write_text(s)
