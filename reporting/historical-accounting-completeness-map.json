@@ -1,6 +1,6 @@
 {
   "version": "0.1-historical-accounting-completeness-map",
-  "generatedAt": "2026-09-15T17:57:51.507Z",
+  "generatedAt": "2026-09-15T17:58:35.885Z",
   "status": "diagnostic-no-completion-authority",
   "periodStart": "2026-08",
   "currentMonth": "2026-09",
@@ -37,7 +37,7 @@
     "companyMonthlyReports": {
       "file": "reporting/company-monthly-reports.json",
       "version": "0.5-company-monthly-confirmed-estimated-view",
-      "generatedAt": "2026-09-15T16:25:21.113Z"
+      "generatedAt": "2026-09-15T17:57:55.984Z"
     }
   },
   "months": [
@@ -533,7 +533,8 @@
       "stateLabel": "Partial",
       "evidenceComplete": false,
       "reasonCodes": [
-        "current-period-open"
+        "current-period-open",
+        "company-lifecycle-unresolved"
       ],
       "mechanismCount": 4,
       "completeMechanismCount": 0,
@@ -546,8 +547,10 @@
         "accountingStatus": "partial-observed",
         "accountingCoverageComplete": false,
         "partialPeriod": true,
-        "unresolvedEventCount": 0,
-        "unresolvedReasons": []
+        "unresolvedEventCount": 3,
+        "unresolvedReasons": [
+          "canonical-event-usd-valuation-incomplete"
+        ]
       },
       "sourceOfTruth": false,
       "incomeCreationAuthority": false,
