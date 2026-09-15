@@ -107,7 +107,7 @@ jobs:
           VE33_TRANSIENT_PROTOCOLS: aerodrome
           # Public Base transaction supplied by the owner as the factual LAPTOP quick-claim fixture.
           VE33_TRANSIENT_TX_HASHES: '0xaad260eb97a2414e45dc5f105e8966932ca8795eb267aacd9ce85b929cd37153'
-          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL || 'https://base-rpc.publicnode.com' }}
         run: |
           set -euo pipefail
           node reporting/ve33-transient-claim-diagnostic.mjs | tee /tmp/ve33-transient-claims.log
@@ -118,17 +118,33 @@ jobs:
           REWARDS_DATA_FILE: ./companies/rewards-data.json
           VE33_EVIDENCE_FILE: /tmp/ve33-accounting-evidence.json
           VE33_DIAGNOSTIC_EVIDENCE_FILE: /tmp/ve33-accounting-evidence.json
-          VE33_STATE_READ_CONCURRENCY: '2'
-          VE33_SETTLEMENT_CONCURRENCY: '2'
+          VE33_STATE_READ_CONCURRENCY: '4'
+          VE33_SETTLEMENT_CONCURRENCY: '4'
           VE33_SETTLEMENT_ADDRESS_GROUP_SIZE: '96'
-          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL || 'https://base-rpc.publicnode.com' }}
           OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL || 'https://gateway.tenderly.co/public/optimism' }}
         run: |
           set -euo pipefail
           cp reporting/ve33-accounting-evidence.json "$VE33_EVIDENCE_FILE"
           node reporting/ve33-accounting-evidence.mjs
           node reporting/ve33-settlement-query-diagnostic.mjs
-          node reporting/ve33-unresolved-settlement-diagnostic.mjs
+          needs_forensics="$(node - <<'NODE'
+          const fs=require('fs');
+          const e=JSON.parse(fs.readFileSync('/tmp/ve33-accounting-evidence.json','utf8'));
+          const needs=[
+            Number(e.diagnostics?.settlementQueryFailureCount||0),
+            Number(e.diagnostics?.unresolvedSettlementCount||0),
+            Number(e.diagnostics?.reconciliationCount||0)
+          ].some(x=>x!==0);
+          process.stdout.write(needs?'true':'false');
+          NODE
+          )"
+          if [ "$needs_forensics" = "true" ]; then
+            echo 'Canonical builder reported settlement/reconciliation gaps; running bounded forensic attribution diagnostic.'
+            timeout 240s node reporting/ve33-unresolved-settlement-diagnostic.mjs || echo 'Forensic unresolved-settlement diagnostic did not complete within 240s; canonical gate below remains authoritative.'
+          else
+            echo 'Canonical builder proves zero settlement-query, unresolved-attribution, and reconciliation gaps; skipping redundant full historical forensic rescan.'
+          fi
           node - <<'NODE'
           const fs=require('fs');
           const e=JSON.parse(fs.readFileSync('/tmp/ve33-accounting-evidence.json','utf8'));

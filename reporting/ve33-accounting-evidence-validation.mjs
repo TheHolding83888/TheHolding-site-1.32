@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { Interface } from 'ethers';
 import './historical-canonical-price-validation.mjs';
 import './ve33-transient-claim-recovery-validation.mjs';
-import { VERSION, DIRECT_ACCOUNTING_START, FULL_ACCOUNTING_START, PROTOCOLS, mapLimit, reconcileEntitlement, decodeRewardClaimTokenId, decodeRewardClaimAttribution, trackedPositionDescriptors, compactHistoricalCheckpoints, buildSettlementAddressGroups } from './ve33-accounting-evidence.mjs';
+import { VERSION, DIRECT_ACCOUNTING_START, FULL_ACCOUNTING_START, PROTOCOLS, mapLimit, reconcileEntitlement, decodeRewardClaimTokenId, decodeRewardClaimAttribution, classifyRewardSettlementAttribution, trackedPositionDescriptors, compactHistoricalCheckpoints, buildSettlementAddressGroups } from './ve33-accounting-evidence.mjs';
 
 assert.equal(VERSION,'0.1-ve33-factual-accrual-evidence');
 assert.equal(DIRECT_ACCOUNTING_START,'2026-08-01T00:00:00.000Z');
@@ -111,6 +111,9 @@ const conflictingMulticallData=multicallIface.encodeFunctionData('multicall',[[h
 const conflictingAttribution=decodeRewardClaimAttribution({to:holder,data:conflictingMulticallData,rewardContract:reward,rewardToken:token,voter,holder});
 assert.equal(conflictingAttribution.tokenId,null);
 assert.equal(conflictingAttribution.path,'holder-multicall-conflicting-token-ids');
+assert.equal(classifyRewardSettlementAttribution({tokenId:'64985',path:'voter-claimBribes'},'64985'),'matched');
+assert.equal(classifyRewardSettlementAttribution({tokenId:'69194',path:'voter-claimBribes'},'64985'),'proven-other-token-id');
+assert.equal(classifyRewardSettlementAttribution({tokenId:null,path:'voter-unmatched-calldata'},'64985'),'unresolved');
 
 const activePool='0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 const stalePool='0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
