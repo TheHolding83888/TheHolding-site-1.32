@@ -19,55 +19,33 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Rebuild candidate from latest main
+      - name: Stage measured source pacing candidate
         shell: bash
         run: |
           set -euo pipefail
-          git fetch --prune origin main fix/ve33-rpc-runtime-fresh-20260915
+          git fetch --prune origin fix/ve33-rpc-runtime-fresh-20260915
           git config user.name 'TheHolding83888'
           git config user.email '270993406+TheHolding83888@users.noreply.github.com'
-          git checkout -B fix/ve33-rpc-runtime-fresh-candidate-20260915 origin/main
-          git checkout origin/fix/ve33-rpc-runtime-fresh-20260915 -- \
-            .github/workflows/verify-ve33-accounting.yml \
-            reporting/ve33-accounting-evidence.mjs \
-            reporting/ve33-accounting-evidence-validation.mjs \
-            reporting/ve33-unresolved-settlement-diagnostic.mjs
+          git checkout -B work/pr830-runtime-source-candidate-20260915 origin/fix/ve33-rpc-runtime-fresh-20260915
 
           python - <<'PY'
           from pathlib import Path
-
-          src=Path('reporting/ve33-accounting-evidence.mjs')
-          s=src.read_text()
+          p=Path('reporting/ve33-accounting-evidence.mjs')
+          s=p.read_text()
           old="settlementRangeHints:{'mainnet.base.org':2000},settlementRequestSpacingMs:200,"
           new="settlementRangeHints:{'mainnet.base.org':2000},settlementRequestSpacingMs:180,"
-          assert s.count(old)==1, ('aerodrome spacing anchor', s.count(old))
+          assert s.count(old)==1, ('aerodrome spacing anchor',s.count(old))
           s=s.replace(old,new,1)
           old="rpcEnv:'OPTIMISM_RPC_URL',rpcFallbacks:['https://optimism-rpc.publicnode.com','https://mainnet.optimism.io'],\n    votingEscrow:"
           new="rpcEnv:'OPTIMISM_RPC_URL',rpcFallbacks:['https://optimism-rpc.publicnode.com','https://mainnet.optimism.io'],\n    settlementRequestSpacingMs:200,\n    votingEscrow:"
-          assert s.count(old)==1, ('velodrome spacing anchor', s.count(old))
+          assert s.count(old)==1, ('velodrome spacing anchor',s.count(old))
           s=s.replace(old,new,1)
-          src.write_text(s)
-
-          wf=Path('.github/workflows/verify-ve33-accounting.yml')
-          w=wf.read_text()
-          assert w.count("VE33_STATE_READ_CONCURRENCY: '2'")==1
-          assert w.count("VE33_SETTLEMENT_CONCURRENCY: '2'")==1
-          w=w.replace("VE33_STATE_READ_CONCURRENCY: '2'","VE33_STATE_READ_CONCURRENCY: '4'",1)
-          w=w.replace("VE33_SETTLEMENT_CONCURRENCY: '2'","VE33_SETTLEMENT_CONCURRENCY: '4'",1)
-          wf.write_text(w)
+          p.write_text(s)
           PY
 
           node --check reporting/ve33-accounting-evidence.mjs
-          node --check reporting/ve33-accounting-evidence-validation.mjs
-          node --check reporting/ve33-unresolved-settlement-diagnostic.mjs
           git diff --check
-          git status --short
-          git add \
-            .github/workflows/verify-ve33-accounting.yml \
-            reporting/ve33-accounting-evidence.mjs \
-            reporting/ve33-accounting-evidence-validation.mjs \
-            reporting/ve33-unresolved-settlement-diagnostic.mjs
-          git commit -m 'reliability: close ve33 runtime on fresh main'
-          git push origin HEAD:refs/heads/fix/ve33-rpc-runtime-fresh-candidate-20260915
-          echo "candidate_head=$(git rev-parse HEAD)"
-          echo "candidate_base=$(git rev-parse HEAD^)"
+          git add reporting/ve33-accounting-evidence.mjs
+          git commit -m 'reliability: use measured ve33 settlement pacing'
+          git push --force-with-lease origin HEAD:refs/heads/work/pr830-runtime-source-candidate-20260915
+          echo "source_candidate_head=$(git rev-parse HEAD)"
