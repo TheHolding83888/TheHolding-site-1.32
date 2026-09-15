@@ -29,6 +29,7 @@ export const PROTOCOLS=Object.freeze({
   aerodrome:{
     protocol:'Aerodrome',providerKey:'base',chain:'Base',chainId:8453,
     rpcEnv:'BASE_RPC_URL',rpcFallbacks:['https://base-rpc.publicnode.com','https://mainnet.base.org'],
+    settlementRangeHints:{'mainnet.base.org':2000},settlementRequestSpacingMs:200,
     votingEscrow:'0xeBf418Fe2512e7E6bd9b87a8F0f294aCDC67e6B4',
     rewardsDistributor:'0x227f65131A261548b057215bB1D5Ab2997964C7d',
     voter:'0x16613524e02ad97eDfeF371bC883F2F5d6C480A5',
@@ -270,22 +271,60 @@ function providerLabel(url){
 
 function settlementRouterFor(cfg,lanes=[]){
   const urls=unique([process.env[cfg.rpcEnv],...[...cfg.rpcFallbacks].reverse()]);
-  const candidates=urls.map(url=>({url,label:providerLabel(url),provider:new JsonRpcProvider(url,cfg.chainId)}));
+  const candidates=urls.map(url=>{
+    const label=providerLabel(url);
+    const hinted=Number(cfg.settlementRangeHints?.[label]||0);
+    return{
+      url,label,provider:new JsonRpcProvider(url,cfg.chainId),
+      maxLogRange:hinted>0?hinted:null,rangeLimitSource:hinted>0?'configured-measured-hint':null,
+      disabledForSettlement:false,disableReason:null
+    };
+  });
   const rewardAddressGroups=buildSettlementAddressGroups(lanes);
-  const rewardGroupByAddress=new Map();
-  rewardAddressGroups.forEach((group,index)=>group.forEach(address=>rewardGroupByAddress.set(lower(address),{index,addresses:group})));
+  const settlementAddresses=unique([
+    ...rewardAddressGroups.flat(),
+    ...(isAddress(cfg.rewardsDistributor)?[lower(cfg.rewardsDistributor)]:[])
+  ]).sort().map(getAddress);
+  const settlementGroups=[];
+  for(let i=0;i<settlementAddresses.length;i+=SETTLEMENT_ADDRESS_GROUP_SIZE)settlementGroups.push(settlementAddresses.slice(i,i+SETTLEMENT_ADDRESS_GROUP_SIZE));
+  const settlementGroupByAddress=new Map();
+  settlementGroups.forEach((group,index)=>group.forEach(address=>settlementGroupByAddress.set(lower(address),{index,addresses:group})));
   const queryCache=new Map();
   let preferredIndex=0;
   let gateTail=Promise.resolve();
   let nextRequestAt=0;
-  const REQUEST_SPACING_MS=220;
-  const stats={queryAttempts:0,cacheHits:0,adaptiveSplitCount:0,addressSplitCount:0,rateLimitRetryCount:0,failoverCount:0,providerSuccessCounts:{},providerFailureCounts:{},failureSamples:[]};
+  const REQUEST_SPACING_MS=Math.max(180,Number(cfg.settlementRequestSpacingMs||220));
+  const stats={
+    queryAttempts:0,cacheHits:0,adaptiveSplitCount:0,proactiveRangeSplitCount:0,rangeLimitLearnedCount:0,
+    addressSplitCount:0,rateLimitRetryCount:0,failoverCount:0,providerDisableCount:0,
+    providerSuccessCounts:{},providerFailureCounts:{},failureSamples:[]
+  };
   const errorText=error=>[
     error?.error?.message,error?.info?.error?.message,error?.shortMessage,error?.message,String(error||'')
   ].filter(Boolean).join(' | ').toLowerCase();
-  const isRateLimitError=error=>/rate limit|requests per second|too many requests|http 429|status 429|rps capacity|exceeded.*capacity/.test(errorText(error));
-  const isRangeError=error=>/block range is too large|limited to a 10,000 range|range.*too large|exceed.*block.*range/.test(errorText(error));
+  const isRateLimitError=error=>/rate limit|over rate limit|requests per second|too many requests|http 429|status 429|rps capacity|exceeded.*capacity/.test(errorText(error));
+  const isRangeError=error=>/block range is too large|limited to (?:a )?[0-9,]+ range|limited to\s*0\s*-\s*[0-9,]+\s*blocks?\s*range|range.*too large|exceed.*block.*range/.test(errorText(error));
   const isAddressFilterError=error=>/too many addresses|address.*limit|filter.*address|invalid.*address.*array|address array/.test(errorText(error));
+  const isPayloadTooLargeError=error=>/payload too large|413 payload too large|server response 413/.test(errorText(error));
+  const isTerminalHistoricalProviderError=(candidate,error)=>{
+    const s=errorText(error);
+    if(/archive requests require a personal token|archive.*personal token/.test(s))return true;
+    return candidate.label.includes('publicnode')&&/403 forbidden|status 403|server response 403/.test(s);
+  };
+  const numericRangeLimit=error=>{
+    const s=errorText(error);
+    for(const pattern of [
+      /limited to (?:a )?([0-9,]+) range/,
+      /limited to\s*0\s*-\s*([0-9,]+)\s*blocks?\s*range/
+    ]){
+      const m=s.match(pattern);
+      if(m){
+        const value=Number(String(m[1]).replace(/,/g,''));
+        if(Number.isFinite(value)&&value>0)return value;
+      }
+    }
+    return null;
+  };
   const pace=async()=>{
     let release;
     const previous=gateTail;
@@ -303,15 +342,38 @@ function settlementRouterFor(cfg,lanes=[]){
       error:error?.error?.message||error?.info?.error?.message||error?.shortMessage||error?.message||String(error)
     });
   };
-  const parseSettlementLogs=(rawLogs,isRebase)=>{
-    const iface=isRebase?REBASE_EVENT_IFACE:REWARD_EVENT_IFACE;
-    return(rawLogs||[]).map(log=>{
-      const parsed=iface.parseLog({topics:log.topics,data:log.data});
-      if(!parsed)throw new Error(`Could not parse ${isRebase?'Claimed':'ClaimRewards'} settlement log`);
-      return{...log,args:parsed.args};
-    });
+  const disableCandidate=(candidate,reason)=>{
+    if(candidate.disabledForSettlement)return;
+    candidate.disabledForSettlement=true;
+    candidate.disableReason=reason;
+    stats.providerDisableCount++;
+  };
+  const parseSettlementLogs=rawLogs=>(rawLogs||[]).map(log=>{
+    const topic0=lower(log?.topics?.[0]);
+    const isRebaseTopic=topic0===lower(CLAIMED_TOPIC);
+    const isRewardTopic=topic0===lower(CLAIM_REWARDS_TOPIC);
+    if(!isRebaseTopic&&!isRewardTopic)throw new Error('Unexpected settlement event topic');
+    const iface=isRebaseTopic?REBASE_EVENT_IFACE:REWARD_EVENT_IFACE;
+    const parsed=iface.parseLog({topics:log.topics,data:log.data});
+    if(!parsed)throw new Error(`Could not parse ${isRebaseTopic?'Claimed':'ClaimRewards'} settlement log`);
+    return{...log,args:parsed.args,settlementEvent:isRebaseTopic?'Claimed':'ClaimRewards'};
+  });
+  const splitByRange=async({candidate,index,isRebase,kind,lane,fromBlock,toBlock,addresses,maxRange,proactive})=>{
+    if(proactive)stats.proactiveRangeSplitCount++;
+    else stats.adaptiveSplitCount++;
+    const logs=[];
+    for(let from=fromBlock;from<=toBlock;from+=maxRange){
+      const to=Math.min(toBlock,from+maxRange-1);
+      logs.push(...await queryCandidate({candidate,index,isRebase,kind,lane,fromBlock:from,toBlock:to,addresses}));
+    }
+    return logs;
   };
   const queryCandidate=async({candidate,index,isRebase,kind,lane,fromBlock,toBlock,addresses})=>{
+    if(candidate.disabledForSettlement)throw new Error(`Settlement provider disabled: ${candidate.label} (${candidate.disableReason||'unavailable'})`);
+    const span=Number(toBlock)-Number(fromBlock)+1;
+    if(Number(candidate.maxLogRange)>0&&span>Number(candidate.maxLogRange)){
+      return splitByRange({candidate,index,isRebase,kind,lane,fromBlock,toBlock,addresses,maxRange:Number(candidate.maxLogRange),proactive:true});
+    }
     const attempts=index===preferredIndex?4:1;
     let last=null;
     for(let attempt=1;attempt<=attempts;attempt++){
@@ -320,24 +382,40 @@ function settlementRouterFor(cfg,lanes=[]){
       try{
         const filter={
           address:addresses.length===1?addresses[0]:addresses,
-          topics:[isRebase?CLAIMED_TOPIC:CLAIM_REWARDS_TOPIC],
+          topics:[[CLAIMED_TOPIC,CLAIM_REWARDS_TOPIC]],
           fromBlock,toBlock
         };
         const rawLogs=await candidate.provider.getLogs(filter);
-        const logs=parseSettlementLogs(rawLogs,isRebase);
+        const logs=parseSettlementLogs(rawLogs);
         stats.providerSuccessCounts[candidate.label]=(stats.providerSuccessCounts[candidate.label]||0)+1;
         return logs;
       }catch(error){
         last=error;
         recordFailure(candidate,error,kind,lane,fromBlock,toBlock,addresses.length);
-        if(isRangeError(error)&&fromBlock<toBlock){
-          stats.adaptiveSplitCount++;
-          const mid=Math.floor((fromBlock+toBlock)/2);
-          const left=await queryCandidate({candidate,index,isRebase,kind,lane,fromBlock,toBlock:mid,addresses});
-          const right=await queryCandidate({candidate,index,isRebase,kind,lane,fromBlock:mid+1,toBlock,addresses});
-          return[...left,...right];
+        if(isTerminalHistoricalProviderError(candidate,error)){
+          disableCandidate(candidate,'historical-archive-unavailable');
+          break;
         }
-        if(!isRebase&&isAddressFilterError(error)&&addresses.length>1){
+        const learned=numericRangeLimit(error);
+        if(learned&&(!candidate.maxLogRange||learned<Number(candidate.maxLogRange))){
+          candidate.maxLogRange=learned;
+          candidate.rangeLimitSource='learned-from-rpc-error';
+          stats.rangeLimitLearnedCount++;
+        }
+        if((isRangeError(error)||isPayloadTooLargeError(error))&&fromBlock<toBlock){
+          const bounded=Number(candidate.maxLogRange)>0?Number(candidate.maxLogRange):null;
+          if(bounded&&span>bounded){
+            return splitByRange({candidate,index,isRebase,kind,lane,fromBlock,toBlock,addresses,maxRange:bounded,proactive:false});
+          }
+          if(isRangeError(error)||addresses.length<=1){
+            stats.adaptiveSplitCount++;
+            const mid=Math.floor((fromBlock+toBlock)/2);
+            const left=await queryCandidate({candidate,index,isRebase,kind,lane,fromBlock,toBlock:mid,addresses});
+            const right=await queryCandidate({candidate,index,isRebase,kind,lane,fromBlock:mid+1,toBlock,addresses});
+            return[...left,...right];
+          }
+        }
+        if(!isRebase&&(isAddressFilterError(error)||isPayloadTooLargeError(error))&&addresses.length>1){
           stats.addressSplitCount++;
           const mid=Math.ceil(addresses.length/2),leftAddresses=addresses.slice(0,mid),rightAddresses=addresses.slice(mid);
           const left=await queryCandidate({candidate,index,isRebase,kind,lane,fromBlock,toBlock,addresses:leftAddresses});
@@ -356,18 +434,20 @@ function settlementRouterFor(cfg,lanes=[]){
   };
   const query=async({kind,lane,fromBlock,toBlock})=>{
     const isRebase=kind==='rebase-distributor';
-    const group=isRebase?{index:'rebase',addresses:[getAddress(cfg.rewardsDistributor)]}:rewardGroupByAddress.get(lower(lane.rewardContract));
-    if(!group)throw new Error(`Settlement reward contract not present in address groups: ${lane.rewardContract}`);
-    const cacheKey=[isRebase?'rebase-all':`reward-group-${group.index}`,fromBlock,toBlock].join('|');
+    const targetAddress=getAddress(isRebase?cfg.rewardsDistributor:lane.rewardContract);
+    const group=settlementGroupByAddress.get(lower(targetAddress));
+    if(!group)throw new Error(`Settlement contract not present in pooled address groups: ${targetAddress}`);
+    const cacheKey=[`settlement-group-${group.index}`,fromBlock,toBlock].join('|');
     let work=queryCache.get(cacheKey);
     if(work){
       stats.cacheHits++;
     }else{
       work=(async()=>{
         let last=null;
-        const order=[preferredIndex,...candidates.map((_,i)=>i).filter(i=>i!==preferredIndex)];
+        const order=[preferredIndex,...candidates.map((_,i)=>i).filter(i=>i!==preferredIndex)].filter((x,i,a)=>a.indexOf(x)===i);
         for(const index of order){
           const candidate=candidates[index];
+          if(candidate.disabledForSettlement)continue;
           try{
             const logs=await queryCandidate({candidate,index,isRebase,kind,lane,fromBlock,toBlock,addresses:group.addresses});
             if(index!==preferredIndex){preferredIndex=index;stats.failoverCount++;}
@@ -380,7 +460,8 @@ function settlementRouterFor(cfg,lanes=[]){
     }
     try{
       const logs=await work;
-      return isRebase?logs:logs.filter(log=>lower(log.address)===lower(lane.rewardContract));
+      const expectedTopic=lower(isRebase?CLAIMED_TOPIC:CLAIM_REWARDS_TOPIC);
+      return logs.filter(log=>lower(log.address)===lower(targetAddress)&&lower(log?.topics?.[0])===expectedTopic);
     }catch(error){
       if(queryCache.get(cacheKey)===work)queryCache.delete(cacheKey);
       throw error;
@@ -392,15 +473,18 @@ function settlementRouterFor(cfg,lanes=[]){
       preferredProvider:candidates[preferredIndex]?.label||null,
       candidateProviders:candidates.map(x=>x.label),
       requestSpacingMs:REQUEST_SPACING_MS,queryAttempts:stats.queryAttempts,cacheHits:stats.cacheHits,cacheEntries:queryCache.size,
-      pooledRewardAddressCount:rewardGroupByAddress.size,pooledRewardAddressGroupCount:rewardAddressGroups.length,
+      pooledRewardAddressCount:rewardAddressGroups.flat().length,pooledRewardAddressGroupCount:rewardAddressGroups.length,
+      pooledSettlementAddressCount:settlementAddresses.length,pooledSettlementAddressGroupCount:settlementGroups.length,
       settlementAddressGroupSize:SETTLEMENT_ADDRESS_GROUP_SIZE,
-      adaptiveSplitCount:stats.adaptiveSplitCount,addressSplitCount:stats.addressSplitCount,rateLimitRetryCount:stats.rateLimitRetryCount,failoverCount:stats.failoverCount,
+      adaptiveSplitCount:stats.adaptiveSplitCount,proactiveRangeSplitCount:stats.proactiveRangeSplitCount,rangeLimitLearnedCount:stats.rangeLimitLearnedCount,
+      addressSplitCount:stats.addressSplitCount,rateLimitRetryCount:stats.rateLimitRetryCount,failoverCount:stats.failoverCount,providerDisableCount:stats.providerDisableCount,
+      providerRangeLimits:Object.fromEntries(candidates.map(x=>[x.label,{maxLogRange:x.maxLogRange||null,source:x.rangeLimitSource||null}])),
+      disabledProviders:candidates.filter(x=>x.disabledForSettlement).map(x=>({provider:x.label,reason:x.disableReason})),
       providerSuccessCounts:{...stats.providerSuccessCounts},providerFailureCounts:{...stats.providerFailureCounts},
       failureSamples:[...stats.failureSamples]
     })
   };
 }
-
 async function getBlockReliable(provider,blockNumber,{attempts=BLOCK_LOOKUP_RETRIES,timeoutMs=BLOCK_LOOKUP_TIMEOUT_MS}={}){
   let last=null;
   for(let attempt=1;attempt<=attempts;attempt++){

@@ -107,7 +107,7 @@ jobs:
           VE33_TRANSIENT_PROTOCOLS: aerodrome
           # Public Base transaction supplied by the owner as the factual LAPTOP quick-claim fixture.
           VE33_TRANSIENT_TX_HASHES: '0xaad260eb97a2414e45dc5f105e8966932ca8795eb267aacd9ce85b929cd37153'
-          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL || 'https://base-rpc.publicnode.com' }}
         run: |
           set -euo pipefail
           node reporting/ve33-transient-claim-diagnostic.mjs | tee /tmp/ve33-transient-claims.log
@@ -121,7 +121,7 @@ jobs:
           VE33_STATE_READ_CONCURRENCY: '2'
           VE33_SETTLEMENT_CONCURRENCY: '2'
           VE33_SETTLEMENT_ADDRESS_GROUP_SIZE: '96'
-          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL || 'https://base-rpc.publicnode.com' }}
           OPTIMISM_RPC_URL: ${{ secrets.OPTIMISM_RPC_URL || 'https://gateway.tenderly.co/public/optimism' }}
         run: |
           set -euo pipefail
