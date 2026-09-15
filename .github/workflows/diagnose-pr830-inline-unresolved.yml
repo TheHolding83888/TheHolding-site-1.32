@@ -1,0 +1,69 @@
+name: Diagnose PR830 Inline Unresolved
+on:
+  push:
+    branches:
+      - diagnostic/pr830-runtime-matrix-20260915
+    paths:
+      - '.github/workflows/diagnose-pr830-inline-unresolved.yml'
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/ve33-rpc-runtime-fresh-20260915
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm install --no-save --no-package-lock ethers@6
+      - name: Instrument unresolved proofs in-memory only
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('reporting/ve33-accounting-evidence.mjs')
+          s=p.read_text()
+          a="const result={intervalCount:0,settlementEventCount:0,settlementQueryFailureCount:0,reconciliationCount:0,unresolvedSettlementCount:0,zeroIntervalCount:0,unvaluedIntervalCount:0,historicalPriceResolvedIntervalCount:0,historicalPriceUnresolvedIntervalCount:0,acceptedPositiveIntervalCount:0,events:[]};"
+          b="const result={intervalCount:0,settlementEventCount:0,settlementQueryFailureCount:0,reconciliationCount:0,unresolvedSettlementCount:0,unresolvedSettlementSamples:[],zeroIntervalCount:0,unvaluedIntervalCount:0,historicalPriceResolvedIntervalCount:0,historicalPriceUnresolvedIntervalCount:0,acceptedPositiveIntervalCount:0,events:[]};"
+          assert s.count(a)==1, s.count(a)
+          s=s.replace(a,b,1)
+          a="result.unresolvedSettlementCount+=(settlements.unresolved||[]).length;\n      continue;"
+          b="result.unresolvedSettlementCount+=(settlements.unresolved||[]).length;\n      for(const proof of (settlements.unresolved||[]))if(result.unresolvedSettlementSamples.length<20)result.unresolvedSettlementSamples.push({laneKey:lane.laneKey,protocolKey:lane.protocolKey,company:lane.company,tokenId:lane.tokenId,rewardContract:lane.rewardContract,rewardToken:lane.rewardToken,...proof});\n      continue;"
+          assert s.count(a)==1, s.count(a)
+          s=s.replace(a,b,1)
+          a="const diagnostics={protocols:{},laneCount:0,acceptedPositiveIntervalCount:0,zeroIntervalCount:0,reconciliationCount:0,settlementQueryFailureCount:0,unresolvedSettlementCount:0,unvaluedIntervalCount:0,historicalPriceResolvedIntervalCount:0,historicalPriceUnresolvedIntervalCount:0,referenceAprUsed:false,unknownIsNotZero:true,stateReadConcurrency:STATE_READ_CONCURRENCY,settlementConcurrency:SETTLEMENT_CONCURRENCY,historyCompaction:compactedHistory.stats,runtimeMs:null};"
+          b="const diagnostics={protocols:{},laneCount:0,acceptedPositiveIntervalCount:0,zeroIntervalCount:0,reconciliationCount:0,settlementQueryFailureCount:0,unresolvedSettlementCount:0,unresolvedSettlementSamples:[],unvaluedIntervalCount:0,historicalPriceResolvedIntervalCount:0,historicalPriceUnresolvedIntervalCount:0,referenceAprUsed:false,unknownIsNotZero:true,stateReadConcurrency:STATE_READ_CONCURRENCY,settlementConcurrency:SETTLEMENT_CONCURRENCY,historyCompaction:compactedHistory.stats,runtimeMs:null};"
+          assert s.count(a)==1, s.count(a)
+          s=s.replace(a,b,1)
+          a="diagnostics.unresolvedSettlementCount+=r.unresolvedSettlementCount;"
+          b="diagnostics.unresolvedSettlementCount+=r.unresolvedSettlementCount;\n      for(const proof of (r.unresolvedSettlementSamples||[]))if(diagnostics.unresolvedSettlementSamples.length<40)diagnostics.unresolvedSettlementSamples.push(proof);"
+          assert s.count(a)==1, s.count(a)
+          s=s.replace(a,b,1)
+          p.write_text(s)
+          PY
+          node --check reporting/ve33-accounting-evidence.mjs
+      - name: Build and print unresolved proofs
+        env:
+          REWARDS_DATA_FILE: ./companies/rewards-data.json
+          VE33_EVIDENCE_FILE: /tmp/ve33-accounting-evidence.json
+          VE33_STATE_READ_CONCURRENCY: '4'
+          VE33_SETTLEMENT_CONCURRENCY: '4'
+          VE33_SETTLEMENT_ADDRESS_GROUP_SIZE: '96'
+          BASE_RPC_URL: https://base-rpc.publicnode.com
+          OPTIMISM_RPC_URL: https://gateway.tenderly.co/public/optimism
+        run: |
+          set -euo pipefail
+          cp reporting/ve33-accounting-evidence.json "$VE33_EVIDENCE_FILE"
+          timeout 560s node reporting/ve33-accounting-evidence.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const e=JSON.parse(fs.readFileSync('/tmp/ve33-accounting-evidence.json','utf8'));
+          console.log('PR830_INLINE_UNRESOLVED='+JSON.stringify({
+            runtimeMs:e.diagnostics?.runtimeMs,
+            unresolvedSettlementCount:e.diagnostics?.unresolvedSettlementCount,
+            reconciliationCount:e.diagnostics?.reconciliationCount,
+            samples:e.diagnostics?.unresolvedSettlementSamples||[]
+          },null,2));
+          NODE
