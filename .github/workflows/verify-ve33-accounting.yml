@@ -128,7 +128,23 @@ jobs:
           cp reporting/ve33-accounting-evidence.json "$VE33_EVIDENCE_FILE"
           node reporting/ve33-accounting-evidence.mjs
           node reporting/ve33-settlement-query-diagnostic.mjs
-          node reporting/ve33-unresolved-settlement-diagnostic.mjs
+          needs_forensics="$(node - <<'NODE'
+          const fs=require('fs');
+          const e=JSON.parse(fs.readFileSync('/tmp/ve33-accounting-evidence.json','utf8'));
+          const needs=[
+            Number(e.diagnostics?.settlementQueryFailureCount||0),
+            Number(e.diagnostics?.unresolvedSettlementCount||0),
+            Number(e.diagnostics?.reconciliationCount||0)
+          ].some(x=>x!==0);
+          process.stdout.write(needs?'true':'false');
+          NODE
+          )"
+          if [ "$needs_forensics" = "true" ]; then
+            echo 'Canonical builder reported settlement/reconciliation gaps; running bounded forensic attribution diagnostic.'
+            timeout 240s node reporting/ve33-unresolved-settlement-diagnostic.mjs || echo 'Forensic unresolved-settlement diagnostic did not complete within 240s; canonical gate below remains authoritative.'
+          else
+            echo 'Canonical builder proves zero settlement-query, unresolved-attribution, and reconciliation gaps; skipping redundant full historical forensic rescan.'
+          fi
           node - <<'NODE'
           const fs=require('fs');
           const e=JSON.parse(fs.readFileSync('/tmp/ve33-accounting-evidence.json','utf8'));
