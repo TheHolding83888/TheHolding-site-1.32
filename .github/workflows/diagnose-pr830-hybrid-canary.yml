@@ -20,6 +20,22 @@ jobs:
         with:
           node-version: '22'
       - run: npm install --no-save --no-package-lock ethers@6
+      - name: Apply diagnostic-only pacing candidate
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('reporting/ve33-accounting-evidence.mjs')
+          s=p.read_text()
+          old="settlementRangeHints:{'mainnet.base.org':2000},settlementRequestSpacingMs:200,"
+          new="settlementRangeHints:{'mainnet.base.org':2000},settlementRequestSpacingMs:180,"
+          assert s.count(old)==1, s.count(old)
+          s=s.replace(old,new,1)
+          old="rpcEnv:'OPTIMISM_RPC_URL',rpcFallbacks:['https://optimism-rpc.publicnode.com','https://mainnet.optimism.io'],\n    votingEscrow:"
+          new="rpcEnv:'OPTIMISM_RPC_URL',rpcFallbacks:['https://optimism-rpc.publicnode.com','https://mainnet.optimism.io'],\n    settlementRequestSpacingMs:200,\n    votingEscrow:"
+          assert s.count(old)==1, s.count(old)
+          s=s.replace(old,new,1)
+          p.write_text(s)
+          PY
       - name: Deterministic validation
         run: |
           set -euo pipefail
@@ -51,15 +67,8 @@ jobs:
             settlementQueryFailures:Number(v.settlementQueryFailureCount||0),
             settlementRpc:v.settlementRpc||null
           }]));
-          const out={
-            runtimeMs:Number(e.diagnostics?.runtimeMs||0),
-            laneCount:Number(e.diagnostics?.laneCount||0),
-            reconciliationCount:Number(e.diagnostics?.reconciliationCount||0),
-            settlementQueryFailureCount:Number(e.diagnostics?.settlementQueryFailureCount||0),
-            unresolvedSettlementCount:Number(e.diagnostics?.unresolvedSettlementCount||0),
-            protocols
-          };
-          console.log('PR830_HYBRID_CANARY='+JSON.stringify(out,null,2));
+          const out={runtimeMs:Number(e.diagnostics?.runtimeMs||0),laneCount:Number(e.diagnostics?.laneCount||0),reconciliationCount:Number(e.diagnostics?.reconciliationCount||0),settlementQueryFailureCount:Number(e.diagnostics?.settlementQueryFailureCount||0),unresolvedSettlementCount:Number(e.diagnostics?.unresolvedSettlementCount||0),protocols};
+          console.log('PR830_PACING_CANARY='+JSON.stringify(out,null,2));
           if(!(out.laneCount>0))throw new Error('no accounting lanes');
           if(!Number.isFinite(out.runtimeMs)||!(out.runtimeMs>0))throw new Error('runtime missing');
           if(out.runtimeMs>450000)throw new Error(`runtime budget exceeded: ${out.runtimeMs}`);
@@ -74,5 +83,5 @@ jobs:
             if(d.boundaryFailures!==0)throw new Error(`boundary failures: ${p}=${d.boundaryFailures}`);
             if(d.skippedHistoricalLaneReads!==0)throw new Error(`skipped historical reads: ${p}=${d.skippedHistoricalLaneReads}`);
           }
-          console.log('PR830 hybrid exact canary PASS');
+          console.log('PR830 pacing candidate canary PASS');
           NODE
