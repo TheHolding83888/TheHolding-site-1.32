@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-15T12:11:39.527Z",
+  "generatedAt": "2026-09-15T17:31:43.618Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 2,
-    "medium": 73,
+    "medium": 74,
     "low": 0,
     "info": 0
   },
   "source": {
     "filesScanned": 1302,
-    "bytesScanned": 36760365,
+    "bytesScanned": 37000470,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
         "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Sun, 13 Sep 2026 10:43:07 GMT",
+        "lastModified": "Mon, 14 Sep 2026 13:14:04 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4717,
         "error": null
@@ -55,23 +55,23 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [],
-    "resolvedFindings": [
+    "newFindings": [
       {
-        "id": "a5f3241953bdf77d4bd1082d1297a70ad3ae75cf6ddf536b08088b7838472cd2",
+        "id": "fb24896bb8bf222cbe4835320426deb2c4055f5ff69049cd9ff9abef72635598",
         "severity": "medium",
         "category": "critical-surface-change",
-        "file": ".github/workflows/verify-public-foundation-v1-final-audit.yml",
+        "file": ".github/workflows/verify-ve33-accounting.yml",
         "line": null,
         "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/verify-public-foundation-v1-final-audit.yml.",
+        "summary": "Security-sensitive surface changed: .github/workflows/verify-ve33-accounting.yml.",
         "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
         "evidence": {
-          "previousSha256": "a8956e4776fde01831915756b9526663bbeb3b1a205e2ce7d0acb5ea4b325e32",
-          "currentSha256": "758f834a2c38591fec32ceb67fda6245ffe59239e12219dc4e0e191e47ed7108"
+          "previousSha256": "2c0f395e9a77720484a737203646a5dbd5c41a064dff592bcfb7e503b033a02d",
+          "currentSha256": "d17e739013c685a612535f4f33e6d82c6d7ed6f7c700110dbe89ea86f06a46ab"
         }
       }
-    ]
+    ],
+    "resolvedFindings": []
   },
   "currentFindings": [
     {
@@ -95,6 +95,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "fb24896bb8bf222cbe4835320426deb2c4055f5ff69049cd9ff9abef72635598",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/verify-ve33-accounting.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/verify-ve33-accounting.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "2c0f395e9a77720484a737203646a5dbd5c41a064dff592bcfb7e503b033a02d",
+        "currentSha256": "d17e739013c685a612535f4f33e6d82c6d7ed6f7c700110dbe89ea86f06a46ab"
+      }
     },
     {
       "id": "e0355b82064396fc141e48b5356209bc9cc44e7a4a2b15f7fe18f5dc61f03a0f",
@@ -1108,12 +1122,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "c0fcd61615f67d600588ade0a6ce33c02d24164cfad4de63aa711e9498b5e535",
+    "snapshotHash": "2959fa2d82edb7d753548bdeacf363e756d903b553e1e7b5b5c5c740e0b2cc26",
     "securityVault": {
-      "runCount": 1046,
+      "runCount": 1047,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/09/2026-09-15T12-11-39-527Z-c0fcd61615.json",
-      "latestRecordHash": "c13f071e467dcdf839288f40b91aa5f8b24a69411333a0e444a1f20c1840fdfa",
+      "latestRecordPath": "security/security-vault/2026/09/2026-09-15T17-31-43-618Z-2959fa2d82.json",
+      "latestRecordHash": "a9e5a9c4e11f7e87229d249d89850c2caac12640965219b0b3947086f37a6bb2",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
