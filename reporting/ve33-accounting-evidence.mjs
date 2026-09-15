@@ -656,6 +656,12 @@ export function decodeRewardClaimAttribution({to,data,rewardContract,rewardToken
 
 export function decodeRewardClaimTokenId(args){return decodeRewardClaimAttribution(args).tokenId;}
 
+export function classifyRewardSettlementAttribution(attribution,expectedTokenId){
+  const decoded=attribution?.tokenId==null?null:String(attribution.tokenId);
+  if(decoded===null)return'unresolved';
+  return decoded===String(expectedTokenId)?'matched':'proven-other-token-id';
+}
+
 async function rewardClaimSettlements({provider,settlementRouter,cfg,lane,fromBlock,toBlock}){
   if(toBlock<fromBlock)return{complete:true,amountRaw:'0',events:[],unresolved:[]};
   const events=[],unresolved=[];
@@ -672,7 +678,9 @@ async function rewardClaimSettlements({provider,settlementRouter,cfg,lane,fromBl
         recipient,rewardToken:lane.rewardToken,amountRaw:amount.toString(),decodedTokenId:attribution.tokenId,
         decodePath:attribution.path
       };
-      if(attribution.tokenId!==String(lane.tokenId)){unresolved.push(proof);continue;}
+      const disposition=classifyRewardSettlementAttribution(attribution,lane.tokenId);
+      if(disposition==='unresolved'){unresolved.push(proof);continue;}
+      if(disposition==='proven-other-token-id')continue;
       total+=amount;
       events.push(proof);
     }
