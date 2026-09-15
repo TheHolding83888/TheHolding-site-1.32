@@ -1,0 +1,41 @@
+name: Diagnose PR828 Canonical Bucket Shape
+on:
+  push:
+    branches:
+      - diagnostic/pr828-ve33-runtime-telemetry-20260915
+    paths:
+      - '.github/workflows/diagnose-pr828-canonical-bucket-shape.yml'
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm install --no-save --no-package-lock ethers@6
+      - name: Compare exact-range cache with canonical provider buckets
+        run: |
+          node --input-type=module - <<'NODE'
+          import fs from 'node:fs';
+          import { trackedPositionDescriptors } from './reporting/ve33-accounting-evidence.mjs';
+          const rewards=JSON.parse(fs.readFileSync('companies/rewards-data.json','utf8'));
+          const e=JSON.parse(fs.readFileSync('reporting/ve33-accounting-evidence.json','utf8'));
+          const desc=trackedPositionDescriptors(rewards),lower=x=>String(x||'').toLowerCase(),GROUP=96;
+          const specs={aerodrome:{bucket:2000},velodrome:{bucket:9500}};
+          const out={};
+          for(const [protocol,spec] of Object.entries(specs)){
+            const d=desc.filter(x=>x.protocolKey===protocol),direct=new Set(),managed=new Set(),holders=new Set();
+            for(const x of d){const base=`${x.company}|${lower(x.holder)}|${x.tokenId}`;holders.add(base);if(x.mode==='direct')for(const rc of x.rewardContracts||[])direct.add(`${base}|${lower(rc)}`);if(x.mode==='managed'&&x.freeManagedReward)managed.add(`${base}|${lower(x.freeManagedReward)}`);}
+            const rows=(e.checkpoints||[]).filter(r=>{if(r.protocolKey!==protocol)return false;const base=`${r.company}|${lower(r.holder)}|${r.tokenId}`;if(r.kind==='rebase-distributor')return holders.has(base)&&d.some(x=>x.mode==='direct'&&`${x.company}|${lower(x.holder)}|${x.tokenId}`===base);if(r.kind==='voting-reward')return direct.has(`${base}|${lower(r.rewardContract)}`);if(r.kind==='free-managed-reward')return managed.has(`${base}|${lower(r.rewardContract)}`);return false;});
+            const addresses=[...new Set(rows.map(x=>x.kind==='rebase-distributor'?x.distributor:x.rewardContract).filter(Boolean).map(lower))].sort();
+            const groupBy=new Map();for(let i=0;i<addresses.length;i+=GROUP)for(const a of addresses.slice(i,i+GROUP))groupBy.set(a,Math.floor(i/GROUP));
+            const eventKeys=new Set((e.events||[]).map(x=>x.eventKey)),byLane=new Map();for(const r of rows){if(!byLane.has(r.laneKey))byLane.set(r.laneKey,[]);byLane.get(r.laneKey).push(r);}
+            const buckets=new Set();let intervalConsumers=0,bucketConsumers=0,minBlock=Infinity,maxBlock=0;
+            for(const [laneKey,laneRows] of byLane){laneRows.sort((a,b)=>Number(a.blockNumber)-Number(b.blockNumber));for(let i=1;i<laneRows.length;i++){const open=laneRows[i-1],close=laneRows[i];if(Number(close.blockNumber)<=Number(open.blockNumber))continue;const eventKey=`ve33:${laneKey}:${open.blockNumber}:${close.blockNumber}`;if(eventKeys.has(eventKey))continue;intervalConsumers++;const from=Number(open.blockNumber)+1,to=Number(close.blockNumber),address=lower(open.kind==='rebase-distributor'?open.distributor:open.rewardContract),group=groupBy.get(address);minBlock=Math.min(minBlock,from);maxBlock=Math.max(maxBlock,to);const first=Math.floor(from/spec.bucket),last=Math.floor(to/spec.bucket);for(let b=first;b<=last;b++){buckets.add(`${group}|${b}`);bucketConsumers++;}}}
+            out[protocol]={bucketSize:spec.bucket,activeLaneCount:byLane.size,pendingIntervals:intervalConsumers,canonicalUniqueBuckets:buckets.size,canonicalBucketConsumers:bucketConsumers,theoreticalCanonicalCacheHits:bucketConsumers-buckets.size,minBlock,maxBlock,estimatedPacingFloorMs:buckets.size*(protocol==='aerodrome'?200:220)};
+          }
+          console.log('PR828_CANONICAL_BUCKET_SHAPE='+JSON.stringify(out,null,2));
+          NODE
