@@ -269,7 +269,7 @@ function providerLabel(url){
   catch{return'configured-rpc';}
 }
 
-function settlementRouterFor(cfg,lanes=[]){
+function settlementRouterFor(cfg,lanes=[],latestBlockNumber=null){
   const urls=unique([process.env[cfg.rpcEnv],...[...cfg.rpcFallbacks].reverse()]);
   const candidates=urls.map(url=>{
     const label=providerLabel(url);
@@ -290,13 +290,16 @@ function settlementRouterFor(cfg,lanes=[]){
   const settlementGroupByAddress=new Map();
   settlementGroups.forEach((group,index)=>group.forEach(address=>settlementGroupByAddress.set(lower(address),{index,addresses:group})));
   const queryCache=new Map();
+  const configuredRangeHints=Object.values(cfg.settlementRangeHints||{}).map(Number).filter(x=>Number.isFinite(x)&&x>0);
+  const CANONICAL_BUCKET_SIZE=Math.max(1,Math.min(MAX_LOG_BLOCKS,...(configuredRangeHints.length?configuredRangeHints:[MAX_LOG_BLOCKS])));
+  const settlementCeiling=Number.isFinite(Number(latestBlockNumber))?Number(latestBlockNumber):Number.MAX_SAFE_INTEGER;
   let preferredIndex=0;
   let gateTail=Promise.resolve();
   let nextRequestAt=0;
   const REQUEST_SPACING_MS=Math.max(180,Number(cfg.settlementRequestSpacingMs||220));
   const stats={
     queryAttempts:0,cacheHits:0,adaptiveSplitCount:0,proactiveRangeSplitCount:0,rangeLimitLearnedCount:0,
-    addressSplitCount:0,rateLimitRetryCount:0,failoverCount:0,providerDisableCount:0,
+    addressSplitCount:0,rateLimitRetryCount:0,failoverCount:0,providerDisableCount:0,canonicalBucketMisses:0,
     providerSuccessCounts:{},providerFailureCounts:{},failureSamples:[]
   };
   const errorText=error=>[
@@ -437,42 +440,51 @@ function settlementRouterFor(cfg,lanes=[]){
     const targetAddress=getAddress(isRebase?cfg.rewardsDistributor:lane.rewardContract);
     const group=settlementGroupByAddress.get(lower(targetAddress));
     if(!group)throw new Error(`Settlement contract not present in pooled address groups: ${targetAddress}`);
-    const cacheKey=[`settlement-group-${group.index}`,fromBlock,toBlock].join('|');
-    let work=queryCache.get(cacheKey);
-    if(work){
-      stats.cacheHits++;
-    }else{
-      work=(async()=>{
-        let last=null;
-        const order=[preferredIndex,...candidates.map((_,i)=>i).filter(i=>i!==preferredIndex)].filter((x,i,a)=>a.indexOf(x)===i);
-        for(const index of order){
-          const candidate=candidates[index];
-          if(candidate.disabledForSettlement)continue;
-          try{
-            const logs=await queryCandidate({candidate,index,isRebase,kind,lane,fromBlock,toBlock,addresses:group.addresses});
-            if(index!==preferredIndex){preferredIndex=index;stats.failoverCount++;}
-            return logs;
-          }catch(error){last=error;}
-        }
-        throw last||new Error(`No settlement-log RPC available for ${cfg.protocol}`);
-      })();
-      queryCache.set(cacheKey,work);
+    const exactFrom=Number(fromBlock),exactTo=Math.min(Number(toBlock),settlementCeiling);
+    if(exactTo<exactFrom)return[];
+    const firstBucket=Math.floor(exactFrom/CANONICAL_BUCKET_SIZE),lastBucket=Math.floor(exactTo/CANONICAL_BUCKET_SIZE);
+    const bucketWorks=[];
+    for(let bucket=firstBucket;bucket<=lastBucket;bucket++){
+      const bucketFrom=bucket*CANONICAL_BUCKET_SIZE;
+      const bucketTo=Math.min(settlementCeiling,bucketFrom+CANONICAL_BUCKET_SIZE-1);
+      const cacheKey=[`settlement-group-${group.index}`,`bucket-${bucket}`,bucketFrom,bucketTo].join('|');
+      let work=queryCache.get(cacheKey);
+      if(work){
+        stats.cacheHits++;
+      }else{
+        stats.canonicalBucketMisses++;
+        work=(async()=>{
+          let last=null;
+          const order=[preferredIndex,...candidates.map((_,i)=>i).filter(i=>i!==preferredIndex)].filter((x,i,a)=>a.indexOf(x)===i);
+          for(const index of order){
+            const candidate=candidates[index];
+            if(candidate.disabledForSettlement)continue;
+            try{
+              const logs=await queryCandidate({candidate,index,isRebase,kind,lane,fromBlock:bucketFrom,toBlock:bucketTo,addresses:group.addresses});
+              if(index!==preferredIndex){preferredIndex=index;stats.failoverCount++;}
+              return logs;
+            }catch(error){last=error;}
+          }
+          throw last||new Error(`No settlement-log RPC available for ${cfg.protocol}`);
+        })();
+        queryCache.set(cacheKey,work);
+      }
+      bucketWorks.push({cacheKey,work});
     }
-    try{
-      const logs=await work;
-      const expectedTopic=lower(isRebase?CLAIMED_TOPIC:CLAIM_REWARDS_TOPIC);
-      return logs.filter(log=>lower(log.address)===lower(targetAddress)&&lower(log?.topics?.[0])===expectedTopic);
-    }catch(error){
-      if(queryCache.get(cacheKey)===work)queryCache.delete(cacheKey);
-      throw error;
+    const combined=[];
+    for(const{cacheKey,work}of bucketWorks){
+      try{combined.push(...await work);}
+      catch(error){if(queryCache.get(cacheKey)===work)queryCache.delete(cacheKey);throw error;}
     }
+    const expectedTopic=lower(isRebase?CLAIMED_TOPIC:CLAIM_REWARDS_TOPIC);
+    return combined.filter(log=>Number(log.blockNumber)>=exactFrom&&Number(log.blockNumber)<=exactTo&&lower(log.address)===lower(targetAddress)&&lower(log?.topics?.[0])===expectedTopic);
   };
   return{
     query,
     snapshot:()=>({
       preferredProvider:candidates[preferredIndex]?.label||null,
       candidateProviders:candidates.map(x=>x.label),
-      requestSpacingMs:REQUEST_SPACING_MS,queryAttempts:stats.queryAttempts,cacheHits:stats.cacheHits,cacheEntries:queryCache.size,
+      requestSpacingMs:REQUEST_SPACING_MS,canonicalBucketSize:CANONICAL_BUCKET_SIZE,queryAttempts:stats.queryAttempts,cacheHits:stats.cacheHits,cacheEntries:queryCache.size,canonicalBucketMisses:stats.canonicalBucketMisses,
       pooledRewardAddressCount:rewardAddressGroups.flat().length,pooledRewardAddressGroupCount:rewardAddressGroups.length,
       pooledSettlementAddressCount:settlementAddresses.length,pooledSettlementAddressGroupCount:settlementGroups.length,
       settlementAddressGroupSize:SETTLEMENT_ADDRESS_GROUP_SIZE,
@@ -874,7 +886,7 @@ export async function buildVe33Evidence({rewards,previous={},generatedAt=new Dat
     const latestNumber=await provider.getBlockNumber(),latestBlock=await getBlockReliable(provider,latestNumber);
     const observedAt=new Date(Number(latestBlock.timestamp)*1000).toISOString(),blockCache=new Map(),ownerCache=new Map();
     const lanes=await buildProtocolLanes({rewards,cfg,protocolKey,provider,latestNumber,prices});
-    const settlementRouter=settlementRouterFor(cfg,lanes);
+    const settlementRouter=settlementRouterFor(cfg,lanes,latestNumber);
     diagnostics.laneCount+=lanes.length;
     const pd={
       latestBlockNumber:latestNumber,observedAt,laneCount:lanes.length,boundaryFailures:[],boundaryCapability:[],
