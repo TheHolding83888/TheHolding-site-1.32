@@ -31,7 +31,7 @@ export const PROTOCOLS=Object.freeze({
     rpcEnv:'BASE_RPC_URL',rpcFallbacks:['https://base-rpc.publicnode.com','https://mainnet.base.org'],
     historicalReadFallbacks:['https://mainnet.base.org'],
     settlementRpcOrder:['https://mainnet.base.org','https://base-rpc.publicnode.com'],
-    settlementRangeHints:{'mainnet.base.org':2000},settlementRequestSpacingMs:200,
+    settlementRangeHints:{'mainnet.base.org':2000},settlementRequestSpacingMs:180,
     votingEscrow:'0xeBf418Fe2512e7E6bd9b87a8F0f294aCDC67e6B4',
     rewardsDistributor:'0x227f65131A261548b057215bB1D5Ab2997964C7d',
     voter:'0x16613524e02ad97eDfeF371bC883F2F5d6C480A5',
@@ -41,6 +41,7 @@ export const PROTOCOLS=Object.freeze({
   velodrome:{
     protocol:'Velodrome',providerKey:'optimism',chain:'Optimism',chainId:10,
     rpcEnv:'OPTIMISM_RPC_URL',rpcFallbacks:['https://optimism-rpc.publicnode.com','https://mainnet.optimism.io'],
+    settlementRequestSpacingMs:200,
     votingEscrow:'0xFAf8FD17D9840595845582fCB047DF13f006787d',
     rewardsDistributor:'0x9D4736EC60715e71aFe72973f7885DCBC21EA99b',
     voter:'0x41C914ee0c7E1A5edCD0295623e6dC557B5aBf3C',
