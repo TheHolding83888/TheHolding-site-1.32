@@ -58,19 +58,6 @@ function intervalsForProtocol(protocol,groupIndex){
   return out;
 }
 
-async function providerFor(protocol){
-  const cfg=CONFIG[protocol];
-  let last=null;
-  for(const url of unique(cfg.rpc)){
-    try{
-      const p=new JsonRpcProvider(url,cfg.chainId,{staticNetwork:true});
-      await Promise.race([p.getBlockNumber(),new Promise((_,reject)=>setTimeout(()=>reject(new Error('RPC timeout')),8_000))]);
-      return p;
-    }catch(error){last=error;}
-  }
-  throw last||new Error(`No ${protocol} RPC available`);
-}
-
 function errorText(error){
   return[
     error?.error?.message,error?.info?.error?.message,error?.shortMessage,error?.message,String(error||'')
@@ -78,19 +65,94 @@ function errorText(error){
 }
 
 function isRangeError(error){
-  return /block range is too large|limited to (?:a )?[0-9,]+ range|range.*too large|exceed.*block.*range/.test(errorText(error));
+  return /block range is too large|limited to (?:a )?[0-9,]+ range|limited to\s*0\s*-\s*[0-9,]+\s*blocks?\s*range|range.*too large|exceed.*block.*range/.test(errorText(error));
 }
 
-async function queryLogs(provider,addresses,fromBlock,toBlock){
-  try{
-    return await provider.getLogs({address:addresses.length===1?addresses[0]:addresses,topics:[CLAIM_TOPIC],fromBlock,toBlock});
-  }catch(error){
-    if(!isRangeError(error)||fromBlock>=toBlock)throw error;
-    const mid=Math.floor((fromBlock+toBlock)/2);
-    const left=await queryLogs(provider,addresses,fromBlock,mid);
-    const right=await queryLogs(provider,addresses,mid+1,toBlock);
-    return[...left,...right];
+function numericRangeLimit(error){
+  const s=errorText(error);
+  for(const pattern of [
+    /limited to (?:a )?([0-9,]+) range/,
+    /limited to\s*0\s*-\s*([0-9,]+)\s*blocks?\s*range/
+  ]){
+    const match=s.match(pattern);
+    if(!match)continue;
+    const value=Number(String(match[1]).replace(/,/g,''));
+    if(Number.isFinite(value)&&value>0)return value;
   }
+  return null;
+}
+
+function providerLabel(url){
+  try{return new URL(url).hostname||'configured-rpc';}
+  catch{return'configured-rpc';}
+}
+
+function providerPoolFor(protocol){
+  const cfg=CONFIG[protocol];
+  const candidates=unique(cfg.rpc).map(url=>({url,label:providerLabel(url),provider:new JsonRpcProvider(url,cfg.chainId,{staticNetwork:true})}));
+  let preferredIndex=0;
+  const telemetry={queryAttempts:0,rangeSplits:0,failovers:0,transactionFailovers:0,providerSuccessCounts:{},providerFailureCounts:{},failureSamples:[]};
+  const recordFailure=(candidate,error,operation,fromBlock=null,toBlock=null)=>{
+    telemetry.providerFailureCounts[candidate.label]=(telemetry.providerFailureCounts[candidate.label]||0)+1;
+    if(telemetry.failureSamples.length<12)telemetry.failureSamples.push({provider:candidate.label,operation,fromBlock,toBlock,error:error?.error?.message||error?.info?.error?.message||error?.shortMessage||error?.message||String(error)});
+  };
+  const queryCandidate=async(candidate,addresses,fromBlock,toBlock)=>{
+    telemetry.queryAttempts++;
+    try{
+      const logs=await candidate.provider.getLogs({address:addresses.length===1?addresses[0]:addresses,topics:[CLAIM_TOPIC],fromBlock,toBlock});
+      telemetry.providerSuccessCounts[candidate.label]=(telemetry.providerSuccessCounts[candidate.label]||0)+1;
+      return logs;
+    }catch(error){
+      recordFailure(candidate,error,'getLogs',fromBlock,toBlock);
+      if(!isRangeError(error)||fromBlock>=toBlock)throw error;
+      telemetry.rangeSplits++;
+      const limit=numericRangeLimit(error);
+      if(limit&&toBlock-fromBlock+1>limit){
+        const logs=[];
+        for(let from=fromBlock;from<=toBlock;from+=limit){
+          const to=Math.min(toBlock,from+limit-1);
+          logs.push(...await queryCandidate(candidate,addresses,from,to));
+        }
+        return logs;
+      }
+      const mid=Math.floor((fromBlock+toBlock)/2);
+      const left=await queryCandidate(candidate,addresses,fromBlock,mid);
+      const right=await queryCandidate(candidate,addresses,mid+1,toBlock);
+      return[...left,...right];
+    }
+  };
+  const order=()=>[preferredIndex,...candidates.map((_,i)=>i).filter(i=>i!==preferredIndex)];
+  const queryLogs=async(addresses,fromBlock,toBlock)=>{
+    let last=null;
+    for(const index of order()){
+      const candidate=candidates[index];
+      try{
+        const logs=await queryCandidate(candidate,addresses,fromBlock,toBlock);
+        if(index!==preferredIndex){preferredIndex=index;telemetry.failovers++;}
+        return logs;
+      }catch(error){last=error;}
+    }
+    throw last||new Error(`No ${protocol} RPC available for settlement diagnostic`);
+  };
+  const getTransaction=async hash=>{
+    let last=null;
+    for(const index of order()){
+      const candidate=candidates[index];
+      try{
+        const tx=await candidate.provider.getTransaction(hash);
+        if(tx){
+          if(index!==preferredIndex){preferredIndex=index;telemetry.transactionFailovers++;}
+          return tx;
+        }
+      }catch(error){last=error;recordFailure(candidate,error,'getTransaction');}
+    }
+    if(last)throw last;
+    return null;
+  };
+  return{
+    queryLogs,getTransaction,
+    snapshot:()=>({preferredProvider:candidates[preferredIndex]?.label||null,candidateProviders:candidates.map(x=>x.label),...telemetry})
+  };
 }
 
 function positions(data,needle){
@@ -132,7 +194,7 @@ const stats={};
 for(const protocol of ['aerodrome','velodrome']){
   const {groups,index}=groupsForProtocol(protocol);
   const intervals=intervalsForProtocol(protocol,index);
-  const provider=await providerFor(protocol);
+  const pool=providerPoolFor(protocol);
   const cache=new Map();
   let matchingClaimLogs=0;
   for(const lane of intervals){
@@ -141,7 +203,7 @@ for(const protocol of ['aerodrome','velodrome']){
     for(let from=lane.fromBlock;from<=lane.toBlock;from+=MAX_LOG_BLOCKS){
       const to=Math.min(lane.toBlock,from+MAX_LOG_BLOCKS-1);
       const cacheKey=`${groupNo}|${from}|${to}`;
-      if(!cache.has(cacheKey))cache.set(cacheKey,queryLogs(provider,addresses,from,to));
+      if(!cache.has(cacheKey))cache.set(cacheKey,pool.queryLogs(addresses,from,to));
       const logs=await cache.get(cacheKey);
       for(const log of logs){
         if(lower(log.address)!==lower(lane.rewardContract))continue;
@@ -150,7 +212,8 @@ for(const protocol of ['aerodrome','velodrome']){
         const holder=getAddress(parsed.args[0]),rewardToken=getAddress(parsed.args[1]),amount=BigInt(parsed.args[2]);
         if(lower(holder)!==lower(lane.holder)||lower(rewardToken)!==lower(lane.rewardToken)||amount===0n)continue;
         matchingClaimLogs++;
-        const tx=await provider.getTransaction(log.transactionHash);
+        let tx=null;
+        try{tx=await pool.getTransaction(log.transactionHash);}catch{}
         const attribution=tx?decodeRewardClaimAttribution({
           to:tx.to,data:tx.data,rewardContract:lane.rewardContract,rewardToken:lane.rewardToken,
           voter:CONFIG[protocol].voter,holder:lane.holder
@@ -166,7 +229,7 @@ for(const protocol of ['aerodrome','velodrome']){
       }
     }
   }
-  stats[protocol]={laneIntervals:intervals.length,addressGroups:groups.length,cacheEntries:cache.size,matchingClaimLogs};
+  stats[protocol]={laneIntervals:intervals.length,addressGroups:groups.length,cacheEntries:cache.size,matchingClaimLogs,rpc:pool.snapshot()};
 }
 
 const dedupe=rows=>[...new Map(rows.map(x=>[`${x.laneKey}|${x.transactionHash}|${x.logIndex}`,x])).values()];
