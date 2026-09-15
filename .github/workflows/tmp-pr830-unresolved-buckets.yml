@@ -1,0 +1,83 @@
+name: Temp Stage PR830 Unresolved Buckets
+on:
+  push:
+    branches:
+      - work/pr830-unresolved-buckets-20260915
+    paths:
+      - '.github/workflows/tmp-pr830-unresolved-buckets.yml'
+permissions:
+  contents: write
+jobs:
+  stage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/ve33-rpc-runtime-fresh-20260915
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Apply canonical bucket reuse to unresolved diagnostic
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('reporting/ve33-unresolved-settlement-diagnostic.mjs')
+          s=p.read_text()
+          old="""  const pool=await providerPoolFor(protocol);
+  const cache=new Map();
+  let matchingClaimLogs=0;
+  for(const lane of intervals){
+    const groupNo=index.get(lower(lane.rewardContract));
+    const addresses=groups[groupNo];
+    for(let from=lane.fromBlock;from<=lane.toBlock;from+=MAX_LOG_BLOCKS){
+      const to=Math.min(lane.toBlock,from+MAX_LOG_BLOCKS-1);
+      const cacheKey=`${groupNo}|${from}|${to}`;
+      if(!cache.has(cacheKey))cache.set(cacheKey,queryLogsWithFailover(pool,addresses,from,to));
+      const logs=await cache.get(cacheKey);
+      for(const log of logs){
+"""
+          new="""  const pool=await providerPoolFor(protocol);
+  const cache=new Map();
+  const configuredRangeHints=Object.values(CONFIG[protocol].rangeHints||{}).map(Number).filter(x=>Number.isFinite(x)&&x>0);
+  const canonicalBucketSize=Math.max(1,Math.min(MAX_LOG_BLOCKS,...(configuredRangeHints.length?configuredRangeHints:[MAX_LOG_BLOCKS])));
+  const scanCeiling=intervals.reduce((m,x)=>Math.max(m,Number(x.toBlock)||0),0);
+  let matchingClaimLogs=0;
+  for(const lane of intervals){
+    const groupNo=index.get(lower(lane.rewardContract));
+    const addresses=groups[groupNo];
+    const exactFrom=Number(lane.fromBlock),exactTo=Number(lane.toBlock);
+    const firstBucket=Math.floor(exactFrom/canonicalBucketSize),lastBucket=Math.floor(exactTo/canonicalBucketSize);
+    for(let bucket=firstBucket;bucket<=lastBucket;bucket++){
+      const bucketFrom=bucket*canonicalBucketSize;
+      const bucketTo=Math.min(scanCeiling,bucketFrom+canonicalBucketSize-1);
+      const cacheKey=`${groupNo}|bucket-${bucket}|${bucketFrom}|${bucketTo}`;
+      if(!cache.has(cacheKey))cache.set(cacheKey,queryLogsWithFailover(pool,addresses,bucketFrom,bucketTo));
+      const logs=(await cache.get(cacheKey)).filter(log=>Number(log.blockNumber)>=exactFrom&&Number(log.blockNumber)<=exactTo);
+      for(const log of logs){
+"""
+          assert s.count(old)==1, s.count(old)
+          s=s.replace(old,new,1)
+          old="""  stats[protocol]={
+    laneIntervals:intervals.length,addressGroups:groups.length,cacheEntries:cache.size,matchingClaimLogs,
+"""
+          new="""  stats[protocol]={
+    laneIntervals:intervals.length,addressGroups:groups.length,canonicalBucketSize,cacheEntries:cache.size,matchingClaimLogs,
+"""
+          assert s.count(old)==1, s.count(old)
+          s=s.replace(old,new,1)
+          p.write_text(s)
+          PY
+      - name: Verify bounded diagnostic-only change
+        run: |
+          node --check reporting/ve33-unresolved-settlement-diagnostic.mjs
+          git diff --check
+          test "$(git diff --name-only | wc -l)" -eq 1
+          test "$(git diff --name-only)" = "reporting/ve33-unresolved-settlement-diagnostic.mjs"
+      - name: Commit to PR branch
+        run: |
+          git config user.name 'TheHolding83888'
+          git config user.email '270993406+TheHolding83888@users.noreply.github.com'
+          git add reporting/ve33-unresolved-settlement-diagnostic.mjs
+          git commit -m 'diagnostic: reuse canonical ve33 settlement buckets'
+          git push origin HEAD:fix/ve33-rpc-runtime-fresh-20260915
