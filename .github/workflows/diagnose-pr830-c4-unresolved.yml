@@ -1,0 +1,59 @@
+name: Diagnose PR830 c4 Unresolved
+on:
+  push:
+    branches:
+      - diagnostic/pr830-runtime-matrix-20260915
+    paths:
+      - '.github/workflows/diagnose-pr830-c4-unresolved.yml'
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/ve33-rpc-runtime-fresh-20260915
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm install --no-save --no-package-lock ethers@6
+      - name: Build exact evidence at bounded c4
+        env:
+          REWARDS_DATA_FILE: ./companies/rewards-data.json
+          VE33_EVIDENCE_FILE: /tmp/ve33-accounting-evidence.json
+          VE33_STATE_READ_CONCURRENCY: '4'
+          VE33_SETTLEMENT_CONCURRENCY: '4'
+          VE33_SETTLEMENT_ADDRESS_GROUP_SIZE: '96'
+          BASE_RPC_URL: https://base-rpc.publicnode.com
+          OPTIMISM_RPC_URL: https://gateway.tenderly.co/public/optimism
+        run: |
+          set -euo pipefail
+          cp reporting/ve33-accounting-evidence.json "$VE33_EVIDENCE_FILE"
+          node reporting/ve33-accounting-evidence.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const e=JSON.parse(fs.readFileSync('/tmp/ve33-accounting-evidence.json','utf8'));
+          console.log('PR830_C4_SUMMARY='+JSON.stringify({
+            runtimeMs:e.diagnostics?.runtimeMs,
+            laneCount:e.diagnostics?.laneCount,
+            reconciliationCount:e.diagnostics?.reconciliationCount,
+            settlementQueryFailureCount:e.diagnostics?.settlementQueryFailureCount,
+            unresolvedSettlementCount:e.diagnostics?.unresolvedSettlementCount,
+            protocols:Object.fromEntries(Object.entries(e.diagnostics?.protocols||{}).map(([k,v])=>[k,{
+              runtimeMs:v.runtimeMs,laneCount:v.laneCount,currentCheckpointCount:v.currentCheckpointCount,
+              currentStateFailureCount:v.currentStateFailureCount,boundaryFailures:(v.boundaryFailures||[]).length,
+              historicalBoundarySkippedLaneReads:v.historicalBoundarySkippedLaneReads,settlementRpc:v.settlementRpc
+            }]))
+          },null,2));
+          NODE
+      - name: Attribute unresolved settlement proofs
+        env:
+          VE33_DIAGNOSTIC_EVIDENCE_FILE: /tmp/ve33-accounting-evidence.json
+          BASE_RPC_URL: https://mainnet.base.org
+          OPTIMISM_RPC_URL: https://gateway.tenderly.co/public/optimism
+        run: |
+          set -euo pipefail
+          timeout 420s node reporting/ve33-unresolved-settlement-diagnostic.mjs
