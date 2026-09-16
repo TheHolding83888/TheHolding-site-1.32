@@ -1,7 +1,7 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-16T12:09:01.714Z",
+  "generatedAt": "2026-09-16T14:30:14.133Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
@@ -13,7 +13,7 @@
   },
   "source": {
     "filesScanned": 1311,
-    "bytesScanned": 37836119,
+    "bytesScanned": 37944196,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -57,6 +57,22 @@
   "whatChanged": {
     "newFindings": [
       {
+        "id": "45ad0d31b95e379af260e1cd4905d0ca1ecf6d1c50dcb2ee451175da15be7322",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/update-aerodrome-managed-pulse.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/update-aerodrome-managed-pulse.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "b0b3431986d11cc2f1bfa90fc22cab9f1ec3aeca3bd47d6f549ff0a04fac79a3",
+          "currentSha256": "04ebc63ff2686fa785e1173d5774a3cce592f2a95b7dd111e0ec7f8b5ab372b7"
+        }
+      }
+    ],
+    "resolvedFindings": [
+      {
         "id": "04ce6dff2f5a8946a1e92d28b4f1c9ad01d51a0cbec1490de49178cfbe9ea0de",
         "severity": "medium",
         "category": "third-party-script-content-change",
@@ -71,48 +87,6 @@
           "currentSha256": "36b0da9f235f69039144a9152fd9215467a9f6f002c2671ad155b2fb0bca7e8c",
           "etag": "W/\"ec7db4752c54e95f9bc0909d8c510190\"",
           "lastModified": "Tue, 15 Sep 2026 20:52:28 GMT",
-          "files": [
-            "blog/index.html",
-            "defitea/index.html",
-            "faq/index.html",
-            "fructus/index.html",
-            "monetra/index.html",
-            "singul/index.html",
-            "substantia/index.html"
-          ]
-        }
-      }
-    ],
-    "resolvedFindings": [
-      {
-        "id": "81b0418306c2fa50f711f6cc106d2a82425ce475c7ee4524fb19a6fc26271522",
-        "severity": "medium",
-        "category": "critical-surface-change",
-        "file": ".github/workflows/verify-known-mechanism-reuse-parity.yml",
-        "line": null,
-        "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/verify-known-mechanism-reuse-parity.yml.",
-        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-        "evidence": {
-          "previousSha256": "9ecfe30313055790f1304addc54ce6b4ab918acfff88f170078717422c3a0755",
-          "currentSha256": "e02063219aa15d12197dffe085841ea762a9ee624aadb8a1b9b13e63096bfee4"
-        }
-      },
-      {
-        "id": "734f2880acdc2b8fa6e0974cad8550a4edf9430febb811467f7409b64ecc2aa7",
-        "severity": "medium",
-        "category": "third-party-script-content-change",
-        "file": null,
-        "line": null,
-        "entity": "https://cloud.umami.is/script.js",
-        "summary": "Reviewed third-party script bytes changed: https://cloud.umami.is/script.js",
-        "whyItMatters": "A mutable vendor script changed outside the repository. The change may be legitimate, but the trust decision should be re-checked before treating the new bytes as routine.",
-        "evidence": {
-          "provider": "Umami Cloud",
-          "previousSha256": "36b0da9f235f69039144a9152fd9215467a9f6f002c2671ad155b2fb0bca7e8c",
-          "currentSha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
-          "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-          "lastModified": "Sun, 13 Sep 2026 10:43:07 GMT",
           "files": [
             "blog/index.html",
             "defitea/index.html",
@@ -148,6 +122,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "45ad0d31b95e379af260e1cd4905d0ca1ecf6d1c50dcb2ee451175da15be7322",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/update-aerodrome-managed-pulse.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/update-aerodrome-managed-pulse.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "b0b3431986d11cc2f1bfa90fc22cab9f1ec3aeca3bd47d6f549ff0a04fac79a3",
+        "currentSha256": "04ebc63ff2686fa785e1173d5774a3cce592f2a95b7dd111e0ec7f8b5ab372b7"
+      }
     },
     {
       "id": "e0355b82064396fc141e48b5356209bc9cc44e7a4a2b15f7fe18f5dc61f03a0f",
@@ -1123,32 +1111,6 @@
       }
     },
     {
-      "id": "04ce6dff2f5a8946a1e92d28b4f1c9ad01d51a0cbec1490de49178cfbe9ea0de",
-      "severity": "medium",
-      "category": "third-party-script-content-change",
-      "file": null,
-      "line": null,
-      "entity": "https://cloud.umami.is/script.js",
-      "summary": "Reviewed third-party script bytes changed: https://cloud.umami.is/script.js",
-      "whyItMatters": "A mutable vendor script changed outside the repository. The change may be legitimate, but the trust decision should be re-checked before treating the new bytes as routine.",
-      "evidence": {
-        "provider": "Umami Cloud",
-        "previousSha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
-        "currentSha256": "36b0da9f235f69039144a9152fd9215467a9f6f002c2671ad155b2fb0bca7e8c",
-        "etag": "W/\"ec7db4752c54e95f9bc0909d8c510190\"",
-        "lastModified": "Tue, 15 Sep 2026 20:52:28 GMT",
-        "files": [
-          "blog/index.html",
-          "defitea/index.html",
-          "faq/index.html",
-          "fructus/index.html",
-          "monetra/index.html",
-          "singul/index.html",
-          "substantia/index.html"
-        ]
-      }
-    },
-    {
       "id": "03efad5c0a95a389378f645c19fa37f5e2daf47dce7f9d035780e1cfe9201aab",
       "severity": "medium",
       "category": "unpinned-action",
@@ -1181,22 +1143,18 @@
       "action": "Re-review the changed DOM rendering surface; reviewed innerHTML exemptions are valid only for exact unchanged Git blobs."
     },
     {
-      "priority": "medium",
-      "action": "Re-review the monitored third-party JavaScript trust decision before treating the changed/unverifiable vendor bytes as routine."
-    },
-    {
       "priority": "roadmap",
       "action": "Before interactive AI dialogue: add prompt-injection boundaries, tool permission gates, private/public context separation and immutable action audit logs."
     }
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "b2071fa8fdb7e0b9c1053b73bc8fd2e4ab41d35172b39026bc9517e0189611e3",
+    "snapshotHash": "d6f06fc456841f91eac1c6e2606f7ff59f951076355b71cd92fbf687d75f2705",
     "securityVault": {
-      "runCount": 1052,
+      "runCount": 1053,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/09/2026-09-16T12-09-01-714Z-b2071fa8fd.json",
-      "latestRecordHash": "1c1046f4da047e17beb10c82758acd0b275f57b99c178bf9f886400038e72887",
+      "latestRecordPath": "security/security-vault/2026/09/2026-09-16T14-30-14-133Z-d6f06fc456.json",
+      "latestRecordHash": "fed41c751c41396f5f5107faa48c05f1f9519533df043f3668cc5960efab92cc",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
