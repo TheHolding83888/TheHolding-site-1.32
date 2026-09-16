@@ -13,6 +13,8 @@ on:
     paths:
       - "intelligence/economic-graph/aerodrome-managed-strategy-pulse.mjs"
       - "intelligence/economic-graph/aerodrome-epoch-flow-overlay.mjs"
+      - "intelligence/economic-graph/aerodrome-market-breath-overlay.mjs"
+      - "intelligence/economic-graph/aerodrome-vote-epoch-history-overlay.mjs"
       - "intelligence/economic-graph/aerodrome-veaero-candidate.mjs"
       - "intelligence/economic-graph/economic-graph-canonical-runner.mjs"
       - ".github/workflows/update-aerodrome-managed-pulse.yml"
@@ -20,8 +22,11 @@ on:
     paths:
       - "intelligence/economic-graph/aerodrome-managed-strategy-pulse.mjs"
       - "intelligence/economic-graph/aerodrome-epoch-flow-overlay.mjs"
+      - "intelligence/economic-graph/aerodrome-market-breath-overlay.mjs"
+      - "intelligence/economic-graph/aerodrome-vote-epoch-history-overlay.mjs"
       - "intelligence/economic-graph/aerodrome-veaero-candidate.mjs"
       - "intelligence/economic-graph/economic-graph-canonical-runner.mjs"
+      - ".github/workflows/update-aerodrome-managed-pulse.yml"
 
 permissions:
   contents: write
@@ -64,6 +69,8 @@ jobs:
           set -euo pipefail
           node --check intelligence/economic-graph/aerodrome-managed-strategy-pulse.mjs
           node --check intelligence/economic-graph/aerodrome-epoch-flow-overlay.mjs
+          node --check intelligence/economic-graph/aerodrome-market-breath-overlay.mjs
+          node --check intelligence/economic-graph/aerodrome-vote-epoch-history-overlay.mjs
           test -s intelligence/economic-graph/economic-graph.json
           git diff --check
 
@@ -85,6 +92,7 @@ jobs:
 
       - name: Enrich protocol-native epoch flow accounting
         env:
+          BASE_ARCHIVE_RPC_URL: ${{ secrets.BASE_ARCHIVE_RPC_URL }}
           BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
           BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
         run: |
@@ -161,6 +169,7 @@ jobs:
         if: github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
+          BASE_ARCHIVE_RPC_URL: ${{ secrets.BASE_ARCHIVE_RPC_URL }}
           BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
           BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
         shell: bash
