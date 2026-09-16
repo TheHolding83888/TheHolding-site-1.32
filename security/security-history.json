@@ -2,30 +2,18 @@
   "version": "0.1-security-history",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
   "startedAt": "2026-08-13T16:56:02.005Z",
-  "lastUpdatedAt": "2026-09-16T11:57:04.742Z",
+  "lastUpdatedAt": "2026-09-16T12:09:01.714Z",
   "retention": {
     "operationalRuns": 730,
     "operationalEvents": 5000,
     "longTermCanonicalMemory": "security/security-vault/"
   },
   "lifetime": {
-    "runCount": 1051,
-    "vaultRunCount": 1051,
+    "runCount": 1052,
+    "vaultRunCount": 1052,
     "vaultStartedAt": "2026-08-13T16:56:02.005Z"
   },
   "runs": [
-    {
-      "generatedAt": "2026-08-19T18:50:49.519Z",
-      "status": "watch",
-      "snapshotHash": "8ae0b5fc40f9b8c2f0e3ab089f1b16c03052c3836d926d5d40e18234e0c01e28",
-      "recordPath": "security/security-vault/2026/08/2026-08-19T18-50-49-519Z-8ae0b5fc40.json",
-      "recordHash": "8fb34f7860e13a8ce8d1e465516020611491576cca581603b86a43bbf862b382",
-      "findingCount": 44,
-      "criticalCount": 0,
-      "highCount": 6,
-      "newFindingCount": 0,
-      "resolvedFindingCount": 8
-    },
     {
       "generatedAt": "2026-08-19T19:11:50.542Z",
       "status": "watch",
@@ -8773,6 +8761,18 @@
       "highCount": 2,
       "newFindingCount": 2,
       "resolvedFindingCount": 1
+    },
+    {
+      "generatedAt": "2026-09-16T12:09:01.714Z",
+      "status": "watch",
+      "snapshotHash": "b2071fa8fdb7e0b9c1053b73bc8fd2e4ab41d35172b39026bc9517e0189611e3",
+      "recordPath": "security/security-vault/2026/09/2026-09-16T12-09-01-714Z-b2071fa8fd.json",
+      "recordHash": "1c1046f4da047e17beb10c82758acd0b275f57b99c178bf9f886400038e72887",
+      "findingCount": 76,
+      "criticalCount": 0,
+      "highCount": 2,
+      "newFindingCount": 1,
+      "resolvedFindingCount": 2
     }
   ],
   "events": [
@@ -37707,17 +37707,6 @@
       "entity": null
     },
     {
-      "id": "eb36b5575a4339c77d171f62dc90dcf8d2232c85a0c63e401c85a075e8aaf13f",
-      "type": "finding-opened",
-      "detectedAt": "2026-09-16T11:26:19.795Z",
-      "findingId": "04ce6dff2f5a8946a1e92d28b4f1c9ad01d51a0cbec1490de49178cfbe9ea0de",
-      "severity": "medium",
-      "category": "third-party-script-content-change",
-      "summary": "Reviewed third-party script bytes changed: https://cloud.umami.is/script.js",
-      "file": null,
-      "entity": "https://cloud.umami.is/script.js"
-    },
-    {
       "id": "0a491db56deac9fb186f18b5023e07e26ead10396db94051ce9d5b0f26d4bfd7",
       "type": "finding-opened",
       "detectedAt": "2026-09-16T11:57:04.742Z",
@@ -37744,6 +37733,39 @@
       "type": "finding-resolved",
       "detectedAt": "2026-09-16T11:57:04.742Z",
       "findingId": "04ce6dff2f5a8946a1e92d28b4f1c9ad01d51a0cbec1490de49178cfbe9ea0de",
+      "severity": "medium",
+      "category": "third-party-script-content-change",
+      "summary": "Resolved: Reviewed third-party script bytes changed: https://cloud.umami.is/script.js",
+      "file": null,
+      "entity": "https://cloud.umami.is/script.js"
+    },
+    {
+      "id": "eb36b5575a4339c77d171f62dc90dcf8d2232c85a0c63e401c85a075e8aaf13f",
+      "type": "finding-opened",
+      "detectedAt": "2026-09-16T12:09:01.714Z",
+      "findingId": "04ce6dff2f5a8946a1e92d28b4f1c9ad01d51a0cbec1490de49178cfbe9ea0de",
+      "severity": "medium",
+      "category": "third-party-script-content-change",
+      "summary": "Reviewed third-party script bytes changed: https://cloud.umami.is/script.js",
+      "file": null,
+      "entity": "https://cloud.umami.is/script.js"
+    },
+    {
+      "id": "8964ce9ff87507971bf8f9f33fc1b166649450330208140e16627c631687cac9",
+      "type": "finding-resolved",
+      "detectedAt": "2026-09-16T12:09:01.714Z",
+      "findingId": "81b0418306c2fa50f711f6cc106d2a82425ce475c7ee4524fb19a6fc26271522",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "summary": "Resolved: Security-sensitive surface changed: .github/workflows/verify-known-mechanism-reuse-parity.yml.",
+      "file": ".github/workflows/verify-known-mechanism-reuse-parity.yml",
+      "entity": null
+    },
+    {
+      "id": "c881504e9b6b38a212c6179cd81c48f033926247a4049d40f930fe55515ad4e9",
+      "type": "finding-resolved",
+      "detectedAt": "2026-09-16T12:09:01.714Z",
+      "findingId": "734f2880acdc2b8fa6e0974cad8550a4edf9430febb811467f7409b64ecc2aa7",
       "severity": "medium",
       "category": "third-party-script-content-change",
       "summary": "Resolved: Reviewed third-party script bytes changed: https://cloud.umami.is/script.js",
