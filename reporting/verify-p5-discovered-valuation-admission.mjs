@@ -120,34 +120,37 @@ assert.equal(badResolved.unresolvedStatuses['historical-valuation-source-identit
 assert.equal(historicalValuationSourceMatchesVe33Identity(aeroEvent,{...resolved.ledger.events[0].valuationResolution,sourceChainId:10}),false);
 assert.equal(historicalValuationSourceMatchesVe33Identity(veloEvent,{...resolved.ledger.events[1].valuationResolution,quoteToken:BASE_NATIVE_USDC}),false);
 
-// Temporary read-only production diagnostic: expose only the unresolved target
-// events that currently keep the P5 final audit actionable. This is removed
-// once the exact failure class is identified.
+// Temporary read-only production diagnostic. Remove after classification.
 const liveLedger=JSON.parse(await fs.readFile('reporting/income-ledger.json','utf8'));
 const liveView=buildCanonicalEarnedIncomeView(liveLedger);
-const targetUnresolved=(liveView.unresolved||[])
-  .filter(row=>String(row?.company||'')==='aerocvxyb.eth')
-  .map(row=>({
-    eventKey:row.eventKey||null,
-    company:row.company||null,
-    family:row.family||null,
-    protocol:row.protocol||null,
-    route:row.route||null,
-    chainId:row.chainId??null,
-    token:row.token||null,
-    asset:row.asset||null,
-    amount:row.amount??null,
-    usdValue:row.usdValue??null,
-    economicDate:row.economicDate||null,
-    periodStart:row.periodStart||null,
-    periodEnd:row.periodEnd||null,
-    reason:row.reason||null,
-    valuationStatus:row.valuationStatus||null,
-    valuationResolution:row.valuationResolution||null,
-    sourceIdentity:row.sourceIdentity||null,
-    sourceFile:row.sourceFile||null
-  }));
-console.log('P5 TARGET unresolved aerocvxyb.eth',JSON.stringify(targetUnresolved,null,2));
+const targetUnresolved=(liveView.unresolved||[]).filter(row=>String(row?.company||'')==='aerocvxyb.eth');
+console.log('P5 TARGET unresolved aerocvxyb.eth',JSON.stringify(targetUnresolved.map(row=>({
+  eventKey:row.eventKey||null,company:row.company||null,family:row.family||null,protocol:row.protocol||null,route:row.route||null,
+  chainId:row.chainId??null,token:row.token||null,asset:row.asset||null,amount:row.amount??null,usdValue:row.usdValue??null,
+  economicDate:row.economicDate||null,periodStart:row.periodStart||null,periodEnd:row.periodEnd||null,reason:row.reason||null,
+  valuationStatus:row.valuationStatus||null,valuationResolution:row.valuationResolution||null,sourceIdentity:row.sourceIdentity||null,sourceFile:row.sourceFile||null
+})),null,2));
+
+const unresolvedKeys=new Set(targetUnresolved.map(row=>row.eventKey));
+const { historicalCanonicalPriceAtBoundary }=await import('./historical-canonical-price.mjs');
+const { ve33EventIdentity }=await import('./ve33-historical-valuation-identity.mjs');
+for(const raw of (liveLedger.events||[]).filter(event=>unresolvedKeys.has(event?.eventKey))){
+  const identity=ve33EventIdentity(raw);
+  const eligible=raw?.family==='accrued-entitlement'&&raw?.sourceFile==='reporting/ve33-accounting-evidence.json'&&raw?.usdValue===null&&raw?.valuationStatus==='unvalued-fail-closed'&&Number.isFinite(Date.parse(raw?.periodEnd||''))&&Number(raw?.amount)>0&&raw?.unknownIsNotZero===true&&raw?.executionAuthority==='none';
+  let valuation=null;
+  if(identity?.ok){
+    valuation=await historicalCanonicalPriceAtBoundary({token:identity.token,boundaryAt:raw.periodEnd,eventKey:raw.eventKey,sourceIdentity:raw.sourceIdentity});
+  }
+  console.log('P5 TARGET resolver diagnostic',JSON.stringify({
+    eventKey:raw.eventKey,asset:raw.asset,rawChainId:raw.chainId??null,rawToken:raw.token||null,rawSourceFile:raw.sourceFile||null,
+    rawValuationStatus:raw.valuationStatus||null,eligible,identity,valuation:valuation?{
+      ok:valuation.ok===true,status:valuation.status||null,sourceFamily:valuation.sourceFamily||null,priceUsd:valuation.priceUsd??null,
+      chainId:valuation.chainId??null,sourceBlockNumber:valuation.sourceBlockNumber??null,sourceContract:valuation.sourceContract||null,
+      quoteToken:valuation.quoteToken||null,quoteTokenSymbol:valuation.quoteTokenSymbol||null,rpcEndpointId:valuation.rpcEndpointId||null,
+      attempts:valuation.attempts||null
+    }:null
+  },null,2));
+}
 
 console.log('P5 discovered historical valuation admission PASS',{
   resolved:resolved.resolvedEventCount,
