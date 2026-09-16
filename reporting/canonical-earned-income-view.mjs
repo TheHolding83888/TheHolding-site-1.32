@@ -18,7 +18,9 @@ const HISTORICAL_VALUATION_SOURCE_FAMILIES = new Set([
   'canonical-market-data-git-history',
   'historical-onchain-chainlink-at-boundary',
   'historical-onchain-velodrome-twap-chainlink-at-boundary',
-  'historical-onchain-slipstream-twap-chainlink-at-boundary'
+  'historical-onchain-slipstream-twap-chainlink-at-boundary',
+  'historical-onchain-aerodrome-twap-chainlink-at-boundary',
+  'historical-onchain-velodrome-discovered-twap-chainlink-at-boundary'
 ]);
 const finite = v => v !== null && v !== undefined && v !== '' && Number.isFinite(Number(v));
 const round = (v, d = 8) => finite(v) ? Math.round(Number(v) * 10 ** d) / 10 ** d : null;
@@ -166,6 +168,70 @@ function historicalValuationSourceValid(event, resolution, boundaryMs, observedM
     try {
       if (BigInt(resolution.quoteRoundId) <= 0n || BigInt(resolution.quoteAnsweredInRound) < BigInt(resolution.quoteRoundId)) return false;
     } catch { return false; }
+    const derived = round(Number(resolution.quoteTokenAmount) * Number(resolution.quotePriceUsd), 12);
+    if (!finite(derived) || Math.abs(Number(derived) - Number(resolution.valuationUnitUsd)) > 0.00000002) return false;
+    return true;
+  }
+
+  if (family === 'historical-onchain-aerodrome-twap-chainlink-at-boundary') {
+    if (
+      resolution?.sourceStatus !== 'historical-onchain-aerodrome-discovered-twap-chainlink-price' ||
+      !/^0x[0-9a-f]{40}$/i.test(String(resolution?.poolFactory || '')) ||
+      !Number.isSafeInteger(Number(resolution?.tickSpacing)) || Number(resolution.tickSpacing) <= 0 ||
+      String(resolution?.routeSelection || '') !== 'highest-active-liquidity-at-historical-boundary' ||
+      !Number.isSafeInteger(Number(resolution?.routeCandidateCount)) || Number(resolution.routeCandidateCount) < 1 ||
+      !/^0x[0-9a-f]{40}$/i.test(String(resolution?.poolToken0 || '')) ||
+      !/^0x[0-9a-f]{40}$/i.test(String(resolution?.poolToken1 || '')) ||
+      !/^\d+$/.test(String(resolution?.poolLiquidity || '')) ||
+      !/^0x[0-9a-f]{40}$/i.test(String(resolution?.rewardToken || '')) ||
+      !Number.isSafeInteger(Number(resolution?.rewardTokenDecimals)) || Number(resolution.rewardTokenDecimals) < 0 || Number(resolution.rewardTokenDecimals) > 255 ||
+      !/^0x[0-9a-f]{40}$/i.test(String(resolution?.quoteToken || '')) ||
+      !String(resolution?.quoteTokenSymbol || '').trim() ||
+      !Number.isSafeInteger(Number(resolution?.twapSeconds)) || Number(resolution.twapSeconds) <= 0 ||
+      !Number.isSafeInteger(Number(resolution?.averageTick)) ||
+      !/^0x[0-9a-f]{40}$/i.test(String(resolution?.quoteChainlinkContract || '')) ||
+      !/^\d+$/.test(String(resolution?.quoteRoundId || '')) ||
+      !/^\d+$/.test(String(resolution?.quoteAnsweredInRound || '')) ||
+      resolution?.stablecoinPegAssumptionUsed !== false ||
+      !finite(resolution?.quoteTokenAmount) || Number(resolution.quoteTokenAmount) <= 0 ||
+      !finite(resolution?.quotePriceUsd) || Number(resolution.quotePriceUsd) <= 0
+    ) return false;
+    try {
+      if (BigInt(resolution.poolLiquidity) <= 0n || BigInt(resolution.quoteRoundId) <= 0n || BigInt(resolution.quoteAnsweredInRound) < BigInt(resolution.quoteRoundId)) return false;
+    } catch { return false; }
+    const quoteObservedMs = Date.parse(resolution?.quoteObservedAt || '');
+    if (!Number.isFinite(quoteObservedMs) || quoteObservedMs !== observedMs || quoteObservedMs > blockMs) return false;
+    const derived = round(Number(resolution.quoteTokenAmount) * Number(resolution.quotePriceUsd), 12);
+    if (!finite(derived) || Math.abs(Number(derived) - Number(resolution.valuationUnitUsd)) > 0.00000002) return false;
+    return true;
+  }
+
+  if (family === 'historical-onchain-velodrome-discovered-twap-chainlink-at-boundary') {
+    if (
+      resolution?.sourceStatus !== 'historical-onchain-velodrome-discovered-twap-chainlink-price' ||
+      !/^0x[0-9a-f]{40}$/i.test(String(resolution?.poolFactory || '')) ||
+      !/^0x[0-9a-f]{40}$/i.test(String(resolution?.poolToken0 || '')) ||
+      !/^0x[0-9a-f]{40}$/i.test(String(resolution?.poolToken1 || '')) ||
+      typeof resolution?.poolStable !== 'boolean' ||
+      !/^0x[0-9a-f]{40}$/i.test(String(resolution?.rewardToken || '')) ||
+      !Number.isSafeInteger(Number(resolution?.rewardTokenDecimals)) || Number(resolution.rewardTokenDecimals) < 0 || Number(resolution.rewardTokenDecimals) > 255 ||
+      !/^0x[0-9a-f]{40}$/i.test(String(resolution?.quoteToken || '')) ||
+      String(resolution?.quoteTokenSymbol || '') !== 'USDC' ||
+      !/^\d+$/.test(String(resolution?.quoteAmountOutRaw || '')) ||
+      !Number.isSafeInteger(Number(resolution?.twapGranularity)) || Number(resolution.twapGranularity) <= 0 ||
+      !Number.isSafeInteger(Number(resolution?.observationLength)) || Number(resolution.observationLength) <= Number(resolution.twapGranularity) ||
+      !/^0x[0-9a-f]{40}$/i.test(String(resolution?.quoteChainlinkContract || '')) ||
+      !/^\d+$/.test(String(resolution?.quoteRoundId || '')) ||
+      !/^\d+$/.test(String(resolution?.quoteAnsweredInRound || '')) ||
+      resolution?.stablecoinPegAssumptionUsed !== false ||
+      !finite(resolution?.quoteTokenAmount) || Number(resolution.quoteTokenAmount) <= 0 ||
+      !finite(resolution?.quotePriceUsd) || Number(resolution.quotePriceUsd) <= 0
+    ) return false;
+    try {
+      if (BigInt(resolution.quoteAmountOutRaw) <= 0n || BigInt(resolution.quoteRoundId) <= 0n || BigInt(resolution.quoteAnsweredInRound) < BigInt(resolution.quoteRoundId)) return false;
+    } catch { return false; }
+    const quoteObservedMs = Date.parse(resolution?.quoteObservedAt || '');
+    if (!Number.isFinite(quoteObservedMs) || quoteObservedMs !== observedMs || quoteObservedMs > blockMs) return false;
     const derived = round(Number(resolution.quoteTokenAmount) * Number(resolution.quotePriceUsd), 12);
     if (!finite(derived) || Math.abs(Number(derived) - Number(resolution.valuationUnitUsd)) > 0.00000002) return false;
     return true;
@@ -382,6 +448,8 @@ function buildCanonicalEarnedIncomeView(ledger) {
       exactHistoricalOnchainChainlinkResolutionAllowed: true,
       exactHistoricalOnchainVelodromeTwapChainlinkResolutionAllowed: true,
       exactHistoricalOnchainSlipstreamTwapChainlinkResolutionAllowed: true,
+      exactHistoricalOnchainAerodromeDiscoveredTwapChainlinkResolutionAllowed: true,
+      exactHistoricalOnchainVelodromeDiscoveredTwapChainlinkResolutionAllowed: true,
       legacyDirectChainlinkMissingPegMetadataAccepted: true,
       explicitStablecoinPegAssumptionRejected: true,
       unknownIsNotZero: true

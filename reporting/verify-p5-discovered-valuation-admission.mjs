@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict';
 import { annotateHistoricalValuationResolution } from './income-ledger.mjs';
 import { historicalValuationSourceMatchesVe33Identity } from './ve33-historical-valuation-identity.mjs';
+import { buildCanonicalEarnedIncomeView } from './canonical-earned-income-view.mjs';
 import {
   AERODROME_SLIPSTREAM_FACTORIES,
   CANONICAL_TICK_SPACINGS,
@@ -9,11 +10,15 @@ import {
   DEFAULT_TWAP_SECONDS
 } from './historical-aerodrome-usdc-route.mjs';
 import {
+  BASE_NATIVE_USDC_CHAINLINK_FEED,
+  BASE_AERO_TOKEN,
+  BASE_AERO_CHAINLINK_FEED
+} from './historical-aerodrome-discovered-price.mjs';
+import {
   OPTIMISM_VELODROME_V2_FACTORY,
   OPTIMISM_NATIVE_USDC,
   DEFAULT_TWAP_GRANULARITY
 } from './historical-velodrome-usdc-route.mjs';
-import { BASE_NATIVE_USDC_CHAINLINK_FEED } from './historical-aerodrome-discovered-price.mjs';
 import { OPTIMISM_NATIVE_USDC_CHAINLINK_FEED } from './historical-velodrome-discovered-price.mjs';
 
 const boundaryAt='2026-09-01T00:00:00.000Z';
@@ -22,8 +27,9 @@ const blockAt='2026-08-31T23:59:00.000Z';
 const wallet='0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 const rewardContract='0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
 const pool='0xcccccccccccccccccccccccccccccccccccccccc';
-const AERO_TOKEN='0x1111111111111111111111111111111111111111';
+const AERO_USDC_REWARD_TOKEN='0x1111111111111111111111111111111111111111';
 const VELO_TOKEN='0x2222222222222222222222222222222222222222';
+const AERO_QUOTE_REWARD_TOKEN='0x3333333333333333333333333333333333333333';
 
 function event(protocol,token,chainId){
   const lane=`${protocol}|Synthetic.eth|${wallet}|123|voting-reward|${rewardContract}|${token}`;
@@ -37,18 +43,32 @@ function event(protocol,token,chainId){
   };
 }
 
-const aeroEvent=event('aerodrome',AERO_TOKEN,8453);
+const aeroUsdcEvent=event('aerodrome',AERO_USDC_REWARD_TOKEN,8453);
+const aeroQuoteEvent=event('aerodrome',AERO_QUOTE_REWARD_TOKEN,8453);
 const veloEvent=event('velodrome',VELO_TOKEN,10);
 
-function aeroProof(){return {
+function aeroUsdcProof(){return {
   ok:true,status:'historical-onchain-aerodrome-discovered-twap-chainlink-price',
   sourceFamily:'historical-onchain-aerodrome-twap-chainlink-at-boundary',assetId:null,priceUsd:2,
   observedAt,chainId:8453,sourceBlockNumber:200,sourceBlockTimestamp:blockAt,sourceContract:pool,rpcEndpointId:'test',
   exactHistoricalBlock:true,poolFactory:AERODROME_SLIPSTREAM_FACTORIES[0],tickSpacing:CANONICAL_TICK_SPACINGS[0],
-  routeSelection:'highest-active-liquidity-at-historical-boundary',routeCandidateCount:1,poolToken0:AERO_TOKEN,poolToken1:BASE_NATIVE_USDC,
-  poolLiquidity:'1000',rewardToken:AERO_TOKEN,rewardTokenDecimals:18,quoteToken:BASE_NATIVE_USDC,quoteTokenSymbol:'USDC',
+  routeSelection:'highest-active-liquidity-at-historical-boundary',routeCandidateCount:1,poolToken0:AERO_USDC_REWARD_TOKEN,poolToken1:BASE_NATIVE_USDC,
+  poolLiquidity:'1000',rewardToken:AERO_USDC_REWARD_TOKEN,rewardTokenDecimals:18,quoteToken:BASE_NATIVE_USDC,quoteTokenSymbol:'USDC',
   quoteTokenAmount:2,twapSeconds:DEFAULT_TWAP_SECONDS,averageTick:0,quoteChainlinkContract:BASE_NATIVE_USDC_CHAINLINK_FEED,
   quoteRoundId:'1',quoteAnsweredInRound:'1',quoteObservedAt:observedAt,quotePriceUsd:1,
+  sourceFile:'reporting/historical-aerodrome-discovered-price.mjs',stablecoinPegAssumptionUsed:false,currentPriceUsed:false,
+  referenceAprUsed:false,executionAuthority:'none'
+};}
+
+function aeroQuoteProof(){return {
+  ok:true,status:'historical-onchain-aerodrome-discovered-twap-chainlink-price',
+  sourceFamily:'historical-onchain-aerodrome-twap-chainlink-at-boundary',assetId:null,priceUsd:1,
+  observedAt,chainId:8453,sourceBlockNumber:200,sourceBlockTimestamp:blockAt,sourceContract:pool,rpcEndpointId:'test',
+  exactHistoricalBlock:true,poolFactory:AERODROME_SLIPSTREAM_FACTORIES[0],tickSpacing:CANONICAL_TICK_SPACINGS[0],
+  routeSelection:'highest-active-liquidity-at-historical-boundary',routeCandidateCount:1,poolToken0:AERO_QUOTE_REWARD_TOKEN,poolToken1:BASE_AERO_TOKEN,
+  poolLiquidity:'900',rewardToken:AERO_QUOTE_REWARD_TOKEN,rewardTokenDecimals:18,quoteToken:BASE_AERO_TOKEN,quoteTokenSymbol:'AERO',
+  quoteTokenAmount:2,twapSeconds:DEFAULT_TWAP_SECONDS,averageTick:0,quoteChainlinkContract:BASE_AERO_CHAINLINK_FEED,
+  quoteRoundId:'2',quoteAnsweredInRound:'2',quoteObservedAt:observedAt,quotePriceUsd:0.5,
   sourceFile:'reporting/historical-aerodrome-discovered-price.mjs',stablecoinPegAssumptionUsed:false,currentPriceUsed:false,
   referenceAprUsed:false,executionAuthority:'none'
 };}
@@ -65,33 +85,86 @@ function veloProof(){return {
   referenceAprUsed:false,executionAuthority:'none'
 };}
 
-const proofByToken=new Map([[AERO_TOKEN.toLowerCase(),aeroProof()],[VELO_TOKEN.toLowerCase(),veloProof()]]);
-const resolved=await annotateHistoricalValuationResolution({events:[aeroEvent,veloEvent]}, {
+const proofByToken=new Map([
+  [AERO_USDC_REWARD_TOKEN.toLowerCase(),aeroUsdcProof()],
+  [AERO_QUOTE_REWARD_TOKEN.toLowerCase(),aeroQuoteProof()],
+  [VELO_TOKEN.toLowerCase(),veloProof()]
+]);
+const resolved=await annotateHistoricalValuationResolution({events:[aeroUsdcEvent,aeroQuoteEvent,veloEvent]}, {
   resolver:async ({token})=>structuredClone(proofByToken.get(String(token).toLowerCase()))
 });
-assert.equal(resolved.eligibleEventCount,2);
-assert.equal(resolved.resolvedEventCount,2);
+assert.equal(resolved.eligibleEventCount,3);
+assert.equal(resolved.resolvedEventCount,3);
 assert.equal(resolved.unresolvedEventCount,0);
 assert.equal(resolved.ledger.events[0].valuationResolution?.resolvedUsdValue,6);
-assert.equal(resolved.ledger.events[1].valuationResolution?.resolvedUsdValue,12);
+assert.equal(resolved.ledger.events[1].valuationResolution?.resolvedUsdValue,3);
+assert.equal(resolved.ledger.events[2].valuationResolution?.resolvedUsdValue,12);
 assert.equal(resolved.ledger.events.every(x=>x.valuationResolution?.exactHistoricalBlock===true),true);
 assert.equal(resolved.ledger.events.every(x=>x.valuationResolution?.currentPriceUsed===false),true);
 assert.equal(resolved.ledger.events.every(x=>x.valuationResolution?.stablecoinPegAssumptionUsed===false),true);
 
-const badAero={...aeroProof(),poolFactory:'0xdddddddddddddddddddddddddddddddddddddddd'};
-const badResolved=await annotateHistoricalValuationResolution({events:[aeroEvent]}, {resolver:async()=>badAero});
+const canonicalLedger=events=>({
+  version:'0.1-canonical-income-ledger',
+  generatedAt:'2026-09-16T00:00:00.000Z',
+  semantics:{unknownIsNotZero:true,referenceAprCanBackfillEarnedIncome:false},
+  events
+});
+const canonicalView=buildCanonicalEarnedIncomeView(canonicalLedger(resolved.ledger.events));
+assert.equal(canonicalView.recognized.length,3);
+assert.equal(canonicalView.unresolved.length,0);
+assert.deepEqual(canonicalView.recognized.map(x=>x.usdValue),[6,3,12]);
+assert.equal(canonicalView.semantics.exactHistoricalOnchainAerodromeDiscoveredTwapChainlinkResolutionAllowed,true);
+assert.equal(canonicalView.semantics.exactHistoricalOnchainVelodromeDiscoveredTwapChainlinkResolutionAllowed,true);
+
+for(const [label,index,mutate] of [
+  ['wrong-block',0,event=>{event.valuationResolution.sourceBlockNumber+=1;}],
+  ['explicit-peg',0,event=>{event.valuationResolution.stablecoinPegAssumptionUsed=true;}],
+  ['wrong-route-factory',0,event=>{event.valuationResolution.poolFactory='0xdddddddddddddddddddddddddddddddddddddddd';}],
+  ['wrong-aero-quote-symbol',1,event=>{event.valuationResolution.quoteTokenSymbol='USDC';}],
+  ['wrong-aero-quote-token',1,event=>{event.valuationResolution.quoteToken=BASE_NATIVE_USDC;}],
+  ['wrong-aero-quote-feed',1,event=>{event.valuationResolution.quoteChainlinkContract=BASE_NATIVE_USDC_CHAINLINK_FEED;}]
+]){
+  const bad=structuredClone(resolved.ledger.events[index]);
+  mutate(bad);
+  const view=buildCanonicalEarnedIncomeView(canonicalLedger([bad]));
+  assert.equal(view.recognized.length,0,`${label} must not be recognized`);
+  assert.equal(view.unresolved.length,1,`${label} must remain unresolved`);
+  assert.equal(view.unresolved[0].reason,'canonical-event-usd-valuation-incomplete');
+}
+const badVeloConsumer=structuredClone(resolved.ledger.events[2]);
+badVeloConsumer.valuationResolution.quoteAmountOutRaw='0';
+const badVeloView=buildCanonicalEarnedIncomeView(canonicalLedger([badVeloConsumer]));
+assert.equal(badVeloView.recognized.length,0);
+assert.equal(badVeloView.unresolved[0]?.reason,'canonical-event-usd-valuation-incomplete');
+
+const badAero={...aeroUsdcProof(),poolFactory:'0xdddddddddddddddddddddddddddddddddddddddd'};
+const badResolved=await annotateHistoricalValuationResolution({events:[aeroUsdcEvent]}, {resolver:async()=>badAero});
 assert.equal(badResolved.resolvedEventCount,0);
 assert.equal(badResolved.unresolvedEventCount,1);
 assert.equal(badResolved.unresolvedStatuses['historical-valuation-source-identity-mismatch'],1);
 
-assert.equal(historicalValuationSourceMatchesVe33Identity(aeroEvent,{...resolved.ledger.events[0].valuationResolution,sourceChainId:10}),false);
-assert.equal(historicalValuationSourceMatchesVe33Identity(veloEvent,{...resolved.ledger.events[1].valuationResolution,quoteToken:BASE_NATIVE_USDC}),false);
+const badQuoteFeed={...aeroQuoteProof(),quoteChainlinkContract:BASE_NATIVE_USDC_CHAINLINK_FEED};
+const badQuoteResolved=await annotateHistoricalValuationResolution({events:[aeroQuoteEvent]}, {resolver:async()=>badQuoteFeed});
+assert.equal(badQuoteResolved.resolvedEventCount,0);
+assert.equal(badQuoteResolved.unresolvedEventCount,1);
+assert.equal(badQuoteResolved.unresolvedStatuses['historical-valuation-source-identity-mismatch'],1);
+
+assert.equal(historicalValuationSourceMatchesVe33Identity(aeroUsdcEvent,{...resolved.ledger.events[0].valuationResolution,sourceChainId:10}),false);
+assert.equal(historicalValuationSourceMatchesVe33Identity(aeroQuoteEvent,{...resolved.ledger.events[1].valuationResolution,quoteToken:BASE_NATIVE_USDC}),false);
+assert.equal(historicalValuationSourceMatchesVe33Identity(aeroQuoteEvent,{...resolved.ledger.events[1].valuationResolution,quoteTokenSymbol:'USDC'}),false);
+assert.equal(historicalValuationSourceMatchesVe33Identity(veloEvent,{...resolved.ledger.events[2].valuationResolution,quoteToken:BASE_NATIVE_USDC}),false);
 
 console.log('P5 discovered historical valuation admission PASS',{
   resolved:resolved.resolvedEventCount,
+  canonicalConsumerRecognized:canonicalView.recognized.length,
+  approvedAerodromeQuotes:['USDC','AERO'],
   badFactoryFailsClosed:badResolved.unresolvedEventCount===1,
+  wrongQuoteFeedFailsClosed:badQuoteResolved.unresolvedEventCount===1,
   wrongChainFailsClosed:true,
   wrongQuoteTokenFailsClosed:true,
+  wrongQuoteSymbolFailsClosed:true,
+  canonicalConsumerRecognizedDiscoveredValuations:true,
+  malformedConsumerProofFailsClosed:true,
   currentPriceUsed:false,
   stablecoinPegAssumptionUsed:false,
   executionAuthority:'none'
