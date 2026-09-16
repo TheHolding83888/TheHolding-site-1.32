@@ -74,23 +74,61 @@ function numericLogField(value, fallback = 0) {
   if (value === null || value === undefined || value === '') return fallback;
   try { return Number(BigInt(value)); } catch { return Number(value) || fallback; }
 }
+function rpcErrorText(error) {
+  return [
+    error?.error?.message,
+    error?.info?.error?.message,
+    error?.shortMessage,
+    error?.message,
+    String(error || '')
+  ].filter(Boolean).join(' | ').toLowerCase();
+}
+function isRangeSizeError(error) {
+  const text = rpcErrorText(error);
+  return /\b413\b|payload too large|request entity too large|response size|block range is too large|range.*too large|exceed.*block.*range|limited to (?:a )?[0-9,]+ range|limited to\s*0\s*-\s*[0-9,]+\s*blocks?\s*range|query returned more than/.test(text);
+}
+function numericRangeLimit(error) {
+  const text = rpcErrorText(error);
+  for (const pattern of [
+    /limited to (?:a )?([0-9,]+) range/,
+    /limited to\s*0\s*-\s*([0-9,]+)\s*blocks?\s*range/
+  ]) {
+    const match = text.match(pattern);
+    if (!match) continue;
+    const value = Number(String(match[1]).replace(/,/g, ''));
+    if (Number.isFinite(value) && value > 0) return value;
+  }
+  return null;
+}
 
 async function getLogsChunked(provider, filter, fromBlock, toBlock) {
   const out = [];
   let cursor = Number(fromBlock);
   const finalBlock = Number(toBlock);
-  let chunkSize = 50_000;
-  const minChunk = 2_500;
+  const maxChunk = 50_000;
+  const minChunk = 100;
+  let chunkSize = maxChunk;
+  let learnedMaxRange = null;
   while (cursor <= finalBlock) {
     const end = Math.min(finalBlock, cursor + chunkSize - 1);
     try {
       const logs = await provider.getLogs({ ...filter, fromBlock: cursor, toBlock: end });
       out.push(...logs);
       cursor = end + 1;
-      if (chunkSize < 50_000) chunkSize = Math.min(50_000, chunkSize * 2);
+      if (learnedMaxRange === null && chunkSize < maxChunk) chunkSize = Math.min(maxChunk, chunkSize * 2);
+      else if (learnedMaxRange !== null) chunkSize = Math.min(chunkSize, learnedMaxRange);
     } catch (error) {
-      if (chunkSize <= minChunk) throw error;
-      chunkSize = Math.max(minChunk, Math.floor(chunkSize / 2));
+      // Only range/response-size failures justify shrinking the same provider.
+      // Auth/rate-limit/provider failures (403/429/etc.) must fail over instead
+      // of wasting repeated calls at progressively smaller block windows.
+      if (!isRangeSizeError(error)) throw error;
+      const hintedLimit = numericRangeLimit(error);
+      const nextChunk = hintedLimit
+        ? Math.min(chunkSize - 1, hintedLimit)
+        : Math.floor(chunkSize / 2);
+      if (chunkSize <= minChunk || nextChunk < minChunk) throw error;
+      learnedMaxRange = Math.max(minChunk, nextChunk);
+      chunkSize = learnedMaxRange;
     }
   }
   return out;
