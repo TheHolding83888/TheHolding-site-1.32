@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
 import { annotateHistoricalValuationResolution } from './income-ledger.mjs';
 import { historicalValuationSourceMatchesVe33Identity } from './ve33-historical-valuation-identity.mjs';
 import { buildCanonicalEarnedIncomeView } from './canonical-earned-income-view.mjs';
@@ -118,6 +119,35 @@ assert.equal(badResolved.unresolvedStatuses['historical-valuation-source-identit
 
 assert.equal(historicalValuationSourceMatchesVe33Identity(aeroEvent,{...resolved.ledger.events[0].valuationResolution,sourceChainId:10}),false);
 assert.equal(historicalValuationSourceMatchesVe33Identity(veloEvent,{...resolved.ledger.events[1].valuationResolution,quoteToken:BASE_NATIVE_USDC}),false);
+
+// Temporary read-only production diagnostic: expose only the unresolved target
+// events that currently keep the P5 final audit actionable. This is removed
+// once the exact failure class is identified.
+const liveLedger=JSON.parse(await fs.readFile('reporting/income-ledger.json','utf8'));
+const liveView=buildCanonicalEarnedIncomeView(liveLedger);
+const targetUnresolved=(liveView.unresolved||[])
+  .filter(row=>String(row?.company||'')==='aerocvxyb.eth')
+  .map(row=>({
+    eventKey:row.eventKey||null,
+    company:row.company||null,
+    family:row.family||null,
+    protocol:row.protocol||null,
+    route:row.route||null,
+    chainId:row.chainId??null,
+    token:row.token||null,
+    asset:row.asset||null,
+    amount:row.amount??null,
+    usdValue:row.usdValue??null,
+    economicDate:row.economicDate||null,
+    periodStart:row.periodStart||null,
+    periodEnd:row.periodEnd||null,
+    reason:row.reason||null,
+    valuationStatus:row.valuationStatus||null,
+    valuationResolution:row.valuationResolution||null,
+    sourceIdentity:row.sourceIdentity||null,
+    sourceFile:row.sourceFile||null
+  }));
+console.log('P5 TARGET unresolved aerocvxyb.eth',JSON.stringify(targetUnresolved,null,2));
 
 console.log('P5 discovered historical valuation admission PASS',{
   resolved:resolved.resolvedEventCount,
