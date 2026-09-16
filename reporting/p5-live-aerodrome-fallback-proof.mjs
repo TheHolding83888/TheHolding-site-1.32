@@ -4,12 +4,23 @@ import assert from 'node:assert/strict';
 import { annotateHistoricalValuationResolution } from './income-ledger.mjs';
 import { buildCanonicalEarnedIncomeView } from './canonical-earned-income-view.mjs';
 import { historicalCanonicalPriceAtBoundary } from './historical-canonical-price.mjs';
+import { discoverHistoricalAerodromeUsdcRoute } from './historical-aerodrome-usdc-route.mjs';
 
 const ledger=JSON.parse(await fs.readFile('reporting/income-ledger.json','utf8'));
+const registry=JSON.parse(await fs.readFile('intelligence/market-data/onchain-price-source-registry.json','utf8'));
 const targetCompany='aerocvxyb.eth';
 const valuationReason='canonical-event-usd-valuation-incomplete';
+const BASE_WETH='0x4200000000000000000000000000000000000006';
 const lower=v=>String(v||'').toLowerCase();
 const isVe33Target=e=>e?.company===targetCompany&&e?.sourceFile==='reporting/ve33-accounting-evidence.json'&&e?.family==='accrued-entitlement';
+
+async function rpcCall({endpoint,method,params,fetchImpl=fetch}={}){
+  const response=await fetchImpl(endpoint?.url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params})});
+  if(!response.ok)throw new Error(`RPC HTTP ${response.status}`);
+  const body=await response.json();
+  if(body?.error)throw new Error(body.error?.message||JSON.stringify(body.error));
+  return body?.result;
+}
 
 const beforeView=buildCanonicalEarnedIncomeView(ledger);
 const beforeUnresolved=beforeView.unresolved.filter(x=>x.company===targetCompany&&x.reason===valuationReason);
@@ -88,37 +99,77 @@ for(const item of residualDiagnostics){
   }
 }
 
+// P5 topology probe: before implementing another quote leg, prove whether the
+// unresolved reward tokens actually had active historical Slipstream WETH pools.
+const baseNetwork=registry?.networks?.base;
+const wethProbeCache=new Map();
+const wethRouteDiagnostics=[];
+for(const event of aerodromeBlockers){
+  const match=String(event.eventKey||'').match(/:(\d+):(\d+)$/);
+  const sourceBlockNumber=match?Number(match[2]):null;
+  const cacheKey=`${lower(event.token)}|${sourceBlockNumber}|${event.periodEnd}`;
+  if(!wethProbeCache.has(cacheKey)){
+    wethProbeCache.set(cacheKey,discoverHistoricalAerodromeUsdcRoute({
+      token:event.token,
+      sourceBlockNumber,
+      boundaryAt:event.periodEnd,
+      network:baseNetwork,
+      rpcCall,
+      quoteToken:BASE_WETH,
+      quoteTokenDecimals:18
+    }).catch(error=>({ok:false,status:'weth-topology-probe-error',error:error?.message||String(error)})));
+  }
+  const route=await wethProbeCache.get(cacheKey);
+  wethRouteDiagnostics.push({
+    eventKey:event.eventKey,
+    company:event.company,
+    token:lower(event.token),
+    asset:event.asset||null,
+    boundaryAt:event.periodEnd,
+    sourceBlockNumber,
+    routeFound:route?.ok===true,
+    routeStatus:route?.status||null,
+    pool:route?.pool?lower(route.pool):null,
+    factory:route?.factory?lower(route.factory):null,
+    tickSpacing:route?.tickSpacing??null,
+    liquidity:route?.liquidity??null,
+    quoteToken:route?.quoteToken?lower(route.quoteToken):lower(BASE_WETH),
+    quoteTokenAmount:route?.quoteTokenAmount??null,
+    exactHistoricalBlock:route?.exactHistoricalBlock===true,
+    currentPriceUsed:false,
+    executionAuthority:'none'
+  });
+}
+const wethRouteEventCount=wethRouteDiagnostics.filter(x=>x.routeFound).length;
+const wethRouteUniqueKeys=[...new Set(wethRouteDiagnostics.filter(x=>x.routeFound).map(x=>`${x.token}|${x.sourceBlockNumber}`))];
+const wethRouteAssets=[...new Set(wethRouteDiagnostics.filter(x=>x.routeFound).map(x=>x.asset).filter(Boolean))];
+const wethStatusCounts={};
+for(const item of wethRouteDiagnostics)wethStatusCounts[item.routeStatus]=(wethStatusCounts[item.routeStatus]||0)+1;
+
 const summary={
-  ok:afterUnresolved.length<beforeUnresolved.length&&aeroFallbackEvents.length>0,
+  ok:wethRouteEventCount>0,
   targetCompany,
   baselineValuationBlockers:beforeUnresolved.length,
   candidateValuationBlockers:afterUnresolved.length,
   blockerDelta:beforeUnresolved.length-afterUnresolved.length,
   newlyRecognizedEventKeys:newlyRecognized.map(x=>x.eventKey),
   aeroFallbackEventCount:aeroFallbackEvents.length,
-  aeroFallbackEvents:aeroFallbackEvents.map(e=>({
-    eventKey:e.eventKey,
-    token:lower(e.token),
-    boundaryAt:e.periodEnd,
-    quoteTokenSymbol:e.valuationResolution.quoteTokenSymbol,
-    quoteToken:lower(e.valuationResolution.quoteToken),
-    sourceBlockNumber:e.valuationResolution.sourceBlockNumber,
-    sourceContract:lower(e.valuationResolution.sourceContract),
-    quoteChainlinkContract:lower(e.valuationResolution.quoteChainlinkContract),
-    resolvedUsdValue:e.valuationResolution.resolvedUsdValue,
-    currentPriceUsed:e.valuationResolution.currentPriceUsed,
-    stablecoinPegAssumptionUsed:e.valuationResolution.stablecoinPegAssumptionUsed,
-    executionAuthority:e.valuationResolution.executionAuthority
-  })),
   eligibleEventCount:annotated.eligibleEventCount??null,
   resolvedEventCount:annotated.resolvedEventCount??null,
   unresolvedEventCount:annotated.unresolvedEventCount??null,
   unresolvedStatuses:annotated.unresolvedStatuses??null,
   residualAerodromeBlockerCount:residualDiagnostics.length,
   residualRouteStatusCounts:routeStatusCounts,
+  wethTopologyProbe:{
+    quoteToken:lower(BASE_WETH),
+    routeFoundEventCount:wethRouteEventCount,
+    routeFoundUniqueTokenBlockCount:wethRouteUniqueKeys.length,
+    assets:wethRouteAssets,
+    statusCounts:wethStatusCounts,
+    diagnostics:wethRouteDiagnostics
+  },
   residualDiagnostics,
   executionAuthority:'none'
 };
-console.log('P5 LIVE Aerodrome AERO fallback proof + residual diagnosis',JSON.stringify(summary,null,2));
-assert.ok(summary.blockerDelta>0,'candidate did not reduce the live aerocvxyb historical USD blocker');
-assert.ok(summary.aeroFallbackEventCount>0,'candidate did not use the new AERO quote fallback on any live unresolved event');
+console.log('P5 LIVE residual Aerodrome WETH topology probe',JSON.stringify(summary,null,2));
+assert.ok(summary.wethTopologyProbe.routeFoundEventCount>0,'no live residual Aerodrome blocker has a proven historical WETH route');
