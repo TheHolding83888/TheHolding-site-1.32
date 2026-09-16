@@ -1,7 +1,7 @@
 # THE HOLDING — PRE-P10 ACCOUNTING TAILS ROADMAP
 ## Owner-approved durable addendum · 2026-09-16
 
-Status: **QUEUED — do not interrupt the current active P9 package**  
+Status: **ACTIVE — P9 materialized GREEN; Tail A GREEN; Tail B ACTIVE**  
 Authority: sequencing / recovery context only  
 executionAuthority: none
 
@@ -16,19 +16,19 @@ This addendum does not replace the canonical public→private roadmap. Changing 
 
 ## Sequencing contract
 
-Do **not** interrupt the current active P9 work merely to start these tails.
+P9 has physically materialized its bounded reliability closure. The current order is now:
 
-Preferred order after the current P9 closure and before P10 System-wide Production Acceptance:
-
-1. **Tail A — rare reward-token historical valuation closure**;
-2. **Tail B — ICP NNS dynamic monitoring / reference-yield refinement**;
-3. proceed to **P10**.
+1. **Tail A — rare reward-token historical valuation closure — GREEN**;
+2. **Tail B — ICP NNS dynamic monitoring / reference-yield refinement — ACTIVE**;
+3. proceed to **P10** when Tail B reaches an honest bounded closure.
 
 If Tail B lacks a second factual maturity/reward observation, do not invent one and do not block P10 solely to force a synthetic APR. Preserve the estimate/provenance explicitly and continue once the factual boundary is honest.
 
 ---
 
 ## Tail A — Rare reward-token historical valuation closure
+
+Status: **GREEN — genuinely unprovable at the current exact historical boundary; no production patch justified.**
 
 ### Current concrete case
 
@@ -44,41 +44,45 @@ Current historical reward observations include:
 
 The accounting event/amount/identity is not lost. The unresolved part is historical USD valuation at the required accounting boundary.
 
-### Required work
+### Closure proof · 2026-09-16
 
-Do not add a BLUECHIP-specific accounting engine or token-specific business-rule patch.
+Temporary diagnosis-only PR `#847` probed the live current canonical events on a GitHub-hosted runner and was deliberately closed **without merge**.
 
-Run a bounded generic historical-price diagnosis at the exact historical boundary:
+Exact tested boundary:
 
-`reward token → proven historical quote route → USD`
+- accounting boundary: `2026-09-15T15:53:07.000Z`;
+- Base closing block: `51,349,120`;
+- unresolved BLUECHIP events: `2` (`#64985`, `#69194`).
 
-Candidate reusable routes may include, only when exact historical evidence exists:
+Using the current generic exact-block Aerodrome Slipstream route core, the diagnostic tested:
 
-- reward token → USDC → USD;
-- reward token → AERO → USD;
-- another canonical, identity-bound onchain quote route already consistent with P5 rules.
+1. `BLUECHIP → native Base USDC` — no proven historical route;
+2. `BLUECHIP → AERO` — no proven historical route;
+3. `BLUECHIP → WETH` — no proven historical route, so a WETH→USDC→USD continuation was not applicable.
 
-Rules remain:
+The existing generic historical-price synthetic verification remained GREEN. The diagnostic preserved:
 
-- exact historical boundary/block only;
-- no current spot-price backfill;
-- no silent stablecoin `$1` assumption;
+- `currentPriceUsed = false`;
+- `stablecoinPegAssumptionUsed = false`;
 - no APR/APY inference;
-- `UNKNOWN != 0`;
-- one unresolved token must remain locally isolated and must not block valid accounting for other tokens/mechanisms.
+- no production accounting mutation;
+- `executionAuthority = none`.
 
-### Acceptance
+### Decision
 
-Close this tail in one of two valid ways:
+Do **not** add BLUECHIP-specific accounting logic, do not backfill with today's price, and do not build an arbitrary recursive router merely to force cosmetic completeness.
 
-1. **GREEN — reusable gap fixed:** a generic exact-boundary route exists, the current resolver was missing the reusable class, the systemic fix is production-proven, and the BLUECHIP events resolve without token-specific logic; or
-2. **GREEN — genuinely unprovable:** no defensible historical route exists at the required boundary, so token amount/history remains preserved and USD remains explicit UNKNOWN/evidence-pending.
+Keep the exact token amounts/history in the Canonical Income Ledger and preserve historical USD as explicit `UNKNOWN / unvalued-fail-closed`.
 
-Do not reopen P5 broadly unless fresh evidence proves a reusable capability gap rather than a genuinely unavailable historical price.
+This is a valid Tail A GREEN closure under the P5/PRE-P10 rule: the bounded reusable routes were tested at the exact historical boundary and no defensible route was proven.
+
+Reopen only if fresh evidence later proves a new reusable historical quote class that materially applies beyond this one token.
 
 ---
 
 ## Tail B — ICP NNS dynamic monitoring / reference-yield refinement
+
+Status: **ACTIVE**
 
 ### Owner-provided external monitor evidence
 
@@ -135,7 +139,7 @@ An estimate must never silently become factual earned-income authority.
 
 If a second genuine maturity/reward snapshot becomes available, compute a trailing observed reference rate from the factual delta and productive stake/time interval, with explicit provenance and confidence.
 
-If there is only one factual snapshot (`21.48 ICP`), keep APR as an explicit reference estimate rather than pretending the repeated Telegram messages are new observations.
+If there is only one factual snapshot (`21.48 ICP`), keep APR as an explicit reference estimate rather than pretending the repeated monitor messages are new observations.
 
 Possible future model:
 
@@ -168,4 +172,4 @@ At takeover/warmup, read in this order:
 
 Then verify the live active package before acting.
 
-This addendum is owner-approved follow-up scope. It is **queued**, not permission to interrupt a still-active earlier package without fresh evidence or a newer owner instruction.
+Current next bounded item from this addendum: **Tail B — ICP NNS dynamic monitoring / reference-yield refinement.**
