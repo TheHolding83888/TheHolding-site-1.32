@@ -12,7 +12,16 @@ import {
 } from './historical-aerodrome-usdc-route.mjs';
 
 const registry=JSON.parse(await fs.readFile('intelligence/market-data/onchain-price-source-registry.json','utf8'));
-const network=registry?.networks?.base;
+const registryNetwork=registry?.networks?.base;
+const configuredRpc=String(process.env.BASE_RPC_URL||'').trim();
+const registryEndpoints=Array.isArray(registryNetwork?.rpcFailover)?registryNetwork.rpcFailover:[];
+const network={
+  ...registryNetwork,
+  rpcFailover:[
+    ...(configuredRpc?[{id:'configured-base-rpc',url:configuredRpc}]:[]),
+    ...registryEndpoints.filter(x=>String(x?.url||'')!==configuredRpc)
+  ]
+};
 const POOL='0xF099ceFE04717710dd2EC40f2e0c9C06134F5Eb5';
 const TOWNS='0x00000000A22C618FD6b4D7e9A335C4B96B189A38';
 const USDC='0x833589fCD6eDb6E08f4C7C32D4f71b54bdA02913';
@@ -58,6 +67,7 @@ for(const endpoint of network.rpcFailover){
     }
     proof={
       endpoint:endpoint.id,
+      configuredRpcAvailable:Boolean(configuredRpc),
       blockNumber:BLOCK,
       blockTimestamp:block?.timestamp?new Date(Number(BigInt(block.timestamp))*1000).toISOString():null,
       codePresent:typeof code==='string'&&code!=='0x',
@@ -80,8 +90,9 @@ for(const endpoint of network.rpcFailover){
   }catch(error){endpointDiagnostics.push({endpoint:endpoint.id,error:error?.message||String(error)});}
 }
 
-const summary={ok:Boolean(proof),proof,endpointDiagnostics,canonicalFactories:AERODROME_SLIPSTREAM_FACTORIES.map(lower),canonicalTickSpacings:CANONICAL_TICK_SPACINGS,executionAuthority:'none'};
+const summary={ok:Boolean(proof),configuredRpcAvailable:Boolean(configuredRpc),proof,endpointDiagnostics,canonicalFactories:AERODROME_SLIPSTREAM_FACTORIES.map(lower),canonicalTickSpacings:CANONICAL_TICK_SPACINGS,executionAuthority:'none'};
 console.log('P5 known TOWNS/USDC Slipstream historical pool introspection',JSON.stringify(summary,null,2));
+assert.equal(Boolean(configuredRpc),true,'existing BASE_RPC_URL secret is not available to this proof workflow');
 assert.ok(proof,'known TOWNS/USDC pool could not be introspected at the historical closing block');
 assert.equal(proof.pairMatches,true,'known pool token pair does not match TOWNS/USDC at boundary');
 assert.equal(proof.activeLiquidity,true,'known pool had no active liquidity at boundary');
