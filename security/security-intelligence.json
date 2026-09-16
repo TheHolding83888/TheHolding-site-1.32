@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-16T09:07:19.613Z",
+  "generatedAt": "2026-09-16T11:26:19.795Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 2,
-    "medium": 73,
+    "medium": 74,
     "low": 0,
     "info": 0
   },
   "source": {
-    "filesScanned": 1305,
-    "bytesScanned": 37550696,
+    "filesScanned": 1306,
+    "bytesScanned": 37750988,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -45,33 +45,45 @@
         ],
         "networkSkipped": false,
         "ok": true,
-        "sha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
-        "etag": "W/\"4059de88a81ebfbb3146b6dec956278e\"",
-        "lastModified": "Sun, 13 Sep 2026 10:43:07 GMT",
+        "sha256": "36b0da9f235f69039144a9152fd9215467a9f6f002c2671ad155b2fb0bca7e8c",
+        "etag": "W/\"ec7db4752c54e95f9bc0909d8c510190\"",
+        "lastModified": "Tue, 15 Sep 2026 20:52:28 GMT",
         "contentType": "application/javascript; charset=utf-8",
-        "bytes": 4717,
+        "bytes": 4757,
         "error": null
       }
     ]
   },
   "whatChanged": {
-    "newFindings": [],
-    "resolvedFindings": [
+    "newFindings": [
       {
-        "id": "b1d74d75c4ffb1af140123a8368851359d046d9f030690311dbe022314fd2dd5",
+        "id": "04ce6dff2f5a8946a1e92d28b4f1c9ad01d51a0cbec1490de49178cfbe9ea0de",
         "severity": "medium",
-        "category": "critical-surface-change",
-        "file": ".github/workflows/update-reporting.yml",
+        "category": "third-party-script-content-change",
+        "file": null,
         "line": null,
-        "entity": null,
-        "summary": "Security-sensitive surface changed: .github/workflows/update-reporting.yml.",
-        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "entity": "https://cloud.umami.is/script.js",
+        "summary": "Reviewed third-party script bytes changed: https://cloud.umami.is/script.js",
+        "whyItMatters": "A mutable vendor script changed outside the repository. The change may be legitimate, but the trust decision should be re-checked before treating the new bytes as routine.",
         "evidence": {
-          "previousSha256": "cca112727406e28425af4cbd0c25dd90965eadfc99775fcf13eef2b4b50bd7ff",
-          "currentSha256": "a27a3aa804f01f2e35bdd03b1f7b7adfe9b666c6ee3b5d2a740d4db9fc0be070"
+          "provider": "Umami Cloud",
+          "previousSha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
+          "currentSha256": "36b0da9f235f69039144a9152fd9215467a9f6f002c2671ad155b2fb0bca7e8c",
+          "etag": "W/\"ec7db4752c54e95f9bc0909d8c510190\"",
+          "lastModified": "Tue, 15 Sep 2026 20:52:28 GMT",
+          "files": [
+            "blog/index.html",
+            "defitea/index.html",
+            "faq/index.html",
+            "fructus/index.html",
+            "monetra/index.html",
+            "singul/index.html",
+            "substantia/index.html"
+          ]
         }
       }
-    ]
+    ],
+    "resolvedFindings": []
   },
   "currentFindings": [
     {
@@ -1070,6 +1082,32 @@
       }
     },
     {
+      "id": "04ce6dff2f5a8946a1e92d28b4f1c9ad01d51a0cbec1490de49178cfbe9ea0de",
+      "severity": "medium",
+      "category": "third-party-script-content-change",
+      "file": null,
+      "line": null,
+      "entity": "https://cloud.umami.is/script.js",
+      "summary": "Reviewed third-party script bytes changed: https://cloud.umami.is/script.js",
+      "whyItMatters": "A mutable vendor script changed outside the repository. The change may be legitimate, but the trust decision should be re-checked before treating the new bytes as routine.",
+      "evidence": {
+        "provider": "Umami Cloud",
+        "previousSha256": "f91822332c2a13f91e8fe29c0aeb169497cb1d870d31a099c5ecc8bea58ea3ac",
+        "currentSha256": "36b0da9f235f69039144a9152fd9215467a9f6f002c2671ad155b2fb0bca7e8c",
+        "etag": "W/\"ec7db4752c54e95f9bc0909d8c510190\"",
+        "lastModified": "Tue, 15 Sep 2026 20:52:28 GMT",
+        "files": [
+          "blog/index.html",
+          "defitea/index.html",
+          "faq/index.html",
+          "fructus/index.html",
+          "monetra/index.html",
+          "singul/index.html",
+          "substantia/index.html"
+        ]
+      }
+    },
+    {
       "id": "03efad5c0a95a389378f645c19fa37f5e2daf47dce7f9d035780e1cfe9201aab",
       "severity": "medium",
       "category": "unpinned-action",
@@ -1102,18 +1140,22 @@
       "action": "Re-review the changed DOM rendering surface; reviewed innerHTML exemptions are valid only for exact unchanged Git blobs."
     },
     {
+      "priority": "medium",
+      "action": "Re-review the monitored third-party JavaScript trust decision before treating the changed/unverifiable vendor bytes as routine."
+    },
+    {
       "priority": "roadmap",
       "action": "Before interactive AI dialogue: add prompt-injection boundaries, tool permission gates, private/public context separation and immutable action audit logs."
     }
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "53e19b7eb9be2396af9eff593557e5945454bba91dbf0ab579dfcafd4754dd2b",
+    "snapshotHash": "7344e63baca138ee4d223252b708de03a2bc58e4148c15feee56cc4c615ba372",
     "securityVault": {
-      "runCount": 1049,
+      "runCount": 1050,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/09/2026-09-16T09-07-19-613Z-53e19b7eb9.json",
-      "latestRecordHash": "10554c1e74709457713fb0eec114a4c78977f1246de0505690fb2fb5a72dd4a1",
+      "latestRecordPath": "security/security-vault/2026/09/2026-09-16T11-26-19-795Z-7344e63bac.json",
+      "latestRecordHash": "660496e463fc292019e586c7c58a089cf94c7c10d8274643c114474a6c571d04",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
