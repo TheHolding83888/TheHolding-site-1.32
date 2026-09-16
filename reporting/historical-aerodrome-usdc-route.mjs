@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Exact-block Aerodrome Slipstream reward-token -> Base USDC route discovery.
+ * Exact-block Aerodrome Slipstream reward-token -> Base quote route discovery.
  *
  * Factories are the canonical Aerodrome Slipstream deployments published by
  * aerodrome-finance/slipstream. Discovery is read-only and fail-closed: it
@@ -8,25 +8,25 @@
  * a positive 5-minute TWAP, and never assumes a USDC peg or current price.
  */
 
-export const VERSION='0.1-exact-block-aerodrome-slipstream-usdc-route-discovery';
+export const VERSION='0.2-exact-block-aerodrome-slipstream-route-archive-fabric';
 export const BASE_NATIVE_USDC='0x833589fCD6eDb6E08f4C7C32D4f71b54bdA02913';
 export const BASE_NATIVE_USDC_DECIMALS=6;
 export const DEFAULT_TWAP_SECONDS=300;
 export const MAX_BOUNDARY_BLOCK_LAG_SECONDS=120;
 
-// Canonical Base deployments from aerodrome-finance/slipstream README.
+export const AERODROME_HISTORICAL_RPC_FALLBACKS=Object.freeze([
+  Object.freeze({id:'tenderly-public-archive',url:'https://base.gateway.tenderly.co'})
+]);
+
 export const AERODROME_SLIPSTREAM_FACTORIES=Object.freeze([
   '0x5e7BB104d84c7CB9B682AaC2F3d509f5F406809A',
   '0xaDe65c38CD4849aDBA595a4323a8C7DdfE89716a',
   '0xf8f2eB4940CFE7d13603DDDD87f123820Fc061Ef'
 ]);
 
-// CLFactory constructor enables these spacings. Extra future spacings remain
-// UNKNOWN until independently admitted rather than being guessed.
 export const CANONICAL_TICK_SPACINGS=Object.freeze([1,50,100,200,2000]);
 
 export const SELECTORS=Object.freeze({
-  // keccak256('getPool(address,address,int24)')[0:4]
   getPool:'0x28af8d0b',
   decimals:'0x313ce567',
   token0:'0x0dfe1681',
@@ -43,6 +43,19 @@ const abiWord=value=>{
 };
 const abiAddress=value=>lower(value).replace(/^0x/,'').padStart(64,'0');
 const hexQuantity=value=>`0x${BigInt(value).toString(16)}`;
+
+export function historicalAerodromeRpcEndpoints(network){
+  const seen=new Set();
+  return[
+    ...AERODROME_HISTORICAL_RPC_FALLBACKS,
+    ...(Array.isArray(network?.rpcFailover)?network.rpcFailover:[])
+  ].filter(endpoint=>{
+    const url=String(endpoint?.url||'').trim();
+    if(!url||seen.has(url))return false;
+    seen.add(url);
+    return true;
+  });
+}
 
 export function encodeGetPool(tokenA,tokenB,tickSpacing){
   return `${SELECTORS.getPool}${abiAddress(tokenA)}${abiAddress(tokenB)}${abiWord(tickSpacing)}`;
@@ -94,28 +107,18 @@ export function quoteTokenPerReward({avgTick,token0,token,tokenDecimals,quoteTok
   return quotePerReward;
 }
 
-export async function discoverHistoricalAerodromeUsdcRoute({
-  token,
-  sourceBlockNumber,
-  boundaryAt,
-  network,
-  rpcCall,
-  fetchImpl=fetch,
-  factories=AERODROME_SLIPSTREAM_FACTORIES,
-  tickSpacings=CANONICAL_TICK_SPACINGS,
-  quoteToken=BASE_NATIVE_USDC,
-  quoteTokenDecimals=BASE_NATIVE_USDC_DECIMALS,
-  twapSeconds=DEFAULT_TWAP_SECONDS
-}={}){
+export async function discoverHistoricalAerodromeUsdcRoute({token,sourceBlockNumber,boundaryAt,network,rpcCall,fetchImpl=fetch,factories=AERODROME_SLIPSTREAM_FACTORIES,tickSpacings=CANONICAL_TICK_SPACINGS,quoteToken=BASE_NATIVE_USDC,quoteTokenDecimals=BASE_NATIVE_USDC_DECIMALS,twapSeconds=DEFAULT_TWAP_SECONDS}={}){
   if(!/^0x[0-9a-f]{40}$/i.test(String(token||''))||lower(token)===lower(quoteToken))return{ok:false,status:'invalid-reward-token'};
   if(!Number.isSafeInteger(Number(sourceBlockNumber))||Number(sourceBlockNumber)<=0)return{ok:false,status:'invalid-source-block'};
   const boundaryMs=Date.parse(boundaryAt||'');
   if(!Number.isFinite(boundaryMs))return{ok:false,status:'invalid-accounting-boundary'};
-  if(Number(network?.chainId)!==8453||!Array.isArray(network?.rpcFailover)||network.rpcFailover.length===0)return{ok:false,status:'base-historical-rpc-fabric-unavailable'};
+  if(Number(network?.chainId)!==8453)return{ok:false,status:'base-historical-rpc-fabric-unavailable'};
   if(typeof rpcCall!=='function')return{ok:false,status:'historical-rpc-call-unavailable'};
+  const endpoints=historicalAerodromeRpcEndpoints(network);
+  if(endpoints.length===0)return{ok:false,status:'base-historical-rpc-fabric-unavailable'};
 
   const blockTag=hexQuantity(sourceBlockNumber),attempts=[];
-  for(const endpoint of network.rpcFailover){
+  for(const endpoint of endpoints){
     try{
       const block=await rpcCall({endpoint,method:'eth_getBlockByNumber',params:[blockTag,false],fetchImpl});
       if(lower(block?.number)!==lower(blockTag))return{ok:false,status:'closing-block-rpc-mismatch',sourceBlockNumber};
@@ -125,12 +128,10 @@ export async function discoverHistoricalAerodromeUsdcRoute({
       if(blockTimestampMs>boundaryMs)return{ok:false,status:'historical-block-after-accounting-boundary',sourceBlockNumber};
       const boundaryLagSeconds=(boundaryMs-blockTimestampMs)/1000;
       if(boundaryLagSeconds>MAX_BOUNDARY_BLOCK_LAG_SECONDS)return{ok:false,status:'historical-block-too-far-from-accounting-boundary',sourceBlockNumber,boundaryLagSeconds:Number(boundaryLagSeconds.toFixed(3))};
-
       const decimalsHex=await rpcCall({endpoint,method:'eth_call',params:[{to:token,data:SELECTORS.decimals},blockTag],fetchImpl});
       const tokenDecimals=Number(decodeUint256(decimalsHex));
       if(!Number.isInteger(tokenDecimals)||tokenDecimals<0||tokenDecimals>36)return{ok:false,status:'reward-token-decimals-invalid',sourceBlockNumber};
       const valid=[];
-
       for(const factory of factories){
         for(const tickSpacing of tickSpacings){
           try{
@@ -154,30 +155,14 @@ export async function discoverHistoricalAerodromeUsdcRoute({
           }catch(error){attempts.push({endpointId:endpoint?.id||null,factory,tickSpacing,error:error?.message||String(error)});}
         }
       }
-
       const unique=new Map();
-      for(const candidate of valid){
-        const key=lower(candidate.pool),existing=unique.get(key);
-        if(!existing||candidate.liquidity>existing.liquidity)unique.set(key,candidate);
-      }
+      for(const candidate of valid){const key=lower(candidate.pool),existing=unique.get(key);if(!existing||candidate.liquidity>existing.liquidity)unique.set(key,candidate);}
       const candidates=[...unique.values()];
       if(candidates.length===0)continue;
       candidates.sort((a,b)=>a.liquidity===b.liquidity?0:(a.liquidity>b.liquidity?-1:1));
-      if(candidates.length>1&&candidates[0].liquidity===candidates[1].liquidity){
-        return{ok:false,status:'historical-aerodrome-usdc-route-ambiguous',sourceBlockNumber,candidatePools:candidates.map(x=>({factory:x.factory,pool:x.pool,tickSpacing:x.tickSpacing,liquidity:x.liquidity.toString()}))};
-      }
+      if(candidates.length>1&&candidates[0].liquidity===candidates[1].liquidity)return{ok:false,status:'historical-aerodrome-usdc-route-ambiguous',sourceBlockNumber,candidatePools:candidates.map(x=>({factory:x.factory,pool:x.pool,tickSpacing:x.tickSpacing,liquidity:x.liquidity.toString()}))};
       const candidate=candidates[0];
-      return{
-        ok:true,status:'historical-aerodrome-usdc-route-proven',chainId:8453,
-        sourceBlockNumber:Number(sourceBlockNumber),sourceBlockTimestamp:new Date(blockTimestampMs).toISOString(),
-        rpcEndpointId:endpoint?.id||null,factory:candidate.factory,pool:candidate.pool,tickSpacing:candidate.tickSpacing,
-        routeSelection:'highest-active-liquidity-at-historical-boundary',candidateCount:candidates.length,
-        token,tokenDecimals,token0:candidate.token0,token1:candidate.token1,
-        quoteToken,quoteTokenDecimals,quoteTokenAmount:candidate.quoteTokenAmount,
-        twapSeconds:Number(twapSeconds),averageTick:candidate.avgTick,liquidity:candidate.liquidity.toString(),
-        exactHistoricalBlock:true,stablecoinPegAssumptionUsed:false,currentPriceUsed:false,referenceAprUsed:false,
-        executionAuthority:'none'
-      };
+      return{ok:true,status:'historical-aerodrome-usdc-route-proven',chainId:8453,sourceBlockNumber:Number(sourceBlockNumber),sourceBlockTimestamp:new Date(blockTimestampMs).toISOString(),rpcEndpointId:endpoint?.id||null,factory:candidate.factory,pool:candidate.pool,tickSpacing:candidate.tickSpacing,routeSelection:'highest-active-liquidity-at-historical-boundary',candidateCount:candidates.length,token,tokenDecimals,token0:candidate.token0,token1:candidate.token1,quoteToken,quoteTokenDecimals,quoteTokenAmount:candidate.quoteTokenAmount,twapSeconds:Number(twapSeconds),averageTick:candidate.avgTick,liquidity:candidate.liquidity.toString(),exactHistoricalBlock:true,stablecoinPegAssumptionUsed:false,currentPriceUsed:false,referenceAprUsed:false,executionAuthority:'none'};
     }catch(error){attempts.push({endpointId:endpoint?.id||null,error:error?.message||String(error)});}
   }
   return{ok:false,status:'historical-aerodrome-usdc-route-unavailable',sourceBlockNumber:Number(sourceBlockNumber),attempts};
