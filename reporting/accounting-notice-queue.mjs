@@ -19,6 +19,7 @@ const OUTPUT_FILE=process.env.ACCOUNTING_NOTICE_QUEUE_FILE||path.join(ROOT,'repo
 
 const VERSION='0.2-accounting-notice-queue-boundary-evidence-pending';
 const BOUNDARY_EVIDENCE_PENDING_REASON='period-boundary-evidence-pending-no-exact-month-cut';
+const VALUATION_EVIDENCE_PENDING_REASON='canonical-event-usd-valuation-incomplete';
 const CATEGORIES=new Set([
   'missing-capability',
   'tracking-no-period-event',
@@ -54,6 +55,7 @@ const companyAmounts=row=>{
 };
 const lifecycle=row=>row?.incomeAccounting?.lifecycle||{};
 const boundaryEvidencePending=reasons=>Array.isArray(reasons)&&reasons.length>0&&reasons.every(reason=>reason===BOUNDARY_EVIDENCE_PENDING_REASON);
+const valuationEvidencePending=reasons=>Array.isArray(reasons)&&reasons.length>0&&reasons.every(reason=>reason===VALUATION_EVIDENCE_PENDING_REASON);
 
 const coverage=read(COVERAGE_FILE);
 const monthly=read(MONTHLY_FILE);
@@ -139,6 +141,7 @@ for(const [companyKey,c] of Object.entries(coverage.companies||{})){
     if(Number(life?.unresolvedEventCount||0)>0){
       const unresolvedReasons=Array.isArray(life?.unresolvedReasons)?life.unresolvedReasons:[];
       const exactCutEvidencePending=boundaryEvidencePending(unresolvedReasons);
+      const historicalValuationEvidencePending=valuationEvidencePending(unresolvedReasons);
       rows.push({
         ...makeBase({
           company,
@@ -147,16 +150,17 @@ for(const [companyKey,c] of Object.entries(coverage.companies||{})){
           mechanism:'__company_period__',
           category:'period-lifecycle-reconciliation',
           trackingState:monthRow?.accountingStatus||null,
-          blocker:exactCutEvidencePending?'historical-boundary-evidence-pending':'unresolved-period-lifecycle-events',
-          action:exactCutEvidencePending?'await-exact-boundary-evidence-no-proration':'reconcile-period-boundary-settlement-or-lifecycle-semantics',
-          engineeringActionable:!exactCutEvidencePending,
-          parked:exactCutEvidencePending
+          blocker:exactCutEvidencePending?'historical-boundary-evidence-pending':historicalValuationEvidencePending?'historical-valuation-evidence-pending':'unresolved-period-lifecycle-events',
+          action:exactCutEvidencePending?'await-exact-boundary-evidence-no-proration':historicalValuationEvidencePending?'preserve-unknown-until-provable-historical-valuation-evidence':'reconcile-period-boundary-settlement-or-lifecycle-semantics',
+          engineeringActionable:!exactCutEvidencePending&&!historicalValuationEvidencePending,
+          parked:exactCutEvidencePending||historicalValuationEvidencePending
         }),
         ...amounts,
         amountScope:'company-period',
         unresolvedEventCount:Number(life.unresolvedEventCount||0),
         unresolvedReasons,
         boundaryEvidencePending:exactCutEvidencePending,
+        valuationEvidencePending:historicalValuationEvidencePending,
         prorationAllowed:false
       });
     }
@@ -192,6 +196,7 @@ const output={
     trackingNoPeriodEventIsError:false,
     ownerDataPendingIsEngineeringFailure:false,
     boundaryEvidencePendingIsEngineeringFailure:false,
+    valuationEvidencePendingIsEngineeringFailure:false,
     crossMonthIntervalProrationAllowed:false,
     boundaryEvidencePendingCanCloseAccountingCoverage:false,
     unknownIsNotZero:true
@@ -204,7 +209,7 @@ const output={
   classificationContract:{
     'missing-capability':'Actual reusable factual-tracking capability is absent; engineering action is justified.',
     'tracking-no-period-event':'Factual tracking exists but no event has occurred in the selected month; this is not an error.',
-    'period-lifecycle-reconciliation':'Evidence exists but period/lifecycle attribution needs reconciliation. An explicit historical-boundary-evidence-pending blocker means the source interval crosses a calendar boundary without an exact cut; it remains UNKNOWN/partial and must not be time-prorated.',
+    'period-lifecycle-reconciliation':'Evidence exists but period/lifecycle attribution needs reconciliation. Exact boundary evidence or historical USD valuation may remain explicitly pending without becoming an engineering defect; UNKNOWN must be preserved until proof exists.',
     'reference-vs-factual-divergence':'Confirmed factual income and non-factual Reference estimate are shown side by side as a diagnostic comparison only.'
   },
   summary:{
@@ -216,7 +221,8 @@ const output={
     periodLifecycleReconciliationCount:count('period-lifecycle-reconciliation'),
     referenceVsFactualDivergenceCount:count('reference-vs-factual-divergence'),
     ownerDataPendingCount:rows.filter(x=>x.blocker==='owner-data-pending').length,
-    boundaryEvidencePendingCount:rows.filter(x=>x.blocker==='historical-boundary-evidence-pending').length
+    boundaryEvidencePendingCount:rows.filter(x=>x.blocker==='historical-boundary-evidence-pending').length,
+    valuationEvidencePendingCount:rows.filter(x=>x.blocker==='historical-valuation-evidence-pending').length
   },
   rows,
   authority:{
