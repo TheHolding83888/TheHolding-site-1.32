@@ -1,10 +1,12 @@
 # THE HOLDING · STABLE CAPITAL INTELLIGENCE LAYER v0.5 · PERFORMANCE-LIVE
+# holding-workflow-definition-proof: intelligence/reliability/update-stable-capital-scheduler-proof.mjs
 name: "Update Stable Capital"
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "37 5 * * *"
+    # P10 scheduler-liveness repair: preserve daily cadence while re-registering the canonical schedule.
+    - cron: "41 5 * * *"
 
 permissions:
   contents: write
