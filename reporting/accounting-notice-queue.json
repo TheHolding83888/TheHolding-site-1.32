@@ -1,6 +1,6 @@
 {
   "version": "0.2-accounting-notice-queue-boundary-evidence-pending",
-  "generatedAt": "2026-09-16T10:50:42.989Z",
+  "generatedAt": "2026-09-16T11:26:27.016Z",
   "status": "diagnostic-no-completion-authority",
   "currentMonth": "2026-09",
   "purpose": "Single derived operational queue for Company Passport accounting notices and reconciliation work. Canonical sources remain unchanged and authoritative.",
@@ -16,6 +16,7 @@
     "trackingNoPeriodEventIsError": false,
     "ownerDataPendingIsEngineeringFailure": false,
     "boundaryEvidencePendingIsEngineeringFailure": false,
+    "valuationEvidencePendingIsEngineeringFailure": false,
     "crossMonthIntervalProrationAllowed": false,
     "boundaryEvidencePendingCanCloseAccountingCoverage": false,
     "unknownIsNotZero": true
@@ -29,7 +30,7 @@
     "companyMonthlyReports": {
       "file": "reporting/company-monthly-reports.json",
       "version": "0.5-company-monthly-confirmed-estimated-view",
-      "generatedAt": "2026-09-16T10:50:42.340Z"
+      "generatedAt": "2026-09-16T11:26:26.373Z"
     },
     "icpNnsFactualSnapshots": {
       "file": "reporting/icp-nns-factual-snapshots.json",
@@ -41,51 +42,22 @@
   "classificationContract": {
     "missing-capability": "Actual reusable factual-tracking capability is absent; engineering action is justified.",
     "tracking-no-period-event": "Factual tracking exists but no event has occurred in the selected month; this is not an error.",
-    "period-lifecycle-reconciliation": "Evidence exists but period/lifecycle attribution needs reconciliation. An explicit historical-boundary-evidence-pending blocker means the source interval crosses a calendar boundary without an exact cut; it remains UNKNOWN/partial and must not be time-prorated.",
+    "period-lifecycle-reconciliation": "Evidence exists but period/lifecycle attribution needs reconciliation. Exact boundary evidence or historical USD valuation may remain explicitly pending without becoming an engineering defect; UNKNOWN must be preserved until proof exists.",
     "reference-vs-factual-divergence": "Confirmed factual income and non-factual Reference estimate are shown side by side as a diagnostic comparison only."
   },
   "summary": {
     "rowCount": 34,
-    "engineeringActionableCount": 1,
-    "parkedCount": 4,
+    "engineeringActionableCount": 0,
+    "parkedCount": 5,
     "missingCapabilityCount": 0,
     "trackingNoPeriodEventCount": 19,
     "periodLifecycleReconciliationCount": 5,
     "referenceVsFactualDivergenceCount": 10,
     "ownerDataPendingCount": 2,
-    "boundaryEvidencePendingCount": 2
+    "boundaryEvidencePendingCount": 2,
+    "valuationEvidencePendingCount": 1
   },
   "rows": [
-    {
-      "id": "period-lifecycle-reconciliation:aerocvxyb.eth:2026-09:__company_period__",
-      "company": "aerocvxyb.eth",
-      "registry": null,
-      "month": "2026-09",
-      "scope": "company-period",
-      "mechanism": "__company_period__",
-      "category": "period-lifecycle-reconciliation",
-      "priority": 2,
-      "trackingState": "partial-observed",
-      "blocker": "unresolved-period-lifecycle-events",
-      "action": "reconcile-period-boundary-settlement-or-lifecycle-semantics",
-      "engineeringActionable": true,
-      "parked": false,
-      "sourceOfTruth": false,
-      "incomeCreationAuthority": false,
-      "monthClosingAuthority": false,
-      "canReplaceUnknown": false,
-      "executionAuthority": "none",
-      "confirmedUsd": 19.99010348,
-      "estimatedUsd": 73.850095,
-      "deltaUsd": 53.85999152,
-      "amountScope": "company-period",
-      "unresolvedEventCount": 3,
-      "unresolvedReasons": [
-        "canonical-event-usd-valuation-incomplete"
-      ],
-      "boundaryEvidencePending": false,
-      "prorationAllowed": false
-    },
     {
       "id": "period-lifecycle-reconciliation:0x5860...83CA8.eth:2026-09:icp_nns",
       "company": "0x5860...83CA8.eth",
@@ -152,6 +124,38 @@
         "period-boundary-evidence-pending-no-exact-month-cut"
       ],
       "boundaryEvidencePending": true,
+      "valuationEvidencePending": false,
+      "prorationAllowed": false
+    },
+    {
+      "id": "period-lifecycle-reconciliation:aerocvxyb.eth:2026-09:__company_period__",
+      "company": "aerocvxyb.eth",
+      "registry": null,
+      "month": "2026-09",
+      "scope": "company-period",
+      "mechanism": "__company_period__",
+      "category": "period-lifecycle-reconciliation",
+      "priority": 2,
+      "trackingState": "partial-observed",
+      "blocker": "historical-valuation-evidence-pending",
+      "action": "preserve-unknown-until-provable-historical-valuation-evidence",
+      "engineeringActionable": false,
+      "parked": true,
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none",
+      "confirmedUsd": 22.17408082,
+      "estimatedUsd": 73.850095,
+      "deltaUsd": 51.67601418,
+      "amountScope": "company-period",
+      "unresolvedEventCount": 2,
+      "unresolvedReasons": [
+        "canonical-event-usd-valuation-incomplete"
+      ],
+      "boundaryEvidencePending": false,
+      "valuationEvidencePending": true,
       "prorationAllowed": false
     },
     {
@@ -174,9 +178,9 @@
       "canReplaceUnknown": false,
       "executionAuthority": "none",
       "companyContext": {
-        "confirmedUsd": 19.99010348,
+        "confirmedUsd": 22.17408082,
         "estimatedUsd": 73.850095,
-        "deltaUsd": 53.85999152
+        "deltaUsd": 51.67601418
       },
       "productiveValueUsd": 3244.61,
       "accountingFamily": "accrued-entitlement",
@@ -220,6 +224,7 @@
         "period-boundary-evidence-pending-no-exact-month-cut"
       ],
       "boundaryEvidencePending": true,
+      "valuationEvidencePending": false,
       "prorationAllowed": false
     },
     {
@@ -943,9 +948,9 @@
       "monthClosingAuthority": false,
       "canReplaceUnknown": false,
       "executionAuthority": "none",
-      "confirmedUsd": 19.99010348,
+      "confirmedUsd": 22.17408082,
       "estimatedUsd": 73.850095,
-      "deltaUsd": 53.85999152,
+      "deltaUsd": 51.67601418,
       "amountScope": "company-period",
       "comparisonSemantic": "Estimated is a non-factual Reference-model comparator; delta is not missing income and has no completion authority."
     },
