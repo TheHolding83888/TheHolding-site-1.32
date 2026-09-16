@@ -6,9 +6,9 @@ import {
   historicalBaseSlipstreamTwapRouteForToken
 } from './historical-canonical-price.mjs';
 import {
-  AERODROME_SLIPSTREAM_FACTORIES, CANONICAL_TICK_SPACINGS, BASE_NATIVE_USDC, DEFAULT_TWAP_SECONDS
+  AERODROME_SLIPSTREAM_FACTORIES, CANONICAL_TICK_SPACINGS, DEFAULT_TWAP_SECONDS
 } from './historical-aerodrome-usdc-route.mjs';
-import { BASE_NATIVE_USDC_CHAINLINK_FEED } from './historical-aerodrome-discovered-price.mjs';
+import { historicalAerodromeApprovedQuoteRouteForToken } from './historical-aerodrome-discovered-price.mjs';
 import {
   OPTIMISM_VELODROME_V2_FACTORY, OPTIMISM_NATIVE_USDC, DEFAULT_TWAP_GRANULARITY
 } from './historical-velodrome-usdc-route.mjs';
@@ -96,13 +96,15 @@ export function historicalValuationSourceMatchesVe33Identity(event,resolution){
     const pair=new Set([lower(resolution?.poolToken0),lower(resolution?.poolToken1)]);
     const factoryOk=AERODROME_SLIPSTREAM_FACTORIES.map(lower).includes(lower(resolution?.poolFactory));
     const spacingOk=CANONICAL_TICK_SPACINGS.includes(Number(resolution?.tickSpacing));
-    return Number(event?.chainId)===8453&&Number(resolution?.sourceChainId)===8453&&
+    const quoteRoute=historicalAerodromeApprovedQuoteRouteForToken(resolution?.quoteToken);
+    return Boolean(quoteRoute)&&
+      Number(event?.chainId)===8453&&Number(resolution?.sourceChainId)===8453&&
       lower(resolution?.rewardToken)===identity.token&&factoryOk&&spacingOk&&
       String(resolution?.routeSelection||'')==='highest-active-liquidity-at-historical-boundary'&&
       Number.isInteger(Number(resolution?.routeCandidateCount))&&Number(resolution?.routeCandidateCount)>=1&&
-      pair.size===2&&pair.has(identity.token)&&pair.has(lower(BASE_NATIVE_USDC))&&
-      lower(resolution?.quoteToken)===lower(BASE_NATIVE_USDC)&&
-      lower(resolution?.quoteChainlinkContract)===lower(BASE_NATIVE_USDC_CHAINLINK_FEED)&&
+      pair.size===2&&pair.has(identity.token)&&pair.has(lower(quoteRoute.token))&&
+      lower(resolution?.quoteToken)===lower(quoteRoute.token)&&
+      lower(resolution?.quoteChainlinkContract)===lower(quoteRoute.chainlinkFeed)&&
       Number(resolution?.twapSeconds)===Number(DEFAULT_TWAP_SECONDS)&&Number.isSafeInteger(Number(resolution?.averageTick))&&
       resolution?.stablecoinPegAssumptionUsed===false&&
       String(resolution?.sourceStatus||'')==='historical-onchain-aerodrome-discovered-twap-chainlink-price';
