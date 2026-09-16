@@ -4,12 +4,14 @@ on:
   pull_request:
     paths:
       - 'reporting/income-ledger.mjs'
+      - 'reporting/canonical-earned-income-view.mjs'
       - 'reporting/ve33-historical-valuation-identity.mjs'
       - 'reporting/historical-aerodrome-discovered-price.mjs'
       - 'reporting/historical-velodrome-discovered-price.mjs'
       - 'reporting/historical-aerodrome-usdc-route.mjs'
       - 'reporting/historical-velodrome-usdc-route.mjs'
       - 'reporting/verify-p5-discovered-valuation-admission.mjs'
+      - 'reporting/p5-live-aerodrome-fallback-proof.mjs'
       - '.github/workflows/verify-p5-discovered-valuation-admission.yml'
   push:
     branches:
@@ -27,6 +29,7 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
@@ -35,7 +38,11 @@ jobs:
       - name: Syntax check canonical valuation admission
         run: |
           node --check reporting/income-ledger.mjs
+          node --check reporting/canonical-earned-income-view.mjs
           node --check reporting/ve33-historical-valuation-identity.mjs
           node --check reporting/verify-p5-discovered-valuation-admission.mjs
+          node --check reporting/p5-live-aerodrome-fallback-proof.mjs
       - name: Verify discovered valuation admission and fail-closed identity
         run: node reporting/verify-p5-discovered-valuation-admission.mjs
+      - name: Prove live Aerodrome AERO fallback against current canonical ledger
+        run: node reporting/p5-live-aerodrome-fallback-proof.mjs
