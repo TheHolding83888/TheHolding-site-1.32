@@ -1,7 +1,7 @@
 {
   "version": "0.1-vlcvx-votium-curve-gauge-flow",
   "engineVersion": "0.1-votium-convex-curve-execution-bridge",
-  "generatedAt": "2026-09-12T06:08:33.690Z",
+  "generatedAt": "2026-09-16T15:19:04.882Z",
   "status": "shadow-cross-protocol-flow-proven",
   "purpose": "Connect Votium incentive accounting and proven vlCVX voting power to Convex GaugeVotePlatform and actually executed Curve gauge BPS weights, without claiming incentives caused votes or downstream pool economics.",
   "authority": {
@@ -18,14 +18,14 @@
   },
   "sourceBinding": {
     "roundFlowFile": "intelligence/economic-graph/vlcvx-votium-round-flow.json",
-    "roundFlowSha256": "e1c332829489e1093815442fbc5fd3dc42a23289e25f6c65cf21607307d49e07",
+    "roundFlowSha256": "db0dc47fd2a77a694e02a44877d98e4aa8892ee88d1bb0ba759065038aaaf31e",
     "votingProvenanceFile": "intelligence/economic-graph/vlcvx-votium-snapshot-proof.json",
-    "votingProvenanceSha256": "d0a9dfa9580c3a0fb9f5a2ecc304855d66af9fb71c1e86136745bcb170885a83",
+    "votingProvenanceSha256": "d0eabb3020139d7cb63bd6cfcd03e2b838188343eff519645584240dc3303b1d",
     "companyRegistry": "004",
     "candidateId": "defitea-convex-vlcvx-votium",
     "retainedHistoricalArtifactFile": "intelligence/economic-graph/vlcvx-votium-curve-gauge-flow.json",
-    "retainedHistoricalArtifactSha256": "200dfc9977a1d05fdd64f1d4c7733688f93592247a987ab5b3376d04de6f1d3d",
-    "retainedHistoricalGeneratedAt": "2026-08-26T10:00:40.083Z"
+    "retainedHistoricalArtifactSha256": "dba38d0a811282996c7cb47c1eb4fc4b8c56df4e51fb9acf736fd318ee1007c0",
+    "retainedHistoricalGeneratedAt": "2026-09-12T06:08:33.690Z"
   },
   "protocolBridge": {
     "chain": "Ethereum",
@@ -38,9 +38,9 @@
     "executionEventSemantics": "GaugeVotePlatform getGaugeCount/getGaugeEntry enumerate gauges with votes. CurveGaugeExecutor counts only submitted gauges with gaugeTotal > 0, but GaugeVoteExecuted emits the complete caller-supplied gauge array; therefore event-only gauges are valid only when live gaugeTotal = 0 and emitted BPS = 0."
   },
   "observation": {
-    "ethereumBlock": 25959435,
-    "ethereumBlockHash": "0xae96e16ded3c364621d20042db5b0061b3b4df50a46a16fe217b260780a86a23",
-    "observedAt": "2026-09-12T06:08:11.000Z",
+    "ethereumBlock": 25990887,
+    "ethereumBlockHash": "0x205d7939ad715818bed72e7745fe874ee2bff7e672eb21547c53d3688e452bf9",
+    "observedAt": "2026-09-16T15:18:47.000Z",
     "rpcArchitecture": "split-current-state-and-historical-log-lanes",
     "stateRpcEndpointClass": "ethereum-rpc.publicnode.com",
     "historicalLogRpcEndpointClassesUsed": [],
@@ -97,8 +97,8 @@
       ],
       "completionRule": "stop only after completed current executor state, every GaugeVotePlatform voted gauge is present in execution events, all event-only gauges have zero BPS, no event gauge is duplicated, and total executed BPS equals 10000 for both target proposals",
       "evidenceMode": "retained-last-verified-canonical-events",
-      "retainedArtifactSha256": "200dfc9977a1d05fdd64f1d4c7733688f93592247a987ab5b3376d04de6f1d3d",
-      "retainedGeneratedAt": "2026-08-26T10:00:40.083Z",
+      "retainedArtifactSha256": "dba38d0a811282996c7cb47c1eb4fc4b8c56df4e51fb9acf736fd318ee1007c0",
+      "retainedGeneratedAt": "2026-09-12T06:08:33.690Z",
       "freshRefreshAttempted": true,
       "freshRefreshStatus": "unavailable-fell-back-to-retained-canonical",
       "freshRefreshFailureRecorded": true,
