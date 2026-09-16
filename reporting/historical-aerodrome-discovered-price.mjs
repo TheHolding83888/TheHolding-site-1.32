@@ -3,10 +3,11 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import {
   discoverHistoricalAerodromeUsdcRoute,
+  historicalAerodromeRpcEndpoints,
   BASE_NATIVE_USDC
 } from './historical-aerodrome-usdc-route.mjs';
 
-export const VERSION='0.1-aerodrome-discovered-twap-plus-chainlink-usd';
+export const VERSION='0.2-aerodrome-discovered-twap-plus-chainlink-shared-archive-fabric';
 export const ONCHAIN_PRICE_REGISTRY_REPO_PATH='intelligence/market-data/onchain-price-source-registry.json';
 export const BASE_NATIVE_USDC_CHAINLINK_FEED='0x7e860098F58bBFC8648a4311b374B1D669a2bc6B';
 
@@ -60,7 +61,19 @@ export async function historicalBaseAerodromeDiscoveredPriceAtBoundary({
   }catch(error){
     return{ok:false,status:'onchain-price-registry-unavailable',assetId:null,sourceBlockNumber,error:error?.message||String(error)};
   }
-  const network=registry?.networks?.base;
+  const baseNetwork=registry?.networks?.base;
+  if(Number(baseNetwork?.chainId)!==8453){
+    return{ok:false,status:'base-historical-rpc-fabric-unavailable',assetId:null,sourceBlockNumber};
+  }
+  const network={...baseNetwork,rpcFailover:historicalAerodromeRpcEndpoints(baseNetwork)};
+  if(!network.rpcFailover.length){
+    return{ok:false,status:'base-historical-rpc-fabric-unavailable',assetId:null,sourceBlockNumber};
+  }
+  const historicalRegistry={
+    ...registry,
+    networks:{...(registry?.networks||{}),base:network}
+  };
+
   const route=await discoverHistoricalAerodromeUsdcRoute({
     token,
     sourceBlockNumber,
@@ -77,7 +90,7 @@ export async function historicalBaseAerodromeDiscoveredPriceAtBoundary({
     eventKey,
     sourceIdentity,
     root,
-    onchainRegistry:registry,
+    onchainRegistry:historicalRegistry,
     rpcCall,
     fetchImpl
   });
