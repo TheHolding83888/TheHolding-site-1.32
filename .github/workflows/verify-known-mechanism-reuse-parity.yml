@@ -7,7 +7,12 @@ on:
       - 'rewards/company-rewards-engine.mjs'
       - 'rewards/company-010-rewards-overlay.mjs'
       - 'companies/company-010-public-adapter.js'
+      - 'companies/rewards-data.json'
+      - 'reporting/income-ledger.json'
+      - 'reporting/accounting-coverage.json'
+      - 'reporting/known-mechanism-new-reward-reuse-validation.mjs'
       - '.github/workflows/update-company-rewards.yml'
+      - '.github/workflows/verify-known-mechanism-reuse-parity.yml'
       - 'intelligence/project-memory/THE_HOLDING_KNOWN_MECHANISM_REUSE_AND_PROMOTION_CANON_2026-08-18.md'
       - 'intelligence/project-memory/README.md'
 
@@ -31,6 +36,7 @@ jobs:
           node --check rewards/company-rewards-engine.mjs
           node --check rewards/company-010-rewards-overlay.mjs
           node --check companies/company-010-public-adapter.js
+          node --check reporting/known-mechanism-new-reward-reuse-validation.mjs
       - name: Verify established generic ve capability exists
         run: |
           set -euo pipefail
@@ -42,6 +48,10 @@ jobs:
           }
           console.log('Established generic ve Compounded + pricing capability PASS');
           NODE
+      - name: Verify P6 live supported-mechanism new reward-token reuse
+        run: |
+          set -euo pipefail
+          node reporting/known-mechanism-new-reward-reuse-validation.mjs
       - name: Verify Company #010 preserves full capability parity
         run: |
           set -euo pipefail
