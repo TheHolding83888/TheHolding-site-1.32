@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict';
 import { annotateHistoricalValuationResolution } from './income-ledger.mjs';
 import { historicalValuationSourceMatchesVe33Identity } from './ve33-historical-valuation-identity.mjs';
+import { buildCanonicalEarnedIncomeView } from './canonical-earned-income-view.mjs';
 import {
   AERODROME_SLIPSTREAM_FACTORIES,
   CANONICAL_TICK_SPACINGS,
@@ -78,6 +79,37 @@ assert.equal(resolved.ledger.events.every(x=>x.valuationResolution?.exactHistori
 assert.equal(resolved.ledger.events.every(x=>x.valuationResolution?.currentPriceUsed===false),true);
 assert.equal(resolved.ledger.events.every(x=>x.valuationResolution?.stablecoinPegAssumptionUsed===false),true);
 
+const canonicalLedger=events=>({
+  version:'0.1-canonical-income-ledger',
+  generatedAt:'2026-09-14T00:00:00.000Z',
+  semantics:{unknownIsNotZero:true,referenceAprCanBackfillEarnedIncome:false},
+  events
+});
+const canonicalView=buildCanonicalEarnedIncomeView(canonicalLedger(resolved.ledger.events));
+assert.equal(canonicalView.recognized.length,2);
+assert.equal(canonicalView.unresolved.length,0);
+assert.deepEqual(canonicalView.recognized.map(x=>x.usdValue),[6,12]);
+assert.equal(canonicalView.semantics.exactHistoricalOnchainAerodromeDiscoveredTwapChainlinkResolutionAllowed,true);
+assert.equal(canonicalView.semantics.exactHistoricalOnchainVelodromeDiscoveredTwapChainlinkResolutionAllowed,true);
+
+for(const [label,mutate] of [
+  ['wrong-block',event=>{event.valuationResolution.sourceBlockNumber+=1;}],
+  ['explicit-peg',event=>{event.valuationResolution.stablecoinPegAssumptionUsed=true;}],
+  ['wrong-route-factory',event=>{event.valuationResolution.poolFactory='0xdddddddddddddddddddddddddddddddddddddddd';}]
+]){
+  const bad=structuredClone(resolved.ledger.events[0]);
+  mutate(bad);
+  const view=buildCanonicalEarnedIncomeView(canonicalLedger([bad]));
+  assert.equal(view.recognized.length,0,`${label} must not be recognized`);
+  assert.equal(view.unresolved.length,1,`${label} must remain unresolved`);
+  assert.equal(view.unresolved[0].reason,'canonical-event-usd-valuation-incomplete');
+}
+const badVeloConsumer=structuredClone(resolved.ledger.events[1]);
+badVeloConsumer.valuationResolution.quoteAmountOutRaw='0';
+const badVeloView=buildCanonicalEarnedIncomeView(canonicalLedger([badVeloConsumer]));
+assert.equal(badVeloView.recognized.length,0);
+assert.equal(badVeloView.unresolved[0]?.reason,'canonical-event-usd-valuation-incomplete');
+
 const badAero={...aeroProof(),poolFactory:'0xdddddddddddddddddddddddddddddddddddddddd'};
 const badResolved=await annotateHistoricalValuationResolution({events:[aeroEvent]}, {resolver:async()=>badAero});
 assert.equal(badResolved.resolvedEventCount,0);
@@ -94,5 +126,7 @@ console.log('P5 discovered historical valuation admission PASS',{
   wrongQuoteTokenFailsClosed:true,
   currentPriceUsed:false,
   stablecoinPegAssumptionUsed:false,
+  canonicalConsumerRecognizedDiscoveredValuations:true,
+  malformedConsumerProofFailsClosed:true,
   executionAuthority:'none'
 });
