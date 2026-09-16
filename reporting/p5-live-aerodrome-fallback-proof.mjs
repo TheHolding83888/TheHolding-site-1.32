@@ -15,13 +15,16 @@ const registry=JSON.parse(await fs.readFile('intelligence/market-data/onchain-pr
 const registryNetwork=registry?.networks?.base;
 const configuredRpc=String(process.env.BASE_RPC_URL||'').trim();
 const registryEndpoints=Array.isArray(registryNetwork?.rpcFailover)?registryNetwork.rpcFailover:[];
-const network={
-  ...registryNetwork,
-  rpcFailover:[
-    ...(configuredRpc?[{id:'configured-base-rpc',url:configuredRpc}]:[]),
-    ...registryEndpoints.filter(x=>String(x?.url||'')!==configuredRpc)
-  ]
-};
+const publicArchiveCandidates=[
+  {id:'tenderly-public',url:'https://base.gateway.tenderly.co'}
+];
+const allEndpoints=[
+  ...(configuredRpc?[{id:'configured-base-rpc',url:configuredRpc}]:[]),
+  ...publicArchiveCandidates,
+  ...registryEndpoints
+];
+const seen=new Set();
+const network={...registryNetwork,rpcFailover:allEndpoints.filter(x=>x?.url&&!seen.has(x.url)&&(seen.add(x.url),true))};
 const POOL='0xF099ceFE04717710dd2EC40f2e0c9C06134F5Eb5';
 const TOWNS='0x00000000A22C618FD6b4D7e9A335C4B96B189A38';
 const USDC='0x833589fCD6eDb6E08f4C7C32D4f71b54bdA02913';
@@ -71,20 +74,13 @@ for(const endpoint of network.rpcFailover){
       blockNumber:BLOCK,
       blockTimestamp:block?.timestamp?new Date(Number(BigInt(block.timestamp))*1000).toISOString():null,
       codePresent:typeof code==='string'&&code!=='0x',
-      pool:lower(POOL),
-      factory:lower(factory),
+      pool:lower(POOL),factory:lower(factory),
       factoryAlreadyAllowlisted:AERODROME_SLIPSTREAM_FACTORIES.map(lower).includes(lower(factory)),
-      tickSpacing,
-      tickSpacingAlreadyAllowlisted:CANONICAL_TICK_SPACINGS.includes(tickSpacing),
+      tickSpacing,tickSpacingAlreadyAllowlisted:CANONICAL_TICK_SPACINGS.includes(tickSpacing),
       token0:lower(token0),token1:lower(token1),
       pairMatches:new Set([lower(token0),lower(token1)]).has(lower(TOWNS))&&new Set([lower(token0),lower(token1)]).has(lower(USDC)),
-      liquidity:liquidity.toString(),
-      activeLiquidity:liquidity>0n,
-      observe300Ok:true,
-      averageTick:Number(avg),
-      factoryLookups,
-      currentPriceUsed:false,
-      executionAuthority:'none'
+      liquidity:liquidity.toString(),activeLiquidity:liquidity>0n,observe300Ok:true,averageTick:Number(avg),
+      factoryLookups,currentPriceUsed:false,executionAuthority:'none'
     };
     break;
   }catch(error){endpointDiagnostics.push({endpoint:endpoint.id,error:error?.message||String(error)});}
@@ -92,7 +88,6 @@ for(const endpoint of network.rpcFailover){
 
 const summary={ok:Boolean(proof),configuredRpcAvailable:Boolean(configuredRpc),proof,endpointDiagnostics,canonicalFactories:AERODROME_SLIPSTREAM_FACTORIES.map(lower),canonicalTickSpacings:CANONICAL_TICK_SPACINGS,executionAuthority:'none'};
 console.log('P5 known TOWNS/USDC Slipstream historical pool introspection',JSON.stringify(summary,null,2));
-assert.equal(Boolean(configuredRpc),true,'existing BASE_RPC_URL secret is not available to this proof workflow');
 assert.ok(proof,'known TOWNS/USDC pool could not be introspected at the historical closing block');
 assert.equal(proof.pairMatches,true,'known pool token pair does not match TOWNS/USDC at boundary');
 assert.equal(proof.activeLiquidity,true,'known pool had no active liquidity at boundary');
