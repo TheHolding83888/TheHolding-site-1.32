@@ -4,7 +4,8 @@ name: "Update Stable Capital"
 on:
   workflow_dispatch:
   schedule:
-    - cron: "37 5 * * *"
+    # P10 scheduler-liveness repair: preserve daily cadence while re-registering the canonical schedule.
+    - cron: "41 5 * * *"
 
 permissions:
   contents: write
