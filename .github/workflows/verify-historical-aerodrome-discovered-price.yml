@@ -6,6 +6,7 @@ on:
       - 'reporting/historical-aerodrome-usdc-route.mjs'
       - 'reporting/historical-aerodrome-discovered-price.mjs'
       - 'reporting/verify-historical-aerodrome-discovered-price.mjs'
+      - 'reporting/verify-prep10-bluechip-historical-route.mjs'
       - 'reporting/historical-canonical-price.mjs'
       - '.github/workflows/verify-historical-aerodrome-discovered-price.yml'
   workflow_dispatch:
@@ -16,6 +17,7 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -23,3 +25,8 @@ jobs:
           node-version: '20'
       - name: Verify exact-block Aerodrome discovery and USD composition
         run: node reporting/verify-historical-aerodrome-discovered-price.mjs
+      - name: Diagnose current BLUECHIP exact historical quote routes
+        env:
+          BASE_ARCHIVE_RPC_URL: ${{ secrets.BASE_ARCHIVE_RPC_URL || '' }}
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL || '' }}
+        run: node reporting/verify-prep10-bluechip-historical-route.mjs
