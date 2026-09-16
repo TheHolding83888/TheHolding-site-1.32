@@ -44,5 +44,7 @@ jobs:
           node --check reporting/p5-live-aerodrome-fallback-proof.mjs
       - name: Verify discovered valuation admission and fail-closed identity
         run: node reporting/verify-p5-discovered-valuation-admission.mjs
-      - name: Prove live Aerodrome AERO fallback against current canonical ledger
+      - name: Prove live Aerodrome historical RPC path against known pool
+        env:
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL || '' }}
         run: node reporting/p5-live-aerodrome-fallback-proof.mjs
