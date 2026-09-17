@@ -37,7 +37,7 @@ for (const phrase of [
   'Owner-approved Flow Mode',
   'Main Drift Triage',
   'Confirmation boundary and platform authority',
-  'do not manufacture short stop points',
+  'manufacture short stop points',
   'Unrelated generated/data-only drift',
   'Platform permission/consent gates always remain authoritative',
 ]) {
