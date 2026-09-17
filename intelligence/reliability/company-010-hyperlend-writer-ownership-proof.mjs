@@ -24,6 +24,8 @@ assert.ok(diagnostic.includes('REWARDS_DATA: /tmp/rewards-data.json'),'HyperLend
 assert.ok(diagnostic.includes('node onboarding/company-010-hyperlend-income-overlay.mjs'),'HyperLend state replay missing');
 assert.ok(diagnostic.includes('node rewards/company-010-hyperlend-rewards-overlay.mjs'),'HyperLend Rewards replay missing');
 assert.ok(diagnostic.includes('repositoryMutationAuthority:false'),'HyperLend diagnostic ownership declaration missing');
+assert.ok(diagnostic.includes('DIRTY_BEFORE="$(git status --porcelain)"'),'HyperLend diagnostic must expose checkout residue before cleanup');
+assert.ok(diagnostic.includes('rm -rf node_modules'),'HyperLend bounded dependency residue cleanup missing');
 assert.ok(diagnostic.includes('test -z "$(git status --porcelain)"'),'HyperLend diagnostic repository-clean proof missing');
 
 assert.match(stateWorkflow,/permissions:\n  contents: write/,'Canonical Company #010 writer lost bounded contents authority');
@@ -56,6 +58,7 @@ for(const forbidden of ['sendTransaction(', 'new Wallet(', 'eth_sendTransaction'
 
 console.log('Company #010 HyperLend writer ownership proof PASS',{
   diagnosticRepositoryMutationAuthority:false,
+  diagnosticDependencyResidueCleanup:'node_modules-only',
   companyStateCanonicalWriter:'Update Company #010 · Cypher Production State',
   rewardsCanonicalWriter:'Update Company Rewards',
   hyperlendStateMaterializedByCanonicalStateWriter:true,
