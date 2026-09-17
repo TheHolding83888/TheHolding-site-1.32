@@ -1,7 +1,7 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-16T19:11:37.436Z",
+  "generatedAt": "2026-09-17T04:12:47.012Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
@@ -12,8 +12,8 @@
     "info": 0
   },
   "source": {
-    "filesScanned": 1315,
-    "bytesScanned": 38156949,
+    "filesScanned": 1317,
+    "bytesScanned": 38628373,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "36b0da9f235f69039144a9152fd9215467a9f6f002c2671ad155b2fb0bca7e8c",
         "etag": "W/\"ec7db4752c54e95f9bc0909d8c510190\"",
-        "lastModified": "Tue, 15 Sep 2026 20:52:14 GMT",
+        "lastModified": "Tue, 15 Sep 2026 20:52:22 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4757,
         "error": null
@@ -56,6 +56,22 @@
   },
   "whatChanged": {
     "newFindings": [
+      {
+        "id": "c4d88bfe79f604eaa73d9143fdbc3d7b6a2708f993ffc983c1f923d0178f74b8",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/update-continuity-checkpoint.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/update-continuity-checkpoint.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "df31bcd8ff31beb5b152ae262fb275f85f8daddee121111693f5693d98731cfe",
+          "currentSha256": "db3e450d3f0cdc99e3ae3cc427cc608d25956e3400385d2d5388e2f5f0b173fc"
+        }
+      }
+    ],
+    "resolvedFindings": [
       {
         "id": "6ec87dbe3574f8ffa2e5538a86f2a3f7cd43f08eeae1b7831acd779b1761ac6a",
         "severity": "medium",
@@ -70,8 +86,7 @@
           "currentSha256": "2f7deeb6d4ea515138f9e8cc9e6704cb7a8e24d300805e10ff3e7ffafd3d3f7c"
         }
       }
-    ],
-    "resolvedFindings": []
+    ]
   },
   "currentFindings": [
     {
@@ -97,17 +112,17 @@
       "evidence": null
     },
     {
-      "id": "6ec87dbe3574f8ffa2e5538a86f2a3f7cd43f08eeae1b7831acd779b1761ac6a",
+      "id": "c4d88bfe79f604eaa73d9143fdbc3d7b6a2708f993ffc983c1f923d0178f74b8",
       "severity": "medium",
       "category": "critical-surface-change",
-      "file": ".github/workflows/update-stable-capital.yml",
+      "file": ".github/workflows/update-continuity-checkpoint.yml",
       "line": null,
       "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/update-stable-capital.yml.",
+      "summary": "Security-sensitive surface changed: .github/workflows/update-continuity-checkpoint.yml.",
       "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
       "evidence": {
-        "previousSha256": "2cab5cc5b960b633f7131e84d83a751036a73cdd6a60decc37910beb30d33954",
-        "currentSha256": "2f7deeb6d4ea515138f9e8cc9e6704cb7a8e24d300805e10ff3e7ffafd3d3f7c"
+        "previousSha256": "df31bcd8ff31beb5b152ae262fb275f85f8daddee121111693f5693d98731cfe",
+        "currentSha256": "db3e450d3f0cdc99e3ae3cc427cc608d25956e3400385d2d5388e2f5f0b173fc"
       }
     },
     {
@@ -1122,12 +1137,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "064e7985271bf09fe2efa26167ee2351e4c6c98872e0660cb5ed1bf54ae39c1e",
+    "snapshotHash": "f12d32ed81dba1da0a15bb8e235a50630f83e02b4164d45d930c1c4bed77be42",
     "securityVault": {
-      "runCount": 1057,
+      "runCount": 1058,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/09/2026-09-16T19-11-37-436Z-064e798527.json",
-      "latestRecordHash": "206088f889ab130794259b37757f27388be8df214a24f41a19134f16bbcc1e67",
+      "latestRecordPath": "security/security-vault/2026/09/2026-09-17T04-12-47-012Z-f12d32ed81.json",
+      "latestRecordHash": "2c5787f5632a3d209768e045fa18ba42c0c6d2354813f8cfba0a6ec35866a8aa",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
