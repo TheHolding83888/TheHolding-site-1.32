@@ -34,8 +34,14 @@ for (const phrase of [
   'capital movement',
   'security-policy mutation',
   'expected_head_sha',
+  'Owner-approved Flow Mode',
+  'Main Drift Triage',
+  'Confirmation boundary and platform authority',
+  'do not manufacture short stop points',
+  'Unrelated generated/data-only drift',
+  'Platform permission/consent gates always remain authoritative',
 ]) {
-  if (!collaboration.toLowerCase().includes(phrase.toLowerCase())) throw new Error(`Owner Collaboration canon missing bounded merge-flow phrase: ${phrase}`);
+  if (!collaboration.toLowerCase().includes(phrase.toLowerCase())) throw new Error(`Owner Collaboration canon missing bounded flow phrase: ${phrase}`);
 }
 
 const build = fs.readFileSync(`${root}/${buildFile}`, 'utf8');
@@ -135,6 +141,12 @@ for (const phrase of [
   'Default working language with the owner is **Russian**',
   'Work **one primary objective at a time**',
   'Routine low-risk repository work may proceed through verified PR merge and production proof without a separate per-PR confirmation',
+  '**Flow Mode:**',
+  '**Main Drift Triage:**',
+  '**Confirmation boundary:**',
+  'do not manufacture short stop points',
+  'Unrelated generated/data-only drift does not by itself invalidate or require rebuilding a correct PR',
+  'Platform permission/consent gates always remain authoritative',
   'Live-site screenshots are visual acceptance evidence',
   'not a psychological profile',
   'autonomous observational/world evidence is the primary always-on lane',
@@ -145,7 +157,7 @@ for (const phrase of [
   if (!current.toLowerCase().includes(phrase.toLowerCase())) throw new Error(`CURRENT bootstrap missing phrase: ${phrase}`);
 }
 
-console.log('CURRENT minimum recovery + Security + continuity-root + cold-canon invariants PASS', {
+console.log('CURRENT minimum recovery + Security + continuity-root + cold-canon + owner-flow invariants PASS', {
   generatedAt: security.generatedAt,
   critical: c.critical,
   high: c.high,
@@ -159,4 +171,7 @@ console.log('CURRENT minimum recovery + Security + continuity-root + cold-canon 
   continuityRoot: 'CONTINUITY.md',
   minimumRecoveryDocumentsAfterCurrent: 2,
   continuousImprovementInvariant: true,
+  ownerFlowMode: true,
+  mainDriftTriage: true,
+  confirmationBoundary: true,
 });
