@@ -43,6 +43,16 @@ assert.ok(workflow.includes('node --check rewards/company-010-hyperlend-rewards-
 assert.ok(workflow.includes('node rewards/company-010-hyperlend-rewards-overlay.mjs'),'Rewards writer does not materialize HyperLend projection');
 assert.ok(workflow.includes("repositoryMutationAuthority!=='Update Company Rewards'"),'Rewards writer HyperLend ownership assertion missing');
 
+// Company #010 measured-earned token parity must follow actual economic rows.
+// A direct ve route with zero claimable and no positively-valued Compounded row
+// must not fabricate a base token merely to satisfy a presentation strip.
+assert.ok(workflow.includes("const measuredTokenSet=new Set(c.measuredEarnedTokens||[]);"),'Rewards writer measured-token set guard missing');
+assert.ok(workflow.includes("for(const symbol of ['WHYPE','USDC'])"),'Project X measured-token parity guard missing');
+assert.ok(workflow.includes("for(const route of ['aerodrome-ve','velodrome-ve-direct'])"),'ve route-derived measured-token parity guard missing');
+assert.ok(workflow.includes("...(c.rewards||[]).filter(x=>x.route===route)"),'ve claimable economic-row parity source missing');
+assert.ok(workflow.includes("...(c.embeddedIncome||[]).filter(x=>x.route===route&&finite(x.usdValue)&&Number(x.usdValue)>0)"),'ve Compounded economic-row parity source missing');
+assert.doesNotMatch(workflow,/\['AERO','VELO','WHYPE','USDC'\]/,'stale hard-coded ve measured-token strip guard survived');
+
 // ICP/NNS owns domain state/history only. Update Company Rewards is the sole
 // publisher of the ICP projection inside companies/rewards-data.json. Keep the
 // path trigger for human/code changes, and explicitly consume only successful
@@ -89,6 +99,7 @@ console.log('Rewards workflow definition paired proof PASS',{
   dailySnapshotUtc:contract.dailySnapshotUtc,
   cypherGenericPromotionNaturalTrigger:true,
   hyperlendProjectionOwnedByRewardsWriter:true,
+  company010MeasuredTokenParity:'actual-economic-rows-only',
   icpNnsStatePathTriggerRetained:true,
   icpNnsWorkflowRunHandoff:true,
   workflowRunMainBranchOnly:true,

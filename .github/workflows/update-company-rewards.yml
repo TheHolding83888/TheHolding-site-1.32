@@ -133,7 +133,15 @@ jobs:
           if(!finite(c.measuredEmbeddedUsd)||Math.abs(Number(c.measuredEmbeddedUsd)-embeddedUsd)>0.00001)throw new Error('Measured embedded USD total drift');
           if(!finite(c.measuredEarnedUsd)||Math.abs(Number(c.measuredEarnedUsd)-(claimableBefore+embeddedUsd))>0.00001)throw new Error('Measured earned total must equal claimable + priced Compounded');
           if(c.measuredEarnedUsdIsComplete!==false)throw new Error('Measured earned completeness must preserve unresolved route semantics');
-          for(const symbol of ['AERO','VELO','WHYPE','USDC'])if(!(c.measuredEarnedTokens||[]).includes(symbol))throw new Error('Measured earned token strip missing '+symbol);
+          const measuredTokenSet=new Set(c.measuredEarnedTokens||[]);
+          for(const symbol of ['WHYPE','USDC'])if(!measuredTokenSet.has(symbol))throw new Error('Measured earned token strip missing '+symbol);
+          for(const route of ['aerodrome-ve','velodrome-ve-direct']){
+            const economicRows=[
+              ...(c.rewards||[]).filter(x=>x.route===route),
+              ...(c.embeddedIncome||[]).filter(x=>x.route===route&&finite(x.usdValue)&&Number(x.usdValue)>0)
+            ];
+            for(const row of economicRows)if(row.symbol&&!measuredTokenSet.has(row.symbol))throw new Error('Measured earned token strip missing '+row.symbol+' for '+route);
+          }
           console.log('Rewards v0.3.10 Company #010 base parity PASS',{claimableUsd:c.claimableUsd,measuredEmbeddedUsd:c.measuredEmbeddedUsd,measuredEarnedUsd:c.measuredEarnedUsd});
           NODE
 
