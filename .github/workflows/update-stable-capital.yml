@@ -1,0 +1,24 @@
+# THE HOLDING · STABLE CAPITAL · RETIRED ACTIONS REGISTRATION
+# holding-workflow-definition-proof: intelligence/reliability/update-stable-capital-scheduler-proof.mjs
+name: "Update Stable Capital · Retired Registration"
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: update-stable-capital-retired
+  cancel-in-progress: false
+
+jobs:
+  retired-registration:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Explain retired registration
+        shell: bash
+        run: |
+          echo "This historical GitHub Actions registration is retired."
+          echo "Canonical scheduled Stable Capital materialization lives in update-stable-capital-scheduled.yml."
+          echo "This workflow has no schedule, no contents write permission and no production writer steps."
