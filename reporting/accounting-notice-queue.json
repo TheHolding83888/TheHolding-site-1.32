@@ -1,6 +1,6 @@
 {
   "version": "0.2-accounting-notice-queue-boundary-evidence-pending",
-  "generatedAt": "2026-09-17T11:17:06.760Z",
+  "generatedAt": "2026-09-17T12:26:06.550Z",
   "status": "diagnostic-no-completion-authority",
   "currentMonth": "2026-09",
   "purpose": "Single derived operational queue for Company Passport accounting notices and reconciliation work. Canonical sources remain unchanged and authoritative.",
@@ -25,12 +25,12 @@
     "accountingCoverage": {
       "file": "reporting/accounting-coverage.json",
       "version": "0.13-supplementary-route-principal-isolation-accounting-mechanism-coverage-registry",
-      "generatedAt": "2026-09-17T11:15:07.284Z"
+      "generatedAt": "2026-09-17T12:24:01.408Z"
     },
     "companyMonthlyReports": {
       "file": "reporting/company-monthly-reports.json",
       "version": "0.5-company-monthly-confirmed-estimated-view",
-      "generatedAt": "2026-09-17T11:17:06.104Z"
+      "generatedAt": "2026-09-17T12:26:05.906Z"
     },
     "icpNnsFactualSnapshots": {
       "file": "reporting/icp-nns-factual-snapshots.json",
@@ -46,16 +46,16 @@
     "reference-vs-factual-divergence": "Confirmed factual income and non-factual Reference estimate are shown side by side as a diagnostic comparison only."
   },
   "summary": {
-    "rowCount": 34,
+    "rowCount": 36,
     "engineeringActionableCount": 1,
-    "parkedCount": 5,
+    "parkedCount": 7,
     "missingCapabilityCount": 1,
     "trackingNoPeriodEventCount": 18,
-    "periodLifecycleReconciliationCount": 5,
+    "periodLifecycleReconciliationCount": 7,
     "referenceVsFactualDivergenceCount": 10,
     "ownerDataPendingCount": 2,
     "boundaryEvidencePendingCount": 2,
-    "valuationEvidencePendingCount": 1
+    "valuationEvidencePendingCount": 3
   },
   "rows": [
     {
@@ -79,8 +79,8 @@
       "executionAuthority": "none",
       "companyContext": {
         "confirmedUsd": 17.14188403,
-        "estimatedUsd": 22.936214,
-        "deltaUsd": 5.79432997
+        "estimatedUsd": 24.554132,
+        "deltaUsd": 7.41224797
       },
       "productiveValueUsd": 308.77,
       "accountingFamily": "embedded-income",
@@ -230,6 +230,68 @@
       }
     },
     {
+      "id": "period-lifecycle-reconciliation:Cypher:2026-09:__company_period__",
+      "company": "Cypher",
+      "registry": null,
+      "month": "2026-09",
+      "scope": "company-period",
+      "mechanism": "__company_period__",
+      "category": "period-lifecycle-reconciliation",
+      "priority": 2,
+      "trackingState": "partial-observed",
+      "blocker": "historical-valuation-evidence-pending",
+      "action": "preserve-unknown-until-provable-historical-valuation-evidence",
+      "engineeringActionable": false,
+      "parked": true,
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none",
+      "confirmedUsd": 17.14188403,
+      "estimatedUsd": 24.554132,
+      "deltaUsd": 7.41224797,
+      "amountScope": "company-period",
+      "unresolvedEventCount": 1,
+      "unresolvedReasons": [
+        "canonical-event-usd-valuation-incomplete"
+      ],
+      "boundaryEvidencePending": false,
+      "valuationEvidencePending": true,
+      "prorationAllowed": false
+    },
+    {
+      "id": "period-lifecycle-reconciliation:defitea.eth:2026-09:__company_period__",
+      "company": "defitea.eth",
+      "registry": null,
+      "month": "2026-09",
+      "scope": "company-period",
+      "mechanism": "__company_period__",
+      "category": "period-lifecycle-reconciliation",
+      "priority": 2,
+      "trackingState": "partial-observed",
+      "blocker": "historical-valuation-evidence-pending",
+      "action": "preserve-unknown-until-provable-historical-valuation-evidence",
+      "engineeringActionable": false,
+      "parked": true,
+      "sourceOfTruth": false,
+      "incomeCreationAuthority": false,
+      "monthClosingAuthority": false,
+      "canReplaceUnknown": false,
+      "executionAuthority": "none",
+      "confirmedUsd": 55.23054464,
+      "estimatedUsd": 87.389967,
+      "deltaUsd": 32.15942236,
+      "amountScope": "company-period",
+      "unresolvedEventCount": 1,
+      "unresolvedReasons": [
+        "canonical-event-usd-valuation-incomplete"
+      ],
+      "boundaryEvidencePending": false,
+      "valuationEvidencePending": true,
+      "prorationAllowed": false
+    },
+    {
       "id": "period-lifecycle-reconciliation:Monetra.eth:2026-09:__company_period__",
       "company": "Monetra.eth",
       "registry": "008",
@@ -280,9 +342,9 @@
       "canReplaceUnknown": false,
       "executionAuthority": "none",
       "companyContext": {
-        "confirmedUsd": 1.85984103,
-        "estimatedUsd": 1.810217,
-        "deltaUsd": -0.04962403
+        "confirmedUsd": 1.8605252,
+        "estimatedUsd": 1.810216,
+        "deltaUsd": -0.0503092
       },
       "productiveValueUsd": 111.49,
       "accountingFamily": "accrued-entitlement",
@@ -313,9 +375,9 @@
       "canReplaceUnknown": false,
       "executionAuthority": "none",
       "companyContext": {
-        "confirmedUsd": 1.85984103,
-        "estimatedUsd": 1.810217,
-        "deltaUsd": -0.04962403
+        "confirmedUsd": 1.8605252,
+        "estimatedUsd": 1.810216,
+        "deltaUsd": -0.0503092
       },
       "productiveValueUsd": 152.07,
       "accountingFamily": "accrued-entitlement",
@@ -380,8 +442,8 @@
       "executionAuthority": "none",
       "companyContext": {
         "confirmedUsd": 17.14188403,
-        "estimatedUsd": 22.936214,
-        "deltaUsd": 5.79432997
+        "estimatedUsd": 24.554132,
+        "deltaUsd": 7.41224797
       },
       "productiveValueUsd": 186.44,
       "accountingFamily": "embedded-income",
@@ -413,8 +475,8 @@
       "executionAuthority": "none",
       "companyContext": {
         "confirmedUsd": 17.14188403,
-        "estimatedUsd": 22.936214,
-        "deltaUsd": 5.79432997
+        "estimatedUsd": 24.554132,
+        "deltaUsd": 7.41224797
       },
       "productiveValueUsd": 123.83,
       "accountingFamily": "accrued-entitlement",
@@ -446,8 +508,8 @@
       "executionAuthority": "none",
       "companyContext": {
         "confirmedUsd": 17.14188403,
-        "estimatedUsd": 22.936214,
-        "deltaUsd": 5.79432997
+        "estimatedUsd": 24.554132,
+        "deltaUsd": 7.41224797
       },
       "productiveValueUsd": 416.53,
       "accountingFamily": "accrued-entitlement",
@@ -479,8 +541,8 @@
       "executionAuthority": "none",
       "companyContext": {
         "confirmedUsd": 17.14188403,
-        "estimatedUsd": 22.936214,
-        "deltaUsd": 5.79432997
+        "estimatedUsd": 24.554132,
+        "deltaUsd": 7.41224797
       },
       "productiveValueUsd": 197.37,
       "accountingFamily": "embedded-income",
@@ -512,8 +574,8 @@
       "executionAuthority": "none",
       "companyContext": {
         "confirmedUsd": 17.14188403,
-        "estimatedUsd": 22.936214,
-        "deltaUsd": 5.79432997
+        "estimatedUsd": 24.554132,
+        "deltaUsd": 7.41224797
       },
       "productiveValueUsd": 180.06,
       "accountingFamily": "embedded-income",
@@ -545,8 +607,8 @@
       "executionAuthority": "none",
       "companyContext": {
         "confirmedUsd": 17.14188403,
-        "estimatedUsd": 22.936214,
-        "deltaUsd": 5.79432997
+        "estimatedUsd": 24.554132,
+        "deltaUsd": 7.41224797
       },
       "productiveValueUsd": 78.1,
       "accountingFamily": "accrued-entitlement",
@@ -577,9 +639,9 @@
       "canReplaceUnknown": false,
       "executionAuthority": "none",
       "companyContext": {
-        "confirmedUsd": 54.73221408,
-        "estimatedUsd": 87.389968,
-        "deltaUsd": 32.65775392
+        "confirmedUsd": 55.23054464,
+        "estimatedUsd": 87.389967,
+        "deltaUsd": 32.15942236
       },
       "productiveValueUsd": 1453.03,
       "accountingFamily": "accrued-entitlement",
@@ -610,9 +672,9 @@
       "canReplaceUnknown": false,
       "executionAuthority": "none",
       "companyContext": {
-        "confirmedUsd": 54.73221408,
-        "estimatedUsd": 87.389968,
-        "deltaUsd": 32.65775392
+        "confirmedUsd": 55.23054464,
+        "estimatedUsd": 87.389967,
+        "deltaUsd": 32.15942236
       },
       "productiveValueUsd": 301.19,
       "accountingFamily": "accrued-entitlement",
@@ -643,9 +705,9 @@
       "canReplaceUnknown": false,
       "executionAuthority": "none",
       "companyContext": {
-        "confirmedUsd": 54.73221408,
-        "estimatedUsd": 87.389968,
-        "deltaUsd": 32.65775392
+        "confirmedUsd": 55.23054464,
+        "estimatedUsd": 87.389967,
+        "deltaUsd": 32.15942236
       },
       "productiveValueUsd": 1155.16,
       "accountingFamily": "accrued-entitlement",
@@ -676,9 +738,9 @@
       "canReplaceUnknown": false,
       "executionAuthority": "none",
       "companyContext": {
-        "confirmedUsd": 54.73221408,
-        "estimatedUsd": 87.389968,
-        "deltaUsd": 32.65775392
+        "confirmedUsd": 55.23054464,
+        "estimatedUsd": 87.389967,
+        "deltaUsd": 32.15942236
       },
       "productiveValueUsd": 472.83,
       "accountingFamily": "accrued-entitlement",
@@ -709,9 +771,9 @@
       "canReplaceUnknown": false,
       "executionAuthority": "none",
       "companyContext": {
-        "confirmedUsd": 54.73221408,
-        "estimatedUsd": 87.389968,
-        "deltaUsd": 32.65775392
+        "confirmedUsd": 55.23054464,
+        "estimatedUsd": 87.389967,
+        "deltaUsd": 32.15942236
       },
       "productiveValueUsd": 1258.58,
       "accountingFamily": "accrued-entitlement",
@@ -841,9 +903,9 @@
       "canReplaceUnknown": false,
       "executionAuthority": "none",
       "companyContext": {
-        "confirmedUsd": 10.41274512,
+        "confirmedUsd": 10.41454486,
         "estimatedUsd": 8.229751,
-        "deltaUsd": -2.18299412
+        "deltaUsd": -2.18479386
       },
       "productiveValueUsd": 374.213245,
       "accountingFamily": "accrued-entitlement",
@@ -873,9 +935,9 @@
       "monthClosingAuthority": false,
       "canReplaceUnknown": false,
       "executionAuthority": "none",
-      "confirmedUsd": 1.85984103,
-      "estimatedUsd": 1.810217,
-      "deltaUsd": -0.04962403,
+      "confirmedUsd": 1.8605252,
+      "estimatedUsd": 1.810216,
+      "deltaUsd": -0.0503092,
       "amountScope": "company-period",
       "comparisonSemantic": "Estimated is a non-factual Reference-model comparator; delta is not missing income and has no completion authority."
     },
@@ -974,8 +1036,8 @@
       "canReplaceUnknown": false,
       "executionAuthority": "none",
       "confirmedUsd": 17.14188403,
-      "estimatedUsd": 22.936214,
-      "deltaUsd": 5.79432997,
+      "estimatedUsd": 24.554132,
+      "deltaUsd": 7.41224797,
       "amountScope": "company-period",
       "comparisonSemantic": "Estimated is a non-factual Reference-model comparator; delta is not missing income and has no completion authority."
     },
@@ -998,9 +1060,9 @@
       "monthClosingAuthority": false,
       "canReplaceUnknown": false,
       "executionAuthority": "none",
-      "confirmedUsd": 54.73221408,
-      "estimatedUsd": 87.389968,
-      "deltaUsd": 32.65775392,
+      "confirmedUsd": 55.23054464,
+      "estimatedUsd": 87.389967,
+      "deltaUsd": 32.15942236,
       "amountScope": "company-period",
       "comparisonSemantic": "Estimated is a non-factual Reference-model comparator; delta is not missing income and has no completion authority."
     },
@@ -1098,9 +1160,9 @@
       "monthClosingAuthority": false,
       "canReplaceUnknown": false,
       "executionAuthority": "none",
-      "confirmedUsd": 10.41274512,
+      "confirmedUsd": 10.41454486,
       "estimatedUsd": 8.229751,
-      "deltaUsd": -2.18299412,
+      "deltaUsd": -2.18479386,
       "amountScope": "company-period",
       "comparisonSemantic": "Estimated is a non-factual Reference-model comparator; delta is not missing income and has no completion authority."
     }
