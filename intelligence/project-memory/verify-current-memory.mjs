@@ -39,7 +39,7 @@ for (const phrase of [
   'Confirmation boundary and platform authority',
   'manufacture short stop points',
   'Unrelated generated/data-only drift',
-  'Platform permission/consent gates always remain authoritative',
+  'cannot override ChatGPT/GitHub/platform permission gates',
 ]) {
   if (!collaboration.toLowerCase().includes(phrase.toLowerCase())) throw new Error(`Owner Collaboration canon missing bounded flow phrase: ${phrase}`);
 }
