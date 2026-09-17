@@ -1,0 +1,195 @@
+# THE HOLDING · STABLE CAPITAL INTELLIGENCE LAYER v0.5 · PERFORMANCE-LIVE
+# holding-workflow-definition-proof: intelligence/reliability/update-stable-capital-scheduler-proof.mjs
+# holding-control-plane: repository-writer
+# holding-truth-plane: Stable Capital / Embedded Yield / Stable Companies Index
+# holding-control-domain: Monetra Stable Capital scheduled materialization
+name: "Update Stable Capital"
+
+on:
+  workflow_dispatch:
+  schedule:
+    # P10 scheduler-liveness repair: preserve daily cadence while forcing a clean GitHub Actions workflow registration.
+    - cron: "41 5 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-stable-capital
+  cancel-in-progress: false
+
+jobs:
+  stable-capital:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+
+      - name: Preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check stable-capital/stable-capital-engine.mjs
+          node --check stable-capital/embedded-yield-interval-history.mjs
+          node --check stable-capital/stable-index-bridge.mjs
+          test -s companies/company-008-resolve.json
+          test -s companies/stable-capital-data.json
+          test -s companies/embedded-yield-ledger.json
+          test -s companies/company-008-strategy-entry-ledger.json
+
+          node - <<'NODE'
+          const fs=require('fs');
+
+          const r=JSON.parse(fs.readFileSync('companies/company-008-resolve.json','utf8'));
+          if(r.version!=='1.4-company-008-fraxtal-sfrxusd-close') throw new Error('unexpected resolver '+r.version);
+          if(r.company?.registry!=='008'||r.company?.name!=='Monetra.eth') throw new Error('resolver identity mismatch');
+          if(!r.productionReadiness?.stableCapitalBookReady) throw new Error('Stable Capital book not ready');
+          if((r.stableCapital?.positions||[]).length!==10) throw new Error('expected exactly 10 current positions');
+
+          const d=JSON.parse(fs.readFileSync('companies/stable-capital-data.json','utf8'));
+          if(!new Set([
+            '0.3-monetra-fxsave-canonical-nav',
+            '0.4-monetra-recurring-full-coverage',
+            '0.4.1-monetra-recurring-stable-index-semantics'
+          ]).has(d.version)) throw new Error('unexpected prior Stable Capital version '+d.version);
+          if(d.company?.registry!=='008'||(d.positions||[]).length!==10) throw new Error('Stable Capital identity/count regression');
+
+          const l=JSON.parse(fs.readFileSync('companies/embedded-yield-ledger.json','utf8'));
+          if(!new Set([
+            '0.3-flow-aware-fxsave-canonical',
+            '0.4-flow-aware-recurring-checkpoints'
+          ]).has(l.version)) throw new Error('unexpected prior Embedded Ledger '+l.version);
+          if(l.company?.registry!=='008'||Object.keys(l.positions||{}).length!==10) throw new Error('Embedded Ledger identity/count regression');
+
+          const s=JSON.parse(fs.readFileSync('companies/company-008-strategy-entry-ledger.json','utf8'));
+          if(s.version!=='0.7-monetra-lido-capital-transfer-close') throw new Error('expected Strategy Entry v0.7, got '+s.version);
+          if(s.company?.registry!=='008'||s.company?.name!=='Monetra.eth') throw new Error('Strategy Entry identity mismatch');
+          if((s.strategies||[]).length!==10) throw new Error('Strategy Entry count regression');
+          if(
+            s.summary?.entryResolvedCount!==10 ||
+            s.summary?.currentNominalComparableCount!==10 ||
+            s.summary?.fullEntryReady!==true ||
+            s.summary?.fullPerformanceReady!==true ||
+            s.summary?.publicInvestedReady!==true ||
+            s.summary?.publicPerformanceReady!==true ||
+            (s.unresolved||[]).length!==0
+          ) throw new Error('Strategy Entry not full 10/10 public-ready');
+
+          console.log('Performance-live preflight OK.');
+          console.log('Verified Invested:',s.summary.strategyInvestedNominalStableTotal);
+          console.log('Verified Performance:',s.summary.strategyPerformanceNominalStable,s.summary.strategyPerformancePct+'%');
+          NODE
+
+      - name: Install dependencies
+        run: npm install --no-save ethers@6 @aave-dao/aave-address-book
+
+      - name: Collect recurring Stable Capital reference yield + ledger checkpoint
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
+          ETH_ARCHIVE_RPC_URL: ${{ secrets.ETH_ARCHIVE_RPC_URL }}
+          BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
+          BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
+          FRAXTAL_RPC_URL: ${{ secrets.FRAXTAL_RPC_URL }}
+          FRAXTAL_RPC_URL_2: ${{ secrets.FRAXTAL_RPC_URL_2 }}
+        run: node stable-capital/stable-capital-engine.mjs
+
+      - name: Build canonical Embedded Yield interval history
+        run: node stable-capital/embedded-yield-interval-history.mjs
+
+      - name: Build Stable Companies Index + verified Performance
+        run: node stable-capital/stable-index-bridge.mjs
+
+      - name: Validate generated data
+        shell: bash
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs=require('fs');
+          const d=JSON.parse(fs.readFileSync('companies/stable-capital-data.json','utf8'));
+          const l=JSON.parse(fs.readFileSync('companies/embedded-yield-ledger.json','utf8'));
+          const i=JSON.parse(fs.readFileSync('companies/stable-index-data.json','utf8'));
+
+          if(d.version!=='0.4.1-monetra-recurring-stable-index-semantics') throw new Error('unexpected Stable Capital version');
+          if(d.methodologyVersion!=='1.3-stable-capital-recurring-full-coverage') throw new Error('unexpected Stable Capital methodology');
+          if(d.company?.registry!=='008'||d.company?.name!=='Monetra.eth') throw new Error('Stable Capital identity mismatch');
+          if((d.positions||[]).length!==10) throw new Error('Stable Capital position count regression');
+          if(Number(d.summary?.productiveStableCapitalUsd)<90) throw new Error('productive Stable Capital implausibly low');
+
+          if(l.version!=='0.4-flow-aware-recurring-checkpoints') throw new Error('unexpected Embedded Ledger version');
+          if(l.company?.registry!=='008'||Object.keys(l.positions||{}).length!==10) throw new Error('Embedded Ledger regression');
+          if(l.intervalHistory?.schemaVersion!=='0.1-canonical-embedded-yield-interval-history') throw new Error('canonical interval history missing');
+          if(!Array.isArray(l.intervalHistory?.rows)||l.intervalHistory.rows.length<1) throw new Error('canonical interval rows missing');
+          if(!(Number(l.intervalHistory?.acceptedCount)>0)) throw new Error('no accepted canonical intervals');
+          for(const p of Object.values(l.positions||{})) {
+            if(!Array.isArray(p.intervalHistory)) throw new Error('position intervalHistory missing');
+          }
+
+          if(i.version!=='0.2-stable-companies-index-strategy-performance') throw new Error('unexpected Stable Index version');
+          if(i.methodologyVersion!=='0.2-separate-stable-universe-strategy-entry-performance') throw new Error('unexpected Stable Index methodology');
+          if(i.universe?.separateFromGeneralComposite!==true) throw new Error('Stable Index separation invariant failed');
+          if((i.companies||[]).length!==1||i.companies[0]?.registry!=='008') throw new Error('Stable Index company invariant failed');
+
+          const c=i.companies[0];
+          if(c.performance?.status!=='verified-since-inception') throw new Error('Performance status not verified');
+          if(!(Number(c.investedUsd)>99&&Number(c.investedUsd)<101)) throw new Error('Invested outside expected ~100');
+          if(!Number.isFinite(Number(c.performance?.sinceInceptionUsd))) throw new Error('Performance amount missing');
+          if(!Number.isFinite(Number(c.performance?.sinceInceptionPct))) throw new Error('Performance pct missing');
+          if(i.source?.strategyEntryVersion!=='0.7-monetra-lido-capital-transfer-close') throw new Error('Strategy Entry provenance missing');
+
+          console.log('PERFORMANCE LIVE + CANONICAL INTERVAL HISTORY VALIDATION OK');
+          console.log('Accepted interval rows:',l.intervalHistory.acceptedCount);
+          console.log('Invested:',c.investedUsd);
+          console.log('Performance:',c.performance.sinceInceptionUsd,c.performance.sinceInceptionPct+'%');
+          console.log('Performance as of:',c.performance.asOf);
+          NODE
+
+      - name: Publish Stable Capital + Stable Companies Index
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          FILES=(
+            "companies/stable-capital-data.json"
+            "companies/embedded-yield-ledger.json"
+            "companies/stable-index-data.json"
+          )
+          for f in "${FILES[@]}"; do test -s "$f"; done
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f "${FILES[@]}"
+
+          if ! git diff --cached --quiet -- "${FILES[@]}"; then
+            git commit -m "Publish Monetra verified Stable Performance"
+          else
+            echo "No Stable Capital changes to publish."
+          fi
+
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if git rebase origin/main && git push origin HEAD:main; then break; fi
+            git rebase --abort || true
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            sleep $((attempt*2))
+          done
+
+          git fetch origin main
+          for f in "${FILES[@]}"; do git cat-file -e "origin/main:$f"; done
+
+          REMOTE_STABLE="$(git show origin/main:companies/stable-capital-data.json | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")"
+          REMOTE_INDEX="$(git show origin/main:companies/stable-index-data.json | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")"
+
+          test "$REMOTE_STABLE" = "0.4.1-monetra-recurring-stable-index-semantics"
+          test "$REMOTE_INDEX" = "0.2-stable-companies-index-strategy-performance"
+
+          echo "Verified Monetra Invested + Performance + canonical interval history published to origin/main."
