@@ -2,7 +2,7 @@
   "version": "1.16",
   "methodologyVersion": "1.1-simple-safe",
   "collectorVersion": "1.16-company-010-state-backed-productivity-admission",
-  "generatedAt": "2026-09-17T10:28:13.433Z",
+  "generatedAt": "2026-09-17T15:21:53.631Z",
   "snapshotKey": "2026-W38",
   "note": "Reference APRs are normalized from official protocol APIs, onchain state, official protocol frontends, and canonical state-backed company mechanisms. Company APR is capital-weighted across productive positions with valid Reference APRs. Unknown engines are excluded, never treated as 0%. Cypher keeps Concentrator auto-compounded yield and Convex staked-cvxCRV claimable yield as separate productive mechanisms rather than collapsing wrapper units into CRV. VoteMarket veCRV/veFXN rewards are modeled as supplementary income channels on the existing principal: capital is counted once, verified company-specific finalized periods may persist as derived Reference observations across a later claim, and the overlay never grants factual earned-income authority. Company #007 current productive inventory is rebound from fresh discovery/resolve evidence; redeemed YBLP mechanisms are excluded from current inventory while historical observations remain preserved.",
   "engines": {
@@ -17,8 +17,8 @@
       "sourceMetric": "40 Acres simulator gross expected weekly voting rewards annualized",
       "source": "https://www.40acres.finance/",
       "periodStart": null,
-      "periodEnd": "2026-09-17T10:27:16.296Z",
-      "lastUpdatedAt": "2026-09-17T10:27:16.296Z",
+      "periodEnd": "2026-09-17T15:20:54.378Z",
+      "lastUpdatedAt": "2026-09-17T15:20:54.378Z",
       "status": "ok",
       "methodologyVersion": "1.1-simple-safe",
       "collectorVersion": "1.15-company-009-beefy-cvxcrv",
@@ -40,8 +40,8 @@
       "sourceMetric": "40 Acres simulator gross expected weekly voting rewards annualized",
       "source": "https://www.40acres.finance/",
       "periodStart": null,
-      "periodEnd": "2026-09-17T10:27:16.296Z",
-      "lastUpdatedAt": "2026-09-17T10:27:16.296Z",
+      "periodEnd": "2026-09-17T15:20:54.378Z",
+      "lastUpdatedAt": "2026-09-17T15:20:54.378Z",
       "status": "ok",
       "methodologyVersion": "1.1-simple-safe",
       "collectorVersion": "1.15-company-009-beefy-cvxcrv",
@@ -58,19 +58,19 @@
       "principalSymbol": "CVX",
       "sourceUrl": "https://www.convexfinance.com/lock-cvx",
       "nativeCadence": "biweekly",
-      "aprLatest": 15.8304,
+      "aprLatest": 14.7804,
       "sourceType": "official-frontend",
       "sourceMetric": "Locked CVX platform vAPR + last completed Votium incentives APR",
       "source": "https://www.convexfinance.com/lock-cvx",
       "periodStart": null,
-      "periodEnd": "2026-09-17T10:27:16.296Z",
-      "lastUpdatedAt": "2026-09-17T10:27:16.296Z",
+      "periodEnd": "2026-09-17T15:20:54.378Z",
+      "lastUpdatedAt": "2026-09-17T15:20:54.378Z",
       "status": "ok",
       "methodologyVersion": "1.1-simple-safe",
       "collectorVersion": "1.15-company-009-beefy-cvxcrv",
       "details": {
         "platformVapr": 0.0004,
-        "votiumLastRoundApr": 15.83
+        "votiumLastRoundApr": 14.78
       }
     },
     "beefy_cvxcrv": {
@@ -79,19 +79,19 @@
       "principalSymbol": "cvxCRV",
       "sourceUrl": "https://api.beefy.finance/apy",
       "nativeCadence": "continuous",
-      "aprLatest": 9.9853,
+      "aprLatest": 10.0123,
       "sourceType": "official-api",
       "sourceMetric": "Beefy convex-staked-cvxCRV vault APY · auto-compounded embedded yield",
       "source": "https://api.beefy.finance/apy",
       "periodStart": null,
-      "periodEnd": "2026-09-17T10:27:16.296Z",
-      "lastUpdatedAt": "2026-09-17T10:27:16.296Z",
+      "periodEnd": "2026-09-17T15:20:54.378Z",
+      "lastUpdatedAt": "2026-09-17T15:20:54.378Z",
       "status": "ok",
       "methodologyVersion": "1.1-simple-safe",
       "collectorVersion": "1.15-company-009-beefy-cvxcrv",
       "details": {
         "vaultId": "convex-staked-cvxCRV",
-        "rawApy": 0.09985285053818127,
+        "rawApy": 0.10012266873519238,
         "incomeMode": "compounded-embedded",
         "separateClaimableRewards": false
       }
@@ -102,20 +102,20 @@
       "principalSymbol": "CRV",
       "sourceUrl": "https://classic.curve.finance/",
       "nativeCadence": "weekly",
-      "aprLatest": 2.0086,
+      "aprLatest": 2.0379,
       "sourceType": "onchain",
       "sourceMetric": "veCRV crvUSD fee APR · 4 completed weeks average",
       "source": "https://etherscan.io/address/0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914",
       "periodStart": "2026-08-20T00:00:00.000Z",
       "periodEnd": "2026-09-17T00:00:00.000Z",
-      "lastUpdatedAt": "2026-09-17T10:27:16.296Z",
+      "lastUpdatedAt": "2026-09-17T15:20:54.378Z",
       "status": "ok",
       "methodologyVersion": "1.1-simple-safe",
       "collectorVersion": "1.15-company-009-beefy-cvxcrv",
       "details": {
         "contract": "0xD16d5eC345Dd86Fb63C6a9C43c517210F1027914",
         "rpc": "https://1rpc.io/eth",
-        "crvPrice": 0.31680542,
+        "crvPrice": 0.31224218,
         "crvUSDPriceAssumption": 1,
         "weeksUsed": 4,
         "lastTokenTime": 1789591475,
@@ -124,25 +124,25 @@
             "week": 1788998400,
             "tokensCrvUSD": 91318.00050620789,
             "veSupply": 776186896.9180568,
-            "apr": 1.9311
+            "apr": 1.9593
           },
           {
             "week": 1788393600,
             "tokensCrvUSD": 89711.90484694079,
             "veSupply": 779648511.2860774,
-            "apr": 1.8887
+            "apr": 1.9163
           },
           {
             "week": 1787788800,
             "tokensCrvUSD": 94777.70956708067,
             "veSupply": 780689920.7761227,
-            "apr": 1.9927
+            "apr": 2.0218
           },
           {
             "week": 1787184000,
             "tokensCrvUSD": 105296.76945962243,
             "veSupply": 777928715.0780392,
-            "apr": 2.2217
+            "apr": 2.2542
           }
         ]
       }
@@ -159,7 +159,7 @@
       "source": "https://api-v2.pendle.finance/core/v1/spendle/data",
       "periodStart": "2026-08-25T00:00:00.000Z",
       "periodEnd": "2026-09-08T00:00:00.000Z",
-      "lastUpdatedAt": "2026-09-17T10:27:16.296Z",
+      "lastUpdatedAt": "2026-09-17T15:20:54.378Z",
       "status": "warming",
       "methodologyVersion": "1.1-simple-safe",
       "collectorVersion": "1.15-company-009-beefy-cvxcrv",
@@ -439,10 +439,10 @@
           "survivorSnapshot": {
             "status": "ok",
             "rpc": "https://ethereum-rpc.publicnode.com",
-            "observedAt": 1789640854,
+            "observedAt": 1789658477,
             "addressCount": 449,
             "batchCalls": 8,
-            "currentNativeSupply": 34115124.220474266,
+            "currentNativeSupply": 34162644.347940356,
             "errors": null
           },
           "balanceDiagnostics": [
@@ -451,16 +451,16 @@
               "status": "diagnostic-survivor-cluster",
               "sampledUsers": 179,
               "currentDirectBalanceUsers": 104,
-              "clusterSize": 39,
-              "clusterDensity": 0.375,
+              "clusterSize": 38,
+              "clusterDensity": 0.3654,
               "clusterTolerancePct": 0.5,
-              "maxClusterSpreadBps": 74.46,
-              "rewardPerActiveSPendle": 0.0009063847608948057,
-              "diagnosticRewardApr": 2.3631,
+              "maxClusterSpreadBps": 73.64,
+              "rewardPerActiveSPendle": 0.0009063096481213902,
+              "diagnosticRewardApr": 2.3629,
               "distributedSPendle": 199338,
-              "impliedActiveSPendle": 219926468.979,
-              "currentNativeSupply": 34115124.2205,
-              "impliedActiveToCurrentNativeRatio": 6.4466,
+              "impliedActiveSPendle": 219944695.9582,
+              "currentNativeSupply": 34162644.3479,
+              "impliedActiveToCurrentNativeRatio": 6.4382,
               "clusterAddresses": [
                 "0x363ce4a82bea0bbc635bd9a1d9021a142fe8c1cd",
                 "0xa604d9152505849be778bb8672b88c12047dea32",
@@ -470,7 +470,6 @@
                 "0xd47d508e5f1e376b2518fa8bab8f045e006d6e98",
                 "0x80599cf344af7684971f748a0c6ad393feccc46f",
                 "0x4dcff24d5757d163241ec9e6c81678f8b8e8b196",
-                "0xf43e1152b20b99bfac44f58cd026194c81e1c622",
                 "0xd516c9877578f3d21c4221fbd3cb8d2a17312ebe",
                 "0x49b61b0b725be7ee97361318ea6711f5ccf55ed3",
                 "0x60c0e586727467602a6ac5b7c5bacb94600ccc75",
@@ -654,16 +653,16 @@
               "status": "diagnostic-survivor-cluster",
               "sampledUsers": 179,
               "currentDirectBalanceUsers": 96,
-              "clusterSize": 33,
-              "clusterDensity": 0.3438,
+              "clusterSize": 32,
+              "clusterDensity": 0.3333,
               "clusterTolerancePct": 0.5,
-              "maxClusterSpreadBps": 73.54,
-              "rewardPerActiveSPendle": 0.0006403070786298076,
-              "diagnosticRewardApr": 1.6694,
+              "maxClusterSpreadBps": 74.01,
+              "rewardPerActiveSPendle": 0.0006403373340554258,
+              "diagnosticRewardApr": 1.6695,
               "distributedSPendle": 144388,
-              "impliedActiveSPendle": 225498053.6979,
-              "currentNativeSupply": 34115124.2205,
-              "impliedActiveToCurrentNativeRatio": 6.6099,
+              "impliedActiveSPendle": 225487399.0956,
+              "currentNativeSupply": 34162644.3479,
+              "impliedActiveToCurrentNativeRatio": 6.6004,
               "clusterAddresses": [
                 "0x363ce4a82bea0bbc635bd9a1d9021a142fe8c1cd",
                 "0xa604d9152505849be778bb8672b88c12047dea32",
@@ -675,7 +674,6 @@
                 "0x83d647e287d2bc41502c22526c5bdc29b6fb3191",
                 "0xa8cf8882e86df0f14eae3a51f3730a2131ed3aaf",
                 "0x4bc07ef4b43bec29768c0b498e0256807e8581ac",
-                "0xd07935b1a3206f55c261ee9587559c9f5bbac9c6",
                 "0x1c6c6eb5942f99400da8e8b3a7540038f02c81ec",
                 "0xb9ed955fc3a389229a1873f631669a40c345f5f4",
                 "0x276fdb2995ada85742b54fd5119c487751ce1f5f",
@@ -859,8 +857,8 @@
               "diagnosticRewardApr": 1.6956,
               "distributedSPendle": 149086,
               "impliedActiveSPendle": 229235174.1911,
-              "currentNativeSupply": 34115124.2205,
-              "impliedActiveToCurrentNativeRatio": 6.7195,
+              "currentNativeSupply": 34162644.3479,
+              "impliedActiveToCurrentNativeRatio": 6.7101,
               "clusterAddresses": [
                 "0x363ce4a82bea0bbc635bd9a1d9021a142fe8c1cd",
                 "0xa604d9152505849be778bb8672b88c12047dea32",
@@ -1051,25 +1049,25 @@
             "minClusterDensity": 0.25,
             "maxSpreadBps": 75,
             "maxSupplyDeviationPct": 5,
-            "observedSupplyMedian": 225498053.6979,
-            "observedMaxSupplyDeviationPct": 2.471,
+            "observedSupplyMedian": 225487399.0956,
+            "observedMaxSupplyDeviationPct": 2.458,
             "supplyConsistencyOk": true,
             "campaigns": [
               {
                 "campaign": "2026-08-14-spendle",
-                "apr": 2.3631,
-                "clusterSize": 39,
-                "clusterDensity": 0.375,
-                "maxClusterSpreadBps": 74.46,
-                "impliedActiveSPendle": 219926468.979
+                "apr": 2.3629,
+                "clusterSize": 38,
+                "clusterDensity": 0.3654,
+                "maxClusterSpreadBps": 73.64,
+                "impliedActiveSPendle": 219944695.9582
               },
               {
                 "campaign": "2026-08-01-spendle",
-                "apr": 1.6694,
-                "clusterSize": 33,
-                "clusterDensity": 0.3438,
-                "maxClusterSpreadBps": 73.54,
-                "impliedActiveSPendle": 225498053.6979
+                "apr": 1.6695,
+                "clusterSize": 32,
+                "clusterDensity": 0.3333,
+                "maxClusterSpreadBps": 74.01,
+                "impliedActiveSPendle": 225487399.0956
               },
               {
                 "campaign": "2026-07-18-spendle",
@@ -1086,12 +1084,12 @@
         },
         "currentSupply": {
           "snapshotKey": "2026-W38",
-          "observedAt": 1789640852,
-          "periodEnd": "2026-09-17T10:27:32.000Z",
-          "totalPendleStaked": 97714723.97298168,
-          "totalStakedInSpendle": 34115124.220474266,
-          "virtualSpendleFromVependle": 175634896.1342172,
-          "currentEffectiveSupply": 209750020.35469148
+          "observedAt": 1789658476,
+          "periodEnd": "2026-09-17T15:21:16.000Z",
+          "totalPendleStaked": 97760361.90534279,
+          "totalStakedInSpendle": 34162644.347940356,
+          "virtualSpendleFromVependle": 175582054.7270161,
+          "currentEffectiveSupply": 209744699.07495645
         },
         "recentCompleted": [
           {
@@ -1151,37 +1149,37 @@
       "principalSymbol": "FXN",
       "sourceUrl": "https://fx.aladdin.club/v2/lock",
       "nativeCadence": "weekly",
-      "aprLatest": 24.1,
+      "aprLatest": 23.99,
       "sourceType": "official-frontend-exact-block",
       "sourceMetric": "veFXN Locker APR",
       "source": "https://fx.aladdin.club/v2/lock",
       "periodStart": null,
-      "periodEnd": "2026-09-17T10:27:16.296Z",
-      "lastUpdatedAt": "2026-09-17T10:28:13.433Z",
+      "periodEnd": "2026-09-17T15:20:54.378Z",
+      "lastUpdatedAt": "2026-09-17T15:21:53.631Z",
       "status": "ok",
       "methodologyVersion": "1.1-simple-safe",
       "collectorVersion": "1.15-company-009-beefy-cvxcrv",
       "details": {
         "exactSourceAuthority": "FXN Locker block",
-        "collectorAprBeforeExactSourceAuthority": 24.1,
+        "collectorAprBeforeExactSourceAuthority": 79.33,
         "economicSnapshot": {
-          "aprPct": 24.1,
+          "aprPct": 23.99,
           "fxnLocked": 562326.69,
           "fxnCirculatingSupplyLockedPct": 79.33,
-          "totalVeFxn": 484787.17,
-          "cumulativeThisWeekWsteth": 0.01,
+          "totalVeFxn": 484710.11,
+          "cumulativeThisWeekWsteth": 0.03,
           "previousWeekWsteth": 16.12,
           "averageLockRaw": "3.45 Years",
           "accumulateTillRaw": "Sep 23, 2026 11:59 PM",
-          "rawBlockHash": "961f62cb6c17b3e8fac310568694f69916214291874c8aa2a9afc3c76987c049",
-          "observedAt": "2026-09-17T10:28:13.476Z",
+          "rawBlockHash": "9363ac5c4b7c59033d9375ff362c2fa1fc97d6cb3b8c8a10cd340b96419ee887",
+          "observedAt": "2026-09-17T15:21:53.675Z",
           "source": "https://fx.aladdin.club/v2/lock",
           "sourceType": "official-frontend-exact-locker-block",
           "sourceMetric": "FXN Locker economic vitals",
           "nativeCadence": "weekly",
           "executionAuthority": "none",
           "snapshotKey": "2026-W38",
-          "productivityGeneratedAt": "2026-09-17T10:28:13.433Z",
+          "productivityGeneratedAt": "2026-09-17T15:21:53.631Z",
           "canonicalization": "same-exact-locker-block-as-apr-authority",
           "aprParityDeltaPctPoints": 0
         }
@@ -1198,8 +1196,8 @@
       "sourceMetric": "veYB APR · current/latest epoch",
       "source": "https://yieldbasis.com/analytics",
       "periodStart": null,
-      "periodEnd": "2026-09-17T10:27:16.296Z",
-      "lastUpdatedAt": "2026-09-17T10:27:16.296Z",
+      "periodEnd": "2026-09-17T15:20:54.378Z",
+      "lastUpdatedAt": "2026-09-17T15:20:54.378Z",
       "status": "ok",
       "methodologyVersion": "1.1-simple-safe",
       "collectorVersion": "1.15-company-009-beefy-cvxcrv",
@@ -1216,8 +1214,8 @@
       "sourceMetric": "Yield Basis FT APY (30D) pending reproducible historical PPS",
       "source": "companies/company-007-resolve.json",
       "periodStart": null,
-      "periodEnd": "2026-09-17T10:27:16.296Z",
-      "lastUpdatedAt": "2026-09-17T10:27:16.296Z",
+      "periodEnd": "2026-09-17T15:20:54.378Z",
+      "lastUpdatedAt": "2026-09-17T15:20:54.378Z",
       "status": "warming",
       "methodologyVersion": "1.1-simple-safe",
       "collectorVersion": "1.15-company-009-beefy-cvxcrv",
@@ -1239,8 +1237,8 @@
       "sourceMetric": "Yield Basis FT APY (30D) pending reproducible historical PPS",
       "source": "companies/company-007-resolve.json",
       "periodStart": null,
-      "periodEnd": "2026-09-17T10:27:16.296Z",
-      "lastUpdatedAt": "2026-09-17T10:27:16.296Z",
+      "periodEnd": "2026-09-17T15:20:54.378Z",
+      "lastUpdatedAt": "2026-09-17T15:20:54.378Z",
       "status": "warming",
       "methodologyVersion": "1.1-simple-safe",
       "collectorVersion": "1.15-company-009-beefy-cvxcrv",
@@ -1257,13 +1255,13 @@
       "principalSymbol": "FRAX",
       "sourceUrl": "https://app.frax.finance/fxtl-vefxs",
       "nativeCadence": "epoch",
-      "aprLatest": 5.3667,
+      "aprLatest": 5.3674,
       "sourceType": "official-api",
       "sourceMetric": "Fraxtal veFRAX/veFXS APR",
       "source": "https://api.frax.finance/combineddata/",
       "periodStart": null,
-      "periodEnd": "2026-09-17T10:27:16.296Z",
-      "lastUpdatedAt": "2026-09-17T10:27:16.296Z",
+      "periodEnd": "2026-09-17T15:20:54.378Z",
+      "lastUpdatedAt": "2026-09-17T15:20:54.378Z",
       "status": "ok",
       "methodologyVersion": "1.1-simple-safe",
       "collectorVersion": "1.15-company-009-beefy-cvxcrv",
@@ -1282,8 +1280,8 @@
       "sourceMetric": "VVV emissionRatePerSecond / total sVVV supply",
       "source": "https://venice.ai/token",
       "periodStart": null,
-      "periodEnd": "2026-09-17T10:27:16.296Z",
-      "lastUpdatedAt": "2026-09-17T10:27:16.296Z",
+      "periodEnd": "2026-09-17T15:20:54.378Z",
+      "lastUpdatedAt": "2026-09-17T15:20:54.378Z",
       "status": "ok",
       "methodologyVersion": "1.1-simple-safe",
       "collectorVersion": "1.15-company-009-beefy-cvxcrv",
@@ -1291,7 +1289,7 @@
         "contract": "0x321b7ff75154472B18EDb199033fF4D116F340Ff",
         "rpc": "https://mainnet.base.org",
         "rateVVVPerSecond": 0.07927447995941146,
-        "totalStakedVVV": 33982036.89102742
+        "totalStakedVVV": 33982003.81341239
       }
     },
     "liquity_lqty": {
@@ -1305,15 +1303,15 @@
       "sourceMetric": "previous observed LQTY staking APR · awaiting next full weekly interval",
       "source": "https://docs.liquity.org/liquity-v1/faq/staking",
       "periodStart": "2026-09-13T09:35:11.000Z",
-      "periodEnd": "2026-09-17T10:27:47.000Z",
-      "lastUpdatedAt": "2026-09-17T10:27:16.296Z",
+      "periodEnd": "2026-09-17T15:21:23.000Z",
+      "lastUpdatedAt": "2026-09-17T15:20:54.378Z",
       "status": "ok",
       "methodologyVersion": "1.1-simple-safe",
       "collectorVersion": "1.15-company-009-beefy-cvxcrv",
       "details": {
         "contract": "0x4f9fbb3f1e99b56e0fe2892e623ed36a76fc605d",
         "rpc": "https://eth.drpc.org",
-        "baselineAgeSeconds": 348756,
+        "baselineAgeSeconds": 366372,
         "reason": "Existing baseline is younger than 5 days; previous validated APR carried forward"
       }
     },
@@ -1323,13 +1321,13 @@
       "principalSymbol": "RSUP",
       "sourceUrl": "https://resupply.finance/governance/rsup",
       "nativeCadence": "weekly",
-      "aprLatest": 20.69,
+      "aprLatest": 20.63,
       "sourceType": "official-frontend",
       "sourceMetric": "Staked RSUP vAPR",
       "source": "https://resupply.finance/governance/rsup",
       "periodStart": null,
-      "periodEnd": "2026-09-17T10:27:16.296Z",
-      "lastUpdatedAt": "2026-09-17T10:27:16.296Z",
+      "periodEnd": "2026-09-17T15:20:54.378Z",
+      "lastUpdatedAt": "2026-09-17T15:20:54.378Z",
       "status": "ok",
       "methodologyVersion": "1.1-simple-safe",
       "collectorVersion": "1.15-company-009-beefy-cvxcrv",
@@ -1348,8 +1346,8 @@
       "sourceMetric": "NNS 2-year dissolve-delay Annualized Estimate Rewards",
       "source": "https://dashboard.internetcomputer.org/governance",
       "periodStart": null,
-      "periodEnd": "2026-09-17T10:27:16.296Z",
-      "lastUpdatedAt": "2026-09-17T10:27:16.296Z",
+      "periodEnd": "2026-09-17T15:20:54.378Z",
+      "lastUpdatedAt": "2026-09-17T15:20:54.378Z",
       "status": "ok",
       "methodologyVersion": "1.1-simple-safe",
       "collectorVersion": "1.15-company-009-beefy-cvxcrv",
@@ -1512,25 +1510,25 @@
   },
   "companies": {
     "defitea.eth": {
-      "aprLatest": 15.9577,
+      "aprLatest": 15.8552,
       "aprHistoricalAverage": 11.933,
       "observationCount": 3,
       "trackingStartedAt": "2026-08-16T04:50:50.379Z",
-      "updatedAt": "2026-09-17T10:27:16.296Z",
+      "updatedAt": "2026-09-17T15:20:54.378Z",
       "source": "the-holding-productivity-intelligence-layer",
       "status": "partial",
       "aprScope": "covered-productive-capital",
-      "coverage": 0.908187,
-      "productiveValue": 12581.71,
-      "coveredProductiveValue": 11426.55,
-      "uncoveredProductiveValue": 1155.16,
+      "coverage": 0.907697,
+      "productiveValue": 12628.62,
+      "coveredProductiveValue": 11462.96,
+      "uncoveredProductiveValue": 1165.66,
       "breakdown": [
         {
           "engineId": "aerodrome_veaero",
           "principalId": "aerodrome-finance",
           "units": 2632.61,
-          "price": 0.55193694,
-          "value": 1453.03,
+          "price": 0.58508238,
+          "value": 1540.29,
           "apr": 27.04,
           "engineStatus": "ok"
         },
@@ -1538,18 +1536,18 @@
           "engineId": "convex_vlcvx",
           "principalId": "convex-finance",
           "units": 1333.8,
-          "price": 1.9308766994164326,
-          "value": 2575.4,
-          "apr": 15.8304,
+          "price": 1.9081166998854397,
+          "value": 2545.05,
+          "apr": 14.7804,
           "engineStatus": "ok"
         },
         {
           "engineId": "curve_vecrv",
           "principalId": "curve-dao-token",
           "units": 4125,
-          "price": 0.31680542,
-          "value": 1306.82,
-          "apr": 6.794762,
+          "price": 0.31224218,
+          "value": 1288,
+          "apr": 6.824062,
           "engineStatus": "ok",
           "incomeChannels": {
             "version": "0.3-votemarket-claimed-aware-reference-persistence",
@@ -1559,7 +1557,7 @@
             "capitalDoubleCount": false,
             "native": {
               "label": "Curve fees",
-              "aprPct": 2.0086,
+              "aprPct": 2.0379,
               "sourceEngineId": "curve_vecrv"
             },
             "votemarket": {
@@ -1649,7 +1647,7 @@
               "canReplaceUnknown": false,
               "executionAuthority": "none"
             },
-            "effectiveAprPct": 6.794762,
+            "effectiveAprPct": 6.824062,
             "effectiveAprIncludesVoteMarket": true,
             "displayHierarchy": [
               "veCRV",
@@ -1668,8 +1666,8 @@
           "engineId": "pendle_spendle",
           "principalId": "pendle",
           "units": 501.74,
-          "price": 2.30229899,
-          "value": 1155.16,
+          "price": 2.32324483,
+          "value": 1165.66,
           "apr": null,
           "engineStatus": "warming"
         },
@@ -1677,9 +1675,9 @@
           "engineId": "fx_vefxn",
           "principalId": "fxn-token",
           "units": 64.81,
-          "price": 27.127480625946028,
-          "value": 1758.13,
-          "apr": 34.44067,
+          "price": 27.303705901198242,
+          "value": 1769.55,
+          "apr": 34.33067,
           "engineStatus": "ok",
           "incomeChannels": {
             "version": "0.3-votemarket-claimed-aware-reference-persistence",
@@ -1689,7 +1687,7 @@
             "capitalDoubleCount": false,
             "native": {
               "label": "veFXN Locker",
-              "aprPct": 24.1,
+              "aprPct": 23.99,
               "sourceEngineId": "fx_vefxn"
             },
             "votemarket": {
@@ -1760,7 +1758,7 @@
               "canReplaceUnknown": false,
               "executionAuthority": "none"
             },
-            "effectiveAprPct": 34.44067,
+            "effectiveAprPct": 34.33067,
             "effectiveAprIncludesVoteMarket": true,
             "displayHierarchy": [
               "veFXN",
@@ -1779,8 +1777,8 @@
           "engineId": "yieldbasis_veyb",
           "principalId": "yield-basis",
           "units": 10846,
-          "price": 0.07975810842997588,
-          "value": 865.06,
+          "price": 0.07911524843937341,
+          "value": 858.08,
           "apr": 0.49,
           "engineStatus": "ok"
         },
@@ -1788,17 +1786,17 @@
           "engineId": "frax_vefrax",
           "principalId": "frax-share",
           "units": 4456.96,
-          "price": 0.25776567,
-          "value": 1148.85,
-          "apr": 5.3667,
+          "price": 0.26297962,
+          "value": 1172.09,
+          "apr": 5.3674,
           "engineStatus": "ok"
         },
         {
           "engineId": "velodrome_vevelo",
           "principalId": "velodrome-finance",
           "units": 12180,
-          "price": 0.02353510857028703,
-          "value": 286.66,
+          "price": 0.02444007216790461,
+          "value": 297.68,
           "apr": 24.96,
           "engineStatus": "ok"
         },
@@ -1806,8 +1804,8 @@
           "engineId": "venice_svvv",
           "principalId": "venice-token",
           "units": 50,
-          "price": 25.171647168776452,
-          "value": 1258.58,
+          "price": 24.33854,
+          "value": 1216.93,
           "apr": 7.3568,
           "engineStatus": "ok"
         },
@@ -1815,8 +1813,8 @@
           "engineId": "liquity_lqty",
           "principalId": "liquity",
           "units": 1488,
-          "price": 0.20241194837430673,
-          "value": 301.19,
+          "price": 0.20235977279924466,
+          "value": 301.11,
           "apr": 0.2152,
           "engineStatus": "ok"
         },
@@ -1824,9 +1822,9 @@
           "engineId": "resupply_rsup",
           "principalId": "resupply",
           "units": 3682,
-          "price": 0.12841698386380013,
-          "value": 472.83,
-          "apr": 20.69,
+          "price": 0.1287827540277628,
+          "value": 474.18,
+          "apr": 20.63,
           "engineStatus": "ok"
         }
       ],
@@ -1835,32 +1833,32 @@
         "routes": {
           "votemarket-vecrv": {
             "principalEngineId": "curve_vecrv",
-            "nativeAprPct": 2.0086,
+            "nativeAprPct": 2.0379,
             "voteMarketAprPct": 4.786162,
-            "effectiveAprPct": 6.794762,
+            "effectiveAprPct": 6.824062,
             "status": "measured-reference",
             "marketCount": 3,
             "currentMarketCount": 3,
             "persistedMarketCount": 0,
             "claimedMarketCount": 0,
             "persistenceUsed": false,
-            "capitalValueUsd": 1306.82,
+            "capitalValueUsd": 1288,
             "capitalCountedOnce": true,
             "observationPersistence": "claimed-aware-derived-cache",
             "claimedPeriodPersistencePending": false
           },
           "votemarket-vefxn": {
             "principalEngineId": "fx_vefxn",
-            "nativeAprPct": 24.1,
+            "nativeAprPct": 23.99,
             "voteMarketAprPct": 10.34067,
-            "effectiveAprPct": 34.44067,
+            "effectiveAprPct": 34.33067,
             "status": "measured-reference",
             "marketCount": 2,
             "currentMarketCount": 2,
             "persistedMarketCount": 0,
             "claimedMarketCount": 0,
             "persistenceUsed": false,
-            "capitalValueUsd": 1758.13,
+            "capitalValueUsd": 1769.55,
             "capitalCountedOnce": true,
             "observationPersistence": "claimed-aware-derived-cache",
             "claimedPeriodPersistencePending": false
@@ -1875,25 +1873,25 @@
       }
     },
     "YieldRing.eth": {
-      "aprLatest": 17.1092,
-      "aprHistoricalAverage": 15.181,
+      "aprLatest": 16.8306,
+      "aprHistoricalAverage": 15.1412,
       "observationCount": 7,
       "trackingStartedAt": "2026-08-09T21:01:14.956Z",
-      "updatedAt": "2026-09-17T10:28:13.433Z",
+      "updatedAt": "2026-09-17T15:21:53.631Z",
       "source": "the-holding-productivity-intelligence-layer",
       "status": "ok",
       "aprScope": "full-productive-capital",
       "coverage": 1,
-      "productiveValue": 1103.64,
-      "coveredProductiveValue": 1103.64,
+      "productiveValue": 1126.03,
+      "coveredProductiveValue": 1126.03,
       "uncoveredProductiveValue": 0,
       "breakdown": [
         {
           "engineId": "aerodrome_veaero",
           "principalId": "aerodrome-finance",
           "units": 678,
-          "price": 0.55193694,
-          "value": 374.213245,
+          "price": 0.58508238,
+          "value": 396.685854,
           "apr": 27.04,
           "engineStatus": "ok",
           "sourceState": {
@@ -1908,18 +1906,18 @@
           "engineId": "convex_vlcvx",
           "principalId": "convex-finance",
           "units": 240,
-          "price": 1.9308766994164326,
-          "value": 463.41,
-          "apr": 15.8304,
+          "price": 1.9081166998854397,
+          "value": 457.95,
+          "apr": 14.7804,
           "engineStatus": "ok"
         },
         {
           "engineId": "frax_vefrax",
           "principalId": "frax-share",
           "units": 1032,
-          "price": 0.25776567,
-          "value": 266.014171,
-          "apr": 5.3667,
+          "price": 0.26297962,
+          "value": 271.394968,
+          "apr": 5.3674,
           "engineStatus": "ok",
           "sourceState": {
             "canonicalCompanyState": "companies/yieldring-canonical-state.json",
@@ -1933,25 +1931,25 @@
       ]
     },
     "05081966.eth": {
-      "aprLatest": 10.5898,
-      "aprHistoricalAverage": 9.8919,
+      "aprLatest": 10.9203,
+      "aprHistoricalAverage": 9.9391,
       "observationCount": 7,
       "trackingStartedAt": "2026-08-09T21:01:14.956Z",
-      "updatedAt": "2026-09-17T10:27:16.296Z",
+      "updatedAt": "2026-09-17T15:20:54.378Z",
       "source": "the-holding-productivity-intelligence-layer",
       "status": "ok",
       "aprScope": "full-productive-capital",
       "coverage": 1,
-      "productiveValue": 364.86,
-      "coveredProductiveValue": 364.86,
+      "productiveValue": 371.42,
+      "coveredProductiveValue": 371.42,
       "uncoveredProductiveValue": 0,
       "breakdown": [
         {
           "engineId": "aerodrome_veaero",
           "principalId": "aerodrome-finance",
           "units": 202,
-          "price": 0.55193694,
-          "value": 111.49,
+          "price": 0.58508238,
+          "value": 118.19,
           "apr": 27.04,
           "engineStatus": "ok"
         },
@@ -1959,9 +1957,9 @@
           "engineId": "curve_vecrv",
           "principalId": "curve-dao-token",
           "units": 480,
-          "price": 0.31680542,
-          "value": 152.07,
-          "apr": 2.0086,
+          "price": 0.31224218,
+          "value": 149.88,
+          "apr": 2.0379,
           "engineStatus": "ok",
           "incomeChannels": {
             "version": "0.3-votemarket-claimed-aware-reference-persistence",
@@ -1971,7 +1969,7 @@
             "capitalDoubleCount": false,
             "native": {
               "label": "Curve fees",
-              "aprPct": 2.0086,
+              "aprPct": 2.0379,
               "sourceEngineId": "curve_vecrv"
             },
             "votemarket": {
@@ -1990,7 +1988,7 @@
               "canReplaceUnknown": false,
               "executionAuthority": "none"
             },
-            "effectiveAprPct": 2.0086,
+            "effectiveAprPct": 2.0379,
             "effectiveAprIncludesVoteMarket": false,
             "displayHierarchy": [
               "veCRV",
@@ -2009,9 +2007,9 @@
           "engineId": "frax_vefrax",
           "principalId": "frax-share",
           "units": 393,
-          "price": 0.25776567,
-          "value": 101.3,
-          "apr": 5.3667,
+          "price": 0.26297962,
+          "value": 103.35,
+          "apr": 5.3674,
           "engineStatus": "ok"
         }
       ],
@@ -2020,16 +2018,16 @@
         "routes": {
           "votemarket-vecrv": {
             "principalEngineId": "curve_vecrv",
-            "nativeAprPct": 2.0086,
+            "nativeAprPct": 2.0379,
             "voteMarketAprPct": null,
-            "effectiveAprPct": 2.0086,
+            "effectiveAprPct": 2.0379,
             "status": "unavailable",
             "marketCount": 0,
             "currentMarketCount": 0,
             "persistedMarketCount": 0,
             "claimedMarketCount": 0,
             "persistenceUsed": false,
-            "capitalValueUsd": 152.07,
+            "capitalValueUsd": 149.88,
             "capitalCountedOnce": true,
             "observationPersistence": "claimed-aware-derived-cache",
             "claimedPeriodPersistencePending": false
@@ -2048,46 +2046,46 @@
       "aprHistoricalAverage": 3.7114,
       "observationCount": 7,
       "trackingStartedAt": "2026-08-09T21:01:14.956Z",
-      "updatedAt": "2026-09-17T10:27:16.296Z",
+      "updatedAt": "2026-09-17T15:20:54.378Z",
       "source": "the-holding-productivity-intelligence-layer",
       "status": "ok",
       "aprScope": "full-productive-capital",
       "coverage": 1,
-      "productiveValue": 959.41,
-      "coveredProductiveValue": 959.41,
+      "productiveValue": 951.68,
+      "coveredProductiveValue": 951.68,
       "uncoveredProductiveValue": 0,
       "breakdown": [
         {
           "engineId": "yieldbasis_veyb",
           "principalId": "yield-basis",
           "units": 12029,
-          "price": 0.07975810842997588,
-          "value": 959.41,
+          "price": 0.07911524843937341,
+          "value": 951.68,
           "apr": 0.49,
           "engineStatus": "ok"
         }
       ]
     },
     "0x5860...83CA8.eth": {
-      "aprLatest": 16.5362,
-      "aprHistoricalAverage": 16.1608,
+      "aprLatest": 16.7855,
+      "aprHistoricalAverage": 16.2024,
       "observationCount": 6,
       "trackingStartedAt": "2026-08-16T04:50:50.379Z",
-      "updatedAt": "2026-09-17T10:27:16.296Z",
+      "updatedAt": "2026-09-17T15:20:54.378Z",
       "source": "the-holding-productivity-intelligence-layer",
       "status": "ok",
       "aprScope": "full-productive-capital",
       "coverage": 1,
-      "productiveValue": 6898.36,
-      "coveredProductiveValue": 6898.36,
+      "productiveValue": 7108.23,
+      "coveredProductiveValue": 7108.23,
       "uncoveredProductiveValue": 0,
       "breakdown": [
         {
           "engineId": "icp_nns",
           "principalId": "internet-computer",
           "units": 1363,
-          "price": 2.54733364,
-          "value": 3472.02,
+          "price": 2.56091845,
+          "value": 3490.53,
           "apr": 6.57,
           "engineStatus": "ok"
         },
@@ -2095,8 +2093,8 @@
           "engineId": "aerodrome_veaero",
           "principalId": "aerodrome-finance",
           "units": 5000,
-          "price": 0.55193694,
-          "value": 2759.68,
+          "price": 0.58508238,
+          "value": 2925.41,
           "apr": 27.04,
           "engineStatus": "ok"
         },
@@ -2104,33 +2102,33 @@
           "engineId": "velodrome_vevelo",
           "principalId": "velodrome-finance",
           "units": 28326,
-          "price": 0.02353510857028703,
-          "value": 666.66,
+          "price": 0.02444007216790461,
+          "value": 692.29,
           "apr": 24.96,
           "engineStatus": "ok"
         }
       ]
     },
     "aerocvxyb.eth": {
-      "aprLatest": 17.1634,
-      "aprHistoricalAverage": 16.9249,
+      "aprLatest": 17.469,
+      "aprHistoricalAverage": 16.9758,
       "observationCount": 6,
       "trackingStartedAt": "2026-08-16T04:50:50.379Z",
-      "updatedAt": "2026-09-17T10:27:16.296Z",
+      "updatedAt": "2026-09-17T15:20:54.378Z",
       "source": "the-holding-productivity-intelligence-layer",
       "status": "ok",
       "aprScope": "full-productive-capital",
       "coverage": 1,
-      "productiveValue": 9556.92,
-      "coveredProductiveValue": 9556.92,
+      "productiveValue": 9878.74,
+      "coveredProductiveValue": 9878.74,
       "uncoveredProductiveValue": 0,
       "breakdown": [
         {
           "engineId": "aerodrome_veaero",
           "principalId": "aerodrome-finance",
           "units": 9230.248119304428,
-          "price": 0.55193694,
-          "value": 5094.51,
+          "price": 0.58508238,
+          "value": 5400.46,
           "apr": 27.04,
           "engineStatus": "ok"
         },
@@ -2138,8 +2136,8 @@
           "engineId": "velodrome_vevelo",
           "principalId": "velodrome-finance",
           "units": 6971.925992122776,
-          "price": 0.02353510857028703,
-          "value": 164.09,
+          "price": 0.02444007216790461,
+          "value": 170.39,
           "apr": 24.96,
           "engineStatus": "ok"
         },
@@ -2147,8 +2145,8 @@
           "engineId": "yieldbasis_veyb",
           "principalId": "yield-basis",
           "units": 12499.999999999958,
-          "price": 0.07975810842997588,
-          "value": 996.98,
+          "price": 0.07911524843937341,
+          "value": 988.94,
           "apr": 0.49,
           "engineStatus": "ok"
         },
@@ -2156,33 +2154,33 @@
           "engineId": "icp_nns",
           "principalId": "internet-computer",
           "units": 1296,
-          "price": 2.54733364,
-          "value": 3301.34,
+          "price": 2.56091845,
+          "value": 3318.95,
           "apr": 6.57,
           "engineStatus": "ok"
         }
       ]
     },
     "Rook's portfolio": {
-      "aprLatest": 21.8196,
-      "aprHistoricalAverage": 18.1856,
+      "aprLatest": 21.8911,
+      "aprHistoricalAverage": 18.1975,
       "observationCount": 6,
       "trackingStartedAt": "2026-08-16T04:50:50.379Z",
-      "updatedAt": "2026-09-17T10:28:13.433Z",
+      "updatedAt": "2026-09-17T15:21:53.631Z",
       "source": "the-holding-productivity-intelligence-layer",
       "status": "ok",
       "aprScope": "full-productive-capital",
       "coverage": 1,
-      "productiveValue": 3473.14,
-      "coveredProductiveValue": 3473.14,
+      "productiveValue": 3602.8,
+      "coveredProductiveValue": 3602.8,
       "uncoveredProductiveValue": 0,
       "breakdown": [
         {
           "engineId": "aerodrome_veaero",
           "principalId": "aerodrome-finance",
           "units": 4330.755126048871,
-          "price": 0.55193694,
-          "value": 2390.3,
+          "price": 0.58508238,
+          "value": 2533.85,
           "apr": 27.04,
           "engineStatus": "ok"
         },
@@ -2190,18 +2188,18 @@
           "engineId": "convex_vlcvx",
           "principalId": "convex-finance",
           "units": 336.240148815125,
-          "price": 1.9308766994164326,
-          "value": 649.24,
-          "apr": 15.8304,
+          "price": 1.9081166998854397,
+          "value": 641.59,
+          "apr": 14.7804,
           "engineStatus": "ok"
         },
         {
           "engineId": "curve_vecrv",
           "principalId": "curve-dao-token",
           "units": 1368.677426931635,
-          "price": 0.31680542,
-          "value": 433.6,
-          "apr": 2.0086,
+          "price": 0.31224218,
+          "value": 427.36,
+          "apr": 2.0379,
           "engineStatus": "ok",
           "incomeChannels": {
             "version": "0.3-votemarket-claimed-aware-reference-persistence",
@@ -2211,7 +2209,7 @@
             "capitalDoubleCount": false,
             "native": {
               "label": "Curve fees",
-              "aprPct": 2.0086,
+              "aprPct": 2.0379,
               "sourceEngineId": "curve_vecrv"
             },
             "votemarket": {
@@ -2230,7 +2228,7 @@
               "canReplaceUnknown": false,
               "executionAuthority": "none"
             },
-            "effectiveAprPct": 2.0086,
+            "effectiveAprPct": 2.0379,
             "effectiveAprIncludesVoteMarket": false,
             "displayHierarchy": [
               "veCRV",
@@ -2251,16 +2249,16 @@
         "routes": {
           "votemarket-vecrv": {
             "principalEngineId": "curve_vecrv",
-            "nativeAprPct": 2.0086,
+            "nativeAprPct": 2.0379,
             "voteMarketAprPct": null,
-            "effectiveAprPct": 2.0086,
+            "effectiveAprPct": 2.0379,
             "status": "unavailable",
             "marketCount": 0,
             "currentMarketCount": 0,
             "persistedMarketCount": 0,
             "claimedMarketCount": 0,
             "persistenceUsed": false,
-            "capitalValueUsd": 433.6,
+            "capitalValueUsd": 427.36,
             "capitalCountedOnce": true,
             "observationPersistence": "claimed-aware-derived-cache",
             "claimedPeriodPersistencePending": false
@@ -2276,25 +2274,25 @@
       "currentInventoryAuthority": "companies/company-007-discovery.json + companies/company-007-resolve.json"
     },
     "1milliondollar.eth": {
-      "aprLatest": 8.2849,
-      "aprHistoricalAverage": 9.7694,
+      "aprLatest": 8.603,
+      "aprHistoricalAverage": 9.8224,
       "observationCount": 6,
       "trackingStartedAt": "2026-08-16T04:50:50.379Z",
-      "updatedAt": "2026-09-17T10:27:16.296Z",
+      "updatedAt": "2026-09-17T15:20:54.378Z",
       "source": "the-holding-productivity-intelligence-layer",
       "status": "ok",
       "aprScope": "full-productive-capital",
       "coverage": 1,
-      "productiveValue": 475.58,
-      "coveredProductiveValue": 475.58,
+      "productiveValue": 479.53,
+      "coveredProductiveValue": 479.53,
       "uncoveredProductiveValue": 0,
       "breakdown": [
         {
           "engineId": "aerodrome_veaero",
           "principalId": "aerodrome-finance",
           "units": 214.798088305326,
-          "price": 0.55193694,
-          "value": 118.55,
+          "price": 0.58508238,
+          "value": 125.67,
           "apr": 27.04,
           "engineStatus": "ok"
         },
@@ -2302,24 +2300,24 @@
           "engineId": "beefy_cvxcrv",
           "principalId": "convex-crv",
           "units": 468.390991181449,
-          "price": 0.12579341350137385,
-          "value": 58.92,
-          "apr": 9.9853,
+          "price": 0.12416018010914254,
+          "value": 58.16,
+          "apr": 10.0123,
           "engineStatus": "ok"
         },
         {
           "engineId": "yieldbasis_veyb",
           "principalId": "yield-basis",
           "units": 3737.585758274693,
-          "price": 0.07975810842997588,
-          "value": 298.1,
+          "price": 0.07911524843937341,
+          "value": 295.7,
           "apr": 0.49,
           "engineStatus": "ok"
         }
       ]
     },
     "Cypher": {
-      "aprLatest": 29.7272,
+      "aprLatest": 29.507,
       "aprHistoricalAverage": null,
       "observationCount": 0,
       "trackingStartedAt": null,
@@ -2338,7 +2336,7 @@
           "units": 213.604082243098,
           "price": null,
           "value": 416.53,
-          "apr": 15.8304,
+          "apr": 14.7804,
           "engineStatus": "ok",
           "source": "https://www.convexfinance.com/lock-cvx"
         },
@@ -2501,7 +2499,7 @@
           "snapshotKey": "2026-W38",
           "apr": 27.04,
           "periodStart": null,
-          "periodEnd": "2026-09-17T10:27:16.296Z",
+          "periodEnd": "2026-09-17T15:20:54.378Z",
           "sourceType": "official-frontend"
         }
       ],
@@ -2552,7 +2550,7 @@
           "snapshotKey": "2026-W38",
           "apr": 24.96,
           "periodStart": null,
-          "periodEnd": "2026-09-17T10:27:16.296Z",
+          "periodEnd": "2026-09-17T15:20:54.378Z",
           "sourceType": "official-frontend"
         }
       ],
@@ -2601,9 +2599,9 @@
         },
         {
           "snapshotKey": "2026-W38",
-          "apr": 15.8304,
+          "apr": 14.7804,
           "periodStart": null,
-          "periodEnd": "2026-09-17T10:27:16.296Z",
+          "periodEnd": "2026-09-17T15:20:54.378Z",
           "sourceType": "official-frontend"
         }
       ],
@@ -2682,9 +2680,9 @@
         },
         {
           "snapshotKey": "2026-W38",
-          "apr": 24.1,
+          "apr": 23.99,
           "periodStart": null,
-          "periodEnd": "2026-09-17T10:27:16.296Z",
+          "periodEnd": "2026-09-17T15:20:54.378Z",
           "sourceType": "official-frontend-exact-block"
         }
       ],
@@ -2735,7 +2733,7 @@
           "snapshotKey": "2026-W38",
           "apr": 0.49,
           "periodStart": null,
-          "periodEnd": "2026-09-17T10:27:16.296Z",
+          "periodEnd": "2026-09-17T15:20:54.378Z",
           "sourceType": "official-analytics"
         }
       ],
@@ -2784,9 +2782,9 @@
         },
         {
           "snapshotKey": "2026-W38",
-          "apr": 5.3667,
+          "apr": 5.3674,
           "periodStart": null,
-          "periodEnd": "2026-09-17T10:27:16.296Z",
+          "periodEnd": "2026-09-17T15:20:54.378Z",
           "sourceType": "official-api"
         }
       ],
@@ -2837,7 +2835,7 @@
           "snapshotKey": "2026-W38",
           "apr": 7.3568,
           "periodStart": null,
-          "periodEnd": "2026-09-17T10:27:16.296Z",
+          "periodEnd": "2026-09-17T15:20:54.378Z",
           "sourceType": "onchain"
         }
       ],
@@ -2886,9 +2884,9 @@
         },
         {
           "snapshotKey": "2026-W38",
-          "apr": 20.69,
+          "apr": 20.63,
           "periodStart": null,
-          "periodEnd": "2026-09-17T10:27:16.296Z",
+          "periodEnd": "2026-09-17T15:20:54.378Z",
           "sourceType": "official-frontend"
         }
       ],
@@ -2937,7 +2935,7 @@
         },
         {
           "snapshotKey": "2026-W38",
-          "apr": 2.0086,
+          "apr": 2.0379,
           "periodStart": "2026-08-20T00:00:00.000Z",
           "periodEnd": "2026-09-17T00:00:00.000Z",
           "sourceType": "onchain"
@@ -2983,7 +2981,7 @@
           "snapshotKey": "2026-W38",
           "apr": 6.57,
           "periodStart": null,
-          "periodEnd": "2026-09-17T10:27:16.296Z",
+          "periodEnd": "2026-09-17T15:20:54.378Z",
           "sourceType": "official-dashboard"
         }
       ],
@@ -3085,9 +3083,9 @@
         },
         {
           "snapshotKey": "2026-W38",
-          "apr": 9.9853,
+          "apr": 10.0123,
           "periodStart": null,
-          "periodEnd": "2026-09-17T10:27:16.296Z",
+          "periodEnd": "2026-09-17T15:20:54.378Z",
           "sourceType": "official-api"
         }
       ],
@@ -3131,7 +3129,7 @@
           "snapshotKey": "2026-W38",
           "apr": 0.2152,
           "periodStart": "2026-09-13T09:35:11.000Z",
-          "periodEnd": "2026-09-17T10:27:47.000Z",
+          "periodEnd": "2026-09-17T15:21:23.000Z",
           "sourceType": "carry-forward"
         }
       ]
@@ -3188,10 +3186,10 @@
         },
         {
           "snapshotKey": "2026-W38",
-          "apr": 17.1092,
-          "periodEnd": "2026-09-17T10:27:16.296Z",
-          "totalProductiveValue": 1103.64,
-          "coveredProductiveValue": 1103.64,
+          "apr": 16.8306,
+          "periodEnd": "2026-09-17T15:20:54.378Z",
+          "totalProductiveValue": 1126.03,
+          "coveredProductiveValue": 1126.03,
           "coverage": 1
         }
       ],
@@ -3247,9 +3245,9 @@
         {
           "snapshotKey": "2026-W38",
           "apr": 0.49,
-          "periodEnd": "2026-09-17T10:27:16.296Z",
-          "totalProductiveValue": 959.41,
-          "coveredProductiveValue": 959.41,
+          "periodEnd": "2026-09-17T15:20:54.378Z",
+          "totalProductiveValue": 951.68,
+          "coveredProductiveValue": 951.68,
           "coverage": 1
         }
       ],
@@ -3304,10 +3302,10 @@
         },
         {
           "snapshotKey": "2026-W38",
-          "apr": 10.5899,
-          "periodEnd": "2026-09-17T10:27:16.296Z",
-          "totalProductiveValue": 364.86,
-          "coveredProductiveValue": 364.86,
+          "apr": 10.9202,
+          "periodEnd": "2026-09-17T15:20:54.378Z",
+          "totalProductiveValue": 371.41,
+          "coveredProductiveValue": 371.41,
           "coverage": 1
         }
       ],
@@ -3354,10 +3352,10 @@
         },
         {
           "snapshotKey": "2026-W38",
-          "apr": 16.5362,
-          "periodEnd": "2026-09-17T10:27:16.296Z",
-          "totalProductiveValue": 6898.36,
-          "coveredProductiveValue": 6898.36,
+          "apr": 16.7855,
+          "periodEnd": "2026-09-17T15:20:54.378Z",
+          "totalProductiveValue": 7108.23,
+          "coveredProductiveValue": 7108.23,
           "coverage": 1
         }
       ],
@@ -3404,10 +3402,10 @@
         },
         {
           "snapshotKey": "2026-W38",
-          "apr": 21.8196,
-          "periodEnd": "2026-09-17T10:28:13.433Z",
-          "totalProductiveValue": 3473.14,
-          "coveredProductiveValue": 3473.14,
+          "apr": 21.8911,
+          "periodEnd": "2026-09-17T15:21:53.631Z",
+          "totalProductiveValue": 3602.8,
+          "coveredProductiveValue": 3602.8,
           "coverage": 1
         }
       ],
@@ -3454,10 +3452,10 @@
         },
         {
           "snapshotKey": "2026-W38",
-          "apr": 17.1634,
-          "periodEnd": "2026-09-17T10:27:16.296Z",
-          "totalProductiveValue": 9556.92,
-          "coveredProductiveValue": 9556.92,
+          "apr": 17.469,
+          "periodEnd": "2026-09-17T15:20:54.378Z",
+          "totalProductiveValue": 9878.74,
+          "coveredProductiveValue": 9878.74,
           "coverage": 1
         }
       ],
@@ -3504,10 +3502,10 @@
         },
         {
           "snapshotKey": "2026-W38",
-          "apr": 8.2849,
-          "periodEnd": "2026-09-17T10:27:16.296Z",
-          "totalProductiveValue": 475.58,
-          "coveredProductiveValue": 475.58,
+          "apr": 8.603,
+          "periodEnd": "2026-09-17T15:20:54.378Z",
+          "totalProductiveValue": 479.53,
+          "coveredProductiveValue": 479.53,
           "coverage": 1
         }
       ],
@@ -3549,12 +3547,12 @@
     },
     "pendle": {
       "snapshotKey": "2026-W38",
-      "observedAt": 1789640852,
-      "periodEnd": "2026-09-17T10:27:32.000Z",
-      "totalPendleStaked": 97714723.97298168,
-      "totalStakedInSpendle": 34115124.220474266,
-      "virtualSpendleFromVependle": 175634896.1342172,
-      "currentEffectiveSupply": 209750020.35469148,
+      "observedAt": 1789658476,
+      "periodEnd": "2026-09-17T15:21:16.000Z",
+      "totalPendleStaked": 97760361.90534279,
+      "totalStakedInSpendle": 34162644.347940356,
+      "virtualSpendleFromVependle": 175582054.7270161,
+      "currentEffectiveSupply": 209744699.07495645,
       "snapshots": [
         {
           "snapshotKey": "2026-W32",
@@ -3612,12 +3610,12 @@
         },
         {
           "snapshotKey": "2026-W38",
-          "observedAt": 1789640852,
-          "periodEnd": "2026-09-17T10:27:32.000Z",
-          "totalPendleStaked": 97714723.97298168,
-          "totalStakedInSpendle": 34115124.220474266,
-          "virtualSpendleFromVependle": 175634896.1342172,
-          "currentEffectiveSupply": 209750020.35469148
+          "observedAt": 1789658476,
+          "periodEnd": "2026-09-17T15:21:16.000Z",
+          "totalPendleStaked": 97760361.90534279,
+          "totalStakedInSpendle": 34162644.347940356,
+          "virtualSpendleFromVependle": 175582054.7270161,
+          "currentEffectiveSupply": 209744699.07495645
         }
       ],
       "epochMapSummary": {
@@ -3627,14 +3625,14 @@
         "offsetSeconds": 259200,
         "offsetDays": 3
       },
-      "lastResearchAt": 1789640852,
+      "lastResearchAt": 1789658476,
       "survivorSnapshotSummary": {
         "status": "ok",
         "rpc": "https://ethereum-rpc.publicnode.com",
-        "observedAt": 1789640854,
+        "observedAt": 1789658477,
         "addressCount": 449,
         "batchCalls": 8,
-        "currentNativeSupply": 34115124.220474266,
+        "currentNativeSupply": 34162644.347940356,
         "errors": null
       },
       "survivorReplication": {
@@ -3645,25 +3643,25 @@
         "minClusterDensity": 0.25,
         "maxSpreadBps": 75,
         "maxSupplyDeviationPct": 5,
-        "observedSupplyMedian": 225498053.6979,
-        "observedMaxSupplyDeviationPct": 2.471,
+        "observedSupplyMedian": 225487399.0956,
+        "observedMaxSupplyDeviationPct": 2.458,
         "supplyConsistencyOk": true,
         "campaigns": [
           {
             "campaign": "2026-08-14-spendle",
-            "apr": 2.3631,
-            "clusterSize": 39,
-            "clusterDensity": 0.375,
-            "maxClusterSpreadBps": 74.46,
-            "impliedActiveSPendle": 219926468.979
+            "apr": 2.3629,
+            "clusterSize": 38,
+            "clusterDensity": 0.3654,
+            "maxClusterSpreadBps": 73.64,
+            "impliedActiveSPendle": 219944695.9582
           },
           {
             "campaign": "2026-08-01-spendle",
-            "apr": 1.6694,
-            "clusterSize": 33,
-            "clusterDensity": 0.3438,
-            "maxClusterSpreadBps": 73.54,
-            "impliedActiveSPendle": 225498053.6979
+            "apr": 1.6695,
+            "clusterSize": 32,
+            "clusterDensity": 0.3333,
+            "maxClusterSpreadBps": 74.01,
+            "impliedActiveSPendle": 225487399.0956
           },
           {
             "campaign": "2026-07-18-spendle",
@@ -3679,24 +3677,24 @@
         {
           "campaign": "2026-08-14-spendle",
           "status": "diagnostic-survivor-cluster",
-          "clusterSize": 39,
-          "clusterDensity": 0.375,
-          "maxClusterSpreadBps": 74.46,
-          "diagnosticRewardApr": 2.3631,
-          "impliedActiveSPendle": 219926468.979,
-          "currentNativeSupply": 34115124.2205,
-          "impliedActiveToCurrentNativeRatio": 6.4466
+          "clusterSize": 38,
+          "clusterDensity": 0.3654,
+          "maxClusterSpreadBps": 73.64,
+          "diagnosticRewardApr": 2.3629,
+          "impliedActiveSPendle": 219944695.9582,
+          "currentNativeSupply": 34162644.3479,
+          "impliedActiveToCurrentNativeRatio": 6.4382
         },
         {
           "campaign": "2026-08-01-spendle",
           "status": "diagnostic-survivor-cluster",
-          "clusterSize": 33,
-          "clusterDensity": 0.3438,
-          "maxClusterSpreadBps": 73.54,
-          "diagnosticRewardApr": 1.6694,
-          "impliedActiveSPendle": 225498053.6979,
-          "currentNativeSupply": 34115124.2205,
-          "impliedActiveToCurrentNativeRatio": 6.6099
+          "clusterSize": 32,
+          "clusterDensity": 0.3333,
+          "maxClusterSpreadBps": 74.01,
+          "diagnosticRewardApr": 1.6695,
+          "impliedActiveSPendle": 225487399.0956,
+          "currentNativeSupply": 34162644.3479,
+          "impliedActiveToCurrentNativeRatio": 6.6004
         },
         {
           "campaign": "2026-07-18-spendle",
@@ -3706,8 +3704,8 @@
           "maxClusterSpreadBps": 61.19,
           "diagnosticRewardApr": 1.6956,
           "impliedActiveSPendle": 229235174.1911,
-          "currentNativeSupply": 34115124.2205,
-          "impliedActiveToCurrentNativeRatio": 6.7195
+          "currentNativeSupply": 34162644.3479,
+          "impliedActiveToCurrentNativeRatio": 6.7101
         }
       ]
     }
@@ -3715,23 +3713,23 @@
   "diagnostics": {
     "engineErrors": {},
     "companyMetadataErrors": {},
-    "priceTimestamp": "2026-09-17T10:27:16.296Z",
+    "priceTimestamp": "2026-09-17T15:20:54.378Z",
     "pricesUsed": {
-      "ethereum": 2436.16391822,
-      "liquity": 0.20241194837430673,
-      "aerodrome-finance": 0.55193694,
-      "convex-finance": 1.9308766994164326,
-      "curve-dao-token": 0.31680542,
-      "pendle": 2.30229899,
-      "fxn-token": 27.127480625946028,
-      "yield-basis": 0.07975810842997588,
-      "frax-share": 0.25776567,
-      "velodrome-finance": 0.02353510857028703,
-      "venice-token": 25.171647168776452,
-      "resupply": 0.12841698386380013,
-      "internet-computer": 2.54733364,
-      "bitcoin": 76375.93,
-      "convex-crv": 0.12579341350137385
+      "ethereum": 2456.81648495,
+      "liquity": 0.20235977279924466,
+      "aerodrome-finance": 0.58508238,
+      "convex-finance": 1.9081166998854397,
+      "curve-dao-token": 0.31224218,
+      "pendle": 2.32324483,
+      "fxn-token": 27.303705901198242,
+      "yield-basis": 0.07911524843937341,
+      "frax-share": 0.26297962,
+      "velodrome-finance": 0.02444007216790461,
+      "venice-token": 24.33854,
+      "resupply": 0.1287827540277628,
+      "internet-computer": 2.56091845,
+      "bitcoin": 76366.77347469,
+      "convex-crv": 0.12416018010914254
     },
     "company010": {
       "status": "admitted",
@@ -3754,10 +3752,10 @@
       "version": "0.3.5-same-block-economic-snapshot-authority",
       "source": "https://fx.aladdin.club/v2/lock",
       "sourceMetric": "veFXN Locker APR",
-      "previousCollectorApr": 24.1,
-      "exactApr": 24.1,
-      "previousCanonicalEngineApr": 24.1,
-      "previousCurrentEngineHistoryApr": 24.1,
+      "previousCollectorApr": 79.33,
+      "exactApr": 23.99,
+      "previousCanonicalEngineApr": 79.33,
+      "previousCurrentEngineHistoryApr": 79.33,
       "adjustedCompanies": 1,
       "canonicalEngineSynchronized": true,
       "currentEngineHistorySynchronized": true,
@@ -3767,8 +3765,8 @@
       "historicalSnapshotsRewritten": false,
       "executionAuthority": "none",
       "sameBlockEconomicSnapshotMaterialized": true,
-      "economicSnapshotObservedAt": "2026-09-17T10:28:13.476Z",
-      "economicSnapshotRawBlockHash": "961f62cb6c17b3e8fac310568694f69916214291874c8aa2a9afc3c76987c049",
+      "economicSnapshotObservedAt": "2026-09-17T15:21:53.675Z",
+      "economicSnapshotRawBlockHash": "9363ac5c4b7c59033d9375ff362c2fa1fc97d6cb3b8c8a10cd340b96419ee887",
       "economicSnapshotAprParityDeltaPctPoints": 0,
       "downstreamMustUseCanonicalEconomicSnapshot": true,
       "liveReprobeIsDiagnosticOnly": true
@@ -3807,16 +3805,16 @@
           "routes": {
             "votemarket-vecrv": {
               "principalEngineId": "curve_vecrv",
-              "nativeAprPct": 2.0086,
+              "nativeAprPct": 2.0379,
               "voteMarketAprPct": null,
-              "effectiveAprPct": 2.0086,
+              "effectiveAprPct": 2.0379,
               "status": "unavailable",
               "marketCount": 0,
               "currentMarketCount": 0,
               "persistedMarketCount": 0,
               "claimedMarketCount": 0,
               "persistenceUsed": false,
-              "capitalValueUsd": 152.07,
+              "capitalValueUsd": 149.88,
               "capitalCountedOnce": true,
               "observationPersistence": "claimed-aware-derived-cache",
               "claimedPeriodPersistencePending": false
@@ -3827,32 +3825,32 @@
           "routes": {
             "votemarket-vecrv": {
               "principalEngineId": "curve_vecrv",
-              "nativeAprPct": 2.0086,
+              "nativeAprPct": 2.0379,
               "voteMarketAprPct": 4.786162,
-              "effectiveAprPct": 6.794762,
+              "effectiveAprPct": 6.824062,
               "status": "measured-reference",
               "marketCount": 3,
               "currentMarketCount": 3,
               "persistedMarketCount": 0,
               "claimedMarketCount": 0,
               "persistenceUsed": false,
-              "capitalValueUsd": 1306.82,
+              "capitalValueUsd": 1288,
               "capitalCountedOnce": true,
               "observationPersistence": "claimed-aware-derived-cache",
               "claimedPeriodPersistencePending": false
             },
             "votemarket-vefxn": {
               "principalEngineId": "fx_vefxn",
-              "nativeAprPct": 24.1,
+              "nativeAprPct": 23.99,
               "voteMarketAprPct": 10.34067,
-              "effectiveAprPct": 34.44067,
+              "effectiveAprPct": 34.33067,
               "status": "measured-reference",
               "marketCount": 2,
               "currentMarketCount": 2,
               "persistedMarketCount": 0,
               "claimedMarketCount": 0,
               "persistenceUsed": false,
-              "capitalValueUsd": 1758.13,
+              "capitalValueUsd": 1769.55,
               "capitalCountedOnce": true,
               "observationPersistence": "claimed-aware-derived-cache",
               "claimedPeriodPersistencePending": false
@@ -3863,16 +3861,16 @@
           "routes": {
             "votemarket-vecrv": {
               "principalEngineId": "curve_vecrv",
-              "nativeAprPct": 2.0086,
+              "nativeAprPct": 2.0379,
               "voteMarketAprPct": null,
-              "effectiveAprPct": 2.0086,
+              "effectiveAprPct": 2.0379,
               "status": "unavailable",
               "marketCount": 0,
               "currentMarketCount": 0,
               "persistedMarketCount": 0,
               "claimedMarketCount": 0,
               "persistenceUsed": false,
-              "capitalValueUsd": 433.6,
+              "capitalValueUsd": 427.36,
               "capitalCountedOnce": true,
               "observationPersistence": "claimed-aware-derived-cache",
               "claimedPeriodPersistencePending": false
