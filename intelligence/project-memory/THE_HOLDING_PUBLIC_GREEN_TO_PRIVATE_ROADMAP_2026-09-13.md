@@ -46,6 +46,7 @@ At the start of every new work session:
 - Do not optimize for speed without measured bottleneck evidence.
 - Do not begin private-only `Capital Flow Semantics` while the canonical repository is public.
 - A newer explicit owner instruction overrides older sequencing details. As of 2026-09-13, **cosmetic packages are deferred until the functional/technical packages below are green**.
+- For already-authorized low-risk work inside one active package, use the durable Owner Collaboration **Flow Mode**: continue through direct implementation/proof/closure steps without artificial per-step pauses; moving `main` is triaged rather than treated as an automatic rebuild trigger; high-consequence/platform confirmation boundaries remain authoritative.
 
 ## Handoff baseline — verify live before use
 
@@ -238,6 +239,8 @@ Apply existing Private Migration Gate Stage C conservatively:
 - close only Runtime Reliability incidents proven obsolete;
 - delete only clearly disposable temporary branches after proving no unique recovery value;
 - preserve historical/accounting/checkpoint branches by default.
+
+**Actions Hygiene is part of this package, not a new parallel package.** During P12, perform a bounded inventory of active workflow files and recurring/triggered runs. Classify each workflow as `KEEP`, `CONSOLIDATE`, `REPAIR` or `RETIRE` using fresh run evidence and actual dependency/authority role. Remove or consolidate only demonstrably redundant/noisy machinery; preserve fail-closed production writers, required guards and forensic/recovery value. The goal is lower operational noise and cognitive load without weakening factual coverage, safety or canonical writer authority.
 
 No mass branch deletion, Git history rewrite, forensic evidence erasure, or cleanup-for-cleanup's-sake.
 
