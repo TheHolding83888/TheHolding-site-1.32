@@ -1,5 +1,5 @@
 # THE HOLDING — OWNER COLLABORATION OPERATING STYLE
-## 2026-08-18 · durable working contract for AI/project sessions · updated 2026-08-23
+## 2026-08-18 · durable working contract for AI/project sessions · updated 2026-09-17
 
 ## Purpose
 
@@ -92,6 +92,56 @@ Before every routine merge that proceeds under this bounded standing permission:
 7. verify physical production state appropriate to the change.
 
 This preserves autonomous working flow without turning repository access into blanket authority.
+
+### 5A. Owner-approved Flow Mode — 2026-09-17
+
+For an already-authorized low-risk objective, do **not** manufacture short stop points or repeatedly return to the owner merely because one small implementation step, check or PR stage completed.
+
+Preferred flow:
+
+`recover live truth → diagnose → implement the smallest systemic fix → verify exact head → merge when authorized and green → verify physical production evidence → clean up the bounded tail → continue to the next logically dependent low-risk step`
+
+Continue through that chain while all of the following remain true:
+- the work stays inside the current owner-approved objective;
+- risk remains routine/low;
+- no material authority boundary expands;
+- fresh evidence continues to support the direction;
+- the next step is a direct dependency or closure step, not a new roadmap package.
+
+A natural stop is appropriate only when:
+- the objective is physically closed/proven;
+- a real external blocker prevents further correct work;
+- the next action crosses a confirmation boundary below;
+- the next action belongs to a different roadmap package whose sequencing is not yet open;
+- available tool/platform permissions themselves require owner interaction.
+
+Do not optimize for arbitrary wall-clock cycle length. The goal is **maximum coherent closure per active session without weakening proof discipline**.
+
+### 5B. Main Drift Triage — 2026-09-17
+
+`main` changes frequently because canonical production writers materialize fresh data. A moving `main` is therefore **not by itself a reason to discard, rebuild or rebase an otherwise valid PR**.
+
+Before rebuilding because `main` moved, classify the drift:
+
+1. **Unrelated generated/data-only drift** — changes do not touch the PR's files, semantic dependencies, acceptance evidence or mergeability. Preserve the current PR; refresh live evidence as needed, but do not restart the implementation cycle.
+2. **Relevant dependency drift** — changes touch code/data/contracts consumed by the PR or invalidate its exact-head assumptions. Refresh/rebase/rebuild as needed and rerun affected proof.
+3. **Real merge/safety conflict** — drift changes mergeability, authority, methodology, security boundary or production semantics. Stop automatic merge progression until the conflict is understood and freshly proven.
+
+Never ignore moving `main`; **triage it instead of reflexively rebuilding**.
+
+This rule addresses a demonstrated failure class where unrelated generated production changes caused correct bounded fixes to be rebuilt on `fresh-main` branches even though their own implementation remained valid.
+
+### 5C. Confirmation boundary and platform authority — 2026-09-17
+
+Use this compact risk model for routine owner-authorized project work:
+
+- **LOW RISK — continue autonomously:** read-only inspection; bounded code/docs/tests; branch/commit/PR; ordinary exact-head checks; routine low-risk merge after proof; post-merge verification; non-destructive cleanup inside the accepted scope.
+- **AMBIGUOUS / MEDIUM — investigate first:** gather evidence and diagnose without expanding authority or performing the consequential mutation. Continue automatically only if the evidence reduces the action back to the established low-risk envelope.
+- **HIGH CONSEQUENCE — explicit owner confirmation required:** capital/wallet/transaction execution; secrets/credentials; material security weakening or trust-boundary expansion; accounting/methodology/policy mutation with material consequences; destructive/irreversible migration or history rewrite; major new architecture/authority instead of a bounded fix; repository visibility public → private; any action whose consequence materially exceeds routine engineering maintenance.
+
+Project memory can preserve the owner's standing intent, but it **cannot override ChatGPT/GitHub/platform permission gates**. If the platform requires a confirmation, connection, permission upgrade or owner interaction, request it rather than attempting to route around it.
+
+Handoffs/checkpoints should reference this durable collaboration contract instead of inventing a new authorization model per chat. A new chat should recover the compact version from generated `CURRENT.md` and use this canon only when collaboration/authority/cadence detail is relevant.
 
 ## 6. Live-site visual review is part of the workflow
 
@@ -210,4 +260,4 @@ Leave ephemeral run IDs, temporary values and routine workflow noise in machine 
 
 For owner-driven project work, a new AI session should behave as follows:
 
-**Read live state first. Understand the existing canon. Work one objective at a time. Prefer systemic reusable fixes. Protect accepted surfaces. Prove production reality. Keep routine low-risk work moving through verified merge/production proof without repeatedly interrupting the owner; stop for explicit confirmation at material authority, capital, security, methodology, destructive or other high-consequence boundaries. Preserve material learning so the owner does not have to teach the same thing twice.**
+**Read live state first. Understand the existing canon. Work one objective at a time. Prefer systemic reusable fixes. Protect accepted surfaces. Prove production reality. Keep routine low-risk work moving through verified merge/production proof without repeatedly interrupting the owner; use Flow Mode until objective closure or a real blocker/confirmation boundary; triage moving `main` instead of reflexively rebuilding on unrelated generated drift; stop for explicit confirmation at material authority, capital, security, methodology, destructive or other high-consequence boundaries; never treat project memory as permission to bypass platform controls. Preserve material learning so the owner does not have to teach the same thing twice.**
