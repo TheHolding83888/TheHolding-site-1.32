@@ -119,6 +119,7 @@ jobs:
   checkpoint:
     needs: classify
     permissions:
+      actions: write
       contents: write
       pull-requests: read
     if: needs.classify.outputs.should_checkpoint == 'true'
@@ -141,6 +142,7 @@ jobs:
         env:
           CONTINUITY_TRIGGER_SHA: ${{ github.sha }}
           CONTINUITY_TRIGGER_REASON: ${{ needs.classify.outputs.reason }}
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
@@ -188,6 +190,8 @@ jobs:
               git fetch origin main
               test "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)"
               echo "Verified immutable continuity checkpoint on remote main."
+              gh workflow run update-project-memory-bootstrap.yml --ref main
+              echo "Dispatched Project Memory Bootstrap so CURRENT.md follows the new continuity root."
               exit 0
             fi
 
@@ -212,5 +216,5 @@ jobs:
             echo "**Daily backstop:** 23:47 UTC"
             echo "**Execution authority:** none"
             echo
-            echo "The checkpoint writer can only append one immutable checkpoint and update the continuity root. A successful checkpoint push naturally wakes Project Memory Bootstrap, which remains the sole CURRENT.md writer. Checkpoint machine snapshots declare whether their source artifacts predate the triggering boundary; they never substitute for physical production proof."
+            echo "The checkpoint writer can only append one immutable checkpoint and update the continuity root. A successful checkpoint push explicitly dispatches Project Memory Bootstrap, which remains the sole CURRENT.md writer. Checkpoint machine snapshots declare whether their source artifacts predate the triggering boundary; they never substitute for physical production proof."
           } >> "$GITHUB_STEP_SUMMARY"
