@@ -12,10 +12,16 @@ const HEAD_SHA = process.env.HEAD_SHA || '';
 function fail(message) {
   throw new Error(`Stable Capital scheduler proof failed: ${message}`);
 }
+function git(args) {
+  return execFileSync('git', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+}
 
 if (!BASE_SHA || !HEAD_SHA) fail('BASE_SHA/HEAD_SHA missing');
 if (!fs.existsSync(WORKFLOW)) fail('fresh workflow path missing');
 if (!fs.existsSync(RETIRED_WORKFLOW)) fail('retired registration tombstone missing');
+
+const MERGE_BASE = git(['merge-base', BASE_SHA, HEAD_SHA]);
+if (!MERGE_BASE) fail('unable to resolve PR merge base');
 
 const text = fs.readFileSync(WORKFLOW, 'utf8');
 const retired = fs.readFileSync(RETIRED_WORKFLOW, 'utf8');
@@ -65,19 +71,13 @@ for (const forbidden of [
   if (retired.includes(forbidden)) fail(`retired registration still references production writer surface: ${forbidden}`);
 }
 
-const changed = execFileSync('git', ['diff', '--name-only', BASE_SHA, HEAD_SHA], {
-  encoding: 'utf8',
-  stdio: ['ignore', 'pipe', 'pipe']
-}).trim().split(/\r?\n/).filter(Boolean).sort();
+const changed = git(['diff', '--name-only', MERGE_BASE, HEAD_SHA]).split(/\r?\n/).filter(Boolean).sort();
 const allowed = [RETIRED_WORKFLOW, WORKFLOW, PROOF].sort();
 if (changed.length !== allowed.length || changed.some((path, i) => path !== allowed[i])) {
-  fail(`migration escaped bounded path set: ${JSON.stringify(changed)}`);
+  fail(`migration escaped bounded PR path set: ${JSON.stringify(changed)}`);
 }
 
-const baseText = execFileSync('git', ['show', `${BASE_SHA}:${RETIRED_WORKFLOW}`], {
-  encoding: 'utf8',
-  stdio: ['ignore', 'pipe', 'pipe']
-});
+const baseText = git(['show', `${MERGE_BASE}:${RETIRED_WORKFLOW}`]);
 for (const invariant of [
   'name: "Update Stable Capital"',
   `cron: "${EXPECTED_CRON}"`,
@@ -92,6 +92,7 @@ for (const invariant of [
 
 console.log('Update Stable Capital workflow re-registration proof PASS');
 console.log(JSON.stringify({
+  mergeBase: MERGE_BASE,
   retiredWorkflow: RETIRED_WORKFLOW,
   activeWorkflow: WORKFLOW,
   dailyCronUtc: EXPECTED_CRON,
