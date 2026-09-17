@@ -73,8 +73,14 @@ jobs:
           if(s.authority?.executionAuthority!=='none'||h.authority?.executionAuthority!=='none'||r.diagnostics?.company010?.hyperlendIncome?.executionAuthority!=='none')throw new Error('authority drift');
           console.log('HyperLend read-only diagnostic PASS',{hToken:h.hToken,referenceAprPct:h.referenceAprPct,embedded:h.income.primary,externalIncentives:h.income.externalIncentives,rewardsDrawer:{measuredEmbeddedUsd:c.measuredEmbeddedUsd,measuredEarnedUsd:c.measuredEarnedUsd},repositoryMutationAuthority:false,executionAuthority:'none'});
           NODE
-      - name: Prove diagnostic left repository untouched
+      - name: Remove bounded dependency install residue and prove repository untouched
         run: |
           set -euo pipefail
+          DIRTY_BEFORE="$(git status --porcelain)"
+          if [ -n "$DIRTY_BEFORE" ]; then
+            echo 'Diagnostic checkout residue before bounded cleanup:'
+            printf '%s\n' "$DIRTY_BEFORE"
+          fi
+          rm -rf node_modules
           test -z "$(git status --porcelain)"
           echo 'HyperLend diagnostic is repository read-only; Company State and Rewards canonical writers own materialization.'
