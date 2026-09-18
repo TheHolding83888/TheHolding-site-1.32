@@ -100,6 +100,14 @@ This roadmap is the durable ordered work queue for the remaining functional/reli
 
 For the active package, follow the roadmap's small-package rule: **one primary objective → bounded fix/proof → write-back → next package**.
 
+### Complex Task / Failure-Class route
+
+When a task becomes multi-hour, recursive, hypothesis-heavy, scope-expanding, or mixes diagnosis/repair/proof/closure, additionally load:
+
+- `THE_HOLDING_COMPLEX_TASK_FAILURE_CLASS_OPERATING_PROTOCOL_2026-09-18.md`.
+
+Use it as a narrowing discipline, **not** as a new orchestration layer. Core law: `DIAGNOSE != REPAIR != PROVE != CLOSE`; one failure class per active packet; re-baseline after material change; checkpoint useful deltas after roughly 30–60 minutes of unresolved work; a newly discovered defect becomes a new packet rather than hidden scope expansion. Large/fast-growing generated artifacts must be treated before hard provider/storage limits force a production failure.
+
 Cold references, load only when directly relevant:
 - `README.md`;
 - `THE_HOLDING_OWNER_COLLABORATION_OPERATING_STYLE_2026-08-18.md`;
