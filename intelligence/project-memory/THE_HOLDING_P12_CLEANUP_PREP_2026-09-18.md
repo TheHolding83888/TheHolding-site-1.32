@@ -126,6 +126,38 @@ Evidence:
 
 Before issue closure: confirm no newer recurrence of the same fingerprint and link #853 + physical Rewards evidence.
 
+### P10-linked reliability reds — do not patch around the guard
+
+#### #379 — repeated-failure · `refresh-cognitive-stack`
+Classification: **BLOCKED_BY_P10_STABLE_FRESHNESS / NOT AN INDEPENDENT FIX CANDIDATE**
+
+Reviewed root cause:
+- the current workflow definition has not changed since 2026-08-27 and its early `cognitive-freshness-guard.mjs` runs in `global` scope for normal `workflow_run` execution;
+- `global` scope intentionally requires **all** Observer economic sources to be `fresh`;
+- current `intelligence/change-intelligence.json` reports exactly three stale sources: `stableCapital`, `stableIndex`, and `embeddedLedger`;
+- those are the same three Stable Capital production artifacts whose physical freshness is the final P10 acceptance gate;
+- fresh Explanatory Context still satisfies the hard vlCVX/Votium cognitive invariants (`curveExecutedVotiumGaugeRows=79`, `currentCurvePoolContextsComplete=31`, `exactFeeUsd=UNKNOWN`, relation classes preserved), so there is no evidence that those assertions are the failure class;
+- the last coherent cognitive-stack publish was 2026-09-13, while runtime recurrence continued through 2026-09-17 because Stable Capital remained stale.
+
+Durable lesson:
+**A fail-closed cognitive RED caused by deliberately stale canonical economic input must be resolved by restoring the canonical upstream writer, not by weakening or bypassing the Cognitive freshness contract.**
+
+Preventive invariant:
+`global cognitive refresh => all Observer economic sources fresh` remains correct and must not be relaxed merely to make the workflow green.
+
+P12 closure condition:
+After P10 Stable Capital natural-run physically refreshes the three artifacts, require Observer/System Memory to rebind to that state and then require a natural Cognitive Stack run to publish successfully. If that happens with no same-fingerprint recurrence, #379 becomes a close candidate. If it still fails, reopen exact downstream diagnosis from the new evidence.
+
+#### #564 — critical handoff miss · `update-explanatory-context → refresh-cognitive-stack`
+Classification: **DOWNSTREAM_SYMPTOM_OF_#379 / BLOCKED_BY_P10_STABLE_FRESHNESS**
+
+Reviewed cause chain:
+- the issue definition is exactly: Explanatory Context succeeded but Cognitive Stack did not materialize within 60m;
+- Explanatory Context has continued to materialize fresh state;
+- its downstream Cognitive Stack is intentionally blocked by the same global freshness guard while the three Stable Capital sources remain stale.
+
+Do not create a second handoff/orchestrator or bypass the freshness guard. After P10 freshness restoration, prove the existing natural handoff produces Cognitive materialization within the expected window. If yes and no recurrence appears, #564 becomes a close candidate together with #379.
+
 ### Healthy-later-production but lesson still needs review
 
 These incidents have fresh evidence that the subject or downstream chain later materialized successfully, but their issue bodies still say `Root cause: UNKNOWN_UNTIL_REVIEWED`. Therefore a later success alone is insufficient for automatic closure.
@@ -142,8 +174,6 @@ These incidents have fresh evidence that the subject or downstream chain later m
 
 Do not close these in bulk. They need exact workflow/handoff evidence and, where appropriate, a durable lesson/canary mapping:
 
-- **#564** critical handoff miss `update-explanatory-context → refresh-cognitive-stack`
-- **#379** repeated-failure `refresh-cognitive-stack`
 - **#778** repeated-failure `resume-economic-graph-after-code-change`
 - **#792** repeated-failure `verify-ve33-accounting`
 - **#447** repeated-failure `unified-capital-refresh`
@@ -195,6 +225,7 @@ Low semantic risk:
 ### Batch B — reliability issue reconciliation
 - close only issues with reviewed root cause + durable fix/proof and no recurrence;
 - start with #822 and #369;
+- after P10, validate #379/#564 through natural Cognitive recovery rather than a guard bypass;
 - convert healthy-but-unreviewed issues into an explicit review queue instead of silently closing them;
 - preserve incident history; issue closure is metadata cleanup, not deletion of lessons.
 
