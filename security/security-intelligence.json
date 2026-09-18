@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-17T19:19:28.174Z",
+  "generatedAt": "2026-09-18T11:52:49.279Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 2,
-    "medium": 74,
+    "medium": 73,
     "low": 0,
     "info": 0
   },
   "source": {
-    "filesScanned": 1324,
-    "bytesScanned": 39734942,
+    "filesScanned": 1327,
+    "bytesScanned": 40292742,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -47,7 +47,7 @@
         "ok": true,
         "sha256": "36b0da9f235f69039144a9152fd9215467a9f6f002c2671ad155b2fb0bca7e8c",
         "etag": "W/\"ec7db4752c54e95f9bc0909d8c510190\"",
-        "lastModified": "Wed, 16 Sep 2026 20:30:31 GMT",
+        "lastModified": "Fri, 18 Sep 2026 02:51:35 GMT",
         "contentType": "application/javascript; charset=utf-8",
         "bytes": 4757,
         "error": null
@@ -55,7 +55,8 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [
+    "newFindings": [],
+    "resolvedFindings": [
       {
         "id": "f93e5c7e29756d095259b1790bea7a9e26d39e9f151da8d87b9784dea336813a",
         "severity": "medium",
@@ -70,8 +71,7 @@
           "currentSha256": "444959b47e0108e1fe92339580b704fcd4de41f6aa634a7e67878081b074e499"
         }
       }
-    ],
-    "resolvedFindings": []
+    ]
   },
   "currentFindings": [
     {
@@ -95,20 +95,6 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
-    },
-    {
-      "id": "f93e5c7e29756d095259b1790bea7a9e26d39e9f151da8d87b9784dea336813a",
-      "severity": "medium",
-      "category": "critical-surface-change",
-      "file": ".github/workflows/update-company-010-hyperlend-income.yml",
-      "line": null,
-      "entity": null,
-      "summary": "Security-sensitive surface changed: .github/workflows/update-company-010-hyperlend-income.yml.",
-      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
-      "evidence": {
-        "previousSha256": "47c678b028ce5ed2e60b415696aad935d58737933fd2449aeab03263388241fd",
-        "currentSha256": "444959b47e0108e1fe92339580b704fcd4de41f6aa634a7e67878081b074e499"
-      }
     },
     {
       "id": "e0355b82064396fc141e48b5356209bc9cc44e7a4a2b15f7fe18f5dc61f03a0f",
@@ -1122,12 +1108,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "6620833d53b5dd72112eaa68af8f8ff471ca83ec7bb6be7ab5360843dac6024f",
+    "snapshotHash": "e7c92f4aa4c514d289a94d368bc750bdb15a7d7809e9a3be78c5f21cc3b127f7",
     "securityVault": {
-      "runCount": 1064,
+      "runCount": 1065,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/09/2026-09-17T19-19-28-174Z-6620833d53.json",
-      "latestRecordHash": "33c2b70965bedfce3162a041874021f516f982262b5c6a25600c5dc1bfef0b5e",
+      "latestRecordPath": "security/security-vault/2026/09/2026-09-18T11-52-49-279Z-e7c92f4aa4.json",
+      "latestRecordHash": "246721a1e8ccc9749f5f3d981ae39ff1c4a8825b2a239261134b4f16c2714f46",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
