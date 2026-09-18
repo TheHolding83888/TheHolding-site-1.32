@@ -39,6 +39,41 @@ A fresh canonical observation and its dependent capital projection must have exp
 P12 closure condition:
 Fresh-check no same-fingerprint recurrence, reference #715 + later physical Market Data publication, then close #716. Close stale PR #717 separately as superseded; do not merge its stale head.
 
+### #815 — repeated-failure · update-aerodrome-managed-pulse
+Classification: **LIVE INTERMITTENT SIGNAL / KEEP + INVESTIGATE**
+
+Evidence:
+- incident has continued to recur through `2026-09-17T23:03:51Z` (2026-09-18 02:03:51 MSK), when the observer saw 2 consecutive failures;
+- a later physical Aerodrome pulse commit (`0fc68c046116e422d5ede66bbb4a8ae40ba3961b`) proves the writer can recover and materialize;
+- recovery after recurrence does not prove the failure class is gone;
+- root cause remains `UNKNOWN_UNTIL_REVIEWED`.
+
+P12 action:
+Do not close as stale metadata. Obtain exact failed-run evidence and distinguish external/provider intermittency, safe-writer/main-drift contention, deterministic code failure, or observer false-positive. Only then decide whether a bounded fix is warranted.
+
+### #799 — running-too-long · update-reporting
+Classification: **LIVE PERFORMANCE SIGNAL / KEEP + PROFILE**
+
+Evidence:
+- recurred as recently as `2026-09-17T20:15:18Z` (23:15:18 MSK) with runtime reported at exactly 60.0 minutes;
+- earlier recurrences include 35.9m and 44.5m;
+- Reporting later physically materialized fresh canonical ledger/report data, so this is not evidence of a permanently dead writer;
+- historical work (#629, #661, #673) deliberately expanded/bounded Reporting runtime for fail-closed safe-writer retries and expensive evidence reuse, but the fresh 60m observation means those older repairs cannot be treated as proof that current latency is acceptable.
+
+P12/P13 action:
+Keep open. Use exact run/job timing and existing P7 profiling discipline to determine where wall time is spent before changing budgets or removing evidence. Do not solve a timeout/latency signal by weakening factual accounting coverage.
+
+### #727 — repeated-failure · update-reporting
+Classification: **HISTORICAL FAILURE FINGERPRINT / REVIEW TOGETHER WITH #799**
+
+Evidence:
+- last recorded repeated-failure recurrence was 2026-09-11;
+- Reporting has physically materialized many times since;
+- however current #799 shows the same writer still has a live runtime-performance concern.
+
+P12 action:
+Do not close #727 independently until the historical failure mode is distinguished from the currently recurring long-runtime mode. Reconcile both Reporting issues from one exact-run/profile review to avoid duplicate or contradictory lessons.
+
 ### #456 — critical-handoff-miss · unified-capital-refresh → update-economic-graph
 Classification: **CURRENT CHAIN HEALTHY / NEEDS ROOT-CAUSE REVIEW BEFORE CLOSURE**
 
@@ -143,27 +178,29 @@ Security-sensitive `pull_request_target` surfaces, especially Production Deploym
 
 Both must be validated only **after** Stable Capital restores the three stale canonical sources; do not weaken Cognitive global freshness.
 
+### Current/intermittent signals — KEEP
+- #815 Aerodrome Managed Pulse repeated failures — latest recurrence 2026-09-18 MSK, later recovery does not close the class.
+- #799 Reporting running-too-long — latest 60m recurrence 2026-09-17 23:15 MSK.
+- #727 Reporting repeated failures — review jointly with #799.
+- #778 Economic Graph code-change recovery.
+- #792 ve33 accounting verifier.
+- #432 Production Deployment Smoke (security-sensitive).
+
 ### Healthy today but historical lesson incomplete
-- #815 Aerodrome Managed Pulse.
-- #799 / #727 Reporting.
-- #565 Monthly Reports.
+- #565 Monthly Reports — one old Sep 1 fingerprint, extensive later physical materialization, root cause not reviewed.
 - #370 Economic Graph.
 - #383 Economic Graph → Explanatory handoff.
 - #726 Comparative Intelligence.
 - #659 Learning Loop.
 - #456 Unified Capital → Economic Graph handoff.
 
-### Keep for deeper exact-run review
-- #778 Economic Graph code-change recovery.
-- #792 ve33 accounting verifier.
-- #432 Production Deployment Smoke (security-sensitive).
-
 ## Operating conclusion
 
 The open Runtime Reliability list is a mixture of:
 1. genuinely resolved historical incidents whose issues were never reconciled;
 2. downstream symptoms of the single still-open P10 Stable Capital freshness gate;
-3. healthy-current workflows whose historical root cause was never formally reviewed;
-4. a small residual set that still merits exact-run investigation.
+3. **live intermittent/performance signals that must stay open even when later runs recover**;
+4. healthy-current workflows whose historical root cause was never formally reviewed;
+5. a small residual set that still merits exact-run investigation.
 
 P12 should therefore reconcile evidence first and close metadata second. It must not turn `fewer open issues` into a substitute for `fewer real failure classes`.
