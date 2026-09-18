@@ -8,8 +8,8 @@ name: "Update Stable Capital"
 on:
   workflow_dispatch:
   schedule:
-    # P10 scheduler-liveness repair: preserve daily cadence while forcing a clean GitHub Actions workflow registration.
-    - cron: "41 5 * * *"
+    # P10 live scheduler proof: keep one daily writer while moving the slot to a fresh registration time.
+    - cron: "10 16 * * *"
 
 permissions:
   contents: write

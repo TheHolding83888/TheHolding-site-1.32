@@ -5,7 +5,7 @@ import { execFileSync } from 'node:child_process';
 const WORKFLOW = '.github/workflows/update-stable-capital-scheduled.yml';
 const RETIRED_WORKFLOW = '.github/workflows/update-stable-capital.yml';
 const PROOF = 'intelligence/reliability/update-stable-capital-scheduler-proof.mjs';
-const EXPECTED_CRON = '41 5 * * *';
+const EXPECTED_CRON = '10 16 * * *';
 const BASE_SHA = process.env.BASE_SHA || '';
 const HEAD_SHA = process.env.HEAD_SHA || '';
 
@@ -17,7 +17,7 @@ function git(args) {
 }
 
 if (!BASE_SHA || !HEAD_SHA) fail('BASE_SHA/HEAD_SHA missing');
-if (!fs.existsSync(WORKFLOW)) fail('fresh workflow path missing');
+if (!fs.existsSync(WORKFLOW)) fail('active workflow path missing');
 if (!fs.existsSync(RETIRED_WORKFLOW)) fail('retired registration tombstone missing');
 
 const MERGE_BASE = git(['merge-base', BASE_SHA, HEAD_SHA]);
@@ -44,7 +44,7 @@ for (const required of [
   'companies/embedded-yield-ledger.json',
   'companies/stable-index-data.json'
 ]) {
-  if (!text.includes(required)) fail(`canonical migration invariant missing: ${required}`);
+  if (!text.includes(required)) fail(`active writer invariant missing: ${required}`);
 }
 if ((text.match(/\bcron:\s*/g) || []).length !== 1) fail('active registration must have exactly one cron schedule');
 
@@ -72,31 +72,32 @@ for (const forbidden of [
 }
 
 const changed = git(['diff', '--name-only', MERGE_BASE, HEAD_SHA]).split(/\r?\n/).filter(Boolean).sort();
-const allowed = [RETIRED_WORKFLOW, WORKFLOW, PROOF].sort();
-if (changed.length !== allowed.length || changed.some((path, i) => path !== allowed[i])) {
-  fail(`migration escaped bounded PR path set: ${JSON.stringify(changed)}`);
+const allowed = new Set([WORKFLOW, PROOF]);
+if (changed.length < 1 || changed.some(path => !allowed.has(path))) {
+  fail(`repair escaped bounded path set: ${JSON.stringify(changed)}`);
 }
 
-const baseText = git(['show', `${MERGE_BASE}:${RETIRED_WORKFLOW}`]);
+const baseText = git(['show', `${MERGE_BASE}:${WORKFLOW}`]);
 for (const invariant of [
   'name: "Update Stable Capital"',
-  `cron: "${EXPECTED_CRON}"`,
   'contents: write',
   'group: update-stable-capital',
   'node stable-capital/stable-capital-engine.mjs',
   'node stable-capital/embedded-yield-interval-history.mjs',
-  'node stable-capital/stable-index-bridge.mjs'
+  'node stable-capital/stable-index-bridge.mjs',
+  'companies/stable-capital-data.json',
+  'companies/embedded-yield-ledger.json',
+  'companies/stable-index-data.json'
 ]) {
-  if (!baseText.includes(invariant)) fail(`base workflow invariant missing unexpectedly: ${invariant}`);
+  if (!baseText.includes(invariant)) fail(`base active-workflow invariant missing unexpectedly: ${invariant}`);
 }
 
-console.log('Update Stable Capital workflow re-registration proof PASS');
+console.log('Update Stable Capital scheduler definition proof PASS');
 console.log(JSON.stringify({
   mergeBase: MERGE_BASE,
   retiredWorkflow: RETIRED_WORKFLOW,
   activeWorkflow: WORKFLOW,
   dailyCronUtc: EXPECTED_CRON,
-  workflowPathReregistered: true,
   retiredRegistrationReadOnly: true,
   retiredRegistrationScheduled: false,
   canonicalWriterCount: 1,
