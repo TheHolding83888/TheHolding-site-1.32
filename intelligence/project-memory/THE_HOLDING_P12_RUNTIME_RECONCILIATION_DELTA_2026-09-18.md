@@ -23,6 +23,22 @@ Pinned third-party Action identity is executable workflow infrastructure. A malf
 P12 closure condition:
 Fresh-check no newer recurrence, reference #767 + a later successful physical Unified Capital snapshot, then close #447 as resolved historical incident.
 
+### #716 — repeated-failure · market-data-refresh
+Classification: **RESOLVED_EVIDENCE / STRONG CLOSE CANDIDATE**
+
+Reviewed evidence:
+- issue was created 2026-09-09 after 3 consecutive production failures and contains no later recurrence comments;
+- merged PR #715 explicitly records the production root causes exposed after #714: Market Data correctly produced a fresh canonical price snapshot but then hit Public Capital parity against the prior generation; Unified Capital recomputed the coherent state but a safe-writer retry rebased onto unrelated newer commits and reran projectors against already-composed generated surfaces;
+- #715 preserved both fail-closed guards and changed ownership/handoff instead of weakening validation: Market Data owns price observation/materialization only, Unified Capital observes successful Market Data completion, admits only genuinely new generations, requires exact generation parity, and resets generated surfaces after safe-writer rebase before canonical replay;
+- canonical Market Data has repeatedly physically materialized after #715; fresh example: `39046ddd815807e027073f1acc8e86d3f876c8e1` on 2026-09-18, plus many 2026-09-16/17 snapshots;
+- current main also contains the validated-snapshot publish retry semantics that make old open PR #717 redundant.
+
+Durable lesson:
+A fresh canonical observation and its dependent capital projection must have explicit one-way ownership and same-generation admission. Unrelated `main` churn must not force a second live observation or reuse partially composed generated surfaces.
+
+P12 closure condition:
+Fresh-check no same-fingerprint recurrence, reference #715 + later physical Market Data publication, then close #716. Close stale PR #717 separately as superseded; do not merge its stale head.
+
 ### #456 — critical-handoff-miss · unified-capital-refresh → update-economic-graph
 Classification: **CURRENT CHAIN HEALTHY / NEEDS ROOT-CAUSE REVIEW BEFORE CLOSURE**
 
@@ -99,12 +115,27 @@ Evidence:
 Remaining pre-close check:
 Confirm no current repository rule/procedure outside code search intentionally requires an open benign canary PR. If none is found, close the PR while preserving Git history; do not delete its branch in the same batch.
 
+## Actions fan-out preparation boundary
+
+The existing fan-out system remains the only authority for reduction work:
+- policy: `workflow-fanout-policy.json`;
+- frozen ceiling: `workflow-fanout-baseline.json`;
+- exact-source audit: `workflow-fanout-audit.mjs`;
+- Workflow Control Plane + existing Supersession Controller.
+
+The frozen baseline is historical (126 workflows / 76 PR workflows at the measured head) and explicitly a **ceiling, not a target**. It must not be treated as current fleet truth.
+
+No temporary workflow or PR should be created merely to obtain a pre-P10 audit because that would itself create Action fan-out/noise during Stable Capital acceptance. P12 should run the existing audit on exact live `main` after P10 closure, then select only the smallest proven no-safety-loss reduction batch.
+
+Security-sensitive `pull_request_target` surfaces, especially Production Deployment Smoke / Production Boundary contexts, are excluded from casual reduction.
+
 ## Consolidated runtime buckets for P12 activation
 
 ### Strong close candidates after one final live recurrence check
 - #822 HyperLend — fixed/proven by #855 + natural post-merge success.
 - #369 Rewards — fixed/proven by #853 + physical Rewards/Accounting closure.
 - #447 Unified Capital — malformed action-pin root cause fixed by #767 + repeated later physical publication.
+- #716 Market Data — same-generation ownership/handoff root cause fixed by #715 + repeated later physical publication.
 
 ### P10-dependent close candidates
 - #379 Cognitive repeated failure.
@@ -118,7 +149,6 @@ Both must be validated only **after** Stable Capital restores the three stale ca
 - #565 Monthly Reports.
 - #370 Economic Graph.
 - #383 Economic Graph → Explanatory handoff.
-- #716 Market Data.
 - #726 Comparative Intelligence.
 - #659 Learning Loop.
 - #456 Unified Capital → Economic Graph handoff.
