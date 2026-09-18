@@ -1,7 +1,7 @@
 # The Holding — forensic checkpoint
 
 Date: 2026-09-18
-Time: ~20:23 MSK
+Time: ~20:23–20:25 MSK
 Mode: P10 WAITING_EXTERNAL_PROOF + P12 read-only forensic preparation
 Authority: no production repair activation; `main` untouched by this checkpoint; `executionAuthority = none`.
 
@@ -19,7 +19,7 @@ Current acceptance gate remains physical:
 
 PR #858 merged at ~18:49 MSK and moved the sole active Stable scheduler slot to `10 16 * * *` = 19:10 MSK. This is a fresh proof opportunity after the earlier 05:41 UTC registration failed to materialize naturally.
 
-Latest fresh Actions check at ~20:23 MSK: no `Update Stable Capital` natural run in the recent Actions surface. Other scheduled workflows are materializing successfully, so repository-wide Actions is not globally stopped.
+Latest repeated fresh Actions checks through ~20:25 MSK: no `Update Stable Capital` natural run in the recent Actions surface. Other scheduled workflows are materializing successfully, so repository-wide Actions is not globally stopped.
 
 Historical exact Stable scheduler delay benchmark from 2026-09-06 remains 4h01m39s. Therefore current P10 status is still `WAITING_EXTERNAL_PROOF`, not OPEN_DEFECT. Passive-wait boundary is approximately 23:10–23:12 MSK; if still absent then, open a fresh scheduler-diagnosis packet instead of extending passive wait indefinitely.
 
@@ -54,8 +54,17 @@ Historical issue reports 7 consecutive failures on 2026-09-10. Current workflow 
 ### Issue #432 Production Deployment Smoke — RETAIN / SECURITY-REVIEW
 Historical repeated-failure incident from Aug 28–30. No reviewed root cause / durable repair / canary proof established in current forensic pass. Because deployment smoke is security-sensitive, absence of new recurrence is not enough to close. Retain for explicit security review.
 
-### Issue #565 Monthly Reports — review started
-Historical Sep 1 incident: 2 consecutive production failures, no comments, root cause still UNKNOWN_UNTIL_REVIEWED. Do not close yet; exact attribution/proof still required.
+### Issue #565 Monthly Reports — RETAIN / REVIEW
+Historical Sep 1 incident: 2 consecutive production failures, zero comments, root cause still UNKNOWN_UNTIL_REVIEWED. Later monthly-report `skipped` materializations do not prove the original failure class was repaired. No closure without exact attribution/proof.
+
+### Issue #370 Economic Graph repeated-failure — RETAIN / REVIEW
+Historical fingerprint began Aug 26 and recurred repeatedly through Sep 13, including 3–5 consecutive production failures while root cause stayed UNKNOWN_UNTIL_REVIEWED. Do not close from silence after Sep 13. Keep distinct from current #778 engineering packet, which targets exact-generation readiness/coherence rather than retroactively attributing this old fingerprint.
+
+### Issue #383 Economic Graph -> Explanatory handoff miss — RETAIN / REVIEW
+Historical critical handoff fingerprint: Economic Graph succeeded but Explanatory Context did not materialize within 60m. Recurrences continued through Sep 13 and root cause remained UNKNOWN_UNTIL_REVIEWED. Do not merge this attribution with #456 or #778 without exact lineage.
+
+### Issue #659 Learning Loop repeated-failure — RETAIN / REVIEW
+Historical Sep 6 fingerprint: 3 consecutive production failures, zero comments, root cause UNKNOWN_UNTIL_REVIEWED. No reviewed repair/canary evidence in this pass; retain as historical operational memory.
 
 ## Stale PR cleanup classification already established
 Post-P10 candidates to close as superseded/metadata without merge:
@@ -66,15 +75,37 @@ Post-P10 candidates to close as superseded/metadata without merge:
 - #433
 - #37 (`must never be merged`; branch deletion remains a separate destructive boundary and requires dependency proof)
 
+## Post-P10 cleanup buckets now pre-classified
+
+### Closure-ready evidence
+- #716 Market Data
+- #792 ve33 verifier
+
+### Historical / superseded candidate
+- #727 Reporting old repeated-failure; current live engineering issue is #799
+
+### Waiting for natural production proof
+- #822 HyperLend
+- #369 Rewards
+
+### Retain / explicit review required
+- #447 transient Unified/FXN runtime
+- #726 Comparative
+- #432 deployment smoke security-sensitive
+- #565 monthly reports
+- #370 Economic Graph historical repeated-failure
+- #383 Economic Graph -> Explanatory handoff miss
+- #659 Learning Loop
+
 ## Engineering queue remains gated by P10
 Do not activate production repairs before P10 GREEN:
-- #815 Aerodrome Managed Pulse capability-aware RPC routing
-- #778 Economic Graph exact-generation readiness/coherence
-- #799 Reporting dependency-aware drift optimization
+1. #815 Aerodrome Managed Pulse capability-aware RPC routing
+2. #778 Economic Graph exact-generation readiness/coherence
+3. #799 Reporting dependency-aware drift optimization
 
 ## Immediate resume sequence
 1. Fresh-check `Update Stable Capital` natural run.
-2. If absent and still before historical-lag boundary: continue read-only forensic review only.
-3. Continue #565 -> #370 -> #383 -> #659 one packet at a time.
+2. If absent and still before historical-lag boundary: remain in read-only/preparation mode.
+3. Use the completed forensic buckets above to prepare exact post-P10 Batch A/B/C execution ordering; do not mutate production yet.
 4. If Stable natural run materializes: bind exact run/jobs/head; verify all 3 physical files on live main; verify downstream rebind; complete P10 acceptance.
 5. If Stable remains absent beyond ~23:10–23:12 MSK: start a fresh bounded scheduler diagnosis; do not substitute manual dispatch for natural proof.
