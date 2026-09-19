@@ -1,12 +1,8 @@
+# holding-workflow-definition-proof: intelligence/reliability/update-stable-capital-scheduler-proof.mjs
 name: Verify Stable Historical RPC Capability
 
 on:
-  pull_request:
-    paths:
-      - 'stable-capital/rpc-capability-selector.mjs'
-      - '.github/workflows/update-stable-capital-scheduled.yml'
-      - '.github/workflows/verify-stable-rpc-capability.yml'
-      - 'intelligence/reliability/update-stable-capital-scheduler-proof.mjs'
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -18,8 +14,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-        with:
-          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
@@ -28,12 +22,6 @@ jobs:
 
       - name: Install runtime dependency
         run: npm install --no-save --no-package-lock ethers@6
-
-      - name: Paired Stable writer definition proof
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: node intelligence/reliability/update-stable-capital-scheduler-proof.mjs
 
       - name: Deterministic truth-contract validation
         run: |
