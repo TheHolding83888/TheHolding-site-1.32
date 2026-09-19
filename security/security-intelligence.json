@@ -1,19 +1,19 @@
 {
   "version": "0.1-autonomous-security-intelligence",
   "sentinelVersion": "0.2-browser-trust-aware-security-sentinel",
-  "generatedAt": "2026-09-19T08:07:56.428Z",
+  "generatedAt": "2026-09-19T08:41:05.925Z",
   "status": "watch",
   "headline": "2 high-signal security watch items detected; no critical secret exposure found.",
   "severityCounts": {
     "critical": 0,
     "high": 2,
-    "medium": 73,
+    "medium": 74,
     "low": 0,
     "info": 0
   },
   "source": {
-    "filesScanned": 1340,
-    "bytesScanned": 36110932,
+    "filesScanned": 1342,
+    "bytesScanned": 36118457,
     "siteProbes": 6
   },
   "browserTrust": {
@@ -55,7 +55,22 @@
     ]
   },
   "whatChanged": {
-    "newFindings": [],
+    "newFindings": [
+      {
+        "id": "5250e1b227bf20ce96268d5b7ae68779e090d1fba1e21feb42faf33d1e8985ce",
+        "severity": "medium",
+        "category": "critical-surface-change",
+        "file": ".github/workflows/production-deployment-smoke.yml",
+        "line": null,
+        "entity": null,
+        "summary": "Security-sensitive surface changed: .github/workflows/production-deployment-smoke.yml.",
+        "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+        "evidence": {
+          "previousSha256": "2c3bd67c7f002031d41b73c894b72c4bbde9daec1db20ce82f08f12ec67990b9",
+          "currentSha256": "8a47dd97faeca0d264bcc92bab21ed2d5ac54bf9d54e7928b04a0f1c2bb48096"
+        }
+      }
+    ],
     "resolvedFindings": []
   },
   "currentFindings": [
@@ -80,6 +95,20 @@
       "summary": "Workflow uses pull_request_target.",
       "whyItMatters": "This trigger runs in a privileged base-repository context and requires special care around untrusted pull-request code.",
       "evidence": null
+    },
+    {
+      "id": "5250e1b227bf20ce96268d5b7ae68779e090d1fba1e21feb42faf33d1e8985ce",
+      "severity": "medium",
+      "category": "critical-surface-change",
+      "file": ".github/workflows/production-deployment-smoke.yml",
+      "line": null,
+      "entity": null,
+      "summary": "Security-sensitive surface changed: .github/workflows/production-deployment-smoke.yml.",
+      "whyItMatters": "The change may be legitimate, but future reasoning can now correlate it with the exact security scan that followed.",
+      "evidence": {
+        "previousSha256": "2c3bd67c7f002031d41b73c894b72c4bbde9daec1db20ce82f08f12ec67990b9",
+        "currentSha256": "8a47dd97faeca0d264bcc92bab21ed2d5ac54bf9d54e7928b04a0f1c2bb48096"
+      }
     },
     {
       "id": "e0355b82064396fc141e48b5356209bc9cc44e7a4a2b15f7fe18f5dc61f03a0f",
@@ -1093,12 +1122,12 @@
   ],
   "bridge": {
     "purpose": "Compact security handoff for The Holding Brain / human review.",
-    "snapshotHash": "cb01d42fad1b499b913e8ab5de139444a736b544fe61b276b6026a35b8e73146",
+    "snapshotHash": "dc57bb3cae759539aaad417736a3ff4e17e75784ecfd5506c797d94b4d77ea25",
     "securityVault": {
-      "runCount": 1075,
+      "runCount": 1076,
       "startedAt": "2026-08-13T16:56:02.005Z",
-      "latestRecordPath": "security/security-vault/2026/09/2026-09-19T08-07-56-428Z-cb01d42fad.json",
-      "latestRecordHash": "fcdf176818afd8c65b01df9e11816b7240ff81914a4b08b94b7525b962be8c19",
+      "latestRecordPath": "security/security-vault/2026/09/2026-09-19T08-41-05-925Z-dc57bb3cae.json",
+      "latestRecordHash": "1a2557338dccae65256120ab6f261942d33bb804727fe8bcefefc04cbb403550",
       "chainRootHash": "9578250264a6db68479de8bb3dc7456c62f3ddd3b0ff4d1144b8a18e85f25e99"
     }
   }
