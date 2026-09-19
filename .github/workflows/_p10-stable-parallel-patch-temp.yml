@@ -1,0 +1,67 @@
+name: "P10 TEMP · Patch Stable parallel rates"
+
+on:
+  push:
+    branches:
+      - fix/p10-stable-parallel-rate-collection-20260919
+    paths:
+      - ".github/workflows/_p10-stable-parallel-patch-temp.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: p10-temp-stable-parallel-patch
+  cancel-in-progress: false
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repair branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: fix/p10-stable-parallel-rate-collection-20260919
+          fetch-depth: 0
+
+      - name: Replace serial rate collection with bounded parallel reads
+        shell: python
+        run: |
+          from pathlib import Path
+          path = Path('stable-capital/stable-capital-engine.mjs')
+          text = path.read_text()
+          old = """  const rows = {};
+          for (const [id, fn] of specs) {
+            try { rows[id] = await fn(); }
+            catch (e) { rows[id] = { status: 'error', annualYieldPct: null, error: errorText(e) }; }
+          }
+          return rows;
+          """
+          new = """  const pairs = await Promise.all(specs.map(async ([id, fn]) => {
+            try { return [id, await fn()]; }
+            catch (e) { return [id, { status: 'error', annualYieldPct: null, error: errorText(e) }]; }
+          }));
+          return Object.fromEntries(pairs);
+          """
+          count = text.count(old)
+          if count != 1:
+              raise SystemExit(f'Expected exactly one serial collectRates block, found {count}')
+          path.write_text(text.replace(old, new))
+
+      - name: Static proof
+        run: |
+          set -euo pipefail
+          node --check stable-capital/stable-capital-engine.mjs
+          grep -F "const pairs = await Promise.all(specs.map" stable-capital/stable-capital-engine.mjs
+          git diff --check
+          test "$(git diff --name-only | tr -d '\r')" = "stable-capital/stable-capital-engine.mjs"
+
+      - name: Commit bounded engine repair to branch
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add stable-capital/stable-capital-engine.mjs
+          git commit -m "fix(p10): parallelize independent Stable rate reads"
+          git push origin HEAD:fix/p10-stable-parallel-rate-collection-20260919
