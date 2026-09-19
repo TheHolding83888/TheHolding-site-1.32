@@ -4,7 +4,6 @@ import { execFileSync } from 'node:child_process';
 
 const WORKFLOW = '.github/workflows/update-stable-capital-scheduled.yml';
 const RETIRED_WORKFLOW = '.github/workflows/update-stable-capital.yml';
-const CANARY_WORKFLOW = '.github/workflows/verify-stable-rpc-capability.yml';
 const PROOF = 'intelligence/reliability/update-stable-capital-scheduler-proof.mjs';
 const ENGINE = 'stable-capital/stable-capital-engine.mjs';
 const RPC_SELECTOR = 'stable-capital/rpc-capability-selector.mjs';
@@ -24,7 +23,6 @@ function git(args) {
 if (!BASE_SHA || !HEAD_SHA) fail('BASE_SHA/HEAD_SHA missing');
 if (!fs.existsSync(WORKFLOW)) fail('active workflow path missing');
 if (!fs.existsSync(RETIRED_WORKFLOW)) fail('retired registration tombstone missing');
-if (!fs.existsSync(CANARY_WORKFLOW)) fail('historical RPC canary workflow missing');
 if (!fs.existsSync(RPC_SELECTOR)) fail('historical RPC capability selector missing');
 
 const MERGE_BASE = git(['merge-base', BASE_SHA, HEAD_SHA]);
@@ -32,7 +30,6 @@ if (!MERGE_BASE) fail('unable to resolve PR merge base');
 
 const text = fs.readFileSync(WORKFLOW, 'utf8');
 const retired = fs.readFileSync(RETIRED_WORKFLOW, 'utf8');
-const canary = fs.readFileSync(CANARY_WORKFLOW, 'utf8');
 const selector = fs.readFileSync(RPC_SELECTOR, 'utf8');
 
 for (const required of [
@@ -72,9 +69,9 @@ if ((text.match(/intelligence\/market-data\/market-data-coingecko\.json/g) || []
   fail('active registration must have exactly one canonical Market Data fallback heartbeat path');
 }
 
-// The shared selector may influence transport only. It must prove historical
-// contract state, fail closed, sanitize persisted provenance and never become
-// an economic writer or authority expansion.
+// Shared transport selector: actual historical contract state is the capability
+// test. It may select transport only; it never becomes a writer or accounting
+// authority and it must preserve UNKNOWN/null when capability is unavailable.
 for (const required of [
   "export const VERSION = '0.1-stable-rpc-capability'",
   "capability: 'historical-contract-state-read'",
@@ -88,31 +85,9 @@ for (const required of [
 ]) {
   if (!selector.includes(required)) fail(`RPC selector invariant missing: ${required}`);
 }
-if (!selector.includes("const probe = new Contract(probeAddress")) fail('selector no longer proves contract state');
+if (!selector.includes('const probe = new Contract(probeAddress')) fail('selector no longer proves contract state');
 if (!selector.includes('probe.decimals({ blockTag: historicalBlockNumber })')) fail('selector no longer performs historical eth_call');
 if (/git\s+(?:commit|push)|contents:\s*write/.test(selector)) fail('selector acquired repository writer surface');
-
-// The diagnostic canary stays manual and read-only so it creates no new PR
-// fan-out. Review safety comes from this paired deterministic proof; live
-// historical capability is re-proven by the canonical Stable writer in production.
-for (const required of [
-  '# holding-workflow-definition-proof: intelligence/reliability/update-stable-capital-scheduler-proof.mjs',
-  'name: Verify Stable Historical RPC Capability',
-  'workflow_dispatch:',
-  RPC_SELECTOR,
-  CANARY_WORKFLOW,
-  'contents: read',
-  'Deterministic truth-contract validation',
-  'Focused Ethereum historical state canary',
-  'selectHistoricalRpc',
-  'historyBlockDistance:50000'
-]) {
-  if (!canary.includes(required)) fail(`RPC canary invariant missing: ${required}`);
-}
-if (/^\s*pull_request:\s*$/m.test(canary)) fail('RPC canary must not add pull_request fan-out');
-if (/contents:\s*write/.test(canary)) fail('RPC canary acquired write permission');
-if (/\bgit\s+(?:commit|push)\b/.test(canary)) fail('RPC canary acquired git writer command');
-if (/^\s*schedule:\s*$/m.test(canary) || /\bcron:\s*/.test(canary)) fail('RPC canary must not create a scheduled writer/runner');
 
 for (const required of [
   '# holding-workflow-definition-proof: intelligence/reliability/update-stable-capital-scheduler-proof.mjs',
@@ -138,11 +113,11 @@ for (const forbidden of [
 }
 
 const changed = git(['diff', '--name-only', MERGE_BASE, HEAD_SHA]).split(/\r?\n/).filter(Boolean).sort();
-const allowed = new Set([WORKFLOW, PROOF, RPC_SELECTOR, CANARY_WORKFLOW]);
+const allowed = new Set([WORKFLOW, PROOF, RPC_SELECTOR]);
 if (changed.length < 1 || changed.some(file => !allowed.has(file))) {
   fail(`repair escaped bounded path set: ${JSON.stringify(changed)}`);
 }
-for (const requiredChanged of [WORKFLOW, PROOF, RPC_SELECTOR, CANARY_WORKFLOW]) {
+for (const requiredChanged of [WORKFLOW, PROOF, RPC_SELECTOR]) {
   if (!changed.includes(requiredChanged)) fail(`bounded repair path not changed: ${requiredChanged}`);
 }
 
@@ -166,7 +141,6 @@ console.log(JSON.stringify({
   mergeBase: MERGE_BASE,
   retiredWorkflow: RETIRED_WORKFLOW,
   activeWorkflow: WORKFLOW,
-  canaryWorkflow: CANARY_WORKFLOW,
   cronUtc: EXPECTED_CRON,
   automaticFallbackHeartbeat: FALLBACK_HEARTBEAT,
   engineSelfProbePath: ENGINE,
@@ -178,8 +152,8 @@ console.log(JSON.stringify({
   retiredRegistrationScheduled: false,
   canonicalWriterCount: 1,
   duplicateWriterAdded: false,
-  canaryReadOnly: true,
-  canaryPullRequestFanout: false,
+  newWorkflowAdded: false,
+  pullRequestFanoutDelta: 0,
   accountingSemanticsChanged: false,
   executionAuthority: 'none'
 }, null, 2));
