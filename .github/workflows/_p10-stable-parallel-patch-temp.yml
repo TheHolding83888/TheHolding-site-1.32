@@ -1,4 +1,4 @@
-name: "P10 TEMP · Patch Stable parallel rates"
+name: "P10 TEMP · Wire Stable engine self-probe"
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: p10-temp-stable-parallel-patch
+  group: p10-temp-stable-self-probe-patch
   cancel-in-progress: false
 
 jobs:
@@ -25,33 +25,52 @@ jobs:
           ref: fix/p10-stable-parallel-rate-collection-20260919
           fetch-depth: 1
 
-      - name: Replace serial rate collection with bounded parallel reads
+      - name: Wire engine self-probe and bounded proof scope
         shell: python
         run: |
           from pathlib import Path
-          path = Path('stable-capital/stable-capital-engine.mjs')
-          text = path.read_text()
-          old = "  const rows = {};\n  for (const [id, fn] of specs) {\n    try { rows[id] = await fn(); }\n    catch (e) { rows[id] = { status: 'error', annualYieldPct: null, error: errorText(e) }; }\n  }\n  return rows;\n"
-          new = "  const pairs = await Promise.all(specs.map(async ([id, fn]) => {\n    const startedAt = Date.now();\n    console.log(`[stable-rate] start ${id}`);\n    try {\n      const value = await fn();\n      console.log(`[stable-rate] done ${id} ${Date.now() - startedAt}ms status=${value?.status || 'unknown'}`);\n      return [id, value];\n    } catch (e) {\n      console.warn(`[stable-rate] error ${id} ${Date.now() - startedAt}ms ${errorText(e)}`);\n      return [id, { status: 'error', annualYieldPct: null, error: errorText(e) }];\n    }\n  }));\n  return Object.fromEntries(pairs);\n"
-          count = text.count(old)
-          if count != 1:
-              raise SystemExit(f'Expected exactly one serial collectRates block, found {count}')
-          path.write_text(text.replace(old, new))
+
+          workflow = Path('.github/workflows/update-stable-capital-scheduled.yml')
+          text = workflow.read_text()
+          old = '      # Definition/proof changes self-probe the writer immediately after merge.\n      - ".github/workflows/update-stable-capital-scheduled.yml"\n      - "intelligence/reliability/update-stable-capital-scheduler-proof.mjs"\n'
+          new = '      # Engine/definition/proof changes self-probe the writer immediately after merge.\n      - "stable-capital/stable-capital-engine.mjs"\n      - ".github/workflows/update-stable-capital-scheduled.yml"\n      - "intelligence/reliability/update-stable-capital-scheduler-proof.mjs"\n'
+          if text.count(old) != 1:
+              raise SystemExit('Stable workflow self-probe anchor mismatch')
+          workflow.write_text(text.replace(old, new))
+
+          proof = Path('intelligence/reliability/update-stable-capital-scheduler-proof.mjs')
+          p = proof.read_text()
+          replacements = [
+              ("const PROOF = 'intelligence/reliability/update-stable-capital-scheduler-proof.mjs';\n", "const PROOF = 'intelligence/reliability/update-stable-capital-scheduler-proof.mjs';\nconst ENGINE = 'stable-capital/stable-capital-engine.mjs';\n"),
+              ("  FALLBACK_HEARTBEAT,\n  '.github/workflows/update-stable-capital-scheduled.yml',\n", "  FALLBACK_HEARTBEAT,\n  ENGINE,\n  '.github/workflows/update-stable-capital-scheduled.yml',\n"),
+              ("const allowed = new Set([WORKFLOW, PROOF]);", "const allowed = new Set([WORKFLOW, PROOF, ENGINE]);"),
+              ("  automaticFallbackHeartbeat: FALLBACK_HEARTBEAT,\n", "  automaticFallbackHeartbeat: FALLBACK_HEARTBEAT,\n  engineSelfProbePath: ENGINE,\n")
+          ]
+          for old_p, new_p in replacements:
+              if p.count(old_p) != 1:
+                  raise SystemExit(f'Proof anchor mismatch: {old_p!r}')
+              p = p.replace(old_p, new_p)
+          proof.write_text(p)
 
       - name: Static proof
         run: |
           set -euo pipefail
           node --check stable-capital/stable-capital-engine.mjs
-          grep -F "const pairs = await Promise.all(specs.map" stable-capital/stable-capital-engine.mjs
-          grep -F "[stable-rate] done" stable-capital/stable-capital-engine.mjs
+          node --check intelligence/reliability/update-stable-capital-scheduler-proof.mjs
+          grep -F 'stable-capital/stable-capital-engine.mjs' .github/workflows/update-stable-capital-scheduled.yml
+          grep -F "const ENGINE = 'stable-capital/stable-capital-engine.mjs';" intelligence/reliability/update-stable-capital-scheduler-proof.mjs
+          grep -F 'new Set([WORKFLOW, PROOF, ENGINE])' intelligence/reliability/update-stable-capital-scheduler-proof.mjs
           git diff --check
-          test "$(git diff --name-only | tr -d '\r')" = "stable-capital/stable-capital-engine.mjs"
+          mapfile -t changed < <(git diff --name-only | sort)
+          test "${#changed[@]}" -eq 2
+          test "${changed[0]}" = ".github/workflows/update-stable-capital-scheduled.yml"
+          test "${changed[1]}" = "intelligence/reliability/update-stable-capital-scheduler-proof.mjs"
 
-      - name: Commit bounded engine repair to branch
+      - name: Commit bounded self-probe repair to branch
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add stable-capital/stable-capital-engine.mjs
-          git commit -m "fix(p10): parallelize independent Stable rate reads"
+          git add .github/workflows/update-stable-capital-scheduled.yml intelligence/reliability/update-stable-capital-scheduler-proof.mjs
+          git commit -m "fix(p10): self-probe Stable engine repairs"
           git push origin HEAD:fix/p10-stable-parallel-rate-collection-20260919
