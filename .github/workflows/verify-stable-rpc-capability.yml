@@ -1,0 +1,103 @@
+name: Verify Stable Historical RPC Capability
+
+on:
+  pull_request:
+    paths:
+      - 'stable-capital/rpc-capability-selector.mjs'
+      - '.github/workflows/update-stable-capital-scheduled.yml'
+      - '.github/workflows/verify-stable-rpc-capability.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify-stable-rpc-capability:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+
+      - name: Install runtime dependency
+        run: npm install --no-save --no-package-lock ethers@6
+
+      - name: Deterministic truth-contract validation
+        run: |
+          set -euo pipefail
+          node --check stable-capital/rpc-capability-selector.mjs
+          node --input-type=module - <<'NODE'
+          import {
+            VERSION,
+            buildCandidateUrls,
+            capabilityArtifact,
+            providerLabel
+          } from './stable-capital/rpc-capability-selector.mjs';
+
+          if(VERSION!=='0.1-stable-rpc-capability') throw new Error('capability version drift');
+
+          const candidates=buildCandidateUrls({
+            ETH_ARCHIVE_RPC_URL:'https://archive.example/rpc',
+            ETH_RPC_URL:'https://live.example/rpc',
+            ETH_RPC_URL_2:'https://live.example/rpc\nINJECTED=1'
+          });
+          if(candidates[0]!=='https://archive.example/rpc') throw new Error('archive candidate priority drift');
+          if(!candidates.includes('https://live.example/rpc')) throw new Error('live fallback candidate missing');
+          if(candidates.some(x=>x.includes('INJECTED'))) throw new Error('unsafe candidate admitted');
+          if(providerLabel('https://user:pass@archive.example/rpc?key=secret')!=='archive.example') throw new Error('provider label leaks URL detail');
+
+          const unavailable=capabilityArtifact({
+            ok:false,
+            attempts:[{ok:false,provider:'rpc.example',latencyMs:10,error:'archive state unavailable'}]
+          },'2026-09-19T00:00:00.000Z');
+          if(unavailable.status!=='unavailable-fail-closed') throw new Error('unavailable status must fail closed');
+          if(unavailable.selected!==null) throw new Error('unavailable selection must stay null');
+          if(unavailable.invariants?.unknownNeverZero!==true||unavailable.invariants?.failClosed!==true) throw new Error('UNKNOWN/fail-closed invariant drift');
+          if(unavailable.invariants?.secondStableWriterCreated!==false||unavailable.invariants?.executionAuthority!=='none') throw new Error('authority/writer invariant drift');
+
+          const ready=capabilityArtifact({
+            ok:true,
+            selected:{provider:'archive.example',latestBlock:100000,historicalBlock:50000,historicalTimestamp:1,latencyMs:20,probeDecimals:6},
+            attempts:[{ok:true,provider:'archive.example',latestBlock:100000,historicalBlock:50000,latencyMs:20}]
+          },'2026-09-19T00:00:00.000Z');
+          if(ready.status!=='ready'||ready.selected?.provider!=='archive.example') throw new Error('ready artifact drift');
+          if(JSON.stringify(ready).includes('user:pass')||JSON.stringify(ready).includes('?key=')) throw new Error('capability artifact leaked URL');
+
+          console.log('Stable RPC deterministic truth contract PASS');
+          NODE
+
+      - name: Focused Ethereum historical state canary
+        env:
+          ETH_ARCHIVE_RPC_URL: ${{ secrets.ETH_ARCHIVE_RPC_URL }}
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
+        run: |
+          set -euo pipefail
+          node --input-type=module - <<'NODE'
+          import {
+            buildCandidateUrls,
+            selectHistoricalRpc
+          } from './stable-capital/rpc-capability-selector.mjs';
+
+          const selection=await selectHistoricalRpc({
+            candidates:buildCandidateUrls(process.env),
+            historyBlockDistance:50000,
+            timeoutMs:8000
+          });
+          if(!selection.ok) {
+            const diagnostics=selection.attempts.map(x=>({provider:x.provider,error:x.error}));
+            throw new Error(`No Ethereum RPC candidate proved historical contract-state capability: ${JSON.stringify(diagnostics)}`);
+          }
+          if(!selection.selected?.historicalBlock||!selection.selected?.latestBlock) throw new Error('historical proof blocks missing');
+          if(!(selection.selected.historicalBlock < selection.selected.latestBlock)) throw new Error('historical proof did not use an older block');
+          console.log('Stable historical RPC canary PASS',{
+            provider:selection.selected.provider,
+            latestBlock:selection.selected.latestBlock,
+            historicalBlock:selection.selected.historicalBlock,
+            latencyMs:selection.selected.latencyMs
+          });
+          NODE
