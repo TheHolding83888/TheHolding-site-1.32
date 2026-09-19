@@ -92,11 +92,13 @@ if (!selector.includes("const probe = new Contract(probeAddress")) fail('selecto
 if (!selector.includes('probe.decimals({ blockTag: historicalBlockNumber })')) fail('selector no longer performs historical eth_call');
 if (/git\s+(?:commit|push)|contents:\s*write/.test(selector)) fail('selector acquired repository writer surface');
 
-// The PR canary is review-only. It proves both deterministic fail-closed
-// semantics and one real historical state read without creating a writer.
+// The diagnostic canary stays manual and read-only so it creates no new PR
+// fan-out. Review safety comes from this paired deterministic proof; live
+// historical capability is re-proven by the canonical Stable writer in production.
 for (const required of [
+  '# holding-workflow-definition-proof: intelligence/reliability/update-stable-capital-scheduler-proof.mjs',
   'name: Verify Stable Historical RPC Capability',
-  'pull_request:',
+  'workflow_dispatch:',
   RPC_SELECTOR,
   CANARY_WORKFLOW,
   'contents: read',
@@ -107,6 +109,7 @@ for (const required of [
 ]) {
   if (!canary.includes(required)) fail(`RPC canary invariant missing: ${required}`);
 }
+if (/^\s*pull_request:\s*$/m.test(canary)) fail('RPC canary must not add pull_request fan-out');
 if (/contents:\s*write/.test(canary)) fail('RPC canary acquired write permission');
 if (/\bgit\s+(?:commit|push)\b/.test(canary)) fail('RPC canary acquired git writer command');
 if (/^\s*schedule:\s*$/m.test(canary) || /\bcron:\s*/.test(canary)) fail('RPC canary must not create a scheduled writer/runner');
@@ -176,6 +179,7 @@ console.log(JSON.stringify({
   canonicalWriterCount: 1,
   duplicateWriterAdded: false,
   canaryReadOnly: true,
+  canaryPullRequestFanout: false,
   accountingSemanticsChanged: false,
   executionAuthority: 'none'
 }, null, 2));
