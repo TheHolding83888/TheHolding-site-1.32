@@ -3,11 +3,11 @@
   "engineVersion": "0.1-engineering-lesson-candidate-adapter",
   "source": {
     "incidentLedgerFile": "intelligence/learning/engineering-incident-ledger.json",
-    "incidentLedgerHash": "f3661ebaf24e505790e0723003d27fcaa2aaf23c32c6ce2aa527a878f437461e"
+    "incidentLedgerHash": "d0ff15a21f5f148ff212cd2c5de85b3d525e9cb7eeb2dee1397722007aaac2cc"
   },
   "summary": {
-    "incidentCount": 2,
-    "verifiedCandidateCount": 1,
+    "incidentCount": 3,
+    "verifiedCandidateCount": 2,
     "pendingEvidenceCount": 1,
     "formalLessonCount": 0
   },
@@ -80,7 +80,7 @@
       "lessonCandidate": "Treat accounting closure as a physical-artifact property, not a green-workflow claim: promote mechanisms only from factual tracking evidence, keep Reference APR non-authoritative, reconcile settlements explicitly, and close only when live Accounting Coverage has zero reusable gaps and zero unmatched canonical events.",
       "epistemicNote": "Verified engineering association across the accounting repair sequence; it records the observed production pattern and authority boundaries, not a causal claim about every future accounting incident.",
       "evidenceCheckCount": 11,
-      "passedEvidenceCheckCount": 10,
+      "passedEvidenceCheckCount": 7,
       "evidenceChecks": [
         {
           "evidence": {
@@ -144,8 +144,8 @@
             "jsonPath": "summary.unmatchedCanonicalEventCount",
             "value": 0
           },
-          "pass": true,
-          "detail": "reporting/accounting-coverage.json#summary.unmatchedCanonicalEventCount=0; expected=0"
+          "pass": false,
+          "detail": "reporting/accounting-coverage.json#summary.unmatchedCanonicalEventCount=66; expected=0"
         },
         {
           "evidence": {
@@ -164,8 +164,8 @@
             "jsonPath": "settlementMechanismLinks",
             "value": 5
           },
-          "pass": true,
-          "detail": "reporting/accounting-coverage.json#settlementMechanismLinks length=5; expected=5"
+          "pass": false,
+          "detail": "reporting/accounting-coverage.json#settlementMechanismLinks length=8; expected=5"
         },
         {
           "evidence": {
@@ -184,8 +184,86 @@
             "jsonPath": "unmatchedCanonicalEvents",
             "value": 0
           },
+          "pass": false,
+          "detail": "reporting/accounting-coverage.json#unmatchedCanonicalEvents length=50; expected=0"
+        }
+      ],
+      "authority": {
+        "formalLesson": false,
+        "causalClaimAuthority": "none",
+        "policyMutationAuthority": "none",
+        "executionAuthority": "none"
+      }
+    },
+    {
+      "incidentId": "ENG-INC-2026-09-10-public-projector-materialization-corruption",
+      "domain": "production-materialization-reliability",
+      "recordedAt": "2026-09-10T03:55:00.000Z",
+      "status": "verified-candidate",
+      "incident": "A Unified Capital production refresh committed structurally corrupted public company HTML even though upstream capital/data validation was green; the Companies surface became effectively broken while correct Market Data, balances and capital state from the same snapshot still needed to be preserved.",
+      "boundedCause": "A production projector passed dynamic HTML/JavaScript as the replacement-string argument to JavaScript String.replace(), so dollar-prefixed replacement tokens inside generated content were interpreted by replacement semantics instead of being inserted literally. The broad multi-surface package increased blast radius and made the anomaly harder to isolate, but it was not the direct technical cause.",
+      "fix": "Recover only the damaged public HTML surfaces from the last clean parent, preserve the valid Market Data/capital/balance changes, and harden the affected projectors to perform callback-based literal replacement with exact single-target guards and idempotent runtime projection. Require exact-head UI checks and then a fresh production Unified Capital materialization before treating recovery as complete.",
+      "observedResult": "Recovery PR #718 merged at bdbf3b1f9503331aa6eef253625a55591afd2041. The next production Unified Capital refresh completed successfully and materialized snapshot 2d3deb8a2d2f16ec3467cd396d3e2c673945ba08 without recreating the prior large HTML corruption; the recovered projector code remains callback-literal and fail-closed on unexpected target counts.",
+      "lessonCandidate": "A green upstream workflow is not sufficient proof for a production writer. Treat the physically materialized artifact as the release boundary: prefer SOURCE -> PROJECT TO TEMP -> STRUCTURAL/PARSE VALIDATION -> IDEMPOTENCE -> DIFF/ANOMALY CHECK -> PUBLISH; use a shared literal-replacement primitive rather than raw replace(pattern, dynamicString), and promote one logical public surface at a time so failures stay bounded and attributable.",
+      "epistemicNote": "The String.replace replacement-semantics defect and successful surgical recovery are directly supported by repository history and the post-recovery materialization. The statement about large packages concerns observed blast-radius/detection risk and is not asserted as the root cause of the corruption. This candidate does not itself mutate policy or methodology.",
+      "evidenceCheckCount": 5,
+      "passedEvidenceCheckCount": 5,
+      "evidenceChecks": [
+        {
+          "evidence": {
+            "kind": "commit-ancestor",
+            "sha": "518a971cc36301e05044ed13fb619a012f162ca3",
+            "subjectIncludes": "capital: refresh coherent production snapshot"
+          },
           "pass": true,
-          "detail": "reporting/accounting-coverage.json#unmatchedCanonicalEvents length=0; expected=0"
+          "detail": "ancestor commit 518a971cc363 · required subject marker matched"
+        },
+        {
+          "evidence": {
+            "kind": "commit-ancestor",
+            "sha": "bdbf3b1f9503331aa6eef253625a55591afd2041",
+            "subjectIncludes": "recover public company page rendering"
+          },
+          "pass": true,
+          "detail": "ancestor commit bdbf3b1f9503 · required subject marker matched"
+        },
+        {
+          "evidence": {
+            "kind": "commit-ancestor",
+            "sha": "2d3deb8a2d2f16ec3467cd396d3e2c673945ba08",
+            "subjectIncludes": "capital: refresh coherent production snapshot"
+          },
+          "pass": true,
+          "detail": "ancestor commit 2d3deb8a2d2f · required subject marker matched"
+        },
+        {
+          "evidence": {
+            "kind": "file-contains-all",
+            "path": "companies/owner-balance-site-projection.mjs",
+            "contains": [
+              "expected exactly one old projection",
+              "return text.replace(oldText,() => newText);",
+              "canonicalProjectionPathUpdatedOnce:true",
+              "executionAuthority:'none'"
+            ]
+          },
+          "pass": true,
+          "detail": "companies/owner-balance-site-projection.mjs contains 4 required marker(s)"
+        },
+        {
+          "evidence": {
+            "kind": "file-contains-all",
+            "path": "companies/public-page-market-runtime-projection.mjs",
+            "contains": [
+              "return text.replace(oldText,() => newText);",
+              "expected exactly one old projection",
+              "company001DirectBrowserCoinGecko:false",
+              "singulDuplicateRuntime:false",
+              "executionAuthority:'none'"
+            ]
+          },
+          "pass": true,
+          "detail": "companies/public-page-market-runtime-projection.mjs contains 5 required marker(s)"
         }
       ],
       "authority": {
@@ -211,8 +289,8 @@
     "walletActionAllowed": false,
     "capitalExecutionAllowed": false
   },
-  "generatedAt": "2026-09-06T09:17:21.257Z",
+  "generatedAt": "2026-09-19T07:56:14.939Z",
   "integrity": {
-    "stateHash": "9a454fc0595fe1871f86ac220e6158a3ddc85ac0fdcb3dd6b9abf4eb1d831228"
+    "stateHash": "20801f3658deff2cac42c461b4d326f5fb1c3f770ade0c00d110af8ca353c1ac"
   }
 }

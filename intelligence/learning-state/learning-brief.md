@@ -1,16 +1,16 @@
 # The Holding — Decision & Outcome Learning Loop
 
-Generated: 2026-09-06T09:17:20.719Z
+Generated: 2026-09-19T07:56:14.467Z
 Status: ready
-Cognitive chain: 61764db0b960b142831d9086f19022fea34040f5924a8869ac6f86ef5a368d27
+Cognitive chain: 3eef695fdd5270f6a371b0f4d5594baee6281ed4424e8010352a7e242673a513
 
 ## Memory
 
 Active Brain cases observed: 25
 Decision-worthy active cases: 3
 Data-hygiene active cases: 22
-Remembered cases: 294
-Coherent Brain observations: 81
+Remembered cases: 306
+Coherent Brain observations: 82
 Owner decisions: 2
 Settled outcomes: 0
 Lessons: 0
@@ -31,7 +31,7 @@ This layer learns by persistent, verifiable experience memory — not by silentl
 <!-- engineering-lessons:start -->
 ## Verified engineering experience
 
-Verified engineering lesson candidates: 1
+Verified engineering lesson candidates: 2
 Pending engineering incident records: 1
 
 These are evidence-backed engineering associations inside the existing Learning Loop. They are separate from formal owner-decision `Lessons`, do not prove causation, and cannot mutate policy or execution authority.
