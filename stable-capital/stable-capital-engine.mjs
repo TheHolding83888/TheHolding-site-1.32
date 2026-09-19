@@ -1176,12 +1176,19 @@ async function collectRates() {
     ['ethereum:liquity-v2-sp:weth', rateLiquity],
     ['fraxtal:0xfc00000000000000000000000000000000000008', rateFrax]
   ];
-  const rows = {};
-  for (const [id, fn] of specs) {
-    try { rows[id] = await fn(); }
-    catch (e) { rows[id] = { status: 'error', annualYieldPct: null, error: errorText(e) }; }
-  }
-  return rows;
+  const pairs = await Promise.all(specs.map(async ([id, fn]) => {
+    const startedAt = Date.now();
+    console.log(`[stable-rate] start ${id}`);
+    try {
+      const value = await fn();
+      console.log(`[stable-rate] done ${id} ${Date.now() - startedAt}ms status=${value?.status || 'unknown'}`);
+      return [id, value];
+    } catch (e) {
+      console.warn(`[stable-rate] error ${id} ${Date.now() - startedAt}ms ${errorText(e)}`);
+      return [id, { status: 'error', annualYieldPct: null, error: errorText(e) }];
+    }
+  }));
+  return Object.fromEntries(pairs);
 }
 
 function productiveRule(position) {
