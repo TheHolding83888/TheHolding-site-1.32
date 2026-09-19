@@ -10,6 +10,15 @@ on:
   schedule:
     # P10 bounded natural-scheduler proof window: two off-peak daily slots; revert to one daily slot after proof.
     - cron: "52 4,16 * * *"
+  push:
+    branches: [main]
+    paths:
+      # Automatic failover: the canonical daily Market Data baseline is an existing healthy heartbeat.
+      # This does not create a second writer; it wakes this same canonical Stable writer.
+      - "intelligence/market-data/market-data-coingecko.json"
+      # Definition/proof changes self-probe the writer immediately after merge.
+      - ".github/workflows/update-stable-capital-scheduled.yml"
+      - "intelligence/reliability/update-stable-capital-scheduler-proof.mjs"
 
 permissions:
   contents: write
