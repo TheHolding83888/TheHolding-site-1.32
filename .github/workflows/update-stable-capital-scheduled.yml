@@ -18,6 +18,8 @@ on:
       - "intelligence/market-data/market-data-coingecko.json"
       # Engine/transport/definition/proof changes self-probe the writer immediately after merge.
       - "stable-capital/stable-capital-engine.mjs"
+      - "stable-capital/historical-rpc-coordinator.mjs"
+      - "stable-capital/stable-regression-validation.mjs"
       - "stable-capital/rpc-capability-selector.mjs"
       - ".github/workflows/update-stable-capital-scheduled.yml"
       - "intelligence/reliability/update-stable-capital-scheduler-proof.mjs"
@@ -50,6 +52,8 @@ jobs:
         run: |
           set -euo pipefail
           node --check stable-capital/stable-capital-engine.mjs
+          node --check stable-capital/historical-rpc-coordinator.mjs
+          node --check stable-capital/stable-regression-validation.mjs
           node --check stable-capital/rpc-capability-selector.mjs
           node --check stable-capital/embedded-yield-interval-history.mjs
           node --check stable-capital/stable-index-bridge.mjs
@@ -57,6 +61,8 @@ jobs:
           test -s companies/stable-capital-data.json
           test -s companies/embedded-yield-ledger.json
           test -s companies/company-008-strategy-entry-ledger.json
+
+          node stable-capital/stable-regression-validation.mjs
 
           node - <<'NODE'
           const fs=require('fs');

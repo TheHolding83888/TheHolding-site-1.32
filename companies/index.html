@@ -10334,11 +10334,11 @@ function renderStableStrategyOrbit(lang, company) {
         const cos = Math.cos(t), sin = Math.sin(t);
         const value = posValue(p);
         const r = nodeMin + (nodeMax - nodeMin) * Math.sqrt(Math.max(value, 0) / maxValue);
-        const apr = Number(p.referenceApyPct);
-        const aprText = Number.isFinite(apr) ? stablePct(apr, 2) : '—';
+        const aprText = stablePct(p.referenceApyPct, 2);
         const [x, y] = pt(angle, R);
         return {
             i, angle, cos, sin, x, y, r, value, aprText,
+            positionId: String(p.id || ''),
             label: orbitStrategyLabel(p),
             chain: String(p.chain || '').trim(),
             anchor: cos > 0.28 ? 'start' : (cos < -0.28 ? 'end' : 'middle')
@@ -10405,7 +10405,7 @@ function renderStableStrategyOrbit(lang, company) {
                 + escapeHtml(item.aprText) + '</text>';
         }
 
-        return '<g class="so-node" data-idx="' + item.i + '">'
+        return '<g class="so-node" data-idx="' + item.i + '" data-position-id="' + escapeHtml(item.positionId) + '">'
             + '<circle class="so-node-glow" cx="' + item.x.toFixed(1) + '" cy="' + item.y.toFixed(1) + '" r="' + (item.r * 2.3).toFixed(1) + '"></circle>'
             + '<circle class="so-node-dot" cx="' + item.x.toFixed(1) + '" cy="' + item.y.toFixed(1) + '" r="' + item.r.toFixed(1) + '"></circle>'
             + (mobile
@@ -10416,8 +10416,7 @@ function renderStableStrategyOrbit(lang, company) {
     }).join('');
 
     /* ── Centre: the company itself, carrying the book-level aggregate ─ */
-    const bookApr = Number(company && company.displayReferenceApyPct);
-    const bookAprText = Number.isFinite(bookApr) ? stablePct(bookApr, 2) : '—';
+    const bookAprText = stablePct(company && company.displayReferenceApyPct, 2);
     const strategiesLabel = ru
         ? (n + ' ' + (n === 1 ? 'стратегия' : (n < 5 ? 'стратегии' : 'стратегий')))
         : (n + ' ' + (n === 1 ? 'strategy' : 'strategies'));
@@ -10490,7 +10489,9 @@ function renderStableCompanies(lang) {
     if (!c) return;
 
     const set = (id, value) => { const el=document.getElementById(id); if(el) el.textContent=value; };
-    const apy = Number(c.displayReferenceApyPct);
+    const apy = c.displayReferenceApyPct !== null && c.displayReferenceApyPct !== undefined
+        && c.displayReferenceApyPct !== '' && Number.isFinite(Number(c.displayReferenceApyPct))
+        ? Number(c.displayReferenceApyPct) : null;
     const marketPrincipal = Number(c.marketPrincipalUsd ?? c.performance?.marketPrincipalUsd ?? c.stableCapitalUsd);
     const claimable = Number(c.accruedClaimableUsd ?? c.performance?.claimableUsd ?? 0);
     const currentCapital = Number(c.currentCapitalUsd ?? c.performance?.currentCapitalUsd ??
