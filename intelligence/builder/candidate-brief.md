@@ -1,12 +1,12 @@
 # The Holding Self-Improvement Builder Sandbox
 
-Generated: 2026-09-05T11:20:17.466Z
+Generated: 2026-09-19T07:58:14.476Z
 
 1 candidate packet(s). Production mutation: **DISABLED**.
 
 ## Candidate queue
 
-- **BLD-d3432369975ba75d8a731d22 · dom-provenance-triage · 50 current findings** – Review actual data provenance for 50 current findings; classify sinks as trusted, sanitized, or unsafe before any code change. [CANDIDATE] · DEC-9e7fdbf2f8431a42194b
+- **BLD-f5610bfb8408261d6dbb332d · dom-provenance-triage · 71 current findings** – Review actual data provenance for 71 current findings; classify sinks as trusted, sanitized, or unsafe before any code change. [CANDIDATE] · DEC-9e7fdbf2f8431a42194b
 
 ## Boundary
 
