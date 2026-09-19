@@ -94,9 +94,23 @@ for(const required of [
   'default: global',
   'economic-graph-recovery',
   'intelligence/reliability/cognitive-freshness-guard.mjs',
-  "github.event.workflow_run.event != 'workflow_dispatch'"
+  "github.event.workflow_run.event != 'workflow_dispatch'",
+  'AUTONOMOUS_OBSERVER_MAX_AGE_HOURS: "6"',
+  'if [ "$COGNITIVE_TRIGGER" = "schedule" ] || [ "$COGNITIVE_TRIGGER" = "push" ]; then'
 ])assert(cognitive.includes(required),`Cognitive workflow scoped-freshness contract missing: ${required}`);
 assert(!cognitive.includes("change.sourceHealth?.allFresh !== true"),'Cognitive workflow reintroduced inline global freshness coupling');
+
+const cognitivePushBlock=cognitive.match(/\n  push:\n([\s\S]*?)\n\npermissions:/)?.[1]||'';
+for(const required of [
+  'branches: [main]',
+  'intelligence/system-memory.json',
+  '.github/workflows/refresh-cognitive-stack.yml',
+  'intelligence/reliability/frax-graph-memory-recovery-definition-proof.mjs'
+])assert(cognitivePushBlock.includes(required),`Cognitive bounded heartbeat trigger missing: ${required}`);
+assert((cognitivePushBlock.match(/intelligence\/system-memory\.json/g)||[]).length===1,'Cognitive trigger must keep exactly one canonical System Memory heartbeat');
+assert(!cognitive.includes('\n  pull_request:'),'Cognitive writer must not gain pull_request execution');
+assert(!cognitive.includes('actions: write'),'Cognitive writer must not gain actions:write authority');
+assert(!cognitive.includes('write-all'),'Cognitive writer must not gain write-all authority');
 
 for(const required of [
   "global: Object.freeze",
@@ -163,6 +177,9 @@ console.log('FRAX GRAPH→SCOPED COGNITION→MEMORY WORKFLOW DEFINITION PROOF PA
   validatorPoolHistoryConfigRecovery:true,
   sourceRaceBlocked:true,
   globalFreshnessStillFailClosed:true,
+  cognitiveSystemMemoryHeartbeat:true,
+  cognitivePushFreshnessMaxAgeHours:6,
+  cognitiveDuplicateWriterAdded:false,
   graphRecoveryFreshnessDependencies:['productivity','rewards'],
   unrelatedStaleSourcesRemainVisible:true,
   duplicateWorkflowDispatchCognitiveWakeBlocked:true,
