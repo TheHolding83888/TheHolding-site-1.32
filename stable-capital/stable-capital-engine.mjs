@@ -29,6 +29,7 @@ import {
   getAddress
 } from 'ethers';
 import { AaveV3Base } from '@aave-dao/aave-address-book';
+import { createHistoricalRpcCoordinator } from './historical-rpc-coordinator.mjs';
 
 const VERSION = '0.4.1-monetra-recurring-stable-index-semantics';
 const METHODOLOGY = '1.3-stable-capital-recurring-full-coverage';
@@ -111,6 +112,10 @@ const HISTORY_RPC = Object.freeze({
     'https://eth.blockscout.com/api/eth-rpc'
   ])
 });
+
+// Heavy Ethereum history reads share one observation window and one bounded
+// queue. Unrelated current/official rate adapters remain parallel.
+const archiveRpc = createHistoricalRpcCoordinator();
 
 function addr(x) { return getAddress(String(x).toLowerCase()); }
 function unique(xs) { return [...new Set(xs.filter(Boolean))]; }
@@ -222,19 +227,22 @@ async function withProvider(chain, fn) {
 }
 
 async function withArchiveProvider(fn) {
-  const attempts = [];
-  for (const url of HISTORY_RPC.ethereum) {
-    let provider;
-    try {
-      provider = new JsonRpcProvider(url, 1, { staticNetwork: true });
-      const value = await fn(provider, url);
-      return { ok: true, value, providerUrl: url, attempts };
-    } catch (e) {
-      attempts.push({ url, error: errorText(e) });
-      try { provider?.destroy?.(); } catch {}
+  return archiveRpc.run(async () => {
+    const attempts = [];
+    for (const url of HISTORY_RPC.ethereum) {
+      let provider;
+      try {
+        provider = new JsonRpcProvider(url, 1, { staticNetwork: true });
+        const value = await fn(provider, url);
+        return { ok: true, value, providerUrl: url, attempts };
+      } catch (e) {
+        attempts.push({ url, error: errorText(e) });
+      } finally {
+        try { provider?.destroy?.(); } catch {}
+      }
     }
-  }
-  return { ok: false, error: 'all archive providers failed', attempts };
+    return { ok: false, error: 'all archive providers failed', attempts };
+  });
 }
 
 async function tokenMeta(provider, token, blockTag) {
@@ -356,10 +364,15 @@ async function findBlockAtOrBefore(provider, targetTs) {
 }
 
 async function historicalUnitRate(wrapper, days = 7, maxDepth = 3) {
-  const targetTs = Math.floor(Date.now() / 1000) - days * 86400;
+  const targetTs = archiveRpc.targetTimestamp(days);
 
   const call = await withArchiveProvider(async (provider, url) => {
-    const histBlock = await findBlockAtOrBefore(provider, targetTs);
+    const histBlock = await archiveRpc.blockAtOrBefore({
+      provider,
+      providerKey: url,
+      days,
+      resolve: findBlockAtOrBefore
+    });
     const targetBlock = Number(histBlock.number);
     const wMetaNow = await tokenMeta(provider, wrapper);
     const unit = 10n ** BigInt(wMetaNow.decimals);
@@ -632,9 +645,14 @@ async function fxSaveEconomicNavAt(provider, shareRaw, blockTag = 'latest') {
 }
 
 async function fxSaveHistoricalEconomicRate(days = 7) {
-  const targetTs = Math.floor(Date.now() / 1000) - days * 86400;
+  const targetTs = archiveRpc.targetTimestamp(days);
   const call = await withArchiveProvider(async (provider, url) => {
-    const histBlock = await findBlockAtOrBefore(provider, targetTs);
+    const histBlock = await archiveRpc.blockAtOrBefore({
+      provider,
+      providerKey: url,
+      days,
+      resolve: findBlockAtOrBefore
+    });
     const latestBlock = await provider.getBlock('latest');
     const unitShare = 10n ** 18n; // official SDK documents fxSAVE shares as 18 decimals.
 

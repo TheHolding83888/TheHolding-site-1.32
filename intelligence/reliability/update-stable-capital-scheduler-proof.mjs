@@ -6,8 +6,12 @@ const WORKFLOW = '.github/workflows/update-stable-capital-scheduled.yml';
 const RETIRED_WORKFLOW = '.github/workflows/update-stable-capital.yml';
 const PROOF = 'intelligence/reliability/update-stable-capital-scheduler-proof.mjs';
 const ENGINE = 'stable-capital/stable-capital-engine.mjs';
+const ARCHIVE_COORDINATOR = 'stable-capital/historical-rpc-coordinator.mjs';
+const REGRESSION_VALIDATION = 'stable-capital/stable-regression-validation.mjs';
 const RPC_SELECTOR = 'stable-capital/rpc-capability-selector.mjs';
 const RPC_ARTIFACT = 'intelligence/reliability/stable-rpc-capability.json';
+const STABLE_UI = 'companies/index.html';
+const UI_SENTINEL = 'ui-regression/ui-regression-sentinel-v0.1.mjs';
 const EXPECTED_CRON = '52 4,16 * * *';
 const FALLBACK_HEARTBEAT = 'intelligence/market-data/market-data-coingecko.json';
 const BASE_SHA = process.env.BASE_SHA || '';
@@ -24,6 +28,8 @@ if (!BASE_SHA || !HEAD_SHA) fail('BASE_SHA/HEAD_SHA missing');
 if (!fs.existsSync(WORKFLOW)) fail('active workflow path missing');
 if (!fs.existsSync(RETIRED_WORKFLOW)) fail('retired registration tombstone missing');
 if (!fs.existsSync(RPC_SELECTOR)) fail('historical RPC capability selector missing');
+if (!fs.existsSync(ARCHIVE_COORDINATOR)) fail('historical RPC coordinator missing');
+if (!fs.existsSync(REGRESSION_VALIDATION)) fail('Stable regression validation missing');
 
 const MERGE_BASE = git(['merge-base', BASE_SHA, HEAD_SHA]);
 if (!MERGE_BASE) fail('unable to resolve PR merge base');
@@ -31,6 +37,10 @@ if (!MERGE_BASE) fail('unable to resolve PR merge base');
 const text = fs.readFileSync(WORKFLOW, 'utf8');
 const retired = fs.readFileSync(RETIRED_WORKFLOW, 'utf8');
 const selector = fs.readFileSync(RPC_SELECTOR, 'utf8');
+const coordinator = fs.readFileSync(ARCHIVE_COORDINATOR, 'utf8');
+const validation = fs.readFileSync(REGRESSION_VALIDATION, 'utf8');
+const stableUi = fs.readFileSync(STABLE_UI, 'utf8');
+const uiSentinel = fs.readFileSync(UI_SENTINEL, 'utf8');
 
 for (const required of [
   '# holding-workflow-definition-proof: intelligence/reliability/update-stable-capital-scheduler-proof.mjs',
@@ -44,6 +54,8 @@ for (const required of [
   'branches: [main]',
   FALLBACK_HEARTBEAT,
   ENGINE,
+  ARCHIVE_COORDINATOR,
+  REGRESSION_VALIDATION,
   RPC_SELECTOR,
   '.github/workflows/update-stable-capital-scheduled.yml',
   PROOF,
@@ -51,6 +63,7 @@ for (const required of [
   'group: update-stable-capital',
   'cancel-in-progress: false',
   'node stable-capital/rpc-capability-selector.mjs',
+  'node stable-capital/stable-regression-validation.mjs',
   'node stable-capital/stable-capital-engine.mjs',
   'node stable-capital/embedded-yield-interval-history.mjs',
   'node stable-capital/stable-index-bridge.mjs',
@@ -89,6 +102,33 @@ if (!selector.includes('const probe = new Contract(probeAddress')) fail('selecto
 if (!selector.includes('probe.decimals({ blockTag: historicalBlockNumber })')) fail('selector no longer performs historical eth_call');
 if (/git\s+(?:commit|push)|contents:\s*write/.test(selector)) fail('selector acquired repository writer surface');
 
+// The capability probe proves that historical state can be read. The shared
+// coordinator additionally proves that the real multi-adapter workload cannot
+// burst the selected endpoint or repeat the same timestamp binary search.
+for (const required of [
+  'export function createHistoricalRpcCoordinator',
+  'const blockPromises = new Map()',
+  'let queueTail = Promise.resolve()',
+  'queueTail.then(() => task(), () => task())',
+  'blockPromises.delete(key)',
+  'return Object.freeze({ run, targetTimestamp, blockAtOrBefore })'
+]) {
+  if (!coordinator.includes(required)) fail(`historical RPC coordinator invariant missing: ${required}`);
+}
+if (/git\s+(?:commit|push)|contents:\s*write/.test(coordinator)) fail('historical RPC coordinator acquired writer authority');
+
+for (const required of [
+  'archive workloads were not serialized',
+  'shared historical block was resolved more than once',
+  'failed historical block lookup was not evicted',
+  'Stable strategy UNKNOWN can still become numeric zero'
+]) {
+  if (!validation.includes(required)) fail(`Stable regression proof missing: ${required}`);
+}
+if (!stableUi.includes('const aprText = stablePct(p.referenceApyPct, 2);')) fail('Stable strategy renderer bypasses nullable formatter');
+if (stableUi.includes('Number(p.referenceApyPct)')) fail('Stable strategy renderer can coerce null to zero');
+if (!uiSentinel.includes('Stable UNKNOWN rates render as dash, never false 0.00%')) fail('physical UI null/zero regression check missing');
+
 for (const required of [
   '# holding-workflow-definition-proof: intelligence/reliability/update-stable-capital-scheduler-proof.mjs',
   'name: "Update Stable Capital · Retired Registration"',
@@ -113,11 +153,27 @@ for (const forbidden of [
 }
 
 const changed = git(['diff', '--name-only', MERGE_BASE, HEAD_SHA]).split(/\r?\n/).filter(Boolean).sort();
-const allowed = new Set([WORKFLOW, PROOF, RPC_SELECTOR]);
+const allowed = new Set([
+  WORKFLOW,
+  PROOF,
+  ENGINE,
+  ARCHIVE_COORDINATOR,
+  REGRESSION_VALIDATION,
+  STABLE_UI,
+  UI_SENTINEL
+]);
 if (changed.length < 1 || changed.some(file => !allowed.has(file))) {
   fail(`repair escaped bounded path set: ${JSON.stringify(changed)}`);
 }
-for (const requiredChanged of [WORKFLOW, PROOF, RPC_SELECTOR]) {
+for (const requiredChanged of [
+  WORKFLOW,
+  PROOF,
+  ENGINE,
+  ARCHIVE_COORDINATOR,
+  REGRESSION_VALIDATION,
+  STABLE_UI,
+  UI_SENTINEL
+]) {
   if (!changed.includes(requiredChanged)) fail(`bounded repair path not changed: ${requiredChanged}`);
 }
 
@@ -145,8 +201,12 @@ console.log(JSON.stringify({
   automaticFallbackHeartbeat: FALLBACK_HEARTBEAT,
   engineSelfProbePath: ENGINE,
   historicalTransportSelector: RPC_SELECTOR,
+  historicalWorkloadCoordinator: ARCHIVE_COORDINATOR,
+  stableRegressionValidation: REGRESSION_VALIDATION,
   historicalCapabilityArtifact: RPC_ARTIFACT,
   historicalCapabilityContract: 'actual historical contract eth_call required; liveness/header history insufficient; unavailable remains UNKNOWN/null',
+  historicalWorkloadContract: 'one bounded archive workload at a time; one shared historical block per provider/window; failed lookup remains retryable',
+  stableUiTruthContract: 'UNKNOWN/null renders as dash; genuine finite zero remains 0.00%',
   fallbackSemantics: 'canonical Market Data baseline publication wakes the existing Stable writer; no duplicate writer and no workflow-dispatch authority added',
   retiredRegistrationReadOnly: true,
   retiredRegistrationScheduled: false,

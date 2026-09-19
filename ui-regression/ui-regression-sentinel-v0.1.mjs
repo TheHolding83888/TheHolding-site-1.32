@@ -17,7 +17,7 @@ import vm from 'node:vm';
 import process from 'node:process';
 import { chromium } from '@playwright/test';
 
-const VERSION = '0.1.1-calibration';
+const VERSION = '0.1.2-stable-null-truth';
 const ROOT = path.resolve(process.env.GITHUB_WORKSPACE || process.cwd());
 const TARGET_URL = process.env.UI_SENTINEL_URL || 'http://127.0.0.1:4173/companies/';
 const REPORT_PATH = path.resolve(process.env.UI_SENTINEL_REPORT_PATH || path.join(ROOT, 'ui-regression-report.json'));
@@ -138,6 +138,13 @@ function staticChecks() {
   check(scope, 'EN/RU controls preserved', () => ({
     ok: html.includes('data-lang="en"') && html.includes('data-lang="ru"'),
     detail: 'Language switch controls.'
+  }));
+
+  check(scope, 'Stable UNKNOWN APY cannot be coerced to zero', () => ({
+    ok: !html.includes('Number(p.referenceApyPct)')
+      && html.includes('const aprText = stablePct(p.referenceApyPct, 2);')
+      && html.includes('const bookAprText = stablePct(company && company.displayReferenceApyPct, 2);'),
+    detail: 'null/UNKNOWN must render as —; a genuine finite zero must still render as 0.00%.'
   }));
 
   // Compile every inline executable script without executing it. JSON-LD and external src are excluded.
@@ -389,6 +396,23 @@ async function testViewport(browser, spec) {
       }, null, { timeout: 4_000 });
       return { ok: true, detail: (await page.locator('#scTotalCapital').textContent()) || '' };
     });
+    await acheck(scope, 'Stable UNKNOWN rates render as dash, never false 0.00%', async () => page.evaluate(async () => {
+      const response = await fetch('./stable-index-data.json', { cache: 'no-store' });
+      const data = await response.json();
+      const unknown = (data.positions || []).filter(row => row && row.referenceApyPct == null);
+      const rendered = unknown.map(row => {
+        const node = [...document.querySelectorAll('.so-node[data-position-id]')]
+          .find(el => el.dataset.positionId === row.id);
+        return { id: row.id, text: node?.querySelector('.so-rate')?.textContent?.trim() || null };
+      });
+      const formatterTruth = typeof stablePct === 'function'
+        && stablePct(null, 2) === '—'
+        && stablePct(0, 2) === '0.00%';
+      return {
+        ok: formatterTruth && unknown.length > 0 && rendered.every(row => row.text === '—'),
+        detail: JSON.stringify({ unknown: unknown.length, rendered, formatterTruth })
+      };
+    }));
 
     const stableOpen = page.locator('[data-stable-passport-open]').first();
     if (await stableOpen.count()) {
