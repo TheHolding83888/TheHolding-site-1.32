@@ -103,7 +103,7 @@ for (const required of [
   'Deterministic truth-contract validation',
   'Focused Ethereum historical state canary',
   'selectHistoricalRpc',
-  'historicalBlockDistance:50000'
+  'historyBlockDistance:50000'
 ]) {
   if (!canary.includes(required)) fail(`RPC canary invariant missing: ${required}`);
 }
