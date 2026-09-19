@@ -1,4 +1,5 @@
 name: The Holding Production Deployment Smoke
+# holding-workflow-definition-proof: intelligence/reliability/production-deployment-smoke-definition-proof.mjs
 
 on:
   pull_request_target:
@@ -37,7 +38,7 @@ jobs:
           changed="$(gh api --paginate -H 'Accept: application/vnd.github+json' "/repos/$REPO/pulls/$PR_NUMBER/files?per_page=100" --jq '.[].filename')"
           printf 'Changed files:\n%s\n' "$changed"
 
-          if ! printf '%s\n' "$changed" | grep -Eq '(^|/)wrangler[^/]*\.jsonc?$|^worker/|^index\.html$|^agents/|^companies/index\.html$'; then
+          if ! printf '%s\n' "$changed" | grep -Eq '^\.assetsignore$|(^|/)wrangler[^/]*\.jsonc?$|^worker/|^index\.html$|^agents/|^companies/index\.html$'; then
             echo 'No deployment-sensitive production surface changed; Cloudflare build gate is not applicable.'
             exit 0
           fi
