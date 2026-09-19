@@ -8,8 +8,8 @@ name: "Update Stable Capital"
 on:
   workflow_dispatch:
   schedule:
-    # P10 live scheduler proof: keep one daily writer while moving the slot to a fresh registration time.
-    - cron: "10 16 * * *"
+    # P10 bounded natural-scheduler proof window: two off-peak daily slots; revert to one daily slot after proof.
+    - cron: "52 4,16 * * *"
 
 permissions:
   contents: write
