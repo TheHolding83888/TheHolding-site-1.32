@@ -1,19 +1,19 @@
 # The Holding Brain — Grounded Reasoning Brief
 
-Generated: 2026-09-19T11:58:53.492Z
+Generated: 2026-09-19T12:33:17.576Z
 Mode: delta
 Status: watch
 
 ## 25 evidence-bound reasoning case(s) are active across economic and security memory.
 
 ### What changed
-Current canonical inputs contain 12 material Observer change(s), 0 new security finding event(s), and 1 resolved security finding event(s). Canonical protocol-economic context is available across 2 cohorts (f(x) veFXN Locker; Curve veCRV Fee Distributor). f(x) remains measured context with unresolved causality; Curve exposes a proven APR mechanical identity while the upstream cause of fee-distribution changes remains unresolved.
+Current canonical inputs contain 12 material Observer change(s), 0 new security finding event(s), and 0 resolved security finding event(s). Canonical protocol-economic context is available across 2 cohorts (f(x) veFXN Locker; Curve veCRV Fee Distributor). f(x) remains measured context with unresolved causality; Curve exposes a proven APR mechanical identity while the upstream cause of fee-distribution changes remains unresolved.
 
 ### Protocol economic contexts · 2 cohorts
 
 #### defitea.eth · f(x) · veFXN Locker
 - Cohort ID: defitea-fxn-vefxn
-- Canonical APR: 23.55%
+- Canonical APR: 23.62%
 - Context status: context-available-causal-attribution-unresolved
 - Mechanical attribution: not proven
 - Causal attribution: unresolved
