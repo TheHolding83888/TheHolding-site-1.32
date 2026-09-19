@@ -5,6 +5,7 @@ import fs from 'node:fs';
 const WORKFLOW_PATH = '.github/workflows/update-change-intelligence.yml';
 const REPORTING_HEARTBEAT = 'reporting/reporting-data.json';
 const workflow = fs.readFileSync(WORKFLOW_PATH, 'utf8');
+const triggerBlock = workflow.match(/^on:\n[\s\S]*?\npermissions:/m)?.[0] || '';
 
 const must = (needle, label) => assert.ok(workflow.includes(needle), label);
 
@@ -29,8 +30,9 @@ must('git fetch origin main', 'safe writer fetch guard missing');
 must('git rebase origin/main', 'safe writer rebase guard missing');
 must('git push origin HEAD:main', 'safe writer push guard missing');
 
-assert.equal((workflow.match(/\bcron:\s*/g) || []).length, 1, 'Observer must keep exactly one cron declaration');
-assert.equal((workflow.match(/reporting\/reporting-data\.json/g) || []).length, 1, 'Observer must keep exactly one canonical Reporting heartbeat path');
+assert.ok(triggerBlock, 'Observer trigger block missing');
+assert.equal((triggerBlock.match(/\bcron:\s*/g) || []).length, 1, 'Observer must keep exactly one cron declaration');
+assert.equal((triggerBlock.match(/reporting\/reporting-data\.json/g) || []).length, 1, 'Observer trigger must keep exactly one canonical Reporting heartbeat path');
 assert.equal(workflow.includes('\n  pull_request:'), false, 'Observer must not gain pull_request execution');
 assert.equal(workflow.includes('actions: write'), false, 'Observer must not gain actions:write');
 assert.equal(workflow.includes('write-all'), false, 'Observer must not gain write-all');
