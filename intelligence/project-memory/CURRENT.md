@@ -4,7 +4,7 @@
 >
 > Start from this live `main` file. Then load only the minimum recovery packet below. Full owner/build/history canons remain machine-verified durable contracts and are loaded only when the compact router says they are relevant. Changing facts still come from live generated artifacts and exact workflow evidence, not prose memory.
 
-Canonical source state represented here: **2026-09-19T05:38:02.328Z**
+Canonical source state represented here: **2026-09-19T07:11:48.848Z**
 
 ## Minimum recovery packet
 
@@ -41,9 +41,9 @@ Current authority boundary: **execution authority = none**. No wallet signing, t
 
 ## Memory architecture
 
-- **System Memory** — current normalized state; generatedAt: 2026-09-18T11:35:41.707Z.
-- **Permanent Memory Vault** — 76 Observer record(s), 573 material event(s), retention: indefinite; hard lifetime cap: none.
-- **Latest Vault record** — intelligence/memory-vault/2026/09/2026-09-18T11-35-41-707Z-e3a35f57e3.json.
+- **System Memory** — current normalized state; generatedAt: 2026-09-19T07:11:48.848Z.
+- **Permanent Memory Vault** — 77 Observer record(s), 588 material event(s), retention: indefinite; hard lifetime cap: none.
+- **Latest Vault record** — intelligence/memory-vault/2026/09/2026-09-19T07-11-48-848Z-be665f0b9e.json.
 - **Decision Memory** — 2 append-only owner decision(s); executionAuthority: none.
 - **Project continuity** — CURRENT + CONTINUITY root + latest master continuity + compact task router + routed specialized canons + Git history.
 
