@@ -7,6 +7,16 @@ on:
     # Daily Observer pass after Rewards (04:57), Stable Capital (05:37)
     # and Reporting (06:07). Sunday Productivity (04:17) is also already complete.
     - cron: '27 6 * * *'
+  push:
+    branches: [main]
+    paths:
+      # Automatic failover: Reporting is the final normal upstream publication before Observer.
+      # This wakes the same canonical Observer writer; it does not create a second writer.
+      - 'reporting/reporting-data.json'
+      # Engine/definition/proof changes self-probe the writer immediately after merge.
+      - 'intelligence/change-intelligence-engine.mjs'
+      - '.github/workflows/update-change-intelligence.yml'
+      - 'intelligence/reliability/change-intelligence-realty-news-workflow-definition-proof.mjs'
 
 permissions:
   contents: write
