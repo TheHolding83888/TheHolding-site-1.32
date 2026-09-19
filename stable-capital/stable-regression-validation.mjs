@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { createHistoricalRpcCoordinator } from './historical-rpc-coordinator.mjs';
+import { createHistoricalRpcCoordinator, createRpcRequestPacer } from './historical-rpc-coordinator.mjs';
 
 const root = path.resolve(process.cwd());
 const fixedNow = Date.UTC(2026, 8, 19, 12, 0, 0);
@@ -64,6 +64,22 @@ const recovered = await retryCoordinator.blockAtOrBefore({
 assert.equal(retryCount, 2, 'failed historical block lookup was not evicted');
 assert.equal(recovered.number, 456, 'historical block retry did not recover');
 
+let clockMs = 0;
+const pacedStarts = [];
+const pacer = createRpcRequestPacer({
+  minimumIntervalMs: 500,
+  now: () => clockMs,
+  wait: async ms => { clockMs += ms; }
+});
+await Promise.all([1, 2, 3].map(id => pacer.run(async () => {
+  pacedStarts.push({ id, at: clockMs });
+})));
+assert.deepEqual(pacedStarts, [
+  { id: 1, at: 500 },
+  { id: 2, at: 1000 },
+  { id: 3, at: 1500 }
+], 'archive RPC requests were not paced at the bounded interval');
+
 const engine = fs.readFileSync(path.join(root, 'stable-capital', 'stable-capital-engine.mjs'), 'utf8');
 assert.match(engine, /archiveRpc\.run\(/, 'Stable engine bypasses the shared archive queue');
 assert.match(engine, /archiveRpc\.blockAtOrBefore\(/, 'Stable engine bypasses the shared historical block');
@@ -71,6 +87,9 @@ assert.match(engine, /ETH_ARCHIVE_BLOCK_NUMBER/, 'Stable engine does not consume
 assert.match(engine, /ETH_ARCHIVE_BLOCK_TIMESTAMP/, 'Stable engine does not consume the proven historical block timestamp');
 assert.match(engine, /return PROVEN_HISTORY_BLOCK;/, 'Stable engine repeats timestamp search instead of reusing selector evidence');
 assert.match(engine, /\[stable-archive\] reuse proven block/, 'Stable production logs cannot prove block-handoff reuse');
+assert.match(engine, /class PacedArchiveJsonRpcProvider extends JsonRpcProvider/, 'Stable archive provider bypasses per-request pacing');
+assert.match(engine, /createRpcRequestPacer\(\{ minimumIntervalMs: 1000 \}\)/, 'Stable archive request pace is not bounded to one request per second');
+assert.match(engine, /batchMaxCount: 1/, 'Stable archive provider can still burst JSON-RPC batches');
 
 const selector = fs.readFileSync(path.join(root, 'stable-capital', 'rpc-capability-selector.mjs'), 'utf8');
 assert.match(selector, /ETH_ARCHIVE_BLOCK_NUMBER/, 'RPC selector does not hand off the proven historical block number');

@@ -29,7 +29,7 @@ import {
   getAddress
 } from 'ethers';
 import { AaveV3Base } from '@aave-dao/aave-address-book';
-import { createHistoricalRpcCoordinator } from './historical-rpc-coordinator.mjs';
+import { createHistoricalRpcCoordinator, createRpcRequestPacer } from './historical-rpc-coordinator.mjs';
 
 const VERSION = '0.4.1-monetra-recurring-stable-index-semantics';
 const METHODOLOGY = '1.3-stable-capital-recurring-full-coverage';
@@ -123,6 +123,13 @@ const PROVEN_HISTORY_BLOCK = (() => {
 // Heavy Ethereum history reads share one observation window and one bounded
 // queue. Unrelated current/official rate adapters remain parallel.
 const archiveRpc = createHistoricalRpcCoordinator();
+const archiveRequestPacer = createRpcRequestPacer({ minimumIntervalMs: 1000 });
+
+class PacedArchiveJsonRpcProvider extends JsonRpcProvider {
+  _send(payload) {
+    return archiveRequestPacer.run(() => super._send(payload));
+  }
+}
 
 function addr(x) { return getAddress(String(x).toLowerCase()); }
 function unique(xs) { return [...new Set(xs.filter(Boolean))]; }
@@ -239,7 +246,11 @@ async function withArchiveProvider(fn) {
     for (const url of HISTORY_RPC.ethereum) {
       let provider;
       try {
-        provider = new JsonRpcProvider(url, 1, { staticNetwork: true });
+        provider = new PacedArchiveJsonRpcProvider(url, 1, {
+          staticNetwork: true,
+          batchMaxCount: 1,
+          batchStallTime: 0
+        });
         const value = await fn(provider, url);
         return { ok: true, value, providerUrl: url, attempts };
       } catch (e) {
