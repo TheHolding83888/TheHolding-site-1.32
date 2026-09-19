@@ -21,6 +21,15 @@ on:
     # Security Sentinel pass (06:47 UTC). This integrated cycle refreshes Security
     # once more immediately before reasoning so the cognitive packet is exact.
     - cron: "27 7 * * *"
+  push:
+    branches: [main]
+    paths:
+      # Automatic failover: a fresh canonical Observer/System Memory publication
+      # wakes this same Cognitive writer when schedule/workflow_run delivery is absent.
+      - "intelligence/system-memory.json"
+      # Self-probe this writer after bounded workflow/proof maintenance.
+      - ".github/workflows/refresh-cognitive-stack.yml"
+      - "intelligence/reliability/frax-graph-memory-recovery-definition-proof.mjs"
 
 permissions:
   contents: write
@@ -64,7 +73,7 @@ jobs:
         run: |
           set -euo pipefail
           args=(--scope "$COGNITIVE_FRESHNESS_SCOPE")
-          if [ "$COGNITIVE_TRIGGER" = "schedule" ]; then
+          if [ "$COGNITIVE_TRIGGER" = "schedule" ] || [ "$COGNITIVE_TRIGGER" = "push" ]; then
             args+=(--max-observer-age-hours "$AUTONOMOUS_OBSERVER_MAX_AGE_HOURS")
           fi
           node intelligence/reliability/cognitive-freshness-guard.mjs "${args[@]}"
