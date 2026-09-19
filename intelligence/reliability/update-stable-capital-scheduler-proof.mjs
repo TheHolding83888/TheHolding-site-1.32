@@ -5,7 +5,8 @@ import { execFileSync } from 'node:child_process';
 const WORKFLOW = '.github/workflows/update-stable-capital-scheduled.yml';
 const RETIRED_WORKFLOW = '.github/workflows/update-stable-capital.yml';
 const PROOF = 'intelligence/reliability/update-stable-capital-scheduler-proof.mjs';
-const EXPECTED_CRON = '10 16 * * *';
+const EXPECTED_CRON = '52 4,16 * * *';
+const FALLBACK_HEARTBEAT = 'intelligence/market-data/market-data-coingecko.json';
 const BASE_SHA = process.env.BASE_SHA || '';
 const HEAD_SHA = process.env.HEAD_SHA || '';
 
@@ -34,6 +35,10 @@ for (const required of [
   'name: "Update Stable Capital"',
   'workflow_dispatch:',
   `cron: "${EXPECTED_CRON}"`,
+  'push:',
+  'branches: [main]',
+  FALLBACK_HEARTBEAT,
+  '.github/workflows/update-stable-capital-scheduled.yml',
   'contents: write',
   'group: update-stable-capital',
   'cancel-in-progress: false',
@@ -46,7 +51,10 @@ for (const required of [
 ]) {
   if (!text.includes(required)) fail(`active writer invariant missing: ${required}`);
 }
-if ((text.match(/\bcron:\s*/g) || []).length !== 1) fail('active registration must have exactly one cron schedule');
+if ((text.match(/\bcron:\s*/g) || []).length !== 1) fail('active registration must have exactly one cron declaration');
+if ((text.match(/intelligence\/market-data\/market-data-coingecko\.json/g) || []).length !== 1) {
+  fail('active registration must have exactly one canonical Market Data fallback heartbeat path');
+}
 
 for (const required of [
   '# holding-workflow-definition-proof: intelligence/reliability/update-stable-capital-scheduler-proof.mjs',
@@ -97,7 +105,9 @@ console.log(JSON.stringify({
   mergeBase: MERGE_BASE,
   retiredWorkflow: RETIRED_WORKFLOW,
   activeWorkflow: WORKFLOW,
-  dailyCronUtc: EXPECTED_CRON,
+  cronUtc: EXPECTED_CRON,
+  automaticFallbackHeartbeat: FALLBACK_HEARTBEAT,
+  fallbackSemantics: 'canonical Market Data baseline publication wakes the existing Stable writer; no duplicate writer and no workflow-dispatch authority added',
   retiredRegistrationReadOnly: true,
   retiredRegistrationScheduled: false,
   canonicalWriterCount: 1,
