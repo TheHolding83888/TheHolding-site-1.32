@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           ref: fix/p10-stable-parallel-rate-collection-20260919
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Replace serial rate collection with bounded parallel reads
         shell: python
@@ -31,19 +31,8 @@ jobs:
           from pathlib import Path
           path = Path('stable-capital/stable-capital-engine.mjs')
           text = path.read_text()
-          old = """  const rows = {};
-          for (const [id, fn] of specs) {
-            try { rows[id] = await fn(); }
-            catch (e) { rows[id] = { status: 'error', annualYieldPct: null, error: errorText(e) }; }
-          }
-          return rows;
-          """
-          new = """  const pairs = await Promise.all(specs.map(async ([id, fn]) => {
-            try { return [id, await fn()]; }
-            catch (e) { return [id, { status: 'error', annualYieldPct: null, error: errorText(e) }]; }
-          }));
-          return Object.fromEntries(pairs);
-          """
+          old = "  const rows = {};\n  for (const [id, fn] of specs) {\n    try { rows[id] = await fn(); }\n    catch (e) { rows[id] = { status: 'error', annualYieldPct: null, error: errorText(e) }; }\n  }\n  return rows;\n"
+          new = "  const pairs = await Promise.all(specs.map(async ([id, fn]) => {\n    const startedAt = Date.now();\n    console.log(`[stable-rate] start ${id}`);\n    try {\n      const value = await fn();\n      console.log(`[stable-rate] done ${id} ${Date.now() - startedAt}ms status=${value?.status || 'unknown'}`);\n      return [id, value];\n    } catch (e) {\n      console.warn(`[stable-rate] error ${id} ${Date.now() - startedAt}ms ${errorText(e)}`);\n      return [id, { status: 'error', annualYieldPct: null, error: errorText(e) }];\n    }\n  }));\n  return Object.fromEntries(pairs);\n"
           count = text.count(old)
           if count != 1:
               raise SystemExit(f'Expected exactly one serial collectRates block, found {count}')
@@ -54,6 +43,7 @@ jobs:
           set -euo pipefail
           node --check stable-capital/stable-capital-engine.mjs
           grep -F "const pairs = await Promise.all(specs.map" stable-capital/stable-capital-engine.mjs
+          grep -F "[stable-rate] done" stable-capital/stable-capital-engine.mjs
           git diff --check
           test "$(git diff --name-only | tr -d '\r')" = "stable-capital/stable-capital-engine.mjs"
 
