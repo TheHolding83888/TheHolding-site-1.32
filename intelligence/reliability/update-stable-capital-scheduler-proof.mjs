@@ -5,6 +5,7 @@ import { execFileSync } from 'node:child_process';
 const WORKFLOW = '.github/workflows/update-stable-capital-scheduled.yml';
 const RETIRED_WORKFLOW = '.github/workflows/update-stable-capital.yml';
 const PROOF = 'intelligence/reliability/update-stable-capital-scheduler-proof.mjs';
+const ENGINE = 'stable-capital/stable-capital-engine.mjs';
 const EXPECTED_CRON = '52 4,16 * * *';
 const FALLBACK_HEARTBEAT = 'intelligence/market-data/market-data-coingecko.json';
 const BASE_SHA = process.env.BASE_SHA || '';
@@ -38,6 +39,7 @@ for (const required of [
   'push:',
   'branches: [main]',
   FALLBACK_HEARTBEAT,
+  ENGINE,
   '.github/workflows/update-stable-capital-scheduled.yml',
   'contents: write',
   'group: update-stable-capital',
@@ -80,7 +82,7 @@ for (const forbidden of [
 }
 
 const changed = git(['diff', '--name-only', MERGE_BASE, HEAD_SHA]).split(/\r?\n/).filter(Boolean).sort();
-const allowed = new Set([WORKFLOW, PROOF]);
+const allowed = new Set([WORKFLOW, PROOF, ENGINE]);
 if (changed.length < 1 || changed.some(path => !allowed.has(path))) {
   fail(`repair escaped bounded path set: ${JSON.stringify(changed)}`);
 }
@@ -107,6 +109,7 @@ console.log(JSON.stringify({
   activeWorkflow: WORKFLOW,
   cronUtc: EXPECTED_CRON,
   automaticFallbackHeartbeat: FALLBACK_HEARTBEAT,
+  engineSelfProbePath: ENGINE,
   fallbackSemantics: 'canonical Market Data baseline publication wakes the existing Stable writer; no duplicate writer and no workflow-dispatch authority added',
   retiredRegistrationReadOnly: true,
   retiredRegistrationScheduled: false,
