@@ -1,7 +1,7 @@
-# THE HOLDING · STABLE CAPITAL INTELLIGENCE LAYER v0.5 · PERFORMANCE-LIVE
+# THE HOLDING · STABLE CAPITAL INTELLIGENCE LAYER v0.6 · CAPABILITY-AWARE HISTORICAL TRANSPORT
 # holding-workflow-definition-proof: intelligence/reliability/update-stable-capital-scheduler-proof.mjs
 # holding-control-plane: repository-writer
-# holding-truth-plane: Stable Capital / Embedded Yield / Stable Companies Index
+# holding-truth-plane: Stable Capital / Embedded Yield / Stable Companies Index / Historical RPC Capability
 # holding-control-domain: Monetra Stable Capital scheduled materialization
 name: "Update Stable Capital"
 
@@ -16,8 +16,9 @@ on:
       # Automatic failover: the canonical daily Market Data baseline is an existing healthy heartbeat.
       # This does not create a second writer; it wakes this same canonical Stable writer.
       - "intelligence/market-data/market-data-coingecko.json"
-      # Engine/definition/proof changes self-probe the writer immediately after merge.
+      # Engine/transport/definition/proof changes self-probe the writer immediately after merge.
       - "stable-capital/stable-capital-engine.mjs"
+      - "stable-capital/rpc-capability-selector.mjs"
       - ".github/workflows/update-stable-capital-scheduled.yml"
       - "intelligence/reliability/update-stable-capital-scheduler-proof.mjs"
 
@@ -49,6 +50,7 @@ jobs:
         run: |
           set -euo pipefail
           node --check stable-capital/stable-capital-engine.mjs
+          node --check stable-capital/rpc-capability-selector.mjs
           node --check stable-capital/embedded-yield-interval-history.mjs
           node --check stable-capital/stable-index-bridge.mjs
           test -s companies/company-008-resolve.json
@@ -102,11 +104,18 @@ jobs:
       - name: Install dependencies
         run: npm install --no-save ethers@6 @aave-dao/aave-address-book
 
-      - name: Collect recurring Stable Capital reference yield + ledger checkpoint
+      - name: Select Ethereum historical RPC by proven capability
         env:
+          ETH_ARCHIVE_RPC_URL: ${{ secrets.ETH_ARCHIVE_RPC_URL }}
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
           ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
-          ETH_ARCHIVE_RPC_URL: ${{ secrets.ETH_ARCHIVE_RPC_URL }}
+        run: node stable-capital/rpc-capability-selector.mjs
+
+      - name: Collect recurring Stable Capital reference yield + ledger checkpoint
+        env:
+          # ETH_ARCHIVE_RPC_URL is intentionally supplied by the capability selector via GITHUB_ENV.
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+          ETH_RPC_URL_2: ${{ secrets.ETH_RPC_URL_2 }}
           BASE_RPC_URL: ${{ secrets.BASE_RPC_URL }}
           BASE_RPC_URL_2: ${{ secrets.BASE_RPC_URL_2 }}
           FRAXTAL_RPC_URL: ${{ secrets.FRAXTAL_RPC_URL }}
@@ -128,12 +137,21 @@ jobs:
           const d=JSON.parse(fs.readFileSync('companies/stable-capital-data.json','utf8'));
           const l=JSON.parse(fs.readFileSync('companies/embedded-yield-ledger.json','utf8'));
           const i=JSON.parse(fs.readFileSync('companies/stable-index-data.json','utf8'));
+          const rpc=JSON.parse(fs.readFileSync('intelligence/reliability/stable-rpc-capability.json','utf8'));
 
           if(d.version!=='0.4.1-monetra-recurring-stable-index-semantics') throw new Error('unexpected Stable Capital version');
           if(d.methodologyVersion!=='1.3-stable-capital-recurring-full-coverage') throw new Error('unexpected Stable Capital methodology');
           if(d.company?.registry!=='008'||d.company?.name!=='Monetra.eth') throw new Error('Stable Capital identity mismatch');
           if((d.positions||[]).length!==10) throw new Error('Stable Capital position count regression');
           if(Number(d.summary?.productiveStableCapitalUsd)<90) throw new Error('productive Stable Capital implausibly low');
+
+          // Truth-preservation invariant: unavailable reference rates must remain null/UNKNOWN.
+          for(const p of d.positions||[]) {
+            const ref=p?.reference||{};
+            if(ref.status!=='ok' && ref.annualYieldPct!==null) {
+              throw new Error(`non-ok Stable reference must remain null: ${p.id}`);
+            }
+          }
 
           if(l.version!=='0.4-flow-aware-recurring-checkpoints') throw new Error('unexpected Embedded Ledger version');
           if(l.company?.registry!=='008'||Object.keys(l.positions||{}).length!==10) throw new Error('Embedded Ledger regression');
@@ -148,6 +166,19 @@ jobs:
           if(i.methodologyVersion!=='0.2-separate-stable-universe-strategy-entry-performance') throw new Error('unexpected Stable Index methodology');
           if(i.universe?.separateFromGeneralComposite!==true) throw new Error('Stable Index separation invariant failed');
           if((i.companies||[]).length!==1||i.companies[0]?.registry!=='008') throw new Error('Stable Index company invariant failed');
+          for(const p of i.positions||[]) {
+            if(p.referenceStatus!=='ok' && p.referenceApyPct!==null) {
+              throw new Error(`Stable Index converted UNKNOWN reference into a number: ${p.id}`);
+            }
+          }
+
+          if(rpc.version!=='0.1-stable-rpc-capability') throw new Error('unexpected Stable RPC capability version');
+          if(rpc.capability!=='historical-contract-state-read') throw new Error('historical RPC capability contract missing');
+          if(rpc.invariants?.endpointLivenessIsNotHistoricalCapability!==true) throw new Error('RPC liveness/capability separation invariant missing');
+          if(rpc.invariants?.unknownNeverZero!==true||rpc.invariants?.failClosed!==true) throw new Error('Stable UNKNOWN/fail-closed invariant missing');
+          if(rpc.invariants?.secondStableWriterCreated!==false||rpc.invariants?.executionAuthority!=='none') throw new Error('Stable authority/writer invariant drift');
+          if(rpc.status==='ready' && !rpc.selected?.provider) throw new Error('ready RPC capability missing selected provider');
+          if(!['ready','unavailable-fail-closed'].includes(rpc.status)) throw new Error('invalid RPC capability status');
 
           const c=i.companies[0];
           if(c.performance?.status!=='verified-since-inception') throw new Error('Performance status not verified');
@@ -156,7 +187,8 @@ jobs:
           if(!Number.isFinite(Number(c.performance?.sinceInceptionPct))) throw new Error('Performance pct missing');
           if(i.source?.strategyEntryVersion!=='0.7-monetra-lido-capital-transfer-close') throw new Error('Strategy Entry provenance missing');
 
-          console.log('PERFORMANCE LIVE + CANONICAL INTERVAL HISTORY VALIDATION OK');
+          console.log('PERFORMANCE LIVE + CANONICAL INTERVAL HISTORY + RPC CAPABILITY VALIDATION OK');
+          console.log('Stable RPC capability:',rpc.status,rpc.selected?.provider||'none');
           console.log('Accepted interval rows:',l.intervalHistory.acceptedCount);
           console.log('Invested:',c.investedUsd);
           console.log('Performance:',c.performance.sinceInceptionUsd,c.performance.sinceInceptionPct+'%');
@@ -172,6 +204,7 @@ jobs:
             "companies/stable-capital-data.json"
             "companies/embedded-yield-ledger.json"
             "companies/stable-index-data.json"
+            "intelligence/reliability/stable-rpc-capability.json"
           )
           for f in "${FILES[@]}"; do test -s "$f"; done
 
@@ -198,8 +231,10 @@ jobs:
 
           REMOTE_STABLE="$(git show origin/main:companies/stable-capital-data.json | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")"
           REMOTE_INDEX="$(git show origin/main:companies/stable-index-data.json | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")"
+          REMOTE_RPC="$(git show origin/main:intelligence/reliability/stable-rpc-capability.json | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")"
 
           test "$REMOTE_STABLE" = "0.4.1-monetra-recurring-stable-index-semantics"
           test "$REMOTE_INDEX" = "0.2-stable-companies-index-strategy-performance"
+          test "$REMOTE_RPC" = "0.1-stable-rpc-capability"
 
-          echo "Verified Monetra Invested + Performance + canonical interval history published to origin/main."
+          echo "Verified Monetra Invested + Performance + canonical interval history + RPC capability published to origin/main."
