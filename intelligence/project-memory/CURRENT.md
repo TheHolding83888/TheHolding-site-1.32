@@ -4,11 +4,11 @@
 >
 > Start from this live `main` file. Then load only the minimum recovery packet below. Full owner/build/history canons remain machine-verified durable contracts and are loaded only when the compact router says they are relevant. Changing facts still come from live generated artifacts and exact workflow evidence, not prose memory.
 
-Canonical source state represented here: **2026-09-19T12:34:17.090Z**
+Canonical source state represented here: **2026-09-19T15:47:40.409Z**
 
 ## Minimum recovery packet
 
-1. [THE_HOLDING_MASTER_CONTINUITY_2026-09-19_114826_AUTO_78305e9f.md](./THE_HOLDING_MASTER_CONTINUITY_2026-09-19_114826_AUTO_78305e9f.md)
+1. [THE_HOLDING_MASTER_CONTINUITY_2026-09-19_154742_AUTO_8d1e87e7.md](./THE_HOLDING_MASTER_CONTINUITY_2026-09-19_154742_AUTO_8d1e87e7.md)
 2. [Memory Routing Index v2](./THE_HOLDING_MEMORY_ROUTING_INDEX_v2_2026-08-26.md)
 3. Follow the router: load only the task-specific durable canon/context and live machine-readable evidence needed for the current objective.
 
@@ -50,7 +50,8 @@ Current authority boundary: **execution authority = none**. No wallet signing, t
 ## Current cognitive stack
 
 - Cognitive Stack: **WATCH**; readyForManualInterpretation: true; chainHash: 3761a1466940d8724fcf0c24c8d51e9ed76fb2028cae050e4b80a2c413cc7b95.
-- Security Sentinel (latest standalone state): **WATCH**; Critical 0 / High 2 / Medium 73; generatedAt 2026-09-19T12:33:16.525Z.
+- Security Sentinel (latest standalone state): **WATCH**; Critical 0 / High 2 / Medium 73; generatedAt 2026-09-19T15:47:40.409Z.
+- Cognitive Stack Security snapshot is older (2026-09-19T12:33:16.525Z); it remains the exact Security binding for that coherent Cognitive Stack packet, not the current standalone Security count.
 - Grounded Brain: **WATCH**.
 - ChatGPT Bridge: **WATCH**; cases 25; evidence 40; noExecution true.
 
