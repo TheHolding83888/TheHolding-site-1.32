@@ -26,7 +26,7 @@ export const DEFAULT_CHAIN_ID = 1;
 export const DEFAULT_HISTORY_BLOCK_DISTANCE = 50_000;
 export const DEFAULT_ATTEMPT_TIMEOUT_MS = 8_000;
 export const DEFAULT_MAX_CANDIDATES = 6;
-export const DEFAULT_PROBE_ADDRESS = '0xA0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'; // Ethereum USDC
+export const DEFAULT_PROBE_ADDRESS = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'; // Ethereum USDC
 
 function unique(values) {
   return [...new Set(values.filter(Boolean))];
