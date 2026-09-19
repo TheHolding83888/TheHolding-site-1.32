@@ -23,7 +23,10 @@ import { Contract, JsonRpcProvider } from 'ethers';
 
 export const VERSION = '0.1-stable-rpc-capability';
 export const DEFAULT_CHAIN_ID = 1;
-export const DEFAULT_HISTORY_BLOCK_DISTANCE = 50_000;
+// Post-Merge Ethereum block timestamps advance in 12-second slots. 50,500
+// blocks therefore lands just beyond seven days, so the proven block can be
+// reused by the collector without a second, rate-limit-heavy timestamp search.
+export const DEFAULT_HISTORY_BLOCK_DISTANCE = 50_500;
 export const DEFAULT_ATTEMPT_TIMEOUT_MS = 8_000;
 export const DEFAULT_MAX_CANDIDATES = 6;
 export const DEFAULT_PROBE_ADDRESS = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'; // Ethereum USDC
@@ -206,10 +209,19 @@ export function capabilityArtifact(selection, generatedAt = new Date().toISOStri
   };
 }
 
-function writeGithubEnv(selectedUrl) {
+function writeGithubEnv(selectedUrl, selected) {
   const envFile = process.env.GITHUB_ENV;
-  if (!envFile || !selectedUrl) return false;
-  fs.appendFileSync(envFile, `ETH_ARCHIVE_RPC_URL=${selectedUrl}\n`, 'utf8');
+  if (!envFile || !selectedUrl || !selected) return false;
+  const historicalBlock = Number(selected.historicalBlock);
+  const historicalTimestamp = Number(selected.historicalTimestamp);
+  if (!Number.isInteger(historicalBlock) || historicalBlock < 1
+    || !Number.isInteger(historicalTimestamp) || historicalTimestamp < 1) return false;
+  fs.appendFileSync(envFile, [
+    `ETH_ARCHIVE_RPC_URL=${selectedUrl}`,
+    `ETH_ARCHIVE_BLOCK_NUMBER=${historicalBlock}`,
+    `ETH_ARCHIVE_BLOCK_TIMESTAMP=${historicalTimestamp}`,
+    ''
+  ].join('\n'), 'utf8');
   return true;
 }
 
@@ -224,7 +236,7 @@ async function runCli() {
   fs.writeFileSync(outFile, `${JSON.stringify(artifact, null, 2)}\n`, 'utf8');
 
   if (selection.ok) {
-    writeGithubEnv(selection.url);
+    writeGithubEnv(selection.url, selection.selected);
     console.log(`Stable historical RPC capability PASS via ${selection.selected.provider}; historical block ${selection.selected.historicalBlock}.`);
   } else {
     // Deliberately do not fail the workflow. The economic collector must still

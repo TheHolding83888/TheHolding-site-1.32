@@ -159,21 +159,14 @@ const allowed = new Set([
   ENGINE,
   ARCHIVE_COORDINATOR,
   REGRESSION_VALIDATION,
+  RPC_SELECTOR,
   STABLE_UI,
   UI_SENTINEL
 ]);
 if (changed.length < 1 || changed.some(file => !allowed.has(file))) {
   fail(`repair escaped bounded path set: ${JSON.stringify(changed)}`);
 }
-for (const requiredChanged of [
-  WORKFLOW,
-  PROOF,
-  ENGINE,
-  ARCHIVE_COORDINATOR,
-  REGRESSION_VALIDATION,
-  STABLE_UI,
-  UI_SENTINEL
-]) {
+for (const requiredChanged of [PROOF, ENGINE, REGRESSION_VALIDATION, RPC_SELECTOR]) {
   if (!changed.includes(requiredChanged)) fail(`bounded repair path not changed: ${requiredChanged}`);
 }
 

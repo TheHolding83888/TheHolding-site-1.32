@@ -113,6 +113,13 @@ const HISTORY_RPC = Object.freeze({
   ])
 });
 
+const PROVEN_HISTORY_BLOCK = (() => {
+  const number = Number(process.env.ETH_ARCHIVE_BLOCK_NUMBER);
+  const timestamp = Number(process.env.ETH_ARCHIVE_BLOCK_TIMESTAMP);
+  if (!Number.isInteger(number) || number < 1 || !Number.isInteger(timestamp) || timestamp < 1) return null;
+  return Object.freeze({ number, timestamp });
+})();
+
 // Heavy Ethereum history reads share one observation window and one bounded
 // queue. Unrelated current/official rate adapters remain parallel.
 const archiveRpc = createHistoricalRpcCoordinator();
@@ -363,16 +370,31 @@ async function findBlockAtOrBefore(provider, targetTs) {
   return out;
 }
 
+async function historicalBlockAtOrBefore(provider, providerKey, days = 7) {
+  return archiveRpc.blockAtOrBefore({
+    provider,
+    providerKey,
+    days,
+    resolve: async (activeProvider, targetTs) => {
+      // The capability selector already performed a historical block read and
+      // exported the exact block it proved. Reuse that evidence instead of
+      // issuing ~25 timestamp-search requests to the same rate-limited RPC.
+      if (PROVEN_HISTORY_BLOCK
+        && PROVEN_HISTORY_BLOCK.timestamp <= targetTs
+        && targetTs - PROVEN_HISTORY_BLOCK.timestamp <= 2 * 86400) {
+        console.log(`[stable-archive] reuse proven block ${PROVEN_HISTORY_BLOCK.number} (${PROVEN_HISTORY_BLOCK.timestamp})`);
+        return PROVEN_HISTORY_BLOCK;
+      }
+      return findBlockAtOrBefore(activeProvider, targetTs);
+    }
+  });
+}
+
 async function historicalUnitRate(wrapper, days = 7, maxDepth = 3) {
   const targetTs = archiveRpc.targetTimestamp(days);
 
   const call = await withArchiveProvider(async (provider, url) => {
-    const histBlock = await archiveRpc.blockAtOrBefore({
-      provider,
-      providerKey: url,
-      days,
-      resolve: findBlockAtOrBefore
-    });
+    const histBlock = await historicalBlockAtOrBefore(provider, url, days);
     const targetBlock = Number(histBlock.number);
     const wMetaNow = await tokenMeta(provider, wrapper);
     const unit = 10n ** BigInt(wMetaNow.decimals);
@@ -647,12 +669,7 @@ async function fxSaveEconomicNavAt(provider, shareRaw, blockTag = 'latest') {
 async function fxSaveHistoricalEconomicRate(days = 7) {
   const targetTs = archiveRpc.targetTimestamp(days);
   const call = await withArchiveProvider(async (provider, url) => {
-    const histBlock = await archiveRpc.blockAtOrBefore({
-      provider,
-      providerKey: url,
-      days,
-      resolve: findBlockAtOrBefore
-    });
+    const histBlock = await historicalBlockAtOrBefore(provider, url, days);
     const latestBlock = await provider.getBlock('latest');
     const unitShare = 10n ** 18n; // official SDK documents fxSAVE shares as 18 decimals.
 

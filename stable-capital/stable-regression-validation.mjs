@@ -67,6 +67,15 @@ assert.equal(recovered.number, 456, 'historical block retry did not recover');
 const engine = fs.readFileSync(path.join(root, 'stable-capital', 'stable-capital-engine.mjs'), 'utf8');
 assert.match(engine, /archiveRpc\.run\(/, 'Stable engine bypasses the shared archive queue');
 assert.match(engine, /archiveRpc\.blockAtOrBefore\(/, 'Stable engine bypasses the shared historical block');
+assert.match(engine, /ETH_ARCHIVE_BLOCK_NUMBER/, 'Stable engine does not consume the proven historical block number');
+assert.match(engine, /ETH_ARCHIVE_BLOCK_TIMESTAMP/, 'Stable engine does not consume the proven historical block timestamp');
+assert.match(engine, /return PROVEN_HISTORY_BLOCK;/, 'Stable engine repeats timestamp search instead of reusing selector evidence');
+assert.match(engine, /\[stable-archive\] reuse proven block/, 'Stable production logs cannot prove block-handoff reuse');
+
+const selector = fs.readFileSync(path.join(root, 'stable-capital', 'rpc-capability-selector.mjs'), 'utf8');
+assert.match(selector, /ETH_ARCHIVE_BLOCK_NUMBER/, 'RPC selector does not hand off the proven historical block number');
+assert.match(selector, /ETH_ARCHIVE_BLOCK_TIMESTAMP/, 'RPC selector does not hand off the proven historical block timestamp');
+assert.match(selector, /DEFAULT_HISTORY_BLOCK_DISTANCE = 50_500/, 'RPC selector no longer proves a block at or before seven days');
 
 const html = fs.readFileSync(path.join(root, 'companies', 'index.html'), 'utf8');
 assert.ok(!html.includes('Number(p.referenceApyPct)'), 'Stable strategy UNKNOWN can still become numeric zero');
