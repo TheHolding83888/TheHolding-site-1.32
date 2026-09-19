@@ -1,0 +1,58 @@
+{
+  "version": "0.1-stable-rpc-capability",
+  "generatedAt": "2026-09-19T11:48:32.451Z",
+  "chain": {
+    "name": "Ethereum",
+    "chainId": 1
+  },
+  "capability": "historical-contract-state-read",
+  "status": "ready",
+  "selected": {
+    "provider": "eth.blockscout.com",
+    "latestBlock": 26011364,
+    "historicalBlock": 25961364,
+    "historicalTimestamp": 1789216475,
+    "latencyMs": 785,
+    "probeDecimals": 6
+  },
+  "attempts": [
+    {
+      "ok": false,
+      "provider": "ethereum-rpc.publicnode.com",
+      "latencyMs": 191,
+      "latestBlock": null,
+      "historicalBlock": null,
+      "error": "server response 403 Forbidden"
+    },
+    {
+      "ok": false,
+      "provider": "eth.llamarpc.com",
+      "latencyMs": 78,
+      "latestBlock": null,
+      "historicalBlock": null,
+      "error": "server response 403 Forbidden"
+    },
+    {
+      "ok": true,
+      "provider": "eth.blockscout.com",
+      "latencyMs": 785,
+      "latestBlock": 26011364,
+      "historicalBlock": 25961364,
+      "error": null
+    }
+  ],
+  "probe": {
+    "address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+    "method": "decimals()",
+    "historicalBlockDistance": 50000,
+    "requirement": "historical eth_call must succeed; liveness/header history alone is insufficient"
+  },
+  "invariants": {
+    "strategyAgnosticTransport": true,
+    "endpointLivenessIsNotHistoricalCapability": true,
+    "unknownNeverZero": true,
+    "failClosed": true,
+    "secondStableWriterCreated": false,
+    "executionAuthority": "none"
+  }
+}
