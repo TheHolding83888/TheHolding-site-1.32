@@ -115,12 +115,15 @@ for (const required of [
 ]) {
   if (!coordinator.includes(required)) fail(`historical RPC coordinator invariant missing: ${required}`);
 }
+if (!coordinator.includes('export function createRpcRequestPacer')) fail('historical RPC request pacer missing');
+if (!coordinator.includes('nextAllowedAt = Number(now()) + interval')) fail('historical RPC request interval invariant missing');
 if (/git\s+(?:commit|push)|contents:\s*write/.test(coordinator)) fail('historical RPC coordinator acquired writer authority');
 
 for (const required of [
   'archive workloads were not serialized',
   'shared historical block was resolved more than once',
   'failed historical block lookup was not evicted',
+  'archive RPC requests were not paced at the bounded interval',
   'Stable strategy UNKNOWN can still become numeric zero'
 ]) {
   if (!validation.includes(required)) fail(`Stable regression proof missing: ${required}`);
@@ -166,7 +169,7 @@ const allowed = new Set([
 if (changed.length < 1 || changed.some(file => !allowed.has(file))) {
   fail(`repair escaped bounded path set: ${JSON.stringify(changed)}`);
 }
-for (const requiredChanged of [PROOF, ENGINE, REGRESSION_VALIDATION, RPC_SELECTOR]) {
+for (const requiredChanged of [PROOF, ENGINE, ARCHIVE_COORDINATOR, REGRESSION_VALIDATION]) {
   if (!changed.includes(requiredChanged)) fail(`bounded repair path not changed: ${requiredChanged}`);
 }
 
@@ -198,7 +201,7 @@ console.log(JSON.stringify({
   stableRegressionValidation: REGRESSION_VALIDATION,
   historicalCapabilityArtifact: RPC_ARTIFACT,
   historicalCapabilityContract: 'actual historical contract eth_call required; liveness/header history insufficient; unavailable remains UNKNOWN/null',
-  historicalWorkloadContract: 'one bounded archive workload at a time; one shared historical block per provider/window; failed lookup remains retryable',
+  historicalWorkloadContract: 'one bounded archive workload at a time; one shared historical block per provider/window; one paced non-batched RPC request at a time; failed lookup remains retryable',
   stableUiTruthContract: 'UNKNOWN/null renders as dash; genuine finite zero remains 0.00%',
   fallbackSemantics: 'canonical Market Data baseline publication wakes the existing Stable writer; no duplicate writer and no workflow-dispatch authority added',
   retiredRegistrationReadOnly: true,

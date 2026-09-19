@@ -46,3 +46,35 @@ export function createHistoricalRpcCoordinator({ observedAtMs = Date.now() } = {
 
   return Object.freeze({ run, targetTimestamp, blockAtOrBefore });
 }
+
+export function createRpcRequestPacer({
+  minimumIntervalMs = 500,
+  now = () => Date.now(),
+  wait = ms => new Promise(resolve => setTimeout(resolve, ms))
+} = {}) {
+  const interval = Number(minimumIntervalMs);
+  if (!Number.isFinite(interval) || interval < 0) throw new Error('minimumIntervalMs must be non-negative');
+  if (typeof now !== 'function' || typeof wait !== 'function') throw new Error('RPC pacer clock/wait must be functions');
+
+  let queueTail = Promise.resolve();
+  let nextAllowedAt = Number(now()) + interval;
+
+  function run(task) {
+    if (typeof task !== 'function') return Promise.reject(new Error('paced RPC task must be a function'));
+    const scheduled = queueTail.then(async () => {
+      const delayMs = Math.max(0, nextAllowedAt - Number(now()));
+      if (delayMs > 0) await wait(delayMs);
+      nextAllowedAt = Number(now()) + interval;
+      return task();
+    }, async () => {
+      const delayMs = Math.max(0, nextAllowedAt - Number(now()));
+      if (delayMs > 0) await wait(delayMs);
+      nextAllowedAt = Number(now()) + interval;
+      return task();
+    });
+    queueTail = scheduled.then(() => undefined, () => undefined);
+    return scheduled;
+  }
+
+  return Object.freeze({ run, minimumIntervalMs: interval });
+}
